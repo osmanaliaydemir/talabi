@@ -1,0 +1,22 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=your-server; Database=your-database; User Id=your-user; Password=your-password; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True; Connection Timeout=30;"
+  },
+  "JwtSettings": {
+    "Secret": "your-super-secret-jwt-key-here-minimum-32-characters",
+    "Issuer": "TalabiApi",
+    "Audience": "TalabiApp",
+    "ExpirationInMinutes": 1440
+  },
+  "GoogleMaps": {
+    "ApiKey": "your-google-maps-api-key-here"
+  }
+}
+
