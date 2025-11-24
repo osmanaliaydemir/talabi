@@ -4,22 +4,46 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
+import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/language_selection_screen.dart';
 import 'package:mobile/screens/login_screen.dart';
 import 'package:mobile/screens/main_navigation_screen.dart';
 import 'package:mobile/screens/onboarding_screen.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/cache_service.dart';
+import 'package:mobile/services/connectivity_service.dart';
+import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize cache service
+  await CacheService.init();
+  
+  // Initialize connectivity and sync services
+  final connectivityService = ConnectivityService();
+  final syncService = SyncService(connectivityService);
+  
+  // Initialize API service with connectivity
+  final apiService = ApiService();
+  apiService.setConnectivityService(connectivityService);
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LocalizationProvider()),
+        ChangeNotifierProvider(create: (context) => ConnectivityProvider(connectivityService)),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
-        ChangeNotifierProvider(create: (context) => CartProvider()),
+        ChangeNotifierProvider(
+          create: (context) => CartProvider(
+            syncService: syncService,
+            connectivityProvider: context.read<ConnectivityProvider>(),
+          ),
+        ),
         ChangeNotifierProvider(create: (context) => BottomNavProvider()),
       ],
       child: const MyApp(),

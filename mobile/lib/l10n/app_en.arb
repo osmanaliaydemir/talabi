@@ -101,6 +101,8 @@
   "iHaveVerified": "I Have Verified",
   "resendEmail": "Resend Email",
   "resendFeatureComingSoon": "Resend feature coming soon",
-  "pleaseVerifyEmail": "Please verify your email address."
+  "pleaseVerifyEmail": "Please verify your email address.",
+  "offlineMode": "Offline Mode",
+  "offlineModeDescription": "Some features may be limited"
 }
 

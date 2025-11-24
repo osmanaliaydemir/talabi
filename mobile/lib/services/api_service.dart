@@ -4,6 +4,8 @@ import 'package:mobile/models/order.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/search_dtos.dart';
+import 'package:mobile/services/cache_service.dart';
+import 'package:mobile/services/connectivity_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
@@ -17,9 +19,16 @@ class ApiService {
     ),
   );
 
+  final CacheService _cacheService = CacheService();
+  ConnectivityService? _connectivityService;
+
   // Track refresh token operation to prevent concurrent calls
   bool _isRefreshing = false;
   Completer<Map<String, String>>? _refreshCompleter;
+
+  void setConnectivityService(ConnectivityService connectivityService) {
+    _connectivityService = connectivityService;
+  }
 
   // Singleton pattern
   factory ApiService() {
@@ -152,9 +161,30 @@ class ApiService {
 
   Future<List<Vendor>> getVendors() async {
     try {
+      // Try network first
       final response = await _dio.get('/vendors');
       final List<dynamic> data = response.data;
-      return data.map((json) => Vendor.fromJson(json)).toList();
+      final vendors = data.map((json) => Vendor.fromJson(json)).toList();
+
+      // Cache the result
+      await _cacheService.cacheVendors(vendors);
+
+      return vendors;
+    } on DioException catch (e) {
+      print('Error fetching vendors: $e');
+
+      // If offline or network error, try cache
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        final cachedVendors = await _cacheService.getCachedVendors();
+        if (cachedVendors != null && cachedVendors.isNotEmpty) {
+          print('📦 [CACHE] Returning cached vendors');
+          return cachedVendors;
+        }
+      }
+
+      rethrow;
     } catch (e) {
       print('Error fetching vendors: $e');
       rethrow;
@@ -163,9 +193,30 @@ class ApiService {
 
   Future<List<Product>> getProducts(int vendorId) async {
     try {
+      // Try network first
       final response = await _dio.get('/vendors/$vendorId/products');
       final List<dynamic> data = response.data;
-      return data.map((json) => Product.fromJson(json)).toList();
+      final products = data.map((json) => Product.fromJson(json)).toList();
+
+      // Cache the result
+      await _cacheService.cacheProducts(products);
+
+      return products;
+    } on DioException catch (e) {
+      print('Error fetching products: $e');
+
+      // If offline or network error, try cache
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        final cachedProducts = await _cacheService.getCachedProducts();
+        if (cachedProducts != null && cachedProducts.isNotEmpty) {
+          print('📦 [CACHE] Returning cached products');
+          return cachedProducts;
+        }
+      }
+
+      rethrow;
     } catch (e) {
       print('Error fetching products: $e');
       rethrow;
@@ -387,8 +438,29 @@ class ApiService {
   // Profile methods
   Future<Map<String, dynamic>> getProfile() async {
     try {
+      // Try network first
       final response = await _dio.get('/profile');
-      return response.data;
+      final profile = response.data as Map<String, dynamic>;
+
+      // Cache the result
+      await _cacheService.cacheProfile(profile);
+
+      return profile;
+    } on DioException catch (e) {
+      print('Error fetching profile: $e');
+
+      // If offline or network error, try cache
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        final cachedProfile = await _cacheService.getCachedProfile();
+        if (cachedProfile != null) {
+          print('📦 [CACHE] Returning cached profile');
+          return cachedProfile;
+        }
+      }
+
+      rethrow;
     } catch (e) {
       print('Error fetching profile: $e');
       rethrow;
@@ -604,8 +676,29 @@ class ApiService {
 
   Future<List<String>> getCategories() async {
     try {
+      // Try network first
       final response = await _dio.get('/products/categories');
-      return List<String>.from(response.data);
+      final categories = List<String>.from(response.data);
+
+      // Cache the result
+      await _cacheService.cacheCategories(categories);
+
+      return categories;
+    } on DioException catch (e) {
+      print('Error fetching categories: $e');
+
+      // If offline or network error, try cache
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        final cachedCategories = await _cacheService.getCachedCategories();
+        if (cachedCategories != null && cachedCategories.isNotEmpty) {
+          print('📦 [CACHE] Returning cached categories');
+          return cachedCategories;
+        }
+      }
+
+      rethrow;
     } catch (e) {
       print('Error fetching categories: $e');
       rethrow;

@@ -7,6 +7,7 @@ import 'package:mobile/screens/favorites_screen.dart';
 import 'package:mobile/screens/order_history_screen.dart';
 import 'package:mobile/screens/profile_screen.dart';
 import 'package:mobile/screens/vendor_list_screen.dart';
+import 'package:mobile/widgets/connectivity_banner.dart';
 import 'package:mobile/widgets/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +44,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final bottomNav = Provider.of<BottomNavProvider>(context);
 
     return Scaffold(
-      body: IndexedStack(index: bottomNav.currentIndex, children: _screens),
+      body: Stack(
+        children: [
+          IndexedStack(index: bottomNav.currentIndex, children: _screens),
+          // Floating banner at the top
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: const ConnectivityBanner(),
+          ),
+        ],
+      ),
       bottomNavigationBar: const PersistentBottomNavBar(),
     );
   }

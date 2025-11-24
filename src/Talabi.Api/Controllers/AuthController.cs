@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
+using Talabi.Core.Services;
 
 namespace Talabi.Api.Controllers;
 
@@ -16,12 +18,18 @@ public class AuthController : ControllerBase
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly IEmailSender _emailSender;
 
-    public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration configuration)
+    public AuthController(
+        UserManager<AppUser> userManager, 
+        SignInManager<AppUser> signInManager, 
+        IConfiguration configuration,
+        IEmailSender emailSender)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _emailSender = emailSender;
     }
 
     [HttpPost("register")]
@@ -32,11 +40,32 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
-            var token = await GenerateJwtToken(user);
-            return Ok(new { Token = token, UserId = user.Id, Email = user.Email, FullName = user.FullName });
+            // Generate email confirmation token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth", new { token, email = user.Email }, Request.Scheme);
+            
+            await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", $"Please confirm your account by clicking this link: {confirmationLink}");
+
+            // For now, we return the token directly to make testing easier without a real email server
+            // In production, you would only return a success message
+            return Ok(new { Message = "User registered successfully. Please check your email to confirm your account.", ConfirmationToken = token });
         }
 
         return BadRequest(result.Errors);
+    }
+
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(string token, string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+            return BadRequest("Invalid email confirmation request.");
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+            return Ok("Email confirmed successfully!");
+
+        return BadRequest("Error confirming email.");
     }
 
     [HttpPost("forgot-password")]
@@ -53,9 +82,7 @@ public class AuthController : ControllerBase
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             
-            // TODO: Send email with reset token
-            // For now, we'll just return success
-            // In production, you should send an email with the reset link
+            await _emailSender.SendEmailAsync(user.Email!, "Reset Password", $"Your password reset token is: {token}");
             
             return Ok(new { Message = "If the email exists, a password reset link has been sent." });
         }
@@ -76,6 +103,12 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { Message = "Invalid email or password" });
             }
 
+            // Check if email is confirmed
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return Unauthorized(new { Message = "Email not confirmed. Please check your email." });
+            }
+
             // Check if password hash is valid before attempting to verify
             if (string.IsNullOrEmpty(user.PasswordHash))
             {
@@ -87,14 +120,20 @@ public class AuthController : ControllerBase
             if (result.Succeeded)
             {
                 var token = await GenerateJwtToken(user);
-                return Ok(new { Token = token, UserId = user.Id, Email = user.Email, FullName = user.FullName });
+                var refreshToken = GenerateRefreshToken();
+
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                await _userManager.UpdateAsync(user);
+
+                return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName });
             }
 
             return Unauthorized(new { Message = "Invalid email or password" });
         }
         catch (FormatException ex) when (ex.Message.Contains("Base-64"))
         {
-            // Password hash is corrupted - reset the password
+             // Password hash is corrupted - reset the password
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user != null)
             {
@@ -109,7 +148,13 @@ public class AuthController : ControllerBase
                     if (loginResult.Succeeded)
                     {
                         var token = await GenerateJwtToken(user);
-                        return Ok(new { Token = token, UserId = user.Id, Email = user.Email, FullName = user.FullName });
+                        var refreshToken = GenerateRefreshToken();
+
+                        user.RefreshToken = refreshToken;
+                        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                        await _userManager.UpdateAsync(user);
+
+                        return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName });
                     }
                 }
             }
@@ -120,6 +165,37 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500, new { Message = "An error occurred during login", Error = ex.Message });
         }
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken(RefreshTokenDto dto)
+    {
+        if (dto is null)
+            return BadRequest("Invalid client request");
+
+        string? accessToken = dto.Token;
+        string? refreshToken = dto.RefreshToken;
+
+        var principal = GetPrincipalFromExpiredToken(accessToken);
+        if (principal == null)
+            return BadRequest("Invalid access token or refresh token");
+
+        var email = principal.FindFirstValue(ClaimTypes.Email) ?? principal.FindFirstValue(JwtRegisteredClaimNames.Email);
+        if (email == null)
+             return BadRequest("Invalid access token or refresh token");
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            return BadRequest("Invalid access token or refresh token");
+
+        var newAccessToken = await GenerateJwtToken(user);
+        var newRefreshToken = GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(new { Token = newAccessToken, RefreshToken = newRefreshToken });
     }
 
     private async Task<string> GenerateJwtToken(AppUser user)
@@ -160,5 +236,35 @@ public class AuthController : ControllerBase
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-}
 
+    private static string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
+    {
+        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var secret = jwtSettings["Secret"];
+
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
+            ValidateLifetime = false // Here we are validating that the token is expired, so we don't care about lifetime
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            throw new SecurityTokenException("Invalid token");
+
+        return principal;
+    }
+}

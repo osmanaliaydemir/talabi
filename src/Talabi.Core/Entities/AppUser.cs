@@ -8,4 +8,6 @@ public class AppUser : IdentityUser
     public string? Address { get; set; }
     public string? ProfileImageUrl { get; set; }
     public DateTime? DateOfBirth { get; set; }
+    public string? RefreshToken { get; set; }
+    public DateTime RefreshTokenExpiryTime { get; set; }
 }

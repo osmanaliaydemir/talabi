@@ -1,3 +1,6 @@
+using AspNetCoreRateLimit;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -5,8 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
 using System.Text;
+using Talabi.Api.Validators;
 using Talabi.Core.Entities;
+using Talabi.Core.Services;
 using Talabi.Infrastructure.Data;
+using Talabi.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,12 +47,38 @@ builder.Services.AddDbContext<TalabiDbContext>(options =>
 
 // Services
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<Talabi.Core.Services.ICurrencyService, Talabi.Infrastructure.Services.CurrencyService>();
+builder.Services.AddScoped<ICurrencyService, CurrencyService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Rate Limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Period = "1m",
+            Limit = 60
+        }
+    };
+});
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 
 // Identity
-builder.Services.AddIdentity<AppUser, IdentityRole>()
-    .AddEntityFrameworkStores<TalabiDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<AppUser, IdentityRole>(options => 
+{
+    options.SignIn.RequireConfirmedEmail = true;
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<TalabiDbContext>()
+.AddDefaultTokenProviders();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -108,11 +140,17 @@ if (app.Environment.IsDevelopment())
         }
     }
 }
+else
+{
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 
 // Localization middleware
 app.UseRequestLocalization();
+
+app.UseIpRateLimiting();
 
 app.UseAuthentication();
 app.UseAuthorization();

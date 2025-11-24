@@ -2,11 +2,23 @@ import 'package:flutter/foundation.dart';
 import 'package:mobile/models/cart_item.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/sync_service.dart';
+import 'package:mobile/providers/connectivity_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class CartProvider with ChangeNotifier {
   final Map<int, CartItem> _items = {};
   final ApiService _apiService = ApiService();
+  final SyncService? _syncService;
+  final ConnectivityProvider? _connectivityProvider;
+  final _uuid = const Uuid();
   bool _isLoading = false;
+
+  CartProvider({
+    SyncService? syncService,
+    ConnectivityProvider? connectivityProvider,
+  }) : _syncService = syncService,
+       _connectivityProvider = connectivityProvider;
 
   Map<int, CartItem> get items => _items;
   int get itemCount => _items.length;
@@ -55,83 +67,182 @@ class CartProvider with ChangeNotifier {
   }
 
   Future<void> addItem(Product product) async {
-    try {
-      await _apiService.addToCart(product.id, 1);
+    final isOnline = _connectivityProvider?.isOnline ?? true;
 
-      // Update local state
-      if (_items.containsKey(product.id)) {
-        _items[product.id]!.quantity++;
-      } else {
-        _items[product.id] = CartItem(product: product);
+    // Update local state immediately for better UX
+    if (_items.containsKey(product.id)) {
+      _items[product.id]!.quantity++;
+    } else {
+      _items[product.id] = CartItem(product: product);
+    }
+    notifyListeners();
+
+    if (isOnline) {
+      try {
+        await _apiService.addToCart(product.id, 1);
+        // Reload from backend to get correct IDs
+        await loadCart();
+      } catch (e) {
+        print('Error adding item: $e');
+        // If online but request failed, queue it
+        if (_syncService != null) {
+          final action = SyncAction(
+            id: _uuid.v4(),
+            type: SyncActionType.addToCart,
+            data: {'productId': product.id, 'quantity': 1},
+          );
+          await _syncService!.addToQueue(action);
+          print('📦 [CART] Action queued: addToCart');
+        }
       }
-
-      // Reload from backend to get correct IDs
-      await loadCart();
-    } catch (e) {
-      print('Error adding item: $e');
-      rethrow;
+    } else {
+      // Offline: queue the action
+      if (_syncService != null) {
+        final action = SyncAction(
+          id: _uuid.v4(),
+          type: SyncActionType.addToCart,
+          data: {'productId': product.id, 'quantity': 1},
+        );
+        await _syncService!.addToQueue(action);
+        print('📦 [CART] Offline - Action queued: addToCart');
+      }
     }
   }
 
   Future<void> removeItem(int productId) async {
-    try {
-      final cartItem = _items[productId];
-      if (cartItem?.backendId != null) {
-        await _apiService.removeFromCart(cartItem!.backendId!);
-      }
+    final cartItem = _items[productId];
+    final isOnline = _connectivityProvider?.isOnline ?? true;
 
-      _items.remove(productId);
-      notifyListeners();
-    } catch (e) {
-      print('Error removing item: $e');
-      rethrow;
+    // Update local state immediately
+    _items.remove(productId);
+    notifyListeners();
+
+    if (isOnline && cartItem != null && cartItem.backendId != null) {
+      try {
+        await _apiService.removeFromCart(cartItem.backendId!);
+      } catch (e) {
+        print('Error removing item: $e');
+        // If online but request failed, queue it
+        if (_syncService != null) {
+          final action = SyncAction(
+            id: _uuid.v4(),
+            type: SyncActionType.removeFromCart,
+            data: {'itemId': cartItem.backendId!},
+          );
+          await _syncService!.addToQueue(action);
+          print('📦 [CART] Action queued: removeFromCart');
+        }
+      }
+    } else if (!isOnline && cartItem != null && cartItem.backendId != null) {
+      // Offline: queue the action
+      if (_syncService != null) {
+        final action = SyncAction(
+          id: _uuid.v4(),
+          type: SyncActionType.removeFromCart,
+          data: {'itemId': cartItem!.backendId!},
+        );
+        await _syncService!.addToQueue(action);
+        print('📦 [CART] Offline - Action queued: removeFromCart');
+      }
     }
   }
 
   Future<void> increaseQuantity(int productId) async {
     if (!_items.containsKey(productId)) return;
 
-    try {
-      final cartItem = _items[productId]!;
+    final cartItem = _items[productId]!;
+    final isOnline = _connectivityProvider?.isOnline ?? true;
 
-      if (cartItem.backendId != null) {
+    // Update local state immediately
+    cartItem.quantity++;
+    notifyListeners();
+
+    if (isOnline && cartItem.backendId != null) {
+      try {
         await _apiService.updateCartItem(
           cartItem.backendId!,
-          cartItem.quantity + 1,
+          cartItem.quantity,
         );
+      } catch (e) {
+        print('Error increasing quantity: $e');
+        // If online but request failed, queue it
+        if (_syncService != null) {
+          final action = SyncAction(
+            id: _uuid.v4(),
+            type: SyncActionType.updateCartItem,
+            data: {
+              'itemId': cartItem.backendId!,
+              'quantity': cartItem.quantity,
+            },
+          );
+          await _syncService!.addToQueue(action);
+          print('📦 [CART] Action queued: updateCartItem');
+        }
       }
-      cartItem.quantity++;
-
-      notifyListeners();
-    } catch (e) {
-      print('Error increasing quantity: $e');
-      rethrow;
+    } else if (!isOnline && cartItem.backendId != null) {
+      // Offline: queue the action
+      if (_syncService != null) {
+        final action = SyncAction(
+          id: _uuid.v4(),
+          type: SyncActionType.updateCartItem,
+          data: {'itemId': cartItem.backendId!, 'quantity': cartItem.quantity},
+        );
+        await _syncService!.addToQueue(action);
+        print('📦 [CART] Offline - Action queued: updateCartItem');
+      }
     }
   }
 
   Future<void> decreaseQuantity(int productId) async {
     if (!_items.containsKey(productId)) return;
 
-    try {
-      final cartItem = _items[productId]!;
+    final cartItem = _items[productId]!;
+    final isOnline = _connectivityProvider?.isOnline ?? true;
 
-      if (cartItem.quantity > 1) {
-        if (cartItem.backendId != null) {
+    if (cartItem.quantity > 1) {
+      // Update local state immediately
+      cartItem.quantity--;
+      notifyListeners();
+
+      if (isOnline && cartItem.backendId != null) {
+        try {
           await _apiService.updateCartItem(
             cartItem.backendId!,
-            cartItem.quantity - 1,
+            cartItem.quantity,
           );
+        } catch (e) {
+          print('Error decreasing quantity: $e');
+          // If online but request failed, queue it
+          if (_syncService != null) {
+            final action = SyncAction(
+              id: _uuid.v4(),
+              type: SyncActionType.updateCartItem,
+              data: {
+                'itemId': cartItem.backendId!,
+                'quantity': cartItem.quantity,
+              },
+            );
+            await _syncService!.addToQueue(action);
+            print('📦 [CART] Action queued: updateCartItem');
+          }
         }
-        cartItem.quantity--;
-      } else {
-        await removeItem(productId);
-        return;
+      } else if (!isOnline && cartItem.backendId != null) {
+        // Offline: queue the action
+        if (_syncService != null) {
+          final action = SyncAction(
+            id: _uuid.v4(),
+            type: SyncActionType.updateCartItem,
+            data: {
+              'itemId': cartItem.backendId!,
+              'quantity': cartItem.quantity,
+            },
+          );
+          await _syncService!.addToQueue(action);
+          print('📦 [CART] Offline - Action queued: updateCartItem');
+        }
       }
-
-      notifyListeners();
-    } catch (e) {
-      print('Error decreasing quantity: $e');
-      rethrow;
+    } else {
+      await removeItem(productId);
     }
   }
 

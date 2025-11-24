@@ -101,6 +101,8 @@
   "iHaveVerified": "Doğruladım",
   "resendEmail": "E-postayı Tekrar Gönder",
   "resendFeatureComingSoon": "Tekrar gönderme özelliği yakında gelecek",
-  "pleaseVerifyEmail": "Lütfen e-posta adresinizi doğrulayın."
+  "pleaseVerifyEmail": "Lütfen e-posta adresinizi doğrulayın.",
+  "offlineMode": "Çevrimdışı Mod",
+  "offlineModeDescription": "Bazı özellikler sınırlı olabilir"
 }
 
