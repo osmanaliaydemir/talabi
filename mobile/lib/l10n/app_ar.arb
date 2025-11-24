@@ -94,6 +94,13 @@
   "forgetPasswordDescription": "أدخل عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور",
   "continueButton": "متابعة",
   "passwordResetEmailSent": "تم إرسال بريد إعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني",
-  "passwordResetFailed": "فشل إرسال بريد إعادة تعيين كلمة المرور"
+  "passwordResetFailed": "فشل إرسال بريد إعادة تعيين كلمة المرور",
+  "emailVerification": "التحقق من البريد الإلكتروني",
+  "checkYourEmail": "تحقق من بريدك الإلكتروني",
+  "emailVerificationDescription": "لقد أرسلنا رابط التحقق إلى عنوان بريدك الإلكتروني. يرجى التحقق من صندوق الوارد الخاص بك والنقر على الرابط للتحقق من حسابك.",
+  "iHaveVerified": "لقد قمت بالتحقق",
+  "resendEmail": "إعادة إرسال البريد الإلكتروني",
+  "resendFeatureComingSoon": "ميزة إعادة الإرسال قريباً",
+  "pleaseVerifyEmail": "يرجى التحقق من عنوان بريدك الإلكتروني."
 }
 

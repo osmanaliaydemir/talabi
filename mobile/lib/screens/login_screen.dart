@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/screens/email_verification_screen.dart';
 import 'package:mobile/screens/forgot_password_screen.dart';
 import 'package:mobile/screens/main_navigation_screen.dart';
 import 'package:mobile/screens/register_screen.dart';
@@ -60,6 +62,53 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
         );
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
+        String errorMessage = '';
+
+        // Extract error message from response
+        if (e.response?.data != null) {
+          final responseData = e.response!.data;
+          if (responseData is Map) {
+            errorMessage = responseData['message']?.toString() ?? '';
+          } else if (responseData is String) {
+            errorMessage = responseData;
+          }
+        }
+
+        // If no message in response, use exception message
+        if (errorMessage.isEmpty) {
+          errorMessage = e.message ?? e.toString();
+        }
+
+        // Check if email is not confirmed
+        if (errorMessage.toLowerCase().contains('email not confirmed') ||
+            errorMessage.toLowerCase().contains('email not verified')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const EmailVerificationScreen(),
+            ),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.pleaseVerifyEmail),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                errorMessage.isNotEmpty
+                    ? errorMessage
+                    : '${localizations.loginFailed}: ${e.message}',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

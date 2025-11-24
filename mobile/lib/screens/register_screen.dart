@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/utils/navigation_logger.dart';
+import 'package:mobile/screens/email_verification_screen.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -58,7 +59,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       print('🟢 [REGISTER_SCREEN] Register successful!');
 
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const EmailVerificationScreen(),
+          ),
+        );
       }
     } catch (e, stackTrace) {
       print('🔴 [REGISTER_SCREEN] Register error: $e');

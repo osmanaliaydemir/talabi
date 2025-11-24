@@ -94,6 +94,13 @@
   "forgetPasswordDescription": "Enter your email account to reset password",
   "continueButton": "Continue",
   "passwordResetEmailSent": "Password reset email has been sent to your email address",
-  "passwordResetFailed": "Failed to send password reset email"
+  "passwordResetFailed": "Failed to send password reset email",
+  "emailVerification": "Email Verification",
+  "checkYourEmail": "Check Your Email",
+  "emailVerificationDescription": "We have sent a verification link to your email address. Please check your inbox and click the link to verify your account.",
+  "iHaveVerified": "I Have Verified",
+  "resendEmail": "Resend Email",
+  "resendFeatureComingSoon": "Resend feature coming soon",
+  "pleaseVerifyEmail": "Please verify your email address."
 }
 

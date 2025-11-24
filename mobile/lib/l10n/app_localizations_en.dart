@@ -201,8 +201,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome Back!';
 
   @override
-  String get loginDescription =>
-      'To keep connected with us please login with your personal info';
+  String get loginDescription => 'To keep connected with us please login with your personal info';
 
   @override
   String get emailAddress => 'Email Address';
@@ -274,16 +273,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgetPassword => 'Forget Password';
 
   @override
-  String get forgetPasswordDescription =>
-      'Enter your email account to reset password';
+  String get forgetPasswordDescription => 'Enter your email account to reset password';
 
   @override
   String get continueButton => 'Continue';
 
   @override
-  String get passwordResetEmailSent =>
-      'Password reset email has been sent to your email address';
+  String get passwordResetEmailSent => 'Password reset email has been sent to your email address';
 
   @override
   String get passwordResetFailed => 'Failed to send password reset email';
+
+  @override
+  String get emailVerification => 'Email Verification';
+
+  @override
+  String get checkYourEmail => 'Check Your Email';
+
+  @override
+  String get emailVerificationDescription => 'We have sent a verification link to your email address. Please check your inbox and click the link to verify your account.';
+
+  @override
+  String get iHaveVerified => 'I Have Verified';
+
+  @override
+  String get resendEmail => 'Resend Email';
+
+  @override
+  String get resendFeatureComingSoon => 'Resend feature coming soon';
+
+  @override
+  String get pleaseVerifyEmail => 'Please verify your email address.';
 }

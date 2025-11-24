@@ -201,8 +201,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcomeBack => 'Tekrar Hoş Geldiniz!';
 
   @override
-  String get loginDescription =>
-      'Bizimle bağlantıda kalmak için lütfen kişisel bilgilerinizle giriş yapın';
+  String get loginDescription => 'Bizimle bağlantıda kalmak için lütfen kişisel bilgilerinizle giriş yapın';
 
   @override
   String get emailAddress => 'E-posta Adresi';
@@ -274,16 +273,35 @@ class AppLocalizationsTr extends AppLocalizations {
   String get forgetPassword => 'Şifremi Unuttum';
 
   @override
-  String get forgetPasswordDescription =>
-      'Şifrenizi sıfırlamak için e-posta adresinizi girin';
+  String get forgetPasswordDescription => 'Şifrenizi sıfırlamak için e-posta adresinizi girin';
 
   @override
   String get continueButton => 'Devam Et';
 
   @override
-  String get passwordResetEmailSent =>
-      'Şifre sıfırlama e-postası e-posta adresinize gönderildi';
+  String get passwordResetEmailSent => 'Şifre sıfırlama e-postası e-posta adresinize gönderildi';
 
   @override
   String get passwordResetFailed => 'Şifre sıfırlama e-postası gönderilemedi';
+
+  @override
+  String get emailVerification => 'E-posta Doğrulama';
+
+  @override
+  String get checkYourEmail => 'E-postanızı Kontrol Edin';
+
+  @override
+  String get emailVerificationDescription => 'E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin ve hesabınızı doğrulamak için bağlantıya tıklayın.';
+
+  @override
+  String get iHaveVerified => 'Doğruladım';
+
+  @override
+  String get resendEmail => 'E-postayı Tekrar Gönder';
+
+  @override
+  String get resendFeatureComingSoon => 'Tekrar gönderme özelliği yakında gelecek';
+
+  @override
+  String get pleaseVerifyEmail => 'Lütfen e-posta adresinizi doğrulayın.';
 }

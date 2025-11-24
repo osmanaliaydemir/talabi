@@ -94,6 +94,13 @@
   "forgetPasswordDescription": "Şifrenizi sıfırlamak için e-posta adresinizi girin",
   "continueButton": "Devam Et",
   "passwordResetEmailSent": "Şifre sıfırlama e-postası e-posta adresinize gönderildi",
-  "passwordResetFailed": "Şifre sıfırlama e-postası gönderilemedi"
+  "passwordResetFailed": "Şifre sıfırlama e-postası gönderilemedi",
+  "emailVerification": "E-posta Doğrulama",
+  "checkYourEmail": "E-postanızı Kontrol Edin",
+  "emailVerificationDescription": "E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin ve hesabınızı doğrulamak için bağlantıya tıklayın.",
+  "iHaveVerified": "Doğruladım",
+  "resendEmail": "E-postayı Tekrar Gönder",
+  "resendFeatureComingSoon": "Tekrar gönderme özelliği yakında gelecek",
+  "pleaseVerifyEmail": "Lütfen e-posta adresinizi doğrulayın."
 }
 

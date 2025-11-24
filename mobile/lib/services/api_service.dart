@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:mobile/models/order.dart';
 import 'package:mobile/models/product.dart';
@@ -15,6 +16,10 @@ class ApiService {
       receiveTimeout: const Duration(seconds: 30),
     ),
   );
+
+  // Track refresh token operation to prevent concurrent calls
+  bool _isRefreshing = false;
+  Completer<Map<String, String>>? _refreshCompleter;
 
   // Singleton pattern
   factory ApiService() {
@@ -46,17 +51,103 @@ class ApiService {
           print('📥 [HTTP RESPONSE] Data: ${response.data}');
           return handler.next(response);
         },
-        onError: (error, handler) {
+        onError: (error, handler) async {
           print(
             '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri}',
           );
           print('❌ [HTTP ERROR] Status: ${error.response?.statusCode}');
           print('❌ [HTTP ERROR] Message: ${error.message}');
           print('❌ [HTTP ERROR] Response: ${error.response?.data}');
+
+          // Handle 401 Unauthorized - Refresh Token Logic
+          if (error.response?.statusCode == 401 &&
+              !error.requestOptions.path.contains('login') &&
+              !error.requestOptions.path.contains('refresh-token')) {
+            print('🔄 [REFRESH TOKEN] 401 detected. Attempting to refresh...');
+
+            try {
+              final prefs = await SharedPreferences.getInstance();
+              final token = prefs.getString('token');
+              final refreshToken = prefs.getString('refreshToken');
+
+              if (token != null && refreshToken != null) {
+                Map<String, String> newTokens;
+
+                // If already refreshing, wait for the existing refresh to complete
+                if (_isRefreshing && _refreshCompleter != null) {
+                  print('🔄 [REFRESH TOKEN] Already refreshing, waiting...');
+                  newTokens = await _refreshCompleter!.future;
+                } else {
+                  // Start new refresh operation
+                  _isRefreshing = true;
+                  _refreshCompleter = Completer<Map<String, String>>();
+
+                  try {
+                    newTokens = await _refreshToken(token, refreshToken);
+
+                    // Update tokens in SharedPreferences
+                    await prefs.setString('token', newTokens['token']!);
+                    await prefs.setString(
+                      'refreshToken',
+                      newTokens['refreshToken']!,
+                    );
+
+                    _refreshCompleter!.complete(newTokens);
+                  } catch (e) {
+                    _refreshCompleter!.completeError(e);
+                    rethrow;
+                  } finally {
+                    _isRefreshing = false;
+                    _refreshCompleter = null;
+                  }
+                }
+
+                // Retry the original request with new token
+                final options = error.requestOptions;
+                options.headers['Authorization'] =
+                    'Bearer ${newTokens['token']!}';
+
+                final cloneReq = await _dio.request(
+                  options.path,
+                  data: options.data,
+                  queryParameters: options.queryParameters,
+                  options: Options(
+                    method: options.method,
+                    headers: options.headers,
+                  ),
+                );
+
+                return handler.resolve(cloneReq);
+              }
+            } catch (e) {
+              print('🔴 [REFRESH TOKEN] Failed: $e');
+              _isRefreshing = false;
+              _refreshCompleter = null;
+              // If refresh fails, let the error propagate (user will be logged out by AuthProvider)
+            }
+          }
+
           return handler.next(error);
         },
       ),
     );
+  }
+
+  Future<Map<String, String>> _refreshToken(
+    String token,
+    String refreshToken,
+  ) async {
+    // Create a separate Dio instance to avoid interceptor loops
+    final dio = Dio(BaseOptions(baseUrl: baseUrl));
+    final response = await dio.post(
+      '/auth/refresh-token',
+      data: {'token': token, 'refreshToken': refreshToken},
+    );
+    final data = response.data as Map<String, dynamic>;
+    return {
+      'token': data['token'] as String,
+      'refreshToken': data['refreshToken'] as String,
+    };
   }
 
   Future<List<Vendor>> getVendors() async {
@@ -227,6 +318,18 @@ class ApiService {
       await _dio.post('/auth/forgot-password', data: {'email': email});
     } catch (e) {
       print('Error sending forgot password request: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> confirmEmail(String token, String email) async {
+    try {
+      await _dio.get(
+        '/auth/confirm-email',
+        queryParameters: {'token': token, 'email': email},
+      );
+    } catch (e) {
+      print('Error confirming email: $e');
       rethrow;
     }
   }

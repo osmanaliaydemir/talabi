@@ -201,8 +201,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcomeBack => 'مرحباً بعودتك!';
 
   @override
-  String get loginDescription =>
-      'للبقاء على اتصال معنا يرجى تسجيل الدخول بمعلوماتك الشخصية';
+  String get loginDescription => 'للبقاء على اتصال معنا يرجى تسجيل الدخول بمعلوماتك الشخصية';
 
   @override
   String get emailAddress => 'عنوان البريد الإلكتروني';
@@ -274,16 +273,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forgetPassword => 'نسيت كلمة المرور';
 
   @override
-  String get forgetPasswordDescription =>
-      'أدخل عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور';
+  String get forgetPasswordDescription => 'أدخل عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور';
 
   @override
   String get continueButton => 'متابعة';
 
   @override
-  String get passwordResetEmailSent =>
-      'تم إرسال بريد إعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني';
+  String get passwordResetEmailSent => 'تم إرسال بريد إعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني';
 
   @override
   String get passwordResetFailed => 'فشل إرسال بريد إعادة تعيين كلمة المرور';
+
+  @override
+  String get emailVerification => 'التحقق من البريد الإلكتروني';
+
+  @override
+  String get checkYourEmail => 'تحقق من بريدك الإلكتروني';
+
+  @override
+  String get emailVerificationDescription => 'لقد أرسلنا رابط التحقق إلى عنوان بريدك الإلكتروني. يرجى التحقق من صندوق الوارد الخاص بك والنقر على الرابط للتحقق من حسابك.';
+
+  @override
+  String get iHaveVerified => 'لقد قمت بالتحقق';
+
+  @override
+  String get resendEmail => 'إعادة إرسال البريد الإلكتروني';
+
+  @override
+  String get resendFeatureComingSoon => 'ميزة إعادة الإرسال قريباً';
+
+  @override
+  String get pleaseVerifyEmail => 'يرجى التحقق من عنوان بريدك الإلكتروني.';
 }

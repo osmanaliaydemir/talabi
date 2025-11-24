@@ -4,12 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _token;
+  String? _refreshToken;
   String? _userId;
   String? _email;
   String? _fullName;
 
   bool get isAuthenticated => _token != null;
   String? get token => _token;
+  String? get refreshToken => _refreshToken;
   String? get userId => _userId;
   String? get email => _email;
   String? get fullName => _fullName;
@@ -19,6 +21,7 @@ class AuthProvider with ChangeNotifier {
     final response = await apiService.login(email, password);
 
     _token = response['token'];
+    _refreshToken = response['refreshToken'];
     _userId = response['userId'];
     _email = response['email'];
     _fullName = response['fullName'];
@@ -26,6 +29,9 @@ class AuthProvider with ChangeNotifier {
     // Save to shared preferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', _token!);
+    if (_refreshToken != null) {
+      await prefs.setString('refreshToken', _refreshToken!);
+    }
     await prefs.setString('userId', _userId!);
     await prefs.setString('email', _email!);
     await prefs.setString('fullName', _fullName!);
@@ -46,25 +52,36 @@ class AuthProvider with ChangeNotifier {
       print('🟢 [AUTH_PROVIDER] Response keys: ${response.keys}');
       print('🟢 [AUTH_PROVIDER] Response: $response');
 
-      _token = response['token'];
-      _userId = response['userId'];
-      _email = response['email'];
-      _fullName = response['fullName'];
+      // Note: Register usually doesn't return tokens if email verification is required
+      // But if it does, we handle it.
+      if (response.containsKey('token')) {
+        _token = response['token'];
+        _userId = response['userId'];
+        _email = response['email'];
+        _fullName = response['fullName'];
+        
+        if (response.containsKey('refreshToken')) {
+          _refreshToken = response['refreshToken'];
+        }
 
-      print('🟢 [AUTH_PROVIDER] Token: ${_token != null ? "Set" : "Null"}');
-      print('🟢 [AUTH_PROVIDER] UserId: $_userId');
-      print('🟢 [AUTH_PROVIDER] Email: $_email');
-      print('🟢 [AUTH_PROVIDER] FullName: $_fullName');
+        print('🟢 [AUTH_PROVIDER] Token: ${_token != null ? "Set" : "Null"}');
+        print('🟢 [AUTH_PROVIDER] UserId: $_userId');
+        print('🟢 [AUTH_PROVIDER] Email: $_email');
+        print('🟢 [AUTH_PROVIDER] FullName: $_fullName');
 
-      // Save to shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', _token!);
-      await prefs.setString('userId', _userId!);
-      await prefs.setString('email', _email!);
-      await prefs.setString('fullName', _fullName!);
+        // Save to shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', _token!);
+        if (_refreshToken != null) {
+          await prefs.setString('refreshToken', _refreshToken!);
+        }
+        await prefs.setString('userId', _userId!);
+        await prefs.setString('email', _email!);
+        await prefs.setString('fullName', _fullName!);
 
-      print('🟢 [AUTH_PROVIDER] Data saved to SharedPreferences');
-      notifyListeners();
+        print('🟢 [AUTH_PROVIDER] Data saved to SharedPreferences');
+        notifyListeners();
+      }
     } catch (e, stackTrace) {
       print('🔴 [AUTH_PROVIDER] Register failed: $e');
       print('🔴 [AUTH_PROVIDER] Stack trace: $stackTrace');
@@ -74,6 +91,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> logout() async {
     _token = null;
+    _refreshToken = null;
     _userId = null;
     _email = null;
     _fullName = null;
@@ -91,6 +109,7 @@ class AuthProvider with ChangeNotifier {
     }
 
     _token = prefs.getString('token');
+    _refreshToken = prefs.getString('refreshToken');
     _userId = prefs.getString('userId');
     _email = prefs.getString('email');
     _fullName = prefs.getString('fullName');
