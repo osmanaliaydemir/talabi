@@ -255,7 +255,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return Scaffold(
         body: Container(
           color: Colors.white,
-          child: const Center(child: CircularProgressIndicator()),
+          child: Center(child: CircularProgressIndicator(color: Colors.orange)),
         ),
       );
     }
@@ -687,7 +687,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (_isLoadingReviews)
-                          const Center(child: CircularProgressIndicator())
+                          Center(child: CircularProgressIndicator(color: Colors.orange))
                         else if (_reviews.isEmpty)
                           const Text(
                             'No reviews yet. Be the first to review!',

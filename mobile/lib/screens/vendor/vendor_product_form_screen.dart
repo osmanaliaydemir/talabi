@@ -226,7 +226,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                   border: Border.all(color: Colors.grey[300]!),
                 ),
                 child: _isUploading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.deepPurple,
+                        ),
+                      )
                     : _imageFile != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),

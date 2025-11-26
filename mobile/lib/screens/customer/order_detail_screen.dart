@@ -167,7 +167,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: Colors.orange))
           : _orderDetail == null
           ? const Center(child: Text('Sipariş bulunamadı'))
           : RefreshIndicator(

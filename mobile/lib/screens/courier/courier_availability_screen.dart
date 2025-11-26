@@ -89,13 +89,13 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
         onRefresh: _loadAvailability,
         child: _buildBody(localizations),
       ),
-      bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
+      bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
     );
   }
 
   Widget _buildBody(AppLocalizations? localizations) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Colors.teal));
     }
 
     if (_error != null) {

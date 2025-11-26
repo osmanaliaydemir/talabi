@@ -203,7 +203,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
     if (_isLoading || _googleMapsApiKey == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Teslimat Takibi')),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator(color: Colors.orange)),
       );
     }
 

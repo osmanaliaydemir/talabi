@@ -8,7 +8,9 @@ import 'package:mobile/widgets/courier/courier_header.dart';
 import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
 
 class CourierActiveDeliveriesScreen extends StatefulWidget {
-  const CourierActiveDeliveriesScreen({super.key});
+  final int? initialTabIndex;
+
+  const CourierActiveDeliveriesScreen({super.key, this.initialTabIndex});
 
   @override
   State<CourierActiveDeliveriesScreen> createState() =>
@@ -16,24 +18,71 @@ class CourierActiveDeliveriesScreen extends StatefulWidget {
 }
 
 class _CourierActiveDeliveriesScreenState
-    extends State<CourierActiveDeliveriesScreen> {
+    extends State<CourierActiveDeliveriesScreen>
+    with SingleTickerProviderStateMixin {
   final CourierService _courierService = CourierService();
-  bool _isLoading = true;
-  String? _error;
+  late TabController _tabController;
+
+  // Active Deliveries Tab
+  bool _isLoadingActive = true;
+  String? _errorActive;
   List<CourierOrder> _activeOrders = [];
+
+  // Delivery History Tab
+  bool _isLoadingHistory = true;
+  String? _errorHistory;
+  List<dynamic> _historyOrders = [];
+  int _currentPage = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     print('CourierActiveDeliveriesScreen: initState');
-    _loadActiveOrders();
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex ?? 0,
+    );
+    _tabController.addListener(_onTabChanged);
+
+    // İlk yükleme
+    if (widget.initialTabIndex == 1) {
+      _loadHistory(reset: true);
+    } else {
+      _loadActiveOrders();
+    }
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      print(
+        'CourierActiveDeliveriesScreen: Tab changed to ${_tabController.index}',
+      );
+      // Tab değiştiğinde ilgili tab'ın verilerini yeniden yükle
+      if (_tabController.index == 0) {
+        print('CourierActiveDeliveriesScreen: Reloading active orders');
+        _loadActiveOrders();
+      } else if (_tabController.index == 1) {
+        print('CourierActiveDeliveriesScreen: Reloading delivery history');
+        _loadHistory(reset: true);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadActiveOrders() async {
     print('CourierActiveDeliveriesScreen: Loading active orders...');
     setState(() {
-      _isLoading = true;
-      _error = null;
+      _isLoadingActive = true;
+      _errorActive = null;
     });
 
     try {
@@ -41,7 +90,7 @@ class _CourierActiveDeliveriesScreenState
       if (!mounted) return;
       setState(() {
         _activeOrders = orders;
-        _isLoading = false;
+        _isLoadingActive = false;
       });
       print(
         'CourierActiveDeliveriesScreen: Loaded ${orders.length} active orders',
@@ -51,8 +100,58 @@ class _CourierActiveDeliveriesScreenState
       print(stackTrace);
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
-        _isLoading = false;
+        _errorActive = e.toString();
+        _isLoadingActive = false;
+      });
+    }
+  }
+
+  Future<void> _loadHistory({bool reset = false}) async {
+    if (_isLoadingMore || (_hasMore == false && !reset)) return;
+
+    setState(() {
+      if (reset) {
+        _isLoadingHistory = true;
+        _historyOrders = [];
+        _currentPage = 1;
+        _hasMore = true;
+      } else {
+        _isLoadingMore = true;
+      }
+      _errorHistory = null;
+    });
+
+    try {
+      print(
+        'CourierActiveDeliveriesScreen: Loading history page $_currentPage...',
+      );
+      final result = await _courierService.getOrderHistory(
+        page: _currentPage,
+        pageSize: 20,
+      );
+      if (!mounted) return;
+
+      final items = (result['items'] as List?) ?? [];
+      setState(() {
+        _historyOrders.addAll(items);
+        _isLoadingHistory = false;
+        _isLoadingMore = false;
+        _hasMore = items.length == 20;
+        if (_hasMore) {
+          _currentPage++;
+        }
+      });
+      print(
+        'CourierActiveDeliveriesScreen: Loaded ${items.length} history items, total: ${_historyOrders.length}',
+      );
+    } catch (e, stackTrace) {
+      print('CourierActiveDeliveriesScreen: ERROR loading history - $e');
+      print(stackTrace);
+      if (!mounted) return;
+      setState(() {
+        _errorHistory = e.toString();
+        _isLoadingHistory = false;
+        _isLoadingMore = false;
       });
     }
   }
@@ -64,75 +163,164 @@ class _CourierActiveDeliveriesScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
-        title: localizations?.activeDeliveries ?? 'Aktif Teslimatlar',
-        leadingIcon: Icons.delivery_dining,
-        showBackButton: true,
+        title: localizations?.deliveries ?? 'Teslimatlar',
+        leadingIcon: Icons.local_shipping_outlined,
+        showBackButton: false,
         showNotifications: true,
-        onBack: () => Navigator.of(context).pop(),
-        onRefresh: _loadActiveOrders,
+        onRefresh: () {
+          if (_tabController.index == 0) {
+            _loadActiveOrders();
+          } else {
+            _loadHistory(reset: true);
+          }
+        },
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadActiveOrders,
-        child: _buildBody(localizations),
-      ),
-      bottomNavigationBar: const CourierBottomNav(currentIndex: 0),
-    );
-  }
-
-  Widget _buildBody(AppLocalizations? localizations) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: _loadActiveOrders,
-              child: const Text('Tekrar dene'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_activeOrders.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      body: Column(
         children: [
-          const SizedBox(height: 40),
-          Icon(
-            Icons.inbox_outlined,
-            size: 64,
-            color: Colors.grey[400],
+          Material(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.teal,
+              labelColor: Colors.teal,
+              unselectedLabelColor: Colors.grey,
+              tabs: [
+                Tab(
+                  text: localizations?.activeDeliveries ?? 'Aktif Teslimatlar',
+                ),
+                Tab(text: localizations?.deliveryHistory ?? 'Teslimat Geçmişi'),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Center(
-            child: Text(
-              localizations?.noActiveDeliveries ?? 'No active deliveries',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildActiveDeliveriesTab(localizations),
+                _buildDeliveryHistoryTab(localizations),
+              ],
             ),
           ),
         ],
-      );
-    }
+      ),
+      bottomNavigationBar: const CourierBottomNav(currentIndex: 1),
+    );
+  }
 
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      itemCount: _activeOrders.length,
-      itemBuilder: (context, index) {
-        final order = _activeOrders[index];
-        return _buildOrderCard(order);
-      },
+  Widget _buildActiveDeliveriesTab(AppLocalizations? localizations) {
+    return RefreshIndicator(
+      onRefresh: _loadActiveOrders,
+      child: _isLoadingActive
+          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          : _errorActive != null
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _errorActive!,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: _loadActiveOrders,
+                    child: const Text('Tekrar dene'),
+                  ),
+                ],
+              ),
+            )
+          : _activeOrders.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                const SizedBox(height: 40),
+                Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    localizations?.noActiveDeliveries ?? 'No active deliveries',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: _activeOrders.length,
+              itemBuilder: (context, index) {
+                final order = _activeOrders[index];
+                return _buildOrderCard(order);
+              },
+            ),
+    );
+  }
+
+  Widget _buildDeliveryHistoryTab(AppLocalizations? localizations) {
+    return RefreshIndicator(
+      onRefresh: () => _loadHistory(reset: true),
+      child: _isLoadingHistory
+          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          : _errorHistory != null
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                const SizedBox(height: 40),
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        _errorHistory!,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () => _loadHistory(reset: true),
+                        child: const Text('Tekrar dene'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : _historyOrders.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                const SizedBox(height: 40),
+                Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    localizations?.noActiveDeliveries ??
+                        'Henüz teslimat geçmişi yok',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: _historyOrders.length + (_hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _historyOrders.length) {
+                  // load more
+                  _loadHistory();
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.teal),
+                    ),
+                  );
+                }
+
+                final order = _historyOrders[index] as Map<String, dynamic>;
+                return _buildHistoryCard(order);
+              },
+            ),
     );
   }
 
@@ -146,10 +334,9 @@ class _CourierActiveDeliveriesScreenState
           print(
             'CourierActiveDeliveriesScreen: Tapped order #${order.id}, navigating to detail',
           );
-          final result = await Navigator.of(context).pushNamed(
-            '/courier/order-detail',
-            arguments: order.id,
-          );
+          final result = await Navigator.of(
+            context,
+          ).pushNamed('/courier/order-detail', arguments: order.id);
           if (result == true && mounted) {
             await _loadActiveOrders();
           }
@@ -197,8 +384,9 @@ class _CourierActiveDeliveriesScreenState
               Row(
                 children: [
                   Chip(
-                    backgroundColor:
-                        _statusColor(order.status).withOpacity(0.15),
+                    backgroundColor: _statusColor(
+                      order.status,
+                    ).withOpacity(0.15),
                     label: Text(
                       order.status,
                       style: TextStyle(
@@ -210,15 +398,89 @@ class _CourierActiveDeliveriesScreenState
                   const Spacer(),
                   Text(
                     DateFormat('HH:mm').format(order.createdAt),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(Map<String, dynamic> order) {
+    final status = (order['status'] ?? '').toString();
+    final createdAt = DateTime.tryParse(order['createdAt']?.toString() ?? '');
+    final total = (order['total'] as num?)?.toDouble() ?? 0;
+    final deliveryFee = (order['deliveryFee'] as num?)?.toDouble() ?? 0;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Order #${order['id']}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Chip(
+                  backgroundColor: _statusColor(status).withOpacity(0.15),
+                  label: Text(
+                    status,
+                    style: TextStyle(
+                      color: _statusColor(status),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  createdAt != null
+                      ? DateFormat('dd MMM yyyy HH:mm').format(createdAt)
+                      : '',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+                Text(
+                  CurrencyFormatter.format(total, 'TRY'),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.delivery_dining,
+                  size: 18,
+                  color: Colors.teal.shade700,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  CurrencyFormatter.format(deliveryFee, 'TRY'),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -239,10 +501,7 @@ class _CourierActiveDeliveriesScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 2),
               Text(
                 subtitle,
@@ -265,10 +524,10 @@ class _CourierActiveDeliveriesScreenState
         return Colors.purple;
       case 'delivered':
         return Colors.green;
+      case 'cancelled':
+        return Colors.red;
       default:
         return Colors.grey;
     }
   }
 }
-
-

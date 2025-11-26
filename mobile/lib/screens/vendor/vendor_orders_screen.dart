@@ -134,7 +134,11 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
             child: RefreshIndicator(
               onRefresh: _loadOrders,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.deepPurple,
+                      ),
+                    )
                   : _orders.isEmpty
                   ? Center(
                       child: Column(

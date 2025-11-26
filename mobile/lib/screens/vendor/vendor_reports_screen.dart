@@ -124,7 +124,9 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
           // Report content
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(color: Colors.deepPurple),
+                  )
                 : _report == null
                 ? const Center(child: Text('Rapor bulunamadı'))
                 : RefreshIndicator(

@@ -49,6 +49,7 @@
   "myProfile": "Profilim",
   "user": "Kullanıcı",
   "editProfile": "Profili Düzenle",
+  "editProfileDescription": "İşletme adı, adres ve iletişim bilgilerini düzenle",
   "changePassword": "Şifre Değiştir",
   "notificationSettings": "Bildirim Ayarları",
   "myAddresses": "Adreslerim",
@@ -162,6 +163,7 @@
   "activeDeliveries": "Aktif Teslimatlar",
   "deliveryHistory": "Teslimat Geçmişi",
   "earnings": "Kazançlar",
+  "deliveries": "Teslimatlar",
   "noActiveDeliveries": "Aktif teslimat yok",
   "courierProfileNotFound": "Kurye profili bulunamadı",
   "profileUpdatedSuccessfully": "Profil başarıyla güncellendi",
@@ -199,6 +201,17 @@
   "noFileUploaded": "Dosya yüklenmedi",
   "internalServerErrorDuringUpload": "Yükleme sırasında sunucu hatası oluştu",
   "checkAvailability": "Müsaitlik Kontrolü",
-  "orderHistory": "Sipariş Geçmişi"
+  "orderHistory": "Sipariş Geçmişi",
+  "businessSettings": "İşletme Ayarları",
+  "businessActive": "İşletme Aktif",
+  "customersCanPlaceOrders": "Müşteriler sipariş verebilir",
+  "orderTakingClosed": "Sipariş alımı kapalı",
+  "businessOperations": "İşletme İşlemleri",
+  "minimumOrderAmount": "Minimum Sipariş Tutarı",
+  "estimatedDeliveryTime": "Tahmini Teslimat Süresi (dakika)",
+  "enterValidAmount": "Geçerli bir tutar girin",
+  "enterValidTime": "Geçerli bir süre girin",
+  "optional": "Opsiyonel",
+  "deliveryFee": "Teslimat Ücreti"
 }
 

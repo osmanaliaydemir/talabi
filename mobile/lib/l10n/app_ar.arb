@@ -49,6 +49,7 @@
   "myProfile": "ملفي الشخصي",
   "user": "المستخدم",
   "editProfile": "تعديل الملف الشخصي",
+  "editProfileDescription": "تعديل اسم العمل والعنوان ومعلومات الاتصال",
   "changePassword": "تغيير كلمة المرور",
   "notificationSettings": "إعدادات الإشعارات",
   "myAddresses": "عناويني",
@@ -162,6 +163,7 @@
   "activeDeliveries": "عمليات التسليم النشطة",
   "deliveryHistory": "سجل التسليم",
   "earnings": "الأرباح",
+  "deliveries": "التسليمات",
   "noActiveDeliveries": "لا توجد عمليات تسليم نشطة",
   "courierProfileNotFound": "لم يتم العثور على ملف السائق الشخصي",
   "profileUpdatedSuccessfully": "تم تحديث الملف الشخصي بنجاح",
@@ -199,6 +201,17 @@
   "noFileUploaded": "لم يتم تحميل ملف",
   "internalServerErrorDuringUpload": "خطأ في الخادم أثناء التحميل",
   "checkAvailability": "التحقق من التوفر",
-  "orderHistory": "سجل الطلبات"
+  "orderHistory": "سجل الطلبات",
+  "businessSettings": "إعدادات العمل",
+  "businessActive": "العمل نشط",
+  "customersCanPlaceOrders": "يمكن للعملاء تقديم الطلبات",
+  "orderTakingClosed": "استقبال الطلبات مغلق",
+  "businessOperations": "عمليات العمل",
+  "minimumOrderAmount": "الحد الأدنى لمبلغ الطلب",
+  "estimatedDeliveryTime": "الوقت المقدر للتسليم (بالدقائق)",
+  "enterValidAmount": "أدخل مبلغًا صالحًا",
+  "enterValidTime": "أدخل وقتًا صالحًا",
+  "optional": "اختياري",
+  "deliveryFee": "رسوم التوصيل"
 }
 

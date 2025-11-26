@@ -104,8 +104,8 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           showBackButton: false,
           onRefresh: _loadProfile,
         ),
-        body: const Center(child: CircularProgressIndicator()),
-        bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
+        body: Center(child: CircularProgressIndicator(color: Colors.teal)),
+        bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
       );
     }
 
@@ -124,7 +124,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             localizations?.failedToLoadProfile ?? 'Failed to load profile',
           ),
         ),
-        bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
+        bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
       );
     }
 
@@ -145,7 +145,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           child: _buildProfileDetails(context, authProvider),
         ),
       ),
-      bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
+      bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
     );
   }
 
@@ -180,20 +180,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: () async {
-                  print('CourierProfileScreen: Edit profile tapped');
-                  final result = await Navigator.of(
-                    context,
-                  ).pushNamed('/courier/profile/edit');
-                  if (result == true && mounted) {
-                    await _loadProfile();
-                  }
-                },
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: const Text('Profili Düzenle'),
               ),
             ],
           ),
@@ -263,29 +249,22 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                'Teslimatlar',
-                courier.totalDeliveries.toString(),
-                Icons.local_shipping,
-                Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildStatCard(
                 'Puan',
                 courier.averageRating.toStringAsFixed(1),
                 Icons.star,
                 Colors.amber,
               ),
             ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildStatCard(
+                'Toplam Kazanç',
+                '₺${courier.totalEarnings.toStringAsFixed(2)}',
+                Icons.attach_money,
+                Colors.green,
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 16),
-        _buildStatCard(
-          'Toplam Kazanç',
-          '₺${courier.totalEarnings.toStringAsFixed(2)}',
-          Icons.attach_money,
-          Colors.green,
         ),
         const SizedBox(height: 24),
         const Text(
@@ -293,6 +272,24 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
+        ListTile(
+          leading: const Icon(Icons.edit_outlined),
+          title: Text(localizations?.editProfile ?? 'Profili Düzenle'),
+          subtitle: Text(
+            localizations?.editProfileDescription ??
+                'İşletme adı, adres ve iletişim bilgilerini düzenle',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            print('CourierProfileScreen: Edit profile tapped');
+            final result = await Navigator.of(
+              context,
+            ).pushNamed('/courier/profile/edit');
+            if (result == true && mounted) {
+              await _loadProfile();
+            }
+          },
+        ),
         ListTile(
           leading: const Icon(Icons.radio_button_checked),
           title: const Text('Müsaitlik Durumu'),
@@ -356,11 +353,22 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             );
 
             if (confirm == true && mounted) {
-              await authProvider.logout();
+              final role = await authProvider.logout();
               if (!mounted) return;
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/login', (route) => false);
+              // Role'e göre ilgili login sayfasına yönlendir
+              if (role?.toLowerCase() == 'courier') {
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
+              } else if (role?.toLowerCase() == 'vendor') {
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
+              } else {
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/login', (route) => false);
+              }
             }
           },
         ),

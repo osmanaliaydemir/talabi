@@ -26,11 +26,7 @@ class CartScreen extends StatelessWidget {
           // Main Content
           Expanded(
             child: cart.isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  )
+                ? Center(child: CircularProgressIndicator(color: Colors.orange))
                 : cart.itemCount == 0
                 ? Center(
                     child: Column(
@@ -243,8 +239,9 @@ class CartScreen extends StatelessWidget {
                                             context: context,
                                             barrierDismissible: false,
                                             builder: (context) => const Center(
-                                              child:
-                                                  CircularProgressIndicator(),
+                                              child: CircularProgressIndicator(
+                                                color: Colors.orange,
+                                              ),
                                             ),
                                           );
 

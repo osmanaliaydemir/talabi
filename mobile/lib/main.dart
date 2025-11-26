@@ -11,23 +11,9 @@ import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart'
 import 'package:mobile/screens/shared/auth/login_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
-import 'package:mobile/screens/courier/order_detail_screen.dart';
-import 'package:mobile/screens/courier/order_map_screen.dart';
-import 'package:mobile/screens/courier/courier_profile_screen.dart';
-import 'package:mobile/screens/courier/delivery_proof_screen.dart';
 import 'package:mobile/screens/courier/courier_dashboard_screen.dart';
-import 'package:mobile/screens/courier/courier_active_deliveries_screen.dart';
-import 'package:mobile/screens/courier/courier_availability_screen.dart';
-import 'package:mobile/screens/courier/courier_edit_profile_screen.dart';
-import 'package:mobile/screens/courier/courier_delivery_history_screen.dart';
-import 'package:mobile/screens/courier/earnings_screen.dart';
-import 'package:mobile/screens/courier/courier_notifications_screen.dart';
-import 'package:mobile/screens/courier/courier_navigation_settings_screen.dart';
 import 'package:mobile/screens/vendor/vendor_dashboard_screen.dart';
-import 'package:mobile/screens/vendor/vendor_orders_screen.dart';
-import 'package:mobile/screens/vendor/vendor_products_screen.dart';
-import 'package:mobile/screens/vendor/vendor_profile_screen.dart';
-import 'package:mobile/models/courier_order.dart';
+import 'package:mobile/routers/app_router.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
@@ -206,71 +192,7 @@ class _MyAppState extends State<MyApp> {
               : themeProvider.darkTheme,
           themeMode: themeProvider.themeMode,
           routes: {'/login': (context) => const LoginScreen()},
-          onGenerateRoute: (settings) {
-            switch (settings.name) {
-              case '/courier/order-detail':
-                final orderId = settings.arguments as int;
-                return MaterialPageRoute(
-                  builder: (context) => OrderDetailScreen(orderId: orderId),
-                );
-              case '/courier/order-map':
-                final order = settings.arguments as CourierOrder;
-                return MaterialPageRoute(
-                  builder: (context) => OrderMapScreen(order: order),
-                );
-              case '/courier/profile':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierProfileScreen(),
-                );
-              case '/courier/profile/edit':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierEditProfileScreen(),
-                );
-              case '/courier/notifications':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierNotificationsScreen(),
-                );
-              case '/courier/earnings':
-                return MaterialPageRoute(
-                  builder: (context) => const EarningsScreen(),
-                );
-              case '/courier/availability':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierAvailabilityScreen(),
-                );
-              case '/courier/navigation-settings':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierNavigationSettingsScreen(),
-                );
-              case '/courier/active-deliveries':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierActiveDeliveriesScreen(),
-                );
-              case '/courier/delivery-history':
-                return MaterialPageRoute(
-                  builder: (context) => const CourierDeliveryHistoryScreen(),
-                );
-              case '/courier/delivery-proof':
-                final orderId = settings.arguments as int;
-                return MaterialPageRoute(
-                  builder: (context) => DeliveryProofScreen(orderId: orderId),
-                );
-              case '/vendor/orders':
-                return MaterialPageRoute(
-                  builder: (context) => const VendorOrdersScreen(),
-                );
-              case '/vendor/products':
-                return MaterialPageRoute(
-                  builder: (context) => const VendorProductsScreen(),
-                );
-              case '/vendor/profile':
-                return MaterialPageRoute(
-                  builder: (context) => const VendorProfileScreen(),
-                );
-              default:
-                return null;
-            }
-          },
+          onGenerateRoute: AppRouter.generateRoute,
           home: _buildHome(),
           builder: (context, child) {
             return MediaQuery(

@@ -184,16 +184,14 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       return;
     }
 
-    if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Lütfen bir başlık girin')));
-      return;
-    }
+    // Title is optional - if empty, use a default value
+    final title = _titleController.text.trim().isEmpty
+        ? 'Seçilen Konum'
+        : _titleController.text.trim();
 
     if (widget.onAddressSelected != null) {
       widget.onAddressSelected!(
-        _titleController.text.trim(),
+        title,
         _selectedAddress!,
         _selectedCity ?? '',
         _selectedDistrict ?? '',
@@ -284,8 +282,9 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                   TextField(
                     controller: _titleController,
                     decoration: const InputDecoration(
-                      labelText: 'Adres Başlığı (örn: Ev, İş)',
+                      labelText: 'Adres Başlığı (Opsiyonel)',
                       border: OutlineInputBorder(),
+                      helperText: 'Boş bırakılabilir',
                     ),
                   ),
                   const SizedBox(height: 16),

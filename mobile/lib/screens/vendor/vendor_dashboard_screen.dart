@@ -64,7 +64,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       body: RefreshIndicator(
         onRefresh: _loadSummary,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator(color: Colors.deepPurple))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(

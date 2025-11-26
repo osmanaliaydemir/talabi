@@ -193,7 +193,11 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
             child: RefreshIndicator(
               onRefresh: _loadProducts,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.deepPurple,
+                      ),
+                    )
                   : _filteredProducts.isEmpty
                   ? Center(
                       child: Column(

@@ -10,7 +10,6 @@ import 'package:mobile/screens/shared/profile/edit_profile_screen.dart';
 import 'package:mobile/screens/customer/favorites_screen.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
 import 'package:mobile/screens/customer/order_history_screen.dart';
-import 'package:mobile/screens/shared/auth/login_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:provider/provider.dart';
 
@@ -542,14 +541,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await auth.logout();
+              final role = await auth.logout();
 
               // Navigate to login screen and clear navigation stack
               if (mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
+                // Role'e göre ilgili login sayfasına yönlendir
+                if (role?.toLowerCase() == 'courier') {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
+                } else if (role?.toLowerCase() == 'vendor') {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
+                } else {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
+                }
               }
             },
             child: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),

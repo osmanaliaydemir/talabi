@@ -283,7 +283,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _googleMapsApiKey == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(body: Center(child: CircularProgressIndicator(color: Colors.orange)));
     }
 
     final initialCameraPosition = _userLocation != null
@@ -334,7 +334,10 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                       SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.orange,
+                        ),
                       ),
                       SizedBox(width: 8),
                       Text('Konum alınıyor...'),

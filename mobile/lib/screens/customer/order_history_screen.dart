@@ -56,11 +56,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           // Main Content
           Expanded(
             child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  )
+                ? Center(child: CircularProgressIndicator(color: Colors.orange))
                 : _orders.isEmpty
                 ? Center(
                     child: Column(

@@ -247,7 +247,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator()
+                    ? CircularProgressIndicator(color: Colors.teal)
                     : const Text('Submit Proof & Complete Delivery'),
               ),
             ],

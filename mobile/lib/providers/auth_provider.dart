@@ -65,7 +65,7 @@ class AuthProvider with ChangeNotifier {
         _userId = response['userId'];
         _email = response['email'];
         _fullName = response['fullName'];
-        
+
         if (response.containsKey('refreshToken')) {
           _refreshToken = response['refreshToken'];
         }
@@ -95,7 +95,10 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
+  Future<String?> logout() async {
+    // Logout öncesi role bilgisini sakla
+    final roleBeforeLogout = _role;
+
     _token = null;
     _refreshToken = null;
     _userId = null;
@@ -107,6 +110,9 @@ class AuthProvider with ChangeNotifier {
     await prefs.clear();
 
     notifyListeners();
+
+    // Role bilgisini döndür ki logout sonrası doğru login sayfasına yönlendirilebilsin
+    return roleBeforeLogout;
   }
 
   Future<void> tryAutoLogin() async {

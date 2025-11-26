@@ -135,7 +135,7 @@ class _CourierNotificationsScreenState
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Colors.teal));
     }
 
     if (_isError) {

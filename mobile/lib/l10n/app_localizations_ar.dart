@@ -147,6 +147,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get editProfile => 'تعديل الملف الشخصي';
 
   @override
+  String get editProfileDescription =>
+      'تعديل اسم العمل والعنوان ومعلومات الاتصال';
+
+  @override
   String get changePassword => 'تغيير كلمة المرور';
 
   @override
@@ -451,6 +455,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get earnings => 'الأرباح';
 
   @override
+  String get deliveries => 'التسليمات';
+
+  @override
   String get noActiveDeliveries => 'لا توجد عمليات تسليم نشطة';
 
   @override
@@ -567,4 +574,37 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get checkAvailability => 'التحقق من التوفر';
+
+  @override
+  String get businessSettings => 'إعدادات العمل';
+
+  @override
+  String get businessActive => 'العمل نشط';
+
+  @override
+  String get customersCanPlaceOrders => 'يمكن للعملاء تقديم الطلبات';
+
+  @override
+  String get orderTakingClosed => 'استقبال الطلبات مغلق';
+
+  @override
+  String get businessOperations => 'عمليات العمل';
+
+  @override
+  String get minimumOrderAmount => 'الحد الأدنى لمبلغ الطلب';
+
+  @override
+  String get estimatedDeliveryTime => 'الوقت المقدر للتسليم (بالدقائق)';
+
+  @override
+  String get enterValidAmount => 'أدخل مبلغًا صالحًا';
+
+  @override
+  String get enterValidTime => 'أدخل وقتًا صالحًا';
+
+  @override
+  String get optional => 'اختياري';
+
+  @override
+  String get deliveryFee => 'رسوم التوصيل';
 }

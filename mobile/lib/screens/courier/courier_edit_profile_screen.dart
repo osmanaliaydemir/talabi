@@ -228,7 +228,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         onRefresh: _loadProfile,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: Colors.teal))
           : SafeArea(
               child: Form(
                 key: _formKey,
@@ -411,7 +411,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
+      bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),

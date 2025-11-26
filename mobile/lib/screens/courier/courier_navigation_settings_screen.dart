@@ -105,7 +105,7 @@ class _CourierNavigationSettingsScreenState
         showRefresh: false,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: Colors.teal))
           : ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
@@ -173,7 +173,7 @@ class _CourierNavigationSettingsScreenState
                 ],
               ],
             ),
-      bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
+      bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
     );
   }
 }

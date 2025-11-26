@@ -49,6 +49,7 @@
   "myProfile": "My Profile",
   "user": "User",
   "editProfile": "Edit Profile",
+  "editProfileDescription": "Edit business name, address and contact information",
   "changePassword": "Change Password",
   "notificationSettings": "Notification Settings",
   "myAddresses": "My Addresses",
@@ -162,6 +163,7 @@
   "activeDeliveries": "Active Deliveries",
   "deliveryHistory": "Delivery History",
   "earnings": "Earnings",
+  "deliveries": "Deliveries",
   "noActiveDeliveries": "No active deliveries",
   "courierProfileNotFound": "Courier profile not found",
   "profileUpdatedSuccessfully": "Profile updated successfully",
@@ -199,6 +201,17 @@
   "noFileUploaded": "No file uploaded",
   "internalServerErrorDuringUpload": "Internal server error during upload",
   "checkAvailability": "Check Availability",
-  "orderHistory": "Order History"
+  "orderHistory": "Order History",
+  "businessSettings": "Business Settings",
+  "businessActive": "Business Active",
+  "customersCanPlaceOrders": "Customers can place orders",
+  "orderTakingClosed": "Order taking is closed",
+  "businessOperations": "Business Operations",
+  "minimumOrderAmount": "Minimum Order Amount",
+  "estimatedDeliveryTime": "Estimated Delivery Time (minutes)",
+  "enterValidAmount": "Enter a valid amount",
+  "enterValidTime": "Enter a valid time",
+  "optional": "Optional",
+  "deliveryFee": "Delivery Fee"
 }
 

@@ -101,11 +101,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           // Main Content
           Expanded(
             child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  )
+                ? Center(child: CircularProgressIndicator(color: Colors.orange))
                 : _favorites.isEmpty
                 ? Center(
                     child: Column(

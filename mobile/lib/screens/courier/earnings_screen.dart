@@ -104,7 +104,7 @@ class _EarningsScreenState extends State<EarningsScreen>
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator(color: Colors.teal))
                 : _error != null
                 ? Center(
                     child: Column(
@@ -133,7 +133,7 @@ class _EarningsScreenState extends State<EarningsScreen>
           ),
         ],
       ),
-      bottomNavigationBar: const CourierBottomNav(currentIndex: 1),
+      bottomNavigationBar: const CourierBottomNav(currentIndex: 2),
     );
   }
 

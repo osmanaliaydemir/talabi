@@ -187,7 +187,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Sipariş Detayı')),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.deepPurple),
+        ),
       );
     }
 

@@ -30,9 +30,12 @@ class CourierBottomNav extends StatelessWidget {
             );
             break;
           case 1:
-            Navigator.of(context).pushNamed('/courier/earnings');
+            Navigator.of(context).pushNamed('/courier/active-deliveries');
             break;
           case 2:
+            Navigator.of(context).pushNamed('/courier/earnings');
+            break;
+          case 3:
             Navigator.of(context).pushNamed('/courier/profile');
             break;
         }
@@ -41,6 +44,10 @@ class CourierBottomNav extends StatelessWidget {
         BottomNavigationBarItem(
           icon: const Icon(Icons.dashboard_customize_outlined),
           label: localizations?.roleCourier ?? 'Ana Sayfa',
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.local_shipping_outlined),
+          label: localizations?.deliveries ?? 'Teslimatlar',
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.ssid_chart_outlined),

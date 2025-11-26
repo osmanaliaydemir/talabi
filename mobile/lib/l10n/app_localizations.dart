@@ -376,6 +376,12 @@ abstract class AppLocalizations {
   /// **'Edit Profile'**
   String get editProfile;
 
+  /// No description provided for @editProfileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit business name, address and contact information'**
+  String get editProfileDescription;
+
   /// No description provided for @changePassword.
   ///
   /// In en, this message translates to:
@@ -958,6 +964,12 @@ abstract class AppLocalizations {
   /// **'Earnings'**
   String get earnings;
 
+  /// No description provided for @deliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliveries'**
+  String get deliveries;
+
   /// No description provided for @noActiveDeliveries.
   ///
   /// In en, this message translates to:
@@ -1179,6 +1191,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check Availability'**
   String get checkAvailability;
+
+  /// No description provided for @businessSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Settings'**
+  String get businessSettings;
+
+  /// No description provided for @businessActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Active'**
+  String get businessActive;
+
+  /// No description provided for @customersCanPlaceOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers can place orders'**
+  String get customersCanPlaceOrders;
+
+  /// No description provided for @orderTakingClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order taking is closed'**
+  String get orderTakingClosed;
+
+  /// No description provided for @businessOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Operations'**
+  String get businessOperations;
+
+  /// No description provided for @minimumOrderAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum Order Amount'**
+  String get minimumOrderAmount;
+
+  /// No description provided for @estimatedDeliveryTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Delivery Time (minutes)'**
+  String get estimatedDeliveryTime;
+
+  /// No description provided for @enterValidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid amount'**
+  String get enterValidAmount;
+
+  /// No description provided for @enterValidTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid time'**
+  String get enterValidTime;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @deliveryFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Fee'**
+  String get deliveryFee;
 }
 
 class _AppLocalizationsDelegate

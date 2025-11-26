@@ -292,7 +292,9 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
             if (_isProcessing)
               const Padding(
                 padding: EdgeInsets.only(top: 16),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: CircularProgressIndicator(color: Colors.deepPurple),
+                ),
               ),
           ],
         ),

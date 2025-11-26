@@ -13,25 +13,26 @@ class SearchScreen extends StatefulWidget {
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderStateMixin {
+class _SearchScreenState extends State<SearchScreen>
+    with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   late TabController _tabController;
-  
+
   // Search state
   String _currentQuery = '';
   List<AutocompleteResultDto> _autocompleteResults = [];
   bool _showAutocomplete = false;
-  
+
   // Products search
   PagedResultDto<ProductDto>? _productResults;
   bool _isLoadingProducts = false;
-  
+
   // Vendors search
   PagedResultDto<VendorDto>? _vendorResults;
   bool _isLoadingVendors = false;
-  
+
   // Filters
   String? _selectedCategory;
   String? _selectedCity;
@@ -40,14 +41,14 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
   double? _minRating;
   double? _maxDistance;
   String? _sortBy;
-  
+
   // Filter options
   List<String> _categories = [];
   List<String> _cities = [];
-  
+
   // Search history
   List<String> _searchHistory = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
     _loadSearchHistory();
     _searchController.addListener(_onSearchChanged);
   }
-  
+
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
@@ -64,7 +65,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
     _tabController.dispose();
     super.dispose();
   }
-  
+
   void _onSearchChanged() {
     final query = _searchController.text;
     if (query.isEmpty) {
@@ -74,10 +75,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       });
       return;
     }
-    
+
     _performAutocomplete(query);
   }
-  
+
   Future<void> _loadFilterOptions() async {
     try {
       final categories = await _apiService.getCategories();
@@ -90,7 +91,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       print('Error loading filter options: $e');
     }
   }
-  
+
   Future<void> _loadSearchHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -102,23 +103,23 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       print('Error loading search history: $e');
     }
   }
-  
+
   Future<void> _saveToSearchHistory(String query) async {
     if (query.trim().isEmpty) return;
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final history = prefs.getStringList('search_history') ?? [];
-      
+
       // Remove if exists and add to beginning
       history.remove(query);
       history.insert(0, query);
-      
+
       // Keep only last 10
       if (history.length > 10) {
         history.removeRange(10, history.length);
       }
-      
+
       await prefs.setStringList('search_history', history);
       setState(() {
         _searchHistory = history;
@@ -127,7 +128,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       print('Error saving search history: $e');
     }
   }
-  
+
   Future<void> _performAutocomplete(String query) async {
     try {
       final results = await _apiService.autocomplete(query);
@@ -139,19 +140,22 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       print('Error performing autocomplete: $e');
     }
   }
-  
+
   Future<void> _searchProducts() async {
-    if (_currentQuery.isEmpty && _selectedCategory == null && _minPrice == null && _maxPrice == null) {
+    if (_currentQuery.isEmpty &&
+        _selectedCategory == null &&
+        _minPrice == null &&
+        _maxPrice == null) {
       setState(() {
         _productResults = null;
       });
       return;
     }
-    
+
     setState(() {
       _isLoadingProducts = true;
     });
-    
+
     try {
       final request = ProductSearchRequestDto(
         query: _currentQuery.isEmpty ? null : _currentQuery,
@@ -160,7 +164,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         maxPrice: _maxPrice,
         sortBy: _sortBy,
       );
-      
+
       final results = await _apiService.searchProducts(request);
       setState(() {
         _productResults = results;
@@ -171,25 +175,28 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         _isLoadingProducts = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Arama hatası: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Arama hatası: $e')));
       }
     }
   }
-  
+
   Future<void> _searchVendors() async {
-    if (_currentQuery.isEmpty && _selectedCity == null && _minRating == null && _maxDistance == null) {
+    if (_currentQuery.isEmpty &&
+        _selectedCity == null &&
+        _minRating == null &&
+        _maxDistance == null) {
       setState(() {
         _vendorResults = null;
       });
       return;
     }
-    
+
     setState(() {
       _isLoadingVendors = true;
     });
-    
+
     try {
       final request = VendorSearchRequestDto(
         query: _currentQuery.isEmpty ? null : _currentQuery,
@@ -198,7 +205,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         maxDistanceInKm: _maxDistance,
         sortBy: _sortBy,
       );
-      
+
       final results = await _apiService.searchVendors(request);
       setState(() {
         _vendorResults = results;
@@ -209,36 +216,36 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         _isLoadingVendors = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Arama hatası: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Arama hatası: $e')));
       }
     }
   }
-  
+
   void _onSearchSubmitted(String query) {
     setState(() {
       _currentQuery = query;
       _showAutocomplete = false;
     });
-    
+
     _saveToSearchHistory(query);
     _searchProducts();
     _searchVendors();
   }
-  
+
   void _onAutocompleteSelected(AutocompleteResultDto result) {
     setState(() {
       _searchController.text = result.name;
       _currentQuery = result.name;
       _showAutocomplete = false;
     });
-    
+
     _saveToSearchHistory(result.name);
     _searchProducts();
     _searchVendors();
   }
-  
+
   void _showFilters() {
     showModalBottomSheet(
       context: context,
@@ -246,7 +253,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       builder: (context) => _buildFiltersSheet(),
     );
   }
-  
+
   Widget _buildFiltersSheet() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -281,10 +288,13 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Category filter (for products)
           if (_tabController.index == 0) ...[
-            const Text('Kategori', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Kategori',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedCategory,
@@ -293,10 +303,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                 hintText: 'Kategori seçin',
               ),
               items: _categories.map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                );
+                return DropdownMenuItem(value: category, child: Text(category));
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -305,9 +312,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Price range
-            const Text('Fiyat Aralığı', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Fiyat Aralığı',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -339,7 +349,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
               ],
             ),
           ],
-          
+
           // City and Rating filter (for vendors)
           if (_tabController.index == 1) ...[
             const Text('Şehir', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -351,10 +361,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                 hintText: 'Şehir seçin',
               ),
               items: _cities.map((city) {
-                return DropdownMenuItem(
-                  value: city,
-                  child: Text(city),
-                );
+                return DropdownMenuItem(value: city, child: Text(city));
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -363,9 +370,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Rating filter
-            const Text('Minimum Rating', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Minimum Rating',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Slider(
               value: _minRating ?? 0.0,
@@ -380,9 +390,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Distance filter
-            const Text('Maksimum Mesafe (km)', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Maksimum Mesafe (km)',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
               decoration: const InputDecoration(
@@ -395,9 +408,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
               },
             ),
           ],
-          
+
           const SizedBox(height: 16),
-          
+
           // Sort options
           const Text('Sıralama', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
@@ -409,17 +422,44 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
             ),
             items: _tabController.index == 0
                 ? [
-                    const DropdownMenuItem(value: 'price_asc', child: Text('Fiyat (Düşükten Yükseğe)')),
-                    const DropdownMenuItem(value: 'price_desc', child: Text('Fiyat (Yüksekten Düşüğe)')),
-                    const DropdownMenuItem(value: 'name', child: Text('İsme Göre')),
-                    const DropdownMenuItem(value: 'newest', child: Text('En Yeni')),
+                    const DropdownMenuItem(
+                      value: 'price_asc',
+                      child: Text('Fiyat (Düşükten Yükseğe)'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'price_desc',
+                      child: Text('Fiyat (Yüksekten Düşüğe)'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'name',
+                      child: Text('İsme Göre'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'newest',
+                      child: Text('En Yeni'),
+                    ),
                   ]
                 : [
-                    const DropdownMenuItem(value: 'name', child: Text('İsme Göre')),
-                    const DropdownMenuItem(value: 'newest', child: Text('En Yeni')),
-                    const DropdownMenuItem(value: 'rating_desc', child: Text('Rating (Yüksekten Düşüğe)')),
-                    const DropdownMenuItem(value: 'popularity', child: Text('Popülerlik')),
-                    const DropdownMenuItem(value: 'distance', child: Text('Mesafe')),
+                    const DropdownMenuItem(
+                      value: 'name',
+                      child: Text('İsme Göre'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'newest',
+                      child: Text('En Yeni'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'rating_desc',
+                      child: Text('Rating (Yüksekten Düşüğe)'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'popularity',
+                      child: Text('Popülerlik'),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'distance',
+                      child: Text('Mesafe'),
+                    ),
                   ],
             onChanged: (value) {
               setState(() {
@@ -427,7 +467,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
               });
             },
           ),
-          
+
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -444,7 +484,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -482,10 +522,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         children: [
           TabBarView(
             controller: _tabController,
-            children: [
-              _buildProductsTab(),
-              _buildVendorsTab(),
-            ],
+            children: [_buildProductsTab(), _buildVendorsTab()],
           ),
           if (_showAutocomplete && _searchController.text.isNotEmpty)
             _buildAutocompleteOverlay(),
@@ -493,7 +530,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       ),
     );
   }
-  
+
   Widget _buildAutocompleteOverlay() {
     return Positioned(
       top: 0,
@@ -520,15 +557,20 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                       ..._autocompleteResults.map((result) {
                         return ListTile(
                           leading: Icon(
-                            result.type == 'product' ? Icons.shopping_bag : Icons.store,
+                            result.type == 'product'
+                                ? Icons.shopping_bag
+                                : Icons.store,
                           ),
                           title: Text(result.name),
-                          subtitle: Text(result.type == 'product' ? 'Ürün' : 'Market'),
+                          subtitle: Text(
+                            result.type == 'product' ? 'Ürün' : 'Market',
+                          ),
                           onTap: () => _onAutocompleteSelected(result),
                         );
                       }),
                     ],
-                    if (_searchHistory.isNotEmpty && _autocompleteResults.isEmpty) ...[
+                    if (_searchHistory.isNotEmpty &&
+                        _autocompleteResults.isEmpty) ...[
                       const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text(
@@ -553,12 +595,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       ),
     );
   }
-  
+
   Widget _buildProductsTab() {
     if (_isLoadingProducts) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Colors.orange));
     }
-    
+
     if (_productResults == null) {
       return Center(
         child: Column(
@@ -592,19 +634,19 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         ),
       );
     }
-    
+
     if (_productResults!.items.isEmpty) {
       return const Center(child: Text('Sonuç bulunamadı'));
     }
-    
+
     final cart = Provider.of<CartProvider>(context, listen: false);
-    
+
     return ListView.builder(
       itemCount: _productResults!.items.length,
       itemBuilder: (context, index) {
         final productDto = _productResults!.items[index];
         final product = productDto.toProduct();
-        
+
         return Card(
           margin: const EdgeInsets.all(8.0),
           child: ListTile(
@@ -651,12 +693,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       },
     );
   }
-  
+
   Widget _buildVendorsTab() {
     if (_isLoadingVendors) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Colors.orange));
     }
-    
+
     if (_vendorResults == null) {
       return Center(
         child: Column(
@@ -672,22 +714,27 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         ),
       );
     }
-    
+
     if (_vendorResults!.items.isEmpty) {
       return const Center(child: Text('Sonuç bulunamadı'));
     }
-    
+
     return ListView.builder(
       itemCount: _vendorResults!.items.length,
       itemBuilder: (context, index) {
         final vendorDto = _vendorResults!.items[index];
         final vendor = vendorDto.toVendor();
-        
+
         return Card(
           margin: const EdgeInsets.all(8.0),
           child: ListTile(
             leading: vendor.imageUrl != null
-                ? Image.network(vendor.imageUrl!, width: 50, height: 50, fit: BoxFit.cover)
+                ? Image.network(
+                    vendor.imageUrl!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  )
                 : const Icon(Icons.store, size: 50),
             title: Text(vendor.name),
             subtitle: Column(
@@ -699,7 +746,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                   Row(
                     children: [
                       const Icon(Icons.star, size: 16, color: Colors.amber),
-                      Text(' ${vendor.rating!.toStringAsFixed(1)} (${vendor.ratingCount})'),
+                      Text(
+                        ' ${vendor.rating!.toStringAsFixed(1)} (${vendor.ratingCount})',
+                      ),
                     ],
                   ),
                 if (vendor.distanceInKm != null)
@@ -720,4 +769,3 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
     );
   }
 }
-

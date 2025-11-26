@@ -147,6 +147,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get editProfile => 'Profili Düzenle';
 
   @override
+  String get editProfileDescription =>
+      'İşletme adı, adres ve iletişim bilgilerini düzenle';
+
+  @override
   String get changePassword => 'Şifre Değiştir';
 
   @override
@@ -455,6 +459,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get earnings => 'Kazançlar';
 
   @override
+  String get deliveries => 'Teslimatlar';
+
+  @override
   String get noActiveDeliveries => 'Aktif teslimat yok';
 
   @override
@@ -572,4 +579,37 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get checkAvailability => 'Müsaitlik Kontrolü';
+
+  @override
+  String get businessSettings => 'İşletme Ayarları';
+
+  @override
+  String get businessActive => 'İşletme Aktif';
+
+  @override
+  String get customersCanPlaceOrders => 'Müşteriler sipariş verebilir';
+
+  @override
+  String get orderTakingClosed => 'Sipariş alımı kapalı';
+
+  @override
+  String get businessOperations => 'İşletme İşlemleri';
+
+  @override
+  String get minimumOrderAmount => 'Minimum Sipariş Tutarı';
+
+  @override
+  String get estimatedDeliveryTime => 'Tahmini Teslimat Süresi (dakika)';
+
+  @override
+  String get enterValidAmount => 'Geçerli bir tutar girin';
+
+  @override
+  String get enterValidTime => 'Geçerli bir süre girin';
+
+  @override
+  String get optional => 'Opsiyonel';
+
+  @override
+  String get deliveryFee => 'Teslimat Ücreti';
 }

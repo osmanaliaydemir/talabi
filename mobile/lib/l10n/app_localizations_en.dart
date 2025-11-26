@@ -147,6 +147,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfile => 'Edit Profile';
 
   @override
+  String get editProfileDescription =>
+      'Edit business name, address and contact information';
+
+  @override
   String get changePassword => 'Change Password';
 
   @override
@@ -453,6 +457,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get earnings => 'Earnings';
 
   @override
+  String get deliveries => 'Deliveries';
+
+  @override
   String get noActiveDeliveries => 'No active deliveries';
 
   @override
@@ -570,4 +577,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkAvailability => 'Check Availability';
+
+  @override
+  String get businessSettings => 'Business Settings';
+
+  @override
+  String get businessActive => 'Business Active';
+
+  @override
+  String get customersCanPlaceOrders => 'Customers can place orders';
+
+  @override
+  String get orderTakingClosed => 'Order taking is closed';
+
+  @override
+  String get businessOperations => 'Business Operations';
+
+  @override
+  String get minimumOrderAmount => 'Minimum Order Amount';
+
+  @override
+  String get estimatedDeliveryTime => 'Estimated Delivery Time (minutes)';
+
+  @override
+  String get enterValidAmount => 'Enter a valid amount';
+
+  @override
+  String get enterValidTime => 'Enter a valid time';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get deliveryFee => 'Delivery Fee';
 }

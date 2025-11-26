@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/vendor/vendor_header.dart';
+import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
 
 class VendorSettingsScreen extends StatefulWidget {
   const VendorSettingsScreen({super.key});
@@ -23,6 +26,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    print('VendorSettingsScreen: initState');
     _minimumOrderController = TextEditingController();
     _deliveryFeeController = TextEditingController();
     _deliveryTimeController = TextEditingController();
@@ -38,8 +42,13 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
+    print('VendorSettingsScreen: Loading settings...');
+    setState(() {
+      _isLoading = true;
+    });
     try {
       final settings = await _apiService.getVendorSettings();
+      print('VendorSettingsScreen: Settings loaded successfully');
       setState(() {
         _minimumOrderController.text =
             settings['minimumOrderAmount']?.toString() ?? '';
@@ -49,7 +58,9 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         _isActive = settings['isActive'] ?? true;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('VendorSettingsScreen: ERROR loading settings - $e');
+      print(stackTrace);
       setState(() {
         _isLoading = false;
       });
@@ -62,8 +73,12 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   }
 
   Future<void> _saveSettings() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      print('VendorSettingsScreen: Form validation failed');
+      return;
+    }
 
+    print('VendorSettingsScreen: Saving settings...');
     setState(() {
       _isSaving = true;
     });
@@ -83,6 +98,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
       };
 
       await _apiService.updateVendorSettings(data);
+      print('VendorSettingsScreen: Settings saved successfully');
 
       if (mounted) {
         ScaffoldMessenger.of(
@@ -90,7 +106,9 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         ).showSnackBar(const SnackBar(content: Text('Ayarlar güncellendi')));
         Navigator.pop(context);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('VendorSettingsScreen: ERROR saving settings - $e');
+      print(stackTrace);
       setState(() {
         _isSaving = false;
       });
@@ -104,136 +122,226 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Ayarlar'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
+      appBar: VendorHeader(
+        title: localizations?.businessSettings ?? 'İşletme Ayarları',
+        leadingIcon: Icons.settings,
+        showBackButton: true,
+        onBack: () => Navigator.of(context).pop(),
+        onRefresh: _loadSettings,
+        showNotifications: false,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // Active status
-                  Card(
-                    child: SwitchListTile(
-                      title: const Text('İşletme Aktif'),
-                      subtitle: Text(
-                        _isActive
-                            ? 'Müşteriler sipariş verebilir'
-                            : 'Sipariş alımı kapalı',
-                      ),
-                      value: _isActive,
-                      onChanged: (value) {
-                        setState(() {
-                          _isActive = value;
-                        });
-                      },
-                      activeColor: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Minimum order
-                  TextFormField(
-                    controller: _minimumOrderController,
-                    decoration: const InputDecoration(
-                      labelText: 'Minimum Sipariş Tutarı',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.attach_money),
-                      hintText: 'Opsiyonel',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value != null &&
-                          value.isNotEmpty &&
-                          double.tryParse(value) == null) {
-                        return 'Geçerli bir tutar girin';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Delivery fee
-                  TextFormField(
-                    controller: _deliveryFeeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Teslimat Ücreti',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.delivery_dining),
-                      hintText: 'Opsiyonel',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value != null &&
-                          value.isNotEmpty &&
-                          double.tryParse(value) == null) {
-                        return 'Geçerli bir tutar girin';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Delivery time
-                  TextFormField(
-                    controller: _deliveryTimeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Tahmini Teslimat Süresi (dakika)',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.timer),
-                      hintText: 'Opsiyonel',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value != null &&
-                          value.isNotEmpty &&
-                          int.tryParse(value) == null) {
-                        return 'Geçerli bir süre girin';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Save button
-                  ElevatedButton(
-                    onPressed: _isSaving ? null : _saveSettings,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+          ? Center(child: CircularProgressIndicator(color: Colors.deepPurple))
+          : RefreshIndicator(
+              onRefresh: _loadSettings,
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // Active status card
+                    Card(
+                      elevation: 2,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: _isActive
+                                    ? Colors.green.shade50
+                                    : Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                _isActive ? Icons.check_circle : Icons.cancel,
+                                color: _isActive ? Colors.green : Colors.grey,
+                                size: 28,
                               ),
                             ),
-                          )
-                        : const Text(
-                            'Kaydet',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    localizations?.businessActive ??
+                                        'İşletme Aktif',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _isActive
+                                        ? localizations
+                                                ?.customersCanPlaceOrders ??
+                                            'Müşteriler sipariş verebilir'
+                                        : localizations?.orderTakingClosed ??
+                                            'Sipariş alımı kapalı',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                  ),
-                ],
+                            Switch(
+                              value: _isActive,
+                              onChanged: (value) {
+                                print(
+                                  'VendorSettingsScreen: Active status changed to $value',
+                                );
+                                setState(() {
+                                  _isActive = value;
+                                });
+                              },
+                              activeColor: Colors.green,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Settings section title
+                    Text(
+                      localizations?.businessOperations ?? 'İşletme İşlemleri',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Minimum order amount
+                    TextFormField(
+                      controller: _minimumOrderController,
+                      decoration: InputDecoration(
+                        labelText: localizations?.minimumOrderAmount ??
+                            'Minimum Sipariş Tutarı',
+                        hintText: localizations?.optional ?? 'Opsiyonel',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.attach_money),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value != null &&
+                            value.isNotEmpty &&
+                            double.tryParse(value) == null) {
+                          return localizations?.enterValidAmount ??
+                              'Geçerli bir tutar girin';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Delivery fee
+                    TextFormField(
+                      controller: _deliveryFeeController,
+                      decoration: InputDecoration(
+                        labelText:
+                            localizations?.deliveryFee ?? 'Teslimat Ücreti',
+                        hintText: localizations?.optional ?? 'Opsiyonel',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.delivery_dining),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value != null &&
+                            value.isNotEmpty &&
+                            double.tryParse(value) == null) {
+                          return localizations?.enterValidAmount ??
+                              'Geçerli bir tutar girin';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Delivery time
+                    TextFormField(
+                      controller: _deliveryTimeController,
+                      decoration: InputDecoration(
+                        labelText: localizations?.estimatedDeliveryTime ??
+                            'Tahmini Teslimat Süresi (dakika)',
+                        hintText: localizations?.optional ?? 'Opsiyonel',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.timer),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null &&
+                            value.isNotEmpty &&
+                            int.tryParse(value) == null) {
+                          return localizations?.enterValidTime ??
+                              'Geçerli bir süre girin';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Save button
+                    ElevatedButton(
+                      onPressed: _isSaving ? null : _saveSettings,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              localizations?.save ?? 'Kaydet',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
+      bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
     );
   }
 }

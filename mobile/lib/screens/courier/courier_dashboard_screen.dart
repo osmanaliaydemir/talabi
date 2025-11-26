@@ -171,7 +171,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           title: localizations?.roleCourier ?? 'Kurye Paneli',
           subtitle: authProvider.email ?? '',
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator(color: Colors.teal)),
         bottomNavigationBar: const CourierBottomNav(currentIndex: 0),
       );
     }
@@ -268,7 +268,10 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.teal,
+                              ),
                             )
                           : Switch(
                               value:
@@ -414,7 +417,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       );
                       Navigator.of(
                         context,
-                      ).pushNamed('/courier/delivery-history');
+                      ).pushNamed('/courier/active-deliveries', arguments: 1);
                     },
                   ),
                 ],
@@ -737,7 +740,10 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.teal,
+                        ),
                       )
                     : const Text('Reject'),
               ),
