@@ -63,7 +63,8 @@ import 'app_localizations_tr.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,18 +85,19 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
     Locale('en'),
-    Locale('tr')
+    Locale('tr'),
   ];
 
   /// The application title
@@ -690,9 +693,496 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please verify your email address.'**
   String get pleaseVerifyEmail;
+
+  /// No description provided for @offlineMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Mode'**
+  String get offlineMode;
+
+  /// No description provided for @offlineModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Some features may be limited'**
+  String get offlineModeDescription;
+
+  /// No description provided for @accessibilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility & Display'**
+  String get accessibilityTitle;
+
+  /// No description provided for @accessibilityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize themes, contrast and text size for better readability'**
+  String get accessibilityDescription;
+
+  /// No description provided for @displaySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get displaySettings;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @darkModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use dark theme for low light environments'**
+  String get darkModeDescription;
+
+  /// No description provided for @highContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'High Contrast'**
+  String get highContrast;
+
+  /// No description provided for @highContrastDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase contrast for better visibility'**
+  String get highContrastDescription;
+
+  /// No description provided for @textSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text Size'**
+  String get textSize;
+
+  /// No description provided for @textSizeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust text size for better readability'**
+  String get textSizeDescription;
+
+  /// No description provided for @textSizePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Text'**
+  String get textSizePreview;
+
+  /// No description provided for @cartEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cart is empty'**
+  String get cartEmptyMessage;
+
+  /// No description provided for @cartVoucherPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your voucher code'**
+  String get cartVoucherPlaceholder;
+
+  /// No description provided for @cartSubtotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get cartSubtotalLabel;
+
+  /// No description provided for @cartDeliveryFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Fee'**
+  String get cartDeliveryFeeLabel;
+
+  /// No description provided for @cartTotalAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Amount'**
+  String get cartTotalAmountLabel;
+
+  /// No description provided for @cartSameVendorWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'All items in the cart must be from the same vendor'**
+  String get cartSameVendorWarning;
+
+  /// No description provided for @orderPlacedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Received!'**
+  String get orderPlacedTitle;
+
+  /// No description provided for @orderPlacedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order number: {orderId}\\nTotal: {total}'**
+  String orderPlacedMessage(Object orderId, Object total);
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @errorWithMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorWithMessage(Object error);
+
+  /// No description provided for @clearCartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cart'**
+  String get clearCartTitle;
+
+  /// No description provided for @clearCartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to remove all items from the cart?'**
+  String get clearCartMessage;
+
+  /// No description provided for @clearCartNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get clearCartNo;
+
+  /// No description provided for @clearCartYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get clearCartYes;
+
+  /// No description provided for @clearCartSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart cleared successfully'**
+  String get clearCartSuccess;
+
+  /// No description provided for @productByVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'By {vendorName}'**
+  String productByVendor(Object vendorName);
+
+  /// No description provided for @alreadyReviewedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get alreadyReviewedTitle;
+
+  /// No description provided for @alreadyReviewedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have already reviewed this product.'**
+  String get alreadyReviewedMessage;
+
+  /// No description provided for @writeReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a Review'**
+  String get writeReview;
+
+  /// No description provided for @courierLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Login'**
+  String get courierLogin;
+
+  /// No description provided for @courierWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back, Courier!'**
+  String get courierWelcome;
+
+  /// No description provided for @courierSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to manage your deliveries'**
+  String get courierSubtitle;
+
+  /// No description provided for @areYouCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you a courier?'**
+  String get areYouCourier;
+
+  /// No description provided for @courierSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Sign In'**
+  String get courierSignIn;
+
+  /// No description provided for @courierLoginLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Login'**
+  String get courierLoginLink;
+
+  /// No description provided for @roleCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get roleCustomer;
+
+  /// No description provided for @roleVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor'**
+  String get roleVendor;
+
+  /// No description provided for @roleCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier'**
+  String get roleCourier;
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get roleAdmin;
+
+  /// No description provided for @activeDeliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Deliveries'**
+  String get activeDeliveries;
+
+  /// No description provided for @deliveryHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery History'**
+  String get deliveryHistory;
+
+  /// No description provided for @earnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get earnings;
+
+  /// No description provided for @noActiveDeliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'No active deliveries'**
+  String get noActiveDeliveries;
+
+  /// No description provided for @courierProfileNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier profile not found'**
+  String get courierProfileNotFound;
+
+  /// No description provided for @profileUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileUpdatedSuccessfully;
+
+  /// No description provided for @invalidStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid status. Valid values: Offline, Available, Busy, Break, Assigned'**
+  String get invalidStatus;
+
+  /// No description provided for @cannotGoAvailableOutsideWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot go available outside working hours'**
+  String get cannotGoAvailableOutsideWorkingHours;
+
+  /// No description provided for @cannotGoOfflineWithActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot go offline with active orders'**
+  String get cannotGoOfflineWithActiveOrders;
+
+  /// No description provided for @statusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Status updated'**
+  String get statusUpdated;
+
+  /// No description provided for @locationUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Location updated successfully'**
+  String get locationUpdatedSuccessfully;
+
+  /// No description provided for @invalidLatitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid latitude'**
+  String get invalidLatitude;
+
+  /// No description provided for @invalidLongitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid longitude'**
+  String get invalidLongitude;
+
+  /// No description provided for @orderAcceptedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Order accepted successfully'**
+  String get orderAcceptedSuccessfully;
+
+  /// No description provided for @orderRejectedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Order rejected successfully'**
+  String get orderRejectedSuccessfully;
+
+  /// No description provided for @orderPickedUpSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Order picked up successfully'**
+  String get orderPickedUpSuccessfully;
+
+  /// No description provided for @orderDeliveredSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Order delivered successfully'**
+  String get orderDeliveredSuccessfully;
+
+  /// No description provided for @deliveryProofSubmittedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery proof submitted successfully'**
+  String get deliveryProofSubmittedSuccessfully;
+
+  /// No description provided for @orderNotFoundOrNotAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Order not found or not assigned to you'**
+  String get orderNotFoundOrNotAssigned;
+
+  /// No description provided for @orderMustBeDeliveredBeforeSubmittingProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Order must be delivered before submitting proof'**
+  String get orderMustBeDeliveredBeforeSubmittingProof;
+
+  /// No description provided for @failedToAcceptOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to accept order. It might be already taken or cancelled'**
+  String get failedToAcceptOrder;
+
+  /// No description provided for @failedToRejectOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reject order'**
+  String get failedToRejectOrder;
+
+  /// No description provided for @failedToPickUpOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to pick up order'**
+  String get failedToPickUpOrder;
+
+  /// No description provided for @failedToDeliverOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to deliver order'**
+  String get failedToDeliverOrder;
+
+  /// No description provided for @failedToLoadProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load courier profile'**
+  String get failedToLoadProfile;
+
+  /// No description provided for @failedToUpdateStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update status'**
+  String get failedToUpdateStatus;
+
+  /// No description provided for @failedToUpdateLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update location'**
+  String get failedToUpdateLocation;
+
+  /// No description provided for @failedToLoadStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load statistics'**
+  String get failedToLoadStatistics;
+
+  /// No description provided for @failedToLoadActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load active orders'**
+  String get failedToLoadActiveOrders;
+
+  /// No description provided for @failedToLoadOrderDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load order detail'**
+  String get failedToLoadOrderDetail;
+
+  /// No description provided for @failedToLoadTodayEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load today earnings'**
+  String get failedToLoadTodayEarnings;
+
+  /// No description provided for @failedToLoadWeeklyEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load weekly earnings'**
+  String get failedToLoadWeeklyEarnings;
+
+  /// No description provided for @failedToLoadMonthlyEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load monthly earnings'**
+  String get failedToLoadMonthlyEarnings;
+
+  /// No description provided for @failedToLoadEarningsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load earnings history'**
+  String get failedToLoadEarningsHistory;
+
+  /// No description provided for @failedToSubmitProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit proof'**
+  String get failedToSubmitProof;
+
+  /// No description provided for @failedToUpdateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile'**
+  String get failedToUpdateProfile;
+
+  /// No description provided for @failedToUploadImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload image'**
+  String get failedToUploadImage;
+
+  /// No description provided for @noFileUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'No file uploaded'**
+  String get noFileUploaded;
+
+  /// No description provided for @internalServerErrorDuringUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal server error during upload'**
+  String get internalServerErrorDuringUpload;
+
+  /// No description provided for @checkAvailability.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Availability'**
+  String get checkAvailability;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -701,26 +1191,28 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'en', 'tr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['ar', 'en', 'tr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar': return AppLocalizationsAr();
-    case 'en': return AppLocalizationsEn();
-    case 'tr': return AppLocalizationsTr();
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'tr':
+      return AppLocalizationsTr();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

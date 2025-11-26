@@ -24,7 +24,19 @@ public class Order : BaseEntity
     
     // Delivery tracking
     public DateTime? EstimatedDeliveryTime { get; set; }
+    public DateTime? CourierAssignedAt { get; set; }
+    public DateTime? CourierAcceptedAt { get; set; }
+    public DateTime? PickedUpAt { get; set; }
+    public DateTime? OutForDeliveryAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    
+    // Financials
+    public decimal DeliveryFee { get; set; } = 0;
+    public decimal? CourierTip { get; set; }
+    
+    // Navigation
+    public DeliveryProof? DeliveryProof { get; set; }
+    public CourierEarning? CourierEarning { get; set; }
     
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public ICollection<OrderStatusHistory> StatusHistory { get; set; } = new List<OrderStatusHistory>();

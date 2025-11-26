@@ -7,6 +7,9 @@ class Product {
   final String? category;
   final double price;
   final String? imageUrl;
+  final bool isAvailable;
+  final int? stock;
+  final int? preparationTime;
 
   Product({
     required this.id,
@@ -17,6 +20,9 @@ class Product {
     this.category,
     required this.price,
     this.imageUrl,
+    this.isAvailable = true,
+    this.stock,
+    this.preparationTime,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -29,6 +35,25 @@ class Product {
       category: json['category'],
       price: (json['price'] as num).toDouble(),
       imageUrl: json['imageUrl'],
+      isAvailable: json['isAvailable'] ?? true,
+      stock: json['stock'],
+      preparationTime: json['preparationTime'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'vendorId': vendorId,
+      'vendorName': vendorName,
+      'name': name,
+      'description': description,
+      'category': category,
+      'price': price,
+      'imageUrl': imageUrl,
+      'isAvailable': isAvailable,
+      'stock': stock,
+      'preparationTime': preparationTime,
+    };
   }
 }

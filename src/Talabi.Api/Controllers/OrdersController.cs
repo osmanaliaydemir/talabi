@@ -12,10 +12,12 @@ namespace Talabi.Api.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly TalabiDbContext _context;
+    private readonly Talabi.Core.Interfaces.IOrderAssignmentService _assignmentService;
 
-    public OrdersController(TalabiDbContext context)
+    public OrdersController(TalabiDbContext context, Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
         _context = context;
+        _assignmentService = assignmentService;
     }
 
     [HttpPost]
@@ -51,18 +53,33 @@ public class OrdersController : ControllerBase
 
         // Create order
         var customerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
-        
+
         var order = new Order
         {
             VendorId = dto.VendorId,
             CustomerId = customerId,
             TotalAmount = totalAmount,
             Status = OrderStatus.Pending,
-            OrderItems = orderItems
+            OrderItems = orderItems,
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
+
+        // Automatic Courier Assignment
+        try
+        {
+            var bestCourier = await _assignmentService.FindBestCourierAsync(order);
+            if (bestCourier != null)
+            {
+                await _assignmentService.AssignOrderToCourierAsync(order.Id, bestCourier.Id);
+            }
+        }
+        catch
+        {
+            // Log error but continue
+        }
 
         return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new OrderDto
         {
@@ -79,7 +96,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<OrderDto>> GetOrder(int id)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         var order = await _context.Orders
             .Include(o => o.Vendor)
             .Include(o => o.OrderItems)
@@ -106,7 +123,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -134,7 +151,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<OrderDetailDto>> GetOrderDetail(int id)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         var order = await _context.Orders
             .Include(o => o.Vendor)
             .Include(o => o.Customer)
@@ -224,7 +241,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult> CancelOrder(int id, CancelOrderDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         var order = await _context.Orders
             .Include(o => o.StatusHistory)
             .FirstOrDefaultAsync(o => o.Id == id && (userId == null || o.CustomerId == userId));
@@ -276,9 +293,12 @@ public class OrdersController : ControllerBase
     {
         return current switch
         {
-            OrderStatus.Pending => next == OrderStatus.Preparing || next == OrderStatus.Cancelled,
-            OrderStatus.Preparing => next == OrderStatus.Ready || next == OrderStatus.Cancelled,
-            OrderStatus.Ready => next == OrderStatus.Delivered || next == OrderStatus.Cancelled,
+            OrderStatus.Pending => next is OrderStatus.Preparing or OrderStatus.Cancelled,
+            OrderStatus.Preparing => next is OrderStatus.Ready or OrderStatus.Cancelled,
+            OrderStatus.Ready => next is OrderStatus.Assigned or OrderStatus.Cancelled,
+            OrderStatus.Assigned => next is OrderStatus.Accepted or OrderStatus.Cancelled,
+            OrderStatus.Accepted => next is OrderStatus.OutForDelivery or OrderStatus.Cancelled,
+            OrderStatus.OutForDelivery => next is OrderStatus.Delivered,
             OrderStatus.Delivered => false,
             OrderStatus.Cancelled => false,
             _ => false

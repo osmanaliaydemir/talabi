@@ -10,4 +10,9 @@ public class Product : BaseEntity
     public string? Category { get; set; }
     public decimal Price { get; set; }
     public string? ImageUrl { get; set; }
+
+    // Product availability and stock management
+    public bool IsAvailable { get; set; } = true;
+    public int? Stock { get; set; }
+    public int? PreparationTime { get; set; } // in minutes
 }

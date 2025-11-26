@@ -265,9 +265,9 @@ public class VendorOrdersController : ControllerBase
     {
         return current switch
         {
-            OrderStatus.Pending => next == OrderStatus.Preparing || next == OrderStatus.Cancelled,
-            OrderStatus.Preparing => next == OrderStatus.Ready || next == OrderStatus.Cancelled,
-            OrderStatus.Ready => next == OrderStatus.Delivered || next == OrderStatus.Cancelled,
+            OrderStatus.Pending => next is OrderStatus.Preparing or OrderStatus.Cancelled,
+            OrderStatus.Preparing => next is OrderStatus.Ready or OrderStatus.Cancelled,
+            OrderStatus.Ready => next is OrderStatus.Cancelled or OrderStatus.Assigned or OrderStatus.Delivered,
             OrderStatus.Delivered => false,
             OrderStatus.Cancelled => false,
             _ => false

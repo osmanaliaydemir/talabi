@@ -6,15 +6,26 @@ public class Vendor : BaseEntity
     public string? ImageUrl { get; set; }
     public string Address { get; set; } = string.Empty;
     public string? City { get; set; }
-    
+
     // Location for distance filtering
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
-    
+
     // Rating (average rating from orders/reviews)
     public decimal? Rating { get; set; }
     public int RatingCount { get; set; } = 0;
-    
+
+    // Profile information
+    public string? PhoneNumber { get; set; }
+    public string? Description { get; set; }
+
+    // Business settings
+    public decimal? MinimumOrderAmount { get; set; }
+    public decimal? DeliveryFee { get; set; }
+    public int? EstimatedDeliveryTime { get; set; } // in minutes
+    public bool IsActive { get; set; } = true;
+    public string? OpeningHours { get; set; } // JSON format
+
     public string OwnerId { get; set; } = string.Empty;
     public AppUser? Owner { get; set; }
 

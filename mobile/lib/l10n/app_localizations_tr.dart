@@ -201,7 +201,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcomeBack => 'Tekrar Hoş Geldiniz!';
 
   @override
-  String get loginDescription => 'Bizimle bağlantıda kalmak için lütfen kişisel bilgilerinizle giriş yapın';
+  String get loginDescription =>
+      'Bizimle bağlantıda kalmak için lütfen kişisel bilgilerinizle giriş yapın';
 
   @override
   String get emailAddress => 'E-posta Adresi';
@@ -273,13 +274,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get forgetPassword => 'Şifremi Unuttum';
 
   @override
-  String get forgetPasswordDescription => 'Şifrenizi sıfırlamak için e-posta adresinizi girin';
+  String get forgetPasswordDescription =>
+      'Şifrenizi sıfırlamak için e-posta adresinizi girin';
 
   @override
   String get continueButton => 'Devam Et';
 
   @override
-  String get passwordResetEmailSent => 'Şifre sıfırlama e-postası e-posta adresinize gönderildi';
+  String get passwordResetEmailSent =>
+      'Şifre sıfırlama e-postası e-posta adresinize gönderildi';
 
   @override
   String get passwordResetFailed => 'Şifre sıfırlama e-postası gönderilemedi';
@@ -291,7 +294,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get checkYourEmail => 'E-postanızı Kontrol Edin';
 
   @override
-  String get emailVerificationDescription => 'E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin ve hesabınızı doğrulamak için bağlantıya tıklayın.';
+  String get emailVerificationDescription =>
+      'E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin ve hesabınızı doğrulamak için bağlantıya tıklayın.';
 
   @override
   String get iHaveVerified => 'Doğruladım';
@@ -300,8 +304,272 @@ class AppLocalizationsTr extends AppLocalizations {
   String get resendEmail => 'E-postayı Tekrar Gönder';
 
   @override
-  String get resendFeatureComingSoon => 'Tekrar gönderme özelliği yakında gelecek';
+  String get resendFeatureComingSoon =>
+      'Tekrar gönderme özelliği yakında gelecek';
 
   @override
   String get pleaseVerifyEmail => 'Lütfen e-posta adresinizi doğrulayın.';
+
+  @override
+  String get offlineMode => 'Çevrimdışı Mod';
+
+  @override
+  String get offlineModeDescription => 'Bazı özellikler sınırlı olabilir';
+
+  @override
+  String get accessibilityTitle => 'Erişilebilirlik ve Görünüm';
+
+  @override
+  String get accessibilityDescription =>
+      'Daha rahat okunabilirlik için tema, kontrast ve yazı boyutunu özelleştir';
+
+  @override
+  String get displaySettings => 'Görünüm';
+
+  @override
+  String get darkMode => 'Karanlık Mod';
+
+  @override
+  String get darkModeDescription =>
+      'Düşük ışık ortamları için koyu temayı kullan';
+
+  @override
+  String get highContrast => 'Yüksek Kontrast';
+
+  @override
+  String get highContrastDescription =>
+      'Daha iyi görünürlük için kontrastı artır';
+
+  @override
+  String get textSize => 'Metin Boyutu';
+
+  @override
+  String get textSizeDescription =>
+      'Okunabilirliği artırmak için yazı boyutunu ayarla';
+
+  @override
+  String get textSizePreview => 'Önizleme Metni';
+
+  @override
+  String get cartEmptyMessage => 'Sepetiniz boş';
+
+  @override
+  String get cartVoucherPlaceholder => 'Kupon kodunuzu girin';
+
+  @override
+  String get cartSubtotalLabel => 'Ara Toplam';
+
+  @override
+  String get cartDeliveryFeeLabel => 'Teslimat Ücreti';
+
+  @override
+  String get cartTotalAmountLabel => 'Genel Toplam';
+
+  @override
+  String get cartSameVendorWarning =>
+      'Sepetteki tüm ürünler aynı marketten olmalı';
+
+  @override
+  String get orderPlacedTitle => 'Sipariş Alındı!';
+
+  @override
+  String orderPlacedMessage(Object orderId, Object total) {
+    return 'Sipariş numaranız: $orderId\\nToplam: $total';
+  }
+
+  @override
+  String get ok => 'Tamam';
+
+  @override
+  String errorWithMessage(Object error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get clearCartTitle => 'Sepeti Temizle';
+
+  @override
+  String get clearCartMessage =>
+      'Sepetteki tüm ürünleri kaldırmak istiyor musunuz?';
+
+  @override
+  String get clearCartNo => 'Hayır';
+
+  @override
+  String get clearCartYes => 'Evet';
+
+  @override
+  String get clearCartSuccess => 'Sepet başarıyla temizlendi';
+
+  @override
+  String productByVendor(Object vendorName) {
+    return 'Satıcı: $vendorName';
+  }
+
+  @override
+  String get alreadyReviewedTitle => 'Bilgi';
+
+  @override
+  String get alreadyReviewedMessage => 'Bu ürüne daha önce puan verdiniz.';
+
+  @override
+  String get writeReview => 'Yorum Yaz';
+
+  @override
+  String get courierLogin => 'Kurye Girişi';
+
+  @override
+  String get courierWelcome => 'Hoş Geldin Kurye!';
+
+  @override
+  String get courierSubtitle => 'Teslimatlarını yönetmek için giriş yap';
+
+  @override
+  String get areYouCourier => 'Kurye misiniz?';
+
+  @override
+  String get courierSignIn => 'Kurye Girişi';
+
+  @override
+  String get courierLoginLink => 'Kurye Girişi';
+
+  @override
+  String get roleCustomer => 'Müşteri';
+
+  @override
+  String get roleVendor => 'Satıcı';
+
+  @override
+  String get roleCourier => 'Kurye';
+
+  @override
+  String get roleAdmin => 'Yönetici';
+
+  @override
+  String get activeDeliveries => 'Aktif Teslimatlar';
+
+  @override
+  String get deliveryHistory => 'Teslimat Geçmişi';
+
+  @override
+  String get earnings => 'Kazançlar';
+
+  @override
+  String get noActiveDeliveries => 'Aktif teslimat yok';
+
+  @override
+  String get courierProfileNotFound => 'Kurye profili bulunamadı';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profil başarıyla güncellendi';
+
+  @override
+  String get invalidStatus =>
+      'Geçersiz durum. Geçerli değerler: Offline, Available, Busy, Break, Assigned';
+
+  @override
+  String get cannotGoAvailableOutsideWorkingHours =>
+      'Çalışma saatleri dışında müsait olamazsınız';
+
+  @override
+  String get cannotGoOfflineWithActiveOrders =>
+      'Aktif siparişleriniz varken çevrimdışı olamazsınız';
+
+  @override
+  String get statusUpdated => 'Durum güncellendi';
+
+  @override
+  String get locationUpdatedSuccessfully => 'Konum başarıyla güncellendi';
+
+  @override
+  String get invalidLatitude => 'Geçersiz enlem';
+
+  @override
+  String get invalidLongitude => 'Geçersiz boylam';
+
+  @override
+  String get orderAcceptedSuccessfully => 'Sipariş başarıyla kabul edildi';
+
+  @override
+  String get orderRejectedSuccessfully => 'Sipariş başarıyla reddedildi';
+
+  @override
+  String get orderPickedUpSuccessfully => 'Sipariş başarıyla alındı';
+
+  @override
+  String get orderDeliveredSuccessfully => 'Sipariş başarıyla teslim edildi';
+
+  @override
+  String get deliveryProofSubmittedSuccessfully =>
+      'Teslimat kanıtı başarıyla gönderildi';
+
+  @override
+  String get orderNotFoundOrNotAssigned =>
+      'Sipariş bulunamadı veya size atanmamış';
+
+  @override
+  String get orderMustBeDeliveredBeforeSubmittingProof =>
+      'Teslimat kanıtı göndermeden önce sipariş teslim edilmiş olmalı';
+
+  @override
+  String get failedToAcceptOrder =>
+      'Sipariş kabul edilemedi. Zaten alınmış veya iptal edilmiş olabilir';
+
+  @override
+  String get failedToRejectOrder => 'Sipariş reddedilemedi';
+
+  @override
+  String get failedToPickUpOrder => 'Sipariş alınamadı';
+
+  @override
+  String get failedToDeliverOrder => 'Sipariş teslim edilemedi';
+
+  @override
+  String get failedToLoadProfile => 'Profil yüklenemedi';
+
+  @override
+  String get failedToUpdateStatus => 'Durum güncellenemedi';
+
+  @override
+  String get failedToUpdateLocation => 'Konum güncellenemedi';
+
+  @override
+  String get failedToLoadStatistics => 'İstatistikler yüklenemedi';
+
+  @override
+  String get failedToLoadActiveOrders => 'Aktif siparişler yüklenemedi';
+
+  @override
+  String get failedToLoadOrderDetail => 'Sipariş detayı yüklenemedi';
+
+  @override
+  String get failedToLoadTodayEarnings => 'Bugünkü kazançlar yüklenemedi';
+
+  @override
+  String get failedToLoadWeeklyEarnings => 'Haftalık kazançlar yüklenemedi';
+
+  @override
+  String get failedToLoadMonthlyEarnings => 'Aylık kazançlar yüklenemedi';
+
+  @override
+  String get failedToLoadEarningsHistory => 'Kazanç geçmişi yüklenemedi';
+
+  @override
+  String get failedToSubmitProof => 'Teslimat kanıtı gönderilemedi';
+
+  @override
+  String get failedToUpdateProfile => 'Profil güncellenemedi';
+
+  @override
+  String get failedToUploadImage => 'Resim yüklenemedi';
+
+  @override
+  String get noFileUploaded => 'Dosya yüklenmedi';
+
+  @override
+  String get internalServerErrorDuringUpload =>
+      'Yükleme sırasında sunucu hatası oluştu';
+
+  @override
+  String get checkAvailability => 'Müsaitlik Kontrolü';
 }

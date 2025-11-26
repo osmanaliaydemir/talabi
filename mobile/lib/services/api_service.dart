@@ -4,9 +4,13 @@ import 'package:mobile/models/order.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/search_dtos.dart';
+import 'package:mobile/models/review.dart';
+import 'package:mobile/services/api_request_scheduler.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+const String _requestPermitKey = '_apiRequestPermit';
 
 class ApiService {
   static const String baseUrl = 'https://talabi.runasp.net/api';
@@ -20,6 +24,7 @@ class ApiService {
   );
 
   final CacheService _cacheService = CacheService();
+  final ApiRequestScheduler _requestScheduler = ApiRequestScheduler();
   ConnectivityService? _connectivityService;
 
   // Track refresh token operation to prevent concurrent calls
@@ -41,6 +46,11 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final permit = await _requestScheduler.acquire(
+            highPriority: _isHighPriorityRequest(options),
+          );
+          options.extra[_requestPermitKey] = permit;
+
           // Automatically add token from SharedPreferences
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('token');
@@ -54,6 +64,7 @@ class ApiService {
           return handler.next(options);
         },
         onResponse: (response, handler) {
+          _releasePermit(response.requestOptions);
           print(
             '📥 [HTTP RESPONSE] ${response.statusCode} ${response.requestOptions.uri}',
           );
@@ -61,6 +72,7 @@ class ApiService {
           return handler.next(response);
         },
         onError: (error, handler) async {
+          _releasePermit(error.requestOptions);
           print(
             '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri}',
           );
@@ -146,17 +158,22 @@ class ApiService {
     String token,
     String refreshToken,
   ) async {
-    // Create a separate Dio instance to avoid interceptor loops
-    final dio = Dio(BaseOptions(baseUrl: baseUrl));
-    final response = await dio.post(
-      '/auth/refresh-token',
-      data: {'token': token, 'refreshToken': refreshToken},
-    );
-    final data = response.data as Map<String, dynamic>;
-    return {
-      'token': data['token'] as String,
-      'refreshToken': data['refreshToken'] as String,
-    };
+    final permit = await _requestScheduler.acquire(highPriority: true);
+    try {
+      // Create a separate Dio instance to avoid interceptor loops
+      final dio = Dio(BaseOptions(baseUrl: baseUrl));
+      final response = await dio.post(
+        '/auth/refresh-token',
+        data: {'token': token, 'refreshToken': refreshToken},
+      );
+      final data = response.data as Map<String, dynamic>;
+      return {
+        'token': data['token'] as String,
+        'refreshToken': data['refreshToken'] as String,
+      };
+    } finally {
+      permit.release();
+    }
   }
 
   Future<List<Vendor>> getVendors() async {
@@ -798,6 +815,81 @@ class ApiService {
     }
   }
 
+  // Review methods
+  Future<Review> createReview(
+    int targetId,
+    String targetType,
+    int rating,
+    String comment,
+  ) async {
+    try {
+      final response = await _dio.post(
+        '/reviews',
+        data: {
+          'targetId': targetId,
+          'targetType': targetType,
+          'rating': rating,
+          'comment': comment,
+        },
+      );
+      return Review.fromJson(response.data);
+    } catch (e) {
+      print('Error creating review: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Review>> getProductReviews(int productId) async {
+    try {
+      final response = await _dio.get('/reviews/products/$productId');
+      final List<dynamic> data = response.data;
+      return data.map((json) => Review.fromJson(json)).toList();
+    } catch (e) {
+      print('Error fetching product reviews: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Review>> getVendorReviews(int vendorId) async {
+    try {
+      final response = await _dio.get('/reviews/vendors/$vendorId');
+      final List<dynamic> data = response.data;
+      return data.map((json) => Review.fromJson(json)).toList();
+    } catch (e) {
+      print('Error fetching vendor reviews: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Review>> getPendingReviews() async {
+    try {
+      final response = await _dio.get('/reviews/pending');
+      final List<dynamic> data = response.data;
+      return data.map((json) => Review.fromJson(json)).toList();
+    } catch (e) {
+      print('Error fetching pending reviews: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> approveReview(int reviewId) async {
+    try {
+      await _dio.patch('/reviews/$reviewId/approve');
+    } catch (e) {
+      print('Error approving review: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> rejectReview(int reviewId) async {
+    try {
+      await _dio.patch('/reviews/$reviewId/reject');
+    } catch (e) {
+      print('Error rejecting review: $e');
+      rethrow;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getActiveCouriers() async {
     try {
       final response = await _dio.get('/courier/active');
@@ -962,6 +1054,196 @@ class ApiService {
     } catch (e) {
       print('Error fetching vendor summary: $e');
       rethrow;
+    }
+  }
+
+  // Vendor Product Management Methods
+  Future<List<Product>> getVendorProducts({
+    String? category,
+    bool? isAvailable,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (category != null) queryParams['category'] = category;
+      if (isAvailable != null) queryParams['isAvailable'] = isAvailable;
+
+      final response = await _dio.get(
+        '/vendor/products',
+        queryParameters: queryParams,
+      );
+      final List<dynamic> data = response.data;
+      return data.map((json) => Product.fromJson(json)).toList();
+    } catch (e) {
+      print('Error fetching vendor products: $e');
+      rethrow;
+    }
+  }
+
+  Future<Product> getVendorProduct(int productId) async {
+    try {
+      final response = await _dio.get('/vendor/products/$productId');
+      return Product.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching vendor product: $e');
+      rethrow;
+    }
+  }
+
+  Future<Product> createProduct(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/vendor/products', data: data);
+      return Product.fromJson(response.data);
+    } catch (e) {
+      print('Error creating product: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateProduct(int productId, Map<String, dynamic> data) async {
+    try {
+      await _dio.put('/vendor/products/$productId', data: data);
+    } catch (e) {
+      print('Error updating product: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteProduct(int productId) async {
+    try {
+      await _dio.delete('/vendor/products/$productId');
+    } catch (e) {
+      print('Error deleting product: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateProductAvailability(
+    int productId,
+    bool isAvailable,
+  ) async {
+    try {
+      await _dio.put(
+        '/vendor/products/$productId/availability',
+        data: {'isAvailable': isAvailable},
+      );
+    } catch (e) {
+      print('Error updating product availability: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateProductPrice(int productId, double price) async {
+    try {
+      await _dio.put(
+        '/vendor/products/$productId/price',
+        data: {'price': price},
+      );
+    } catch (e) {
+      print('Error updating product price: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<String>> getVendorProductCategories() async {
+    try {
+      final response = await _dio.get('/vendor/products/categories');
+      return List<String>.from(response.data);
+    } catch (e) {
+      print('Error fetching vendor product categories: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> uploadProductImage(dynamic file) async {
+    try {
+      FormData formData = FormData.fromMap({'file': file});
+
+      final response = await _dio.post('/upload', data: formData);
+      return response.data['url'];
+    } catch (e) {
+      print('Error uploading product image: $e');
+      rethrow;
+    }
+  }
+
+  // Vendor Profile Management Methods
+  Future<Map<String, dynamic>> getVendorProfile() async {
+    try {
+      final response = await _dio.get('/vendor/profile');
+      return response.data;
+    } catch (e) {
+      print('Error fetching vendor profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateVendorProfile(Map<String, dynamic> data) async {
+    try {
+      await _dio.put('/vendor/profile', data: data);
+    } catch (e) {
+      print('Error updating vendor profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateVendorImage(String imageUrl) async {
+    try {
+      await _dio.put('/vendor/profile/image', data: {'imageUrl': imageUrl});
+    } catch (e) {
+      print('Error updating vendor image: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getVendorSettings() async {
+    try {
+      final response = await _dio.get('/vendor/profile/settings');
+      return response.data;
+    } catch (e) {
+      print('Error fetching vendor settings: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateVendorSettings(Map<String, dynamic> data) async {
+    try {
+      await _dio.put('/vendor/profile/settings', data: data);
+    } catch (e) {
+      print('Error updating vendor settings: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> toggleVendorActive(bool isActive) async {
+    try {
+      await _dio.put(
+        '/vendor/profile/settings/active',
+        data: {'isActive': isActive},
+      );
+    } catch (e) {
+      print('Error toggling vendor active: $e');
+      rethrow;
+    }
+  }
+
+  bool _isHighPriorityRequest(RequestOptions options) {
+    const prioritySegments = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/refresh-token',
+      '/auth/confirm-email',
+      '/auth/forgot-password',
+    ];
+
+    return prioritySegments.any(
+      (segment) => options.path.toLowerCase().contains(segment),
+    );
+  }
+
+  void _releasePermit(RequestOptions options) {
+    final permit = options.extra.remove(_requestPermitKey);
+    if (permit is RequestPermit) {
+      permit.release();
     }
   }
 }

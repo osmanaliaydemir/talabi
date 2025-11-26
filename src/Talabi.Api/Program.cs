@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Text;
 using Talabi.Api.Validators;
 using Talabi.Core.Entities;
+using Talabi.Core.Options;
 using Talabi.Core.Services;
 using Talabi.Infrastructure.Data;
 using Talabi.Infrastructure.Services;
@@ -35,7 +36,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.DefaultRequestCulture = new RequestCulture("tr");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
-    
+
     options.RequestCultureProviders.Clear();
     options.RequestCultureProviders.Add(new QueryStringRequestCultureProvider());
     options.RequestCultureProviders.Add(new AcceptLanguageHeaderRequestCultureProvider());
@@ -47,8 +48,17 @@ builder.Services.AddDbContext<TalabiDbContext>(options =>
 
 // Services
 builder.Services.AddHttpClient();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
+builder.Services.AddHttpClient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.IOrderAssignmentService, Talabi.Infrastructure.Services.OrderAssignmentService>();
+builder.Services.AddSignalR();
+builder.Services.AddScoped<Talabi.Core.Interfaces.INotificationService, Talabi.Api.Services.SignalRNotificationService>();
+
+// ...
+
+
 
 // Rate Limiting
 builder.Services.AddMemoryCache();
@@ -72,7 +82,7 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 
 // Identity
-builder.Services.AddIdentity<AppUser, IdentityRole>(options => 
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedEmail = true;
     options.User.RequireUniqueEmail = true;
@@ -109,14 +119,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    
+
     // Seed Data (only if database is accessible)
     using (var scope = app.Services.CreateScope())
     {
-        try 
+        try
         {
             var context = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
-            
+
             // Test database connection first
             if (await context.Database.CanConnectAsync())
             {
@@ -147,6 +157,8 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 // Localization middleware
 app.UseRequestLocalization();
 
@@ -156,5 +168,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<Talabi.Api.Hubs.NotificationHub>("/hubs/notifications");
 
 app.Run();

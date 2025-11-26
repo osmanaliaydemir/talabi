@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
@@ -6,10 +6,28 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
-import 'package:mobile/screens/language_selection_screen.dart';
-import 'package:mobile/screens/login_screen.dart';
-import 'package:mobile/screens/main_navigation_screen.dart';
-import 'package:mobile/screens/onboarding_screen.dart';
+import 'package:mobile/providers/theme_provider.dart';
+import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart';
+import 'package:mobile/screens/shared/auth/login_screen.dart';
+import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
+import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
+import 'package:mobile/screens/courier/order_detail_screen.dart';
+import 'package:mobile/screens/courier/order_map_screen.dart';
+import 'package:mobile/screens/courier/courier_profile_screen.dart';
+import 'package:mobile/screens/courier/delivery_proof_screen.dart';
+import 'package:mobile/screens/courier/courier_dashboard_screen.dart';
+import 'package:mobile/screens/courier/courier_active_deliveries_screen.dart';
+import 'package:mobile/screens/courier/courier_availability_screen.dart';
+import 'package:mobile/screens/courier/courier_edit_profile_screen.dart';
+import 'package:mobile/screens/courier/courier_delivery_history_screen.dart';
+import 'package:mobile/screens/courier/earnings_screen.dart';
+import 'package:mobile/screens/courier/courier_notifications_screen.dart';
+import 'package:mobile/screens/courier/courier_navigation_settings_screen.dart';
+import 'package:mobile/screens/vendor/vendor_dashboard_screen.dart';
+import 'package:mobile/screens/vendor/vendor_orders_screen.dart';
+import 'package:mobile/screens/vendor/vendor_products_screen.dart';
+import 'package:mobile/screens/vendor/vendor_profile_screen.dart';
+import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
@@ -20,23 +38,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize cache service
   await CacheService.init();
-  
+
   // Initialize connectivity and sync services
   final connectivityService = ConnectivityService();
   final syncService = SyncService(connectivityService);
-  
+
   // Initialize API service with connectivity
   final apiService = ApiService();
   apiService.setConnectivityService(connectivityService);
-  
+
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => LocalizationProvider()),
-        ChangeNotifierProvider(create: (context) => ConnectivityProvider(connectivityService)),
+        ChangeNotifierProvider(
+          create: (context) => ConnectivityProvider(connectivityService),
+        ),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(
           create: (context) => CartProvider(
@@ -113,8 +134,18 @@ class _MyAppState extends State<MyApp> {
             // Otherwise show normal app flow
             return Consumer<AuthProvider>(
               builder: (context, auth, _) {
+                final role = auth.role?.toLowerCase();
+                final isCourier = role == 'courier';
+                final isVendor = role == 'vendor';
+
                 if (auth.isAuthenticated) {
-                  return const MainNavigationScreen();
+                  if (isCourier) {
+                    return const CourierDashboardScreen();
+                  } else if (isVendor) {
+                    return const VendorDashboardScreen();
+                  } else {
+                    return const MainNavigationScreen();
+                  }
                 } else {
                   return FutureBuilder(
                     future: auth.tryAutoLogin(),
@@ -124,6 +155,21 @@ class _MyAppState extends State<MyApp> {
                           body: Center(child: CircularProgressIndicator()),
                         );
                       }
+
+                      final autoLoginRole = auth.role?.toLowerCase();
+                      final autoLoginCourier = autoLoginRole == 'courier';
+                      final autoLoginVendor = autoLoginRole == 'vendor';
+
+                      if (auth.isAuthenticated) {
+                        if (autoLoginCourier) {
+                          return const CourierDashboardScreen();
+                        } else if (autoLoginVendor) {
+                          return const VendorDashboardScreen();
+                        } else {
+                          return const MainNavigationScreen();
+                        }
+                      }
+
                       return const LoginScreen();
                     },
                   );
@@ -138,8 +184,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocalizationProvider>(
-      builder: (context, localization, _) {
+    return Consumer2<LocalizationProvider, ThemeProvider>(
+      builder: (context, localization, themeProvider, _) {
         return MaterialApp(
           title: 'Talabi',
           debugShowCheckedModeBanner: false,
@@ -152,12 +198,88 @@ class _MyAppState extends State<MyApp> {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-            useMaterial3: true,
-          ),
+          theme: themeProvider.isHighContrast
+              ? themeProvider.highContrastTheme
+              : themeProvider.lightTheme,
+          darkTheme: themeProvider.isHighContrast
+              ? themeProvider.highContrastTheme
+              : themeProvider.darkTheme,
+          themeMode: themeProvider.themeMode,
           routes: {'/login': (context) => const LoginScreen()},
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case '/courier/order-detail':
+                final orderId = settings.arguments as int;
+                return MaterialPageRoute(
+                  builder: (context) => OrderDetailScreen(orderId: orderId),
+                );
+              case '/courier/order-map':
+                final order = settings.arguments as CourierOrder;
+                return MaterialPageRoute(
+                  builder: (context) => OrderMapScreen(order: order),
+                );
+              case '/courier/profile':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierProfileScreen(),
+                );
+              case '/courier/profile/edit':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierEditProfileScreen(),
+                );
+              case '/courier/notifications':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierNotificationsScreen(),
+                );
+              case '/courier/earnings':
+                return MaterialPageRoute(
+                  builder: (context) => const EarningsScreen(),
+                );
+              case '/courier/availability':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierAvailabilityScreen(),
+                );
+              case '/courier/navigation-settings':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierNavigationSettingsScreen(),
+                );
+              case '/courier/active-deliveries':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierActiveDeliveriesScreen(),
+                );
+              case '/courier/delivery-history':
+                return MaterialPageRoute(
+                  builder: (context) => const CourierDeliveryHistoryScreen(),
+                );
+              case '/courier/delivery-proof':
+                final orderId = settings.arguments as int;
+                return MaterialPageRoute(
+                  builder: (context) => DeliveryProofScreen(orderId: orderId),
+                );
+              case '/vendor/orders':
+                return MaterialPageRoute(
+                  builder: (context) => const VendorOrdersScreen(),
+                );
+              case '/vendor/products':
+                return MaterialPageRoute(
+                  builder: (context) => const VendorProductsScreen(),
+                );
+              case '/vendor/profile':
+                return MaterialPageRoute(
+                  builder: (context) => const VendorProfileScreen(),
+                );
+              default:
+                return null;
+            }
+          },
           home: _buildHome(),
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaleFactor: themeProvider.textScaleFactor),
+              child: child!,
+            );
+          },
         );
       },
     );

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Talabi.Core.Enums;
 
 namespace Talabi.Core.Entities;
 
@@ -10,4 +11,5 @@ public class AppUser : IdentityUser
     public DateTime? DateOfBirth { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime RefreshTokenExpiryTime { get; set; }
+    public UserRole Role { get; set; } = UserRole.Customer;
 }

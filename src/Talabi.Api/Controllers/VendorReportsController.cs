@@ -158,39 +158,56 @@ public class VendorReportsController : ControllerBase
 
             try
             {
+                // Calculate date ranges with proper UTC handling
+                var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+                var todayEnd = todayStart.AddDays(1).AddTicks(-1);
+                var weekStart = DateTime.SpecifyKind(thisWeek, DateTimeKind.Utc);
+                var monthStart = DateTime.SpecifyKind(thisMonth, DateTimeKind.Utc);
+
+                _logger.LogInformation("Date ranges - Today: {TodayStart} to {TodayEnd}, Week: {Week}, Month: {Month}", 
+                    todayStart, todayEnd, weekStart, monthStart);
+
+                // Today's orders (from start of today to end of today)
                 var todayOrders = await _context.Orders
-                    .Where(o => o.VendorId == vendorId && o.CreatedAt >= today)
+                    .Where(o => o.VendorId == vendorId && 
+                               o.CreatedAt >= todayStart && 
+                               o.CreatedAt <= todayEnd)
                     .CountAsync();
 
                 _logger.LogInformation("Today orders count: {Count}", todayOrders);
 
+                // Today's revenue (only delivered orders)
                 var todayRevenue = await _context.Orders
                     .Where(o => o.VendorId == vendorId && 
-                               o.CreatedAt >= today && 
+                               o.CreatedAt >= todayStart && 
+                               o.CreatedAt <= todayEnd &&
                                o.Status == OrderStatus.Delivered)
                     .Select(o => (decimal?)o.TotalAmount)
                     .SumAsync() ?? 0;
 
                 _logger.LogInformation("Today revenue: {Revenue}", todayRevenue);
 
+                // Pending orders (all time, not filtered by date)
                 var pendingOrders = await _context.Orders
                     .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Pending)
                     .CountAsync();
 
                 _logger.LogInformation("Pending orders count: {Count}", pendingOrders);
 
+                // Week revenue (last 7 days, only delivered orders)
                 var weekRevenue = await _context.Orders
                     .Where(o => o.VendorId == vendorId && 
-                               o.CreatedAt >= thisWeek && 
+                               o.CreatedAt >= weekStart &&
                                o.Status == OrderStatus.Delivered)
                     .Select(o => (decimal?)o.TotalAmount)
                     .SumAsync() ?? 0;
 
                 _logger.LogInformation("Week revenue: {Revenue}", weekRevenue);
 
+                // Month revenue (last 30 days, only delivered orders)
                 var monthRevenue = await _context.Orders
                     .Where(o => o.VendorId == vendorId && 
-                               o.CreatedAt >= thisMonth && 
+                               o.CreatedAt >= monthStart &&
                                o.Status == OrderStatus.Delivered)
                     .Select(o => (decimal?)o.TotalAmount)
                     .SumAsync() ?? 0;
@@ -199,11 +216,11 @@ public class VendorReportsController : ControllerBase
 
                 var result = new
                 {
-                    TodayOrders = todayOrders,
-                    TodayRevenue = todayRevenue,
-                    PendingOrders = pendingOrders,
-                    WeekRevenue = weekRevenue,
-                    MonthRevenue = monthRevenue
+                    todayOrders = todayOrders,
+                    todayRevenue = todayRevenue,
+                    pendingOrders = pendingOrders,
+                    weekRevenue = weekRevenue,
+                    monthRevenue = monthRevenue
                 };
 
                 _logger.LogInformation("Summary calculated successfully");

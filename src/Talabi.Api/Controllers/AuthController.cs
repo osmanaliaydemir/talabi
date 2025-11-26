@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Talabi.Core.DTOs;
+using Talabi.Core.DTOs.Email;
+using Talabi.Core.Email;
 using Talabi.Core.Entities;
 using Talabi.Core.Services;
 
@@ -35,23 +37,54 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        var user = new AppUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
-        var result = await _userManager.CreateAsync(user, dto.Password);
-
-        if (result.Succeeded)
+        try
         {
-            // Generate email confirmation token
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth", new { token, email = user.Email }, Request.Scheme);
-            
-            await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", $"Please confirm your account by clicking this link: {confirmationLink}");
+            var user = new AppUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
+            var result = await _userManager.CreateAsync(user, dto.Password);
 
-            // For now, we return the token directly to make testing easier without a real email server
-            // In production, you would only return a success message
-            return Ok(new { Message = "User registered successfully. Please check your email to confirm your account.", ConfirmationToken = token });
+            if (result.Succeeded)
+            {
+                try
+                {
+                    // Generate email confirmation token
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth", new { token, email = user.Email }, Request.Scheme);
+                    
+                    await _emailSender.SendEmailAsync(new EmailTemplateRequest
+                    {
+                        To = user.Email!,
+                        Subject = "Email adresini doğrula",
+                        TemplateName = EmailTemplateNames.ConfirmEmail,
+                        Variables = new Dictionary<string, string>
+                        {
+                            ["fullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.Email! : user.FullName,
+                            ["actionLink"] = confirmationLink!
+                        }
+                    });
+
+                    // For now, we return the token directly to make testing easier without a real email server
+                    // In production, you would only return a success message
+                    return Ok(new { Message = "User registered successfully. Please check your email to confirm your account.", ConfirmationToken = token });
+                }
+                catch (Exception emailEx)
+                {
+                    // Log email error but don't fail registration
+                    // User is already created, so we return success with token
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    return Ok(new { 
+                        Message = "User registered successfully. Email confirmation could not be sent. Please contact support.", 
+                        ConfirmationToken = token,
+                        Warning = emailEx.Message 
+                    });
+                }
+            }
+
+            return BadRequest(result.Errors);
         }
-
-        return BadRequest(result.Errors);
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "An error occurred during registration", Error = ex.Message, StackTrace = ex.StackTrace });
+        }
     }
 
     [HttpGet("confirm-email")]
@@ -82,7 +115,18 @@ public class AuthController : ControllerBase
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             
-            await _emailSender.SendEmailAsync(user.Email!, "Reset Password", $"Your password reset token is: {token}");
+            
+            await _emailSender.SendEmailAsync(new EmailTemplateRequest
+            {
+                To = user.Email!,
+                Subject = "Parolayı sıfırla",
+                TemplateName = EmailTemplateNames.ResetPassword,
+                Variables = new Dictionary<string, string>
+                {
+                    ["fullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.Email! : user.FullName,
+                    ["resetToken"] = token
+                }
+            });
             
             return Ok(new { Message = "If the email exists, a password reset link has been sent." });
         }
@@ -126,7 +170,7 @@ public class AuthController : ControllerBase
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName });
+                return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role.ToString() });
             }
 
             return Unauthorized(new { Message = "Invalid email or password" });
@@ -154,7 +198,7 @@ public class AuthController : ControllerBase
                         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
                         await _userManager.UpdateAsync(user);
 
-                        return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName });
+                        return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role.ToString() });
                     }
                 }
             }
@@ -214,7 +258,8 @@ public class AuthController : ControllerBase
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("fullName", user.FullName)
+            new Claim("fullName", user.FullName),
+            new Claim("role", user.Role.ToString())
         };
 
         // Add role claims

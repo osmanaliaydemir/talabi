@@ -201,7 +201,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome Back!';
 
   @override
-  String get loginDescription => 'To keep connected with us please login with your personal info';
+  String get loginDescription =>
+      'To keep connected with us please login with your personal info';
 
   @override
   String get emailAddress => 'Email Address';
@@ -273,13 +274,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgetPassword => 'Forget Password';
 
   @override
-  String get forgetPasswordDescription => 'Enter your email account to reset password';
+  String get forgetPasswordDescription =>
+      'Enter your email account to reset password';
 
   @override
   String get continueButton => 'Continue';
 
   @override
-  String get passwordResetEmailSent => 'Password reset email has been sent to your email address';
+  String get passwordResetEmailSent =>
+      'Password reset email has been sent to your email address';
 
   @override
   String get passwordResetFailed => 'Failed to send password reset email';
@@ -291,7 +294,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkYourEmail => 'Check Your Email';
 
   @override
-  String get emailVerificationDescription => 'We have sent a verification link to your email address. Please check your inbox and click the link to verify your account.';
+  String get emailVerificationDescription =>
+      'We have sent a verification link to your email address. Please check your inbox and click the link to verify your account.';
 
   @override
   String get iHaveVerified => 'I Have Verified';
@@ -304,4 +308,266 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseVerifyEmail => 'Please verify your email address.';
+
+  @override
+  String get offlineMode => 'Offline Mode';
+
+  @override
+  String get offlineModeDescription => 'Some features may be limited';
+
+  @override
+  String get accessibilityTitle => 'Accessibility & Display';
+
+  @override
+  String get accessibilityDescription =>
+      'Customize themes, contrast and text size for better readability';
+
+  @override
+  String get displaySettings => 'Display';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get darkModeDescription => 'Use dark theme for low light environments';
+
+  @override
+  String get highContrast => 'High Contrast';
+
+  @override
+  String get highContrastDescription =>
+      'Increase contrast for better visibility';
+
+  @override
+  String get textSize => 'Text Size';
+
+  @override
+  String get textSizeDescription => 'Adjust text size for better readability';
+
+  @override
+  String get textSizePreview => 'Preview Text';
+
+  @override
+  String get cartEmptyMessage => 'Your cart is empty';
+
+  @override
+  String get cartVoucherPlaceholder => 'Enter your voucher code';
+
+  @override
+  String get cartSubtotalLabel => 'Subtotal';
+
+  @override
+  String get cartDeliveryFeeLabel => 'Delivery Fee';
+
+  @override
+  String get cartTotalAmountLabel => 'Total Amount';
+
+  @override
+  String get cartSameVendorWarning =>
+      'All items in the cart must be from the same vendor';
+
+  @override
+  String get orderPlacedTitle => 'Order Received!';
+
+  @override
+  String orderPlacedMessage(Object orderId, Object total) {
+    return 'Your order number: $orderId\\nTotal: $total';
+  }
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String errorWithMessage(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get clearCartTitle => 'Clear Cart';
+
+  @override
+  String get clearCartMessage =>
+      'Do you want to remove all items from the cart?';
+
+  @override
+  String get clearCartNo => 'No';
+
+  @override
+  String get clearCartYes => 'Yes';
+
+  @override
+  String get clearCartSuccess => 'Cart cleared successfully';
+
+  @override
+  String productByVendor(Object vendorName) {
+    return 'By $vendorName';
+  }
+
+  @override
+  String get alreadyReviewedTitle => 'Information';
+
+  @override
+  String get alreadyReviewedMessage =>
+      'You have already reviewed this product.';
+
+  @override
+  String get writeReview => 'Write a Review';
+
+  @override
+  String get courierLogin => 'Courier Login';
+
+  @override
+  String get courierWelcome => 'Welcome Back, Courier!';
+
+  @override
+  String get courierSubtitle => 'Sign in to manage your deliveries';
+
+  @override
+  String get areYouCourier => 'Are you a courier?';
+
+  @override
+  String get courierSignIn => 'Courier Sign In';
+
+  @override
+  String get courierLoginLink => 'Courier Login';
+
+  @override
+  String get roleCustomer => 'Customer';
+
+  @override
+  String get roleVendor => 'Vendor';
+
+  @override
+  String get roleCourier => 'Courier';
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get activeDeliveries => 'Active Deliveries';
+
+  @override
+  String get deliveryHistory => 'Delivery History';
+
+  @override
+  String get earnings => 'Earnings';
+
+  @override
+  String get noActiveDeliveries => 'No active deliveries';
+
+  @override
+  String get courierProfileNotFound => 'Courier profile not found';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully';
+
+  @override
+  String get invalidStatus =>
+      'Invalid status. Valid values: Offline, Available, Busy, Break, Assigned';
+
+  @override
+  String get cannotGoAvailableOutsideWorkingHours =>
+      'Cannot go available outside working hours';
+
+  @override
+  String get cannotGoOfflineWithActiveOrders =>
+      'Cannot go offline with active orders';
+
+  @override
+  String get statusUpdated => 'Status updated';
+
+  @override
+  String get locationUpdatedSuccessfully => 'Location updated successfully';
+
+  @override
+  String get invalidLatitude => 'Invalid latitude';
+
+  @override
+  String get invalidLongitude => 'Invalid longitude';
+
+  @override
+  String get orderAcceptedSuccessfully => 'Order accepted successfully';
+
+  @override
+  String get orderRejectedSuccessfully => 'Order rejected successfully';
+
+  @override
+  String get orderPickedUpSuccessfully => 'Order picked up successfully';
+
+  @override
+  String get orderDeliveredSuccessfully => 'Order delivered successfully';
+
+  @override
+  String get deliveryProofSubmittedSuccessfully =>
+      'Delivery proof submitted successfully';
+
+  @override
+  String get orderNotFoundOrNotAssigned =>
+      'Order not found or not assigned to you';
+
+  @override
+  String get orderMustBeDeliveredBeforeSubmittingProof =>
+      'Order must be delivered before submitting proof';
+
+  @override
+  String get failedToAcceptOrder =>
+      'Failed to accept order. It might be already taken or cancelled';
+
+  @override
+  String get failedToRejectOrder => 'Failed to reject order';
+
+  @override
+  String get failedToPickUpOrder => 'Failed to pick up order';
+
+  @override
+  String get failedToDeliverOrder => 'Failed to deliver order';
+
+  @override
+  String get failedToLoadProfile => 'Failed to load courier profile';
+
+  @override
+  String get failedToUpdateStatus => 'Failed to update status';
+
+  @override
+  String get failedToUpdateLocation => 'Failed to update location';
+
+  @override
+  String get failedToLoadStatistics => 'Failed to load statistics';
+
+  @override
+  String get failedToLoadActiveOrders => 'Failed to load active orders';
+
+  @override
+  String get failedToLoadOrderDetail => 'Failed to load order detail';
+
+  @override
+  String get failedToLoadTodayEarnings => 'Failed to load today earnings';
+
+  @override
+  String get failedToLoadWeeklyEarnings => 'Failed to load weekly earnings';
+
+  @override
+  String get failedToLoadMonthlyEarnings => 'Failed to load monthly earnings';
+
+  @override
+  String get failedToLoadEarningsHistory => 'Failed to load earnings history';
+
+  @override
+  String get failedToSubmitProof => 'Failed to submit proof';
+
+  @override
+  String get failedToUpdateProfile => 'Failed to update profile';
+
+  @override
+  String get failedToUploadImage => 'Failed to upload image';
+
+  @override
+  String get noFileUploaded => 'No file uploaded';
+
+  @override
+  String get internalServerErrorDuringUpload =>
+      'Internal server error during upload';
+
+  @override
+  String get checkAvailability => 'Check Availability';
 }

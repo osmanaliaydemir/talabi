@@ -8,6 +8,7 @@ class AuthProvider with ChangeNotifier {
   String? _userId;
   String? _email;
   String? _fullName;
+  String? _role;
 
   bool get isAuthenticated => _token != null;
   String? get token => _token;
@@ -15,6 +16,7 @@ class AuthProvider with ChangeNotifier {
   String? get userId => _userId;
   String? get email => _email;
   String? get fullName => _fullName;
+  String? get role => _role;
 
   Future<void> login(String email, String password) async {
     final apiService = ApiService();
@@ -25,6 +27,7 @@ class AuthProvider with ChangeNotifier {
     _userId = response['userId'];
     _email = response['email'];
     _fullName = response['fullName'];
+    _role = response['role'];
 
     // Save to shared preferences
     final prefs = await SharedPreferences.getInstance();
@@ -35,6 +38,9 @@ class AuthProvider with ChangeNotifier {
     await prefs.setString('userId', _userId!);
     await prefs.setString('email', _email!);
     await prefs.setString('fullName', _fullName!);
+    if (_role != null) {
+      await prefs.setString('role', _role!);
+    }
 
     notifyListeners();
   }
@@ -95,6 +101,7 @@ class AuthProvider with ChangeNotifier {
     _userId = null;
     _email = null;
     _fullName = null;
+    _role = null;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
@@ -113,6 +120,7 @@ class AuthProvider with ChangeNotifier {
     _userId = prefs.getString('userId');
     _email = prefs.getString('email');
     _fullName = prefs.getString('fullName');
+    _role = prefs.getString('role');
 
     notifyListeners();
   }

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 500px; margin: 32px auto; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 15px 35px rgba(0,0,0,0.07); }
+        .title { font-size: 22px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
+        .text { font-size: 15px; line-height: 24px; color: #334155; margin-bottom: 24px; }
+        .button { display: inline-block; padding: 14px 28px; background: #0ea5e9; color: #ffffff; border-radius: 999px; text-decoration: none; font-weight: 600; }
+        .footer { font-size: 12px; color: #94a3b8; margin-top: 32px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Hi {{fullName}},</div>
+        <div class="text">
+            Please confirm your Talabi account by clicking the button below.
+        </div>
+        <a class="button" href="{{actionLink}}" target="_blank" rel="noopener noreferrer">Verify my email</a>
+        <div class="text" style="margin-top: 24px;">
+            If the button does not work, copy the link below into your browser:
+            <br />
+            <a href="{{actionLink}}" style="color:#0ea5e9;">{{actionLink}}</a>
+        </div>
+        <div class="footer">
+            This email was generated automatically; you don’t need to reply.
+        </div>
+    </div>
+</body>
+</html>
+

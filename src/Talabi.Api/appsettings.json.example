@@ -17,6 +17,15 @@
   },
   "GoogleMaps": {
     "ApiKey": "your-google-maps-api-key-here"
+  },
+  "Email": {
+    "ApiBaseUrl": "https://email-gateway.example.com",
+    "SendEndpoint": "/v1/email/send",
+    "ApiKey": "your-email-api-key",
+    "SenderEmail": "noreply@talabi.com",
+    "SenderName": "Talabi",
+    "ApiKeyHeaderName": "Authorization",
+    "AuthorizationScheme": "Bearer"
   }
 }
 

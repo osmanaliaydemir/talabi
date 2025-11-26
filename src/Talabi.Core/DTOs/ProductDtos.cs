@@ -11,3 +11,54 @@ public class ProductDto
     public decimal Price { get; set; }
     public string? ImageUrl { get; set; }
 }
+
+public class VendorProductDto
+{
+    public int Id { get; set; }
+    public int VendorId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? Category { get; set; }
+    public decimal Price { get; set; }
+    public string? ImageUrl { get; set; }
+    public bool IsAvailable { get; set; }
+    public int? Stock { get; set; }
+    public int? PreparationTime { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateProductDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? Category { get; set; }
+    public decimal Price { get; set; }
+    public string? ImageUrl { get; set; }
+    public bool IsAvailable { get; set; } = true;
+    public int? Stock { get; set; }
+    public int? PreparationTime { get; set; }
+}
+
+public class UpdateProductDto
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public string? Category { get; set; }
+    public decimal? Price { get; set; }
+    public string? ImageUrl { get; set; }
+    public bool? IsAvailable { get; set; }
+    public int? Stock { get; set; }
+    public int? PreparationTime { get; set; }
+}
+
+public class UpdateProductAvailabilityDto
+{
+    public bool IsAvailable { get; set; }
+}
+
+public class UpdateProductPriceDto
+{
+    public decimal Price { get; set; }
+}
+

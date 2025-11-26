@@ -21,7 +21,11 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<NotificationSettings> NotificationSettings { get; set; }
     public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
     public DbSet<Courier> Couriers { get; set; }
+    public DbSet<CourierNotification> CourierNotifications { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<DeliveryProof> DeliveryProofs { get; set; }
+    public DbSet<CourierEarning> CourierEarnings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -128,6 +132,12 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<CourierNotification>()
+            .HasOne(cn => cn.Courier)
+            .WithMany(c => c.Notifications)
+            .HasForeignKey(cn => cn.CourierId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Order - DeliveryAddress relationship
         builder.Entity<Order>()
             .HasOne(o => o.DeliveryAddress)
@@ -153,5 +163,78 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<UserPreferences>()
             .HasIndex(up => up.UserId)
             .IsUnique();
+
+        // Review configuration
+        builder.Entity<Review>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Review>()
+            .HasOne(r => r.Product)
+            .WithMany()
+            .HasForeignKey(r => r.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Review>()
+            .HasOne(r => r.Vendor)
+            .WithMany()
+            .HasForeignKey(r => r.VendorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // DeliveryProof configuration
+        builder.Entity<DeliveryProof>()
+            .HasOne(dp => dp.Order)
+            .WithOne(o => o.DeliveryProof)
+            .HasForeignKey<DeliveryProof>(dp => dp.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // CourierEarning configuration
+        builder.Entity<CourierEarning>()
+            .HasOne(ce => ce.Courier)
+            .WithMany()
+            .HasForeignKey(ce => ce.CourierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CourierEarning>()
+            .HasOne(ce => ce.Order)
+            .WithOne(o => o.CourierEarning)
+            .HasForeignKey<CourierEarning>(ce => ce.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CourierEarning>()
+            .Property(ce => ce.BaseDeliveryFee)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<CourierEarning>()
+            .Property(ce => ce.DistanceBonus)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<CourierEarning>()
+            .Property(ce => ce.TipAmount)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<CourierEarning>()
+            .Property(ce => ce.TotalEarning)
+            .HasColumnType("decimal(18,2)");
+
+        // Courier decimal properties
+        builder.Entity<Courier>()
+            .Property(c => c.TotalEarnings)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Courier>()
+            .Property(c => c.CurrentDayEarnings)
+            .HasColumnType("decimal(18,2)");
+
+        // Order delivery fee
+        builder.Entity<Order>()
+            .Property(o => o.DeliveryFee)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Order>()
+            .Property(o => o.CourierTip)
+            .HasColumnType("decimal(18,2)");
     }
 }
