@@ -264,17 +264,25 @@ class ApiService {
     }
   }
 
-  Future<Order> createOrder(int vendorId, Map<int, int> items) async {
+  Future<Order> createOrder(
+    int vendorId,
+    Map<int, int> items, {
+    int? deliveryAddressId,
+    String? paymentMethod,
+    String? note,
+  }) async {
     try {
-      final orderItems = items.entries
-          .map((e) => {'productId': e.key, 'quantity': e.value})
-          .toList();
+      final data = {
+        'vendorId': vendorId,
+        'items': items.entries
+            .map((e) => {'productId': e.key, 'quantity': e.value})
+            .toList(),
+        if (deliveryAddressId != null) 'deliveryAddressId': deliveryAddressId,
+        if (paymentMethod != null) 'paymentMethod': paymentMethod,
+        if (note != null) 'note': note,
+      };
 
-      final response = await _dio.post(
-        '/orders',
-        data: {'vendorId': vendorId, 'items': orderItems},
-      );
-
+      final response = await _dio.post('/orders', data: data);
       return Order.fromJson(response.data);
     } catch (e) {
       print('Error creating order: $e');
@@ -376,6 +384,105 @@ class ApiService {
     } catch (e, stackTrace) {
       print('🔴 [REGISTER] Unexpected error: $e');
       print('🔴 [REGISTER] Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  // Vendor Registration - Creates both User and Vendor records
+  Future<Map<String, dynamic>> vendorRegister({
+    required String email,
+    required String password,
+    required String fullName,
+    required String businessName,
+    required String phone,
+    String? address,
+    String? city,
+    String? description,
+    String? language,
+  }) async {
+    try {
+      print('🔵 [VENDOR_REGISTER] Starting vendor registration...');
+      print('🔵 [VENDOR_REGISTER] URL: $baseUrl/auth/vendor-register');
+      print('🔵 [VENDOR_REGISTER] Email: $email');
+      print('🔵 [VENDOR_REGISTER] FullName: $fullName');
+      print('🔵 [VENDOR_REGISTER] BusinessName: $businessName');
+      print('🔵 [VENDOR_REGISTER] Phone: $phone');
+      print('🔵 [VENDOR_REGISTER] Language: ${language ?? "not specified"}');
+
+      final requestData = {
+        'email': email,
+        'password': password,
+        'fullName': fullName,
+        'businessName': businessName,
+        'phone': phone,
+        if (address != null) 'address': address,
+        if (city != null) 'city': city,
+        if (description != null) 'description': description,
+        if (language != null) 'language': language,
+      };
+      print('🔵 [VENDOR_REGISTER] Request data: $requestData');
+
+      final response = await _dio.post(
+        '/auth/vendor-register',
+        data: requestData,
+      );
+
+      print('🟢 [VENDOR_REGISTER] Success! Status: ${response.statusCode}');
+      print('🟢 [VENDOR_REGISTER] Response data: ${response.data}');
+
+      return response.data;
+    } on DioException catch (e) {
+      print('🔴 [VENDOR_REGISTER] DioException occurred!');
+      print('🔴 [VENDOR_REGISTER] Error type: ${e.type}');
+      print('🔴 [VENDOR_REGISTER] Error message: ${e.message}');
+      print('🔴 [VENDOR_REGISTER] Request path: ${e.requestOptions.path}');
+      print('🔴 [VENDOR_REGISTER] Request data: ${e.requestOptions.data}');
+      print('🔴 [VENDOR_REGISTER] Response status: ${e.response?.statusCode}');
+      print('🔴 [VENDOR_REGISTER] Response data: ${e.response?.data}');
+
+      if (e.response != null) {
+        final responseData = e.response?.data;
+        String errorMessage = 'Unknown error';
+
+        // Handle array response (ASP.NET Identity format)
+        if (responseData is List && responseData.isNotEmpty) {
+          final firstError = responseData[0];
+          if (firstError is Map) {
+            errorMessage =
+                firstError['description'] ??
+                firstError['message'] ??
+                firstError['error'] ??
+                firstError.toString();
+          } else {
+            errorMessage = firstError.toString();
+          }
+        }
+        // Handle object response
+        else if (responseData is Map) {
+          errorMessage =
+              responseData['description'] ??
+              responseData['message'] ??
+              responseData['error'] ??
+              responseData.toString();
+        }
+        // Handle string response
+        else if (responseData is String) {
+          errorMessage = responseData;
+        }
+        // Fallback
+        else {
+          errorMessage =
+              responseData?.toString() ?? e.message ?? 'Unknown error';
+        }
+
+        print('🔴 [VENDOR_REGISTER] Parsed error message: $errorMessage');
+        throw Exception(errorMessage);
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e, stackTrace) {
+      print('🔴 [VENDOR_REGISTER] Unexpected error: $e');
+      print('🔴 [VENDOR_REGISTER] Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -1064,6 +1171,41 @@ class ApiService {
     }
   }
 
+  // Get available couriers for order
+  Future<List<Map<String, dynamic>>> getAvailableCouriers(int orderId) async {
+    try {
+      final response = await _dio.get('/vendor/orders/$orderId/available-couriers');
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      print('Error getting available couriers: $e');
+      rethrow;
+    }
+  }
+
+  // Assign courier to order
+  Future<void> assignCourierToOrder(int orderId, int courierId) async {
+    try {
+      await _dio.post(
+        '/vendor/orders/$orderId/assign-courier',
+        data: {'courierId': courierId},
+      );
+    } catch (e) {
+      print('Error assigning courier: $e');
+      rethrow;
+    }
+  }
+
+  // Auto-assign best courier
+  Future<Map<String, dynamic>> autoAssignCourier(int orderId) async {
+    try {
+      final response = await _dio.post('/vendor/orders/$orderId/auto-assign-courier');
+      return response.data;
+    } catch (e) {
+      print('Error auto-assigning courier: $e');
+      rethrow;
+    }
+  }
+
   // Vendor Reports methods
   Future<Map<String, dynamic>> getSalesReport({
     DateTime? startDate,
@@ -1284,6 +1426,23 @@ class ApiService {
     final permit = options.extra.remove(_requestPermitKey);
     if (permit is RequestPermit) {
       permit.release();
+    }
+  }
+
+  // Legal documents methods
+  Future<Map<String, dynamic>> getLegalContent(
+    String type,
+    String langCode,
+  ) async {
+    try {
+      final response = await _dio.get(
+        '/content/legal/$type',
+        queryParameters: {'lang': langCode},
+      );
+      return response.data;
+    } catch (e) {
+      print('Error fetching legal content: $e');
+      rethrow;
     }
   }
 }

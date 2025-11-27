@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 
 class AddressPickerScreen extends StatefulWidget {
@@ -55,9 +56,10 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
         _isLoading = false;
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
       }
     }
   }
@@ -67,8 +69,9 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Konum servisleri kapalı')),
+            SnackBar(content: Text(l10n.locationServicesDisabled)),
           );
         }
         setState(() {
@@ -177,16 +180,18 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
   }
 
   void _saveAddress() {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_selectedLocation == null || _selectedAddress == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Lütfen bir konum seçin')));
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectLocation)));
       return;
     }
 
     // Title is optional - if empty, use a default value
     final title = _titleController.text.trim().isEmpty
-        ? 'Seçilen Konum'
+        ? l10n.selectedLocation
         : _titleController.text.trim();
 
     if (widget.onAddressSelected != null) {
@@ -207,8 +212,15 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
   Widget build(BuildContext context) {
     if (_isLoading || _googleMapsApiKey == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Adres Seç')),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: Colors.grey[100],
+        body: Column(
+          children: [
+            _buildHeader(context),
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
+        ),
       );
     }
 
@@ -217,17 +229,14 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
         : const CameraPosition(target: LatLng(41.0082, 28.9784), zoom: 11);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Adres Seç'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location),
-            onPressed: _getUserLocation,
-            tooltip: 'Konumumu Bul',
-          ),
-        ],
-      ),
+      backgroundColor: Colors.grey[100],
       body: Column(
+        children: [
+          // Header
+          _buildHeader(context),
+          // Map and Address Form
+          Expanded(
+            child: Column(
         children: [
           // Map
           Expanded(
@@ -272,61 +281,184 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
             ),
           ),
           // Address info card
-          Card(
-            margin: const EdgeInsets.all(8),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Adres Başlığı (Opsiyonel)',
-                      border: OutlineInputBorder(),
-                      helperText: 'Boş bırakılabilir',
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_isLoadingAddress)
-                    const Center(child: CircularProgressIndicator())
-                  else if (_selectedAddress != null) ...[
-                    Text(
-                      'Adres:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[700],
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              return Card(
+                margin: const EdgeInsets.all(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: l10n.addressTitleOptional,
+                          border: const OutlineInputBorder(),
+                          helperText: l10n.canBeLeftEmpty,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(_selectedAddress!),
-                    if (_selectedCity != null && _selectedCity!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text('Şehir: $_selectedCity'),
+                      const SizedBox(height: 16),
+                      if (_isLoadingAddress)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_selectedAddress != null) ...[
+                        Text(
+                          '${l10n.address}:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_selectedAddress!),
+                        if (_selectedCity != null && _selectedCity!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text('${l10n.city}: $_selectedCity'),
+                        ],
+                        if (_selectedDistrict != null &&
+                            _selectedDistrict!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text('${l10n.district}: $_selectedDistrict'),
+                        ],
+                      ] else
+                        Text(
+                          l10n.selectOrDragMarkerOnMap,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _saveAddress,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            l10n.saveAddressButton,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                    if (_selectedDistrict != null &&
-                        _selectedDistrict!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text('İlçe: $_selectedDistrict'),
-                    ],
-                  ] else
-                    const Text(
-                      'Haritada bir konum seçin veya işaretçiyi sürükleyin',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _saveAddress,
-                      child: const Text('Adresi Kaydet'),
-                    ),
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ],
+      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.orange.shade400,
+            Colors.orange.shade600,
+            Colors.orange.shade800,
+          ],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              // Back Button
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.map,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Title
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.selectAddress,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.selectLocationFromMap,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // My Location Button
+              GestureDetector(
+                onTap: _getUserLocation,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.my_location,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

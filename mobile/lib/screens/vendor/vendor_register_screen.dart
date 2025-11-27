@@ -1,122 +1,152 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/screens/shared/auth/email_verification_screen.dart';
-import 'package:mobile/screens/shared/auth/forgot_password_screen.dart';
-import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
+import 'package:mobile/providers/localization_provider.dart';
+import 'package:mobile/screens/courier/courier_login_screen.dart';
+import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
 import 'package:mobile/screens/shared/auth/register_screen.dart';
 import 'package:mobile/screens/vendor/vendor_login_screen.dart';
+import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class VendorRegisterScreen extends StatefulWidget {
+  const VendorRegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<VendorRegisterScreen> createState() => _VendorRegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _businessNameController = TextEditingController();
+  final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _rememberMe = false;
 
   @override
   void dispose() {
+    _businessNameController.dispose();
+    _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _register() async {
+    TapLogger.logButtonPress(
+      'Vendor Register',
+      context: 'VendorRegisterScreen',
+    );
+
     if (!_formKey.currentState!.validate()) {
       TapLogger.logButtonPress(
-        'Login',
-        context: 'LoginScreen - Validation Failed',
+        'Vendor Register',
+        context: 'VendorRegisterScreen - Validation Failed',
       );
       return;
     }
 
-    TapLogger.logButtonPress('Login', context: 'LoginScreen');
-    TapLogger.logTap(
-      'Login Button',
-      action: 'Email: ${_emailController.text.trim()}',
-    );
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.login(
-        _emailController.text.trim(),
-        _passwordController.text,
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      final fullName = _fullNameController.text.trim();
+      final businessName = _businessNameController.text.trim();
+      final phone = _phoneController.text.trim();
+
+      print('🟡 [VENDOR_REGISTER] Calling vendorRegister API');
+      print('🟡 [VENDOR_REGISTER] Email: $email');
+      print('🟡 [VENDOR_REGISTER] BusinessName: $businessName');
+      print('🟡 [VENDOR_REGISTER] FullName: $fullName');
+      print('🟡 [VENDOR_REGISTER] Phone: $phone');
+
+      // Get user's language preference
+      final localizationProvider = Provider.of<LocalizationProvider>(
+        context,
+        listen: false,
+      );
+      final languageCode = localizationProvider.locale.languageCode;
+
+      final apiService = ApiService();
+      // Vendor kaydı için API çağrısı - User ve Vendor tablolarına kayıt yapar
+      await apiService.vendorRegister(
+        email: email,
+        password: password,
+        fullName: fullName,
+        businessName: businessName,
+        phone: phone,
+        language: languageCode,
       );
 
-      // Login başarılı olduysa ana ekrana yönlendir
-      if (mounted && authProvider.isAuthenticated) {
+      print('🟢 [VENDOR_REGISTER] Register successful!');
+
+      if (mounted) {
+        // Email kod doğrulama ekranına yönlendir
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+          MaterialPageRoute(
+            builder: (context) =>
+                EmailCodeVerificationScreen(email: email, password: password),
+          ),
         );
       }
-    } on DioException catch (e) {
+    } catch (e, stackTrace) {
+      print('🔴 [VENDOR_REGISTER] Register error: $e');
+      print('🔴 [VENDOR_REGISTER] Stack trace: $stackTrace');
+
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
-        String errorMessage = '';
 
-        // Extract error message from response
-        if (e.response?.data != null) {
+        String errorMessage = e.toString().replaceAll('Exception: ', '');
+        if (e is DioException && e.response?.data != null) {
           final responseData = e.response!.data;
+
           if (responseData is Map) {
-            errorMessage = responseData['message']?.toString() ?? '';
-          } else if (responseData is String) {
-            errorMessage = responseData;
+            if (responseData.containsKey('errors') &&
+                responseData['errors'] is List) {
+              final errors = responseData['errors'] as List;
+              final duplicateError = errors.firstWhere(
+                (error) =>
+                    error is Map &&
+                    (error['code'] == 'DuplicateEmail' ||
+                        error['code'] == 'DuplicateUserName'),
+                orElse: () => null,
+              );
+
+              if (duplicateError != null) {
+                errorMessage = localizations.emailAlreadyExists;
+              } else if (responseData.containsKey('message')) {
+                errorMessage = responseData['message'].toString();
+              }
+            } else if (responseData.containsKey('message')) {
+              errorMessage = responseData['message'].toString();
+            }
           }
         }
 
-        // If no message in response, use exception message
-        if (errorMessage.isEmpty) {
-          errorMessage = e.message ?? e.toString();
-        }
+        final displayMessage = errorMessage.isNotEmpty
+            ? errorMessage
+            : localizations.registerFailed;
 
-        // Check if email is not confirmed
-        if (errorMessage.toLowerCase().contains('email not confirmed') ||
-            errorMessage.toLowerCase().contains('email not verified')) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const EmailVerificationScreen(),
-            ),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(localizations.pleaseVerifyEmail),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                errorMessage.isNotEmpty
-                    ? errorMessage
-                    : '${localizations.loginFailed}: ${e.message}',
-              ),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${localizations.loginFailed}: $e'),
+            content: Text(displayMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 7),
+            action: SnackBarAction(
+              label: localizations.ok,
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
           ),
         );
       }
@@ -138,23 +168,23 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Modern Header with Gradient
+            // Purple Header for Vendor
             Container(
-              height: 120,
+              height: 160,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.orange.shade600,
-                    Colors.deepOrange.shade400,
-                    Colors.orange.shade700,
+                    Colors.deepPurple.shade600,
+                    Colors.deepPurple.shade400,
+                    Colors.deepPurple.shade700,
                   ],
                 ),
               ),
               child: Stack(
                 children: [
-                  // Animated-like decorative circles
+                  // Decorative circles
                   Positioned(
                     top: -80,
                     right: -60,
@@ -190,24 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    bottom: 20,
-                    right: 40,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.1),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Content - Row layout: Left icon, Center title, Right app icon
+                  // Content - Row layout
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Center(
@@ -225,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: const Center(
                               child: Icon(
-                                Icons.login_rounded,
+                                Icons.person_add_rounded,
                                 size: 24,
                                 color: Colors.white,
                               ),
@@ -236,9 +249,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                localizations.signIn,
+                                localizations.vendorRegister,
                                 style: const TextStyle(
-                                  fontSize: 28,
+                                  fontSize: 26,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                   letterSpacing: 0.5,
@@ -246,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Talabi',
+                                localizations.talabiBusiness,
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -273,9 +286,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Center(
                               child: Icon(
-                                Icons.shopping_bag_rounded,
+                                Icons.store_rounded,
                                 size: 24,
-                                color: Colors.orange.shade600,
+                                color: Colors.deepPurple.shade600,
                               ),
                             ),
                           ),
@@ -313,24 +326,96 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Welcome Message
-                          Text(
-                            localizations.welcomeBack,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.business_center,
+                                color: Colors.deepPurple,
+                                size: 32,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  localizations.createBusinessAccount,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            localizations.loginDescription,
+                            localizations.createYourStoreAndStartSelling,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
                               height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
+                          // Business Name Field
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextFormField(
+                              controller: _businessNameController,
+                              decoration: InputDecoration(
+                                hintText: localizations.businessName,
+                                hintStyle: TextStyle(color: Colors.grey[500]),
+                                prefixIcon: Icon(
+                                  Icons.store_outlined,
+                                  color: Colors.grey[600],
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return localizations.businessNameRequired;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Full Name Field
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextFormField(
+                              controller: _fullNameController,
+                              decoration: InputDecoration(
+                                hintText: localizations.fullName,
+                                hintStyle: TextStyle(color: Colors.grey[500]),
+                                prefixIcon: Icon(
+                                  Icons.person_outline,
+                                  color: Colors.grey[600],
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return localizations.fullNameRequired;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                           // Email Field
                           Container(
                             decoration: BoxDecoration(
@@ -359,6 +444,37 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                                 if (!value.contains('@')) {
                                   return localizations.validEmail;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Phone Field
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextFormField(
+                              controller: _phoneController,
+                              decoration: InputDecoration(
+                                hintText: localizations.phoneNumber,
+                                hintStyle: TextStyle(color: Colors.grey[500]),
+                                prefixIcon: Icon(
+                                  Icons.phone_outlined,
+                                  color: Colors.grey[600],
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                              ),
+                              keyboardType: TextInputType.phone,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return localizations.phoneNumberRequired;
                                 }
                                 return null;
                               },
@@ -411,59 +527,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          // Remember me and Recovery Password
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: _rememberMe,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _rememberMe = value ?? false;
-                                      });
-                                    },
-                                    activeColor: Colors.orange,
-                                  ),
-                                  Text(
-                                    localizations.rememberMe,
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const ForgotPasswordScreen(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  localizations.recoveryPassword,
-                                  style: const TextStyle(
-                                    color: Colors.orange,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                           const SizedBox(height: 24),
-                          // Login Button
+                          // Register Button
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _login,
+                            child: ElevatedButton.icon(
+                              onPressed: _isLoading ? null : _register,
+                              icon: Icon(
+                                Icons.store,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
+                                backgroundColor: Colors.deepPurple,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
@@ -473,7 +549,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 elevation: 0,
                               ),
-                              child: _isLoading
+                              label: _isLoading
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
@@ -483,7 +559,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     )
                                   : Text(
-                                      localizations.logIn,
+                                      localizations.createVendorAccount,
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -491,91 +567,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 32),
-                          // Or continue with separator
-                          Row(
-                            children: [
-                              Expanded(child: Divider(color: Colors.grey[300])),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Text(
-                                  localizations.orContinueWith,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              Expanded(child: Divider(color: Colors.grey[300])),
-                            ],
-                          ),
                           const SizedBox(height: 24),
-                          // Social Login Buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.g_mobiledata,
-                                  label: localizations.google,
-                                  onPressed: () {
-                                    // Google login
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.apple,
-                                  label: localizations.apple,
-                                  onPressed: () {
-                                    // Apple login
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.facebook,
-                                  label: localizations.facebook,
-                                  onPressed: () {
-                                    // Facebook login
-                                  },
-                                  isFacebook: true,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.store,
-                                  label: 'Vendor',
-                                  onPressed: () {
-                                    TapLogger.logButtonPress(
-                                      'Vendor Login',
-                                      context: 'LoginScreen',
-                                    );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const VendorLoginScreen(),
-                                      ),
-                                    );
-                                  },
-                                  isVendor: true,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 32),
-                          // Register Link
+                          // Already have account
                           Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  localizations.dontHaveAccount,
+                                  localizations.alreadyHaveVendorAccount,
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 14,
@@ -584,14 +583,49 @@ class _LoginScreenState extends State<LoginScreen> {
                                 GestureDetector(
                                   onTap: () {
                                     TapLogger.logButtonPress(
-                                      'Register',
-                                      context: 'LoginScreen',
+                                      'Vendor Login',
+                                      context: 'VendorRegisterScreen',
                                     );
-                                    TapLogger.logNavigation(
-                                      'LoginScreen',
-                                      'RegisterScreen',
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const VendorLoginScreen(),
+                                      ),
                                     );
-                                    Navigator.push(
+                                  },
+                                  child: Text(
+                                    localizations.signIn,
+                                    style: const TextStyle(
+                                      color: Colors.deepPurple,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Customer Register Link
+                          Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  localizations.isCustomerAccount,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    TapLogger.logButtonPress(
+                                      'Customer Register',
+                                      context: 'VendorRegisterScreen',
+                                    );
+                                    Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
@@ -600,9 +634,48 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                   },
                                   child: Text(
-                                    localizations.register,
+                                    localizations.signUp,
                                     style: const TextStyle(
                                       color: Colors.orange,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Courier Link
+                          Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  localizations.areYouCourier + ' ',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    TapLogger.logButtonPress(
+                                      'Courier Login',
+                                      context: 'VendorRegisterScreen',
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const CourierLoginScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    localizations.courierLoginLink,
+                                    style: const TextStyle(
+                                      color: Colors.teal,
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -621,121 +694,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    bool isFacebook = false,
-    bool isVendor = false,
-  }) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        side: BorderSide(color: Colors.grey[300]!),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Colors.white,
-      ),
-      child: isFacebook
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1877F2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'f',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            )
-          : isVendor
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.store, color: Colors.orange, size: 20),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon == Icons.g_mobiledata)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF4285F4),
-                              Color(0xFF34A853),
-                              Color(0xFFFBBC05),
-                              Color(0xFFEA4335),
-                            ],
-                            stops: [0.0, 0.33, 0.66, 1.0],
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'G',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  Icon(icon, color: Colors.black87, size: 20),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }

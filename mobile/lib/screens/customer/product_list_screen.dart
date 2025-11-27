@@ -1,13 +1,11 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
-import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/screens/customer/product_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/utils/navigation_logger.dart';
+import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
 import 'package:mobile/widgets/persistent_bottom_nav_bar.dart';
-import 'package:provider/provider.dart';
+import 'package:mobile/widgets/toast_message.dart';
 
 class ProductListScreen extends StatefulWidget {
   final Vendor vendor;
@@ -21,11 +19,66 @@ class ProductListScreen extends StatefulWidget {
 class _ProductListScreenState extends State<ProductListScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Product>> _productsFuture;
+  final Map<int, bool> _favoriteStatus = {};
 
   @override
   void initState() {
     super.initState();
     _productsFuture = _apiService.getProducts(widget.vendor.id);
+    _loadFavoriteStatus();
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    try {
+      final favorites = await _apiService.getFavorites();
+      setState(() {
+        _favoriteStatus.clear();
+        for (var fav in favorites) {
+          _favoriteStatus[fav['id']] = true;
+        }
+      });
+    } catch (e) {
+      print('Error loading favorites: $e');
+    }
+  }
+
+  Future<void> _toggleFavorite(Product product) async {
+    final isFavorite = _favoriteStatus[product.id] ?? false;
+    try {
+      if (isFavorite) {
+        await _apiService.removeFromFavorites(product.id);
+        setState(() {
+          _favoriteStatus[product.id] = false;
+        });
+        if (mounted) {
+          ToastMessage.show(
+            context,
+            message: '${product.name} favorilerden çıkarıldı',
+            isSuccess: true,
+          );
+        }
+      } else {
+        await _apiService.addToFavorites(product.id);
+        setState(() {
+          _favoriteStatus[product.id] = true;
+        });
+        if (mounted) {
+          ToastMessage.show(
+            context,
+            message: '${product.name} favorilere eklendi',
+            isSuccess: true,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastMessage.show(
+          context,
+          message: 'Favori işlemi başarısız: $e',
+          isSuccess: false,
+        );
+      }
+    }
   }
 
   @override
@@ -37,14 +90,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
         future: _productsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return ListView.builder(
+            return GridView.builder(
               padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
               itemCount: 6,
               itemBuilder: (context, index) {
-                return const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
-                  child: ProductSkeletonItem(),
-                );
+                return const ProductSkeletonItem();
               },
             );
           } else if (snapshot.hasError) {
@@ -60,98 +116,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 _productsFuture = _apiService.getProducts(widget.vendor.id);
               });
               await _productsFuture;
+              await _loadFavoriteStatus();
             },
-            child: ListView.builder(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.7,
+                crossAxisSpacing: 0,
+                mainAxisSpacing: 8,
+              ),
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    leading: product.imageUrl != null
-                        ? Hero(
-                            tag: 'product-${product.id}',
-                            child: Image.network(
-                              product.imageUrl!,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.fastfood, size: 60);
-                              },
-                            ),
-                          )
-                        : const Icon(Icons.fastfood, size: 60),
-                    title: Text(product.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (product.description != null)
-                          Text(product.description!),
-                        const SizedBox(height: 4),
-                        Text(
-                          '₺${product.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.add_shopping_cart),
-                          onPressed: () {
-                            TapLogger.logButtonPress(
-                              'Add to Cart',
-                              context: 'ProductListScreen',
-                            );
-                            TapLogger.logTap(
-                              'Product: ${product.name}',
-                              action: 'Add to Cart',
-                            );
-                            final cart = Provider.of<CartProvider>(
-                              context,
-                              listen: false,
-                            );
-                            cart
-                                .addItem(product, context)
-                                .then((_) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '${product.name} sepete eklendi',
-                                      ),
-                                      duration: const Duration(seconds: 1),
-                                    ),
-                                  );
-                                })
-                                .catchError((e) {
-                                  // Error is handled by CartProvider (popup shown)
-                                });
-                          },
-                        ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () {
-                      TapLogger.logTap(
-                        'Product: ${product.name}',
-                        action: 'View Detail',
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailScreen(
-                            productId: product.id,
-                            product: product,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                final isFavorite = _favoriteStatus[product.id] ?? false;
+                return ProductCard(
+                  product: product,
+                  width: null, // Full width in grid
+                  isFavorite: isFavorite,
+                  rating: '4.7',
+                  ratingCount: '2.3k',
+                  onFavoriteTap: () => _toggleFavorite(product),
                 );
               },
             ),

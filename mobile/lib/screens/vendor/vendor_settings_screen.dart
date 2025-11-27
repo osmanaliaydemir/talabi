@@ -65,9 +65,15 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ayarlar yüklenemedi: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.settingsLoadError(e.toString()) ??
+                  'Ayarlar yüklenemedi: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -101,9 +107,14 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
       print('VendorSettingsScreen: Settings saved successfully');
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Ayarlar güncellendi')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.settingsUpdated ?? 'Ayarlar güncellendi',
+            ),
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e, stackTrace) {
@@ -113,9 +124,14 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         _isSaving = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.errorWithMessage(e.toString()) ?? 'Hata: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -185,10 +201,10 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                                   Text(
                                     _isActive
                                         ? localizations
-                                                ?.customersCanPlaceOrders ??
-                                            'Müşteriler sipariş verebilir'
+                                                  ?.customersCanPlaceOrders ??
+                                              'Müşteriler sipariş verebilir'
                                         : localizations?.orderTakingClosed ??
-                                            'Sipariş alımı kapalı',
+                                              'Sipariş alımı kapalı',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[600],
@@ -207,7 +223,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                                   _isActive = value;
                                 });
                               },
-                              activeColor: Colors.green,
+                              activeThumbColor: Colors.green,
                             ),
                           ],
                         ),
@@ -229,7 +245,8 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                     TextFormField(
                       controller: _minimumOrderController,
                       decoration: InputDecoration(
-                        labelText: localizations?.minimumOrderAmount ??
+                        labelText:
+                            localizations?.minimumOrderAmount ??
                             'Minimum Sipariş Tutarı',
                         hintText: localizations?.optional ?? 'Opsiyonel',
                         border: OutlineInputBorder(
@@ -239,7 +256,9 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                         filled: true,
                         fillColor: Colors.grey[50],
                       ),
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       validator: (value) {
                         if (value != null &&
                             value.isNotEmpty &&
@@ -266,7 +285,9 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                         filled: true,
                         fillColor: Colors.grey[50],
                       ),
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       validator: (value) {
                         if (value != null &&
                             value.isNotEmpty &&
@@ -283,7 +304,8 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                     TextFormField(
                       controller: _deliveryTimeController,
                       decoration: InputDecoration(
-                        labelText: localizations?.estimatedDeliveryTime ??
+                        labelText:
+                            localizations?.estimatedDeliveryTime ??
                             'Tahmini Teslimat Süresi (dakika)',
                         hintText: localizations?.optional ?? 'Opsiyonel',
                         border: OutlineInputBorder(

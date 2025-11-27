@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/review.dart';
 import 'package:mobile/services/api_service.dart';
 
@@ -31,9 +32,10 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
     try {
       await _apiService.approveReview(widget.review.id);
       if (mounted) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Yorum onaylandı'),
+          SnackBar(
+            content: Text(localizations?.reviewApproved ?? 'Yorum onaylandı'),
             backgroundColor: Colors.green,
           ),
         );
@@ -42,9 +44,13 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Yorum onaylanırken hata oluştu: $e'),
+            content: Text(
+              localizations?.reviewApproveError(e.toString()) ??
+                  'Yorum onaylanırken hata oluştu: $e',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -61,22 +67,25 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
   Future<void> _rejectReview() async {
     if (_isProcessing) return;
 
+    final localizations = AppLocalizations.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Yorumu Reddet'),
-        content: const Text(
-          'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+        title: Text(localizations?.rejectReview ?? 'Yorumu Reddet'),
+        content: Text(
+          localizations?.rejectReviewConfirmation ??
+              'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            child: Text(localizations?.cancel ?? 'İptal'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Reddet'),
+            child: Text(localizations?.reject ?? 'Reddet'),
           ),
         ],
       ),
@@ -92,8 +101,8 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
       await _apiService.rejectReview(widget.review.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Yorum reddedildi'),
+          SnackBar(
+            content: Text(localizations?.reviewRejected ?? 'Yorum reddedildi'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -104,7 +113,10 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Yorum reddedilirken hata oluştu: $e'),
+            content: Text(
+              localizations?.reviewRejectError(e.toString()) ??
+                  'Yorum reddedilirken hata oluştu: $e',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -120,10 +132,12 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Yorum Detayı'),
+        title: Text(localizations?.reviewDetail ?? 'Yorum Detayı'),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
       ),
@@ -161,7 +175,8 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Kullanıcı ID: ${widget.review.userId}',
+                            localizations?.userId(widget.review.userId) ??
+                                'Kullanıcı ID: ${widget.review.userId}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -182,9 +197,9 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Puan',
-                      style: TextStyle(
+                    Text(
+                      localizations?.rating ?? 'Puan',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey,
@@ -222,9 +237,9 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Yorum',
-                      style: TextStyle(
+                    Text(
+                      localizations?.comment ?? 'Yorum',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey,
@@ -234,7 +249,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                     Text(
                       widget.review.comment.isNotEmpty
                           ? widget.review.comment
-                          : 'Yorum yok',
+                          : (localizations?.noComment ?? 'Yorum yok'),
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
@@ -251,7 +266,10 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                     Icon(Icons.calendar_today, color: Colors.grey[600]),
                     const SizedBox(width: 8),
                     Text(
-                      'Tarih: ${_formatDate(widget.review.createdAt)}',
+                      localizations?.date(
+                            _formatDate(widget.review.createdAt),
+                          ) ??
+                          'Tarih: ${_formatDate(widget.review.createdAt)}',
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
@@ -266,7 +284,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isProcessing ? null : _rejectReview,
                     icon: const Icon(Icons.close),
-                    label: const Text('Reddet'),
+                    label: Text(localizations?.reject ?? 'Reddet'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -279,7 +297,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isProcessing ? null : _approveReview,
                     icon: const Icon(Icons.check),
-                    label: const Text('Onayla'),
+                    label: Text(localizations?.approve ?? 'Onayla'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,

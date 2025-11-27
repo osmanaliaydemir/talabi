@@ -89,9 +89,10 @@ class _AddressesScreenState extends State<AddressesScreen>
         _isLoading = false;
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Adresler yüklenemedi: $e'),
+            content: Text('${l10n.addressesLoadFailed}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -100,19 +101,21 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Future<void> _deleteAddress(int id) async {
+    final l10n = AppLocalizations.of(context)!;
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Adresi Sil'),
-        content: const Text('Bu adresi silmek istediğinizden emin misiniz?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteAddressTitle),
+        content: Text(l10n.deleteAddressConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sil', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -124,8 +127,8 @@ class _AddressesScreenState extends State<AddressesScreen>
         _loadAddresses();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Adres silindi'),
+            SnackBar(
+              content: Text(l10n.addressDeleted),
               backgroundColor: Colors.green,
             ),
           );
@@ -133,7 +136,10 @@ class _AddressesScreenState extends State<AddressesScreen>
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text('${l10n.error}: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -141,13 +147,15 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Future<void> _setDefaultAddress(int id) async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       await _apiService.setDefaultAddress(id);
       _loadAddresses();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Varsayılan adres güncellendi'),
+          SnackBar(
+            content: Text(l10n.defaultAddressUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -155,7 +163,10 @@ class _AddressesScreenState extends State<AddressesScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -272,7 +283,8 @@ class _AddressesScreenState extends State<AddressesScreen>
                                         child: Transform.translate(
                                           offset: Offset(0, 20 * (1 - value)),
                                           child: Text(
-                                            'Manage your delivery addresses',
+                                            localizations
+                                                .manageDeliveryAddresses,
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: Colors.grey[600],
@@ -341,6 +353,8 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -348,7 +362,7 @@ class _AddressesScreenState extends State<AddressesScreen>
           Icon(Icons.location_off, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'Henüz adresiniz yok',
+            l10n.noAddressesYet,
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey[600],
@@ -357,7 +371,7 @@ class _AddressesScreenState extends State<AddressesScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Yeni adres eklemek için + butonuna tıklayın',
+            l10n.tapToAddAddress,
             style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
@@ -450,23 +464,28 @@ class _AddressesScreenState extends State<AddressesScreen>
                             ),
                           ),
                           if (address.isDefault)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.orange,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                'Varsayılan',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final l10n = AppLocalizations.of(context)!;
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    l10n.defaultLabel,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                         ],
                       ),
@@ -484,58 +503,70 @@ class _AddressesScreenState extends State<AddressesScreen>
                   ),
                 ),
                 // Menu Button
-                PopupMenuButton(
-                  icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, size: 20),
-                          SizedBox(width: 8),
-                          Text('Düzenle'),
-                        ],
-                      ),
-                    ),
-                    if (!address.isDefault)
-                      const PopupMenuItem(
-                        value: 'default',
-                        child: Row(
-                          children: [
-                            Icon(Icons.check, size: 20),
-                            SizedBox(width: 8),
-                            Text('Varsayılan Yap'),
-                          ],
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context)!;
+                    return PopupMenuButton(
+                      icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.edit, size: 20),
+                              const SizedBox(width: 8),
+                              Text(l10n.edit),
+                            ],
+                          ),
                         ),
-                      ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, color: Colors.red, size: 20),
-                          SizedBox(width: 8),
-                          Text('Sil', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) async {
-                    if (value == 'edit') {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              AddEditAddressScreen(address: address),
+                        if (!address.isDefault)
+                          PopupMenuItem(
+                            value: 'default',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.check, size: 20),
+                                const SizedBox(width: 8),
+                                Text(l10n.setAsDefault),
+                              ],
+                            ),
+                          ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.delete,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                      if (result == true) {
-                        _loadAddresses();
-                      }
-                    } else if (value == 'default') {
-                      _setDefaultAddress(address.id);
-                    } else if (value == 'delete') {
-                      _deleteAddress(address.id);
-                    }
+                      ],
+                      onSelected: (value) async {
+                        if (value == 'edit') {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AddEditAddressScreen(address: address),
+                            ),
+                          );
+                          if (result == true) {
+                            _loadAddresses();
+                          }
+                        } else if (value == 'default') {
+                          _setDefaultAddress(address.id);
+                        } else if (value == 'delete') {
+                          _deleteAddress(address.id);
+                        }
+                      },
+                    );
                   },
                 ),
               ],
@@ -564,22 +595,28 @@ class _AddressesScreenState extends State<AddressesScreen>
         ),
       ),
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             children: [
               // Back Button
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 24,
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               // Location Icon
               Container(
                 padding: const EdgeInsets.all(8),
@@ -610,7 +647,9 @@ class _AddressesScreenState extends State<AddressesScreen>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${_addresses.length} addresses',
+                      _addresses.length == 1
+                          ? localizations.addressCountSingular
+                          : localizations.addressCountPlural(_addresses.length),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 12,

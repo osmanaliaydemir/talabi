@@ -382,8 +382,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ok => 'OK';
 
   @override
-  String errorWithMessage(Object error) {
-    return 'Error: $error';
+  String errorWithMessage(Object message) {
+    return 'Error: $message';
   }
 
   @override
@@ -620,4 +620,514 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addAddress => 'Add Address';
+
+  @override
+  String get legalDocuments => 'Legal Documents';
+
+  @override
+  String get termsOfUse => 'Terms of Use';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get refundPolicy => 'Refund Policy';
+
+  @override
+  String get distanceSalesAgreement => 'Distance Sales Agreement';
+
+  @override
+  String get loadingContent => 'Loading content...';
+
+  @override
+  String get contentNotAvailable => 'Content not available';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get profileUpdated => 'Profile updated';
+
+  @override
+  String get updatePersonalInfo => 'Update your personal information';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get profileImageUrl => 'Profile Image URL';
+
+  @override
+  String get dateOfBirth => 'Date of Birth';
+
+  @override
+  String get notSelected => 'Not selected';
+
+  @override
+  String get profileLoadFailed => 'Failed to load profile';
+
+  @override
+  String get settingsUpdateFailed => 'Failed to update settings';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get pushNotifications => 'Push Notifications';
+
+  @override
+  String get promotionalNotifications => 'Promotional Notifications';
+
+  @override
+  String get newProducts => 'New Products';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get accessibilityAndDisplay => 'Accessibility & Display';
+
+  @override
+  String get helpCenter => 'Help Center';
+
+  @override
+  String get howCanWeHelpYou => 'How can we help you?';
+
+  @override
+  String get faq => 'FAQ';
+
+  @override
+  String get frequentlyAskedQuestions => 'Frequently asked questions';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get callUs => 'Call Us';
+
+  @override
+  String get liveChat => 'Live Chat';
+
+  @override
+  String get available24x7 => 'Available 24/7';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get logoutConfirmTitle => 'Logout';
+
+  @override
+  String get logoutConfirmMessage =>
+      'Are you sure you want to logout from your account?';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get passwordChangedSuccess => 'Password changed successfully';
+
+  @override
+  String get changePasswordDescription =>
+      'Enter your current password and choose a new one';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get currentPasswordRequired => 'Current password is required';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get newPasswordRequired => 'New password is required';
+
+  @override
+  String get confirmNewPassword => 'Confirm Password';
+
+  @override
+  String get confirmPasswordRequired => 'Password confirmation is required';
+
+  @override
+  String get secureYourAccount => 'Secure your account';
+
+  @override
+  String get addressesLoadFailed => 'Failed to load addresses';
+
+  @override
+  String get deleteAddressTitle => 'Delete Address';
+
+  @override
+  String get deleteAddressConfirm =>
+      'Are you sure you want to delete this address?';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get addressDeleted => 'Address deleted';
+
+  @override
+  String get defaultAddressUpdated => 'Default address updated';
+
+  @override
+  String get manageDeliveryAddresses => 'Manage your delivery addresses';
+
+  @override
+  String get noAddressesYet => 'No addresses yet';
+
+  @override
+  String get tapToAddAddress => 'Tap + button to add a new address';
+
+  @override
+  String get defaultLabel => 'Default';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get setAsDefault => 'Set as Default';
+
+  @override
+  String get addressCountSingular => '1 address';
+
+  @override
+  String addressCountPlural(Object count) {
+    return '$count addresses';
+  }
+
+  @override
+  String get locationServicesDisabled => 'Location services are disabled';
+
+  @override
+  String get pleaseSelectLocation => 'Please select a location';
+
+  @override
+  String get selectedLocation => 'Selected Location';
+
+  @override
+  String get addressTitleOptional => 'Address Title (Optional)';
+
+  @override
+  String get canBeLeftEmpty => 'Can be left empty';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get district => 'District';
+
+  @override
+  String get selectOrDragMarkerOnMap =>
+      'Select a location on the map or drag the marker';
+
+  @override
+  String get saveAddressButton => 'Save Address';
+
+  @override
+  String get selectAddress => 'Select Address';
+
+  @override
+  String get selectLocationFromMap => 'Select location from map';
+
+  @override
+  String get addressAdded => 'Address added';
+
+  @override
+  String get addressUpdated => 'Address updated';
+
+  @override
+  String get editAddress => 'Edit Address';
+
+  @override
+  String get addNewAddress => 'Add New Address';
+
+  @override
+  String get updateAddressInfo => 'Update your address information';
+
+  @override
+  String get enterDeliveryAddressDetails =>
+      'Enter your delivery address details';
+
+  @override
+  String get addressTitleHint => 'Address Title (Home, Work, etc.)';
+
+  @override
+  String get titleRequired => 'Title is required';
+
+  @override
+  String get selectAddressFromMap => 'Select Address from Map';
+
+  @override
+  String get fullAddress => 'Full Address';
+
+  @override
+  String get addressRequired => 'Address is required';
+
+  @override
+  String get cityRequired => 'City is required';
+
+  @override
+  String get districtRequired => 'District is required';
+
+  @override
+  String get postalCodeOptional => 'Postal Code (Optional)';
+
+  @override
+  String get updateAddressButton => 'Update Address';
+
+  @override
+  String get updateAddressDetails => 'Update address details';
+
+  @override
+  String get createNewAddress => 'Create new address';
+
+  @override
+  String get orderUpdates => 'Order Updates';
+
+  @override
+  String get orderUpdatesDescription =>
+      'Get notified when your order status changes';
+
+  @override
+  String get promotions => 'Promotions';
+
+  @override
+  String get promotionsDescription => 'Special offers and promotions';
+
+  @override
+  String get newProductsDescription =>
+      'Get notified when new products are added';
+
+  @override
+  String get settingsSaved => 'Settings saved';
+
+  @override
+  String get manageNotificationPreferences =>
+      'Manage your notification preferences';
+
+  @override
+  String get orderHistoryDescription => 'View your past orders';
+
+  @override
+  String get myAddressesDescription => 'Manage your delivery addresses';
+
+  @override
+  String get changePasswordSubtitle =>
+      'Change your password and enhance security';
+
+  @override
+  String get notificationSettingsDescription =>
+      'Manage your notification preferences';
+
+  @override
+  String get selectLanguageDescription => 'Change application language';
+
+  @override
+  String get legalDocumentsDescription => 'Terms of use and policies';
+
+  @override
+  String get helpCenterDescription => 'FAQ and support line';
+
+  @override
+  String get logoutDescription => 'Sign out from your account';
+
+  @override
+  String get vendorRegister => 'Vendor Registration';
+
+  @override
+  String get talabiBusiness => 'Talabi Business';
+
+  @override
+  String get createBusinessAccount => 'Create Business Account';
+
+  @override
+  String get createYourStoreAndStartSelling =>
+      'Create your store and start selling';
+
+  @override
+  String get businessName => 'Business Name';
+
+  @override
+  String get businessNameRequired => 'Business name is required';
+
+  @override
+  String get phoneNumberRequired => 'Phone number is required';
+
+  @override
+  String get createVendorAccount => 'Create Vendor Account';
+
+  @override
+  String get alreadyHaveVendorAccount => 'Already have a vendor account? ';
+
+  @override
+  String get isCustomerAccount => 'Customer account? ';
+
+  @override
+  String get emailAlreadyExists => 'An account with this email already exists.';
+
+  @override
+  String get enterFourDigitCode => 'Please enter the 4-digit code';
+
+  @override
+  String get emailVerifiedSuccess => 'Email address verified successfully';
+
+  @override
+  String get emailVerifiedLoginFailed =>
+      'Email verified but auto-login failed. Please login manually.';
+
+  @override
+  String get verificationFailed => 'Verification failed';
+
+  @override
+  String get verificationCodeResent => 'Verification code resent';
+
+  @override
+  String get codeSendFailed => 'Failed to send code';
+
+  @override
+  String get fourDigitVerificationCode => '4-Digit Verification Code';
+
+  @override
+  String enterCodeSentToEmail(Object email) {
+    return 'Enter the 4-digit code sent to $email';
+  }
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String codeExpiresIn(Object time) {
+    return 'Code will expire in $time';
+  }
+
+  @override
+  String settingsLoadError(Object error) {
+    return 'Failed to load settings: $error';
+  }
+
+  @override
+  String get settingsUpdated => 'Settings updated';
+
+  @override
+  String get reviewApproved => 'Review approved';
+
+  @override
+  String reviewApproveError(Object error) {
+    return 'Error approving review: $error';
+  }
+
+  @override
+  String get rejectReview => 'Reject Review';
+
+  @override
+  String get rejectReviewConfirmation =>
+      'Are you sure you want to reject this review? This cannot be undone.';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get reviewRejected => 'Review rejected';
+
+  @override
+  String reviewRejectError(Object error) {
+    return 'Error rejecting review: $error';
+  }
+
+  @override
+  String get reviewDetail => 'Review Detail';
+
+  @override
+  String userId(Object id) {
+    return 'User ID: $id';
+  }
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get noComment => 'No comment';
+
+  @override
+  String date(Object date) {
+    return 'Date: $date';
+  }
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get verify => 'Verify';
+
+  @override
+  String get placeOrder => 'Place Order';
+
+  @override
+  String get checkoutTitle => 'Order Confirmation';
+
+  @override
+  String get deliveryAddress => 'Delivery Address';
+
+  @override
+  String get changeAddress => 'Change';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get creditCard => 'Credit Card';
+
+  @override
+  String get mobilePayment => 'Mobile Payment';
+
+  @override
+  String get comingSoon => 'Coming Soon';
+
+  @override
+  String get orderNote => 'Order Note';
+
+  @override
+  String get orderNotePlaceholder => 'Add note for courier (optional)';
+
+  @override
+  String get estimatedDelivery => 'Estimated Delivery';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
+  String get orderSummary => 'Order Summary';
+
+  @override
+  String get confirmOrder => 'Confirm Order';
+
+  @override
+  String get pleaseSelectAddress => 'Please select a delivery address';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'Please select a payment method';
+
+  @override
+  String get orderCreatedSuccess => 'Your order has been created successfully!';
+
+  @override
+  String get noAddressFound => 'No address found';
+
+  @override
+  String get cashDescription => 'You can pay cash to the courier at the door.';
+
+  @override
+  String get paymentComingSoonDescription =>
+      'This payment method will be available soon.';
 }

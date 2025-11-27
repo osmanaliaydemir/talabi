@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/services/location_service.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/navigation_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class OrderMapScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   Position? _currentPosition;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
+  final NavigationService _navigationService = NavigationService();
 
   @override
   void initState() {
@@ -144,6 +146,34 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
     _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
   }
 
+  Future<void> _launchNavigation() async {
+    try {
+      // Determine destination based on order status
+      // If status is 'Accepted', navigate to Vendor (Pickup)
+      // If status is 'OutForDelivery', navigate to Customer (Delivery)
+      // Default to Delivery if unsure
+      double targetLat = widget.order.deliveryLatitude;
+      double targetLng = widget.order.deliveryLongitude;
+
+      if (widget.order.status == 'Accepted' ||
+          widget.order.status == 'Assigned') {
+        targetLat = widget.order.vendorLatitude;
+        targetLng = widget.order.vendorLongitude;
+      }
+
+      await _navigationService.launchMap(targetLat, targetLng);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not launch maps: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,10 +225,7 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
           const SizedBox(height: 16),
           FloatingActionButton.extended(
             heroTag: 'navigate',
-            onPressed: () {
-              // This will open external navigation
-              Navigator.pop(context);
-            },
+            onPressed: _launchNavigation,
             icon: const Icon(Icons.navigation),
             label: const Text('Navigate'),
           ),

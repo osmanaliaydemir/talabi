@@ -27,6 +27,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<DeliveryProof> DeliveryProofs { get; set; }
     public DbSet<CourierEarning> CourierEarnings { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<LegalDocument> LegalDocuments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -249,5 +250,10 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<Order>()
             .Property(o => o.CourierTip)
             .HasColumnType("decimal(18,2)");
+
+        // LegalDocument configuration
+        builder.Entity<LegalDocument>()
+            .HasIndex(ld => new { ld.Type, ld.LanguageCode })
+            .IsUnique();
     }
 }

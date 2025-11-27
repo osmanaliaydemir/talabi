@@ -829,8 +829,8 @@ abstract class AppLocalizations {
   /// No description provided for @errorWithMessage.
   ///
   /// In en, this message translates to:
-  /// **'Error: {error}'**
-  String errorWithMessage(Object error);
+  /// **'Error: {message}'**
+  String errorWithMessage(Object message);
 
   /// No description provided for @clearCartTitle.
   ///
@@ -1275,6 +1275,966 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Address'**
   String get addAddress;
+
+  /// No description provided for @legalDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Documents'**
+  String get legalDocuments;
+
+  /// No description provided for @termsOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use'**
+  String get termsOfUse;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @refundPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund Policy'**
+  String get refundPolicy;
+
+  /// No description provided for @distanceSalesAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance Sales Agreement'**
+  String get distanceSalesAgreement;
+
+  /// No description provided for @loadingContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading content...'**
+  String get loadingContent;
+
+  /// No description provided for @contentNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Content not available'**
+  String get contentNotAvailable;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated'**
+  String get profileUpdated;
+
+  /// No description provided for @updatePersonalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your personal information'**
+  String get updatePersonalInfo;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumber;
+
+  /// No description provided for @profileImageUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Image URL'**
+  String get profileImageUrl;
+
+  /// No description provided for @dateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dateOfBirth;
+
+  /// No description provided for @notSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get notSelected;
+
+  /// No description provided for @profileLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load profile'**
+  String get profileLoadFailed;
+
+  /// No description provided for @settingsUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update settings'**
+  String get settingsUpdateFailed;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get pushNotifications;
+
+  /// No description provided for @promotionalNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotional Notifications'**
+  String get promotionalNotifications;
+
+  /// No description provided for @newProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'New Products'**
+  String get newProducts;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @accessibilityAndDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility & Display'**
+  String get accessibilityAndDisplay;
+
+  /// No description provided for @helpCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Center'**
+  String get helpCenter;
+
+  /// No description provided for @howCanWeHelpYou.
+  ///
+  /// In en, this message translates to:
+  /// **'How can we help you?'**
+  String get howCanWeHelpYou;
+
+  /// No description provided for @faq.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ'**
+  String get faq;
+
+  /// No description provided for @frequentlyAskedQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently asked questions'**
+  String get frequentlyAskedQuestions;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport;
+
+  /// No description provided for @callUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Call Us'**
+  String get callUs;
+
+  /// No description provided for @liveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Chat'**
+  String get liveChat;
+
+  /// No description provided for @available24x7.
+  ///
+  /// In en, this message translates to:
+  /// **'Available 24/7'**
+  String get available24x7;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @logoutConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logoutConfirmTitle;
+
+  /// No description provided for @logoutConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout from your account?'**
+  String get logoutConfirmMessage;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @passwordChangedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChangedSuccess;
+
+  /// No description provided for @changePasswordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password and choose a new one'**
+  String get changePasswordDescription;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPassword;
+
+  /// No description provided for @currentPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is required'**
+  String get currentPasswordRequired;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// No description provided for @newPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'New password is required'**
+  String get newPasswordRequired;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @confirmPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password confirmation is required'**
+  String get confirmPasswordRequired;
+
+  /// No description provided for @secureYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure your account'**
+  String get secureYourAccount;
+
+  /// No description provided for @addressesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load addresses'**
+  String get addressesLoadFailed;
+
+  /// No description provided for @deleteAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Address'**
+  String get deleteAddressTitle;
+
+  /// No description provided for @deleteAddressConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this address?'**
+  String get deleteAddressConfirm;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @addressDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Address deleted'**
+  String get addressDeleted;
+
+  /// No description provided for @defaultAddressUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Default address updated'**
+  String get defaultAddressUpdated;
+
+  /// No description provided for @manageDeliveryAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your delivery addresses'**
+  String get manageDeliveryAddresses;
+
+  /// No description provided for @noAddressesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No addresses yet'**
+  String get noAddressesYet;
+
+  /// No description provided for @tapToAddAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + button to add a new address'**
+  String get tapToAddAddress;
+
+  /// No description provided for @defaultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultLabel;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @setAsDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as Default'**
+  String get setAsDefault;
+
+  /// No description provided for @addressCountSingular.
+  ///
+  /// In en, this message translates to:
+  /// **'1 address'**
+  String get addressCountSingular;
+
+  /// No description provided for @addressCountPlural.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} addresses'**
+  String addressCountPlural(Object count);
+
+  /// No description provided for @locationServicesDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are disabled'**
+  String get locationServicesDisabled;
+
+  /// No description provided for @pleaseSelectLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a location'**
+  String get pleaseSelectLocation;
+
+  /// No description provided for @selectedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Location'**
+  String get selectedLocation;
+
+  /// No description provided for @addressTitleOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Title (Optional)'**
+  String get addressTitleOptional;
+
+  /// No description provided for @canBeLeftEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Can be left empty'**
+  String get canBeLeftEmpty;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @district.
+  ///
+  /// In en, this message translates to:
+  /// **'District'**
+  String get district;
+
+  /// No description provided for @selectOrDragMarkerOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a location on the map or drag the marker'**
+  String get selectOrDragMarkerOnMap;
+
+  /// No description provided for @saveAddressButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Address'**
+  String get saveAddressButton;
+
+  /// No description provided for @selectAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Address'**
+  String get selectAddress;
+
+  /// No description provided for @selectLocationFromMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select location from map'**
+  String get selectLocationFromMap;
+
+  /// No description provided for @addressAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Address added'**
+  String get addressAdded;
+
+  /// No description provided for @addressUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Address updated'**
+  String get addressUpdated;
+
+  /// No description provided for @editAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Address'**
+  String get editAddress;
+
+  /// No description provided for @addNewAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Address'**
+  String get addNewAddress;
+
+  /// No description provided for @updateAddressInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your address information'**
+  String get updateAddressInfo;
+
+  /// No description provided for @enterDeliveryAddressDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your delivery address details'**
+  String get enterDeliveryAddressDetails;
+
+  /// No description provided for @addressTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Title (Home, Work, etc.)'**
+  String get addressTitleHint;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get titleRequired;
+
+  /// No description provided for @selectAddressFromMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Address from Map'**
+  String get selectAddressFromMap;
+
+  /// No description provided for @fullAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Address'**
+  String get fullAddress;
+
+  /// No description provided for @addressRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Address is required'**
+  String get addressRequired;
+
+  /// No description provided for @cityRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'City is required'**
+  String get cityRequired;
+
+  /// No description provided for @districtRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'District is required'**
+  String get districtRequired;
+
+  /// No description provided for @postalCodeOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Postal Code (Optional)'**
+  String get postalCodeOptional;
+
+  /// No description provided for @updateAddressButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Address'**
+  String get updateAddressButton;
+
+  /// No description provided for @updateAddressDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Update address details'**
+  String get updateAddressDetails;
+
+  /// No description provided for @createNewAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new address'**
+  String get createNewAddress;
+
+  /// No description provided for @orderUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Updates'**
+  String get orderUpdates;
+
+  /// No description provided for @orderUpdatesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when your order status changes'**
+  String get orderUpdatesDescription;
+
+  /// No description provided for @promotions.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotions'**
+  String get promotions;
+
+  /// No description provided for @promotionsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Special offers and promotions'**
+  String get promotionsDescription;
+
+  /// No description provided for @newProductsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when new products are added'**
+  String get newProductsDescription;
+
+  /// No description provided for @settingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved'**
+  String get settingsSaved;
+
+  /// No description provided for @manageNotificationPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your notification preferences'**
+  String get manageNotificationPreferences;
+
+  /// No description provided for @orderHistoryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'View your past orders'**
+  String get orderHistoryDescription;
+
+  /// No description provided for @myAddressesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your delivery addresses'**
+  String get myAddressesDescription;
+
+  /// No description provided for @changePasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your password and enhance security'**
+  String get changePasswordSubtitle;
+
+  /// No description provided for @notificationSettingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your notification preferences'**
+  String get notificationSettingsDescription;
+
+  /// No description provided for @selectLanguageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Change application language'**
+  String get selectLanguageDescription;
+
+  /// No description provided for @legalDocumentsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use and policies'**
+  String get legalDocumentsDescription;
+
+  /// No description provided for @helpCenterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ and support line'**
+  String get helpCenterDescription;
+
+  /// No description provided for @logoutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out from your account'**
+  String get logoutDescription;
+
+  /// No description provided for @vendorRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor Registration'**
+  String get vendorRegister;
+
+  /// No description provided for @talabiBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Talabi Business'**
+  String get talabiBusiness;
+
+  /// No description provided for @createBusinessAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Business Account'**
+  String get createBusinessAccount;
+
+  /// No description provided for @createYourStoreAndStartSelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your store and start selling'**
+  String get createYourStoreAndStartSelling;
+
+  /// No description provided for @businessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name'**
+  String get businessName;
+
+  /// No description provided for @businessNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Business name is required'**
+  String get businessNameRequired;
+
+  /// No description provided for @phoneNumberRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required'**
+  String get phoneNumberRequired;
+
+  /// No description provided for @createVendorAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Vendor Account'**
+  String get createVendorAccount;
+
+  /// No description provided for @alreadyHaveVendorAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have a vendor account? '**
+  String get alreadyHaveVendorAccount;
+
+  /// No description provided for @isCustomerAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer account? '**
+  String get isCustomerAccount;
+
+  /// No description provided for @emailAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists.'**
+  String get emailAlreadyExists;
+
+  /// No description provided for @enterFourDigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the 4-digit code'**
+  String get enterFourDigitCode;
+
+  /// No description provided for @emailVerifiedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address verified successfully'**
+  String get emailVerifiedSuccess;
+
+  /// No description provided for @emailVerifiedLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified but auto-login failed. Please login manually.'**
+  String get emailVerifiedLoginFailed;
+
+  /// No description provided for @verificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed'**
+  String get verificationFailed;
+
+  /// No description provided for @verificationCodeResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent'**
+  String get verificationCodeResent;
+
+  /// No description provided for @codeSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send code'**
+  String get codeSendFailed;
+
+  /// No description provided for @fourDigitVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'4-Digit Verification Code'**
+  String get fourDigitVerificationCode;
+
+  /// No description provided for @enterCodeSentToEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 4-digit code sent to {email}'**
+  String enterCodeSentToEmail(Object email);
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
+
+  /// No description provided for @codeExpiresIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Code will expire in {time}'**
+  String codeExpiresIn(Object time);
+
+  /// No description provided for @settingsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load settings: {error}'**
+  String settingsLoadError(Object error);
+
+  /// No description provided for @settingsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings updated'**
+  String get settingsUpdated;
+
+  /// No description provided for @reviewApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Review approved'**
+  String get reviewApproved;
+
+  /// No description provided for @reviewApproveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error approving review: {error}'**
+  String reviewApproveError(Object error);
+
+  /// No description provided for @rejectReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject Review'**
+  String get rejectReview;
+
+  /// No description provided for @rejectReviewConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reject this review? This cannot be undone.'**
+  String get rejectReviewConfirmation;
+
+  /// No description provided for @reject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// No description provided for @reviewRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Review rejected'**
+  String get reviewRejected;
+
+  /// No description provided for @reviewRejectError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error rejecting review: {error}'**
+  String reviewRejectError(Object error);
+
+  /// No description provided for @reviewDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Detail'**
+  String get reviewDetail;
+
+  /// No description provided for @userId.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID: {id}'**
+  String userId(Object id);
+
+  /// No description provided for @rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// No description provided for @comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get comment;
+
+  /// No description provided for @noComment.
+  ///
+  /// In en, this message translates to:
+  /// **'No comment'**
+  String get noComment;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date: {date}'**
+  String date(Object date);
+
+  /// No description provided for @approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// No description provided for @verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verify;
+
+  /// No description provided for @placeOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Place Order'**
+  String get placeOrder;
+
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Confirmation'**
+  String get checkoutTitle;
+
+  /// No description provided for @deliveryAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get deliveryAddress;
+
+  /// No description provided for @changeAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changeAddress;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// No description provided for @cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// No description provided for @creditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get creditCard;
+
+  /// No description provided for @mobilePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Payment'**
+  String get mobilePayment;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoon;
+
+  /// No description provided for @orderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Note'**
+  String get orderNote;
+
+  /// No description provided for @orderNotePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add note for courier (optional)'**
+  String get orderNotePlaceholder;
+
+  /// No description provided for @estimatedDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Delivery'**
+  String get estimatedDelivery;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get minutes;
+
+  /// No description provided for @orderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Summary'**
+  String get orderSummary;
+
+  /// No description provided for @confirmOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Order'**
+  String get confirmOrder;
+
+  /// No description provided for @pleaseSelectAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a delivery address'**
+  String get pleaseSelectAddress;
+
+  /// No description provided for @pleaseSelectPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment method'**
+  String get pleaseSelectPaymentMethod;
+
+  /// No description provided for @orderCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order has been created successfully!'**
+  String get orderCreatedSuccess;
+
+  /// No description provided for @noAddressFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No address found'**
+  String get noAddressFound;
+
+  /// No description provided for @cashDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You can pay cash to the courier at the door.'**
+  String get cashDescription;
+
+  /// No description provided for @paymentComingSoonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment method will be available soon.'**
+  String get paymentComingSoonDescription;
 }
 
 class _AppLocalizationsDelegate

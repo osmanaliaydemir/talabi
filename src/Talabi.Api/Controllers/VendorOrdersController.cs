@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Enums;
+using Talabi.Core.Interfaces;
 using Talabi.Infrastructure.Data;
 
 namespace Talabi.Api.Controllers;
@@ -13,10 +14,12 @@ namespace Talabi.Api.Controllers;
 public class VendorOrdersController : ControllerBase
 {
     private readonly TalabiDbContext _context;
+    private readonly IOrderAssignmentService _assignmentService;
 
-    public VendorOrdersController(TalabiDbContext context)
+    public VendorOrdersController(TalabiDbContext context, IOrderAssignmentService assignmentService)
     {
         _context = context;
+        _assignmentService = assignmentService;
     }
 
     private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
@@ -273,10 +276,211 @@ public class VendorOrdersController : ControllerBase
             _ => false
         };
     }
+
+    // Get available couriers for manual assignment
+    [HttpGet("{id}/available-couriers")]
+    public async Task<ActionResult<IEnumerable<AvailableCourierDto>>> GetAvailableCouriers(int id)
+    {
+        var vendorId = await GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return Forbid("User is not a vendor");
+        }
+
+        var order = await _context.Orders
+            .Include(o => o.Vendor)
+            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+
+        if (order == null)
+        {
+            return NotFound("Order not found");
+        }
+
+        if (order.Status != OrderStatus.Ready)
+        {
+            return BadRequest("Order must be in Ready status to assign courier");
+        }
+
+        // Get vendor location
+        var vendor = order.Vendor;
+        if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue)
+        {
+            return BadRequest("Vendor location not set");
+        }
+
+        // Get available couriers (first get all, then calculate distance in memory)
+        var availableCouriersQuery = await _context.Couriers
+            .Where(c => c.IsActive
+                && c.Status == Talabi.Core.Enums.CourierStatus.Available
+                && c.CurrentActiveOrders < c.MaxActiveOrders
+                && c.CurrentLatitude.HasValue
+                && c.CurrentLongitude.HasValue)
+            .ToListAsync();
+
+        // Calculate distances in memory and filter
+        var availableCouriers = availableCouriersQuery
+            .Select(c => new
+            {
+                Courier = c,
+                Distance = CalculateDistance(
+                    vendor.Latitude.Value,
+                    vendor.Longitude.Value,
+                    c.CurrentLatitude!.Value,
+                    c.CurrentLongitude!.Value
+                )
+            })
+            .Where(x => x.Distance <= 10) // Max 10km
+            .OrderBy(x => x.Distance)
+            .Select(x => new AvailableCourierDto
+            {
+                Id = x.Courier.Id,
+                FullName = x.Courier.Name,
+                PhoneNumber = x.Courier.PhoneNumber,
+                VehicleType = x.Courier.VehicleType ?? "Unknown",
+                AverageRating = x.Courier.AverageRating,
+                TotalDeliveries = x.Courier.TotalDeliveries,
+                CurrentActiveOrders = x.Courier.CurrentActiveOrders,
+                MaxActiveOrders = x.Courier.MaxActiveOrders,
+                Distance = Math.Round(x.Distance, 2),
+                EstimatedArrivalMinutes = (int)Math.Ceiling(x.Distance * 3) // Rough estimate: 3 min per km
+            })
+            .ToList();
+
+        return Ok(availableCouriers);
+    }
+
+    // Manually assign courier to order
+    [HttpPost("{id}/assign-courier")]
+    public async Task<ActionResult> AssignCourier(int id, [FromBody] AssignCourierDto dto)
+    {
+        var vendorId = await GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return Forbid("User is not a vendor");
+        }
+
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+
+        if (order == null)
+        {
+            return NotFound("Order not found");
+        }
+
+        if (order.Status != OrderStatus.Ready)
+        {
+            return BadRequest("Order must be in Ready status to assign courier");
+        }
+
+        if (order.CourierId.HasValue)
+        {
+            return BadRequest("Order already has a courier assigned");
+        }
+
+        // Assign courier using the service
+        var success = await _assignmentService.AssignOrderToCourierAsync(id, dto.CourierId);
+
+        if (!success)
+        {
+            return BadRequest("Failed to assign courier. Courier may not be available or order status is invalid.");
+        }
+
+        return Ok(new { Message = "Courier assigned successfully" });
+    }
+
+    // Auto-assign best courier
+    [HttpPost("{id}/auto-assign-courier")]
+    public async Task<ActionResult> AutoAssignCourier(int id)
+    {
+        var vendorId = await GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return Forbid("User is not a vendor");
+        }
+
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+
+        if (order == null)
+        {
+            return NotFound("Order not found");
+        }
+
+        if (order.Status != OrderStatus.Ready)
+        {
+            return BadRequest("Order must be in Ready status to assign courier");
+        }
+
+        if (order.CourierId.HasValue)
+        {
+            return BadRequest("Order already has a courier assigned");
+        }
+
+        // Find best courier
+        var bestCourier = await _assignmentService.FindBestCourierAsync(order);
+
+        if (bestCourier == null)
+        {
+            return BadRequest("No available couriers found nearby");
+        }
+
+        // Assign courier
+        var success = await _assignmentService.AssignOrderToCourierAsync(id, bestCourier.Id);
+
+        if (!success)
+        {
+            return BadRequest("Failed to assign courier");
+        }
+
+        return Ok(new
+        {
+            Message = "Courier auto-assigned successfully",
+            CourierId = bestCourier.Id,
+            CourierName = bestCourier.Name
+        });
+    }
+
+    private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        var R = 6371; // Radius of the earth in km
+        var dLat = Deg2Rad(lat2 - lat1);
+        var dLon = Deg2Rad(lon2 - lon1);
+        var a =
+            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(Deg2Rad(lat1)) * Math.Cos(Deg2Rad(lat2)) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        var d = R * c; // Distance in km
+        return d;
+    }
+
+    private double Deg2Rad(double deg)
+    {
+        return deg * (Math.PI / 180);
+    }
 }
 
 public class RejectOrderDto
 {
     public string Reason { get; set; } = string.Empty;
+}
+
+public class AssignCourierDto
+{
+    public int CourierId { get; set; }
+}
+
+public class AvailableCourierDto
+{
+    public int Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string VehicleType { get; set; } = string.Empty;
+    public double AverageRating { get; set; }
+    public int TotalDeliveries { get; set; }
+    public int CurrentActiveOrders { get; set; }
+    public int MaxActiveOrders { get; set; }
+    public double Distance { get; set; }
+    public int EstimatedArrivalMinutes { get; set; }
 }
 

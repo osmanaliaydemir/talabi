@@ -80,9 +80,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profil güncellendi'),
+          SnackBar(
+            content: Text(l10n.profileUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -90,8 +91,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -152,7 +157,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Update your personal information',
+                          localizations.updatePersonalInfo,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -200,7 +205,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
-                              hintText: 'Phone Number',
+                              hintText: localizations.phoneNumber,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.phone_outlined,
@@ -224,7 +229,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           child: TextFormField(
                             controller: _imageUrlController,
                             decoration: InputDecoration(
-                              hintText: 'Profile Image URL',
+                              hintText: localizations.profileImageUrl,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.image_outlined,
@@ -264,7 +269,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Date of Birth',
+                                        localizations.dateOfBirth,
                                         style: TextStyle(
                                           color: Colors.grey[500],
                                           fontSize: 14,
@@ -276,7 +281,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                             ? DateFormat(
                                                 'dd/MM/yyyy',
                                               ).format(_dateOfBirth!)
-                                            : 'Not selected',
+                                            : localizations.notSelected,
                                         style: TextStyle(
                                           color: _dateOfBirth != null
                                               ? Colors.black87
@@ -358,22 +363,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             children: [
               // Back Button
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 24,
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               // Profile Icon
               Container(
                 padding: const EdgeInsets.all(8),

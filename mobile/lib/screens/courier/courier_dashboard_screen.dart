@@ -5,6 +5,7 @@ import 'package:mobile/models/courier.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/location_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/courier/courier_header.dart';
@@ -21,6 +22,7 @@ class CourierDashboardScreen extends StatefulWidget {
 class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   final CourierService _courierService = CourierService();
   final NotificationService _notificationService = NotificationService();
+  late final LocationService _locationService;
   Courier? _courier;
   CourierStatistics? _statistics;
   List<CourierOrder> _activeOrders = [];
@@ -32,6 +34,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   void initState() {
     super.initState();
     print('CourierDashboardScreen: initState called');
+    _locationService = LocationService(_courierService);
     _loadData();
     _initializeNotifications();
   }
@@ -57,6 +60,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   @override
   void dispose() {
     _notificationService.stop();
+    _locationService.stopLocationTracking();
     super.dispose();
   }
 
@@ -72,6 +76,19 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       print(
         'CourierDashboardScreen: Profile loaded - ${courier.name}, Status: ${courier.status}',
       );
+
+      // Start location tracking if courier is available
+      if (courier.status == 'Available') {
+        print(
+          'CourierDashboardScreen: Courier is available, starting location tracking...',
+        );
+        await _locationService.startLocationTracking();
+      } else {
+        print(
+          'CourierDashboardScreen: Courier is ${courier.status}, stopping location tracking...',
+        );
+        _locationService.stopLocationTracking();
+      }
 
       print('CourierDashboardScreen: Fetching statistics...');
       final statistics = await _courierService.getStatistics();
@@ -133,6 +150,16 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       print(
         'CourierDashboardScreen: Status updated successfully to $newStatus',
       );
+
+      // Handle location tracking based on new status
+      if (value) {
+        print('CourierDashboardScreen: Starting location tracking...');
+        await _locationService.startLocationTracking();
+      } else {
+        print('CourierDashboardScreen: Stopping location tracking...');
+        _locationService.stopLocationTracking();
+      }
+
       await _loadData(); // Reload to get updated profile
     } catch (e, stackTrace) {
       print('CourierDashboardScreen: ERROR updating status - $e');

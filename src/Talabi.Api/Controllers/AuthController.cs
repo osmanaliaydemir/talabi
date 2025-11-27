@@ -263,6 +263,142 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("vendor-register")]
+    public async Task<IActionResult> VendorRegister(VendorRegisterDto dto)
+    {
+        try
+        {
+            // ÖNCE KULLANICI VAR MI KONTROL ET
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                if (await _userManager.IsEmailConfirmedAsync(existingUser))
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+                        Error = "DuplicateEmail"
+                    });
+                }
+                else
+                {
+                    // Email doğrulanmamış, yeni kod gönder
+                    try
+                    {
+                        await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
+                        return Ok(new
+                        {
+                            Message = "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin.",
+                            Email = dto.Email
+                        });
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
+                        return BadRequest(new
+                        {
+                            Message = "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+                            Error = "Email gönderimi başarısız"
+                        });
+                    }
+                }
+            }
+
+            // Kullanıcı yok, email göndermeyi dene
+            try
+            {
+                await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
+                return BadRequest(new
+                {
+                    Message = "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin.",
+                    Error = "Email gönderimi başarısız",
+                    Details = emailEx.Message
+                });
+            }
+
+            // Email başarıyla gönderildi, kullanıcıyı oluştur
+            var user = new AppUser 
+            { 
+                UserName = dto.Email, 
+                Email = dto.Email, 
+                FullName = dto.FullName,
+                Role = Talabi.Core.Enums.UserRole.Vendor
+            };
+            var result = await _userManager.CreateAsync(user, dto.Password);
+
+            if (result.Succeeded)
+            {
+                try
+                {
+                    // Assign Vendor role
+                    await _userManager.AddToRoleAsync(user, "Vendor");
+
+                    // Create Vendor entity
+                    var vendor = new Vendor
+                    {
+                        OwnerId = user.Id,
+                        Name = dto.BusinessName,
+                        PhoneNumber = dto.Phone,
+                        Address = dto.Address ?? string.Empty,
+                        City = dto.City,
+                        Description = dto.Description,
+                        IsActive = false // Admin onayı bekleyecek
+                    };
+                    _context.Vendors.Add(vendor);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        Message = "Satıcı hesabı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.",
+                        Email = user.Email
+                    });
+                }
+                catch (Exception dbEx)
+                {
+                    var innerExceptionMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                    _logger.LogError(dbEx, "Vendor oluşturulurken hata. UserId: {UserId}, InnerException: {InnerException}", 
+                        user.Id, innerExceptionMessage);
+                    
+                    // Kullanıcıyı sil (rollback)
+                    await _userManager.DeleteAsync(user);
+                    
+                    return StatusCode(500, new
+                    {
+                        Message = "Satıcı hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+                        Error = innerExceptionMessage
+                    });
+                }
+            }
+
+            // Kullanıcı oluşturulamadı - cache'den kodu temizle
+            var cacheKey = $"verification_code_{dto.Email}";
+            _memoryCache.Remove(cacheKey);
+
+            return BadRequest(new
+            {
+                Message = "Satıcı hesabı oluşturulamadı",
+                Errors = result.Errors
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "VendorRegister işlemi sırasında beklenmeyen hata. Email: {Email}", dto.Email);
+            
+            var cacheKey = $"verification_code_{dto.Email}";
+            _memoryCache.Remove(cacheKey);
+            
+            return StatusCode(500, new
+            {
+                Message = "Kayıt sırasında bir hata oluştu",
+                Error = ex.Message
+            });
+        }
+    }
+
     [HttpPost("verify-email-code")]
     public async Task<IActionResult> VerifyEmailCode([FromBody] VerifyEmailCodeDto dto)
     {

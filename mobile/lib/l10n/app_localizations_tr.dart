@@ -385,8 +385,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ok => 'Tamam';
 
   @override
-  String errorWithMessage(Object error) {
-    return 'Hata: $error';
+  String errorWithMessage(Object message) {
+    return 'Hata: $message';
   }
 
   @override
@@ -622,4 +622,513 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get addAddress => 'Adres Ekle';
+
+  @override
+  String get legalDocuments => 'Yasal Belgeler';
+
+  @override
+  String get termsOfUse => 'Kullanım Şartları';
+
+  @override
+  String get privacyPolicy => 'Gizlilik Politikası';
+
+  @override
+  String get refundPolicy => 'İade ve İptal Politikası';
+
+  @override
+  String get distanceSalesAgreement => 'Mesafeli Satış Sözleşmesi';
+
+  @override
+  String get loadingContent => 'İçerik yükleniyor...';
+
+  @override
+  String get contentNotAvailable => 'İçerik mevcut değil';
+
+  @override
+  String get error => 'Hata';
+
+  @override
+  String get profileUpdated => 'Profil güncellendi';
+
+  @override
+  String get updatePersonalInfo => 'Kişisel bilgilerinizi güncelleyin';
+
+  @override
+  String get phoneNumber => 'Telefon Numarası';
+
+  @override
+  String get profileImageUrl => 'Profil Resmi URL';
+
+  @override
+  String get dateOfBirth => 'Doğum Tarihi';
+
+  @override
+  String get notSelected => 'Seçilmedi';
+
+  @override
+  String get profileLoadFailed => 'Profil yüklenemedi';
+
+  @override
+  String get settingsUpdateFailed => 'Ayarlar güncellenemedi';
+
+  @override
+  String get notifications => 'Bildirimler';
+
+  @override
+  String get pushNotifications => 'Anlık Bildirimler';
+
+  @override
+  String get promotionalNotifications => 'Promosyon Bildirimleri';
+
+  @override
+  String get newProducts => 'Yeni Ürünler';
+
+  @override
+  String get more => 'Daha Fazla';
+
+  @override
+  String get accessibilityAndDisplay => 'Erişilebilirlik ve Görünüm';
+
+  @override
+  String get helpCenter => 'Yardım Merkezi';
+
+  @override
+  String get howCanWeHelpYou => 'Size nasıl yardımcı olabiliriz?';
+
+  @override
+  String get faq => 'SSS';
+
+  @override
+  String get frequentlyAskedQuestions => 'Sıkça sorulan sorular';
+
+  @override
+  String get contactSupport => 'Destek ile İletişim';
+
+  @override
+  String get callUs => 'Bizi Arayın';
+
+  @override
+  String get liveChat => 'Canlı Sohbet';
+
+  @override
+  String get available24x7 => '7/24 ulaşılabilir';
+
+  @override
+  String get close => 'Kapat';
+
+  @override
+  String get logoutConfirmTitle => 'Çıkış Yap';
+
+  @override
+  String get logoutConfirmMessage =>
+      'Hesabınızdan çıkmak istediğinize emin misiniz?';
+
+  @override
+  String get passwordsDoNotMatch => 'Şifreler eşleşmiyor';
+
+  @override
+  String get passwordChangedSuccess => 'Şifre başarıyla değiştirildi';
+
+  @override
+  String get changePasswordDescription =>
+      'Mevcut şifrenizi girin ve yeni şifrenizi seçin';
+
+  @override
+  String get currentPassword => 'Mevcut Şifre';
+
+  @override
+  String get currentPasswordRequired => 'Mevcut şifre gerekli';
+
+  @override
+  String get newPassword => 'Yeni Şifre';
+
+  @override
+  String get newPasswordRequired => 'Yeni şifre gerekli';
+
+  @override
+  String get confirmNewPassword => 'Şifre Tekrarı';
+
+  @override
+  String get confirmPasswordRequired => 'Şifre tekrarı gerekli';
+
+  @override
+  String get secureYourAccount => 'Hesabınızı güvende tutun';
+
+  @override
+  String get addressesLoadFailed => 'Adresler yüklenemedi';
+
+  @override
+  String get deleteAddressTitle => 'Adresi Sil';
+
+  @override
+  String get deleteAddressConfirm =>
+      'Bu adresi silmek istediğinizden emin misin?';
+
+  @override
+  String get delete => 'Sil';
+
+  @override
+  String get addressDeleted => 'Adres silindi';
+
+  @override
+  String get defaultAddressUpdated => 'Varsayılan adres güncellendi';
+
+  @override
+  String get manageDeliveryAddresses => 'Teslimat adreslerinizi yönetin';
+
+  @override
+  String get noAddressesYet => 'Henüz adres eklenmemiş';
+
+  @override
+  String get tapToAddAddress => 'Yeni adres eklemek için + butonuna tıklayın';
+
+  @override
+  String get defaultLabel => 'Varsayılan';
+
+  @override
+  String get edit => 'Düzenle';
+
+  @override
+  String get setAsDefault => 'Varsayılan Yap';
+
+  @override
+  String get addressCountSingular => '1 adres';
+
+  @override
+  String addressCountPlural(Object count) {
+    return '$count adres';
+  }
+
+  @override
+  String get locationServicesDisabled => 'Konum servisleri devre dışı';
+
+  @override
+  String get pleaseSelectLocation => 'Lütfen bir konum seçin';
+
+  @override
+  String get selectedLocation => 'Seçilen Konum';
+
+  @override
+  String get addressTitleOptional => 'Adres Başlığı (Opsiyonel)';
+
+  @override
+  String get canBeLeftEmpty => 'Boş bırakılabilir';
+
+  @override
+  String get address => 'Adres';
+
+  @override
+  String get city => 'Şehir';
+
+  @override
+  String get district => 'İlçe';
+
+  @override
+  String get selectOrDragMarkerOnMap =>
+      'Haritada bir konum seçin veya işaretçiyi sürükleyin';
+
+  @override
+  String get saveAddressButton => 'Adresi Kaydet';
+
+  @override
+  String get selectAddress => 'Adres Seç';
+
+  @override
+  String get selectLocationFromMap => 'Haritadan konum seç';
+
+  @override
+  String get addressAdded => 'Adres eklendi';
+
+  @override
+  String get addressUpdated => 'Adres güncellendi';
+
+  @override
+  String get editAddress => 'Adresi Düzenle';
+
+  @override
+  String get addNewAddress => 'Yeni Adres Ekle';
+
+  @override
+  String get updateAddressInfo => 'Adres bilgilerini güncelleyin';
+
+  @override
+  String get enterDeliveryAddressDetails => 'Teslimat adresi bilgilerini girin';
+
+  @override
+  String get addressTitleHint => 'Adres Başlığı (Ev, İş, vb.)';
+
+  @override
+  String get titleRequired => 'Başlık gerekli';
+
+  @override
+  String get selectAddressFromMap => 'Haritadan Adres Seç';
+
+  @override
+  String get fullAddress => 'Açık Adres';
+
+  @override
+  String get addressRequired => 'Adres gerekli';
+
+  @override
+  String get cityRequired => 'Şehir gerekli';
+
+  @override
+  String get districtRequired => 'İlçe gerekli';
+
+  @override
+  String get postalCodeOptional => 'Posta Kodu (Opsiyonel)';
+
+  @override
+  String get updateAddressButton => 'Adresi Güncelle';
+
+  @override
+  String get updateAddressDetails => 'Adres detaylarını güncelle';
+
+  @override
+  String get createNewAddress => 'Yeni adres oluştur';
+
+  @override
+  String get orderUpdates => 'Sipariş Güncellemeleri';
+
+  @override
+  String get orderUpdatesDescription =>
+      'Sipariş durumu değişikliklerinde bildirim al';
+
+  @override
+  String get promotions => 'Kampanyalar';
+
+  @override
+  String get promotionsDescription => 'Özel teklifler ve kampanyalar';
+
+  @override
+  String get newProductsDescription => 'Yeni ürün eklendiğinde bildirim al';
+
+  @override
+  String get settingsSaved => 'Ayarlar kaydedildi';
+
+  @override
+  String get manageNotificationPreferences => 'Bildirim tercihlerinizi yönetin';
+
+  @override
+  String get orderHistoryDescription => 'Geçmiş siparişlerinizi görüntüleyin';
+
+  @override
+  String get myAddressesDescription => 'Teslimat adreslerinizi yönetin';
+
+  @override
+  String get changePasswordSubtitle =>
+      'Şifrenizi değiştirin ve güvenliği artırın';
+
+  @override
+  String get notificationSettingsDescription =>
+      'Bildirim tercihlerinizi yönetin';
+
+  @override
+  String get selectLanguageDescription => 'Uygulama dilini değiştirin';
+
+  @override
+  String get legalDocumentsDescription => 'Kullanım şartları ve politikalar';
+
+  @override
+  String get helpCenterDescription => 'SSS ve destek hattı';
+
+  @override
+  String get logoutDescription => 'Hesabınızdan çıkış yapın';
+
+  @override
+  String get vendorRegister => 'Satıcı Kaydı';
+
+  @override
+  String get talabiBusiness => 'Talabi Business';
+
+  @override
+  String get createBusinessAccount => 'İşletme Hesabı Oluştur';
+
+  @override
+  String get createYourStoreAndStartSelling =>
+      'Mağazanızı oluşturun ve satışa başlayın';
+
+  @override
+  String get businessName => 'İşletme Adı';
+
+  @override
+  String get businessNameRequired => 'İşletme adı gerekli';
+
+  @override
+  String get phoneNumberRequired => 'Telefon numarası gerekli';
+
+  @override
+  String get createVendorAccount => 'Satıcı Hesabı Oluştur';
+
+  @override
+  String get alreadyHaveVendorAccount => 'Zaten satıcı hesabınız var mı? ';
+
+  @override
+  String get isCustomerAccount => 'Müşteri hesabı mı? ';
+
+  @override
+  String get emailAlreadyExists =>
+      'Bu email adresi ile zaten bir hesap bulunmaktadır.';
+
+  @override
+  String get enterFourDigitCode => 'Lütfen 4 haneli kodu giriniz';
+
+  @override
+  String get emailVerifiedSuccess => 'Email adresi başarıyla doğrulandı';
+
+  @override
+  String get emailVerifiedLoginFailed =>
+      'Email doğrulandı ancak otomatik giriş başarısız. Lütfen giriş yapın.';
+
+  @override
+  String get verificationFailed => 'Doğrulama başarısız';
+
+  @override
+  String get verificationCodeResent => 'Doğrulama kodu yeniden gönderildi';
+
+  @override
+  String get codeSendFailed => 'Kod gönderilemedi';
+
+  @override
+  String get fourDigitVerificationCode => '4 Haneli Doğrulama Kodu';
+
+  @override
+  String enterCodeSentToEmail(Object email) {
+    return '$email adresine gönderilen 4 haneli kodu giriniz';
+  }
+
+  @override
+  String get resendCode => 'Tekrar Kod Gönder';
+
+  @override
+  String codeExpiresIn(Object time) {
+    return 'Kod $time sonra geçersiz olacak';
+  }
+
+  @override
+  String settingsLoadError(Object error) {
+    return 'Ayarlar yüklenemedi: $error';
+  }
+
+  @override
+  String get settingsUpdated => 'Ayarlar güncellendi';
+
+  @override
+  String get reviewApproved => 'Yorum onaylandı';
+
+  @override
+  String reviewApproveError(Object error) {
+    return 'Yorum onaylanırken hata oluştu: $error';
+  }
+
+  @override
+  String get rejectReview => 'Yorumu Reddet';
+
+  @override
+  String get rejectReviewConfirmation =>
+      'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.';
+
+  @override
+  String get reject => 'Reddet';
+
+  @override
+  String get reviewRejected => 'Yorum reddedildi';
+
+  @override
+  String reviewRejectError(Object error) {
+    return 'Yorum reddedilirken hata oluştu: $error';
+  }
+
+  @override
+  String get reviewDetail => 'Yorum Detayı';
+
+  @override
+  String userId(Object id) {
+    return 'Kullanıcı ID: $id';
+  }
+
+  @override
+  String get rating => 'Puan';
+
+  @override
+  String get comment => 'Yorum';
+
+  @override
+  String get noComment => 'Yorum yok';
+
+  @override
+  String date(Object date) {
+    return 'Tarih: $date';
+  }
+
+  @override
+  String get approve => 'Onayla';
+
+  @override
+  String get verify => 'Onayla';
+
+  @override
+  String get placeOrder => 'Sipariş Ver';
+
+  @override
+  String get checkoutTitle => 'Sipariş Onayı';
+
+  @override
+  String get deliveryAddress => 'Teslimat Adresi';
+
+  @override
+  String get changeAddress => 'Değiştir';
+
+  @override
+  String get paymentMethod => 'Ödeme Yöntemi';
+
+  @override
+  String get cash => 'Nakit';
+
+  @override
+  String get creditCard => 'Kredi Kartı';
+
+  @override
+  String get mobilePayment => 'Mobil Ödeme';
+
+  @override
+  String get comingSoon => 'Yakında';
+
+  @override
+  String get orderNote => 'Sipariş Notu';
+
+  @override
+  String get orderNotePlaceholder => 'Kurye için not ekleyin (opsiyonel)';
+
+  @override
+  String get estimatedDelivery => 'Tahmini Teslimat';
+
+  @override
+  String get minutes => 'dakika';
+
+  @override
+  String get orderSummary => 'Sipariş Özeti';
+
+  @override
+  String get confirmOrder => 'Siparişi Onayla';
+
+  @override
+  String get pleaseSelectAddress => 'Lütfen teslimat adresi seçin';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'Lütfen ödeme yöntemi seçin';
+
+  @override
+  String get orderCreatedSuccess => 'Siparişiniz başarıyla oluşturuldu!';
+
+  @override
+  String get noAddressFound => 'Kayıtlı adres bulunamadı';
+
+  @override
+  String get cashDescription =>
+      'Nakit olarak kapıda kuryeye teslim edebilirsiniz.';
+
+  @override
+  String get paymentComingSoonDescription =>
+      'Bu ödeme yöntemi yakında hizmete girecektir.';
 }

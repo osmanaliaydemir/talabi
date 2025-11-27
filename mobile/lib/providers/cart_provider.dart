@@ -46,9 +46,31 @@ class CartProvider with ChangeNotifier {
 
       if (cartData['items'] != null) {
         for (var item in cartData['items']) {
+          int vendorId = item['vendorId'] ?? 0;
+          String? vendorName = item['vendorName'];
+
+          // If backend doesn't provide vendorId, fetch it from product endpoint
+          if (vendorId == 0) {
+            try {
+              print(
+                '🛒 [CART] Backend missing vendorId for product ${item['productId']}, fetching...',
+              );
+              final productData = await _apiService.getProduct(
+                item['productId'],
+              );
+              vendorId = productData.vendorId;
+              vendorName = productData.vendorName;
+              print('🛒 [CART] Fetched vendorId: $vendorId');
+            } catch (e) {
+              print('🛒 [CART] Error fetching product details: $e');
+              // Continue with vendorId = 0 if fetch fails
+            }
+          }
+
           final product = Product(
             id: item['productId'],
-            vendorId: 0, // Not needed for cart display
+            vendorId: vendorId,
+            vendorName: vendorName,
             name: item['productName'],
             description: null,
             price: (item['productPrice'] as num).toDouble(),

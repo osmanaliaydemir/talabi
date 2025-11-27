@@ -82,10 +82,11 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       }
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              widget.address == null ? 'Adres eklendi' : 'Adres güncellendi',
+              widget.address == null ? l10n.addressAdded : l10n.addressUpdated,
             ),
             backgroundColor: Colors.green,
           ),
@@ -94,9 +95,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Hata: $e'),
+            content: Text('${l10n.error}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -151,7 +153,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                       children: [
                         // Title
                         Text(
-                          isEdit ? 'Edit Address' : 'Add New Address',
+                          isEdit
+                              ? localizations.editAddress
+                              : localizations.addNewAddress,
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -161,8 +165,8 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                         const SizedBox(height: 8),
                         Text(
                           isEdit
-                              ? 'Update your address information'
-                              : 'Enter your delivery address details',
+                              ? localizations.updateAddressInfo
+                              : localizations.enterDeliveryAddressDetails,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -179,7 +183,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           child: TextFormField(
                             controller: _titleController,
                             decoration: InputDecoration(
-                              hintText: 'Address Title (Home, Work, etc.)',
+                              hintText: localizations.addressTitleHint,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.label_outline,
@@ -193,7 +197,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Başlık gerekli';
+                                return localizations.titleRequired;
                               }
                               return null;
                             },
@@ -213,32 +217,34 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => AddressPickerScreen(
-                                    onAddressSelected: (
-                                      title,
-                                      fullAddress,
-                                      city,
-                                      district,
-                                      postalCode,
-                                      latitude,
-                                      longitude,
-                                    ) {
-                                      setState(() {
-                                        _titleController.text = title;
-                                        _fullAddressController.text = fullAddress;
-                                        _cityController.text = city;
-                                        _districtController.text = district;
-                                        _postalCodeController.text =
-                                            postalCode ?? '';
-                                        _latitude = latitude;
-                                        _longitude = longitude;
-                                      });
-                                    },
+                                    onAddressSelected:
+                                        (
+                                          title,
+                                          fullAddress,
+                                          city,
+                                          district,
+                                          postalCode,
+                                          latitude,
+                                          longitude,
+                                        ) {
+                                          setState(() {
+                                            _titleController.text = title;
+                                            _fullAddressController.text =
+                                                fullAddress;
+                                            _cityController.text = city;
+                                            _districtController.text = district;
+                                            _postalCodeController.text =
+                                                postalCode ?? '';
+                                            _latitude = latitude;
+                                            _longitude = longitude;
+                                          });
+                                        },
                                   ),
                                 ),
                               );
                             },
                             icon: const Icon(Icons.map),
-                            label: const Text('Select Address from Map'),
+                            label: Text(localizations.selectAddressFromMap),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.orange,
@@ -265,7 +271,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             controller: _fullAddressController,
                             maxLines: 3,
                             decoration: InputDecoration(
-                              hintText: 'Full Address',
+                              hintText: localizations.fullAddress,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.only(bottom: 40),
@@ -282,7 +288,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Adres gerekli';
+                                return localizations.addressRequired;
                               }
                               return null;
                             },
@@ -298,7 +304,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           child: TextFormField(
                             controller: _cityController,
                             decoration: InputDecoration(
-                              hintText: 'City',
+                              hintText: localizations.city,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.location_city_outlined,
@@ -312,7 +318,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Şehir gerekli';
+                                return localizations.cityRequired;
                               }
                               return null;
                             },
@@ -328,7 +334,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           child: TextFormField(
                             controller: _districtController,
                             decoration: InputDecoration(
-                              hintText: 'District',
+                              hintText: localizations.district,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.place_outlined,
@@ -342,7 +348,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'İlçe gerekli';
+                                return localizations.districtRequired;
                               }
                               return null;
                             },
@@ -359,7 +365,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             controller: _postalCodeController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              hintText: 'Postal Code (Optional)',
+                              hintText: localizations.postalCodeOptional,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.markunread_mailbox_outlined,
@@ -398,7 +404,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                     ),
                                   )
                                 : Text(
-                                    isEdit ? 'Update Address' : 'Add Address',
+                                    isEdit
+                                        ? localizations.updateAddressButton
+                                        : localizations.addAddress,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -437,22 +445,28 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         ),
       ),
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             children: [
               // Back Button
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 24,
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               // Location Icon
               Container(
                 padding: const EdgeInsets.all(8),
@@ -474,7 +488,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      isEdit ? 'Edit Address' : 'Add Address',
+                      isEdit
+                          ? localizations.editAddress
+                          : localizations.addAddress,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -484,8 +500,8 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                     const SizedBox(height: 2),
                     Text(
                       isEdit
-                          ? 'Update address details'
-                          : 'Create new address',
+                          ? localizations.updateAddressDetails
+                          : localizations.createNewAddress,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 12,

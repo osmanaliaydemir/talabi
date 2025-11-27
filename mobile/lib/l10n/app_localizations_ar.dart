@@ -382,8 +382,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ok => 'حسنًا';
 
   @override
-  String errorWithMessage(Object error) {
-    return 'خطأ: $error';
+  String errorWithMessage(Object message) {
+    return 'خطأ: $message';
   }
 
   @override
@@ -591,16 +591,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get businessOperations => 'عمليات العمل';
 
   @override
-  String get minimumOrderAmount => 'الحد الأدنى لمبلغ الطلب';
+  String get minimumOrderAmount => 'الحد الأدنى للطلب';
 
   @override
-  String get estimatedDeliveryTime => 'الوقت المقدر للتسليم (بالدقائق)';
+  String get estimatedDeliveryTime => 'وقت التوصيل المتوقع (دقيقة)';
 
   @override
-  String get enterValidAmount => 'أدخل مبلغًا صالحًا';
+  String get enterValidAmount => 'أدخل مبلغاً صحيحاً';
 
   @override
-  String get enterValidTime => 'أدخل وقتًا صالحًا';
+  String get enterValidTime => 'أدخل وقتاً صحيحاً';
 
   @override
   String get optional => 'اختياري';
@@ -617,4 +617,507 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addAddress => 'إضافة عنوان';
+
+  @override
+  String get legalDocuments => 'الوثائق القانونية';
+
+  @override
+  String get termsOfUse => 'شروط الاستخدام';
+
+  @override
+  String get privacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get refundPolicy => 'سياسة الاسترداد';
+
+  @override
+  String get distanceSalesAgreement => 'اتفاقية البيع عن بعد';
+
+  @override
+  String get loadingContent => 'جاري تحميل المحتوى...';
+
+  @override
+  String get contentNotAvailable => 'المحتوى غير متوفر';
+
+  @override
+  String get error => 'خطأ';
+
+  @override
+  String get profileUpdated => 'تم تحديث الملف الشخصي';
+
+  @override
+  String get updatePersonalInfo => 'قم بتحديث معلوماتك الشخصية';
+
+  @override
+  String get phoneNumber => 'رقم الهاتف';
+
+  @override
+  String get profileImageUrl => 'رابط صورة الملف الشخصي';
+
+  @override
+  String get dateOfBirth => 'تاريخ الميلاد';
+
+  @override
+  String get notSelected => 'غير محدد';
+
+  @override
+  String get profileLoadFailed => 'فشل تحميل الملف الشخصي';
+
+  @override
+  String get settingsUpdateFailed => 'فشل تحديث الإعدادات';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get pushNotifications => 'الإشعارات الفورية';
+
+  @override
+  String get promotionalNotifications => 'إشعارات العروض';
+
+  @override
+  String get newProducts => 'منتجات جديدة';
+
+  @override
+  String get more => 'المزيد';
+
+  @override
+  String get accessibilityAndDisplay => 'إمكانية الوصول والعرض';
+
+  @override
+  String get helpCenter => 'مركز المساعدة';
+
+  @override
+  String get howCanWeHelpYou => 'كيف يمكننا مساعدتك؟';
+
+  @override
+  String get faq => 'الأسئلة الشائعة';
+
+  @override
+  String get frequentlyAskedQuestions => 'الأسئلة المتكررة';
+
+  @override
+  String get contactSupport => 'اتصل بالدعم';
+
+  @override
+  String get callUs => 'اتصل بنا';
+
+  @override
+  String get liveChat => 'الدردشة المباشرة';
+
+  @override
+  String get available24x7 => 'متاح على مدار الساعة';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get logoutConfirmTitle => 'تسجيل الخروج';
+
+  @override
+  String get logoutConfirmMessage =>
+      'هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمات المرور غير متطابقة';
+
+  @override
+  String get passwordChangedSuccess => 'تم تغيير كلمة المرور بنجاح';
+
+  @override
+  String get changePasswordDescription =>
+      'أدخل كلمة المرور الحالية واختر كلمة مرور جديدة';
+
+  @override
+  String get currentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get currentPasswordRequired => 'كلمة المرور الحالية مطلوبة';
+
+  @override
+  String get newPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get newPasswordRequired => 'كلمة المرور الجديدة مطلوبة';
+
+  @override
+  String get confirmNewPassword => 'تأكيد كلمة المرور';
+
+  @override
+  String get confirmPasswordRequired => 'تأكيد كلمة المرور مطلوب';
+
+  @override
+  String get secureYourAccount => 'قم بتأمين حسابك';
+
+  @override
+  String get addressesLoadFailed => 'فشل تحميل العناوين';
+
+  @override
+  String get deleteAddressTitle => 'حذف العنوان';
+
+  @override
+  String get deleteAddressConfirm => 'هل أنت متأكد أنك تريد حذف هذا العنوان؟';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get addressDeleted => 'تم حذف العنوان';
+
+  @override
+  String get defaultAddressUpdated => 'تم تحديث العنوان الافتراضي';
+
+  @override
+  String get manageDeliveryAddresses => 'إدارة عناوين التوصيل';
+
+  @override
+  String get noAddressesYet => 'لا توجد عناوين بعد';
+
+  @override
+  String get tapToAddAddress => 'اضغط على زر + لإضافة عنوان جديد';
+
+  @override
+  String get defaultLabel => 'افتراضي';
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get setAsDefault => 'تعيين كافتراضي';
+
+  @override
+  String get addressCountSingular => 'عنوان واحد';
+
+  @override
+  String addressCountPlural(Object count) {
+    return '$count عناوين';
+  }
+
+  @override
+  String get locationServicesDisabled => 'خدمات الموقع معطلة';
+
+  @override
+  String get pleaseSelectLocation => 'الرجاء اختيار موقع';
+
+  @override
+  String get selectedLocation => 'الموقع المحدد';
+
+  @override
+  String get addressTitleOptional => 'عنوان العنوان (اختياري)';
+
+  @override
+  String get canBeLeftEmpty => 'يمكن تركه فارغًا';
+
+  @override
+  String get address => 'العنوان';
+
+  @override
+  String get city => 'المدينة';
+
+  @override
+  String get district => 'الحي';
+
+  @override
+  String get selectOrDragMarkerOnMap =>
+      'اختر موقعًا على الخريطة أو اسحب العلامة';
+
+  @override
+  String get saveAddressButton => 'حفظ العنوان';
+
+  @override
+  String get selectAddress => 'اختر العنوان';
+
+  @override
+  String get selectLocationFromMap => 'اختر الموقع من الخريطة';
+
+  @override
+  String get addressAdded => 'تمت إضافة العنوان';
+
+  @override
+  String get addressUpdated => 'تم تحديث العنوان';
+
+  @override
+  String get editAddress => 'تعديل العنوان';
+
+  @override
+  String get addNewAddress => 'إضافة عنوان جديد';
+
+  @override
+  String get updateAddressInfo => 'قم بتحديث معلومات العنوان';
+
+  @override
+  String get enterDeliveryAddressDetails => 'أدخل تفاصيل عنوان التوصيل';
+
+  @override
+  String get addressTitleHint => 'عنوان العنوان (المنزل، العمل، إلخ.)';
+
+  @override
+  String get titleRequired => 'العنوان مطلوب';
+
+  @override
+  String get selectAddressFromMap => 'اختر العنوان من الخريطة';
+
+  @override
+  String get fullAddress => 'العنوان الكامل';
+
+  @override
+  String get addressRequired => 'العنوان مطلوب';
+
+  @override
+  String get cityRequired => 'المدينة مطلوبة';
+
+  @override
+  String get districtRequired => 'الحي مطلوب';
+
+  @override
+  String get postalCodeOptional => 'الرمز البريدي (اختياري)';
+
+  @override
+  String get updateAddressButton => 'تحديث العنوان';
+
+  @override
+  String get updateAddressDetails => 'تحديث تفاصيل العنوان';
+
+  @override
+  String get createNewAddress => 'إنشاء عنوان جديد';
+
+  @override
+  String get orderUpdates => 'تحديثات الطلب';
+
+  @override
+  String get orderUpdatesDescription => 'احصل على إشعارات عند تغير حالة طلبك';
+
+  @override
+  String get promotions => 'العروض';
+
+  @override
+  String get promotionsDescription => 'عروض خاصة وحملات ترويجية';
+
+  @override
+  String get newProductsDescription =>
+      'احصل على إشعارات عند إضافة منتجات جديدة';
+
+  @override
+  String get settingsSaved => 'تم حفظ الإعدادات';
+
+  @override
+  String get manageNotificationPreferences => 'إدارة تفضيلات الإشعارات';
+
+  @override
+  String get orderHistoryDescription => 'عرض طلباتك السابقة';
+
+  @override
+  String get myAddressesDescription => 'إدارة عناوين التوصيل الخاصة بك';
+
+  @override
+  String get changePasswordSubtitle => 'تغيير كلمة المرور وتعزيز الأمان';
+
+  @override
+  String get notificationSettingsDescription => 'إدارة تفضيلات الإشعارات';
+
+  @override
+  String get selectLanguageDescription => 'تغيير لغة التطبيق';
+
+  @override
+  String get legalDocumentsDescription => 'شروط الاستخدام والسياسات';
+
+  @override
+  String get helpCenterDescription => 'الأسئلة الشائعة وخط الدعم';
+
+  @override
+  String get logoutDescription => 'تسجيل الخروج من حسابك';
+
+  @override
+  String get vendorRegister => 'تسجيل البائع';
+
+  @override
+  String get talabiBusiness => 'Talabi Business';
+
+  @override
+  String get createBusinessAccount => 'إنشاء حساب تجاري';
+
+  @override
+  String get createYourStoreAndStartSelling => 'أنشئ متجرك وابدأ البيع';
+
+  @override
+  String get businessName => 'اسم العمل';
+
+  @override
+  String get businessNameRequired => 'اسم العمل مطلوب';
+
+  @override
+  String get phoneNumberRequired => 'رقم الهاتف مطلوب';
+
+  @override
+  String get createVendorAccount => 'إنشاء حساب البائع';
+
+  @override
+  String get alreadyHaveVendorAccount => 'لديك حساب بائع بالفعل؟ ';
+
+  @override
+  String get isCustomerAccount => 'حساب عميل؟ ';
+
+  @override
+  String get emailAlreadyExists => 'يوجد حساب بالفعل بهذا البريد الإلكتروني.';
+
+  @override
+  String get enterFourDigitCode => 'يرجى إدخال الرمز المكون من 4 أرقام';
+
+  @override
+  String get emailVerifiedSuccess => 'تم التحقق من البريد الإلكتروني بنجاح';
+
+  @override
+  String get emailVerifiedLoginFailed =>
+      'تم التحقق من البريد الإلكتروني ولكن فشل تسجيل الدخول التلقائي. يرجى تسجيل الدخول يدوياً.';
+
+  @override
+  String get verificationFailed => 'فشل التحقق';
+
+  @override
+  String get verificationCodeResent => 'تم إعادة إرسال رمز التحقق';
+
+  @override
+  String get codeSendFailed => 'فشل إرسال الرمز';
+
+  @override
+  String get fourDigitVerificationCode => 'رمز التحقق المكون من 4 أرقام';
+
+  @override
+  String enterCodeSentToEmail(Object email) {
+    return 'أدخل الرمز المكون من 4 أرقام المرسل إلى $email';
+  }
+
+  @override
+  String get resendCode => 'إعادة إرسال الرمز';
+
+  @override
+  String codeExpiresIn(Object time) {
+    return 'ستنتهي صلاحية الرمز خلال $time';
+  }
+
+  @override
+  String settingsLoadError(Object error) {
+    return 'فشل تحميل الإعدادات: $error';
+  }
+
+  @override
+  String get settingsUpdated => 'تم تحديث الإعدادات';
+
+  @override
+  String get reviewApproved => 'تمت الموافقة على المراجعة';
+
+  @override
+  String reviewApproveError(Object error) {
+    return 'خطأ في الموافقة على المراجعة: $error';
+  }
+
+  @override
+  String get rejectReview => 'رفض المراجعة';
+
+  @override
+  String get rejectReviewConfirmation =>
+      'هل أنت متأكد أنك تريد رفض هذه المراجعة؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get reviewRejected => 'تم رفض المراجعة';
+
+  @override
+  String reviewRejectError(Object error) {
+    return 'خطأ في رفض المراجعة: $error';
+  }
+
+  @override
+  String get reviewDetail => 'تفاصيل المراجعة';
+
+  @override
+  String userId(Object id) {
+    return 'معرف المستخدم: $id';
+  }
+
+  @override
+  String get rating => 'التقييم';
+
+  @override
+  String get comment => 'تعليق';
+
+  @override
+  String get noComment => 'لا يوجد تعليق';
+
+  @override
+  String date(Object date) {
+    return 'التاريخ: $date';
+  }
+
+  @override
+  String get approve => 'موافقة';
+
+  @override
+  String get verify => 'تأكيد';
+
+  @override
+  String get placeOrder => 'تقديم الطلب';
+
+  @override
+  String get checkoutTitle => 'تأكيد الطلب';
+
+  @override
+  String get deliveryAddress => 'عنوان التسليم';
+
+  @override
+  String get changeAddress => 'تغيير';
+
+  @override
+  String get paymentMethod => 'طريقة الدفع';
+
+  @override
+  String get cash => 'نقدي';
+
+  @override
+  String get creditCard => 'بطاقة ائتمان';
+
+  @override
+  String get mobilePayment => 'الدفع عبر الهاتف';
+
+  @override
+  String get comingSoon => 'قريباً';
+
+  @override
+  String get orderNote => 'ملاحظة الطلب';
+
+  @override
+  String get orderNotePlaceholder => 'أضف ملاحظة للسائق (اختياري)';
+
+  @override
+  String get estimatedDelivery => 'وقت التسليم المتوقع';
+
+  @override
+  String get minutes => 'دقيقة';
+
+  @override
+  String get orderSummary => 'ملخص الطلب';
+
+  @override
+  String get confirmOrder => 'تأكيد الطلب';
+
+  @override
+  String get pleaseSelectAddress => 'يرجى اختيار عنوان التسليم';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'يرجى اختيار طريقة الدفع';
+
+  @override
+  String get orderCreatedSuccess => 'تم إنشاء طلبك بنجاح!';
+
+  @override
+  String get noAddressFound => 'لم يتم العثور على عنوان';
+
+  @override
+  String get cashDescription => 'يمكنك الدفع نقداً للمندوب عند الباب.';
+
+  @override
+  String get paymentComingSoonDescription =>
+      'طريقة الدفع هذه ستكون متاحة قريباً.';
 }

@@ -34,9 +34,9 @@ class _NotificationSettingsScreenState
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ayarlar yüklenemedi: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ayarlar yüklenemedi: $e')));
       }
     }
   }
@@ -47,15 +47,15 @@ class _NotificationSettingsScreenState
     try {
       await _apiService.updateNotificationSettings(_settings!.toJson());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ayarlar kaydedildi')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Ayarlar kaydedildi')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
       }
     }
   }
@@ -63,53 +63,154 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bildirim Ayarları'),
+      backgroundColor: Colors.grey[100],
+      body: Column(
+        children: [
+          // Header
+          _buildHeader(context),
+          // Content
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _settings == null
+                ? const Center(child: Text('Ayarlar yüklenemedi'))
+                : Container(
+                    margin: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        SwitchListTile(
+                          title: const Text('Sipariş Güncellemeleri'),
+                          subtitle: const Text(
+                            'Sipariş durumu değişikliklerinde bildirim al',
+                          ),
+                          value: _settings!.orderUpdates,
+                          onChanged: (value) {
+                            setState(() {
+                              _settings!.orderUpdates = value;
+                            });
+                            _updateSettings();
+                          },
+                        ),
+                        const Divider(),
+                        SwitchListTile(
+                          title: const Text('Kampanyalar'),
+                          subtitle: const Text('Özel teklifler ve kampanyalar'),
+                          value: _settings!.promotions,
+                          onChanged: (value) {
+                            setState(() {
+                              _settings!.promotions = value;
+                            });
+                            _updateSettings();
+                          },
+                        ),
+                        const Divider(),
+                        SwitchListTile(
+                          title: const Text('Yeni Ürünler'),
+                          subtitle: const Text(
+                            'Yeni ürün eklendiğinde bildirim al',
+                          ),
+                          value: _settings!.newProducts,
+                          onChanged: (value) {
+                            setState(() {
+                              _settings!.newProducts = value;
+                            });
+                            _updateSettings();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _settings == null
-              ? const Center(child: Text('Ayarlar yüklenemedi'))
-              : ListView(
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.orange.shade400,
+            Colors.orange.shade600,
+            Colors.orange.shade800,
+          ],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              // Back Button
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.notifications,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Title
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    SwitchListTile(
-                      title: const Text('Sipariş Güncellemeleri'),
-                      subtitle: const Text(
-                          'Sipariş durumu değişikliklerinde bildirim al'),
-                      value: _settings!.orderUpdates,
-                      onChanged: (value) {
-                        setState(() {
-                          _settings!.orderUpdates = value;
-                        });
-                        _updateSettings();
-                      },
+                    Text(
+                      'Bildirim Ayarları',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const Divider(),
-                    SwitchListTile(
-                      title: const Text('Kampanyalar'),
-                      subtitle: const Text('Özel teklifler ve kampanyalar'),
-                      value: _settings!.promotions,
-                      onChanged: (value) {
-                        setState(() {
-                          _settings!.promotions = value;
-                        });
-                        _updateSettings();
-                      },
-                    ),
-                    const Divider(),
-                    SwitchListTile(
-                      title: const Text('Yeni Ürünler'),
-                      subtitle: const Text('Yeni ürün eklendiğinde bildirim al'),
-                      value: _settings!.newProducts,
-                      onChanged: (value) {
-                        setState(() {
-                          _settings!.newProducts = value;
-                        });
-                        _updateSettings();
-                      },
+                    SizedBox(height: 2),
+                    Text(
+                      'Bildirim tercihlerinizi yönetin',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
-import 'package:mobile/services/api_service.dart';
+import 'package:mobile/screens/customer/checkout_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:provider/provider.dart';
 
@@ -226,97 +226,22 @@ class CartScreen extends StatelessWidget {
                                           return;
                                         }
 
-                                        // Prepare order items
-                                        final orderItems = <int, int>{};
-                                        for (var item in cart.items.values) {
-                                          orderItems[item.product.id] =
-                                              item.quantity;
-                                        }
-
-                                        try {
-                                          // Show loading
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (context) => const Center(
-                                              child: CircularProgressIndicator(
-                                                color: Colors.orange,
-                                              ),
-                                            ),
-                                          );
-
-                                          // Create order
-                                          final apiService = ApiService();
-                                          final order = await apiService
-                                              .createOrder(
-                                                vendorId,
-                                                orderItems,
-                                              );
-
-                                          // Hide loading
-                                          if (context.mounted)
-                                            Navigator.pop(context);
-
-                                          // Clear cart
-                                          cart.clear();
-
-                                          // Show success
-                                          if (context.mounted) {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) => AlertDialog(
-                                                title: Text(
-                                                  localizations
-                                                      .orderPlacedTitle,
+                                        // Navigate to checkout screen
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                CheckoutScreen(
+                                                  cartItems: cart.items,
+                                                  vendorId: vendorId,
+                                                  subtotal: cart.totalAmount,
+                                                  deliveryFee: 2.0,
                                                 ),
-                                                content: Text(
-                                                  localizations
-                                                      .orderPlacedMessage(
-                                                        '${order.id}',
-                                                        CurrencyFormatter.format(
-                                                          order.totalAmount,
-                                                          localizationProvider
-                                                              .currency,
-                                                        ),
-                                                      ),
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: Text(
-                                                      localizations.ok,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          // Hide loading
-                                          if (context.mounted)
-                                            Navigator.pop(context);
-
-                                          // Show error
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  localizations
-                                                      .errorWithMessage('$e'),
-                                                ),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                          }
-                                        }
+                                          ),
+                                        );
                                       },
                                 child: Text(
-                                  localizations.checkout,
+                                  localizations.placeOrder,
                                   style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 16,

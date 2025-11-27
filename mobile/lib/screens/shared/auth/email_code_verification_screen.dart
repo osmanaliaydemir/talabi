@@ -88,7 +88,7 @@ class _EmailCodeVerificationScreenState
   void _onCodeChanged(int index, String value) {
     if (value.length == 1) {
       // Bir sonraki input'a geç
-      if (index < 5) {
+      if (index < 3) {
         _focusNodes[index + 1].requestFocus();
       } else {
         // Son input'a geldiğinde klavyeyi kapat
@@ -106,11 +106,12 @@ class _EmailCodeVerificationScreenState
   }
 
   Future<void> _verifyCode() async {
+    final localizations = AppLocalizations.of(context)!;
     final code = _getCode();
     if (code.length != 4) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Lütfen 4 haneli kodu giriniz'),
+          content: Text(localizations.enterFourDigitCode),
           backgroundColor: Colors.red,
         ),
       );
@@ -126,8 +127,8 @@ class _EmailCodeVerificationScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Email adresi başarıyla doğrulandı'),
+          SnackBar(
+            content: Text(localizations.emailVerifiedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -155,9 +156,7 @@ class _EmailCodeVerificationScreenState
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    'Email doğrulandı ancak otomatik giriş başarısız. Lütfen giriş yapın.',
-                  ),
+                  content: Text(localizations.emailVerifiedLoginFailed),
                   backgroundColor: Colors.orange,
                 ),
               );
@@ -176,7 +175,7 @@ class _EmailCodeVerificationScreenState
         }
       }
     } on DioException catch (e) {
-      String errorMessage = 'Doğrulama başarısız';
+      String errorMessage = localizations.verificationFailed;
       if (e.response?.data != null) {
         final responseData = e.response!.data;
         if (responseData is Map && responseData.containsKey('message')) {
@@ -199,7 +198,7 @@ class _EmailCodeVerificationScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Bir hata oluştu: ${e.toString()}'),
+            content: Text(localizations.errorWithMessage(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -214,6 +213,7 @@ class _EmailCodeVerificationScreenState
   }
 
   Future<void> _resendCode() async {
+    final localizations = AppLocalizations.of(context)!;
     setState(() {
       _isResending = true;
     });
@@ -233,8 +233,8 @@ class _EmailCodeVerificationScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Doğrulama kodu yeniden gönderildi'),
+          SnackBar(
+            content: Text(localizations.verificationCodeResent),
             backgroundColor: Colors.green,
           ),
         );
@@ -249,7 +249,7 @@ class _EmailCodeVerificationScreenState
         _focusNodes[0].requestFocus();
       }
     } on DioException catch (e) {
-      String errorMessage = 'Kod gönderilemedi';
+      String errorMessage = localizations.codeSendFailed;
       if (e.response?.data != null) {
         final responseData = e.response!.data;
         if (responseData is Map && responseData.containsKey('message')) {
@@ -266,7 +266,7 @@ class _EmailCodeVerificationScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Bir hata oluştu: ${e.toString()}'),
+            content: Text(localizations.errorWithMessage(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -338,9 +338,7 @@ class _EmailCodeVerificationScreenState
                     child: Padding(
                       padding: const EdgeInsets.only(top: 40),
                       child: Text(
-                        localizations.emailVerification.isNotEmpty
-                            ? localizations.emailVerification
-                            : 'Email Doğrulama',
+                        localizations.emailVerification,
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -392,7 +390,7 @@ class _EmailCodeVerificationScreenState
                         const SizedBox(height: 32),
                         // Title
                         Text(
-                          '4 Haneli Doğrulama Kodu',
+                          localizations.fourDigitVerificationCode,
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -403,7 +401,7 @@ class _EmailCodeVerificationScreenState
                         const SizedBox(height: 16),
                         // Description
                         Text(
-                          '${widget.email} adresine gönderilen 4 haneli kodu giriniz',
+                          localizations.enterCodeSentToEmail(widget.email),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -468,7 +466,9 @@ class _EmailCodeVerificationScreenState
                         // Timer or Resend Button
                         if (!_canResend)
                           Text(
-                            'Kod ${_formatTime(_remainingSeconds)} sonra geçersiz olacak',
+                            localizations.codeExpiresIn(
+                              _formatTime(_remainingSeconds),
+                            ),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -485,9 +485,9 @@ class _EmailCodeVerificationScreenState
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text(
-                                    'Tekrar Kod Gönder',
-                                    style: TextStyle(
+                                : Text(
+                                    localizations.resendCode,
+                                    style: const TextStyle(
                                       color: Colors.orange,
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -518,9 +518,9 @@ class _EmailCodeVerificationScreenState
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text(
-                                    'Onayla',
-                                    style: TextStyle(
+                                : Text(
+                                    localizations.verify,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),

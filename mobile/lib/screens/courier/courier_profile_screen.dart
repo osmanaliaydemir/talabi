@@ -4,6 +4,7 @@ import 'package:mobile/models/courier.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
+import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/widgets/courier/courier_header.dart';
 import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
@@ -324,6 +325,17 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           onTap: () {
             print('CourierProfileScreen: Navigation app tile tapped');
             Navigator.of(context).pushNamed('/courier/navigation-settings');
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.gavel),
+          title: Text(localizations?.legalDocuments ?? 'Yasal Belgeler'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            print('CourierProfileScreen: Legal documents tapped');
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const LegalMenuScreen()),
+            );
           },
         ),
         ListTile(

@@ -5,6 +5,7 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
+import 'package:mobile/screens/vendor/vendor_register_screen.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -433,7 +434,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Row(
                             children: [
                               Expanded(
-                                flex: 1,
                                 child: _buildSocialButton(
                                   icon: Icons.g_mobiledata,
                                   label: localizations.google,
@@ -444,7 +444,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                flex: 1,
                                 child: _buildSocialButton(
                                   icon: Icons.apple,
                                   label: localizations.apple,
@@ -455,7 +454,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                flex: 2,
                                 child: _buildSocialButton(
                                   icon: Icons.facebook,
                                   label: localizations.facebook,
@@ -463,6 +461,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     // Facebook login
                                   },
                                   isFacebook: true,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildSocialButton(
+                                  icon: Icons.store,
+                                  label: 'Vendor',
+                                  onPressed: () {
+                                    TapLogger.logButtonPress(
+                                      'Vendor Register',
+                                      context: 'RegisterScreen',
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const VendorRegisterScreen(),
+                                      ),
+                                    );
+                                  },
+                                  isVendor: true,
                                 ),
                               ),
                             ],
@@ -514,6 +533,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String label,
     required VoidCallback onPressed,
     bool isFacebook = false,
+    bool isVendor = false,
   }) {
     return OutlinedButton(
       onPressed: onPressed,
@@ -545,6 +565,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
+          : isVendor
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.store, color: Colors.orange, size: 20),
                 const SizedBox(height: 4),
                 Text(
                   label,

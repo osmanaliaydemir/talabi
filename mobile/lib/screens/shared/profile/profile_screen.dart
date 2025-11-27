@@ -1,15 +1,15 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/models/notification_settings.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
+
 import 'package:mobile/screens/shared/settings/accessibility_settings_screen.dart';
 import 'package:mobile/screens/shared/profile/addresses_screen.dart';
 import 'package:mobile/screens/shared/profile/change_password_screen.dart';
 import 'package:mobile/screens/shared/profile/edit_profile_screen.dart';
-import 'package:mobile/screens/customer/favorites_screen.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
+import 'package:mobile/screens/shared/settings/notification_settings_screen.dart';
 import 'package:mobile/screens/customer/order_history_screen.dart';
+import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:provider/provider.dart';
 
@@ -24,16 +24,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _profile;
   bool _isLoading = true;
-  NotificationSettings? _notificationSettings;
-  bool _pushNotificationsEnabled = true;
-  bool _promotionalNotificationsEnabled = false;
-  bool _newProductsNotificationsEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
-    _loadNotificationSettings();
   }
 
   Future<void> _loadProfile() async {
@@ -48,67 +43,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Profil yüklenemedi: $e')));
-      }
-    }
-  }
-
-  Future<void> _loadNotificationSettings() async {
-    try {
-      final settingsData = await _apiService.getNotificationSettings();
-      setState(() {
-        _notificationSettings = NotificationSettings.fromJson(settingsData);
-        _pushNotificationsEnabled = _notificationSettings?.orderUpdates ?? true;
-        _promotionalNotificationsEnabled =
-            _notificationSettings?.promotions ?? false;
-        _newProductsNotificationsEnabled =
-            _notificationSettings?.newProducts ?? false;
-      });
-    } catch (e) {
-      // Hata durumunda varsayılan değerler kullanılacak
-    }
-  }
-
-  Future<void> _updateNotificationSetting(String type, bool value) async {
-    if (_notificationSettings == null) return;
-
-    setState(() {
-      if (type == 'push') {
-        _pushNotificationsEnabled = value;
-        _notificationSettings!.orderUpdates = value;
-      } else if (type == 'promotional') {
-        _promotionalNotificationsEnabled = value;
-        _notificationSettings!.promotions = value;
-      } else if (type == 'newProducts') {
-        _newProductsNotificationsEnabled = value;
-        _notificationSettings!.newProducts = value;
-      }
-    });
-
-    try {
-      await _apiService.updateNotificationSettings(
-        _notificationSettings!.toJson(),
-      );
-    } catch (e) {
-      // Hata durumunda geri al
-      setState(() {
-        if (type == 'push') {
-          _pushNotificationsEnabled = !value;
-          _notificationSettings!.orderUpdates = !value;
-        } else if (type == 'promotional') {
-          _promotionalNotificationsEnabled = !value;
-          _notificationSettings!.promotions = !value;
-        } else if (type == 'newProducts') {
-          _newProductsNotificationsEnabled = !value;
-          _notificationSettings!.newProducts = !value;
-        }
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ayarlar güncellenemedi: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.profileLoadFailed}: $e')),
+        );
       }
     }
   }
@@ -215,11 +153,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ColorScheme colorScheme,
     AuthProvider auth,
   ) {
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
-    final currentLanguage = _getLanguageDisplayName(
-      localizationProvider.locale.languageCode,
-    );
-
     return Container(
       margin: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
       decoration: BoxDecoration(
@@ -237,10 +170,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // My Account Section
-          _buildSectionHeader(localizations.editProfile, 'My Account'),
+          _buildSectionHeader(
+            localizations.editProfile,
+            localizations.myAccount,
+          ),
           _buildMenuItem(
             icon: Icons.person,
             title: localizations.editProfile,
+            subtitle: localizations.updatePersonalInfo,
             onTap: () async {
               final result = await Navigator.push(
                 context,
@@ -256,6 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildMenuItem(
             icon: Icons.shopping_bag,
             title: localizations.orderHistory,
+            subtitle: localizations.orderHistoryDescription,
             onTap: () {
               Navigator.push(
                 context,
@@ -268,6 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildMenuItem(
             icon: Icons.location_on,
             title: localizations.myAddresses,
+            subtitle: localizations.myAddressesDescription,
             onTap: () {
               Navigator.push(
                 context,
@@ -278,20 +217,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           _buildMenuItem(
-            icon: Icons.favorite,
-            title: localizations.favoriteProducts,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const FavoritesScreen(),
-                ),
-              );
-            },
-          ),
-          _buildMenuItem(
             icon: Icons.lock,
             title: localizations.changePassword,
+            subtitle: localizations.changePasswordSubtitle,
             onTap: () {
               Navigator.push(
                 context,
@@ -302,38 +230,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           const Divider(height: 1),
-          // Notifications Section
-          _buildSectionHeader(
-            localizations.notificationSettings,
-            'Notifications',
-          ),
-          _buildNotificationMenuItem(
+          // Settings Section
+          _buildSectionHeader(localizations.settings, localizations.settings),
+          _buildMenuItem(
             icon: Icons.notifications,
-            title: 'Push Notifications',
-            value: _pushNotificationsEnabled,
-            onChanged: (value) => _updateNotificationSetting('push', value),
+            title: localizations.notificationSettings,
+            subtitle: localizations.notificationSettingsDescription,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationSettingsScreen(),
+                ),
+              );
+            },
           ),
-          _buildNotificationMenuItem(
-            icon: Icons.campaign,
-            title: 'Promotional Notifications',
-            value: _promotionalNotificationsEnabled,
-            onChanged: (value) =>
-                _updateNotificationSetting('promotional', value),
-          ),
-          _buildNotificationMenuItem(
-            icon: Icons.new_releases,
-            title: 'New Products',
-            value: _newProductsNotificationsEnabled,
-            onChanged: (value) =>
-                _updateNotificationSetting('newProducts', value),
-          ),
-          const Divider(height: 1),
-          // More Section
-          _buildSectionHeader(localizations.logout, 'More'),
           _buildMenuItem(
             icon: Icons.language,
             title: localizations.selectLanguage,
-            subtitle: currentLanguage,
+            subtitle: localizations.selectLanguageDescription,
             onTap: () {
               Navigator.push(
                 context,
@@ -345,7 +260,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildMenuItem(
             icon: Icons.accessibility_new,
-            title: 'Accessibility & Display',
+            title: localizations.accessibilityAndDisplay,
+            subtitle: localizations.accessibilityDescription,
             onTap: () {
               Navigator.push(
                 context,
@@ -356,19 +272,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           _buildMenuItem(
-            icon: Icons.help_outline,
-            title: 'Help Center',
+            icon: Icons.gavel,
+            title: localizations.legalDocuments,
+            subtitle: localizations.legalDocumentsDescription,
             onTap: () {
-              _showHelpCenter(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LegalMenuScreen(),
+                ),
+              );
+            },
+          ),
+          _buildMenuItem(
+            icon: Icons.help_outline,
+            title: localizations.helpCenter,
+            subtitle: localizations.helpCenterDescription,
+            onTap: () {
+              _showHelpCenter(context, localizations);
             },
           ),
           _buildMenuItem(
             icon: Icons.logout,
             title: localizations.logout,
+            subtitle: localizations.logoutDescription,
             titleColor: Colors.red,
             iconColor: Colors.red,
             onTap: () {
-              _showLogoutDialog(context, auth);
+              _showLogoutDialog(context, auth, localizations);
             },
           ),
           const SizedBox(height: 16),
@@ -419,83 +350,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildNotificationMenuItem({
-    required IconData icon,
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.black87),
-      title: Text(
-        title,
-        style: const TextStyle(color: Colors.black87, fontSize: 15),
-      ),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: Colors.green,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-    );
-  }
-
-  String _getLanguageDisplayName(String languageCode) {
-    switch (languageCode) {
-      case 'tr':
-        return 'Türkçe';
-      case 'en':
-        return 'English (US)';
-      case 'ar':
-        return 'العربية';
-      default:
-        return 'English (US)';
-    }
-  }
-
-  void _showHelpCenter(BuildContext context) {
+  void _showHelpCenter(BuildContext context, AppLocalizations localizations) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Help Center'),
+        title: Text(localizations.helpCenter),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'How can we help you?',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              localizations.howCanWeHelpYou,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             _buildHelpItem(
               icon: Icons.help_outline,
-              title: 'FAQ',
-              subtitle: 'Frequently asked questions',
+              title: localizations.faq,
+              subtitle: localizations.frequentlyAskedQuestions,
             ),
             const SizedBox(height: 12),
             _buildHelpItem(
               icon: Icons.email_outlined,
-              title: 'Contact Support',
+              title: localizations.contactSupport,
               subtitle: 'support@talabi.com',
             ),
             const SizedBox(height: 12),
             _buildHelpItem(
               icon: Icons.phone_outlined,
-              title: 'Call Us',
+              title: localizations.callUs,
               subtitle: '+90 (555) 123 45 67',
             ),
             const SizedBox(height: 12),
             _buildHelpItem(
               icon: Icons.chat_bubble_outline,
-              title: 'Live Chat',
-              subtitle: 'Available 24/7',
+              title: localizations.liveChat,
+              subtitle: localizations.available24x7,
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(localizations.close),
           ),
         ],
       ),
@@ -543,16 +440,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context, AuthProvider auth) {
+  void _showLogoutDialog(
+    BuildContext context,
+    AuthProvider auth,
+    AppLocalizations localizations,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Çıkış Yap'),
-        content: const Text('Hesabınızdan çıkmak istediğinize emin misiniz?'),
+        title: Text(localizations.logoutConfirmTitle),
+        content: Text(localizations.logoutConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
+            child: Text(localizations.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -577,7 +478,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
               }
             },
-            child: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+            child: Text(
+              localizations.logout,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

@@ -29,14 +29,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Future<void> _changePassword() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Yeni şifreler eşleşmiyor'),
+        SnackBar(
+          content: Text(l10n.passwordsDoNotMatch),
           backgroundColor: Colors.red,
         ),
       );
@@ -55,8 +57,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Şifre başarıyla değiştirildi'),
+          SnackBar(
+            content: Text(l10n.passwordChangedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -66,7 +68,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Hata: $e'),
+            content: Text('${l10n.error}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -129,7 +131,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Enter your current password and choose a new one',
+                          localizations.changePasswordDescription,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -147,7 +149,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             controller: _currentPasswordController,
                             obscureText: _obscureCurrentPassword,
                             decoration: InputDecoration(
-                              hintText: 'Current Password',
+                              hintText: localizations.currentPassword,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.lock_outline,
@@ -175,7 +177,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Mevcut şifre gerekli';
+                                return localizations.currentPasswordRequired;
                               }
                               return null;
                             },
@@ -192,7 +194,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             controller: _newPasswordController,
                             obscureText: _obscureNewPassword,
                             decoration: InputDecoration(
-                              hintText: 'New Password',
+                              hintText: localizations.newPassword,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.lock_outline,
@@ -219,7 +221,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Yeni şifre gerekli';
+                                return localizations.newPasswordRequired;
                               }
                               if (value.length < 6) {
                                 return localizations.passwordMinLength;
@@ -239,7 +241,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
                             decoration: InputDecoration(
-                              hintText: 'Confirm New Password',
+                              hintText: localizations.confirmNewPassword,
                               hintStyle: TextStyle(color: Colors.grey[500]),
                               prefixIcon: Icon(
                                 Icons.lock_outline,
@@ -267,10 +269,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Şifre tekrarı gerekli';
+                                return localizations.confirmPasswordRequired;
                               }
                               if (value != _newPasswordController.text) {
-                                return 'Şifreler eşleşmiyor';
+                                return localizations.passwordsDoNotMatch;
                               }
                               return null;
                             },
@@ -300,9 +302,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text(
-                                    'Change Password',
-                                    style: TextStyle(
+                                : Text(
+                                    localizations.changePassword,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -339,22 +341,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
       ),
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             children: [
               // Back Button
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 24,
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               // Lock Icon
               Container(
                 padding: const EdgeInsets.all(8),
@@ -362,11 +370,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.lock,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.lock, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
               // Title and Subtitle
@@ -385,7 +389,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Secure your account',
+                      localizations.secureYourAccount,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 12,
