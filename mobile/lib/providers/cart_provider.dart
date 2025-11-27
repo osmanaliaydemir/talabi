@@ -1,9 +1,13 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
 import 'package:mobile/models/product.dart';
+import 'package:mobile/screens/shared/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/providers/connectivity_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 class CartProvider with ChangeNotifier {
@@ -66,26 +70,41 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addItem(Product product) async {
+  Future<void> addItem(Product product, BuildContext? context) async {
     final isOnline = _connectivityProvider?.isOnline ?? true;
-
-    // Update local state immediately for better UX
-    if (_items.containsKey(product.id)) {
-      _items[product.id]!.quantity++;
-    } else {
-      _items[product.id] = CartItem(product: product);
-    }
-    notifyListeners();
 
     if (isOnline) {
       try {
+        // First, check API - don't update local state until success
         await _apiService.addToCart(product.id, 1);
         // Reload from backend to get correct IDs
         await loadCart();
       } catch (e) {
         print('Error adding item: $e');
-        // If online but request failed, queue it
+
+        // Check if error is ADDRESS_REQUIRED
+        if (e is DioException && e.response?.data != null) {
+          final responseData = e.response!.data;
+          if (responseData is Map &&
+              (responseData['code'] == 'ADDRESS_REQUIRED' ||
+                  responseData['requiresAddress'] == true) &&
+              context != null) {
+            // Show popup dialog - don't update state
+            await _showAddressRequiredDialog(context, product);
+            return; // Don't queue the action if address is required
+          }
+        }
+
+        // If online but request failed, update local state optimistically and queue it
         if (_syncService != null) {
+          // Update local state for offline/queued scenarios
+          if (_items.containsKey(product.id)) {
+            _items[product.id]!.quantity++;
+          } else {
+            _items[product.id] = CartItem(product: product);
+          }
+          notifyListeners();
+
           final action = SyncAction(
             id: _uuid.v4(),
             type: SyncActionType.addToCart,
@@ -93,10 +112,20 @@ class CartProvider with ChangeNotifier {
           );
           await _syncService!.addToQueue(action);
           print('📦 [CART] Action queued: addToCart');
+        } else {
+          // Re-throw error if no sync service available
+          rethrow;
         }
       }
     } else {
-      // Offline: queue the action
+      // Offline: update local state and queue the action
+      if (_items.containsKey(product.id)) {
+        _items[product.id]!.quantity++;
+      } else {
+        _items[product.id] = CartItem(product: product);
+      }
+      notifyListeners();
+
       if (_syncService != null) {
         final action = SyncAction(
           id: _uuid.v4(),
@@ -106,6 +135,82 @@ class CartProvider with ChangeNotifier {
         await _syncService!.addToQueue(action);
         print('📦 [CART] Offline - Action queued: addToCart');
       }
+    }
+  }
+
+  Future<void> _showAddressRequiredDialog(
+    BuildContext context,
+    Product product,
+  ) async {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return;
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(
+          localizations.addressRequiredTitle,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          localizations.addressRequiredMessage,
+          style: const TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              print('🟡 [CART] Address dialog: Cancel clicked');
+              Navigator.of(dialogContext).pop(false);
+            },
+            child: Text(
+              localizations.cancel,
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              print('🟢 [CART] Address dialog: Add Address clicked');
+              Navigator.of(dialogContext).pop(true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(localizations.addAddress),
+          ),
+        ],
+      ),
+    );
+
+    print('🟡 [CART] Address dialog result: $result');
+
+    if (result == true) {
+      // Use a small delay to ensure dialog is fully closed before navigation
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!context.mounted) {
+        print('🔴 [CART] Context not mounted after dialog close');
+        return;
+      }
+
+      print('🟢 [CART] Navigating to AddEditAddressScreen');
+      // Navigate to add address screen
+      final addressResult = await Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const AddEditAddressScreen()),
+      );
+
+      print('🟡 [CART] Returned from AddEditAddressScreen: $addressResult');
+
+      // After returning from address screen, try to add to cart again
+      if (context.mounted) {
+        print('🟢 [CART] Retrying addItem after address added');
+        await addItem(product, context);
+      } else {
+        print('🔴 [CART] Context not mounted after address screen');
+      }
+    } else {
+      print('🟡 [CART] User cancelled address dialog');
     }
   }
 

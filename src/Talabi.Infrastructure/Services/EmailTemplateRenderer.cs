@@ -11,7 +11,7 @@ namespace Talabi.Infrastructure.Services;
 
 public interface IEmailTemplateRenderer
 {
-    Task<string> RenderAsync(string templateName, IDictionary<string, string> variables, CancellationToken cancellationToken = default);
+    Task<string> RenderAsync(string templateName, IDictionary<string, string> variables, string? languageCode = null, CancellationToken cancellationToken = default);
 }
 
 public class EmailTemplateRenderer : IEmailTemplateRenderer
@@ -20,14 +20,14 @@ public class EmailTemplateRenderer : IEmailTemplateRenderer
     private readonly Assembly _assembly = typeof(EmailTemplateRenderer).Assembly;
     private readonly ConcurrentDictionary<string, string> _templateCache = new(StringComparer.OrdinalIgnoreCase);
 
-    public async Task<string> RenderAsync(string templateName, IDictionary<string, string> variables, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(string templateName, IDictionary<string, string> variables, string? languageCode = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(templateName))
         {
             throw new ArgumentException("Template name must be provided.", nameof(templateName));
         }
 
-        var template = await GetTemplateAsync(templateName, cancellationToken);
+        var template = await GetTemplateAsync(templateName, languageCode, cancellationToken);
         if (variables is null || variables.Count == 0)
         {
             return template;
@@ -42,22 +42,57 @@ public class EmailTemplateRenderer : IEmailTemplateRenderer
         return builder.ToString();
     }
 
-    private async Task<string> GetTemplateAsync(string templateName, CancellationToken cancellationToken)
+    private async Task<string> GetTemplateAsync(string templateName, string? languageCode, CancellationToken cancellationToken)
     {
-        if (_templateCache.TryGetValue(templateName, out var cached))
+        // Normalize language code
+        languageCode = NormalizeLanguageCode(languageCode);
+        
+        // Try to get language-specific template first
+        var cacheKey = $"{templateName}_{languageCode}";
+        if (_templateCache.TryGetValue(cacheKey, out var cached))
         {
             return cached;
         }
 
-        var resourceName = $"{TemplateRootNamespace}{templateName}.html";
-        await using var stream = _assembly.GetManifestResourceStream(resourceName)
-            ?? throw new InvalidOperationException($"E-posta template dosyası bulunamadı: {resourceName}");
+        // Try language-specific template
+        var languageSpecificResourceName = $"{TemplateRootNamespace}{templateName}_{languageCode}.html";
+        var stream = _assembly.GetManifestResourceStream(languageSpecificResourceName);
 
-        using var reader = new StreamReader(stream);
-        var content = await reader.ReadToEndAsync();
-        _templateCache[templateName] = content;
+        // Fallback to default template if language-specific doesn't exist
+        if (stream == null)
+        {
+            var defaultResourceName = $"{TemplateRootNamespace}{templateName}.html";
+            stream = _assembly.GetManifestResourceStream(defaultResourceName)
+                ?? throw new InvalidOperationException($"E-posta template dosyası bulunamadı: {defaultResourceName}");
+        }
 
-        return content;
+        await using (stream)
+        {
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            _templateCache[cacheKey] = content;
+            return content;
+        }
+    }
+
+    private static string NormalizeLanguageCode(string? languageCode)
+    {
+        if (string.IsNullOrWhiteSpace(languageCode))
+        {
+            return "tr"; // Default to Turkish
+        }
+
+        // Normalize to lowercase and handle common variations
+        var normalized = languageCode.ToLowerInvariant().Trim();
+        
+        // Map common language codes
+        return normalized switch
+        {
+            "tr" or "turkish" => "tr",
+            "en" or "english" => "en",
+            "ar" or "arabic" => "ar",
+            _ => "tr" // Default fallback
+        };
     }
 }
 

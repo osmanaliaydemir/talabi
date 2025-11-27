@@ -483,6 +483,32 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("CourierNotifications");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.DeliveryProof", b =>
                 {
                     b.Property<int>("Id")
@@ -1119,6 +1145,17 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Courier");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.Customer", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.AppUser", "User")
+                        .WithOne()
+                        .HasForeignKey("Talabi.Core.Entities.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.DeliveryProof", b =>

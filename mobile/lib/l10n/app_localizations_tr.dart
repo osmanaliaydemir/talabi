@@ -612,4 +612,14 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deliveryFee => 'Teslimat Ücreti';
+
+  @override
+  String get addressRequiredTitle => 'Adres Gerekli';
+
+  @override
+  String get addressRequiredMessage =>
+      'Sipariş vermek için önce bir teslimat adresi eklemeniz gerekiyor.';
+
+  @override
+  String get addAddress => 'Adres Ekle';
 }

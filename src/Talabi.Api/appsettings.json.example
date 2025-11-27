@@ -19,13 +19,14 @@
     "ApiKey": "your-google-maps-api-key-here"
   },
   "Email": {
-    "ApiBaseUrl": "https://email-gateway.example.com",
-    "SendEndpoint": "/v1/email/send",
-    "ApiKey": "your-email-api-key",
+    "SmtpServer": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "UseSsl": true,
+    "UseTls": true,
     "SenderEmail": "noreply@talabi.com",
+    "SenderPassword": "your-email-password-or-app-password",
     "SenderName": "Talabi",
-    "ApiKeyHeaderName": "Authorization",
-    "AuthorizationScheme": "Bearer"
+    "Timeout": 30000
   }
 }
 

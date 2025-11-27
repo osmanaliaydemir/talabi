@@ -298,19 +298,22 @@ class ApiService {
   Future<Map<String, dynamic>> register(
     String email,
     String password,
-    String fullName,
-  ) async {
+    String fullName, {
+    String? language,
+  }) async {
     try {
       print('🔵 [REGISTER] Starting registration...');
       print('🔵 [REGISTER] URL: $baseUrl/auth/register');
       print('🔵 [REGISTER] Email: $email');
       print('🔵 [REGISTER] FullName: $fullName');
       print('🔵 [REGISTER] Password length: ${password.length}');
+      print('🔵 [REGISTER] Language: ${language ?? "not specified"}');
 
       final requestData = {
         'email': email,
         'password': password,
         'fullName': fullName,
+        if (language != null) 'language': language,
       };
       print('🔵 [REGISTER] Request data: $requestData');
 
@@ -398,6 +401,43 @@ class ApiService {
       );
     } catch (e) {
       print('Error confirming email: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyEmailCode(
+    String email,
+    String code,
+  ) async {
+    try {
+      final response = await _dio.post(
+        '/auth/verify-email-code',
+        data: {'email': email, 'code': code},
+      );
+      return response.data;
+    } catch (e) {
+      print('Error verifying email code: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> resendVerificationCode(
+    String email, {
+    String? language,
+  }) async {
+    try {
+      final requestData = {
+        'email': email,
+        if (language != null) 'language': language,
+      };
+
+      final response = await _dio.post(
+        '/auth/resend-verification-code',
+        data: requestData,
+      );
+      return response.data;
+    } catch (e) {
+      print('Error resending verification code: $e');
       rethrow;
     }
   }

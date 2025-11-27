@@ -30,13 +30,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void initState() {
     super.initState();
-    // Set auth token if available
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    if (auth.token != null) {
-      // Load cart from backend
-      final cart = Provider.of<CartProvider>(context, listen: false);
-      cart.loadCart();
-    }
+    // Load cart after the first frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.token != null && mounted) {
+        // Load cart from backend
+        final cart = Provider.of<CartProvider>(context, listen: false);
+        cart.loadCart();
+      }
+    });
   }
 
   @override

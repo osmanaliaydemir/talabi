@@ -1,8 +1,10 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/providers/localization_provider.dart';
+import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
-import 'package:mobile/screens/shared/auth/email_verification_screen.dart';
+import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -53,15 +55,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
       print('🟡 [REGISTER_SCREEN] FullName: $fullName');
       print('🟡 [REGISTER_SCREEN] Password length: ${password.length}');
 
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.register(email, password, fullName);
+      // Get user's language preference
+      final localizationProvider = Provider.of<LocalizationProvider>(
+        context,
+        listen: false,
+      );
+      final languageCode = localizationProvider.locale.languageCode;
+
+      final apiService = ApiService();
+      await apiService.register(
+        email,
+        password,
+        fullName,
+        language: languageCode,
+      );
 
       print('🟢 [REGISTER_SCREEN] Register successful!');
 
       if (mounted) {
+        // Email kod doğrulama ekranına yönlendir (password ile otomatik login için)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const EmailVerificationScreen(),
+            builder: (context) => EmailCodeVerificationScreen(
+              email: email,
+              password: password, // Otomatik login için password geçiliyor
+            ),
           ),
         );
       }
@@ -71,14 +89,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
-        final errorMessage = e.toString().replaceAll('Exception: ', '');
+
+        // Hata mesajını parse et
+        String errorMessage = e.toString().replaceAll('Exception: ', '');
+        if (e is DioException && e.response?.data != null) {
+          final responseData = e.response!.data;
+
+          // Duplicate email/username hatası için özel mesaj
+          if (responseData is Map) {
+            if (responseData.containsKey('errors') &&
+                responseData['errors'] is List) {
+              final errors = responseData['errors'] as List;
+              final duplicateError = errors.firstWhere(
+                (error) =>
+                    error is Map &&
+                    (error['code'] == 'DuplicateEmail' ||
+                        error['code'] == 'DuplicateUserName'),
+                orElse: () => null,
+              );
+
+              if (duplicateError != null) {
+                errorMessage =
+                    'Bu email adresi ile zaten bir hesap bulunmaktadır.';
+              } else if (responseData.containsKey('message')) {
+                errorMessage = responseData['message'].toString();
+              }
+            } else if (responseData.containsKey('message')) {
+              errorMessage = responseData['message'].toString();
+            }
+          }
+        }
+
+        // Hata mesajını göster - kod ekranına yönlendirme YOK
+        final displayMessage = errorMessage.isNotEmpty
+            ? errorMessage
+            : localizations.registerFailed;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${localizations.registerFailed}: $errorMessage'),
+            content: Text(displayMessage),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 7),
+            action: SnackBarAction(
+              label: 'Tamam',
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
           ),
         );
+
+        // Hata durumunda ekranda kal - kod giriş ekranına yönlendirme YOK
       }
     } finally {
       if (mounted) {

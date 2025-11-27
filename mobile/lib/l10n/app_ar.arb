@@ -212,6 +212,9 @@
   "enterValidAmount": "أدخل مبلغًا صالحًا",
   "enterValidTime": "أدخل وقتًا صالحًا",
   "optional": "اختياري",
-  "deliveryFee": "رسوم التوصيل"
+  "deliveryFee": "رسوم التوصيل",
+  "addressRequiredTitle": "العنوان مطلوب",
+  "addressRequiredMessage": "تحتاج إلى إضافة عنوان توصيل قبل تقديم الطلب.",
+  "addAddress": "إضافة عنوان"
 }
 

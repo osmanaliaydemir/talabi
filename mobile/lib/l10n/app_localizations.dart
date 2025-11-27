@@ -1257,6 +1257,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery Fee'**
   String get deliveryFee;
+
+  /// No description provided for @addressRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Required'**
+  String get addressRequiredTitle;
+
+  /// No description provided for @addressRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to add a delivery address before placing an order.'**
+  String get addressRequiredMessage;
+
+  /// No description provided for @addAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Address'**
+  String get addAddress;
 }
 
 class _AppLocalizationsDelegate

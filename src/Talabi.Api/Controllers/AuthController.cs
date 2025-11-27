@@ -4,12 +4,16 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Email;
 using Talabi.Core.Email;
 using Talabi.Core.Entities;
 using Talabi.Core.Services;
+using Talabi.Infrastructure.Data;
 
 namespace Talabi.Api.Controllers;
 
@@ -21,17 +25,111 @@ public class AuthController : ControllerBase
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IConfiguration _configuration;
     private readonly IEmailSender _emailSender;
+    private readonly IMemoryCache _memoryCache;
+    private readonly TalabiDbContext _context;
+    private readonly ILogger<AuthController> _logger;
+    private const int VerificationCodeExpirationMinutes = 3;
 
     public AuthController(
         UserManager<AppUser> userManager, 
         SignInManager<AppUser> signInManager, 
         IConfiguration configuration,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        IMemoryCache memoryCache, 
+        TalabiDbContext context,
+        ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _emailSender = emailSender;
+        _memoryCache = memoryCache;
+        _context = context;
+        _logger = logger;
+    }
+
+    private static string GenerateVerificationCode()
+    {
+        var random = new Random();
+        return random.Next(1000, 9999).ToString(); // 4 haneli kod
+    }
+
+    private string GetLanguageFromRequest(string? languageFromDto = null)
+    {
+        // Priority: 1. DTO'da belirtilen dil, 2. Accept-Language header, 3. Default (tr)
+        if (!string.IsNullOrWhiteSpace(languageFromDto))
+        {
+            return NormalizeLanguageCode(languageFromDto);
+        }
+
+        // Check Accept-Language header
+        if (Request.Headers.TryGetValue("Accept-Language", out var acceptLanguage))
+        {
+            var languages = acceptLanguage.ToString().Split(',');
+            if (languages.Length > 0)
+            {
+                var primaryLanguage = languages[0].Split(';')[0].Trim().ToLowerInvariant();
+                return NormalizeLanguageCode(primaryLanguage);
+            }
+        }
+
+        return "tr"; // Default
+    }
+
+    private static string NormalizeLanguageCode(string? languageCode)
+    {
+        if (string.IsNullOrWhiteSpace(languageCode))
+        {
+            return "tr";
+        }
+
+        var normalized = languageCode.ToLowerInvariant().Trim();
+
+        return normalized switch
+        {
+            "tr" or "turkish" or "tr-tr" or "tr-TR" => "tr",
+            "en" or "english" or "en-us" or "en-US" or "en-gb" or "en-GB" => "en",
+            "ar" or "arabic" or "ar-sa" or "ar-SA" => "ar",
+            _ => "tr" // Default fallback
+        };
+    }
+
+    private string GetEmailSubject(string languageCode)
+    {
+        return languageCode switch
+        {
+            "en" => "Talabi - Email Verification Code",
+            "ar" => "Talabi - رمز التحقق من البريد الإلكتروني",
+            _ => "Talabi - Email Doğrulama Kodu" // Default Turkish
+        };
+    }
+
+    private async Task SendVerificationCodeAsync(string email, string? fullName, string? languageCode = null)
+    {
+        var code = GenerateVerificationCode();
+        var cacheKey = $"verification_code_{email}";
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(VerificationCodeExpirationMinutes)
+        };
+
+        _memoryCache.Set(cacheKey, code, cacheOptions);
+
+        // Determine language
+        var lang = GetLanguageFromRequest(languageCode);
+
+        await _emailSender.SendEmailAsync(new EmailTemplateRequest
+        {
+            To = email,
+            Subject = GetEmailSubject(lang),
+            TemplateName = EmailTemplateNames.VerificationCode,
+            LanguageCode = lang,
+            Variables = new Dictionary<string, string>
+            {
+                ["fullName"] = string.IsNullOrWhiteSpace(fullName) ? email : fullName,
+                ["verificationCode"] = code
+            }
+        });
     }
 
     [HttpPost("register")]
@@ -39,6 +137,63 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // ÖNCE KULLANICI VAR MI KONTROL ET - Varsa email gönderme
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                // Kullanıcı zaten var, ancak email doğrulanmamış olabilir
+                if (await _userManager.IsEmailConfirmedAsync(existingUser))
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+                        Error = "DuplicateEmail"
+                    });
+                }
+                else
+                {
+                    // Email doğrulanmamış, yeni kod gönder
+                    try
+                    {
+                        await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
+                        return Ok(new
+                        {
+                            Message = "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin.",
+                            Email = dto.Email
+                        });
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
+                        return BadRequest(new
+                        {
+                            Message = "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+                            Error = "Email gönderimi başarısız"
+                        });
+                    }
+                }
+            }
+
+            // Kullanıcı yok, şimdi email göndermeyi dene
+            try
+            {
+                // Email göndermeyi dene (kullanıcı henüz oluşturulmadan)
+                await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
+            }
+            catch (Exception emailEx)
+            {
+                // Email gönderilemezse kullanıcıyı oluşturma ve hata döndür
+                _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
+                
+                return BadRequest(new
+                {
+                    Message = "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin veya daha sonra tekrar deneyin.",
+                    Error = "Email gönderimi başarısız",
+                    Details = emailEx.Message
+                });
+            }
+
+            // Email başarıyla gönderildi, şimdi kullanıcıyı oluştur
             var user = new AppUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
             var result = await _userManager.CreateAsync(user, dto.Password);
 
@@ -46,47 +201,159 @@ public class AuthController : ControllerBase
             {
                 try
                 {
-                    // Generate email confirmation token
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth", new { token, email = user.Email }, Request.Scheme);
-                    
-                    await _emailSender.SendEmailAsync(new EmailTemplateRequest
-                    {
-                        To = user.Email!,
-                        Subject = "Email adresini doğrula",
-                        TemplateName = EmailTemplateNames.ConfirmEmail,
-                        Variables = new Dictionary<string, string>
-                        {
-                            ["fullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.Email! : user.FullName,
-                            ["actionLink"] = confirmationLink!
-                        }
-                    });
+                    // Assign Customer role
+                    await _userManager.AddToRoleAsync(user, "Customer");
 
-                    // For now, we return the token directly to make testing easier without a real email server
-                    // In production, you would only return a success message
-                    return Ok(new { Message = "User registered successfully. Please check your email to confirm your account.", ConfirmationToken = token });
+                    // Create Customer entity
+                    var customer = new Customer
+                    {
+                        UserId = user.Id
+                    };
+                    _context.Customers.Add(customer);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        Message = "Kullanıcı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.",
+                        Email = user.Email
+                    });
                 }
-                catch (Exception emailEx)
+                catch (Exception dbEx)
                 {
-                    // Log email error but don't fail registration
-                    // User is already created, so we return success with token
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    return Ok(new { 
-                        Message = "User registered successfully. Email confirmation could not be sent. Please contact support.", 
-                        ConfirmationToken = token,
-                        Warning = emailEx.Message 
+                    // Kullanıcı oluşturuldu ama Customer entity veya role ataması başarısız
+                    // Email zaten gönderildi, kullanıcı var, sadece eksik kısımları tamamlamak lazım
+                    var innerExceptionMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                    _logger.LogError(dbEx, "Kullanıcı oluşturuldu ancak Customer entity veya role ataması başarısız. UserId: {UserId}, InnerException: {InnerException}", 
+                        user.Id, innerExceptionMessage);
+                    
+                    // Kullanıcıyı sil (rollback)
+                    await _userManager.DeleteAsync(user);
+                    
+                    return StatusCode(500, new
+                    {
+                        Message = "Kullanıcı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+                        Error = innerExceptionMessage
                     });
                 }
             }
 
-            return BadRequest(result.Errors);
+            // Kullanıcı oluşturulamadı ama email gönderildi - cache'den kodu temizle
+            var cacheKey = $"verification_code_{dto.Email}";
+            _memoryCache.Remove(cacheKey);
+
+            return BadRequest(new
+            {
+                Message = "Kullanıcı oluşturulamadı",
+                Errors = result.Errors
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { Message = "An error occurred during registration", Error = ex.Message, StackTrace = ex.StackTrace });
+            _logger.LogError(ex, "Register işlemi sırasında beklenmeyen hata. Email: {Email}", dto.Email);
+            
+            // Email gönderildiyse cache'i temizle
+            var cacheKey = $"verification_code_{dto.Email}";
+            _memoryCache.Remove(cacheKey);
+            
+            return StatusCode(500, new
+            {
+                Message = "Kayıt sırasında bir hata oluştu",
+                Error = ex.Message
+            });
         }
     }
 
+    [HttpPost("verify-email-code")]
+    public async Task<IActionResult> VerifyEmailCode([FromBody] VerifyEmailCodeDto dto)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+            {
+                return BadRequest(new { Message = "Kullanıcı bulunamadı." });
+            }
+
+            // Check if email is already confirmed
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return BadRequest(new { Message = "Email adresi zaten doğrulanmış." });
+            }
+
+            var cacheKey = $"verification_code_{dto.Email}";
+            if (!_memoryCache.TryGetValue(cacheKey, out string? cachedCode))
+            {
+                return BadRequest(new { Message = "Doğrulama kodu süresi dolmuş veya geçersiz." });
+            }
+
+            if (cachedCode != dto.Code)
+            {
+                return BadRequest(new { Message = "Doğrulama kodu hatalı." });
+            }
+
+            // Confirm email
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                // Remove code from cache
+                _memoryCache.Remove(cacheKey);
+
+                return Ok(new { Message = "Email adresi başarıyla doğrulandı." });
+            }
+
+            return BadRequest(new { Message = "Email doğrulama başarısız.", Errors = result.Errors });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "Doğrulama sırasında bir hata oluştu", Error = ex.Message });
+        }
+    }
+
+    [HttpPost("resend-verification-code")]
+    public async Task<IActionResult> ResendVerificationCode([FromBody] ResendVerificationCodeDto dto)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+            {
+                // Don't reveal if user exists or not for security
+                return Ok(new { Message = "Eğer bu email adresi kayıtlıysa, doğrulama kodu gönderildi." });
+            }
+
+            // Check if email is already confirmed
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return BadRequest(new { Message = "Email adresi zaten doğrulanmış." });
+            }
+
+            // Try to get language from UserPreferences if user has preferences
+            string? userLanguage = null;
+            var userPreferences = await _context.UserPreferences
+                .FirstOrDefaultAsync(up => up.UserId == user.Id);
+
+            if (userPreferences != null)
+            {
+                userLanguage = userPreferences.Language;
+            }
+
+            // Priority: DTO Language > UserPreferences > Accept-Language > Default
+            var languageToUse = dto.Language ?? userLanguage;
+
+            // Send new verification code with language preference
+            await SendVerificationCodeAsync(user.Email!, user.FullName, languageToUse);
+
+            return Ok(new { Message = "Doğrulama kodu yeniden gönderildi." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "Kod gönderme sırasında bir hata oluştu", Error = ex.Message });
+        }
+    }
+
+    // Keep the old endpoint for backward compatibility (if needed)
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string token, string email)
     {
@@ -114,8 +381,8 @@ public class AuthController : ControllerBase
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            
-            
+
+
             await _emailSender.SendEmailAsync(new EmailTemplateRequest
             {
                 To = user.Email!,
@@ -127,7 +394,7 @@ public class AuthController : ControllerBase
                     ["resetToken"] = token
                 }
             });
-            
+
             return Ok(new { Message = "If the email exists, a password reset link has been sent." });
         }
         catch (Exception ex)
@@ -177,14 +444,14 @@ public class AuthController : ControllerBase
         }
         catch (FormatException ex) when (ex.Message.Contains("Base-64"))
         {
-             // Password hash is corrupted - reset the password
+            // Password hash is corrupted - reset the password
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user != null)
             {
                 // Remove the old password hash and set a new one
                 var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var resetResult = await _userManager.ResetPasswordAsync(user, resetToken, dto.Password);
-                
+
                 if (resetResult.Succeeded)
                 {
                     // Try login again
@@ -202,7 +469,7 @@ public class AuthController : ControllerBase
                     }
                 }
             }
-            
+
             return StatusCode(500, new { Message = "Account password is corrupted. Please contact support or register a new account." });
         }
         catch (Exception ex)
@@ -226,7 +493,7 @@ public class AuthController : ControllerBase
 
         var email = principal.FindFirstValue(ClaimTypes.Email) ?? principal.FindFirstValue(JwtRegisteredClaimNames.Email);
         if (email == null)
-             return BadRequest("Invalid access token or refresh token");
+            return BadRequest("Invalid access token or refresh token");
 
         var user = await _userManager.FindByEmailAsync(email);
 
@@ -252,7 +519,7 @@ public class AuthController : ControllerBase
 
         // Get user roles
         var roles = await _userManager.GetRolesAsync(user);
-        
+
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
@@ -306,7 +573,7 @@ public class AuthController : ControllerBase
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-        
+
         if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             throw new SecurityTokenException("Invalid token");
 

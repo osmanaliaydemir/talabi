@@ -26,6 +26,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<Review> Reviews { get; set; }
     public DbSet<DeliveryProof> DeliveryProofs { get; set; }
     public DbSet<CourierEarning> CourierEarnings { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -218,6 +219,18 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<CourierEarning>()
             .Property(ce => ce.TotalEarning)
             .HasColumnType("decimal(18,2)");
+
+        // Customer configuration
+        builder.Entity<Customer>()
+            .HasOne(c => c.User)
+            .WithOne()
+            .HasForeignKey<Customer>(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: one customer record per user
+        builder.Entity<Customer>()
+            .HasIndex(c => c.UserId)
+            .IsUnique();
 
         // Courier decimal properties
         builder.Entity<Courier>()

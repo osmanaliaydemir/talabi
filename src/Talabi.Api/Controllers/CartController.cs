@@ -58,6 +58,18 @@ public class CartController : ControllerBase
     {
         var userId = GetUserId();
 
+        // Kullanıcının adresi var mı kontrol et (Customer için)
+        var hasAddress = await _context.UserAddresses.AnyAsync(a => a.UserId == userId);
+        if (!hasAddress)
+        {
+            return BadRequest(new
+            {
+                Message = "Sepete ürün eklemek için önce bir adres eklemeniz gerekmektedir.",
+                Code = "ADDRESS_REQUIRED",
+                RequiresAddress = true
+            });
+        }
+
         // Get or create cart
         var cart = await _context.Carts
             .Include(c => c.CartItems)

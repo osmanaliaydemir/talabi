@@ -679,13 +679,19 @@ class _SearchScreenState extends State<SearchScreen>
             trailing: IconButton(
               icon: const Icon(Icons.add_shopping_cart),
               onPressed: () {
-                cart.addItem(product);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${product.name} sepete eklendi'),
-                    duration: const Duration(seconds: 1),
-                  ),
-                );
+                cart
+                    .addItem(product, context)
+                    .then((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${product.name} sepete eklendi'),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    })
+                    .catchError((e) {
+                      // Error is handled by CartProvider (popup shown)
+                    });
               },
             ),
           ),

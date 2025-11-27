@@ -610,4 +610,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deliveryFee => 'Delivery Fee';
+
+  @override
+  String get addressRequiredTitle => 'Address Required';
+
+  @override
+  String get addressRequiredMessage =>
+      'You need to add a delivery address before placing an order.';
+
+  @override
+  String get addAddress => 'Add Address';
 }

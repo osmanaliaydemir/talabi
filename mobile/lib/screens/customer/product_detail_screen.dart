@@ -687,7 +687,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (_isLoadingReviews)
-                          Center(child: CircularProgressIndicator(color: Colors.orange))
+                          Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.orange,
+                            ),
+                          )
                         else if (_reviews.isEmpty)
                           const Text(
                             'No reviews yet. Be the first to review!',
@@ -816,12 +820,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          cart.addItem(_product!);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${_product!.name} sepete eklendi'),
-                            ),
-                          );
+                          cart
+                              .addItem(_product!, context)
+                              .then((_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '${_product!.name} sepete eklendi',
+                                    ),
+                                  ),
+                                );
+                              })
+                              .catchError((e) {
+                                // Error is handled by CartProvider (popup shown)
+                              });
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,

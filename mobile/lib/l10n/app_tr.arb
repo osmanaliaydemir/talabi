@@ -212,6 +212,9 @@
   "enterValidAmount": "Geçerli bir tutar girin",
   "enterValidTime": "Geçerli bir süre girin",
   "optional": "Opsiyonel",
-  "deliveryFee": "Teslimat Ücreti"
+  "deliveryFee": "Teslimat Ücreti",
+  "addressRequiredTitle": "Adres Gerekli",
+  "addressRequiredMessage": "Sipariş vermek için önce bir teslimat adresi eklemeniz gerekiyor.",
+  "addAddress": "Adres Ekle"
 }
 

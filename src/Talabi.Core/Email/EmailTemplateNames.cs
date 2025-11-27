@@ -4,5 +4,6 @@ public static class EmailTemplateNames
 {
     public const string ConfirmEmail = "ConfirmEmail";
     public const string ResetPassword = "ResetPassword";
+    public const string VerificationCode = "VerificationCode";
 }
 

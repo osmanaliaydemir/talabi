@@ -607,4 +607,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deliveryFee => 'رسوم التوصيل';
+
+  @override
+  String get addressRequiredTitle => 'العنوان مطلوب';
+
+  @override
+  String get addressRequiredMessage =>
+      'تحتاج إلى إضافة عنوان توصيل قبل تقديم الطلب.';
+
+  @override
+  String get addAddress => 'إضافة عنوان';
 }

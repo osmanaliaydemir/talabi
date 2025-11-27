@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   NotificationSettings? _notificationSettings;
   bool _pushNotificationsEnabled = true;
   bool _promotionalNotificationsEnabled = false;
+  bool _newProductsNotificationsEnabled = false;
 
   @override
   void initState() {
@@ -62,6 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _pushNotificationsEnabled = _notificationSettings?.orderUpdates ?? true;
         _promotionalNotificationsEnabled =
             _notificationSettings?.promotions ?? false;
+        _newProductsNotificationsEnabled =
+            _notificationSettings?.newProducts ?? false;
       });
     } catch (e) {
       // Hata durumunda varsayılan değerler kullanılacak
@@ -78,6 +81,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else if (type == 'promotional') {
         _promotionalNotificationsEnabled = value;
         _notificationSettings!.promotions = value;
+      } else if (type == 'newProducts') {
+        _newProductsNotificationsEnabled = value;
+        _notificationSettings!.newProducts = value;
       }
     });
 
@@ -94,6 +100,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         } else if (type == 'promotional') {
           _promotionalNotificationsEnabled = !value;
           _notificationSettings!.promotions = !value;
+        } else if (type == 'newProducts') {
+          _newProductsNotificationsEnabled = !value;
+          _notificationSettings!.newProducts = !value;
         }
       });
       if (mounted) {
@@ -310,6 +319,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             value: _promotionalNotificationsEnabled,
             onChanged: (value) =>
                 _updateNotificationSetting('promotional', value),
+          ),
+          _buildNotificationMenuItem(
+            icon: Icons.new_releases,
+            title: 'New Products',
+            value: _newProductsNotificationsEnabled,
+            onChanged: (value) =>
+                _updateNotificationSetting('newProducts', value),
           ),
           const Divider(height: 1),
           // More Section

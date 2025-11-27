@@ -212,6 +212,9 @@
   "enterValidAmount": "Enter a valid amount",
   "enterValidTime": "Enter a valid time",
   "optional": "Optional",
-  "deliveryFee": "Delivery Fee"
+  "deliveryFee": "Delivery Fee",
+  "addressRequiredTitle": "Address Required",
+  "addressRequiredMessage": "You need to add a delivery address before placing an order.",
+  "addAddress": "Add Address"
 }
 

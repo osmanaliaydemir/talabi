@@ -9,5 +9,6 @@ public class EmailTemplateRequest
     public required string Subject { get; init; }
     public required string TemplateName { get; init; }
     public IDictionary<string, string> Variables { get; init; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    public string? LanguageCode { get; init; }
 }
 

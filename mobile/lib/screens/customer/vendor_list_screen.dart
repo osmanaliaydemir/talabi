@@ -1020,7 +1020,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                                     constraints: const BoxConstraints(),
                                     onPressed: () async {
                                       try {
-                                        await cart.addItem(product);
+                                        await cart.addItem(product, context);
                                         ToastMessage.show(
                                           context,
                                           message:

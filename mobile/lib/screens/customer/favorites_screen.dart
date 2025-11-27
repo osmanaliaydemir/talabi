@@ -490,7 +490,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                   constraints: const BoxConstraints(),
                                   onPressed: () async {
                                     try {
-                                      await cart.addItem(product);
+                                      await cart.addItem(product, context);
                                       ToastMessage.show(
                                         context,
                                         message:

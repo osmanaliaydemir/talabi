@@ -51,7 +51,7 @@ builder.Services.AddHttpClient();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
-builder.Services.AddHttpClient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.IOrderAssignmentService, Talabi.Infrastructure.Services.OrderAssignmentService>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<Talabi.Core.Interfaces.INotificationService, Talabi.Api.Services.SignalRNotificationService>();

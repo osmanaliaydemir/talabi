@@ -116,13 +116,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               context,
                               listen: false,
                             );
-                            cart.addItem(product);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${product.name} sepete eklendi'),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
+                            cart
+                                .addItem(product, context)
+                                .then((_) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '${product.name} sepete eklendi',
+                                      ),
+                                      duration: const Duration(seconds: 1),
+                                    ),
+                                  );
+                                })
+                                .catchError((e) {
+                                  // Error is handled by CartProvider (popup shown)
+                                });
                           },
                         ),
                         const Icon(Icons.chevron_right),
