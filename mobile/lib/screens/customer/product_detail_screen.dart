@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/review.dart';
@@ -165,7 +166,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       return IconButton(
                         icon: Icon(
                           index < rating ? Icons.star : Icons.star_border,
-                          color: Colors.orange,
+                          color: AppTheme.primaryOrange,
                           size: 32,
                         ),
                         onPressed: () {
@@ -231,8 +232,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppTheme.primaryOrange,
+                    foregroundColor: AppTheme.textOnPrimary,
                   ),
                   child: const Text('Submit'),
                 ),
@@ -254,8 +255,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (_isLoading) {
       return Scaffold(
         body: Container(
-          color: Colors.white,
-          child: Center(child: CircularProgressIndicator(color: Colors.orange)),
+          color: AppTheme.backgroundColor,
+          child: Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+          ),
         ),
       );
     }
@@ -270,7 +273,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Stack(
         children: [
           // Product Image Background
@@ -417,7 +420,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.orange,
+                                color: AppTheme.primaryOrange,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -524,7 +527,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: IconButton(
                                 icon: Icon(
                                   Icons.star_outline,
-                                  color: Colors.orange,
+                                  color: AppTheme.primaryOrange,
                                 ),
                                 onPressed: () {
                                   _showReviewDialog(isVendor: true);
@@ -588,7 +591,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       children: [
                                         Icon(
                                           Icons.delivery_dining,
-                                          color: Colors.orange,
+                                          color: AppTheme.primaryOrange,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -627,7 +630,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       children: [
                                         Icon(
                                           Icons.shopping_cart,
-                                          color: Colors.orange,
+                                          color: AppTheme.primaryOrange,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -689,7 +692,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         if (_isLoadingReviews)
                           Center(
                             child: CircularProgressIndicator(
-                              color: Colors.orange,
+                              color: AppTheme.primaryOrange,
                             ),
                           )
                         else if (_reviews.isEmpty)
@@ -734,7 +737,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                               starIndex < review.rating
                                                   ? Icons.star
                                                   : Icons.star_border,
-                                              color: Colors.orange,
+                                              color: AppTheme.primaryOrange,
                                               size: 16,
                                             );
                                           }),

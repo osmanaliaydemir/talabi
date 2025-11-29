@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';

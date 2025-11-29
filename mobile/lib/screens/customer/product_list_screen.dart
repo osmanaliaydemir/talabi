@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
@@ -84,14 +85,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.vendor.name)),
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryOrange,
+        foregroundColor: AppTheme.textOnPrimary,
+        title: Text(
+          widget.vendor.name,
+          style: AppTheme.poppins(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textOnPrimary,
+          ),
+        ),
+      ),
       bottomNavigationBar: const PersistentBottomNavBar(),
       body: FutureBuilder<List<Product>>(
         future: _productsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return GridView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(AppTheme.spacingMedium),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 0.75,
@@ -104,13 +116,24 @@ class _ProductListScreenState extends State<ProductListScreen> {
               },
             );
           } else if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Hata: ${snapshot.error}',
+                style: AppTheme.poppins(color: AppTheme.error),
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Henüz ürün yok.'));
+            return Center(
+              child: Text(
+                'Henüz ürün yok.',
+                style: AppTheme.poppins(color: AppTheme.textSecondary),
+              ),
+            );
           }
 
           final products = snapshot.data!;
           return RefreshIndicator(
+            color: AppTheme.primaryOrange,
             onRefresh: () async {
               setState(() {
                 _productsFuture = _apiService.getProducts(widget.vendor.id);
@@ -119,7 +142,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               await _loadFavoriteStatus();
             },
             child: GridView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(AppTheme.spacingSmall),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 0.7,

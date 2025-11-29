@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:provider/provider.dart';
@@ -116,8 +117,11 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Dil değiştirildi'),
-          backgroundColor: Colors.green,
+          content: Text(
+            'Dil değiştirildi',
+            style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+          ),
+          backgroundColor: AppTheme.success,
           duration: const Duration(seconds: 1),
         ),
       );
@@ -131,7 +135,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -139,7 +143,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
           // Main Content
           Expanded(
             child: Container(
-              color: Colors.white,
+              color: AppTheme.backgroundColor,
               child: SingleChildScrollView(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -148,10 +152,10 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                     child: ScaleTransition(
                       scale: _scaleAnimation,
                       child: Padding(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: EdgeInsets.all(AppTheme.spacingLarge),
                         child: Column(
                           children: [
-                            const SizedBox(height: 20),
+                            SizedBox(height: AppTheme.spacingMedium),
                             // Animated Logo/Icon
                             TweenAnimationBuilder<double>(
                               tween: Tween(begin: 0.0, end: 1.0),
@@ -166,7 +170,8 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                       width: 90,
                                       height: 90,
                                       decoration: BoxDecoration(
-                                        color: Colors.orange.shade50,
+                                        color: AppTheme.primaryOrange
+                                            .withOpacity(0.1),
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
@@ -178,17 +183,17 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                           ),
                                         ],
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.language,
                                         size: 45,
-                                        color: Colors.orange,
+                                        color: AppTheme.primaryOrange,
                                       ),
                                     ),
                                   ),
                                 );
                               },
                             ),
-                            const SizedBox(height: 32),
+                            SizedBox(height: AppTheme.spacingLarge),
                             // Title
                             TweenAnimationBuilder<double>(
                               tween: Tween(begin: 0.0, end: 1.0),
@@ -201,10 +206,10 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                     offset: Offset(0, 20 * (1 - value)),
                                     child: Text(
                                       appLocalizations.selectLanguage,
-                                      style: const TextStyle(
+                                      style: AppTheme.poppins(
                                         fontSize: 28,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
+                                        color: AppTheme.textPrimary,
                                         letterSpacing: 1.0,
                                       ),
                                       textAlign: TextAlign.center,
@@ -213,7 +218,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                 );
                               },
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: AppTheme.spacingSmall),
                             TweenAnimationBuilder<double>(
                               tween: Tween(begin: 0.0, end: 1.0),
                               duration: const Duration(milliseconds: 1000),
@@ -225,9 +230,9 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                     offset: Offset(0, 20 * (1 - value)),
                                     child: Text(
                                       'Choose your preferred language',
-                                      style: TextStyle(
+                                      style: AppTheme.poppins(
                                         fontSize: 14,
-                                        color: Colors.grey[600],
+                                        color: AppTheme.textSecondary,
                                         letterSpacing: 0.5,
                                       ),
                                       textAlign: TextAlign.center,
@@ -236,7 +241,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                 );
                               },
                             ),
-                            const SizedBox(height: 40),
+                            SizedBox(height: AppTheme.spacingXLarge),
                             // Language Cards
                             ...List.generate(
                               _languages.length,
@@ -288,49 +293,52 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Language Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.language,
-                  color: Colors.white,
-                  size: 20,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title and Count
               Expanded(
                 child: Column(
@@ -339,17 +347,17 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                   children: [
                     Text(
                       localizations.selectLanguage,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       '${_languages.length} languages',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -369,21 +377,27 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
     final color = language['color'] as Color;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+      margin: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingLarge,
+        vertical: AppTheme.spacingSmall,
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _selectLanguage(language['code'] as String),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingLarge,
+              vertical: AppTheme.spacingMedium,
+            ),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              color: AppTheme.cardColor,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               border: Border.all(
-                color: isSelected ? color : Colors.grey[300]!,
+                color: isSelected ? color : AppTheme.borderColor,
                 width: isSelected ? 3 : 1,
               ),
               boxShadow: [
@@ -419,7 +433,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                     ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: AppTheme.spacingMedium),
                 // Language Info
                 Expanded(
                   child: Column(
@@ -427,18 +441,18 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                     children: [
                       Text(
                         language['name'] as String,
-                        style: TextStyle(
+                        style: AppTheme.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? color : Colors.black87,
+                          color: isSelected ? color : AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         language['nativeName'] as String,
-                        style: TextStyle(
+                        style: AppTheme.poppins(
                           fontSize: 16,
-                          color: Colors.grey[600],
+                          color: AppTheme.textSecondary,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -464,9 +478,9 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check,
-                            color: Colors.white,
+                            color: AppTheme.textOnPrimary,
                             size: 20,
                           ),
                         )
@@ -475,7 +489,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: AppTheme.borderColor,
                             shape: BoxShape.circle,
                           ),
                         ),

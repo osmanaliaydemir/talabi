@@ -202,11 +202,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signUp => 'إنشاء حساب';
 
   @override
-  String get welcomeBack => 'مرحباً بعودتك!';
+  String get welcomeBack => 'مرحباً بك!';
 
   @override
   String get loginDescription =>
-      'للبقاء على اتصال معنا يرجى تسجيل الدخول بمعلوماتك الشخصية';
+      'سجل الدخول لتقديم الطلبات وتتبعها في الوقت الفعلي';
 
   @override
   String get emailAddress => 'عنوان البريد الإلكتروني';
@@ -1120,4 +1120,32 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get paymentComingSoonDescription =>
       'طريقة الدفع هذه ستكون متاحة قريباً.';
+
+  @override
+  String get skip => 'تخطي';
+
+  @override
+  String get next => 'التالي';
+
+  @override
+  String get getStarted => 'ابدأ';
+
+  @override
+  String get onboardingTitle1 => 'تسوق كل ما تحتاجه';
+
+  @override
+  String get onboardingDesc1 =>
+      'البقالة الطازجة والاحتياجات اليومية والمزيد—كل ذلك في تطبيق واحد';
+
+  @override
+  String get onboardingTitle2 => 'توصيل سريع وموثوق';
+
+  @override
+  String get onboardingDesc2 => 'تتبع طلبك في الوقت الفعلي واحصل عليه بسرعة';
+
+  @override
+  String get onboardingTitle3 => 'أفضل الأسعار والعروض';
+
+  @override
+  String get onboardingDesc3 => 'استمتع بصفقات حصرية وأسعار تنافسية كل يوم';
 }

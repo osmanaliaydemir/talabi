@@ -67,8 +67,8 @@
   "outOfStock": "Stokta Yok",
   "signIn": "Giriş Yap",
   "signUp": "Kayıt Ol",
-  "welcomeBack": "Tekrar Hoş Geldiniz!",
-  "loginDescription": "Bizimle bağlantıda kalmak için lütfen kişisel bilgilerinizle giriş yapın",
+  "welcomeBack": "Hoş Geldiniz!",
+  "loginDescription": "Sipariş vermek ve verdiğiniz siparişleri anlık olarak takip etmek için giriş yapın",
   "emailAddress": "E-posta Adresi",
   "password": "Şifre",
   "rememberMe": "Beni hatırla?",
@@ -619,5 +619,14 @@
   "noAddressFound": "Kayıtlı adres bulunamadı",
   "addNewAddress": "Yeni Adres Ekle",
   "cashDescription": "Nakit olarak kapıda kuryeye teslim edebilirsiniz.",
-  "paymentComingSoonDescription": "Bu ödeme yöntemi yakında hizmete girecektir."
+  "paymentComingSoonDescription": "Bu ödeme yöntemi yakında hizmete girecektir.",
+  "skip": "Geç",
+  "next": "İleri",
+  "getStarted": "Başla",
+  "onboardingTitle1": "İhtiyacınız Olan Her Şey",
+  "onboardingDesc1": "Taze market ürünleri, günlük ihtiyaçlar ve daha fazlası—tek uygulamada",
+  "onboardingTitle2": "Hızlı ve Güvenilir Teslimat",
+  "onboardingDesc2": "Siparişinizi anlık takip edin ve hızlıca teslim alın",
+  "onboardingTitle3": "En İyi Fiyatlar ve Kampanyalar",
+  "onboardingDesc3": "Her gün özel teklifler ve rekabetçi fiyatların keyfini çıkarın"
 }

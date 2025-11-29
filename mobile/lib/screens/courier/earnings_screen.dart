@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:mobile/models/courier_earning.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';

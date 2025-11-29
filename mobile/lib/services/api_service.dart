@@ -549,6 +549,81 @@ class ApiService {
     }
   }
 
+  // External Login (Google, Apple, Facebook)
+  Future<Map<String, dynamic>> externalLogin({
+    required String provider,
+    required String idToken,
+    required String email,
+    required String fullName,
+    String? language,
+  }) async {
+    try {
+      print('🔵 [EXTERNAL_LOGIN] Starting $provider login...');
+      print('🔵 [EXTERNAL_LOGIN] Email: $email');
+      print('🔵 [EXTERNAL_LOGIN] FullName: $fullName');
+
+      final requestData = {
+        'provider': provider,
+        'idToken': idToken,
+        'email': email,
+        'fullName': fullName,
+        if (language != null) 'language': language,
+      };
+
+      final response = await _dio.post(
+        '/auth/external-login',
+        data: requestData,
+      );
+
+      print('🟢 [EXTERNAL_LOGIN] Success! Status: ${response.statusCode}');
+      print('🟢 [EXTERNAL_LOGIN] Response data: ${response.data}');
+
+      return response.data;
+    } on DioException catch (e) {
+      print('🔴 [EXTERNAL_LOGIN] DioException occurred!');
+      print('🔴 [EXTERNAL_LOGIN] Error type: ${e.type}');
+      print('🔴 [EXTERNAL_LOGIN] Error message: ${e.message}');
+      print('🔴 [EXTERNAL_LOGIN] Response status: ${e.response?.statusCode}');
+      print('🔴 [EXTERNAL_LOGIN] Response data: ${e.response?.data}');
+
+      if (e.response != null) {
+        final responseData = e.response?.data;
+        String errorMessage = 'Unknown error';
+
+        if (responseData is Map) {
+          errorMessage =
+              responseData['message'] ??
+              responseData['error'] ??
+              responseData.toString();
+        } else if (responseData is String) {
+          errorMessage = responseData;
+        }
+
+        print('🔴 [EXTERNAL_LOGIN] Parsed error message: $errorMessage');
+        throw Exception(errorMessage);
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e, stackTrace) {
+      print('🔴 [EXTERNAL_LOGIN] Unexpected error: $e');
+      print('🔴 [EXTERNAL_LOGIN] Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  // Notification methods
+  Future<void> registerDeviceToken(String token, String deviceType) async {
+    try {
+      await _dio.post(
+        '/notification/register-device',
+        data: {'token': token, 'deviceType': deviceType},
+      );
+    } catch (e) {
+      print('Error registering device token: $e');
+      // Don't rethrow, just log, as this shouldn't block app usage
+    }
+  }
+
   // Cart methods
   Future<Map<String, dynamic>> getCart() async {
     try {
@@ -1174,7 +1249,9 @@ class ApiService {
   // Get available couriers for order
   Future<List<Map<String, dynamic>>> getAvailableCouriers(int orderId) async {
     try {
-      final response = await _dio.get('/vendor/orders/$orderId/available-couriers');
+      final response = await _dio.get(
+        '/vendor/orders/$orderId/available-couriers',
+      );
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
       print('Error getting available couriers: $e');
@@ -1198,7 +1275,9 @@ class ApiService {
   // Auto-assign best courier
   Future<Map<String, dynamic>> autoAssignCourier(int orderId) async {
     try {
-      final response = await _dio.post('/vendor/orders/$orderId/auto-assign-courier');
+      final response = await _dio.post(
+        '/vendor/orders/$orderId/auto-assign-courier',
+      );
       return response.data;
     } catch (e) {
       print('Error auto-assigning courier: $e');

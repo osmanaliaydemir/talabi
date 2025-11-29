@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               AppLocalizations.of(context)?.passwordResetEmailSent ??
                   'Password reset email sent',
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
         Navigator.pop(context);
@@ -54,7 +55,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               AppLocalizations.of(context)?.passwordResetFailed ??
                   'Failed to send reset email: $e',
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -78,9 +79,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.orange.shade400,
-              Colors.orange.shade600,
-              Colors.orange.shade800,
+              AppTheme.lightOrange,
+              AppTheme.primaryOrange,
+              AppTheme.darkOrange,
             ],
           ),
         ),
@@ -100,7 +101,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: Colors.orange.shade300,
+                          color: AppTheme.lightOrange.withOpacity(0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -113,33 +114,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(50),
-                            bottomRight: Radius.circular(50),
+                          color: AppTheme.primaryOrange,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
+                            bottomRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     // Back button
                     Positioned(
-                      top: 8,
-                      left: 8,
+                      top: AppTheme.spacingSmall,
+                      left: AppTheme.spacingSmall,
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: AppTheme.textOnPrimary,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
                     // Title - Centered
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 40),
+                        padding: EdgeInsets.only(
+                          top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
+                        ),
                         child: Text(
                           localizations.passwordReset,
-                          style: const TextStyle(
+                          style: AppTheme.poppins(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppTheme.textOnPrimary,
                           ),
                         ),
                       ),
@@ -150,23 +160,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               // Main Content Card
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(top: 20),
+                  margin: EdgeInsets.only(
+                    top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                    color: AppTheme.cardColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(
+                        AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                      ),
+                      topRight: Radius.circular(
+                        AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                      ),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: AppTheme.shadowColor,
                         blurRadius: 10,
                         offset: const Offset(0, -4),
                       ),
                     ],
                   ),
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(AppTheme.spacingLarge),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -175,24 +191,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           // Title
                           Text(
                             localizations.forgetPassword,
-                            style: const TextStyle(
+                            style: AppTheme.poppins(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: AppTheme.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          const SizedBox(height: 8),
+                          AppTheme.verticalSpace(0.5),
+                          AppTheme.verticalSpace(0.5),
                           // Description
                           Text(
                             localizations.forgetPasswordDescription,
-                            style: TextStyle(
+                            style: AppTheme.poppins(
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              color: AppTheme.textSecondary,
                               height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 40),
+                          AppTheme.verticalSpace(2.5),
                           // Illustration
                           Center(
                             child: CustomPaint(
@@ -200,27 +216,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               painter: _EmailIllustrationPainter(),
                             ),
                           ),
-                          const SizedBox(height: 40),
+                          AppTheme.verticalSpace(2.5),
                           // Email Input Field
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppTheme.backgroundColor,
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                             child: TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 hintText: localizations.emailAddress,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
+                                hintStyle: AppTheme.poppins(
+                                  color: AppTheme.textHint,
+                                  fontSize: 14,
+                                ),
                                 prefixIcon: Icon(
                                   Icons.email_outlined,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                 ),
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: AppTheme.spacingMedium,
+                                  vertical: AppTheme.spacingMedium,
                                 ),
                               ),
                               validator: (value) {
@@ -234,42 +255,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          AppTheme.verticalSpace(2),
                           // Continue Button
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _resetPassword,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                backgroundColor: AppTheme.primaryOrange,
+                                foregroundColor: AppTheme.textOnPrimary,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingMedium,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
                                 ),
-                                elevation: 0,
+                                elevation: AppTheme.elevationNone,
                               ),
                               child: _isLoading
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(
-                                        color: Colors.white,
+                                        color: AppTheme.textOnPrimary,
                                         strokeWidth: 2,
                                       ),
                                     )
                                   : Text(
                                       localizations.continueButton,
-                                      style: const TextStyle(
+                                      style: AppTheme.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          AppTheme.verticalSpace(1),
                           // Cancel Button
                           SizedBox(
                             width: double.infinity,
@@ -278,18 +301,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   ? null
                                   : () => Navigator.pop(context),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.black87,
-                                side: BorderSide(color: Colors.grey[300]!),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                foregroundColor: AppTheme.textPrimary,
+                                side: BorderSide(color: AppTheme.borderColor),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingMedium,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
                                 ),
                               ),
                               child: Text(
                                 localizations.cancel,
-                                style: const TextStyle(
+                                style: AppTheme.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                 ),

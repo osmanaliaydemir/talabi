@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/models/product.dart';
@@ -207,7 +208,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(isEdit ? 'Ürün Düzenle' : 'Yeni Ürün'),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
       body: Form(
@@ -376,7 +377,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _saveProduct,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: AppTheme.primaryOrange,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 
 import 'package:mobile/screens/shared/settings/accessibility_settings_screen.dart';
@@ -59,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppTheme.backgroundColor,
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
           : Column(
@@ -93,9 +94,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
@@ -106,14 +107,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               // Profile Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.person,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
+                ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title and User Info
               Expanded(
                 child: Column(
@@ -122,17 +127,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text(
                       localizations.myProfile,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       _profile?['fullName'] ?? localizations.user,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -154,18 +159,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     AuthProvider auth,
   ) {
     return Container(
-      margin: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      margin: EdgeInsets.all(AppTheme.spacingMedium),
+      decoration: AppTheme.cardDecoration(withShadow: true),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -296,13 +291,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.logout,
             title: localizations.logout,
             subtitle: localizations.logoutDescription,
-            titleColor: Colors.red,
-            iconColor: Colors.red,
+            titleColor: AppTheme.error,
+            iconColor: AppTheme.error,
             onTap: () {
               _showLogoutDialog(context, auth, localizations);
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppTheme.spacingMedium),
         ],
       ),
     );
@@ -310,13 +305,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSectionHeader(String title, String sectionTitle) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      padding: EdgeInsets.fromLTRB(
+        AppTheme.spacingMedium,
+        AppTheme.spacingMedium,
+        AppTheme.spacingMedium,
+        AppTheme.spacingSmall,
+      ),
       child: Text(
         sectionTitle,
-        style: const TextStyle(
+        style: AppTheme.poppins(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: AppTheme.textPrimary,
         ),
       ),
     );
@@ -331,22 +331,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? Colors.black87),
+      leading: Icon(icon, color: iconColor ?? AppTheme.textPrimary),
       title: Text(
         title,
-        style: TextStyle(color: titleColor ?? Colors.black87, fontSize: 15),
+        style: AppTheme.poppins(
+          color: titleColor ?? AppTheme.textPrimary,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              style: AppTheme.poppins(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+              ),
             )
           : null,
-      trailing: titleColor == Colors.red
+      trailing: titleColor == AppTheme.error
           ? null
-          : Icon(Icons.chevron_right, color: Colors.grey[400]),
+          : Icon(Icons.chevron_right, color: AppTheme.textHint),
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingMedium,
+        vertical: AppTheme.spacingXSmall,
+      ),
     );
   }
 
@@ -361,27 +371,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Text(
               localizations.howCanWeHelpYou,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: AppTheme.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacingMedium),
             _buildHelpItem(
               icon: Icons.help_outline,
               title: localizations.faq,
               subtitle: localizations.frequentlyAskedQuestions,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.email_outlined,
               title: localizations.contactSupport,
               subtitle: 'support@talabi.com',
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.phone_outlined,
               title: localizations.callUs,
               subtitle: '+90 (555) 123 45 67',
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.chat_bubble_outline,
               title: localizations.liveChat,
@@ -409,31 +422,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Handle help item tap
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall),
         child: Row(
           children: [
-            Icon(icon, color: Colors.orange, size: 24),
-            const SizedBox(width: 12),
+            Icon(
+              icon,
+              color: AppTheme.primaryOrange,
+              size: AppTheme.iconSizeMedium,
+            ),
+            SizedBox(width: AppTheme.spacingSmall),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: AppTheme.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: AppTheme.poppins(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(Icons.chevron_right, color: AppTheme.textHint),
           ],
         ),
       ),
@@ -480,7 +500,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             child: Text(
               localizations.logout,
-              style: const TextStyle(color: Colors.red),
+              style: AppTheme.poppins(
+                color: AppTheme.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

@@ -31,11 +31,11 @@ public class AuthController : ControllerBase
     private const int VerificationCodeExpirationMinutes = 3;
 
     public AuthController(
-        UserManager<AppUser> userManager, 
-        SignInManager<AppUser> signInManager, 
+        UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager,
         IConfiguration configuration,
         IEmailSender emailSender,
-        IMemoryCache memoryCache, 
+        IMemoryCache memoryCache,
         TalabiDbContext context,
         ILogger<AuthController> logger)
     {
@@ -184,7 +184,7 @@ public class AuthController : ControllerBase
             {
                 // Email gönderilemezse kullanıcıyı oluşturma ve hata döndür
                 _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-                
+
                 return BadRequest(new
                 {
                     Message = "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin veya daha sonra tekrar deneyin.",
@@ -223,12 +223,12 @@ public class AuthController : ControllerBase
                     // Kullanıcı oluşturuldu ama Customer entity veya role ataması başarısız
                     // Email zaten gönderildi, kullanıcı var, sadece eksik kısımları tamamlamak lazım
                     var innerExceptionMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                    _logger.LogError(dbEx, "Kullanıcı oluşturuldu ancak Customer entity veya role ataması başarısız. UserId: {UserId}, InnerException: {InnerException}", 
+                    _logger.LogError(dbEx, "Kullanıcı oluşturuldu ancak Customer entity veya role ataması başarısız. UserId: {UserId}, InnerException: {InnerException}",
                         user.Id, innerExceptionMessage);
-                    
+
                     // Kullanıcıyı sil (rollback)
                     await _userManager.DeleteAsync(user);
-                    
+
                     return StatusCode(500, new
                     {
                         Message = "Kullanıcı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
@@ -250,11 +250,11 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Register işlemi sırasında beklenmeyen hata. Email: {Email}", dto.Email);
-            
+
             // Email gönderildiyse cache'i temizle
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);
-            
+
             return StatusCode(500, new
             {
                 Message = "Kayıt sırasında bir hata oluştu",
@@ -321,10 +321,10 @@ public class AuthController : ControllerBase
             }
 
             // Email başarıyla gönderildi, kullanıcıyı oluştur
-            var user = new AppUser 
-            { 
-                UserName = dto.Email, 
-                Email = dto.Email, 
+            var user = new AppUser
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
                 FullName = dto.FullName,
                 Role = Talabi.Core.Enums.UserRole.Vendor
             };
@@ -360,12 +360,12 @@ public class AuthController : ControllerBase
                 catch (Exception dbEx)
                 {
                     var innerExceptionMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                    _logger.LogError(dbEx, "Vendor oluşturulurken hata. UserId: {UserId}, InnerException: {InnerException}", 
+                    _logger.LogError(dbEx, "Vendor oluşturulurken hata. UserId: {UserId}, InnerException: {InnerException}",
                         user.Id, innerExceptionMessage);
-                    
+
                     // Kullanıcıyı sil (rollback)
                     await _userManager.DeleteAsync(user);
-                    
+
                     return StatusCode(500, new
                     {
                         Message = "Satıcı hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
@@ -387,10 +387,10 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "VendorRegister işlemi sırasında beklenmeyen hata. Email: {Email}", dto.Email);
-            
+
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);
-            
+
             return StatusCode(500, new
             {
                 Message = "Kayıt sırasında bir hata oluştu",
@@ -660,6 +660,8 @@ public class AuthController : ControllerBase
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+            new Claim(ClaimTypes.Email, user.Email!), // Standard ClaimType for easier extraction
+            new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("fullName", user.FullName),
             new Claim("role", user.Role.ToString())
@@ -714,5 +716,92 @@ public class AuthController : ControllerBase
             throw new SecurityTokenException("Invalid token");
 
         return principal;
+    }
+
+    [HttpPost("external-login")]
+    public async Task<IActionResult> ExternalLogin([FromBody] ExternalAuthDto dto)
+    {
+        try
+        {
+            // Validate provider
+            if (string.IsNullOrEmpty(dto.Provider) ||
+                !new[] { "Google", "Apple", "Facebook" }.Contains(dto.Provider))
+            {
+                return BadRequest(new { Message = "Invalid provider" });
+            }
+
+            // For now, we trust the token from mobile app
+            // In production, you should verify the token with the provider's API
+            // Example: For Google, verify with https://oauth2.googleapis.com/tokeninfo?id_token={token}
+
+            if (string.IsNullOrEmpty(dto.Email))
+            {
+                return BadRequest(new { Message = "Email is required" });
+            }
+
+            // Check if user exists
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+
+            if (user == null)
+            {
+                // Create new user
+                user = new AppUser
+                {
+                    UserName = dto.Email,
+                    Email = dto.Email,
+                    FullName = dto.FullName ?? dto.Email,
+                    EmailConfirmed = true, // Social login emails are pre-verified
+                    Role = Talabi.Core.Enums.UserRole.Customer
+                };
+
+                var result = await _userManager.CreateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(new { Message = "User creation failed", Errors = result.Errors });
+                }
+
+                // Assign Customer role
+                await _userManager.AddToRoleAsync(user, "Customer");
+
+                // Create Customer entity
+                var customer = new Customer
+                {
+                    UserId = user.Id
+                };
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"New user created via {dto.Provider}: {dto.Email}");
+            }
+            else
+            {
+                // User exists, just log them in
+                _logger.LogInformation($"Existing user logged in via {dto.Provider}: {dto.Email}");
+            }
+
+            // Generate JWT token
+            var token = await GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                UserId = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = user.Role.ToString(),
+                Provider = dto.Provider
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"External login failed for provider: {dto.Provider}");
+            return StatusCode(500, new { Message = "External login failed", Error = ex.Message });
+        }
     }
 }

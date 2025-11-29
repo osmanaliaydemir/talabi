@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/courier/courier_login_screen.dart';
 import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
@@ -138,11 +139,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(displayMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
             duration: const Duration(seconds: 7),
             action: SnackBarAction(
               label: localizations.ok,
-              textColor: Colors.white,
+              textColor: AppTheme.textOnPrimary,
               onPressed: () {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
               },
@@ -164,534 +165,576 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Purple Header for Vendor
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.deepPurple.shade600,
-                    Colors.deepPurple.shade400,
-                    Colors.deepPurple.shade700,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.vendorLight,
+              AppTheme.vendorPrimary,
+              AppTheme.vendorDark,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Purple Header for Vendor
+              Container(
+                height: 160,
+                child: Stack(
+                  children: [
+                    // Decorative circles
+                    Positioned(
+                      top: -80,
+                      right: -60,
+                      child: Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              AppTheme.textOnPrimary.withOpacity(0.15),
+                              AppTheme.textOnPrimary.withOpacity(0.05),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 40,
+                      left: -40,
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              AppTheme.textOnPrimary.withOpacity(0.12),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Content - Row layout
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingLarge,
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Left Icon
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppTheme.textOnPrimary.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium + 2,
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.person_add_rounded,
+                                  size: 24,
+                                  color: AppTheme.textOnPrimary,
+                                ),
+                              ),
+                            ),
+                            // Center Title
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  localizations.vendorRegister,
+                                  style: AppTheme.poppins(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textOnPrimary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(0.25),
+                                Text(
+                                  localizations.talabiBusiness,
+                                  style: AppTheme.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppTheme.textOnPrimary.withOpacity(
+                                      0.85,
+                                    ),
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Right App Icon
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppTheme.textOnPrimary,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium + 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.shadowColor,
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.store_rounded,
+                                  size: 24,
+                                  color: AppTheme.vendorPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Decorative circles
-                  Positioned(
-                    top: -80,
-                    right: -60,
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.15),
-                            Colors.white.withOpacity(0.05),
-                            Colors.transparent,
-                          ],
+              // White Card Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                        ),
+                        topRight: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
                         ),
                       ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 40,
-                    left: -40,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.12),
-                            Colors.transparent,
-                          ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.shadowColor,
+                          blurRadius: 10,
+                          offset: const Offset(0, -4),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                  // Content - Row layout
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Left Icon
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.person_add_rounded,
-                                size: 24,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          // Center Title
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                localizations.vendorRegister,
-                                style: const TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
+                    child: Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingLarge),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Welcome Message
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.business_center,
+                                  color: AppTheme.vendorPrimary,
+                                  size: 32,
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                localizations.talabiBusiness,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withOpacity(0.85),
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                          // Right App Icon
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
+                                AppTheme.horizontalSpace(0.75),
+                                Expanded(
+                                  child: Text(
+                                    localizations.createBusinessAccount,
+                                    style: AppTheme.poppins(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                            child: Center(
-                              child: Icon(
-                                Icons.store_rounded,
-                                size: 24,
-                                color: Colors.deepPurple.shade600,
+                            AppTheme.verticalSpace(0.5),
+                            Text(
+                              localizations.createYourStoreAndStartSelling,
+                              style: AppTheme.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                height: 1.5,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // White Card Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Welcome Message
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.business_center,
-                                color: Colors.deepPurple,
-                                size: 32,
+                            AppTheme.verticalSpace(1.5),
+                            // Business Name Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  localizations.createBusinessAccount,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                              child: TextFormField(
+                                controller: _businessNameController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.businessName,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.store_outlined,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
                                   ),
                                 ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.businessNameRequired;
+                                  }
+                                  return null;
+                                },
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            localizations.createYourStoreAndStartSelling,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              height: 1.5,
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Business Name Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _businessNameController,
-                              decoration: InputDecoration(
-                                hintText: localizations.businessName,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.store_outlined,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                            AppTheme.verticalSpace(1),
+                            // Full Name Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.businessNameRequired;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Full Name Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _fullNameController,
-                              decoration: InputDecoration(
-                                hintText: localizations.fullName,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.person_outline,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.fullNameRequired;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Email Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _emailController,
-                              decoration: InputDecoration(
-                                hintText: localizations.emailAddress,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.email_outlined,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.emailRequired;
-                                }
-                                if (!value.contains('@')) {
-                                  return localizations.validEmail;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Phone Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _phoneController,
-                              decoration: InputDecoration(
-                                hintText: localizations.phoneNumber,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.phone_outlined,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                              ),
-                              keyboardType: TextInputType.phone,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.phoneNumberRequired;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Password Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                hintText: localizations.password,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.grey[600],
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                    color: Colors.grey[600],
+                              child: TextFormField(
+                                controller: _fullNameController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.fullName,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                                  prefixIcon: Icon(
+                                    Icons.person_outline,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
                                 ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.fullNameRequired;
+                                  }
+                                  return null;
+                                },
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.passwordRequired;
-                                }
-                                if (value.length < 6) {
-                                  return localizations.passwordMinLength;
-                                }
-                                return null;
-                              },
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Register Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _register,
-                              icon: Icon(
-                                Icons.store,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurple,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                            AppTheme.verticalSpace(1),
+                            // Email Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
                               ),
-                              label: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
+                              child: TextFormField(
+                                controller: _emailController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.emailAddress,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.email_outlined,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.emailRequired;
+                                  }
+                                  if (!value.contains('@')) {
+                                    return localizations.validEmail;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Phone Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                              ),
+                              child: TextFormField(
+                                controller: _phoneController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.phoneNumber,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.phone_outlined,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.phone,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.phoneNumberRequired;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Password Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                              ),
+                              child: TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  hintText: localizations.password,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.lock_outline,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.passwordRequired;
+                                  }
+                                  if (value.length < 6) {
+                                    return localizations.passwordMinLength;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1.5),
+                            // Register Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: _isLoading ? null : _register,
+                                icon: Icon(
+                                  Icons.store,
+                                  color: AppTheme.textOnPrimary,
+                                  size: 20,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.vendorPrimary,
+                                  foregroundColor: AppTheme.textOnPrimary,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  elevation: AppTheme.elevationNone,
+                                ),
+                                label: _isLoading
+                                    ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: AppTheme.textOnPrimary,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(
+                                        localizations.createVendorAccount,
+                                        style: AppTheme.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    )
-                                  : Text(
-                                      localizations.createVendorAccount,
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1.5),
+                            // Already have account
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    localizations.alreadyHaveVendorAccount,
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      TapLogger.logButtonPress(
+                                        'Vendor Login',
+                                        context: 'VendorRegisterScreen',
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const VendorLoginScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      localizations.signIn,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.vendorPrimary,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Already have account
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  localizations.alreadyHaveVendorAccount,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    TapLogger.logButtonPress(
-                                      'Vendor Login',
-                                      context: 'VendorRegisterScreen',
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const VendorLoginScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    localizations.signIn,
-                                    style: const TextStyle(
-                                      color: Colors.deepPurple,
+                                ],
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Customer Register Link
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    localizations.isCustomerAccount,
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Customer Register Link
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  localizations.isCustomerAccount,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    TapLogger.logButtonPress(
-                                      'Customer Register',
-                                      context: 'VendorRegisterScreen',
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const RegisterScreen(),
+                                  GestureDetector(
+                                    onTap: () {
+                                      TapLogger.logButtonPress(
+                                        'Customer Register',
+                                        context: 'VendorRegisterScreen',
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const RegisterScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      localizations.signUp,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.primaryOrange,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    );
-                                  },
-                                  child: Text(
-                                    localizations.signUp,
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Courier Link
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  localizations.areYouCourier + ' ',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    TapLogger.logButtonPress(
-                                      'Courier Login',
-                                      context: 'VendorRegisterScreen',
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CourierLoginScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    localizations.courierLoginLink,
-                                    style: const TextStyle(
-                                      color: Colors.teal,
+                            AppTheme.verticalSpace(1),
+                            // Courier Link
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    localizations.areYouCourier + ' ',
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
                                       fontSize: 14,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  GestureDetector(
+                                    onTap: () {
+                                      TapLogger.logButtonPress(
+                                        'Courier Login',
+                                        context: 'VendorRegisterScreen',
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CourierLoginScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      localizations.courierLoginLink,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.courierPrimary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Order Assignment Notifications -->
+  <data name="NewOrderAssignedTitle" xml:space="preserve">
+    <value>تم تعيين طلب جديد! 🚀</value>
+  </data>
+  <data name="NewOrderAssignedBody" xml:space="preserve">
+    <value>تم تعيين الطلب #{0} لك. تحقق منه الآن!</value>
+  </data>
+  
+  <!-- Order Status Update Notifications -->
+  <data name="OrderReadyTitle" xml:space="preserve">
+    <value>يتم تحضير الطلب 👨‍🍳</value>
+  </data>
+  <data name="OrderReadyBody" xml:space="preserve">
+    <value>يتم تحضير طلبك #{0} ليتم استلامه من قبل السائق.</value>
+  </data>
+  
+  <data name="OrderDeliveredTitle" xml:space="preserve">
+    <value>تم توصيل الطلب ✅</value>
+  </data>
+  <data name="OrderDeliveredBody" xml:space="preserve">
+    <value>تم توصيل طلبك #{0} بنجاح. بالهناء والشفاء!</value>
+  </data>
+  
+  <data name="OrderAssignedTitle" xml:space="preserve">
+    <value>تم تعيين سائق 🚴</value>
+  </data>
+  <data name="OrderAssignedBody" xml:space="preserve">
+    <value>تم تعيين سائق لطلبك #{0}.</value>
+  </data>
+  
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>السائق في الطريق 🛵</value>
+  </data>
+  <data name="OrderAcceptedBody" xml:space="preserve">
+    <value>السائق في طريقه لاستلام طلبك #{0}.</value>
+  </data>
+  
+  <data name="OrderOutForDeliveryTitle" xml:space="preserve">
+    <value>الطلب في الطريق 📦</value>
+  </data>
+  <data name="OrderOutForDeliveryBody" xml:space="preserve">
+    <value>طلبك #{0} في طريقه إليك.</value>
+  </data>
+  
+  <data name="OrderUpdateTitle" xml:space="preserve">
+    <value>تحديث الطلب</value>
+  </data>
+  <data name="OrderUpdateBody" xml:space="preserve">
+    <value>هناك تحديث على طلبك #{0}.</value>
+  </data>
+  
+  <!-- Abandoned Cart Notifications -->
+  <data name="AbandonedCartTitle" xml:space="preserve">
+    <value>هناك منتجات في سلتك! 🛒</value>
+  </data>
+  <data name="AbandonedCartBody" xml:space="preserve">
+    <value>أكمل منتجات سلتك قبل نفادها.</value>
+  </data>
+  
+  <!-- New Product/Vendor Notifications -->
+  <data name="NewProductTitle" xml:space="preserve">
+    <value>منتج جديد! 🎉</value>
+  </data>
+  <data name="NewProductBody" xml:space="preserve">
+    <value>{0} أضاف منتجاً جديداً: {1}</value>
+  </data>
+  
+  <data name="NewVendorTitle" xml:space="preserve">
+    <value>بائع جديد! 🏪</value>
+  </data>
+  <data name="NewVendorBody" xml:space="preserve">
+    <value>{0} انضم إلينا. اكتشفه الآن!</value>
+  </data>
+</root>

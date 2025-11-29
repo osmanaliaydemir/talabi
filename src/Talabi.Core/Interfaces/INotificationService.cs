@@ -1,7 +1,13 @@
-namespace Talabi.Core.Interfaces;
+using System.Threading.Tasks;
 
-public interface INotificationService
+namespace Talabi.Core.Interfaces
 {
-    Task SendOrderAssignmentNotificationAsync(string userId, int orderId);
-    Task SendOrderStatusUpdateNotificationAsync(string userId, int orderId, string status);
+    public interface INotificationService
+    {
+        Task SendNotificationAsync(string token, string title, string body, object data = null);
+        Task SendMulticastNotificationAsync(List<string> tokens, string title, string body, object data = null);
+        Task RegisterDeviceTokenAsync(string userId, string token, string deviceType);
+        Task SendOrderAssignmentNotificationAsync(string userId, int orderId, string? languageCode = null);
+        Task SendOrderStatusUpdateNotificationAsync(string userId, int orderId, string status, string? languageCode = null);
+    }
 }

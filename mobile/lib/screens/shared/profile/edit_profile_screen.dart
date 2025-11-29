@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:intl/intl.dart';
 
@@ -95,7 +96,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.error}: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -115,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -124,23 +125,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                margin: const EdgeInsets.only(top: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
+                margin: EdgeInsets.all(AppTheme.spacingMedium),
+                decoration: AppTheme.cardDecoration(withShadow: true),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(AppTheme.spacingLarge),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -149,41 +137,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         // Title
                         Text(
                           localizations.editProfile,
-                          style: const TextStyle(
-                            fontSize: 28,
+                          style: AppTheme.poppins(
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppTheme.spacingXSmall),
                         Text(
                           localizations.updatePersonalInfo,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            height: 1.5,
+                          style: AppTheme.poppins(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                            height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: AppTheme.spacingLarge),
                         // Full Name Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _nameController,
                             decoration: InputDecoration(
                               hintText: localizations.fullName,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.person_outline,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
                             validator: (value) {
@@ -194,75 +181,70 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingSmall),
                         // Phone Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
                               hintText: localizations.phoneNumber,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.phone_outlined,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingMedium),
                         // Profile Image URL Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _imageUrlController,
                             decoration: InputDecoration(
                               hintText: localizations.profileImageUrl,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.image_outlined,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingSmall),
                         // Date of Birth Field
                         GestureDetector(
                           onTap: _selectDate,
                           child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
+                            decoration: AppTheme.inputBoxDecoration(),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingMedium,
+                              vertical: AppTheme.spacingMedium,
                             ),
                             child: Row(
                               children: [
                                 Icon(
                                   Icons.calendar_today_outlined,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                 ),
-                                const SizedBox(width: 16),
+                                SizedBox(width: AppTheme.spacingMedium),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -270,22 +252,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     children: [
                                       Text(
                                         localizations.dateOfBirth,
-                                        style: TextStyle(
-                                          color: Colors.grey[500],
+                                        style: AppTheme.poppins(
+                                          color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       Text(
                                         _dateOfBirth != null
                                             ? DateFormat(
                                                 'dd/MM/yyyy',
                                               ).format(_dateOfBirth!)
                                             : localizations.notSelected,
-                                        style: TextStyle(
+                                        style: AppTheme.poppins(
                                           color: _dateOfBirth != null
-                                              ? Colors.black87
-                                              : Colors.grey[500],
+                                              ? AppTheme.textPrimary
+                                              : AppTheme.textHint,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -294,39 +276,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 ),
                                 Icon(
                                   Icons.chevron_right,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: AppTheme.spacingLarge),
                         // Save Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _saveProfile,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: AppTheme.buttonPrimary,
+                              foregroundColor: AppTheme.textOnPrimary,
+                              padding: EdgeInsets.symmetric(
+                                vertical: AppTheme.spacingMedium,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusSmall,
+                                ),
                               ),
                               elevation: 0,
                             ),
                             child: _isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: AppTheme.textOnPrimary,
                                       strokeWidth: 2,
                                     ),
                                   )
                                 : Text(
                                     localizations.save,
-                                    style: const TextStyle(
+                                    style: AppTheme.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -356,45 +342,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Profile Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.person,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
+                ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title and Subtitle
               Expanded(
                 child: Column(
@@ -403,17 +396,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   children: [
                     Text(
                       localizations.editProfile,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       widget.profile['fullName'] ?? localizations.user,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

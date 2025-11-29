@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/notification_settings.dart';
 import 'package:mobile/services/api_service.dart';
 
@@ -34,9 +35,15 @@ class _NotificationSettingsScreenState
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ayarlar yüklenemedi: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Ayarlar yüklenemedi: $e',
+              style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
+        );
       }
     }
   }
@@ -47,15 +54,27 @@ class _NotificationSettingsScreenState
     try {
       await _apiService.updateNotificationSettings(_settings!.toJson());
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Ayarlar kaydedildi')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Ayarlar kaydedildi',
+              style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+            ),
+            backgroundColor: AppTheme.success,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Hata: $e',
+              style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+            ),
+            backgroundColor: AppTheme.error,
+          ),
+        );
       }
     }
   }
@@ -63,7 +82,7 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -71,22 +90,40 @@ class _NotificationSettingsScreenState
           // Content
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _settings == null
-                ? const Center(child: Text('Ayarlar yüklenemedi'))
-                : Container(
-                    margin: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryOrange,
                     ),
+                  )
+                : _settings == null
+                ? Center(
+                    child: Text(
+                      'Ayarlar yüklenemedi',
+                      style: AppTheme.poppins(color: AppTheme.textSecondary),
+                    ),
+                  )
+                : Container(
+                    margin: EdgeInsets.all(AppTheme.spacingMedium),
+                    decoration: AppTheme.cardDecoration(),
                     child: ListView(
                       shrinkWrap: true,
+                      padding: EdgeInsets.zero,
                       children: [
                         SwitchListTile(
-                          title: const Text('Sipariş Güncellemeleri'),
-                          subtitle: const Text(
+                          activeColor: AppTheme.primaryOrange,
+                          title: Text(
+                            'Sipariş Güncellemeleri',
+                            style: AppTheme.poppins(
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
                             'Sipariş durumu değişikliklerinde bildirim al',
+                            style: AppTheme.poppins(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
                           ),
                           value: _settings!.orderUpdates,
                           onChanged: (value) {
@@ -96,10 +133,23 @@ class _NotificationSettingsScreenState
                             _updateSettings();
                           },
                         ),
-                        const Divider(),
+                        Divider(color: AppTheme.borderColor),
                         SwitchListTile(
-                          title: const Text('Kampanyalar'),
-                          subtitle: const Text('Özel teklifler ve kampanyalar'),
+                          activeColor: AppTheme.primaryOrange,
+                          title: Text(
+                            'Kampanyalar',
+                            style: AppTheme.poppins(
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Özel teklifler ve kampanyalar',
+                            style: AppTheme.poppins(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
                           value: _settings!.promotions,
                           onChanged: (value) {
                             setState(() {
@@ -108,11 +158,22 @@ class _NotificationSettingsScreenState
                             _updateSettings();
                           },
                         ),
-                        const Divider(),
+                        Divider(color: AppTheme.borderColor),
                         SwitchListTile(
-                          title: const Text('Yeni Ürünler'),
-                          subtitle: const Text(
+                          activeColor: AppTheme.primaryOrange,
+                          title: Text(
+                            'Yeni Ürünler',
+                            style: AppTheme.poppins(
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
                             'Yeni ürün eklendiğinde bildirim al',
+                            style: AppTheme.poppins(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
                           ),
                           value: _settings!.newProducts,
                           onChanged: (value) {
@@ -138,59 +199,62 @@ class _NotificationSettingsScreenState
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notifications,
-                  color: Colors.white,
-                  size: 20,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Bildirim Ayarları',
-                      style: TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -198,8 +262,8 @@ class _NotificationSettingsScreenState
                     SizedBox(height: 2),
                     Text(
                       'Bildirim tercihlerinizi yönetin',
-                      style: TextStyle(
-                        color: Colors.white70,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

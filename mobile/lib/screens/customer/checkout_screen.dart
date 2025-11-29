@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
 import 'package:mobile/providers/cart_provider.dart';
@@ -213,11 +214,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(localizations.checkoutTitle),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
       body: _isLoadingAddresses
-          ? Center(child: CircularProgressIndicator(color: Colors.orange))
+          ? Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -275,7 +278,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _createOrder,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: AppTheme.primaryOrange,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -324,7 +327,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Colors.orange, size: 24),
+        Icon(icon, color: AppTheme.primaryOrange, size: 24),
         SizedBox(width: 8),
         Text(
           title,
@@ -359,7 +362,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 icon: Icon(Icons.add),
                 label: Text(localizations.addNewAddress),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: AppTheme.primaryOrange,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -380,7 +383,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         border: Border.all(color: Colors.orange.shade200, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.1),
+            color: AppTheme.primaryOrange.withOpacity(0.1),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -400,7 +403,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     Container(
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.orange,
+                        color: AppTheme.primaryOrange,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(Icons.home, color: Colors.white, size: 20),
@@ -418,7 +421,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.orange,
+                    color: AppTheme.primaryOrange,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextButton.icon(
@@ -457,7 +460,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.location_on, color: Colors.orange, size: 20),
+                Icon(
+                  Icons.location_on,
+                  color: AppTheme.primaryOrange,
+                  size: 20,
+                ),
                 SizedBox(width: 8),
                 Expanded(
                   child: Column(
@@ -505,7 +512,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             // City and District
             Row(
               children: [
-                Icon(Icons.map, color: Colors.orange, size: 18),
+                Icon(Icons.map, color: AppTheme.primaryOrange, size: 18),
                 SizedBox(width: 8),
                 Expanded(
                   child: Container(
@@ -553,7 +560,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   isSelected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_unchecked,
-                  color: Colors.orange,
+                  color: AppTheme.primaryOrange,
                 ),
                 title: Text(address['title']),
                 subtitle: Text(address['addressLine1']),
@@ -622,19 +629,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   margin: EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.orange
+                        ? AppTheme.primaryOrange
                         : (isEnabled ? Colors.white : Colors.grey[100]),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected
-                          ? Colors.orange
+                          ? AppTheme.primaryOrange
                           : (isEnabled ? Colors.grey[300]! : Colors.grey[200]!),
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.3),
+                              color: AppTheme.primaryOrange.withOpacity(0.3),
                               blurRadius: 6,
                               offset: Offset(0, 2),
                             ),
@@ -649,7 +656,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         size: 24,
                         color: isSelected
                             ? Colors.white
-                            : (isEnabled ? Colors.orange : Colors.grey[400]),
+                            : (isEnabled
+                                  ? AppTheme.primaryOrange
+                                  : Colors.grey[400]),
                       ),
                       SizedBox(height: 4),
                       Text(
@@ -696,7 +705,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline, color: Colors.orange, size: 16),
+              Icon(Icons.info_outline, color: AppTheme.primaryOrange, size: 16),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -727,7 +736,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(Icons.access_time, color: Colors.orange),
+            Icon(Icons.access_time, color: AppTheme.primaryOrange),
             SizedBox(width: 12),
             Text(
               '${localizations.estimatedDelivery}: 30-40 ${localizations.minutes}',
@@ -819,7 +828,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange,
+                    color: AppTheme.primaryOrange,
                   ),
                 ),
               ],

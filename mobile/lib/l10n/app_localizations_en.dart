@@ -202,11 +202,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signUp => 'Sign Up';
 
   @override
-  String get welcomeBack => 'Welcome Back!';
+  String get welcomeBack => 'Welcome!';
 
   @override
   String get loginDescription =>
-      'To keep connected with us please login with your personal info';
+      'Sign in to place orders and track them in real-time';
 
   @override
   String get emailAddress => 'Email Address';
@@ -1130,4 +1130,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get paymentComingSoonDescription =>
       'This payment method will be available soon.';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get onboardingTitle1 => 'Shop Everything You Need';
+
+  @override
+  String get onboardingDesc1 =>
+      'Fresh groceries, daily essentials, and more—all in one app';
+
+  @override
+  String get onboardingTitle2 => 'Fast & Reliable Delivery';
+
+  @override
+  String get onboardingDesc2 =>
+      'Track your order in real-time and get it delivered quickly';
+
+  @override
+  String get onboardingTitle3 => 'Best Prices & Offers';
+
+  @override
+  String get onboardingDesc3 =>
+      'Enjoy exclusive deals and competitive prices every day';
 }

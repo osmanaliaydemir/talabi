@@ -1,11 +1,15 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
 import 'package:mobile/screens/vendor/vendor_register_screen.dart';
+import 'package:mobile/services/social_auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -152,377 +156,568 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final socialAuthService = SocialAuthService();
+      final response = await socialAuthService.signInWithGoogle();
+
+      if (response == null) {
+        // User cancelled
+        return;
+      }
+
+      // Save tokens
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', response['token']);
+      await prefs.setString('refreshToken', response['refreshToken']);
+      await prefs.setString('userId', response['userId']);
+      await prefs.setString('userRole', response['role']);
+
+      if (mounted) {
+        // Update auth provider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.setAuthData(
+          response['token'],
+          response['refreshToken'],
+          response['userId'],
+          response['role'],
+        );
+
+        // Navigate based on role
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } catch (e) {
+      print('🔴 [GOOGLE_LOGIN] Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google login failed: ${e.toString()}'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final socialAuthService = SocialAuthService();
+      final response = await socialAuthService.signInWithApple();
+
+      if (response == null) {
+        // User cancelled
+        return;
+      }
+
+      // Save tokens
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', response['token']);
+      await prefs.setString('refreshToken', response['refreshToken']);
+      await prefs.setString('userId', response['userId']);
+      await prefs.setString('userRole', response['role']);
+
+      if (mounted) {
+        // Update auth provider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.setAuthData(
+          response['token'],
+          response['refreshToken'],
+          response['userId'],
+          response['role'],
+        );
+
+        // Navigate based on role
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } catch (e) {
+      print('🔴 [APPLE_LOGIN] Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Apple login failed: ${e.toString()}'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithFacebook() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final socialAuthService = SocialAuthService();
+      final response = await socialAuthService.signInWithFacebook();
+
+      if (response == null) {
+        // User cancelled
+        return;
+      }
+
+      // Save tokens
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', response['token']);
+      await prefs.setString('refreshToken', response['refreshToken']);
+      await prefs.setString('userId', response['userId']);
+      await prefs.setString('userRole', response['role']);
+
+      if (mounted) {
+        // Update auth provider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.setAuthData(
+          response['token'],
+          response['refreshToken'],
+          response['userId'],
+          response['role'],
+        );
+
+        // Navigate based on role
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } catch (e) {
+      print('🔴 [FACEBOOK_LOGIN] Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Facebook login failed: ${e.toString()}'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Orange Header
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.orange,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.lightOrange,
+              AppTheme.primaryOrange,
+              AppTheme.darkOrange,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header with decorative shapes
+              Container(
+                height: 180,
+                child: Stack(
+                  children: [
+                    // Decorative shape in top right
+                    Positioned(
+                      top: -50,
+                      right: -50,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: AppTheme.lightOrange.withOpacity(0.7),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    // Decorative shape on left side (rounded pill shape)
+                    Positioned(
+                      bottom: -20,
+                      left: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryOrange,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
+                            bottomRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Title - Centered
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
+                        ),
+                        child: Text(
+                          localizations.signUp,
+                          style: AppTheme.poppins(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textOnPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Decorative shape in top right
-                  Positioned(
-                    top: -50,
-                    right: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade300,
-                        shape: BoxShape.circle,
-                      ),
+              // White Card Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                     ),
-                  ),
-                  // Decorative shape on left side (rounded pill shape)
-                  Positioned(
-                    bottom: -20,
-                    left: -30,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(50),
-                          bottomRight: Radius.circular(50),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                        ),
+                        topRight: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
                         ),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.shadowColor,
+                          blurRadius: 10,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
                     ),
-                  ),
-                  // Title - Centered
-                  Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 40),
-                      child: Text(
-                        localizations.signUp,
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // White Card Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Welcome Message
-                          Text(
-                            localizations.createAccount,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                      padding: EdgeInsets.all(AppTheme.spacingLarge),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Welcome Message
+                            Text(
+                              localizations.createAccount,
+                              style: AppTheme.poppins(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            localizations.registerDescription,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              height: 1.5,
+                            AppTheme.verticalSpace(0.5),
+                            Text(
+                              localizations.registerDescription,
+                              style: AppTheme.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 32),
-                          // Full Name Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _fullNameController,
-                              decoration: InputDecoration(
-                                hintText: localizations.fullName,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.person_outline,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                            AppTheme.verticalSpace(2),
+                            // Full Name Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.fullNameRequired;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Email Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _emailController,
-                              decoration: InputDecoration(
-                                hintText: localizations.emailAddress,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.email_outlined,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.emailRequired;
-                                }
-                                if (!value.contains('@')) {
-                                  return localizations.validEmail;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Password Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                hintText: localizations.password,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.grey[600],
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                    color: Colors.grey[600],
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.passwordRequired;
-                                }
-                                if (value.length < 6) {
-                                  return localizations.passwordMinLength;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Register Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _register,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      localizations.signUp,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          // Or continue with separator
-                          Row(
-                            children: [
-                              Expanded(child: Divider(color: Colors.grey[300])),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Text(
-                                  localizations.orContinueWith,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
+                              child: TextFormField(
+                                controller: _fullNameController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.fullName,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
                                     fontSize: 14,
                                   ),
+                                  prefixIcon: Icon(
+                                    Icons.person_outline,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.fullNameRequired;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Email Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
                               ),
-                              Expanded(child: Divider(color: Colors.grey[300])),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          // Social Login Buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.g_mobiledata,
-                                  label: localizations.google,
-                                  onPressed: () {
-                                    // Google login
-                                  },
+                              child: TextFormField(
+                                controller: _emailController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.emailAddress,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.email_outlined,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.emailRequired;
+                                  }
+                                  if (!value.contains('@')) {
+                                    return localizations.validEmail;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Password Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.apple,
-                                  label: localizations.apple,
-                                  onPressed: () {
-                                    // Apple login
-                                  },
+                              child: TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  hintText: localizations.password,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.lock_outline,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
                                 ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.passwordRequired;
+                                  }
+                                  if (value.length < 6) {
+                                    return localizations.passwordMinLength;
+                                  }
+                                  return null;
+                                },
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.facebook,
-                                  label: localizations.facebook,
-                                  onPressed: () {
-                                    // Facebook login
-                                  },
-                                  isFacebook: true,
+                            ),
+                            AppTheme.verticalSpace(1.5),
+                            // Register Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _register,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryOrange,
+                                  foregroundColor: AppTheme.textOnPrimary,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  elevation: AppTheme.elevationNone,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSocialButton(
-                                  icon: Icons.store,
-                                  label: 'Vendor',
-                                  onPressed: () {
-                                    TapLogger.logButtonPress(
-                                      'Vendor Register',
-                                      context: 'RegisterScreen',
-                                    );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const VendorRegisterScreen(),
+                                child: _isLoading
+                                    ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: AppTheme.textOnPrimary,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(
+                                        localizations.signUp,
+                                        style: AppTheme.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    );
-                                  },
-                                  isVendor: true,
-                                ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 32),
-                          // Login Link
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                            AppTheme.verticalSpace(2),
+                            // Or continue with separator
+                            Row(
                               children: [
-                                Text(
-                                  localizations.alreadyHaveAccount,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
+                                Expanded(
+                                  child: Divider(color: AppTheme.dividerColor),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                  ),
+                                  child: Text(
+                                    localizations.orContinueWith,
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    localizations.signIn,
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                Expanded(
+                                  child: Divider(color: AppTheme.dividerColor),
+                                ),
+                              ],
+                            ),
+                            AppTheme.verticalSpace(1.5),
+                            // Social Login Buttons
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSocialButton(
+                                    icon: Icons.g_mobiledata,
+                                    label: localizations.google,
+                                    onPressed: _signInWithGoogle,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildSocialButton(
+                                    icon: Icons.apple,
+                                    label: localizations.apple,
+                                    onPressed: _signInWithApple,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildSocialButton(
+                                    icon: Icons.facebook,
+                                    label: localizations.facebook,
+                                    onPressed: _signInWithFacebook,
+                                    isFacebook: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildSocialButton(
+                                    icon: Icons.store,
+                                    label: 'Vendor',
+                                    onPressed: () {
+                                      TapLogger.logButtonPress(
+                                        'Vendor Register',
+                                        context: 'RegisterScreen',
+                                      );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const VendorRegisterScreen(),
+                                        ),
+                                      );
+                                    },
+                                    isVendor: true,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
+                            AppTheme.verticalSpace(2),
+                            // Login Link
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    localizations.alreadyHaveAccount,
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      localizations.signIn,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.primaryOrange,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -538,10 +733,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        side: BorderSide(color: Colors.grey[300]!),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall + 4),
+        side: BorderSide(color: AppTheme.borderColor),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        ),
+        backgroundColor: AppTheme.cardColor,
       ),
       child: isFacebook
           ? Column(
@@ -568,8 +765,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
-                    color: Colors.black87,
+                  style: AppTheme.poppins(
+                    color: AppTheme.textPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -580,12 +777,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.store, color: Colors.orange, size: 20),
+                Icon(Icons.store, color: AppTheme.primaryOrange, size: 20),
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
-                    color: Colors.black87,
+                  style: AppTheme.poppins(
+                    color: AppTheme.textPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -628,12 +825,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   )
                 else
-                  Icon(icon, color: Colors.black87, size: 20),
+                  Icon(icon, color: AppTheme.textPrimary, size: 20),
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
-                    color: Colors.black87,
+                  style: AppTheme.poppins(
+                    color: AppTheme.textPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/review.dart';
 import 'package:mobile/screens/vendor/vendor_review_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -50,11 +51,13 @@ class _VendorReviewsScreenState extends State<VendorReviewsScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Bekleyen Yorumlar'),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.deepPurple))
+          ? Center(
+              child: CircularProgressIndicator(color: AppTheme.vendorPrimary),
+            )
           : _reviews.isEmpty
           ? Center(
               child: Column(
@@ -105,7 +108,7 @@ class _VendorReviewsScreenState extends State<VendorReviewsScreen> {
                                     ? Icons.star
                                     : Icons.star_border,
                                 size: 16,
-                                color: Colors.orange,
+                                color: AppTheme.primaryOrange,
                               );
                             }),
                           ),

@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -47,9 +48,9 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e'), backgroundColor: AppTheme.error),
+        );
       }
     }
   }
@@ -64,7 +65,13 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
       if (!serviceEnabled) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Konum servisleri kapalı')),
+            SnackBar(
+              content: Text(
+                'Konum servisleri kapalı',
+                style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+              ),
+              backgroundColor: AppTheme.warning,
+            ),
           );
         }
         setState(() {
@@ -79,7 +86,13 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         if (permission == LocationPermission.denied) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Konum izni reddedildi')),
+              SnackBar(
+                content: Text(
+                  'Konum izni reddedildi',
+                  style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+                ),
+                backgroundColor: AppTheme.error,
+              ),
             );
           }
           setState(() {
@@ -92,8 +105,12 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Konum izni kalıcı olarak reddedildi'),
+            SnackBar(
+              content: Text(
+                'Konum izni kalıcı olarak reddedildi',
+                style: AppTheme.poppins(color: AppTheme.textOnPrimary),
+              ),
+              backgroundColor: AppTheme.error,
             ),
           );
         }
@@ -141,9 +158,12 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Marketler yüklenemedi: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Marketler yüklenemedi: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
       }
     }
   }
@@ -208,44 +228,72 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
   void _showVendorInfo(Map<String, dynamic> vendorData) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusLarge),
+        ),
+      ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppTheme.spacingMedium),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               vendorData['name'] as String,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: AppTheme.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(vendorData['address'] as String),
+            SizedBox(height: AppTheme.spacingSmall),
+            Text(
+              vendorData['address'] as String,
+              style: AppTheme.poppins(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+              ),
+            ),
             if (vendorData['rating'] != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: AppTheme.spacingSmall),
               Row(
                 children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 16),
-                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: AppTheme.iconSizeSmall,
+                  ),
+                  SizedBox(width: 4),
                   Text(
                     (vendorData['rating'] as num).toStringAsFixed(1),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTheme.poppins(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
                 ],
               ),
             ],
             if (vendorData['distanceInKm'] != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: AppTheme.spacingSmall),
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 16),
-                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.location_on,
+                    size: AppTheme.iconSizeSmall,
+                    color: AppTheme.textSecondary,
+                  ),
+                  SizedBox(width: 4),
                   Text(
                     '${(vendorData['distanceInKm'] as num).toStringAsFixed(1)} km',
+                    style: AppTheme.poppins(color: AppTheme.textSecondary),
                   ),
                 ],
               ),
             ],
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacingMedium),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -271,7 +319,23 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                     ),
                   );
                 },
-                child: const Text('Ürünleri Görüntüle'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryOrange,
+                  foregroundColor: AppTheme.textOnPrimary,
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppTheme.spacingMedium,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  ),
+                ),
+                child: Text(
+                  'Ürünleri Görüntüle',
+                  style: AppTheme.poppins(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textOnPrimary,
+                  ),
+                ),
               ),
             ),
           ],
@@ -283,7 +347,12 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _googleMapsApiKey == null) {
-      return Scaffold(body: Center(child: CircularProgressIndicator(color: Colors.orange)));
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+        ),
+      );
     }
 
     final initialCameraPosition = _userLocation != null
@@ -295,10 +364,18 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Marketler Haritası'),
+        backgroundColor: AppTheme.primaryOrange,
+        foregroundColor: AppTheme.textOnPrimary,
+        title: Text(
+          'Marketler Haritası',
+          style: AppTheme.poppins(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textOnPrimary,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.my_location),
+            icon: Icon(Icons.my_location, color: AppTheme.textOnPrimary),
             onPressed: _getUserLocation,
             tooltip: 'Konumumu Bul',
           ),
@@ -322,12 +399,17 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
             },
           ),
           if (_isLoadingLocation)
-            const Positioned(
-              top: 16,
-              right: 16,
+            Positioned(
+              top: AppTheme.spacingMedium,
+              right: AppTheme.spacingMedium,
               child: Card(
+                color: AppTheme.cardColor,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
                 child: Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -336,11 +418,17 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.orange,
+                          color: AppTheme.primaryOrange,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Text('Konum alınıyor...'),
+                      SizedBox(width: AppTheme.spacingSmall),
+                      Text(
+                        'Konum alınıyor...',
+                        style: AppTheme.poppins(
+                          fontSize: 12,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
                     ],
                   ),
                 ),

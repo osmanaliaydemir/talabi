@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 
 class VendorNotificationsScreen extends StatefulWidget {
   const VendorNotificationsScreen({super.key});
@@ -39,7 +40,7 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Bildirimler'),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
         actions: [
           TextButton(
@@ -103,7 +104,7 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
         break;
       case 'NewReview':
         icon = Icons.star;
-        iconColor = Colors.orange;
+        iconColor = AppTheme.primaryOrange;
         break;
       default:
         icon = Icons.notifications;
@@ -143,7 +144,7 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
                 width: 12,
                 height: 12,
                 decoration: const BoxDecoration(
-                  color: Colors.orange,
+                  color: AppTheme.primaryOrange,
                   shape: BoxShape.circle,
                 ),
               )

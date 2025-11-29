@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/screens/customer/order_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -56,7 +57,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           // Main Content
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.orange))
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryOrange,
+                    ),
+                  )
                 : _orders.isEmpty
                 ? Center(
                     child: Column(
@@ -97,7 +102,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                 'Durum: ${order['status']}',
                                 style: TextStyle(
                                   color: order['status'] == 'Pending'
-                                      ? Colors.orange
+                                      ? AppTheme.primaryOrange
                                       : Colors.green,
                                   fontWeight: FontWeight.bold,
                                 ),

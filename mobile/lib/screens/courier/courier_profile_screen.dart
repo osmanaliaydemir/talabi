@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/providers/auth_provider.dart';
@@ -233,7 +234,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
                     padding: EdgeInsets.only(top: 8.0),
                     child: Text(
                       'Aktif sipariş tamamlanana kadar offline olamazsın.',
-                      style: TextStyle(color: Colors.orange),
+                      style: TextStyle(color: AppTheme.primaryOrange),
                     ),
                   ),
               ],

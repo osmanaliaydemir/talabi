@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/providers/localization_provider.dart';
@@ -110,7 +111,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Sipariş reddedildi'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppTheme.primaryOrange,
             ),
           );
           Navigator.pop(context);
@@ -157,7 +158,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Yakında müsait kurye bulunamadı'),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppTheme.primaryOrange,
           ),
         );
         return;
@@ -188,7 +189,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.delivery_dining, color: Colors.orange, size: 28),
+                    Icon(
+                      Icons.delivery_dining,
+                      color: AppTheme.primaryOrange,
+                      size: 28,
+                    ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Column(
@@ -263,7 +268,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.orange.shade100,
-                    child: Icon(Icons.person, size: 30, color: Colors.orange),
+                    child: Icon(
+                      Icons.person,
+                      size: 30,
+                      color: AppTheme.primaryOrange,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   // Info
@@ -338,7 +347,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                   _buildCourierDetailChip(
                     Icons.access_time,
                     '~${courier['estimatedArrivalMinutes']} dk',
-                    Colors.orange,
+                    AppTheme.primaryOrange,
                   ),
                   const SizedBox(width: 8),
                   _buildCourierDetailChip(
@@ -454,7 +463,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return Colors.orange;
+        return AppTheme.primaryOrange;
       case 'preparing':
         return Colors.blue;
       case 'ready':
@@ -729,7 +738,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                       icon: const Icon(Icons.person_search),
                       label: const Text('Kurye Seç'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: AppTheme.primaryOrange,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),

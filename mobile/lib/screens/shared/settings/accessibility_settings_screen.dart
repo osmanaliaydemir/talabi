@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -10,73 +11,95 @@ class AccessibilitySettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           _buildHeader(context, localizations),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(AppTheme.spacingMedium),
               child: Container(
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
+                decoration: AppTheme.cardDecoration(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSectionHeader(context, localizations.displaySettings),
                     SwitchListTile(
-                      title: Text(localizations.darkMode),
-                      subtitle: Text(localizations.darkModeDescription),
+                      activeColor: AppTheme.primaryOrange,
+                      title: Text(
+                        localizations.darkMode,
+                        style: AppTheme.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        localizations.darkModeDescription,
+                        style: AppTheme.poppins(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
                       value: themeProvider.themeMode == ThemeMode.dark,
                       onChanged: (value) {
                         themeProvider.setThemeMode(
                           value ? ThemeMode.dark : ThemeMode.light,
                         );
                       },
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingMedium,
                       ),
                     ),
                     SwitchListTile(
-                      title: Text(localizations.highContrast),
-                      subtitle: Text(localizations.highContrastDescription),
+                      activeColor: AppTheme.primaryOrange,
+                      title: Text(
+                        localizations.highContrast,
+                        style: AppTheme.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        localizations.highContrastDescription,
+                        style: AppTheme.poppins(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
                       value: themeProvider.isHighContrast,
                       onChanged: (value) {
                         themeProvider.toggleHighContrast(value);
                       },
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingMedium,
                       ),
                     ),
-                    const Divider(height: 32),
+                    Divider(height: 32, color: AppTheme.borderColor),
                     _buildSectionHeader(context, localizations.textSize),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingMedium,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             localizations.textSizeDescription,
-                            style: theme.textTheme.bodyMedium,
+                            style: AppTheme.poppins(
+                              color: AppTheme.textSecondary,
+                            ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: AppTheme.spacingMedium),
                           Row(
                             children: [
-                              const Text('A', style: TextStyle(fontSize: 14)),
+                              Text('A', style: AppTheme.poppins(fontSize: 14)),
                               Expanded(
                                 child: Slider(
+                                  activeColor: AppTheme.primaryOrange,
+                                  inactiveColor: AppTheme.primaryOrange
+                                      .withOpacity(0.3),
                                   value: themeProvider.textScaleFactor,
                                   min: 0.8,
                                   max: 1.5,
@@ -88,20 +111,21 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                                   },
                                 ),
                               ),
-                              const Text('A', style: TextStyle(fontSize: 24)),
+                              Text('A', style: AppTheme.poppins(fontSize: 24)),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: AppTheme.spacingSmall),
                           Center(
                             child: Text(
                               localizations.textSizePreview,
-                              style: TextStyle(
+                              style: AppTheme.poppins(
                                 fontSize: 16 * themeProvider.textScaleFactor,
                                 fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: AppTheme.spacingLarge),
                         ],
                       ),
                     ),
@@ -122,49 +146,52 @@ class AccessibilitySettingsScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.accessibility_new,
-                  color: Colors.white,
-                  size: 20,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title
               Expanded(
                 child: Column(
@@ -173,17 +200,17 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                   children: [
                     Text(
                       localizations.accessibilityTitle,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       localizations.accessibilityDescription,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -200,12 +227,18 @@ class AccessibilitySettingsScreen extends StatelessWidget {
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      padding: EdgeInsets.fromLTRB(
+        AppTheme.spacingMedium,
+        AppTheme.spacingMedium,
+        AppTheme.spacingMedium,
+        AppTheme.spacingSmall,
+      ),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
+        style: AppTheme.poppins(
+          color: AppTheme.primaryOrange,
           fontWeight: FontWeight.bold,
+          fontSize: 16,
         ),
       ),
     );

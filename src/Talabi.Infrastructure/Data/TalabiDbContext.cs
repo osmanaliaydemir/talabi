@@ -28,6 +28,41 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<CourierEarning> CourierEarnings { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<LegalDocument> LegalDocuments { get; set; }
+    public DbSet<UserActivityLog> UserActivityLogs { get; set; }
+    public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override int SaveChanges()
+    {
+        UpdateTimestamps();
+        return base.SaveChanges();
+    }
+
+    private void UpdateTimestamps()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.Entity is BaseEntity && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+        foreach (var entry in entries)
+        {
+            var entity = (BaseEntity)entry.Entity;
+
+            if (entry.State == EntityState.Added)
+            {
+                entity.CreatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entity.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

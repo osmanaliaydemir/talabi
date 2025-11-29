@@ -1,215 +1,159 @@
-import 'dart:developer' as developer;
-import 'package:signalr_core/signalr_core.dart';
-import 'package:mobile/utils/constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mobile/services/api_service.dart';
 
 class NotificationService {
-  HubConnection? _hubConnection;
-  Function(int orderId)? onOrderAssigned;
-  bool _isConnecting = false;
-  bool _isConnected = false;
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
 
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
+  bool _isInitialized = false;
+
+  // Callback for order assignment notifications
+  void Function(int orderId)? onOrderAssigned;
+
+  /// Initialize the notification service
   Future<void> init() async {
-    if (_isConnecting || _isConnected) {
-      developer.log(
-        'NotificationService: Already connecting or connected',
-        name: 'Courier',
-      );
-      return;
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token == null) {
-      developer.log(
-        'NotificationService: No token found, skipping SignalR connection',
-        name: 'Courier',
-      );
-      return;
-    }
-
-    // Build hub URL - ensure WSS for HTTPS
-    // Constants.apiBaseUrl = 'https://talabi.runasp.net/api'
-    // We need: 'wss://talabi.runasp.net/hubs/notifications'
-    var baseUrl = Constants.apiBaseUrl;
-    if (baseUrl.endsWith('/api')) {
-      baseUrl = baseUrl.substring(0, baseUrl.length - 4); // Remove '/api'
-    }
-
-    // Convert HTTP/HTTPS to WS/WSS
-    if (baseUrl.startsWith('https://')) {
-      baseUrl = baseUrl.replaceFirst('https://', 'wss://');
-    } else if (baseUrl.startsWith('http://')) {
-      baseUrl = baseUrl.replaceFirst('http://', 'ws://');
-    }
-
-    final hubUrl = '$baseUrl/hubs/notifications';
-
-    developer.log(
-      'NotificationService: Initializing SignalR connection',
-      name: 'Courier',
-    );
-    developer.log('NotificationService: Hub URL: $hubUrl', name: 'Courier');
-
-    _isConnecting = true;
-
-    try {
-      _hubConnection = HubConnectionBuilder()
-          .withUrl(
-            hubUrl,
-            HttpConnectionOptions(
-              accessTokenFactory: () async {
-                developer.log(
-                  'NotificationService: Getting access token',
-                  name: 'Courier',
-                );
-                return token;
-              },
-              logging: (level, message) {
-                developer.log('SignalR [$level]: $message', name: 'Courier');
-              },
-              skipNegotiation: false,
-              transport: HttpTransportType.webSockets,
-            ),
-          )
-          .withAutomaticReconnect()
-          .build();
-
-      // Connection state callbacks
-      _hubConnection?.onclose((error) {
-        _isConnected = false;
-        _isConnecting = false;
-        developer.log(
-          'NotificationService: Connection closed${error != null ? " - Error: $error" : ""}',
-          name: 'Courier',
-        );
-      });
-
-      _hubConnection?.onreconnecting((error) {
-        _isConnected = false;
-        developer.log(
-          'NotificationService: Reconnecting${error != null ? " - Error: $error" : ""}',
-          name: 'Courier',
-        );
-      });
-
-      _hubConnection?.onreconnected((connectionId) {
-        _isConnected = true;
-        _isConnecting = false;
-        developer.log(
-          'NotificationService: Reconnected - ConnectionId: $connectionId',
-          name: 'Courier',
-        );
-      });
-
-      // Register for order assignment notifications
-      _hubConnection?.on('ReceiveOrderAssignment', (arguments) {
-        developer.log(
-          'NotificationService: ReceiveOrderAssignment received - Arguments: $arguments',
-          name: 'Courier',
-        );
-        if (onOrderAssigned != null &&
-            arguments != null &&
-            arguments.isNotEmpty) {
-          try {
-            final orderId = arguments[0] is int
-                ? arguments[0] as int
-                : int.parse(arguments[0].toString());
-            developer.log(
-              'NotificationService: Calling onOrderAssigned with OrderId: $orderId',
-              name: 'Courier',
-            );
-            onOrderAssigned!(orderId);
-          } catch (e, stackTrace) {
-            developer.log(
-              'NotificationService: ERROR parsing order assignment - $e',
-              name: 'Courier',
-              error: e,
-              stackTrace: stackTrace,
-            );
-          }
-        }
-      });
-
-      // Also listen for NewOrderAssigned (from hub method)
-      _hubConnection?.on('NewOrderAssigned', (arguments) {
-        developer.log(
-          'NotificationService: NewOrderAssigned received - Arguments: $arguments',
-          name: 'Courier',
-        );
-        if (onOrderAssigned != null &&
-            arguments != null &&
-            arguments.isNotEmpty) {
-          try {
-            final data = arguments[0] as Map<String, dynamic>;
-            final orderId = data['OrderId'] as int? ?? data['orderId'] as int?;
-            if (orderId != null) {
-              developer.log(
-                'NotificationService: Calling onOrderAssigned with OrderId: $orderId',
-                name: 'Courier',
-              );
-              onOrderAssigned!(orderId);
-            }
-          } catch (e, stackTrace) {
-            developer.log(
-              'NotificationService: ERROR parsing new order assignment - $e',
-              name: 'Courier',
-              error: e,
-              stackTrace: stackTrace,
-            );
-          }
-        }
-      });
-
-      developer.log(
-        'NotificationService: Starting connection...',
-        name: 'Courier',
-      );
-      await _hubConnection?.start();
-      _isConnected = true;
-      _isConnecting = false;
-      developer.log(
-        'NotificationService: SignalR Connected successfully - ConnectionId: ${_hubConnection?.connectionId}',
-        name: 'Courier',
-      );
-    } catch (e, stackTrace) {
-      _isConnecting = false;
-      _isConnected = false;
-      developer.log(
-        'NotificationService: ERROR connecting to SignalR - $e',
-        name: 'Courier',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      // Don't throw - allow app to continue without SignalR
-    }
+    await initialize();
   }
 
-  Future<void> stop() async {
-    if (_hubConnection != null) {
-      developer.log(
-        'NotificationService: Stopping SignalR connection',
-        name: 'Courier',
-      );
+  /// Stop the notification service (cleanup)
+  void stop() {
+    onOrderAssigned = null;
+    // Additional cleanup if needed
+  }
+
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    // 1. Request Permissions
+    await _requestPermission();
+
+    // 2. Initialize Local Notifications
+    await _initLocalNotifications();
+
+    // 3. Get FCM Token
+    final token = await _firebaseMessaging.getToken();
+    print('🔥 FCM Token: $token');
+
+    if (token != null) {
       try {
-        await _hubConnection?.stop();
-        _isConnected = false;
-        _isConnecting = false;
-        developer.log(
-          'NotificationService: SignalR connection stopped',
-          name: 'Courier',
-        );
-      } catch (e, stackTrace) {
-        developer.log(
-          'NotificationService: ERROR stopping SignalR - $e',
-          name: 'Courier',
-          error: e,
-          stackTrace: stackTrace,
-        );
+        final deviceType = Platform.isIOS ? 'iOS' : 'Android';
+        await ApiService().registerDeviceToken(token, deviceType);
+        print('✅ Device token registered with API');
+      } catch (e) {
+        print('❌ Failed to register device token: $e');
       }
     }
+
+    // 4. Handle Foreground Messages
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+    // 5. Handle Background Message Tap
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageTap);
+
+    // 6. Check if app was opened from a terminated state
+    final initialMessage = await _firebaseMessaging.getInitialMessage();
+    if (initialMessage != null) {
+      _handleBackgroundMessageTap(initialMessage);
+    }
+
+    _isInitialized = true;
   }
 
-  bool get isConnected => _isConnected;
+  Future<void> _requestPermission() async {
+    if (Platform.isIOS) {
+      await _firebaseMessaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } else if (Platform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          _localNotifications
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
+
+      await androidImplementation?.requestNotificationsPermission();
+    }
+  }
+
+  Future<void> _initLocalNotifications() async {
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    const iosSettings = DarwinInitializationSettings();
+
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
+
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (details) {
+        // Handle local notification tap
+        print('🔔 Local Notification Tapped: ${details.payload}');
+      },
+    );
+  }
+
+  Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    print('🔔 Foreground Message: ${message.notification?.title}');
+    print('🔔 Message Data: ${message.data}');
+
+    // Check if this is an order assignment notification
+    if (message.data.containsKey('orderId') &&
+        message.data.containsKey('type')) {
+      final type = message.data['type'];
+      if (type == 'order_assigned' || type == 'ORDER_ASSIGNED') {
+        final orderId = int.tryParse(message.data['orderId'].toString());
+        if (orderId != null && onOrderAssigned != null) {
+          print('🔔 Triggering onOrderAssigned callback for order #$orderId');
+          onOrderAssigned!(orderId);
+        }
+      }
+    }
+
+    if (message.notification != null) {
+      await _showLocalNotification(message);
+    }
+  }
+
+  void _handleBackgroundMessageTap(RemoteMessage message) {
+    print('🔔 Background Message Tapped: ${message.data}');
+    // Navigate to specific screen based on data
+  }
+
+  Future<void> _showLocalNotification(RemoteMessage message) async {
+    final notification = message.notification;
+    final android = message.notification?.android;
+
+    if (notification != null && android != null) {
+      await _localNotifications.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel', // id
+            'High Importance Notifications', // title
+            channelDescription:
+                'This channel is used for important notifications.',
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+          ),
+          iOS: const DarwinNotificationDetails(),
+        ),
+        payload: message.data.toString(),
+      );
+    }
+  }
 }

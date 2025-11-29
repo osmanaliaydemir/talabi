@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';

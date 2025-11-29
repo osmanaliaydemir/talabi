@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/address.dart';
 import 'package:mobile/screens/shared/profile/address_picker_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -88,7 +89,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
             content: Text(
               widget.address == null ? l10n.addressAdded : l10n.addressUpdated,
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
         Navigator.pop(context, true);
@@ -99,7 +100,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.error}: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -120,7 +121,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     final isEdit = widget.address != null;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -129,23 +130,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                margin: const EdgeInsets.only(top: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
+                margin: EdgeInsets.all(AppTheme.spacingMedium),
+                decoration: AppTheme.cardDecoration(withShadow: true),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(AppTheme.spacingLarge),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -156,43 +144,42 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           isEdit
                               ? localizations.editAddress
                               : localizations.addNewAddress,
-                          style: const TextStyle(
-                            fontSize: 28,
+                          style: AppTheme.poppins(
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppTheme.spacingXSmall),
                         Text(
                           isEdit
                               ? localizations.updateAddressInfo
                               : localizations.enterDeliveryAddressDetails,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            height: 1.5,
+                          style: AppTheme.poppins(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                            height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: AppTheme.spacingLarge),
                         // Address Title Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _titleController,
                             decoration: InputDecoration(
                               hintText: localizations.addressTitleHint,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.label_outline,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
                             validator: (value) {
@@ -203,15 +190,11 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingSmall),
                         // Map Button
-                        Container(
+                        SizedBox(
                           width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ElevatedButton.icon(
+                          child: OutlinedButton.icon(
                             onPressed: () async {
                               await Navigator.push(
                                 context,
@@ -243,30 +226,30 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                 ),
                               );
                             },
-                            icon: const Icon(Icons.map),
+                            icon: Icon(
+                              Icons.map,
+                              size: AppTheme.iconSizeMedium,
+                            ),
                             label: Text(localizations.selectAddressFromMap),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.orange,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.primaryOrange,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
+                              side: BorderSide(color: AppTheme.borderColor),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(color: Colors.grey[300]!),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusSmall,
+                                ),
                               ),
-                              elevation: 0,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingSmall),
                         // Full Address Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _fullAddressController,
                             maxLines: 3,
@@ -438,49 +421,52 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Location Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.location_on,
-                  color: Colors.white,
-                  size: 20,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title and Subtitle
               Expanded(
                 child: Column(
@@ -491,19 +477,19 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                       isEdit
                           ? localizations.editAddress
                           : localizations.addAddress,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       isEdit
                           ? localizations.updateAddressDetails
                           : localizations.createNewAddress,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

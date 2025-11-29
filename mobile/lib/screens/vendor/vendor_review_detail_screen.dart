@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/review.dart';
 import 'package:mobile/services/api_service.dart';
@@ -103,7 +104,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(localizations?.reviewRejected ?? 'Yorum reddedildi'),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppTheme.primaryOrange,
           ),
         );
         widget.onReviewUpdated();
@@ -138,7 +139,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(localizations?.reviewDetail ?? 'Yorum Detayı'),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -213,7 +214,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                               ? Icons.star
                               : Icons.star_border,
                           size: 32,
-                          color: Colors.orange,
+                          color: AppTheme.primaryOrange,
                         );
                       }),
                     ),

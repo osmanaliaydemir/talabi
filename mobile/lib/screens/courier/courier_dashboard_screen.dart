@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier.dart';
@@ -368,7 +369,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                           _statistics?.averageRating.toStringAsFixed(1) ??
                           '0.0',
                       subtitle: '(${_statistics?.totalRatings ?? 0} reviews)',
-                      color: Colors.orange,
+                      color: AppTheme.primaryOrange,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -644,7 +645,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         return Colors.green;
       case 'Busy':
       case 'Assigned':
-        return Colors.orange;
+        return AppTheme.primaryOrange;
       case 'Break':
         return Colors.blue;
       case 'Offline':
@@ -922,7 +923,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'assigned':
-        return Colors.orange;
+        return AppTheme.primaryOrange;
       case 'accepted':
         return Colors.blue;
       case 'outfordelivery':

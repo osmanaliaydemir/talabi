@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
@@ -129,7 +130,7 @@ class _EmailCodeVerificationScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(localizations.emailVerifiedSuccess),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
 
@@ -157,7 +158,7 @@ class _EmailCodeVerificationScreenState
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(localizations.emailVerifiedLoginFailed),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: AppTheme.warning,
                 ),
               );
               Navigator.of(context).pushAndRemoveUntil(
@@ -185,7 +186,10 @@ class _EmailCodeVerificationScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppTheme.error,
+          ),
         );
 
         // Hatalı kodları temizle
@@ -199,7 +203,7 @@ class _EmailCodeVerificationScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(localizations.errorWithMessage(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -235,7 +239,7 @@ class _EmailCodeVerificationScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(localizations.verificationCodeResent),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
 
@@ -259,7 +263,10 @@ class _EmailCodeVerificationScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppTheme.error,
+          ),
         );
       }
     } catch (e) {
@@ -267,7 +274,7 @@ class _EmailCodeVerificationScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(localizations.errorWithMessage(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -285,255 +292,278 @@ class _EmailCodeVerificationScreenState
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Orange Header
-            Container(
-              height: 180,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.orange.shade400,
-                    Colors.orange.shade600,
-                    Colors.orange.shade800,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.lightOrange,
+              AppTheme.primaryOrange,
+              AppTheme.darkOrange,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Orange Header
+              Container(
+                height: 180,
+                child: Stack(
+                  children: [
+                    // Decorative shapes
+                    Positioned(
+                      top: -50,
+                      right: -50,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: AppTheme.lightOrange.withOpacity(0.7),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: -20,
+                      left: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryOrange,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
+                            bottomRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Title
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
+                        ),
+                        child: Text(
+                          localizations.emailVerification,
+                          style: AppTheme.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textOnPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Decorative shapes
-                  Positioned(
-                    top: -50,
-                    right: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade300,
-                        shape: BoxShape.circle,
-                      ),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                     ),
-                  ),
-                  Positioned(
-                    bottom: -20,
-                    left: -30,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(50),
-                          bottomRight: Radius.circular(50),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                        ),
+                        topRight: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
                         ),
                       ),
-                    ),
-                  ),
-                  // Title
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 40),
-                      child: Text(
-                        localizations.emailVerification,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        // Icon
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.shade50,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.mark_email_unread_outlined,
-                            size: 80,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Title
-                        Text(
-                          localizations.fourDigitVerificationCode,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        // Description
-                        Text(
-                          localizations.enterCodeSentToEmail(widget.email),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            height: 1.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 48),
-                        // Code Input Fields
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(4, (index) {
-                            return SizedBox(
-                              width: 45,
-                              height: 55,
-                              child: TextField(
-                                controller: _controllers[index],
-                                focusNode: _focusNodes[index],
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                maxLength: 1,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey[300]!,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey[300]!,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.orange,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                onChanged: (value) =>
-                                    _onCodeChanged(index, value),
-                              ),
-                            );
-                          }),
-                        ),
-                        const SizedBox(height: 32),
-                        // Timer or Resend Button
-                        if (!_canResend)
-                          Text(
-                            localizations.codeExpiresIn(
-                              _formatTime(_remainingSeconds),
-                            ),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          )
-                        else
-                          TextButton(
-                            onPressed: _isResending ? null : _resendCode,
-                            child: _isResending
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text(
-                                    localizations.resendCode,
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        const SizedBox(height: 32),
-                        // Verify Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _verifyCode,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text(
-                                    localizations.verify,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.shadowColor,
+                          blurRadius: 10,
+                          offset: const Offset(0, -4),
                         ),
                       ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingLarge),
+                      child: Column(
+                        children: [
+                          AppTheme.verticalSpace(1.25),
+                          // Icon
+                          Container(
+                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryOrange.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.mark_email_unread_outlined,
+                              size: 80,
+                              color: AppTheme.darkOrange,
+                            ),
+                          ),
+                          AppTheme.verticalSpace(2),
+                          // Title
+                          Text(
+                            localizations.fourDigitVerificationCode,
+                            style: AppTheme.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          AppTheme.verticalSpace(1),
+                          // Description
+                          Text(
+                            localizations.enterCodeSentToEmail(widget.email),
+                            style: AppTheme.poppins(
+                              fontSize: 14,
+                              color: AppTheme.textSecondary,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          AppTheme.verticalSpace(3),
+                          // Code Input Fields
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: List.generate(4, (index) {
+                              return SizedBox(
+                                width: 45,
+                                height: 55,
+                                child: TextField(
+                                  controller: _controllers[index],
+                                  focusNode: _focusNodes[index],
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 1,
+                                  style: AppTheme.poppins(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: InputDecoration(
+                                    counterText: '',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: AppTheme.dividerColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: AppTheme.dividerColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: AppTheme.primaryOrange,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: AppTheme.backgroundColor,
+                                  ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  onChanged: (value) =>
+                                      _onCodeChanged(index, value),
+                                ),
+                              );
+                            }),
+                          ),
+                          AppTheme.verticalSpace(2),
+                          // Timer or Resend Button
+                          if (!_canResend)
+                            Text(
+                              localizations.codeExpiresIn(
+                                _formatTime(_remainingSeconds),
+                              ),
+                              style: AppTheme.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                              ),
+                            )
+                          else
+                            TextButton(
+                              onPressed: _isResending ? null : _resendCode,
+                              child: _isResending
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      localizations.resendCode,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.primaryOrange,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          AppTheme.verticalSpace(2),
+                          // Verify Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _verifyCode,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryOrange,
+                                foregroundColor: AppTheme.textOnPrimary,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingMedium,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
+                                ),
+                                elevation: AppTheme.elevationNone,
+                              ),
+                              child: _isLoading
+                                  ? SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: AppTheme.textOnPrimary,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      localizations.verify,
+                                      style: AppTheme.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

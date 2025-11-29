@@ -119,6 +119,14 @@ artifacts/
 *.user
 *.csproj.user
 
+## Firebase Credentials - CRITICAL: Never commit these!
+**/firebase-adminsdk.json
+**/firebase-adminsdk*.json
+**/google-services.json
+**/GoogleService-Info.plist
+credentials/
+secrets/
+
 ## Entity Framework
 **/Migrations/*.Designer.cs
 

@@ -487,13 +487,13 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeBack.
   ///
   /// In en, this message translates to:
-  /// **'Welcome Back!'**
+  /// **'Welcome!'**
   String get welcomeBack;
 
   /// No description provided for @loginDescription.
   ///
   /// In en, this message translates to:
-  /// **'To keep connected with us please login with your personal info'**
+  /// **'Sign in to place orders and track them in real-time'**
   String get loginDescription;
 
   /// No description provided for @emailAddress.
@@ -2235,6 +2235,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This payment method will be available soon.'**
   String get paymentComingSoonDescription;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Everything You Need'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingDesc1.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh groceries, daily essentials, and more—all in one app'**
+  String get onboardingDesc1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast & Reliable Delivery'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingDesc2.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your order in real-time and get it delivered quickly'**
+  String get onboardingDesc2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Prices & Offers'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingDesc3.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoy exclusive deals and competitive prices every day'**
+  String get onboardingDesc3;
 }
 
 class _AppLocalizationsDelegate

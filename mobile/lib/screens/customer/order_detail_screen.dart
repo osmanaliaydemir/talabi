@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/order_detail.dart';
 import 'package:mobile/screens/customer/delivery_tracking_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -110,7 +111,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Pending':
-        return Colors.orange;
+        return AppTheme.primaryOrange;
       case 'Preparing':
         return Colors.blue;
       case 'Ready':
@@ -167,7 +168,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.orange))
+          ? Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+            )
           : _orderDetail == null
           ? const Center(child: Text('Sipariş bulunamadı'))
           : RefreshIndicator(

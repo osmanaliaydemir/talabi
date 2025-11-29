@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:provider/provider.dart';
@@ -110,7 +111,11 @@ class OrderSuccessScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.orange, size: 24),
+                      Icon(
+                        Icons.info_outline,
+                        color: AppTheme.primaryOrange,
+                        size: 24,
+                      ),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(

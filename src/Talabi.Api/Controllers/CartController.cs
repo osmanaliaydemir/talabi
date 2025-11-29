@@ -104,6 +104,9 @@ public class CartController : ControllerBase
             });
         }
 
+        // Mark cart as modified to trigger UpdatedAt
+        _context.Entry(cart).State = EntityState.Modified;
+
         await _context.SaveChangesAsync();
         return Ok(new { Message = "Item added to cart" });
     }
@@ -131,6 +134,9 @@ public class CartController : ControllerBase
             cartItem.Quantity = dto.Quantity;
         }
 
+        // Mark cart as modified to trigger UpdatedAt
+        _context.Entry(cartItem.Cart!).State = EntityState.Modified;
+
         await _context.SaveChangesAsync();
         return Ok(new { Message = "Cart item updated" });
     }
@@ -150,6 +156,10 @@ public class CartController : ControllerBase
         }
 
         _context.CartItems.Remove(cartItem);
+        
+        // Mark cart as modified to trigger UpdatedAt
+        _context.Entry(cartItem.Cart!).State = EntityState.Modified;
+        
         await _context.SaveChangesAsync();
 
         return Ok(new { Message = "Item removed from cart" });
@@ -167,6 +177,10 @@ public class CartController : ControllerBase
         if (cart != null)
         {
             _context.CartItems.RemoveRange(cart.CartItems);
+            
+            // Mark cart as modified to trigger UpdatedAt
+            _context.Entry(cart).State = EntityState.Modified;
+            
             await _context.SaveChangesAsync();
         }
 

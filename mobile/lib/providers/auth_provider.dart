@@ -130,4 +130,18 @@ class AuthProvider with ChangeNotifier {
 
     notifyListeners();
   }
+
+  Future<void> setAuthData(
+    String token,
+    String refreshToken,
+    String userId,
+    String role,
+  ) async {
+    _token = token;
+    _refreshToken = refreshToken;
+    _userId = userId;
+    _role = role;
+
+    notifyListeners();
+  }
 }

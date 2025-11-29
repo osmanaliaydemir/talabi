@@ -67,8 +67,8 @@
   "outOfStock": "غير متوفر",
   "signIn": "تسجيل الدخول",
   "signUp": "إنشاء حساب",
-  "welcomeBack": "مرحباً بعودتك!",
-  "loginDescription": "للبقاء على اتصال معنا يرجى تسجيل الدخول بمعلوماتك الشخصية",
+  "welcomeBack": "مرحباً بك!",
+  "loginDescription": "سجل الدخول لتقديم الطلبات وتتبعها في الوقت الفعلي",
   "emailAddress": "عنوان البريد الإلكتروني",
   "password": "كلمة المرور",
   "rememberMe": "تذكرني؟",
@@ -619,5 +619,14 @@
   "noAddressFound": "لم يتم العثور على عنوان",
   "addNewAddress": "إضافة عنوان جديد",
   "cashDescription": "يمكنك الدفع نقداً للمندوب عند الباب.",
-  "paymentComingSoonDescription": "طريقة الدفع هذه ستكون متاحة قريباً."
+  "paymentComingSoonDescription": "طريقة الدفع هذه ستكون متاحة قريباً.",
+  "skip": "تخطي",
+  "next": "التالي",
+  "getStarted": "ابدأ",
+  "onboardingTitle1": "تسوق كل ما تحتاجه",
+  "onboardingDesc1": "البقالة الطازجة والاحتياجات اليومية والمزيد—كل ذلك في تطبيق واحد",
+  "onboardingTitle2": "توصيل سريع وموثوق",
+  "onboardingDesc2": "تتبع طلبك في الوقت الفعلي واحصل عليه بسرعة",
+  "onboardingTitle3": "أفضل الأسعار والعروض",
+  "onboardingDesc3": "استمتع بصفقات حصرية وأسعار تنافسية كل يوم"
 }

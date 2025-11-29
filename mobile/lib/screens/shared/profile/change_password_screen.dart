@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -39,7 +40,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.passwordsDoNotMatch),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.error,
         ),
       );
       return;
@@ -59,7 +60,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.passwordChangedSuccess),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
         Navigator.pop(context);
@@ -69,7 +70,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.error}: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -89,7 +90,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -98,23 +99,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                margin: const EdgeInsets.only(top: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
+                margin: EdgeInsets.all(AppTheme.spacingMedium),
+                decoration: AppTheme.cardDecoration(withShadow: true),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(AppTheme.spacingLarge),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -123,89 +111,83 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         // Title
                         Text(
                           localizations.changePassword,
-                          style: const TextStyle(
-                            fontSize: 28,
+                          style: AppTheme.poppins(
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppTheme.spacingXSmall),
                         Text(
                           localizations.changePasswordDescription,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            height: 1.5,
+                          style: AppTheme.poppins(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                            height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: AppTheme.spacingLarge),
                         // Current Password Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _currentPasswordController,
                             obscureText: _obscureCurrentPassword,
                             decoration: InputDecoration(
                               hintText: localizations.currentPassword,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.lock_outline,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureCurrentPassword
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscureCurrentPassword =
-                                        !_obscureCurrentPassword;
-                                  });
-                                },
+                                onPressed: () => setState(
+                                  () => _obscureCurrentPassword =
+                                      !_obscureCurrentPassword,
+                                ),
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return localizations.currentPasswordRequired;
-                              }
-                              return null;
-                            },
+                            validator: (value) =>
+                                (value == null || value.isEmpty)
+                                ? localizations.currentPasswordRequired
+                                : null,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingSmall),
                         // New Password Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _newPasswordController,
                             obscureText: _obscureNewPassword,
                             decoration: InputDecoration(
                               hintText: localizations.newPassword,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.lock_outline,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureNewPassword
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -214,9 +196,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 },
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
                             validator: (value) {
@@ -230,29 +212,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: AppTheme.spacingSmall),
                         // Confirm Password Field
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: AppTheme.inputBoxDecoration(),
                           child: TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
                             decoration: InputDecoration(
                               hintText: localizations.confirmNewPassword,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: AppTheme.poppins(
+                                color: AppTheme.textHint,
+                              ),
                               prefixIcon: Icon(
                                 Icons.lock_outline,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -262,9 +243,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 },
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingMedium,
                               ),
                             ),
                             validator: (value) {
@@ -278,33 +259,37 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: AppTheme.spacingLarge),
                         // Change Password Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _changePassword,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: AppTheme.buttonPrimary,
+                              foregroundColor: AppTheme.textOnPrimary,
+                              padding: EdgeInsets.symmetric(
+                                vertical: AppTheme.spacingMedium,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusSmall,
+                                ),
                               ),
                               elevation: 0,
                             ),
                             child: _isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: AppTheme.textOnPrimary,
                                       strokeWidth: 2,
                                     ),
                                   )
                                 : Text(
                                     localizations.changePassword,
-                                    style: const TextStyle(
+                                    style: AppTheme.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -334,46 +319,50 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
-              // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              // Lock Icon
+              SizedBox(width: AppTheme.spacingSmall),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(Icons.lock, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.lock,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
+                ),
               ),
-              const SizedBox(width: 12),
-              // Title and Subtitle
+              SizedBox(width: AppTheme.spacingSmall),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,17 +370,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   children: [
                     Text(
                       localizations.changePassword,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       localizations.secureYourAccount,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile/services/api_service.dart';
 import 'dart:async';
@@ -203,7 +204,9 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
     if (_isLoading || _googleMapsApiKey == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Teslimat Takibi')),
-        body: Center(child: CircularProgressIndicator(color: Colors.orange)),
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+        ),
       );
     }
 

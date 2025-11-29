@@ -67,8 +67,8 @@
   "outOfStock": "Out of Stock",
   "signIn": "Sign In",
   "signUp": "Sign Up",
-  "welcomeBack": "Welcome Back!",
-  "loginDescription": "To keep connected with us please login with your personal info",
+  "welcomeBack": "Welcome!",
+  "loginDescription": "Sign in to place orders and track them in real-time",
   "emailAddress": "Email Address",
   "password": "Password",
   "rememberMe": "Remember me?",
@@ -624,5 +624,14 @@
   "noAddressFound": "No address found",
   "addNewAddress": "Add New Address",
   "cashDescription": "You can pay cash to the courier at the door.",
-  "paymentComingSoonDescription": "This payment method will be available soon."
+  "paymentComingSoonDescription": "This payment method will be available soon.",
+  "skip": "Skip",
+  "next": "Next",
+  "getStarted": "Get Started",
+  "onboardingTitle1": "Shop Everything You Need",
+  "onboardingDesc1": "Fresh groceries, daily essentials, and more—all in one app",
+  "onboardingTitle2": "Fast & Reliable Delivery",
+  "onboardingDesc2": "Track your order in real-time and get it delivered quickly",
+  "onboardingTitle3": "Best Prices & Offers",
+  "onboardingDesc3": "Enjoy exclusive deals and competitive prices every day"
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
@@ -26,7 +27,11 @@ class CartScreen extends StatelessWidget {
           // Main Content
           Expanded(
             child: cart.isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.orange))
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryOrange,
+                    ),
+                  )
                 : cart.itemCount == 0
                 ? Center(
                     child: Column(
@@ -163,7 +168,7 @@ class CartScreen extends StatelessWidget {
                         margin: const EdgeInsets.all(16),
                         height: 56,
                         decoration: BoxDecoration(
-                          color: Colors.orange,
+                          color: AppTheme.primaryOrange,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -485,7 +490,7 @@ class CartScreen extends StatelessWidget {
                               width: 24,
                               height: 24,
                               decoration: BoxDecoration(
-                                color: Colors.orange,
+                                color: AppTheme.primaryOrange,
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
@@ -534,7 +539,7 @@ class CartScreen extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: AppTheme.primaryOrange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Row(
@@ -630,7 +635,7 @@ class CartScreen extends StatelessWidget {
               },
               child: Text(
                 localizations.clearCartYes,
-                style: const TextStyle(color: Colors.orange),
+                style: const TextStyle(color: AppTheme.primaryOrange),
               ),
             ),
           ],

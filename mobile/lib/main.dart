@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
@@ -18,12 +19,16 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/services/sync_service.dart';
+import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp();
 
   // Initialize cache service
   await CacheService.init();
@@ -35,6 +40,9 @@ void main() async {
   // Initialize API service with connectivity
   final apiService = ApiService();
   apiService.setConnectivityService(connectivityService);
+
+  // Initialize Notification Service
+  await NotificationService().initialize();
 
   runApp(
     MultiProvider(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/shared/settings/legal_content_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/connectivity_banner.dart';
@@ -35,7 +36,7 @@ class LegalMenuScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppTheme.backgroundColor,
       bottomNavigationBar: const PersistentBottomNavBar(),
       body: Column(
         children: [
@@ -46,38 +47,41 @@ class LegalMenuScreen extends StatelessWidget {
             child: Stack(
               children: [
                 ListView.builder(
+                  padding: EdgeInsets.only(top: AppTheme.spacingMedium),
                   itemCount: legalDocuments.length,
                   itemBuilder: (context, index) {
                     final doc = legalDocuments[index];
                     return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingMedium,
+                        vertical: AppTheme.spacingSmall,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      decoration: AppTheme.cardDecoration(),
                       child: ListTile(
                         leading: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(AppTheme.spacingSmall),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppTheme.primaryOrange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSmall,
+                            ),
                           ),
                           child: Icon(
                             doc['icon'] as IconData,
-                            color: Colors.orange,
-                            size: 20,
+                            color: AppTheme.primaryOrange,
+                            size: AppTheme.iconSizeMedium,
                           ),
                         ),
                         title: Text(
                           doc['title'] as String,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: AppTheme.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.chevron_right,
-                          color: Colors.grey,
+                          color: AppTheme.textSecondary,
                         ),
                         onTap: () {
                           Navigator.push(
@@ -94,7 +98,7 @@ class LegalMenuScreen extends StatelessWidget {
                     );
                   },
                 ),
-                const Positioned(
+                Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
@@ -115,45 +119,52 @@ class LegalMenuScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(Icons.gavel, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.gavel,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
+                ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title
               Expanded(
                 child: Column(
@@ -162,17 +173,17 @@ class LegalMenuScreen extends StatelessWidget {
                   children: [
                     Text(
                       l10n.legalDocuments,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       'Sözleşmeler ve Politikalar',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

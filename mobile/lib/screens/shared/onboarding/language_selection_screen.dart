@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,21 +46,21 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
       'name': 'Türkçe',
       'nativeName': 'Türkçe',
       'flag': '🇹🇷',
-      'color': const Color(0xFFE30A17),
+      'color': AppTheme.error, // Red
     },
     {
       'code': 'en',
       'name': 'English',
       'nativeName': 'English',
       'flag': '🇬🇧',
-      'color': const Color(0xFF012169),
+      'color': AppTheme.info, // Blue
     },
     {
       'code': 'ar',
       'name': 'العربية',
       'nativeName': 'العربية',
       'flag': '🇸🇦',
-      'color': const Color(0xFF006C35),
+      'color': AppTheme.success, // Green
     },
   ];
 
@@ -208,9 +209,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.orange.shade400,
-              Colors.orange.shade600,
-              Colors.orange.shade800,
+              AppTheme.lightOrange,
+              AppTheme.primaryOrange,
+              AppTheme.darkOrange,
             ],
           ),
         ),
@@ -238,18 +239,22 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                               width: 120,
                               height: 120,
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30),
+                                color: AppTheme.cardColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: AppTheme.shadowColor,
                                     blurRadius: 20,
                                     spreadRadius: 5,
                                   ),
                                 ],
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                                ),
                                 child: Image.asset(
                                   'assets/icon/icon.png',
                                   width: 80,
@@ -262,13 +267,15 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                         );
                       },
                     ),
-                    const SizedBox(height: 40),
+                    AppTheme.verticalSpace(2.5),
                     // Slogan with typewriter effect
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: Container(
                         key: ValueKey(_currentSloganIndex),
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingXLarge,
+                        ),
                         child: Text(
                           _slogans[_currentSloganIndex].substring(
                                 0,
@@ -283,10 +290,10 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                                       _showCursor
                                   ? '|'
                                   : ''),
-                          style: TextStyle(
+                          style: AppTheme.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppTheme.textOnPrimary,
                             letterSpacing: 0.8,
                             height: 1.4,
                           ),
@@ -294,7 +301,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    AppTheme.verticalSpace(1.25),
                     // Language Cards
                     ...List.generate(
                       _languages.length,
@@ -334,28 +341,34 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
     final color = language['color'] as Color;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+      margin: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingXLarge,
+        vertical: AppTheme.radiusMedium,
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _selectLanguage(language['code'] as String),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingLarge,
+              vertical: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+            ),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              color: AppTheme.cardColor,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
               border: Border.all(
-                color: isSelected ? color : Colors.grey[300]!,
+                color: isSelected ? color : AppTheme.dividerColor,
                 width: isSelected ? 3 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isSelected
                       ? color.withOpacity(0.4)
-                      : Colors.black.withOpacity(0.1),
+                      : AppTheme.shadowColor,
                   blurRadius: isSelected ? 20 : 10,
                   spreadRadius: isSelected ? 2 : 0,
                   offset: const Offset(0, 4),
@@ -384,7 +397,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                     ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                AppTheme.horizontalSpace(1.25),
                 // Language Info
                 Expanded(
                   child: Column(
@@ -392,18 +405,18 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                     children: [
                       Text(
                         language['name'] as String,
-                        style: TextStyle(
+                        style: AppTheme.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? color : Colors.black87,
+                          color: isSelected ? color : AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      AppTheme.verticalSpace(0.25),
                       Text(
                         language['nativeName'] as String,
-                        style: TextStyle(
+                        style: AppTheme.poppins(
                           fontSize: 16,
-                          color: Colors.grey[600],
+                          color: AppTheme.textSecondary,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -429,9 +442,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check,
-                            color: Colors.white,
+                            color: AppTheme.textOnPrimary,
                             size: 20,
                           ),
                         )
@@ -440,7 +453,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: AppTheme.backgroundColor,
                             shape: BoxShape.circle,
                           ),
                         ),

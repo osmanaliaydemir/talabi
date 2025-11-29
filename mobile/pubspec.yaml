@@ -40,6 +40,7 @@ dependencies:
   intl: ^0.20.2
   flutter_localizations:
     sdk: flutter
+  google_fonts: ^6.2.1
   google_maps_flutter: ^2.5.0
   geolocator: ^12.0.0
   geocoding: ^3.0.0
@@ -54,6 +55,13 @@ dependencies:
   signature: ^6.3.0
   url_launcher: ^6.3.2
   flutter_html: ^3.0.0-beta.2
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.2
+  flutter_facebook_auth: ^6.2.0
+  firebase_core: ^3.4.0
+  firebase_auth: ^5.2.0
+  firebase_messaging: ^15.1.0
+  flutter_local_notifications: ^19.5.0
 
 dev_dependencies:
   flutter_test:

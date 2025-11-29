@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/courier/courier_login_screen.dart';
 import 'package:mobile/screens/shared/auth/login_screen.dart';
@@ -58,7 +59,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Giriş başarısız: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -76,385 +77,418 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Orange Header
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.deepPurple,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // Decorative shape in top right
-                  Positioned(
-                    top: -50,
-                    right: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple.shade300.withOpacity(0.3),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  // Decorative shape on left side (rounded pill shape)
-                  Positioned(
-                    bottom: -20,
-                    left: -30,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(50),
-                          bottomRight: Radius.circular(50),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.vendorLight,
+              AppTheme.vendorPrimary,
+              AppTheme.vendorDark,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Vendor Header (Purple/Mor)
+              Container(
+                height: 180,
+                child: Stack(
+                  children: [
+                    // Decorative shape in top right
+                    Positioned(
+                      top: -50,
+                      right: -50,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: AppTheme.vendorLight.withOpacity(0.7),
+                          shape: BoxShape.circle,
                         ),
                       ),
                     ),
-                  ),
-                  // Title - Centered
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 40),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.store, color: Colors.white, size: 36),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Vendor Login',
-                            style: const TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                    // Decorative shape on left side
+                    Positioned(
+                      bottom: -20,
+                      left: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppTheme.vendorPrimary,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
+                            ),
+                            bottomRight: Radius.circular(
+                              AppTheme.radiusXLarge * 2,
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    // Title - Centered
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.store,
+                              color: AppTheme.textOnPrimary,
+                              size: 36,
+                            ),
+                            AppTheme.horizontalSpace(0.75),
+                            Text(
+                              'Vendor Login',
+                              style: AppTheme.poppins(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textOnPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // White Card Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+              // White Card Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                        ),
+                        topRight: Radius.circular(
+                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                        ),
                       ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Welcome Message
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.business_center,
-                                color: Colors.deepPurple,
-                                size: 32,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Welcome Back, Vendor!',
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.shadowColor,
+                          blurRadius: 10,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingLarge),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Welcome Message
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.business_center,
+                                  color: AppTheme.vendorPrimary,
+                                  size: 32,
+                                ),
+                                AppTheme.horizontalSpace(0.75),
+                                Expanded(
+                                  child: Text(
+                                    'Welcome Back, Vendor!',
+                                    style: AppTheme.poppins(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
                                   ),
                                 ),
+                              ],
+                            ),
+                            AppTheme.verticalSpace(0.5),
+                            Text(
+                              'Sign in to manage your store and orders',
+                              style: AppTheme.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                height: 1.5,
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Sign in to manage your store and orders',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              height: 1.5,
                             ),
-                          ),
-                          const SizedBox(height: 32),
-                          // Email Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _emailController,
-                              decoration: InputDecoration(
-                                hintText: localizations.emailAddress,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.business_outlined,
-                                  color: Colors.grey[600],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                            AppTheme.verticalSpace(2),
+                            // Email Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
                               ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.emailRequired;
-                                }
-                                if (!value.contains('@')) {
-                                  return localizations.validEmail;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Password Field
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                hintText: localizations.password,
-                                hintStyle: TextStyle(color: Colors.grey[500]),
-                                prefixIcon: Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.grey[600],
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                    color: Colors.grey[600],
+                              child: TextFormField(
+                                controller: _emailController,
+                                decoration: InputDecoration(
+                                  hintText: localizations.emailAddress,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                                  prefixIcon: Icon(
+                                    Icons.business_outlined,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
                                 ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.emailRequired;
+                                  }
+                                  if (!value.contains('@')) {
+                                    return localizations.validEmail;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Password Field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.backgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
                                 ),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return localizations.passwordRequired;
-                                }
-                                if (value.length < 6) {
-                                  return localizations.passwordMinLength;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Remember me and Recovery Password
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: _rememberMe,
-                                    onChanged: (value) {
+                              child: TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  hintText: localizations.password,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.lock_outline,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                    onPressed: () {
                                       setState(() {
-                                        _rememberMe = value ?? false;
+                                        _obscurePassword = !_obscurePassword;
                                       });
                                     },
-                                    activeColor: Colors.deepPurple,
                                   ),
-                                  Text(
-                                    localizations.rememberMe,
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return localizations.passwordRequired;
+                                  }
+                                  if (value.length < 6) {
+                                    return localizations.passwordMinLength;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Remember me and Recovery Password
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: _rememberMe,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _rememberMe = value ?? false;
+                                        });
+                                      },
+                                      activeColor: AppTheme.vendorPrimary,
+                                    ),
+                                    Text(
+                                      localizations.rememberMe,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    // Forgot password for vendors
+                                  },
+                                  child: Text(
+                                    localizations.recoveryPassword,
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.vendorPrimary,
                                       fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            AppTheme.verticalSpace(1.5),
+                            // Login Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: _isLoading ? null : _login,
+                                icon: Icon(
+                                  Icons.store,
+                                  color: AppTheme.textOnPrimary,
+                                  size: 20,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.vendorPrimary,
+                                  foregroundColor: AppTheme.textOnPrimary,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: AppTheme.spacingMedium,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  elevation: AppTheme.elevationNone,
+                                ),
+                                label: _isLoading
+                                    ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: AppTheme.textOnPrimary,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Vendor Login',
+                                        style: AppTheme.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            AppTheme.verticalSpace(2),
+                            // Customer Login Link
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Are you a customer? ',
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      TapLogger.logButtonPress(
+                                        'Customer Login',
+                                        context: 'VendorLoginScreen',
+                                      );
+                                      TapLogger.logNavigation(
+                                        'VendorLoginScreen',
+                                        'LoginScreen',
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const LoginScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Sign In',
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.vendorPrimary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  // Forgot password for vendors
-                                },
-                                child: Text(
-                                  localizations.recoveryPassword,
-                                  style: const TextStyle(
-                                    color: Colors.deepPurple,
-                                    fontSize: 14,
+                            ),
+                            AppTheme.verticalSpace(1),
+                            // Courier Login Link
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    localizations.areYouCourier + ' ',
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          // Login Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _login,
-                              icon: Icon(
-                                Icons.store,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurple,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
-                              label: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Vendor Login',
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                                  GestureDetector(
+                                    onTap: () {
+                                      TapLogger.logButtonPress(
+                                        'Courier Login',
+                                        context: 'VendorLoginScreen',
+                                      );
+                                      TapLogger.logNavigation(
+                                        'VendorLoginScreen',
+                                        'CourierLoginScreen',
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CourierLoginScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      localizations.courierLoginLink,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.courierPrimary,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 32),
-                          // Customer Login Link
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Are you a customer? ',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    TapLogger.logButtonPress(
-                                      'Customer Login',
-                                      context: 'VendorLoginScreen',
-                                    );
-                                    TapLogger.logNavigation(
-                                      'VendorLoginScreen',
-                                      'LoginScreen',
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const LoginScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Sign In',
-                                    style: const TextStyle(
-                                      color: Colors.deepPurple,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Courier Login Link
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  localizations.areYouCourier + ' ',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    TapLogger.logButtonPress(
-                                      'Courier Login',
-                                      context: 'VendorLoginScreen',
-                                    );
-                                    TapLogger.logNavigation(
-                                      'VendorLoginScreen',
-                                      'CourierLoginScreen',
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CourierLoginScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    localizations.courierLoginLink,
-                                    style: const TextStyle(
-                                      color: Colors.teal,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

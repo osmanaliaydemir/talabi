@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
@@ -517,7 +518,7 @@ class _CourierActiveDeliveriesScreenState
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'assigned':
-        return Colors.orange;
+        return AppTheme.primaryOrange;
       case 'accepted':
         return Colors.blue;
       case 'outfordelivery':

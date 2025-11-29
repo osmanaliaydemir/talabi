@@ -8,12 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
 using System.Text;
+using Talabi.Api.Middleware;
 using Talabi.Api.Validators;
 using Talabi.Core.Entities;
-using Talabi.Core.Options;
+using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
 using Talabi.Infrastructure.Data;
 using Talabi.Infrastructure.Services;
+using Hangfire;
+using Talabi.Core.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,19 +49,23 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddDbContext<TalabiDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Email Settings
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
 // Services
-builder.Services.AddHttpClient();
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
-builder.Services.AddScoped<ICurrencyService, CurrencyService>();
-builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
+builder.Services.AddScoped<INotificationService, FirebaseNotificationService>();
+builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
+builder.Services.AddScoped<IOrderAssignmentService, OrderAssignmentService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
-builder.Services.AddScoped<Talabi.Core.Interfaces.IOrderAssignmentService, Talabi.Infrastructure.Services.OrderAssignmentService>();
+builder.Services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+
+// Hangfire
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
+
+// SignalR
 builder.Services.AddSignalR();
-builder.Services.AddScoped<Talabi.Core.Interfaces.INotificationService, Talabi.Api.Services.SignalRNotificationService>();
-
-// ...
-
-
 
 // Rate Limiting
 builder.Services.AddMemoryCache();
@@ -167,7 +174,17 @@ app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+
 app.MapControllers();
 app.MapHub<Talabi.Api.Hubs.NotificationHub>("/hubs/notifications");
+
+app.UseHangfireDashboard();
+
+// Schedule Recurring Jobs
+RecurringJob.AddOrUpdate<IBackgroundJobService>(
+    "check-abandoned-carts",
+    service => service.CheckAbandonedCarts(),
+    Cron.Hourly);
 
 app.Run();

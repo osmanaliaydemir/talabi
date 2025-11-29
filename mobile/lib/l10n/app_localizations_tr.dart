@@ -202,11 +202,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get signUp => 'Kayıt Ol';
 
   @override
-  String get welcomeBack => 'Tekrar Hoş Geldiniz!';
+  String get welcomeBack => 'Hoş Geldiniz!';
 
   @override
   String get loginDescription =>
-      'Bizimle bağlantıda kalmak için lütfen kişisel bilgilerinizle giriş yapın';
+      'Sipariş vermek ve verdiğiniz siparişleri anlık olarak takip etmek için giriş yapın';
 
   @override
   String get emailAddress => 'E-posta Adresi';
@@ -1131,4 +1131,34 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get paymentComingSoonDescription =>
       'Bu ödeme yöntemi yakında hizmete girecektir.';
+
+  @override
+  String get skip => 'Geç';
+
+  @override
+  String get next => 'İleri';
+
+  @override
+  String get getStarted => 'Başla';
+
+  @override
+  String get onboardingTitle1 => 'İhtiyacınız Olan Her Şey';
+
+  @override
+  String get onboardingDesc1 =>
+      'Taze market ürünleri, günlük ihtiyaçlar ve daha fazlası—tek uygulamada';
+
+  @override
+  String get onboardingTitle2 => 'Hızlı ve Güvenilir Teslimat';
+
+  @override
+  String get onboardingDesc2 =>
+      'Siparişinizi anlık takip edin ve hızlıca teslim alın';
+
+  @override
+  String get onboardingTitle3 => 'En İyi Fiyatlar ve Kampanyalar';
+
+  @override
+  String get onboardingDesc3 =>
+      'Her gün özel teklifler ve rekabetçi fiyatların keyfini çıkarın';
 }

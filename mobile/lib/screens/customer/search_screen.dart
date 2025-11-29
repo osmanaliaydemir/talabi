@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
@@ -598,7 +599,9 @@ class _SearchScreenState extends State<SearchScreen>
 
   Widget _buildProductsTab() {
     if (_isLoadingProducts) {
-      return Center(child: CircularProgressIndicator(color: Colors.orange));
+      return Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+      );
     }
 
     if (_productResults == null) {
@@ -702,7 +705,9 @@ class _SearchScreenState extends State<SearchScreen>
 
   Widget _buildVendorsTab() {
     if (_isLoadingVendors) {
-      return Center(child: CircularProgressIndicator(color: Colors.orange));
+      return Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+      );
     }
 
     if (_vendorResults == null) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +40,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
     final appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -47,23 +48,21 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
           // Content
           Expanded(
             child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
+              margin: EdgeInsets.all(AppTheme.spacingMedium),
+              decoration: AppTheme.cardDecoration(),
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppTheme.spacingMedium),
                 children: [
                   // Date Format
                   Text(
                     appLocalizations?.dateFormat ?? 'Date Format',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.orange,
+                    style: AppTheme.poppins(
+                      color: AppTheme.primaryOrange,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppTheme.spacingSmall),
                   ...[
                     'dd/MM/yyyy',
                     'MM/dd/yyyy',
@@ -71,7 +70,11 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     'dd.MM.yyyy',
                   ].map((format) {
                     return RadioListTile<String>(
-                      title: Text(format),
+                      activeColor: AppTheme.primaryOrange,
+                      title: Text(
+                        format,
+                        style: AppTheme.poppins(color: AppTheme.textPrimary),
+                      ),
                       value: format,
                       groupValue: _selectedDateFormat,
                       onChanged: (value) {
@@ -82,19 +85,24 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     );
                   }),
 
-                  const Divider(height: 32),
+                  Divider(height: 32, color: AppTheme.borderColor),
 
                   // Time Format
                   Text(
                     appLocalizations?.timeFormat ?? 'Time Format',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.orange,
+                    style: AppTheme.poppins(
+                      color: AppTheme.primaryOrange,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppTheme.spacingSmall),
                   RadioListTile<String>(
-                    title: Text(appLocalizations?.hour24 ?? '24 Hour'),
+                    activeColor: AppTheme.primaryOrange,
+                    title: Text(
+                      appLocalizations?.hour24 ?? '24 Hour',
+                      style: AppTheme.poppins(color: AppTheme.textPrimary),
+                    ),
                     value: '24h',
                     groupValue: _selectedTimeFormat,
                     onChanged: (value) {
@@ -104,7 +112,11 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     },
                   ),
                   RadioListTile<String>(
-                    title: Text(appLocalizations?.hour12 ?? '12 Hour'),
+                    activeColor: AppTheme.primaryOrange,
+                    title: Text(
+                      appLocalizations?.hour12 ?? '12 Hour',
+                      style: AppTheme.poppins(color: AppTheme.textPrimary),
+                    ),
                     value: '12h',
                     groupValue: _selectedTimeFormat,
                     onChanged: (value) {
@@ -114,29 +126,35 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     },
                   ),
 
-                  const Divider(height: 32),
+                  Divider(height: 32, color: AppTheme.borderColor),
 
                   // Time Zone
                   Text(
                     appLocalizations?.timeZone ?? 'Time Zone',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.orange,
+                    style: AppTheme.poppins(
+                      color: AppTheme.primaryOrange,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _timeZoneController,
-                    decoration: InputDecoration(
-                      hintText: 'e.g., Europe/Istanbul, America/New_York',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  Container(
+                    decoration: AppTheme.inputBoxDecoration(),
+                    child: TextField(
+                      controller: _timeZoneController,
+                      style: AppTheme.poppins(color: AppTheme.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'e.g., Europe/Istanbul, America/New_York',
+                        hintStyle: AppTheme.poppins(color: AppTheme.textHint),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMedium,
+                          vertical: AppTheme.spacingMedium,
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppTheme.spacingLarge),
                   // Save Button
                   SizedBox(
                     width: double.infinity,
@@ -154,24 +172,32 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                           SnackBar(
                             content: Text(
                               appLocalizations?.save ?? 'Kaydedildi',
+                              style: AppTheme.poppins(
+                                color: AppTheme.textOnPrimary,
+                              ),
                             ),
-                            backgroundColor: Colors.green,
+                            backgroundColor: AppTheme.success,
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppTheme.primaryOrange,
+                        foregroundColor: AppTheme.textOnPrimary,
+                        padding: EdgeInsets.symmetric(
+                          vertical: AppTheme.spacingMedium,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMedium,
+                          ),
                         ),
                       ),
                       child: Text(
                         appLocalizations?.save ?? 'Save',
-                        style: const TextStyle(
+                        style: AppTheme.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: AppTheme.textOnPrimary,
                         ),
                       ),
                     ),
@@ -196,45 +222,52 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
+            AppTheme.lightOrange,
+            AppTheme.primaryOrange,
+            AppTheme.darkOrange,
           ],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingMedium,
+          ),
           child: Row(
             children: [
               // Back Button
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: const Icon(Icons.public, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.public,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
+                ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacingSmall),
               // Title
               Expanded(
                 child: Column(
@@ -243,17 +276,17 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   children: [
                     Text(
                       appLocalizations?.regionalSettings ?? 'Regional Settings',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       'Tarih ve saat ayarları',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                      style: AppTheme.poppins(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

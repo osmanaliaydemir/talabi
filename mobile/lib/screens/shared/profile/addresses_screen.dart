@@ -1,5 +1,6 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/address.dart';
 import 'package:mobile/screens/shared/profile/add_edit_address_screen.dart';
@@ -224,7 +225,8 @@ class _AddressesScreenState extends State<AddressesScreen>
                                             width: 90,
                                             height: 90,
                                             decoration: BoxDecoration(
-                                              color: Colors.orange.shade50,
+                                              color:
+                                                  AppTheme.primaryOrangeShade50,
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
@@ -235,10 +237,10 @@ class _AddressesScreenState extends State<AddressesScreen>
                                                 ),
                                               ],
                                             ),
-                                            child: const Icon(
+                                            child: Icon(
                                               Icons.location_on,
-                                              size: 45,
-                                              color: Colors.orange,
+                                              size: 40,
+                                              color: AppTheme.primaryOrange,
                                             ),
                                           ),
                                         ),
@@ -346,7 +348,7 @@ class _AddressesScreenState extends State<AddressesScreen>
             _loadAddresses();
           }
         },
-        backgroundColor: Colors.orange,
+        backgroundColor: AppTheme.primaryOrange,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -404,13 +406,15 @@ class _AddressesScreenState extends State<AddressesScreen>
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: address.isDefault ? Colors.orange : Colors.grey[300]!,
+                color: address.isDefault
+                    ? AppTheme.primaryOrange
+                    : Colors.grey[300]!,
                 width: address.isDefault ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: address.isDefault
-                      ? Colors.orange.withOpacity(0.2)
+                      ? AppTheme.primaryOrange.withOpacity(0.2)
                       : Colors.black.withOpacity(0.05),
                   blurRadius: address.isDefault ? 15 : 10,
                   spreadRadius: address.isDefault ? 1 : 0,
@@ -427,19 +431,21 @@ class _AddressesScreenState extends State<AddressesScreen>
                   height: 50,
                   decoration: BoxDecoration(
                     color: address.isDefault
-                        ? Colors.orange.withOpacity(0.1)
+                        ? AppTheme.primaryOrange.withOpacity(0.1)
                         : Colors.grey[100],
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: address.isDefault
-                          ? Colors.orange
+                          ? AppTheme.primaryOrange
                           : Colors.transparent,
                       width: 2,
                     ),
                   ),
                   child: Icon(
                     address.isDefault ? Icons.home : Icons.location_on,
-                    color: address.isDefault ? Colors.orange : Colors.grey[600],
+                    color: address.isDefault
+                        ? AppTheme.primaryOrange
+                        : Colors.grey[600],
                     size: 24,
                   ),
                 ),
@@ -458,7 +464,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: address.isDefault
-                                    ? Colors.orange
+                                    ? AppTheme.primaryOrange
                                     : Colors.black87,
                               ),
                             ),
@@ -473,7 +479,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange,
+                                    color: AppTheme.primaryOrange,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

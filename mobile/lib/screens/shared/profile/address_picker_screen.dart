@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -181,7 +182,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
 
   void _saveAddress() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (_selectedLocation == null || _selectedAddress == null) {
       ScaffoldMessenger.of(
         context,
@@ -216,9 +217,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
         body: Column(
           children: [
             _buildHeader(context),
-            const Expanded(
-              child: Center(child: CircularProgressIndicator()),
-            ),
+            const Expanded(child: Center(child: CircularProgressIndicator())),
           ],
         ),
       );
@@ -237,125 +236,135 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
           // Map and Address Form
           Expanded(
             child: Column(
-        children: [
-          // Map
-          Expanded(
-            child: Stack(
               children: [
-                GoogleMap(
-                  initialCameraPosition: initialCameraPosition,
-                  onMapCreated: (GoogleMapController controller) {
-                    _mapController = controller;
-                    if (_selectedLocation != null) {
-                      controller.animateCamera(
-                        CameraUpdate.newLatLngZoom(_selectedLocation!, 16),
-                      );
-                    }
-                  },
-                  onTap: _onMapTap,
-                  onCameraMove: _onCameraMove,
-                  onCameraIdle: _onCameraIdle,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  markers: _selectedLocation != null
-                      ? {
-                          Marker(
-                            markerId: const MarkerId('selected'),
-                            position: _selectedLocation!,
-                            draggable: true,
-                            onDragEnd: (LatLng newPosition) {
-                              setState(() {
-                                _selectedLocation = newPosition;
-                              });
-                              _getAddressFromLocation(newPosition);
-                            },
-                          ),
-                        }
-                      : {},
-                ),
-                // Center indicator
-                Center(
-                  child: Icon(Icons.location_on, color: Colors.red, size: 40),
-                ),
-              ],
-            ),
-          ),
-          // Address info card
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context)!;
-              return Card(
-                margin: const EdgeInsets.all(8),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Map
+                Expanded(
+                  child: Stack(
                     children: [
-                      TextField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          labelText: l10n.addressTitleOptional,
-                          border: const OutlineInputBorder(),
-                          helperText: l10n.canBeLeftEmpty,
-                        ),
+                      GoogleMap(
+                        initialCameraPosition: initialCameraPosition,
+                        onMapCreated: (GoogleMapController controller) {
+                          _mapController = controller;
+                          if (_selectedLocation != null) {
+                            controller.animateCamera(
+                              CameraUpdate.newLatLngZoom(
+                                _selectedLocation!,
+                                16,
+                              ),
+                            );
+                          }
+                        },
+                        onTap: _onMapTap,
+                        onCameraMove: _onCameraMove,
+                        onCameraIdle: _onCameraIdle,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        markers: _selectedLocation != null
+                            ? {
+                                Marker(
+                                  markerId: const MarkerId('selected'),
+                                  position: _selectedLocation!,
+                                  draggable: true,
+                                  onDragEnd: (LatLng newPosition) {
+                                    setState(() {
+                                      _selectedLocation = newPosition;
+                                    });
+                                    _getAddressFromLocation(newPosition);
+                                  },
+                                ),
+                              }
+                            : {},
                       ),
-                      const SizedBox(height: 16),
-                      if (_isLoadingAddress)
-                        const Center(child: CircularProgressIndicator())
-                      else if (_selectedAddress != null) ...[
-                        Text(
-                          '${l10n.address}:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(_selectedAddress!),
-                        if (_selectedCity != null && _selectedCity!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text('${l10n.city}: $_selectedCity'),
-                        ],
-                        if (_selectedDistrict != null &&
-                            _selectedDistrict!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text('${l10n.district}: $_selectedDistrict'),
-                        ],
-                      ] else
-                        Text(
-                          l10n.selectOrDragMarkerOnMap,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _saveAddress,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            l10n.saveAddressButton,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                      // Center indicator
+                      Center(
+                        child: Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40,
                         ),
                       ),
                     ],
                   ),
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+                // Address info card
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context)!;
+                    return Card(
+                      margin: const EdgeInsets.all(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: _titleController,
+                              decoration: InputDecoration(
+                                labelText: l10n.addressTitleOptional,
+                                border: const OutlineInputBorder(),
+                                helperText: l10n.canBeLeftEmpty,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            if (_isLoadingAddress)
+                              const Center(child: CircularProgressIndicator())
+                            else if (_selectedAddress != null) ...[
+                              Text(
+                                '${l10n.address}:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(_selectedAddress!),
+                              if (_selectedCity != null &&
+                                  _selectedCity!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text('${l10n.city}: $_selectedCity'),
+                              ],
+                              if (_selectedDistrict != null &&
+                                  _selectedDistrict!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text('${l10n.district}: $_selectedDistrict'),
+                              ],
+                            ] else
+                              Text(
+                                l10n.selectOrDragMarkerOnMap,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _saveAddress,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryOrange,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  l10n.saveAddressButton,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -364,7 +373,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
 
   Widget _buildHeader(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -407,11 +416,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.map,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.map, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
               // Title

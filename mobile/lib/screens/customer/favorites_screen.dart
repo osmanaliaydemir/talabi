@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
@@ -92,7 +93,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           // Main Content
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.orange))
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryOrange,
+                    ),
+                  )
                 : _favorites.isEmpty
                 ? Center(
                     child: Column(

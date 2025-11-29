@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
@@ -118,7 +119,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
   // Categories data
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Yemek', 'icon': Icons.restaurant, 'color': Colors.orange},
+    {
+      'name': 'Yemek',
+      'icon': Icons.restaurant,
+      'color': AppTheme.primaryOrange,
+    },
     {'name': 'Mağazalar', 'icon': Icons.store, 'color': Colors.blue},
     {'name': 'Market', 'icon': Icons.shopping_basket, 'color': Colors.green},
     {'name': 'İçecek', 'icon': Icons.local_drink, 'color': Colors.purple},
@@ -130,7 +135,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -147,6 +152,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
           // Main Content
           Expanded(
             child: RefreshIndicator(
+              color: AppTheme.primaryOrange,
               onRefresh: () async {
                 setState(() {
                   _vendorsFuture = _apiService.getVendors();
@@ -162,29 +168,29 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   // Search and Filter
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingMedium,
+                        vertical: AppTheme.spacingSmall,
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              decoration: AppTheme.inputBoxDecoration(),
                               child: TextField(
                                 decoration: InputDecoration(
                                   hintText: localizations.search,
+                                  hintStyle: AppTheme.poppins(
+                                    color: AppTheme.textHint,
+                                  ),
                                   prefixIcon: Icon(
                                     Icons.search,
-                                    color: Colors.grey[600],
+                                    color: AppTheme.textSecondary,
                                   ),
                                   border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingMedium,
+                                    vertical: AppTheme.spacingSmall,
                                   ),
                                 ),
                                 onTap: () {
@@ -199,14 +205,19 @@ class _VendorListScreenState extends State<VendorListScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: AppTheme.spacingSmall),
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.orange,
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppTheme.primaryOrange,
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.tune, color: Colors.white),
+                              icon: Icon(
+                                Icons.tune,
+                                color: AppTheme.textOnPrimary,
+                              ),
                               onPressed: () {
                                 // Open filter
                               },
@@ -219,15 +230,17 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   // Promotional Banner
                   SliverToBoxAdapter(
                     child: Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(20),
+                      margin: EdgeInsets.all(AppTheme.spacingMedium),
+                      padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Colors.orange, Colors.orange.shade700],
+                          colors: [AppTheme.lightOrange, AppTheme.darkOrange],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -235,51 +248,66 @@ class _VendorListScreenState extends State<VendorListScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Harika Bir Gün Olacak!',
-                                  style: TextStyle(
+                                  style: AppTheme.poppins(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: AppTheme.textOnPrimary,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: AppTheme.spacingSmall),
                                 Text(
                                   'Ücretsiz teslimat, düşük ücretler & %10 nakit iade!',
-                                  style: TextStyle(
+                                  style: AppTheme.poppins(
                                     fontSize: 14,
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: AppTheme.textOnPrimary.withOpacity(
+                                      0.9,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: AppTheme.spacingMedium),
                                 ElevatedButton(
                                   onPressed: () {},
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.orange,
-                                    padding: const EdgeInsets.symmetric(
+                                    backgroundColor: AppTheme.cardColor,
+                                    foregroundColor: AppTheme.primaryOrange,
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 24,
                                       vertical: 12,
                                     ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusSmall,
+                                      ),
+                                    ),
                                   ),
-                                  child: const Text('Şimdi Sipariş Ver'),
+                                  child: Text(
+                                    'Şimdi Sipariş Ver',
+                                    style: AppTheme.poppins(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.primaryOrange,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: AppTheme.spacingMedium),
                           // Placeholder for image
                           Container(
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppTheme.textOnPrimary.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                             child: Icon(
                               Icons.fastfood,
                               size: 50,
-                              color: Colors.white.withOpacity(0.8),
+                              color: AppTheme.textOnPrimary.withOpacity(0.8),
                             ),
                           ),
                         ],
@@ -292,23 +320,30 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingMedium,
+                            vertical: AppTheme.spacingSmall,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Kategoriler',
-                                style: TextStyle(
+                                style: AppTheme.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                               TextButton(
                                 onPressed: () {},
-                                child: const Text('Tümünü Gör'),
+                                child: Text(
+                                  'Tümünü Gör',
+                                  style: AppTheme.poppins(
+                                    color: AppTheme.primaryOrange,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -317,7 +352,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
                           height: 100,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingSmall,
+                            ),
                             itemCount: _categories.length,
                             itemBuilder: (context, index) {
                               final category = _categories[index];
@@ -335,11 +372,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const SizedBox(
+                          return SizedBox(
                             height: 200,
                             child: Center(
                               child: CircularProgressIndicator(
-                                color: Colors.orange,
+                                color: AppTheme.primaryOrange,
                               ),
                             ),
                           );
@@ -358,24 +395,31 @@ class _VendorListScreenState extends State<VendorListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingSmall,
                               ),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Sizin İçin Seçtiklerimiz',
-                                    style: TextStyle(
+                                    style: AppTheme.poppins(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
                                   TextButton(
                                     onPressed: () {},
-                                    child: const Text('Tümünü Gör'),
+                                    child: Text(
+                                      'Tümünü Gör',
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.primaryOrange,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -384,8 +428,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
                               height: 240,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppTheme.spacingSmall,
                                 ),
                                 itemCount: products.length,
                                 itemBuilder: (context, index) {
@@ -397,7 +441,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: AppTheme.spacingMedium),
                           ],
                         );
                       },
@@ -410,11 +454,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const SizedBox(
+                          return SizedBox(
                             height: 200,
                             child: Center(
                               child: CircularProgressIndicator(
-                                color: Colors.orange,
+                                color: AppTheme.primaryOrange,
                               ),
                             ),
                           );
@@ -433,15 +477,16 @@ class _VendorListScreenState extends State<VendorListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: AppTheme.spacingSmall,
                               ),
                               child: Text(
                                 localizations.popularVendors,
-                                style: const TextStyle(
+                                style: AppTheme.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                             ),
@@ -449,8 +494,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
                               height: 200,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppTheme.spacingSmall,
                                 ),
                                 itemCount: vendors.length,
                                 itemBuilder: (context, index) {
@@ -462,7 +507,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: AppTheme.spacingMedium),
                           ],
                         );
                       },
@@ -480,7 +525,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
   Widget _buildCategoryCard(Map<String, dynamic> category) {
     return Container(
       width: 80,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
       child: Column(
         children: [
           Container(
@@ -488,7 +533,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
             height: 60,
             decoration: BoxDecoration(
               color: (category['color'] as Color).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             ),
             child: Icon(
               category['icon'] as IconData,
@@ -496,10 +541,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
               size: 30,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppTheme.spacingSmall),
           Text(
             category['name'] as String,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            style: AppTheme.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -568,12 +617,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
       },
       child: Container(
         width: 280,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        child: Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+        margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
+        child: Container(
+          decoration: AppTheme.cardDecoration(),
           clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,21 +637,21 @@ class _VendorListScreenState extends State<VendorListScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                color: Colors.grey[200],
+                                color: AppTheme.textSecondary.withOpacity(0.1),
                                 child: Icon(
                                   Icons.store,
                                   size: 50,
-                                  color: Colors.grey[400],
+                                  color: AppTheme.textSecondary,
                                 ),
                               );
                             },
                           )
                         : Container(
-                            color: Colors.grey[200],
+                            color: AppTheme.textSecondary.withOpacity(0.1),
                             child: Icon(
                               Icons.store,
                               size: 50,
-                              color: Colors.grey[400],
+                              color: AppTheme.textSecondary,
                             ),
                           ),
                     if (vendor.rating != null && vendor.rating! > 0)
@@ -613,13 +659,15 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         top: 8,
                         right: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppTheme.cardColor.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusMedium,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -629,12 +677,13 @@ class _VendorListScreenState extends State<VendorListScreen> {
                                 size: 14,
                                 color: Colors.amber[600],
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Text(
                                 vendor.rating!.toStringAsFixed(1),
-                                style: const TextStyle(
+                                style: AppTheme.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                             ],
@@ -645,35 +694,36 @@ class _VendorListScreenState extends State<VendorListScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       vendor.name,
-                      style: const TextStyle(
+                      style: AppTheme.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     if (vendor.address.isNotEmpty)
                       Row(
                         children: [
                           Icon(
                             Icons.location_on,
                             size: 14,
-                            color: Colors.grey[600],
+                            color: AppTheme.textSecondary,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               vendor.address,
-                              style: TextStyle(
+                              style: AppTheme.poppins(
                                 fontSize: 12,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -682,20 +732,20 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         ],
                       ),
                     if (vendor.distanceInKm != null) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(
                             Icons.navigation,
                             size: 14,
-                            color: Colors.grey[500],
+                            color: AppTheme.textSecondary,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             '${vendor.distanceInKm!.toStringAsFixed(1)} km',
-                            style: TextStyle(
+                            style: AppTheme.poppins(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: AppTheme.textSecondary,
                             ),
                           ),
                         ],
@@ -754,11 +804,11 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+          topLeft: Radius.circular(AppTheme.radiusLarge),
+          topRight: Radius.circular(AppTheme.radiusLarge),
         ),
       ),
       child: Column(
@@ -766,26 +816,33 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
         children: [
           // Drag Handle
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            margin: EdgeInsets.only(top: 12, bottom: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppTheme.borderColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: AppTheme.spacingMedium,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Adres Seçin',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: AppTheme.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, color: AppTheme.textPrimary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -794,14 +851,21 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
           // Address List
           if (widget.addresses.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(40),
+              padding: EdgeInsets.all(40),
               child: Column(
                 children: [
-                  Icon(Icons.location_off, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
+                  Icon(
+                    Icons.location_off,
+                    size: 64,
+                    color: AppTheme.textSecondary,
+                  ),
+                  SizedBox(height: AppTheme.spacingMedium),
                   Text(
                     'Henüz adres eklenmemiş',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -826,18 +890,22 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       widget.onAddressSelected(address);
                     },
                     child: Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingMedium,
+                        vertical: AppTheme.spacingSmall,
                       ),
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Colors.orange.withOpacity(0.1)
-                            : Colors.grey[50],
-                        borderRadius: BorderRadius.circular(12),
+                            ? AppTheme.primaryOrange.withOpacity(0.1)
+                            : AppTheme.backgroundColor,
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
                         border: Border.all(
-                          color: isSelected ? Colors.orange : Colors.grey[300]!,
+                          color: isSelected
+                              ? AppTheme.primaryOrange
+                              : AppTheme.borderColor,
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -849,19 +917,21 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                             height: 48,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.orange.withOpacity(0.2)
-                                  : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12),
+                                  ? AppTheme.primaryOrange.withOpacity(0.2)
+                                  : AppTheme.cardColor,
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                             child: Icon(
                               Icons.location_on,
                               color: isSelected
-                                  ? Colors.orange
-                                  : Colors.grey[600],
+                                  ? AppTheme.primaryOrange
+                                  : AppTheme.textSecondary,
                               size: 24,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: AppTheme.spacingMedium),
                           // Address Details
                           Expanded(
                             child: Column(
@@ -872,31 +942,31 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                     Expanded(
                                       child: Text(
                                         address['title'] ?? 'Adres',
-                                        style: TextStyle(
+                                        style: AppTheme.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: isSelected
-                                              ? Colors.orange
-                                              : Colors.black,
+                                              ? AppTheme.primaryOrange
+                                              : AppTheme.textPrimary,
                                         ),
                                       ),
                                     ),
                                     if (isDefault)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
+                                        padding: EdgeInsets.symmetric(
                                           horizontal: 8,
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.green,
+                                          color: AppTheme.success,
                                           borderRadius: BorderRadius.circular(
                                             8,
                                           ),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'Varsayılan',
-                                          style: TextStyle(
-                                            color: Colors.white,
+                                          style: AppTheme.poppins(
+                                            color: AppTheme.textOnPrimary,
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -904,12 +974,12 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                       ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Text(
                                   _getAddressDisplayText(address),
-                                  style: TextStyle(
+                                  style: AppTheme.poppins(
                                     fontSize: 14,
-                                    color: Colors.grey[600],
+                                    color: AppTheme.textSecondary,
                                   ),
                                 ),
                                 if (address['fullAddress'] != null &&
@@ -917,12 +987,13 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                         .toString()
                                         .isNotEmpty)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 4),
+                                    padding: EdgeInsets.only(top: 4),
                                     child: Text(
                                       address['fullAddress'].toString(),
-                                      style: TextStyle(
+                                      style: AppTheme.poppins(
                                         fontSize: 12,
-                                        color: Colors.grey[500],
+                                        color: AppTheme.textSecondary
+                                            .withOpacity(0.8),
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -935,7 +1006,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                           if (isSelected)
                             Icon(
                               Icons.check_circle,
-                              color: Colors.orange,
+                              color: AppTheme.primaryOrange,
                               size: 24,
                             ),
                         ],
@@ -948,7 +1019,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
           // Set Default Button
           if (widget.addresses.isNotEmpty && _tempSelectedAddress != null)
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(AppTheme.spacingMedium),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -957,16 +1028,24 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                     // Navigator.pop is called inside onSetDefault callback
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppTheme.primaryOrange,
+                    foregroundColor: AppTheme.textOnPrimary,
+                    padding: EdgeInsets.symmetric(
+                      vertical: AppTheme.spacingMedium,
+                    ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.radiusMedium,
+                      ),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Varsayılan Adres Yap',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textOnPrimary,
+                    ),
                   ),
                 ),
               ),
