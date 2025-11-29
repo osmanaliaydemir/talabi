@@ -114,34 +114,34 @@ class AppTheme {
       textTheme: GoogleFonts.poppinsTextTheme().copyWith(
         // Büyük Başlıklar
         displayLarge: GoogleFonts.poppins(
-          fontSize: 32,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           color: textPrimary,
         ),
         displayMedium: GoogleFonts.poppins(
-          fontSize: 28,
+          fontSize: 14,
           fontWeight: FontWeight.bold,
           color: textPrimary,
         ),
         displaySmall: GoogleFonts.poppins(
-          fontSize: 24,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
 
         // Başlıklar
         headlineLarge: GoogleFonts.poppins(
-          fontSize: 22,
+          fontSize: 16,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
         headlineMedium: GoogleFonts.poppins(
-          fontSize: 20,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
         headlineSmall: GoogleFonts.poppins(
-          fontSize: 18,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
@@ -188,7 +188,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: GoogleFonts.poppins(
-          fontSize: 20,
+          fontSize: 16,
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
@@ -200,7 +200,7 @@ class AppTheme {
           backgroundColor: primaryOrange,
           foregroundColor: Colors.white,
           textStyle: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
           shape: RoundedRectangleBorder(
@@ -215,7 +215,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryOrange,
           textStyle: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
           side: const BorderSide(color: primaryOrange, width: 2),
@@ -230,7 +230,7 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: primaryOrange,
           textStyle: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
         ),

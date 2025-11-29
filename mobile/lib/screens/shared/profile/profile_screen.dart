@@ -336,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title,
         style: AppTheme.poppins(
           color: titleColor ?? AppTheme.textPrimary,
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -345,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle,
               style: AppTheme.poppins(
                 color: AppTheme.textSecondary,
-                fontSize: 13,
+                fontSize: 11,
               ),
             )
           : null,
