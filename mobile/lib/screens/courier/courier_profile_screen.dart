@@ -12,10 +12,10 @@ import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
 import 'package:provider/provider.dart';
 
 class CourierProfileScreen extends StatefulWidget {
-  const CourierProfileScreen({Key? key}) : super(key: key);
+  const CourierProfileScreen({super.key});
 
   @override
-  _CourierProfileScreenState createState() => _CourierProfileScreenState();
+  State<CourierProfileScreen> createState() => _CourierProfileScreenState();
 }
 
 class _CourierProfileScreenState extends State<CourierProfileScreen> {
@@ -38,12 +38,14 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
       print(
         'CourierProfileScreen: Profile loaded - Name: ${courier.name}, Status: ${courier.status}',
       );
+      if (!mounted) return;
       setState(() {
         _courier = courier;
       });
     } catch (e, stackTrace) {
       print('CourierProfileScreen: ERROR loading profile - $e');
       print(stackTrace);
+      if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -56,7 +58,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         ),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -66,6 +70,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
       await _courierService.updateStatus(newStatus);
       print('CourierProfileScreen: Status updated successfully to $newStatus');
       await _loadProfile(); // Reload to confirm
+      if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -77,6 +82,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
     } catch (e, stackTrace) {
       print('CourierProfileScreen: ERROR updating status - $e');
       print(stackTrace);
+      if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

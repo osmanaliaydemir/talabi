@@ -181,7 +181,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
           child: Column(
             children: [
               // Purple Header for Vendor
-              Container(
+              SizedBox(
                 height: 160,
                 child: Stack(
                   children: [
@@ -196,8 +196,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              AppTheme.textOnPrimary.withOpacity(0.15),
-                              AppTheme.textOnPrimary.withOpacity(0.05),
+                              AppTheme.textOnPrimary.withValues(alpha: 0.15),
+                              AppTheme.textOnPrimary.withValues(alpha: 0.05),
                               Colors.transparent,
                             ],
                           ),
@@ -214,7 +214,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              AppTheme.textOnPrimary.withOpacity(0.12),
+                              AppTheme.textOnPrimary.withValues(alpha: 0.12),
                               Colors.transparent,
                             ],
                           ),
@@ -236,7 +236,9 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: AppTheme.textOnPrimary.withOpacity(0.2),
+                                color: AppTheme.textOnPrimary.withValues(
+                                  alpha: 0.2,
+                                ),
                                 borderRadius: BorderRadius.circular(
                                   AppTheme.radiusMedium + 2,
                                 ),
@@ -268,8 +270,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                   style: AppTheme.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: AppTheme.textOnPrimary.withOpacity(
-                                      0.85,
+                                    color: AppTheme.textOnPrimary.withValues(
+                                      alpha: 0.85,
                                     ),
                                     letterSpacing: 1.5,
                                   ),
@@ -650,11 +652,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.primaryOrange.withOpacity(
-                                            0.1,
+                                          AppTheme.primaryOrange.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          AppTheme.lightOrange.withOpacity(
-                                            0.05,
+                                          AppTheme.lightOrange.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ],
                                         begin: Alignment.centerLeft,
@@ -665,7 +667,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                       ),
                                       border: Border.all(
                                         color: AppTheme.primaryOrange
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),
@@ -737,11 +739,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.courierPrimary.withOpacity(
-                                            0.1,
+                                          AppTheme.courierPrimary.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          AppTheme.courierLight.withOpacity(
-                                            0.05,
+                                          AppTheme.courierLight.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ],
                                         begin: Alignment.centerLeft,
@@ -752,7 +754,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                       ),
                                       border: Border.all(
                                         color: AppTheme.courierPrimary
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),

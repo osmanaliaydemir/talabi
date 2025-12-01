@@ -102,6 +102,7 @@
   "iHaveVerified": "لقد قمت بالتحقق",
   "resendEmail": "إعادة إرسال البريد الإلكتروني",
   "resendFeatureComingSoon": "ميزة إعادة الإرسال قريباً",
+  "verificationEmailResent": "تم إعادة إرسال بريد التحقق الإلكتروني",
   "pleaseVerifyEmail": "يرجى التحقق من عنوان بريدك الإلكتروني.",
   "offlineMode": "وضع عدم الاتصال",
   "offlineModeDescription": "قد تكون بعض الميزات محدودة",
@@ -571,5 +572,6 @@
     "placeholders": {
       "count": {}
     }
-  }
+  },
+  "refresh": "تحديث"
 }

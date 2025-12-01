@@ -311,6 +311,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get resendFeatureComingSoon => 'ميزة إعادة الإرسال قريباً';
 
   @override
+  String get verificationEmailResent => 'تم إعادة إرسال بريد التحقق الإلكتروني';
+
+  @override
   String get pleaseVerifyEmail => 'يرجى التحقق من عنوان بريدك الإلكتروني.';
 
   @override
@@ -1472,4 +1475,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String orderCount(Object count) {
     return '$count طلبات';
   }
+
+  @override
+  String get refresh => 'تحديث';
 }

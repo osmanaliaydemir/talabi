@@ -387,7 +387,7 @@ class _CourierActiveDeliveriesScreenState
                   Chip(
                     backgroundColor: _statusColor(
                       order.status,
-                    ).withOpacity(0.15),
+                    ).withValues(alpha: 0.15),
                     label: Text(
                       order.status,
                       style: TextStyle(
@@ -436,7 +436,7 @@ class _CourierActiveDeliveriesScreenState
                   ),
                 ),
                 Chip(
-                  backgroundColor: _statusColor(status).withOpacity(0.15),
+                  backgroundColor: _statusColor(status).withValues(alpha:  0.15),
                   label: Text(
                     status,
                     style: TextStyle(

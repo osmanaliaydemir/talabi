@@ -1198,9 +1198,12 @@ class ApiService {
     try {
       final queryParams = <String, dynamic>{};
       if (status != null) queryParams['status'] = status;
-      if (startDate != null)
+      if (startDate != null) {
         queryParams['startDate'] = startDate.toIso8601String();
-      if (endDate != null) queryParams['endDate'] = endDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate.toIso8601String();
+      }
 
       final response = await _dio.get(
         '/vendor/orders',
@@ -1307,9 +1310,12 @@ class ApiService {
   }) async {
     try {
       final queryParams = <String, dynamic>{'period': period};
-      if (startDate != null)
+      if (startDate != null) {
         queryParams['startDate'] = startDate.toIso8601String();
-      if (endDate != null) queryParams['endDate'] = endDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate.toIso8601String();
+      }
 
       final response = await _dio.get(
         '/vendor/reports/sales',

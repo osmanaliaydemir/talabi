@@ -367,7 +367,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
               boxShadow: [
                 BoxShadow(
                   color: isSelected
-                      ? color.withOpacity(0.4)
+                      ? color.withValues(alpha: 0.4)
                       : AppTheme.shadowColor,
                   blurRadius: isSelected ? 20 : 10,
                   spreadRadius: isSelected ? 2 : 0,
@@ -383,7 +383,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected ? color : Colors.transparent,
@@ -436,7 +436,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: color.withOpacity(0.4),
+                                color: color.withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),

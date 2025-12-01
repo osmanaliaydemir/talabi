@@ -243,7 +243,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -258,7 +258,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -286,7 +286,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     Text(
                       'Tarih ve saat ayarları',
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

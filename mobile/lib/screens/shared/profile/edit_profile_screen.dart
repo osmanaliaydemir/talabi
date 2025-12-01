@@ -363,7 +363,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -378,7 +378,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -406,7 +406,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Text(
                       widget.profile['fullName'] ?? localizations.user,
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

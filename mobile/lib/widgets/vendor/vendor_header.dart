@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/models/vendor_notification.dart';
 import 'package:provider/provider.dart';
 
 class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
@@ -43,15 +45,19 @@ class _VendorHeaderState extends State<VendorHeader> {
 
   Future<void> _refreshNotificationCount() async {
     try {
-      // TODO: Implement vendor notification count API call when available
-      // For now, we'll use a static count or fetch from local state
+      final notificationsData = await ApiService().getVendorNotifications();
+      final notifications = notificationsData
+          .map((json) => VendorNotification.fromJson(json))
+          .toList();
+
       if (!mounted) return;
+
       setState(() {
-        _unreadNotifications = 0; // Placeholder until API is implemented
+        _unreadNotifications = notifications.where((n) => !n.isRead).length;
       });
-    } catch (e, stackTrace) {
+    } catch (e) {
       print('VendorHeader: ERROR refreshing notification count - $e');
-      print(stackTrace);
+      // Keep 0 as default on error
     }
   }
 
@@ -86,7 +92,7 @@ class _VendorHeaderState extends State<VendorHeader> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -114,7 +120,7 @@ class _VendorHeaderState extends State<VendorHeader> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -140,7 +146,7 @@ class _VendorHeaderState extends State<VendorHeader> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 14,
                       ),
                       maxLines: 1,

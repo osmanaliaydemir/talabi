@@ -442,7 +442,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -457,7 +457,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -489,7 +489,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           ? localizations.updateAddressDetails
                           : localizations.createNewAddress,
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

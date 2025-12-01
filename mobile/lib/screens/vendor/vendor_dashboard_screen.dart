@@ -100,8 +100,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                                   Text(
                                     localizations?.welcomeVendor(
                                           auth.fullName ??
-                                              (localizations?.vendor ??
-                                                  "Satıcı"),
+                                              (localizations.vendor),
                                         ) ??
                                         'Hoş Geldiniz, ${auth.fullName ?? "Satıcı"}',
                                     style: const TextStyle(

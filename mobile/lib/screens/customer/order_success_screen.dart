@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
-import 'package:mobile/l10n/app_localizations.dart';
+
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -11,8 +11,6 @@ class OrderSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return WillPopScope(
       onWillPop: () async {
         // Prevent back button, force user to use buttons
@@ -39,7 +37,7 @@ class OrderSuccessScreen extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.withOpacity(0.3),
+                        color: Colors.green.withValues(alpha: 0.3),
                         blurRadius: 30,
                         offset: Offset(0, 10),
                       ),

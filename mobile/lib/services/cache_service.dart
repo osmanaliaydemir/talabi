@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 

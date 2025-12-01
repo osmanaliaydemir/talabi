@@ -89,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             children: [
               // Header with decorative shapes
-              Container(
+              SizedBox(
                 height: 180,
                 child: Stack(
                   children: [
@@ -101,7 +101,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.lightOrange.withOpacity(0.7),
+                          color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),

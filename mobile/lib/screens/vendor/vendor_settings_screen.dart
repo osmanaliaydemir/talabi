@@ -142,7 +142,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: VendorHeader(
         title: localizations?.businessSettings ?? 'İşletme Ayarları',
         leadingIcon: Icons.settings,
@@ -152,112 +152,111 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         showNotifications: false,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.deepPurple))
+          ? Center(
+              child: CircularProgressIndicator(color: AppTheme.vendorPrimary),
+            )
           : RefreshIndicator(
               onRefresh: _loadSettings,
               child: Form(
                 key: _formKey,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppTheme.spacingMedium),
                   children: [
                     // Active status card
-                    Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _isActive
-                                    ? Colors.green.shade50
-                                    : Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                _isActive ? Icons.check_circle : Icons.cancel,
-                                color: _isActive ? Colors.green : Colors.grey,
-                                size: 28,
+                    Container(
+                      decoration: AppTheme.cardDecoration(),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingSmall,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _isActive
+                                  ? AppTheme.success.withOpacity(0.1)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    localizations?.businessActive ??
-                                        'İşletme Aktif',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            child: Icon(
+                              _isActive ? Icons.check_circle : Icons.cancel,
+                              color: _isActive ? AppTheme.success : Colors.grey,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: AppTheme.spacingMedium),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  localizations?.businessActive ??
+                                      'İşletme Aktif',
+                                  style: AppTheme.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _isActive
-                                        ? localizations
-                                                  ?.customersCanPlaceOrders ??
-                                              'Müşteriler sipariş verebilir'
-                                        : localizations?.orderTakingClosed ??
-                                              'Sipariş alımı kapalı',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _isActive
+                                      ? localizations
+                                                ?.customersCanPlaceOrders ??
+                                            'Müşteriler sipariş verebilir'
+                                      : localizations?.orderTakingClosed ??
+                                            'Sipariş alımı kapalı',
+                                  style: AppTheme.poppins(
+                                    fontSize: 14,
+                                    color: AppTheme.textSecondary,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            Switch(
-                              value: _isActive,
-                              onChanged: (value) {
-                                print(
-                                  'VendorSettingsScreen: Active status changed to $value',
-                                );
-                                setState(() {
-                                  _isActive = value;
-                                });
-                              },
-                              activeThumbColor: Colors.green,
-                            ),
-                          ],
-                        ),
+                          ),
+                          Switch(
+                            value: _isActive,
+                            onChanged: (value) {
+                              print(
+                                'VendorSettingsScreen: Active status changed to $value',
+                              );
+                              setState(() {
+                                _isActive = value;
+                              });
+                            },
+                            activeColor: AppTheme.success,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppTheme.spacingLarge),
 
                     // Settings section title
                     Text(
                       localizations?.businessOperations ?? 'İşletme İşlemleri',
-                      style: const TextStyle(
+                      style: AppTheme.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppTheme.spacingMedium),
 
                     // Minimum order amount
                     TextFormField(
                       controller: _minimumOrderController,
-                      decoration: InputDecoration(
-                        labelText:
+                      decoration: AppTheme.inputDecoration(
+                        label:
                             localizations?.minimumOrderAmount ??
                             'Minimum Sipariş Tutarı',
-                        hintText: localizations?.optional ?? 'Opsiyonel',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        hint: localizations?.optional ?? 'Opsiyonel',
                         prefixIcon: const Icon(Icons.attach_money),
-                        filled: true,
-                        fillColor: Colors.grey[50],
+                        fillColor: AppTheme.surfaceColor,
                       ),
-                      keyboardType: TextInputType.numberWithOptions(
+                      keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       validator: (value) {
@@ -270,23 +269,18 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppTheme.spacingMedium),
 
                     // Delivery fee
                     TextFormField(
                       controller: _deliveryFeeController,
-                      decoration: InputDecoration(
-                        labelText:
-                            localizations?.deliveryFee ?? 'Teslimat Ücreti',
-                        hintText: localizations?.optional ?? 'Opsiyonel',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      decoration: AppTheme.inputDecoration(
+                        label: localizations?.deliveryFee ?? 'Teslimat Ücreti',
+                        hint: localizations?.optional ?? 'Opsiyonel',
                         prefixIcon: const Icon(Icons.delivery_dining),
-                        filled: true,
-                        fillColor: Colors.grey[50],
+                        fillColor: AppTheme.surfaceColor,
                       ),
-                      keyboardType: TextInputType.numberWithOptions(
+                      keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       validator: (value) {
@@ -299,22 +293,18 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppTheme.spacingMedium),
 
                     // Delivery time
                     TextFormField(
                       controller: _deliveryTimeController,
-                      decoration: InputDecoration(
-                        labelText:
+                      decoration: AppTheme.inputDecoration(
+                        label:
                             localizations?.estimatedDeliveryTime ??
                             'Tahmini Teslimat Süresi (dakika)',
-                        hintText: localizations?.optional ?? 'Opsiyonel',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        hint: localizations?.optional ?? 'Opsiyonel',
                         prefixIcon: const Icon(Icons.timer),
-                        filled: true,
-                        fillColor: Colors.grey[50],
+                        fillColor: AppTheme.surfaceColor,
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -327,20 +317,12 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppTheme.spacingXLarge),
 
                     // Save button
                     ElevatedButton(
                       onPressed: _isSaving ? null : _saveSettings,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
+                      style: AppTheme.primaryButtonVendor,
                       child: _isSaving
                           ? const SizedBox(
                               height: 20,
@@ -352,13 +334,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                                 ),
                               ),
                             )
-                          : Text(
-                              localizations?.save ?? 'Kaydet',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          : Text(localizations?.save ?? 'Kaydet'),
                     ),
                   ],
                 ),

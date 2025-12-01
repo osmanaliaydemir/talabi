@@ -24,7 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _addresses = [];
   Map<String, dynamic>? _selectedAddress;
   bool _isLoadingAddresses = false;
-  Map<int, bool> _favoriteStatus = {}; // Track favorite status for each product
+  final Map<int, bool> _favoriteStatus =
+      {}; // Track favorite status for each product
 
   @override
   void initState() {
@@ -267,8 +268,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'Ücretsiz teslimat, düşük ücretler & %10 nakit iade!',
                                   style: AppTheme.poppins(
                                     fontSize: 14,
-                                    color: AppTheme.textOnPrimary.withOpacity(
-                                      0.9,
+                                    color: AppTheme.textOnPrimary.withValues(
+                                      alpha: 0.9,
                                     ),
                                   ),
                                 ),
@@ -305,7 +306,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: AppTheme.textOnPrimary.withOpacity(0.2),
+                              color: AppTheme.textOnPrimary.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(
                                 AppTheme.radiusMedium,
                               ),
@@ -313,7 +316,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Icon(
                               Icons.fastfood,
                               size: 50,
-                              color: AppTheme.textOnPrimary.withOpacity(0.8),
+                              color: AppTheme.textOnPrimary.withValues(
+                                alpha: 0.8,
+                              ),
                             ),
                           ),
                         ],
@@ -538,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: (category['color'] as Color).withOpacity(0.1),
+              color: (category['color'] as Color).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             ),
             child: Icon(
@@ -643,7 +648,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                color: AppTheme.textSecondary.withOpacity(0.1),
+                                color: AppTheme.textSecondary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 child: Icon(
                                   Icons.store,
                                   size: 50,
@@ -653,7 +660,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           )
                         : Container(
-                            color: AppTheme.textSecondary.withOpacity(0.1),
+                            color: AppTheme.textSecondary.withValues(
+                              alpha: 0.1,
+                            ),
                             child: Icon(
                               Icons.store,
                               size: 50,
@@ -670,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.cardColor.withOpacity(0.9),
+                            color: AppTheme.cardColor.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusMedium,
                             ),
@@ -903,7 +912,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       padding: EdgeInsets.all(AppTheme.spacingMedium),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryOrange.withOpacity(0.1)
+                            ? AppTheme.primaryOrange.withValues(alpha: 0.1)
                             : AppTheme.backgroundColor,
                         borderRadius: BorderRadius.circular(
                           AppTheme.radiusMedium,
@@ -923,7 +932,9 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                             height: 48,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primaryOrange.withOpacity(0.2)
+                                  ? AppTheme.primaryOrange.withValues(
+                                      alpha: 0.2,
+                                    )
                                   : AppTheme.cardColor,
                               borderRadius: BorderRadius.circular(
                                 AppTheme.radiusMedium,
@@ -999,7 +1010,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                       style: AppTheme.poppins(
                                         fontSize: 12,
                                         color: AppTheme.textSecondary
-                                            .withOpacity(0.8),
+                                            .withValues(alpha: 0.8),
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,

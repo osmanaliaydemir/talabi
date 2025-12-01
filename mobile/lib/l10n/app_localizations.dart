@@ -694,6 +694,12 @@ abstract class AppLocalizations {
   /// **'Resend feature coming soon'**
   String get resendFeatureComingSoon;
 
+  /// No description provided for @verificationEmailResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email has been resent'**
+  String get verificationEmailResent;
+
   /// No description provided for @pleaseVerifyEmail.
   ///
   /// In en, this message translates to:
@@ -2877,6 +2883,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} orders'**
   String orderCount(Object count);
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
 }
 
 class _AppLocalizationsDelegate

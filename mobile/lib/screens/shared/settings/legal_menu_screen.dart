@@ -6,7 +6,7 @@ import 'package:mobile/widgets/common/connectivity_banner.dart';
 import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
 
 class LegalMenuScreen extends StatelessWidget {
-  const LegalMenuScreen({Key? key}) : super(key: key);
+  const LegalMenuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,9 @@ class LegalMenuScreen extends StatelessWidget {
                         leading: Container(
                           padding: EdgeInsets.all(AppTheme.spacingSmall),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withOpacity(0.1),
+                            color: AppTheme.primaryOrange.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusSmall,
                             ),
@@ -140,7 +142,7 @@ class LegalMenuScreen extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -155,7 +157,7 @@ class LegalMenuScreen extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -183,7 +185,7 @@ class LegalMenuScreen extends StatelessWidget {
                     Text(
                       'Sözleşmeler ve Politikalar',
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

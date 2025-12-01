@@ -2,9 +2,75 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/shared/auth/login_screen.dart';
+import 'package:mobile/services/api_service.dart';
 
-class EmailVerificationScreen extends StatelessWidget {
-  const EmailVerificationScreen({super.key});
+class EmailVerificationScreen extends StatefulWidget {
+  final String? email;
+
+  const EmailVerificationScreen({super.key, this.email});
+
+  @override
+  State<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
+}
+
+class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
+  bool _isResending = false;
+
+  Future<void> _resendEmail() async {
+    if (widget.email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.emailRequired),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isResending = true;
+    });
+
+    try {
+      final apiService = ApiService();
+      // Get current language code
+      final languageCode = Localizations.localeOf(context).languageCode;
+
+      await apiService.resendVerificationCode(
+        widget.email!,
+        language: languageCode,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.verificationEmailResent,
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.error}: ${e.toString()}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResending = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +93,7 @@ class EmailVerificationScreen extends StatelessWidget {
           child: Column(
             children: [
               // Orange Header with Gradient
-              Container(
+              SizedBox(
                 height: 180,
                 child: Stack(
                   children: [
@@ -39,7 +105,7 @@ class EmailVerificationScreen extends StatelessWidget {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.lightOrange.withOpacity(0.7),
+                          color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -117,7 +183,9 @@ class EmailVerificationScreen extends StatelessWidget {
                           Container(
                             padding: EdgeInsets.all(AppTheme.spacingLarge),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange.withOpacity(0.1),
+                              color: AppTheme.primaryOrange.withValues(
+                                alpha: 0.1,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -182,23 +250,23 @@ class EmailVerificationScreen extends StatelessWidget {
                           ),
                           AppTheme.verticalSpace(1),
                           TextButton(
-                            onPressed: () {
-                              // TODO: Implement resend email logic
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    localizations.resendFeatureComingSoon,
+                            onPressed: _isResending ? null : _resendEmail,
+                            child: _isResending
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppTheme.primaryOrange,
+                                    ),
+                                  )
+                                : Text(
+                                    localizations.resendEmail,
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.primaryOrange,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              localizations.resendEmail,
-                              style: AppTheme.poppins(
-                                color: AppTheme.primaryOrange,
-                                fontSize: 14,
-                              ),
-                            ),
                           ),
                         ],
                       ),

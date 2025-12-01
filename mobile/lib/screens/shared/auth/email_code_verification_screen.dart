@@ -308,7 +308,7 @@ class _EmailCodeVerificationScreenState
           child: Column(
             children: [
               // Orange Header
-              Container(
+              SizedBox(
                 height: 180,
                 child: Stack(
                   children: [
@@ -320,7 +320,7 @@ class _EmailCodeVerificationScreenState
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.lightOrange.withOpacity(0.7),
+                          color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -397,7 +397,9 @@ class _EmailCodeVerificationScreenState
                           Container(
                             padding: EdgeInsets.all(AppTheme.spacingLarge),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange.withOpacity(0.1),
+                              color: AppTheme.primaryOrange.withValues(
+                                alpha: 0.1,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(

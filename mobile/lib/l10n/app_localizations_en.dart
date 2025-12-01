@@ -311,6 +311,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resendFeatureComingSoon => 'Resend feature coming soon';
 
   @override
+  String get verificationEmailResent => 'Verification email has been resent';
+
+  @override
   String get pleaseVerifyEmail => 'Please verify your email address.';
 
   @override
@@ -1489,4 +1492,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String orderCount(Object count) {
     return '$count orders';
   }
+
+  @override
+  String get refresh => 'Refresh';
 }

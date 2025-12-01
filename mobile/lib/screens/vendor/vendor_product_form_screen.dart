@@ -6,7 +6,6 @@ import 'package:dio/dio.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/utils/navigation_logger.dart';
 
 class VendorProductFormScreen extends StatefulWidget {
   final Product? product;
@@ -97,9 +96,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormImageUploaded)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.vendorProductFormImageUploaded),
+            ),
+          );
         }
       }
     } catch (e) {
@@ -107,9 +108,13 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         _isUploading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormImageUploadError(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations.vendorProductFormImageUploadError(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -176,17 +181,21 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         // Create new product
         await _apiService.createProduct(data);
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormCreateSuccess)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.vendorProductFormCreateSuccess),
+            ),
+          );
         }
       } else {
         // Update existing product
         await _apiService.updateProduct(widget.product!.id, data);
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormUpdateSuccess)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.vendorProductFormUpdateSuccess),
+            ),
+          );
         }
       }
 
@@ -198,9 +207,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormError(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(localizations.vendorProductFormError(e.toString())),
+          ),
+        );
       }
     }
   }
@@ -213,7 +224,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(isEdit ? localizations.vendorProductFormEditTitle : localizations.vendorProductFormNewTitle),
+        title: Text(
+          isEdit
+              ? localizations.vendorProductFormEditTitle
+              : localizations.vendorProductFormNewTitle,
+        ),
         backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
@@ -400,7 +415,9 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                       ),
                     )
                   : Text(
-                      isEdit ? localizations.updateButton : localizations.createButton,
+                      isEdit
+                          ? localizations.updateButton
+                          : localizations.createButton,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -420,7 +437,10 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       children: [
         Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey[400]),
         const SizedBox(height: 8),
-        Text(localizations.vendorProductFormAddImage, style: TextStyle(color: Colors.grey[600])),
+        Text(
+          localizations.vendorProductFormAddImage,
+          style: TextStyle(color: Colors.grey[600]),
+        ),
       ],
     );
   }

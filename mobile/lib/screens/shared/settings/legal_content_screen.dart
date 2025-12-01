@@ -10,13 +10,13 @@ class LegalContentScreen extends StatefulWidget {
   final String title;
 
   const LegalContentScreen({
-    Key? key,
+    super.key,
     required this.documentType,
     required this.title,
-  }) : super(key: key);
+  });
 
   @override
-  _LegalContentScreenState createState() => _LegalContentScreenState();
+  State<LegalContentScreen> createState() => _LegalContentScreenState();
 }
 
 class _LegalContentScreenState extends State<LegalContentScreen> {
@@ -150,7 +150,7 @@ class _LegalContentScreenState extends State<LegalContentScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -165,7 +165,7 @@ class _LegalContentScreenState extends State<LegalContentScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.article, color: Colors.white, size: 20),

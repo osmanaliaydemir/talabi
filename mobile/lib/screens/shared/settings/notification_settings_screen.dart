@@ -220,7 +220,7 @@ class _NotificationSettingsScreenState
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -235,7 +235,7 @@ class _NotificationSettingsScreenState
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -263,7 +263,7 @@ class _NotificationSettingsScreenState
                     Text(
                       'Bildirim tercihlerinizi yönetin',
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

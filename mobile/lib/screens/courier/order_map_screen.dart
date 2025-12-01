@@ -9,10 +9,10 @@ import 'package:geolocator/geolocator.dart';
 class OrderMapScreen extends StatefulWidget {
   final CourierOrder order;
 
-  const OrderMapScreen({Key? key, required this.order}) : super(key: key);
+  const OrderMapScreen({super.key, required this.order});
 
   @override
-  _OrderMapScreenState createState() => _OrderMapScreenState();
+  State<OrderMapScreen> createState() => _OrderMapScreenState();
 }
 
 class _OrderMapScreenState extends State<OrderMapScreen> {

@@ -171,12 +171,12 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                       height: 90,
                                       decoration: BoxDecoration(
                                         color: AppTheme.primaryOrange
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                              0.1,
+                                            color: Colors.black.withValues(alpha:
+                                            0.1,
                                             ),
                                             blurRadius: 15,
                                             spreadRadius: 3,
@@ -314,7 +314,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -329,7 +329,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -357,7 +357,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                     Text(
                       '${_languages.length} languages',
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -403,8 +403,8 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
               boxShadow: [
                 BoxShadow(
                   color: isSelected
-                      ? color.withOpacity(0.4)
-                      : Colors.black.withOpacity(0.1),
+                      ? color.withValues(alpha: 0.4)
+                      : Colors.black.withValues(alpha: 0.1),
                   blurRadius: isSelected ? 20 : 10,
                   spreadRadius: isSelected ? 2 : 0,
                   offset: const Offset(0, 4),
@@ -419,7 +419,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected ? color : Colors.transparent,
@@ -472,7 +472,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: color.withOpacity(0.4),
+                                color: color.withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),

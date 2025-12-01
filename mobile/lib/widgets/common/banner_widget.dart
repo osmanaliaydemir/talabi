@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/l10n/app_localizations.dart';
 
 class BannerWidget extends StatelessWidget {
   final String? imageUrl;
@@ -30,11 +29,11 @@ class BannerWidget extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.7)],
+            colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.7)],
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -74,7 +73,7 @@ class BannerWidget extends StatelessWidget {
                       subtitle!,
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -90,7 +89,7 @@ class BannerWidget extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white, width: 1),
                 ),

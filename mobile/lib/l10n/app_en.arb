@@ -102,6 +102,7 @@
   "iHaveVerified": "I Have Verified",
   "resendEmail": "Resend Email",
   "resendFeatureComingSoon": "Resend feature coming soon",
+  "verificationEmailResent": "Verification email has been resent",
   "pleaseVerifyEmail": "Please verify your email address.",
   "offlineMode": "Offline Mode",
   "offlineModeDescription": "Some features may be limited",
@@ -582,5 +583,6 @@
     "placeholders": {
       "count": {}
     }
-  }
+  },
+  "refresh": "Refresh"
 }

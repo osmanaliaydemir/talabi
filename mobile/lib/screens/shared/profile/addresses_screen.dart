@@ -231,7 +231,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withOpacity(0.1),
+                                                      .withValues(alpha: 0.1),
                                                   blurRadius: 15,
                                                   spreadRadius: 3,
                                                 ),
@@ -414,8 +414,8 @@ class _AddressesScreenState extends State<AddressesScreen>
               boxShadow: [
                 BoxShadow(
                   color: address.isDefault
-                      ? AppTheme.primaryOrange.withOpacity(0.2)
-                      : Colors.black.withOpacity(0.05),
+                      ? AppTheme.primaryOrange.withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: 0.05),
                   blurRadius: address.isDefault ? 15 : 10,
                   spreadRadius: address.isDefault ? 1 : 0,
                   offset: const Offset(0, 4),
@@ -431,7 +431,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                   height: 50,
                   decoration: BoxDecoration(
                     color: address.isDefault
-                        ? AppTheme.primaryOrange.withOpacity(0.1)
+                        ? AppTheme.primaryOrange.withValues(alpha: 0.1)
                         : Colors.grey[100],
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -612,7 +612,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -627,7 +627,7 @@ class _AddressesScreenState extends State<AddressesScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -657,7 +657,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                           ? localizations.addressCountSingular
                           : localizations.addressCountPlural(_addresses.length),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

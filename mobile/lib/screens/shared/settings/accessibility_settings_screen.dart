@@ -99,7 +99,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                                 child: Slider(
                                   activeColor: AppTheme.primaryOrange,
                                   inactiveColor: AppTheme.primaryOrange
-                                      .withOpacity(0.3),
+                                      .withValues(alpha: 0.3),
                                   value: themeProvider.textScaleFactor,
                                   min: 0.8,
                                   max: 1.5,
@@ -167,7 +167,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withOpacity(0.2),
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
@@ -182,7 +182,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withOpacity(0.2),
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -210,7 +210,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                     Text(
                       localizations.accessibilityDescription,
                       style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

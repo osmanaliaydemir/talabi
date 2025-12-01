@@ -460,7 +460,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              // TODO: Fetch real active orders
               _activeOrders.isEmpty
                   ? Card(
                       elevation: 1,
@@ -484,6 +483,14 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              OutlinedButton.icon(
+                                onPressed: _loadData,
+                                icon: const Icon(Icons.refresh),
+                                label: Text(
+                                  localizations?.refresh ?? 'Refresh',
                                 ),
                               ),
                             ],
@@ -563,7 +570,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                       Chip(
                                         backgroundColor: _statusColor(
                                           order.status,
-                                        ).withOpacity(0.15),
+                                        ).withValues(alpha: 0.15),
                                         label: Text(
                                           order.status,
                                           style: TextStyle(
@@ -672,7 +679,10 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+            colors: [
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05),
+            ],
           ),
         ),
         padding: const EdgeInsets.all(16.0),
@@ -681,7 +691,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 28, color: color),
@@ -934,51 +944,34 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         return Colors.grey;
     }
   }
+}
 
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations? localizations,
-    AuthProvider authProvider,
-  ) {
-    // Legacy header, replaced by CourierHeader.
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildActionCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+Widget _buildActionCard(
+  BuildContext context,
+  String title,
+  IconData icon,
+  Color color,
+  VoidCallback onTap,
+) {
+  return Card(
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: color),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildNotificationIcon() {
-    // Legacy method, no longer used (CourierHeader now owns notification icon).
-    return const SizedBox.shrink();
-  }
+    ),
+  );
 }

@@ -312,6 +312,9 @@ class AppLocalizationsTr extends AppLocalizations {
       'Tekrar gönderme özelliği yakında gelecek';
 
   @override
+  String get verificationEmailResent => 'Doğrulama e-postası tekrar gönderildi';
+
+  @override
   String get pleaseVerifyEmail => 'Lütfen e-posta adresinizi doğrulayın.';
 
   @override
@@ -1488,4 +1491,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String orderCount(Object count) {
     return '$count sipariş';
   }
+
+  @override
+  String get refresh => 'Yenile';
 }

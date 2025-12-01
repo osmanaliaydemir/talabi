@@ -11,11 +11,10 @@ import 'package:path_provider/path_provider.dart';
 class DeliveryProofScreen extends StatefulWidget {
   final int orderId;
 
-  const DeliveryProofScreen({Key? key, required this.orderId})
-    : super(key: key);
+  const DeliveryProofScreen({super.key, required this.orderId});
 
   @override
-  _DeliveryProofScreenState createState() => _DeliveryProofScreenState();
+  State<DeliveryProofScreen> createState() => _DeliveryProofScreenState();
 }
 
 class _DeliveryProofScreenState extends State<DeliveryProofScreen> {

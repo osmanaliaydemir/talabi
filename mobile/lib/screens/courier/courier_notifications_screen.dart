@@ -82,21 +82,6 @@ class _CourierNotificationsScreenState
     }
   }
 
-  Future<void> _markAllAsRead() async {
-    try {
-      print('CourierNotificationsScreen: Marking all as read');
-      await _courierService.markAllNotificationsRead();
-      await _loadNotifications();
-    } catch (e, stackTrace) {
-      print('CourierNotificationsScreen: ERROR mark all as read - $e');
-      print(stackTrace);
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Bildirimler güncellenemedi: $e')));
-    }
-  }
-
   void _handleNotificationTap(CourierNotification notification) async {
     print(
       'CourierNotificationsScreen: Notification tapped - ${notification.id}',

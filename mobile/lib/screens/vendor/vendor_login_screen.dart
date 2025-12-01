@@ -98,7 +98,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
           child: Column(
             children: [
               // Vendor Header (Purple/Mor)
-              Container(
+              SizedBox(
                 height: 180,
                 child: Stack(
                   children: [
@@ -110,7 +110,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.vendorLight.withOpacity(0.7),
+                          color: AppTheme.vendorLight.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -414,11 +414,11 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.primaryOrange.withOpacity(
-                                            0.1,
+                                          AppTheme.primaryOrange.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          AppTheme.lightOrange.withOpacity(
-                                            0.05,
+                                          AppTheme.lightOrange.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ],
                                         begin: Alignment.centerLeft,
@@ -429,7 +429,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       ),
                                       border: Border.all(
                                         color: AppTheme.primaryOrange
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),
@@ -504,11 +504,11 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.courierPrimary.withOpacity(
-                                            0.1,
+                                          AppTheme.courierPrimary.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          AppTheme.courierLight.withOpacity(
-                                            0.05,
+                                          AppTheme.courierLight.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ],
                                         begin: Alignment.centerLeft,
@@ -519,7 +519,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       ),
                                       border: Border.all(
                                         color: AppTheme.courierPrimary
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),
@@ -562,8 +562,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                               ),
                                               AppTheme.horizontalSpace(0.5),
                                               Text(
-                                                localizations.areYouCourier +
-                                                    ' ',
+                                                '${localizations.areYouCourier} ',
                                                 style: AppTheme.poppins(
                                                   color: AppTheme.textSecondary,
                                                   fontSize: 14,

@@ -132,7 +132,7 @@ class CartProvider with ChangeNotifier {
             type: SyncActionType.addToCart,
             data: {'productId': product.id, 'quantity': 1},
           );
-          await _syncService!.addToQueue(action);
+          await _syncService.addToQueue(action);
           print('📦 [CART] Action queued: addToCart');
         } else {
           // Re-throw error if no sync service available
@@ -154,7 +154,7 @@ class CartProvider with ChangeNotifier {
           type: SyncActionType.addToCart,
           data: {'productId': product.id, 'quantity': 1},
         );
-        await _syncService!.addToQueue(action);
+        await _syncService.addToQueue(action);
         print('📦 [CART] Offline - Action queued: addToCart');
       }
     }
@@ -256,7 +256,7 @@ class CartProvider with ChangeNotifier {
             type: SyncActionType.removeFromCart,
             data: {'itemId': cartItem.backendId!},
           );
-          await _syncService!.addToQueue(action);
+          await _syncService.addToQueue(action);
           print('📦 [CART] Action queued: removeFromCart');
         }
       }
@@ -266,9 +266,9 @@ class CartProvider with ChangeNotifier {
         final action = SyncAction(
           id: _uuid.v4(),
           type: SyncActionType.removeFromCart,
-          data: {'itemId': cartItem!.backendId!},
+          data: {'itemId': cartItem.backendId!},
         );
-        await _syncService!.addToQueue(action);
+        await _syncService.addToQueue(action);
         print('📦 [CART] Offline - Action queued: removeFromCart');
       }
     }
@@ -302,7 +302,7 @@ class CartProvider with ChangeNotifier {
               'quantity': cartItem.quantity,
             },
           );
-          await _syncService!.addToQueue(action);
+          await _syncService.addToQueue(action);
           print('📦 [CART] Action queued: updateCartItem');
         }
       }
@@ -314,7 +314,7 @@ class CartProvider with ChangeNotifier {
           type: SyncActionType.updateCartItem,
           data: {'itemId': cartItem.backendId!, 'quantity': cartItem.quantity},
         );
-        await _syncService!.addToQueue(action);
+        await _syncService.addToQueue(action);
         print('📦 [CART] Offline - Action queued: updateCartItem');
       }
     }
@@ -349,7 +349,7 @@ class CartProvider with ChangeNotifier {
                 'quantity': cartItem.quantity,
               },
             );
-            await _syncService!.addToQueue(action);
+            await _syncService.addToQueue(action);
             print('📦 [CART] Action queued: updateCartItem');
           }
         }
@@ -364,7 +364,7 @@ class CartProvider with ChangeNotifier {
               'quantity': cartItem.quantity,
             },
           );
-          await _syncService!.addToQueue(action);
+          await _syncService.addToQueue(action);
           print('📦 [CART] Offline - Action queued: updateCartItem');
         }
       }

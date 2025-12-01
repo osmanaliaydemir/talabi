@@ -369,7 +369,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -773,9 +773,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: statusColor.withOpacity(0.5), width: 1),
+        side: BorderSide(color: statusColor.withValues(alpha: 0.5), width: 1),
       ),
-      color: statusColor.withOpacity(0.05),
+      color: statusColor.withValues(alpha: 0.05),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Row(

@@ -92,7 +92,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
           child: Column(
             children: [
               // Courier Header (Teal/Turkuaz)
-              Container(
+              SizedBox(
                 height: 180,
                 child: Stack(
                   children: [
@@ -104,7 +104,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.courierLight.withOpacity(0.7),
+                          color: AppTheme.courierLight.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -117,7 +117,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: AppTheme.courierDark.withOpacity(0.7),
+                          color: AppTheme.courierDark.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
                               AppTheme.radiusXLarge * 2,
@@ -424,11 +424,11 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.vendorPrimary.withOpacity(
-                                            0.1,
+                                          AppTheme.vendorPrimary.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          AppTheme.vendorLight.withOpacity(
-                                            0.05,
+                                          AppTheme.vendorLight.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ],
                                         begin: Alignment.centerLeft,
@@ -439,7 +439,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                       ),
                                       border: Border.all(
                                         color: AppTheme.vendorPrimary
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),

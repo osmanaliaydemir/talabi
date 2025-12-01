@@ -383,7 +383,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         border: Border.all(color: Colors.orange.shade200, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryOrange.withOpacity(0.1),
+            color: AppTheme.primaryOrange.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -571,7 +571,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   Navigator.pop(context);
                 },
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -606,7 +606,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Column(
       children: [
         // Horizontal tabs
-        Container(
+        SizedBox(
           height: 70,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
@@ -641,7 +641,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: AppTheme.primaryOrange.withOpacity(0.3),
+                              color: AppTheme.primaryOrange.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 6,
                               offset: Offset(0, 2),
                             ),
@@ -782,7 +784,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
             Divider(height: 24),
             // Subtotal
             Row(

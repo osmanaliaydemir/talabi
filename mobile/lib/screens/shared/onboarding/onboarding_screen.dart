@@ -188,7 +188,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [page.color.withOpacity(0.1), AppTheme.cardColor],
+          colors: [page.color.withValues(alpha: 0.1), AppTheme.cardColor],
           stops: const [0.4, 0.4],
         ),
       ),
@@ -202,7 +202,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: page.color.withOpacity(0.1),
+                  color: page.color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(page.icon, size: 100, color: page.color),

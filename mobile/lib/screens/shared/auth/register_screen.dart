@@ -336,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             children: [
               // Header with decorative shapes
-              Container(
+              SizedBox(
                 height: 180,
                 child: Stack(
                   children: [
@@ -348,7 +348,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.lightOrange.withOpacity(0.7),
+                          color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -698,11 +698,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.primaryOrange.withOpacity(
-                                            0.1,
+                                          AppTheme.primaryOrange.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          AppTheme.lightOrange.withOpacity(
-                                            0.05,
+                                          AppTheme.lightOrange.withValues(
+                                            alpha: 0.05,
                                           ),
                                         ],
                                         begin: Alignment.centerLeft,
@@ -713,7 +713,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                       border: Border.all(
                                         color: AppTheme.primaryOrange
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),
