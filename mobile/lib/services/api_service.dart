@@ -46,6 +46,20 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // Check connectivity before making request
+          if (_connectivityService != null && !_connectivityService!.isOnline) {
+            final isOnline = await _connectivityService!.checkConnectivity();
+            if (!isOnline) {
+              return handler.reject(
+                DioException(
+                  requestOptions: options,
+                  error: 'No internet connection',
+                  type: DioExceptionType.connectionError,
+                ),
+              );
+            }
+          }
+
           final permit = await _requestScheduler.acquire(
             highPriority: _isHighPriorityRequest(options),
           );
