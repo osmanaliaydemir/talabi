@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/providers/localization_provider.dart';
+import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:provider/provider.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
@@ -477,6 +478,23 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     }
   }
 
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Icons.hourglass_top_rounded;
+      case 'preparing':
+        return Icons.kitchen_rounded;
+      case 'ready':
+        return Icons.check_circle_rounded;
+      case 'delivered':
+        return Icons.delivery_dining_rounded;
+      case 'cancelled':
+        return Icons.cancel_rounded;
+      default:
+        return Icons.info_rounded;
+    }
+  }
+
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -500,7 +518,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Sipariş Detayı')),
+        appBar: VendorHeader(title: 'Sipariş Detayı', showBackButton: true),
         body: Center(
           child: CircularProgressIndicator(color: Colors.deepPurple),
         ),
@@ -509,7 +527,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
 
     if (_order == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Sipariş Detayı')),
+        appBar: VendorHeader(title: 'Sipariş Detayı', showBackButton: true),
         body: const Center(child: Text('Sipariş bulunamadı')),
       );
     }
@@ -517,44 +535,13 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     final status = _order!['status'] as String;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sipariş Detayı')),
+      appBar: VendorHeader(title: 'Sipariş Detayı', showBackButton: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status card
-            Card(
-              color: _getStatusColor(status).withOpacity(0.1),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(Icons.info, color: _getStatusColor(status)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Durum',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                          Text(
-                            _getStatusText(status),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: _getStatusColor(status),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildStatusCard(status),
             const SizedBox(height: 16),
             // Customer info
             Card(
@@ -612,6 +599,17 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                                   width: 50,
                                   height: 50,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.image_not_supported),
+                                    );
+                                  },
                                 ),
                               )
                             else
@@ -760,6 +758,56 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                 ],
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCard(String status) {
+    final statusColor = _getStatusColor(status);
+    final statusText = _getStatusText(status);
+    final statusIcon = _getStatusIcon(status);
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: statusColor.withOpacity(0.5), width: 1),
+      ),
+      color: statusColor.withOpacity(0.05),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Row(
+          children: [
+            Icon(statusIcon, color: statusColor, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "SİPARİŞ DURUMU",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[400], size: 16),
           ],
         ),
       ),

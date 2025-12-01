@@ -120,12 +120,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
                   )
                 : GridView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.8,
+                          crossAxisSpacing: 10,
                           mainAxisSpacing: 12,
                         ),
                     itemCount: _favorites.length,
@@ -133,7 +136,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       final product = _favorites[index];
                       return ProductCard(
                         product: product,
-                        width: 200,
+                        width: null,
                         isFavorite: true,
                         rating: '4.7',
                         ratingCount: '2.3k',

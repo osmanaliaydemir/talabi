@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/vendor/vendor_edit_profile_screen.dart';
+import 'package:mobile/screens/vendor/vendor_notifications_screen.dart';
 import 'package:mobile/screens/vendor/vendor_orders_screen.dart';
 import 'package:mobile/screens/vendor/vendor_products_screen.dart';
 import 'package:mobile/screens/vendor/vendor_profile_screen.dart';
@@ -12,6 +13,11 @@ class VendorRouter {
       case '/vendor/orders':
         return MaterialPageRoute(
           builder: (context) => const VendorOrdersScreen(),
+        );
+
+      case '/vendor/notifications':
+        return MaterialPageRoute(
+          builder: (context) => const VendorNotificationsScreen(),
         );
 
       case '/vendor/products':

@@ -267,10 +267,7 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
                     Icon(Icons.calendar_today, color: Colors.grey[600]),
                     const SizedBox(width: 8),
                     Text(
-                      localizations?.date(
-                            _formatDate(widget.review.createdAt),
-                          ) ??
-                          'Tarih: ${_formatDate(widget.review.createdAt)}',
+                      '${localizations?.date ?? 'Tarih'}: ${_formatDate(widget.review.createdAt)}',
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],

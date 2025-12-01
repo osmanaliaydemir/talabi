@@ -1524,4 +1524,56 @@ class ApiService {
       rethrow;
     }
   }
+
+  // Vendor notifications
+  Future<List<dynamic>> getVendorNotifications() async {
+    try {
+      final response = await _dio.get('/vendor/notifications');
+      return response.data['items'] ?? [];
+    } catch (e) {
+      print('Error fetching vendor notifications: $e');
+      rethrow;
+    }
+  }
+
+  // Customer notifications
+  Future<List<dynamic>> getCustomerNotifications() async {
+    try {
+      final response = await _dio.get('/customer/notifications');
+      return response.data['items'] ?? [];
+    } catch (e) {
+      print('Error fetching customer notifications: $e');
+      rethrow;
+    }
+  }
+
+  // Mark notification as read
+  Future<void> markNotificationAsRead(String type, int id) async {
+    try {
+      final endpoint = type == 'vendor'
+          ? '/vendor/notifications/$id/read'
+          : type == 'customer'
+          ? '/customer/notifications/$id/read'
+          : '/courier/notifications/$id/read';
+      await _dio.post(endpoint);
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      rethrow;
+    }
+  }
+
+  // Mark all notifications as read
+  Future<void> markAllNotificationsAsRead(String type) async {
+    try {
+      final endpoint = type == 'vendor'
+          ? '/vendor/notifications/read-all'
+          : type == 'customer'
+          ? '/customer/notifications/read-all'
+          : '/courier/notifications/read-all';
+      await _dio.post(endpoint);
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+      rethrow;
+    }
+  }
 }

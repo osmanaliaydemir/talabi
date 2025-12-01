@@ -67,7 +67,9 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              localizations?.failedToLoadProfile ?? 'Profil yüklenemedi: $e',
+              localizations != null 
+                  ? localizations.failedToLoadProfile(e) 
+                  : 'Profil yüklenemedi: $e',
             ),
           ),
         );

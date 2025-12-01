@@ -10,3 +10,9 @@ public class VendorNotificationDto
     public int? RelatedEntityId { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+public class VendorNotificationResponseDto
+{
+    public IEnumerable<VendorNotificationDto> Items { get; set; } = new List<VendorNotificationDto>();
+    public int UnreadCount { get; set; }
+}

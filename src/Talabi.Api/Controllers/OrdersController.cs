@@ -67,6 +67,27 @@ public class OrdersController : ControllerBase
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
 
+        // Add vendor notification
+        await AddVendorNotificationAsync(
+            order.VendorId,
+            "Yeni Sipariş",
+            $"#{order.Id} numaralı yeni sipariş alındı. Toplam: {totalAmount:C}",
+            "NewOrder",
+            order.Id);
+
+        // Add customer notification
+        if (customerId != "anonymous")
+        {
+            await AddCustomerNotificationAsync(
+                customerId,
+                "Sipariş Oluşturuldu",
+                $"#{order.Id} numaralı siparişiniz başarıyla oluşturuldu. Toplam: {totalAmount:C}",
+                "OrderCreated",
+                order.Id);
+        }
+
+        await _context.SaveChangesAsync();
+
         // Automatic Courier Assignment
         try
         {
@@ -234,6 +255,29 @@ public class OrdersController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        // Add customer notification for status change
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+        {
+            var statusMessage = newStatus switch
+            {
+                OrderStatus.Preparing => "Siparişiniz hazırlanıyor",
+                OrderStatus.Ready => "Siparişiniz hazır, kurye atanıyor",
+                OrderStatus.Assigned => "Siparişinize kurye atandı",
+                OrderStatus.Accepted => "Kurye siparişi kabul etti",
+                OrderStatus.OutForDelivery => "Siparişiniz yola çıktı",
+                OrderStatus.Delivered => "Siparişiniz teslim edildi",
+                OrderStatus.Cancelled => "Siparişiniz iptal edildi",
+                _ => "Sipariş durumu güncellendi"
+            };
+
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                "Sipariş Durumu Güncellendi",
+                $"#{order.Id} numaralı sipariş: {statusMessage}",
+                "OrderStatusChanged",
+                order.Id);
+        }
+
         return Ok(new { Message = "Order status updated" });
     }
 
@@ -286,7 +330,55 @@ public class OrdersController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        // Add customer notification for cancellation
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+        {
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                "Sipariş İptal Edildi",
+                $"#{order.Id} numaralı siparişiniz iptal edildi. Sebep: {dto.Reason}",
+                "OrderCancelled",
+                order.Id);
+        }
+
         return Ok(new { Message = "Order cancelled successfully" });
+    }
+
+    private async Task AddVendorNotificationAsync(int vendorId, string title, string message, string type, int? relatedEntityId = null)
+    {
+        _context.VendorNotifications.Add(new VendorNotification
+        {
+            VendorId = vendorId,
+            Title = title,
+            Message = message,
+            Type = type,
+            RelatedEntityId = relatedEntityId
+        });
+    }
+
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, int? orderId = null)
+    {
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+        if (customer == null)
+        {
+            // Create customer if doesn't exist
+            customer = new Customer
+            {
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+        }
+
+        _context.CustomerNotifications.Add(new CustomerNotification
+        {
+            CustomerId = customer.Id,
+            Title = title,
+            Message = message,
+            Type = type,
+            OrderId = orderId
+        });
     }
 
     private bool IsValidStatusTransition(OrderStatus current, OrderStatus next)

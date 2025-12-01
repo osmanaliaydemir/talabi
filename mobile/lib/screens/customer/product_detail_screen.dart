@@ -8,7 +8,7 @@ import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/widgets/persistent_bottom_nav_bar.dart';
+import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {

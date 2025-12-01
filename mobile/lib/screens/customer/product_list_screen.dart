@@ -5,8 +5,8 @@ import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
-import 'package:mobile/widgets/persistent_bottom_nav_bar.dart';
-import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class ProductListScreen extends StatefulWidget {
   final Vendor vendor;
@@ -145,7 +145,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               padding: EdgeInsets.all(AppTheme.spacingSmall),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.7,
+                childAspectRatio: 0.8,
                 crossAxisSpacing: 0,
                 mainAxisSpacing: 8,
               ),

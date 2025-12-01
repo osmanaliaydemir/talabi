@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
@@ -70,6 +71,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    final localizations = AppLocalizations.of(context)!;
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
@@ -97,7 +99,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Resim yüklendi')));
+          ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormImageUploaded)));
         }
       }
     } catch (e) {
@@ -107,12 +109,13 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Resim yüklenemedi: $e')));
+        ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormImageUploadError(e.toString()))));
       }
     }
   }
 
   void _showImageSourceDialog() {
+    final localizations = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -120,7 +123,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Kamera'),
+              title: Text(localizations.vendorProductFormSourceCamera),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -128,7 +131,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Galeri'),
+              title: Text(localizations.vendorProductFormSourceGallery),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -146,6 +149,8 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     setState(() {
       _isLoading = true;
     });
+
+    final localizations = AppLocalizations.of(context)!;
 
     try {
       final data = {
@@ -173,7 +178,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Ürün oluşturuldu')));
+          ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormCreateSuccess)));
         }
       } else {
         // Update existing product
@@ -181,7 +186,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Ürün güncellendi')));
+          ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormUpdateSuccess)));
         }
       }
 
@@ -195,7 +200,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ).showSnackBar(SnackBar(content: Text(localizations.vendorProductFormError(e.toString()))));
       }
     }
   }
@@ -203,11 +208,12 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.product != null;
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(isEdit ? 'Ürün Düzenle' : 'Yeni Ürün'),
+        title: Text(isEdit ? localizations.vendorProductFormEditTitle : localizations.vendorProductFormNewTitle),
         backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
@@ -255,14 +261,14 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Name
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Ürün Adı *',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.fastfood),
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormNameLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.fastfood),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Ürün adı gerekli';
+                  return localizations.vendorProductFormNameRequired;
                 }
                 return null;
               },
@@ -272,10 +278,10 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Description
             TextFormField(
               controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Açıklama',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description),
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormDescriptionLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.description),
               ),
               maxLines: 3,
             ),
@@ -284,10 +290,10 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Category
             TextFormField(
               controller: _categoryController,
-              decoration: const InputDecoration(
-                labelText: 'Kategori',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.category),
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormCategoryLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.category),
               ),
             ),
             const SizedBox(height: 16),
@@ -295,18 +301,18 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Price
             TextFormField(
               controller: _priceController,
-              decoration: const InputDecoration(
-                labelText: 'Fiyat *',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.attach_money),
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormPriceLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.attach_money),
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Fiyat gerekli';
+                  return localizations.vendorProductFormPriceRequired;
                 }
                 if (double.tryParse(value) == null) {
-                  return 'Geçerli bir fiyat girin';
+                  return localizations.vendorProductFormPriceInvalid;
                 }
                 return null;
               },
@@ -316,18 +322,18 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Stock
             TextFormField(
               controller: _stockController,
-              decoration: const InputDecoration(
-                labelText: 'Stok Miktarı',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.inventory),
-                hintText: 'Opsiyonel',
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormStockLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.inventory),
+                hintText: localizations.optional,
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value != null &&
                     value.isNotEmpty &&
                     int.tryParse(value) == null) {
-                  return 'Geçerli bir sayı girin';
+                  return localizations.vendorProductFormInvalidNumber;
                 }
                 return null;
               },
@@ -337,18 +343,18 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Preparation time
             TextFormField(
               controller: _preparationTimeController,
-              decoration: const InputDecoration(
-                labelText: 'Hazırlık Süresi (dakika)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.timer),
-                hintText: 'Opsiyonel',
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormPreparationTimeLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.timer),
+                hintText: localizations.optional,
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value != null &&
                     value.isNotEmpty &&
                     int.tryParse(value) == null) {
-                  return 'Geçerli bir sayı girin';
+                  return localizations.vendorProductFormInvalidNumber;
                 }
                 return null;
               },
@@ -357,11 +363,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
 
             // Availability switch
             SwitchListTile(
-              title: const Text('Stokta'),
+              title: Text(localizations.vendorProductFormInStockLabel),
               subtitle: Text(
                 _isAvailable
-                    ? 'Ürün müşterilere gösterilecek'
-                    : 'Ürün stok dışı olarak işaretlenecek',
+                    ? localizations.vendorProductFormInStockDescription
+                    : localizations.vendorProductFormOutOfStockDescription,
               ),
               value: _isAvailable,
               onChanged: (value) {
@@ -394,7 +400,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                       ),
                     )
                   : Text(
-                      isEdit ? 'Güncelle' : 'Oluştur',
+                      isEdit ? localizations.updateButton : localizations.createButton,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -408,12 +414,13 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   }
 
   Widget _buildImagePlaceholder() {
+    final localizations = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey[400]),
         const SizedBox(height: 8),
-        Text('Resim Ekle', style: TextStyle(color: Colors.grey[600])),
+        Text(localizations.vendorProductFormAddImage, style: TextStyle(color: Colors.grey[600])),
       ],
     );
   }

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/vendor/vendor_product_form_screen.dart';
-import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/utils/navigation_logger.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
-import 'package:provider/provider.dart';
+import 'package:mobile/widgets/common/product_card.dart';
 
 class VendorProductsScreen extends StatefulWidget {
   const VendorProductsScreen({super.key});
@@ -58,9 +56,15 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ürünler yüklenemedi: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.vendorProductsLoadError(
+                e.toString(),
+              ),
+            ),
+          ),
+        );
       }
     }
   }
@@ -94,38 +98,41 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
           SnackBar(
             content: Text(
               product.isAvailable
-                  ? '${product.name} stok dışı yapıldı'
-                  : '${product.name} stokta',
+                  ? AppLocalizations.of(context)!
+                      .vendorProductsSetOutOfStock(product.name)
+                  : AppLocalizations.of(context)!
+                      .vendorProductsSetInStock(product.name),
             ),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
+        );
       }
     }
   }
 
   Future<void> _deleteProduct(Product product) async {
+    final localizations = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ürünü Sil'),
+        title: Text(localizations.vendorProductsDeleteTitle),
         content: Text(
-          '${product.name} ürününü silmek istediğinize emin misiniz?',
+          localizations.vendorProductsDeleteConfirmation(product.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            child: Text(localizations.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Sil'),
+            child: Text(localizations.delete),
           ),
         ],
       ),
@@ -136,15 +143,17 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
         await _apiService.deleteProduct(product.id);
         _loadProducts();
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('${product.name} silindi')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.vendorProductsDeleteSuccess(product.name)),
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(localizations.errorWithMessage(e.toString()))),
+          );
         }
       }
     }
@@ -152,12 +161,12 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: VendorHeader(
-        title: 'Ürünlerim',
+        title: localizations.vendorProductsTitle,
         leadingIcon: Icons.inventory_2_outlined,
         showBackButton: false,
         onRefresh: _loadProducts,
@@ -170,7 +179,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Ürün ara...',
+                hintText: localizations.vendorProductsSearchHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -200,63 +209,85 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                       ),
                     )
                   : _filteredProducts.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.inventory_2_outlined,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Ürün bulunamadı',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextButton.icon(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const VendorProductFormScreen(),
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inventory_2_outlined,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                localizations.vendorProductsEmpty,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey[600],
                                 ),
-                              );
-                              if (result == true) _loadProducts();
-                            },
-                            icon: const Icon(Icons.add),
-                            label: const Text('İlk Ürününü Ekle'),
+                              ),
+                              const SizedBox(height: 8),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const VendorProductFormScreen(),
+                                    ),
+                                  );
+                                  if (result == true) _loadProducts();
+                                },
+                                icon: const Icon(Icons.add),
+                                label: Text(localizations.vendorProductsAddFirst),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        )
+                      : GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             childAspectRatio: 0.7,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                           ),
-                      itemCount: _filteredProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = _filteredProducts[index];
-                        return _buildProductCard(product, localizationProvider);
-                      },
-                    ),
+                          itemCount: _filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = _filteredProducts[index];
+                            return ProductCard(
+                              product: product,
+                              onTap: () async {
+                                TapLogger.logTap(
+                                  'Product #${product.id}',
+                                  action: localizations.edit,
+                                );
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        VendorProductFormScreen(product: product),
+                                  ),
+                                );
+                                if (result == true) _loadProducts();
+                              },
+                              onToggleAvailability: () =>
+                                  _toggleAvailability(product),
+                              onDelete: () => _deleteProduct(product),
+                            );
+                          },
+                        ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          TapLogger.logNavigation('VendorProducts', 'VendorProductForm');
+          TapLogger.logNavigation(
+            'VendorProducts',
+            'VendorProductForm',
+          );
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -267,144 +298,12 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
         },
         backgroundColor: Colors.deepPurple,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Yeni Ürün', style: TextStyle(color: Colors.white)),
-      ),
-      bottomNavigationBar: const VendorBottomNav(currentIndex: 2),
-    );
-  }
-
-  Widget _buildProductCard(Product product, LocalizationProvider localization) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      child: InkWell(
-        onTap: () async {
-          TapLogger.logTap('Product #${product.id}', action: 'Edit');
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => VendorProductFormScreen(product: product),
-            ),
-          );
-          if (result == true) _loadProducts();
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product image
-            Stack(
-              children: [
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  color: Colors.grey[200],
-                  child: product.imageUrl != null
-                      ? Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.fastfood, size: 48),
-                        )
-                      : const Icon(Icons.fastfood, size: 48),
-                ),
-                // Availability badge
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: product.isAvailable ? Colors.green : Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      product.isAvailable ? 'Stokta' : 'Stok Dışı',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Product info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    if (product.category != null)
-                      Text(
-                        product.category!,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                      ),
-                    const Spacer(),
-                    Text(
-                      CurrencyFormatter.format(
-                        product.price,
-                        localization.currency,
-                      ),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Action buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: IconButton(
-                      icon: Icon(
-                        product.isAvailable
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        size: 20,
-                      ),
-                      onPressed: () => _toggleAvailability(product),
-                      tooltip: product.isAvailable
-                          ? 'Stok Dışı Yap'
-                          : 'Stokta Yap',
-                    ),
-                  ),
-                  Expanded(
-                    child: IconButton(
-                      icon: const Icon(Icons.delete, size: 20),
-                      color: Colors.red,
-                      onPressed: () => _deleteProduct(product),
-                      tooltip: 'Sil',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        label: Text(
+          localizations.vendorProductsAddNew,
+          style: const TextStyle(color: Colors.white),
         ),
       ),
+      bottomNavigationBar: const VendorBottomNav(currentIndex: 2),
     );
   }
 }

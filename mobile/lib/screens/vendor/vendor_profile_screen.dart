@@ -43,40 +43,43 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Profil yüklenemedi: $e')));
+        ).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.profileLoadFailed(e.toString()))),
+        );
       }
     }
   }
 
-  String _getLanguageDisplayName(String languageCode) {
+  String _getLanguageDisplayName(BuildContext context, String languageCode) {
+    final localizations = AppLocalizations.of(context)!;
     switch (languageCode) {
       case 'tr':
-        return 'Türkçe';
+        return localizations.languageNameTr;
       case 'en':
-        return 'English (US)';
+        return localizations.languageNameEn;
       case 'ar':
-        return 'العربية';
+        return localizations.languageNameAr;
       default:
-        return 'English (US)';
+        return localizations.languageNameEn;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final localizations = AppLocalizations.of(context);
+    final localizations = AppLocalizations.of(context)!;
 
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: VendorHeader(
-          title: localizations?.profile ?? 'Profil',
-          subtitle: authProvider.fullName ?? authProvider.email ?? 'Satıcı',
+          title: localizations.vendorProfileTitle,
+          subtitle: authProvider.fullName ?? authProvider.email ?? localizations.vendorFallbackSubtitle,
           leadingIcon: Icons.person_outline,
           showBackButton: false,
           onRefresh: _loadProfile,
         ),
-        body: Center(
+        body: const Center(
           child: CircularProgressIndicator(color: Colors.deepPurple),
         ),
         bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
@@ -87,15 +90,15 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: VendorHeader(
-          title: localizations?.profile ?? 'Profil',
-          subtitle: authProvider.fullName ?? authProvider.email ?? 'Satıcı',
+          title: localizations.vendorProfileTitle,
+          subtitle: authProvider.fullName ?? authProvider.email ?? localizations.vendorFallbackSubtitle,
           leadingIcon: Icons.person_outline,
           showBackButton: false,
           onRefresh: _loadProfile,
         ),
         body: Center(
           child: Text(
-            localizations?.failedToLoadProfile ?? 'Profil yüklenemedi',
+            localizations.profileLoadFailed(''),
           ),
         ),
         bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
@@ -105,8 +108,8 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: VendorHeader(
-        title: localizations?.profile ?? 'Profil',
-        subtitle: authProvider.fullName ?? authProvider.email ?? 'Satıcı',
+        title: localizations.vendorProfileTitle,
+        subtitle: authProvider.fullName ?? authProvider.email ?? localizations.vendorFallbackSubtitle,
         leadingIcon: Icons.person_outline,
         showBackButton: false,
         onRefresh: _loadProfile,
@@ -126,7 +129,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
   Widget _buildProfileDetails(
     BuildContext context,
     AuthProvider authProvider,
-    AppLocalizations? localizations,
+    AppLocalizations localizations,
   ) {
     final profile = _profile!;
     final localizationProvider = Provider.of<LocalizationProvider>(
@@ -134,6 +137,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
       listen: false,
     );
     final currentLanguage = _getLanguageDisplayName(
+      context,
       localizationProvider.locale.languageCode,
     );
 
@@ -148,7 +152,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                 backgroundColor: Colors.grey[200],
                 backgroundImage: profile['imageUrl'] != null
                     ? NetworkImage(profile['imageUrl'] as String)
-                          as ImageProvider
+                        as ImageProvider
                     : null,
                 child: profile['imageUrl'] == null
                     ? const Icon(Icons.store, size: 50)
@@ -156,7 +160,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                profile['name'] ?? 'İşletme Adı',
+                profile['name'] ?? localizations.businessNameFallback,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               if (profile['city'] != null)
@@ -170,9 +174,9 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           ),
         ),
         const SizedBox(height: 32),
-        const Text(
-          'İşletme Bilgileri',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          localizations.businessInfo,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Card(
@@ -184,14 +188,14 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                 if (profile['address'] != null)
                   _buildInfoRow(
                     Icons.location_on,
-                    'Adres',
+                    localizations.addressLabel,
                     profile['address'] as String,
                   ),
                 if (profile['phoneNumber'] != null) ...[
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     Icons.phone,
-                    'Telefon',
+                    localizations.phoneLabel,
                     profile['phoneNumber'] as String,
                   ),
                 ],
@@ -199,7 +203,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                   const SizedBox(height: 12),
                   _buildInfoRow(
                     Icons.description,
-                    'Açıklama',
+                    localizations.description,
                     profile['description'] as String,
                   ),
                 ],
@@ -208,17 +212,16 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Ayarlar',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          localizations.generalSettings,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         ListTile(
           leading: const Icon(Icons.edit_outlined),
-          title: Text(localizations?.editProfile ?? 'Profili Düzenle'),
+          title: Text(localizations.editProfile),
           subtitle: Text(
-            localizations?.editProfileDescription ??
-                'İşletme adı, adres ve iletişim bilgilerini düzenle',
+            localizations.editProfileDescription,
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
@@ -235,9 +238,9 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.settings),
-          title: const Text('İşletme Ayarları'),
-          subtitle: const Text(
-            'Minimum sipariş, teslimat ücreti ve diğer ayarlar',
+          title: Text(localizations.businessSettingsTitle),
+          subtitle: Text(
+            localizations.businessSettingsSubtitle,
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
@@ -251,7 +254,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.language),
-          title: Text(localizations?.selectLanguage ?? 'Dil Seçimi'),
+          title: Text(localizations.selectLanguage),
           subtitle: Text(currentLanguage),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
@@ -265,24 +268,24 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.logout, color: Colors.red),
-          title: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+          title: Text(localizations.logout, style: const TextStyle(color: Colors.red)),
           onTap: () async {
             print('VendorProfileScreen: Logout tapped');
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('Çıkış Yap'),
-                content: const Text('Çıkış yapmak istediğine emin misin?'),
+                title: Text(localizations.logoutConfirmTitle),
+                content: Text(localizations.logoutConfirmMessage),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('İptal'),
+                    child: Text(localizations.cancel),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text(
-                      'Çıkış Yap',
-                      style: TextStyle(color: Colors.red),
+                    child: Text(
+                      localizations.logout,
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 ],

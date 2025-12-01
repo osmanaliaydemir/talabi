@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/widgets/vendor/vendor_header.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/models/vendor_notification.dart';
+import 'package:intl/intl.dart';
 
 class VendorNotificationsScreen extends StatefulWidget {
   const VendorNotificationsScreen({super.key});
@@ -10,155 +14,171 @@ class VendorNotificationsScreen extends StatefulWidget {
 }
 
 class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'type': 'NewOrder',
-      'title': 'Yeni Sipariş',
-      'message': 'Ahmet Yılmaz adlı müşteriden yeni sipariş',
-      'time': '5 dakika önce',
-      'isRead': false,
-    },
-    {
-      'type': 'OrderStatusChanged',
-      'title': 'Sipariş Durumu Değişti',
-      'message': 'Sipariş #1234 teslim edildi',
-      'time': '1 saat önce',
-      'isRead': true,
-    },
-    {
-      'type': 'NewReview',
-      'title': 'Yeni Yorum',
-      'message': 'Mehmet Demir 5 yıldız verdi',
-      'time': '2 saat önce',
-      'isRead': true,
-    },
-  ];
+  late Future<List<VendorNotification>> _notificationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsFuture = _loadNotifications();
+  }
+
+  Future<List<VendorNotification>> _loadNotifications() async {
+    try {
+      final data = await ApiService().getVendorNotifications();
+      return data.map((json) => VendorNotification.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> _markAsRead(int id) async {
+    try {
+      await ApiService().markNotificationAsRead('vendor', id);
+      setState(() {
+        _notificationsFuture = _loadNotifications();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bildirim okundu olarak işaretlenemedi: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Bildirimler'),
-        backgroundColor: AppTheme.primaryOrange,
-        foregroundColor: Colors.white,
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                for (var notification in _notifications) {
-                  notification['isRead'] = true;
-                }
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Tümü okundu olarak işaretlendi')),
-              );
-            },
-            child: const Text(
-              'Tümünü Okundu İşaretle',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
+      appBar: VendorHeader(
+        title: localizations.vendorNotificationsTitle,
+        leadingIcon: Icons.notifications,
+        showBackButton: true,
       ),
-      body: _notifications.isEmpty
-          ? Center(
+      body: FutureBuilder<List<VendorNotification>>(
+        future: _notificationsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.notifications_none,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
+                  Text(localizations.vendorNotificationsErrorMessage),
                   const SizedBox(height: 16),
-                  Text(
-                    'Henüz bildirim yok',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _notificationsFuture = _loadNotifications();
+                      });
+                    },
+                    child: const Text('Yeniden Dene'),
                   ),
                 ],
               ),
-            )
-          : ListView.builder(
-              itemCount: _notifications.length,
-              itemBuilder: (context, index) {
-                final notification = _notifications[index];
-                return _buildNotificationCard(notification);
+            );
+          }
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final notifications = snapshot.data!;
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  _notificationsFuture = _loadNotifications();
+                });
               },
-            ),
-    );
-  }
-
-  Widget _buildNotificationCard(Map<String, dynamic> notification) {
-    IconData icon;
-    Color iconColor;
-
-    switch (notification['type']) {
-      case 'NewOrder':
-        icon = Icons.shopping_bag;
-        iconColor = Colors.green;
-        break;
-      case 'OrderStatusChanged':
-        icon = Icons.update;
-        iconColor = Colors.blue;
-        break;
-      case 'NewReview':
-        icon = Icons.star;
-        iconColor = AppTheme.primaryOrange;
-        break;
-      default:
-        icon = Icons.notifications;
-        iconColor = Colors.grey;
-    }
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: notification['isRead'] ? Colors.white : Colors.orange.shade50,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: iconColor.withOpacity(0.2),
-          child: Icon(icon, color: iconColor),
-        ),
-        title: Text(
-          notification['title'],
-          style: TextStyle(
-            fontWeight: notification['isRead']
-                ? FontWeight.normal
-                : FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(notification['message']),
-            const SizedBox(height: 4),
-            Text(
-              notification['time'],
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        trailing: !notification['isRead']
-            ? Container(
-                width: 12,
-                height: 12,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryOrange,
-                  shape: BoxShape.circle,
+              child: ListView.builder(
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: notification.isRead
+                          ? Colors.grey
+                          : Theme.of(context).primaryColor,
+                      child: Icon(
+                        _getIconForType(notification.type),
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      notification.title,
+                      style: TextStyle(
+                        fontWeight: notification.isRead
+                            ? FontWeight.normal
+                            : FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(notification.message),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat(
+                            'dd MMM yyyy, HH:mm',
+                          ).format(notification.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: notification.isRead
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.check_circle_outline),
+                            onPressed: () => _markAsRead(notification.id),
+                            tooltip: 'Okundu olarak işaretle',
+                          ),
+                    onTap: () {
+                      if (!notification.isRead) {
+                        _markAsRead(notification.id);
+                      }
+                    },
+                  );
+                },
+              ),
+            );
+          }
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.notifications_none,
+                  size: 64,
+                  color: Colors.grey[400],
                 ),
-              )
-            : null,
-        onTap: () {
-          setState(() {
-            notification['isRead'] = true;
-          });
-          // Navigate to related screen based on type
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${notification['title']} açıldı')),
+                const SizedBox(height: 16),
+                Text(
+                  localizations.vendorNotificationsEmptyMessage,
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ],
+            ),
           );
         },
       ),
     );
+  }
+
+  IconData _getIconForType(String type) {
+    switch (type.toLowerCase()) {
+      case 'neworder':
+        return Icons.shopping_cart;
+      case 'orderstatuschanged':
+        return Icons.update;
+      case 'newreview':
+        return Icons.star;
+      case 'info':
+        return Icons.info;
+      default:
+        return Icons.notifications;
+    }
   }
 }

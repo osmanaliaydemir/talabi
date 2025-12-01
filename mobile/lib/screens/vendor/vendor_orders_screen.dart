@@ -1,5 +1,5 @@
 ﻿import 'package:flutter/material.dart';
-
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/vendor/vendor_order_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
@@ -86,18 +86,18 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
     }
   }
 
-  String _getStatusText(String status) {
+  String _getStatusText(String status, AppLocalizations localizations) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'Bekliyor';
+        return localizations.pending;
       case 'preparing':
-        return 'Hazırlanıyor';
+        return localizations.preparing;
       case 'ready':
-        return 'Hazır';
+        return localizations.ready;
       case 'delivered':
-        return 'Teslim Edildi';
+        return localizations.delivered;
       case 'cancelled':
-        return 'İptal Edildi';
+        return localizations.cancelled;
       default:
         return status;
     }
@@ -106,10 +106,11 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
   @override
   Widget build(BuildContext context) {
     final localizationProvider = Provider.of<LocalizationProvider>(context);
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: VendorHeader(
-        title: 'Siparişler',
+        title: localizations.vendorOrders,
         leadingIcon: Icons.shopping_bag_outlined,
         showBackButton: false,
         onRefresh: _loadOrders,
@@ -123,11 +124,11 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
               indicatorColor: Colors.deepPurple,
               labelColor: Colors.deepPurple,
               unselectedLabelColor: Colors.grey,
-              tabs: const [
-                Tab(text: 'Bekleyen'),
-                Tab(text: 'Hazırlanıyor'),
-                Tab(text: 'Hazır'),
-                Tab(text: 'Teslim Edildi'),
+              tabs: [
+                Tab(text: localizations.pending),
+                Tab(text: localizations.preparing),
+                Tab(text: localizations.ready),
+                Tab(text: localizations.delivered),
               ],
             ),
           ),
@@ -152,7 +153,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Sipariş bulunamadı',
+                            localizations.noOrdersFound,
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.grey[600],
@@ -180,7 +181,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                               ),
                             ),
                             title: Text(
-                              'Sipariş #${order['id']}',
+                              '${localizations.order} #${order['id']}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -189,9 +190,9 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 4),
-                                Text('Müşteri: ${order['customerName']}'),
+                                Text('${localizations.customer}: ${order['customerName']}'),
                                 Text(
-                                  'Tarih: ${DateTime.parse(order['createdAt']).toString().substring(0, 16)}',
+                                  '${localizations.date}: ${DateTime.parse(order['createdAt']).toString().substring(0, 16)}',
                                 ),
                                 const SizedBox(height: 8),
                                 Container(
@@ -206,7 +207,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    _getStatusText(order['status']),
+                                    _getStatusText(order['status'], localizations),
                                     style: TextStyle(
                                       color: _getStatusColor(order['status']),
                                       fontWeight: FontWeight.bold,

@@ -38,8 +38,7 @@ void main() async {
   final syncService = SyncService(connectivityService);
 
   // Initialize API service with connectivity
-  final apiService = ApiService();
-  apiService.setConnectivityService(connectivityService);
+  ApiService().setConnectivityService(connectivityService);
 
   // Initialize Notification Service
   await NotificationService().initialize();
@@ -66,7 +65,9 @@ void main() async {
   );
 }
 
+/// The root widget of the application.
 class MyApp extends StatefulWidget {
+  /// Creates the root widget.
   const MyApp({super.key});
 
   @override
@@ -206,7 +207,7 @@ class _MyAppState extends State<MyApp> {
             return MediaQuery(
               data: MediaQuery.of(
                 context,
-              ).copyWith(textScaleFactor: themeProvider.textScaleFactor),
+              ).copyWith(textScaler: TextScaler.linear(themeProvider.textScaleFactor)),
               child: child!,
             );
           },

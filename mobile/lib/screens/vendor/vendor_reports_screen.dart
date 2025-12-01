@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/providers/localization_provider.dart';
@@ -49,7 +49,7 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Rapor yüklenemedi: $e')));
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))));
       }
     }
   }
@@ -81,16 +81,17 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final localizationProvider = Provider.of<LocalizationProvider>(context);
+    final localizations = AppLocalizations.of(context)!;
     final dateFormat = DateFormat('dd/MM/yyyy');
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Satış Raporları'),
+        title: Text(localizations.salesReports),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
             onPressed: _selectDateRange,
-            tooltip: 'Tarih Aralığı Seç',
+            tooltip: localizations.selectDateRange,
           ),
         ],
       ),
@@ -103,10 +104,10 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
               children: [
                 Expanded(
                   child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'day', label: Text('Günlük')),
-                      ButtonSegment(value: 'week', label: Text('Haftalık')),
-                      ButtonSegment(value: 'month', label: Text('Aylık')),
+                    segments: [
+                      ButtonSegment(value: 'day', label: Text(localizations.daily)),
+                      ButtonSegment(value: 'week', label: Text(localizations.weekly)),
+                      ButtonSegment(value: 'month', label: Text(localizations.monthly)),
                     ],
                     selected: {_selectedPeriod},
                     onSelectionChanged: (Set<String> newSelection) {
@@ -129,240 +130,157 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
                     child: CircularProgressIndicator(color: Colors.deepPurple),
                   )
                 : _report == null
-                ? const Center(child: Text('Rapor bulunamadı'))
-                : RefreshIndicator(
-                    onRefresh: _loadReport,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Summary cards
-                          Row(
+                    ? Center(child: Text(localizations.noReportFound))
+                    : RefreshIndicator(
+                        onRefresh: _loadReport,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: _buildSummaryCard(
-                                  context,
-                                  'Toplam Sipariş',
-                                  '${_report!['totalOrders'] ?? 0}',
-                                  Icons.receipt_long,
-                                  Colors.blue,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSummaryCard(
-                                  context,
-                                  'Toplam Gelir',
-                                  CurrencyFormatter.format(
-                                    (_report!['totalRevenue'] ?? 0).toDouble(),
-                                    localizationProvider.currency,
+                              // Summary cards
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildSummaryCard(
+                                      context,
+                                      localizations.totalOrders,
+                                      '${_report!['totalOrders'] ?? 0}',
+                                      Icons.receipt_long,
+                                      Colors.blue,
+                                    ),
                                   ),
-                                  Icons.attach_money,
-                                  Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildSummaryCard(
-                                  context,
-                                  'Tamamlanan',
-                                  '${_report!['completedOrders'] ?? 0}',
-                                  Icons.check_circle,
-                                  Colors.green,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildSummaryCard(
-                                  context,
-                                  'İptal Edilen',
-                                  '${_report!['cancelledOrders'] ?? 0}',
-                                  Icons.cancel,
-                                  Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          // Date range
-                          if (_startDate != null && _endDate != null)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.date_range),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      '${dateFormat.format(_startDate!)} - ${dateFormat.format(_endDate!)}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildSummaryCard(
+                                      context,
+                                      localizations.totalRevenue,
+                                      CurrencyFormatter.format(
+                                        (_report!['totalRevenue'] ?? 0).toDouble(),
+                                        localizationProvider.currency,
                                       ),
+                                      Icons.attach_money,
+                                      Colors.green,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          const SizedBox(height: 24),
-                          // Daily sales chart
-                          if (_report!['dailySales'] != null &&
-                              (_report!['dailySales'] as List).isNotEmpty)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Günlük Satışlar',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildSummaryCard(
+                                      context,
+                                      localizations.completed,
+                                      '${_report!['completedOrders'] ?? 0}',
+                                      Icons.check_circle,
+                                      Colors.green,
                                     ),
-                                    const SizedBox(height: 16),
-                                    ...(_report!['dailySales'] as List).map((
-                                      daily,
-                                    ) {
-                                      final date = DateTime.parse(
-                                        daily['date'],
-                                      );
-                                      final revenue = daily['revenue'] ?? 0;
-                                      final orderCount =
-                                          daily['orderCount'] ?? 0;
-
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 12,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildSummaryCard(
+                                      context,
+                                      localizations.cancelledOrders,
+                                      '${_report!['cancelledOrders'] ?? 0}',
+                                      Icons.cancel,
+                                      Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              // Date range
+                              if (_startDate != null && _endDate != null)
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.date_range),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          '${dateFormat.format(_startDate!)} - ${dateFormat.format(_endDate!)}',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 100,
-                                              child: Text(
-                                                dateFormat.format(date),
-                                                style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    CurrencyFormatter.format(
-                                                      revenue.toDouble(),
-                                                      localizationProvider
-                                                          .currency,
-                                                    ),
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '$orderCount sipariş',
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(height: 24),
+                              // Daily sales chart
+                              if (_report!['dailySales'] != null &&
+                                  (_report!['dailySales'] as List).isNotEmpty)
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          localizations.dailySales,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ...(_report!['dailySales'] as List).map((daily) {
+                                          final date = DateTime.parse(daily['date']);
+                                          final revenue = daily['revenue'] ?? 0;
+                                          final orderCount = daily['orderCount'] ?? 0;
+
+                                          return Padding(
+                                            padding: const EdgeInsets.only(bottom: 12),
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 100,
+                                                  child: Text(
+                                                    dateFormat.format(date),
                                                     style: TextStyle(
-                                                      fontSize: 12,
                                                       color: Colors.grey[600],
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 24),
-                          // Top products
-                          if (_report!['topProducts'] != null &&
-                              (_report!['topProducts'] as List).isNotEmpty)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'En Çok Satan Ürünler',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ...(_report!['topProducts'] as List)
-                                        .take(10)
-                                        .map((product) {
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 12,
-                                            ),
-                                            child: Row(
-                                              children: [
+                                                ),
                                                 Expanded(
                                                   child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       Text(
-                                                        product['productName'],
+                                                        CurrencyFormatter.format(
+                                                          revenue.toDouble(),
+                                                          localizationProvider.currency,
+                                                        ),
                                                         style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          fontWeight: FontWeight.bold,
                                                         ),
                                                       ),
                                                       Text(
-                                                        '${product['quantitySold']} adet satıldı',
+                                                        localizations.orderCount(orderCount),
                                                         style: TextStyle(
                                                           fontSize: 12,
-                                                          color:
-                                                              Colors.grey[600],
+                                                          color: Colors.grey[600],
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
-                                                Text(
-                                                  CurrencyFormatter.format(
-                                                    (product['totalRevenue'] ??
-                                                            0)
-                                                        .toDouble(),
-                                                    localizationProvider
-                                                        .currency,
-                                                  ),
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.green,
-                                                  ),
-                                                ),
                                               ],
                                             ),
                                           );
-                                        })
-                                        .toList(),
-                                  ],
+                                        }).toList(),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                        ],
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
           ),
         ],
       ),
@@ -377,25 +295,33 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
     Color color,
   ) {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Icon(icon, color: color),
+              ],
+            ),
             const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(
-                fontSize: 20,
+              style: const TextStyle(
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: color,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),

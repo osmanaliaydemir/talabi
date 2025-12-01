@@ -166,6 +166,17 @@ public class VendorOrdersController : ControllerBase
             CreatedBy = GetUserId()
         });
 
+        // Add customer notification
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+        {
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                "Sipariş Onaylandı",
+                $"#{order.Id} numaralı siparişiniz onaylandı ve hazırlanmaya başlandı.",
+                "OrderAccepted",
+                order.Id);
+        }
+
         await _context.SaveChangesAsync();
 
         return Ok(new { Message = "Order accepted successfully" });
@@ -257,6 +268,26 @@ public class VendorOrdersController : ControllerBase
         if (newStatus == OrderStatus.Ready && !order.EstimatedDeliveryTime.HasValue)
         {
             order.EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes(30); // Default 30 minutes
+        }
+
+        // Add customer notification for status change
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+        {
+            var statusMessage = newStatus switch
+            {
+                OrderStatus.Preparing => "Siparişiniz hazırlanıyor",
+                OrderStatus.Ready => "Siparişiniz hazır, kurye atanıyor",
+                OrderStatus.Delivered => "Siparişiniz teslim edildi",
+                OrderStatus.Cancelled => "Siparişiniz iptal edildi",
+                _ => "Sipariş durumu güncellendi"
+            };
+
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                "Sipariş Durumu Güncellendi",
+                $"#{order.Id} numaralı sipariş: {statusMessage}",
+                "OrderStatusChanged",
+                order.Id);
         }
 
         await _context.SaveChangesAsync();
@@ -457,6 +488,31 @@ public class VendorOrdersController : ControllerBase
     private double Deg2Rad(double deg)
     {
         return deg * (Math.PI / 180);
+    }
+
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, int? orderId = null)
+    {
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+        if (customer == null)
+        {
+            // Create customer if doesn't exist
+            customer = new Talabi.Core.Entities.Customer
+            {
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+        }
+
+        _context.CustomerNotifications.Add(new Talabi.Core.Entities.CustomerNotification
+        {
+            CustomerId = customer.Id,
+            Title = title,
+            Message = message,
+            Type = type,
+            OrderId = orderId
+        });
     }
 }
 

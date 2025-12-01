@@ -817,7 +817,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderPlacedMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your order number: {orderId}\\nTotal: {total}'**
+  /// **'Your order number: {orderId}\nTotal: {total}'**
   String orderPlacedMessage(Object orderId, Object total);
 
   /// No description provided for @ok.
@@ -829,8 +829,8 @@ abstract class AppLocalizations {
   /// No description provided for @errorWithMessage.
   ///
   /// In en, this message translates to:
-  /// **'Error: {message}'**
-  String errorWithMessage(Object message);
+  /// **'Error: {error}'**
+  String errorWithMessage(Object error);
 
   /// No description provided for @clearCartTitle.
   ///
@@ -1099,8 +1099,8 @@ abstract class AppLocalizations {
   /// No description provided for @failedToLoadProfile.
   ///
   /// In en, this message translates to:
-  /// **'Failed to load courier profile'**
-  String get failedToLoadProfile;
+  /// **'Failed to load courier profile: {error}'**
+  String failedToLoadProfile(Object error);
 
   /// No description provided for @failedToUpdateStatus.
   ///
@@ -1363,8 +1363,8 @@ abstract class AppLocalizations {
   /// No description provided for @profileLoadFailed.
   ///
   /// In en, this message translates to:
-  /// **'Failed to load profile'**
-  String get profileLoadFailed;
+  /// **'Failed to load profile: {error}'**
+  String profileLoadFailed(Object error);
 
   /// No description provided for @settingsUpdateFailed.
   ///
@@ -1996,17 +1996,17 @@ abstract class AppLocalizations {
   /// **'Enter the 4-digit code sent to {email}'**
   String enterCodeSentToEmail(Object email);
 
-  /// No description provided for @resendCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Resend Code'**
-  String get resendCode;
-
   /// No description provided for @codeExpiresIn.
   ///
   /// In en, this message translates to:
   /// **'Code will expire in {time}'**
   String codeExpiresIn(Object time);
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
 
   /// No description provided for @settingsLoadError.
   ///
@@ -2095,8 +2095,8 @@ abstract class AppLocalizations {
   /// No description provided for @date.
   ///
   /// In en, this message translates to:
-  /// **'Date: {date}'**
-  String date(Object date);
+  /// **'Date'**
+  String get date;
 
   /// No description provided for @approve.
   ///
@@ -2289,6 +2289,594 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enjoy exclusive deals and competitive prices every day'**
   String get onboardingDesc3;
+
+  /// No description provided for @pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// No description provided for @preparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing'**
+  String get preparing;
+
+  /// No description provided for @ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get ready;
+
+  /// No description provided for @delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get delivered;
+
+  /// No description provided for @cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelled;
+
+  /// No description provided for @vendorOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor Orders'**
+  String get vendorOrders;
+
+  /// No description provided for @noOrdersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders found'**
+  String get noOrdersFound;
+
+  /// No description provided for @order.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get order;
+
+  /// No description provided for @customer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get customer;
+
+  /// No description provided for @vendorDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor Dashboard'**
+  String get vendorDashboard;
+
+  /// No description provided for @summaryLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load summary: {error}'**
+  String summaryLoadError(Object error);
+
+  /// No description provided for @welcomeVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {name}'**
+  String welcomeVendor(Object name);
+
+  /// No description provided for @todayOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Orders'**
+  String get todayOrders;
+
+  /// No description provided for @pendingOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Orders'**
+  String get pendingOrders;
+
+  /// No description provided for @todayRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Revenue'**
+  String get todayRevenue;
+
+  /// No description provided for @weeklyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Revenue'**
+  String get weeklyRevenue;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// No description provided for @reports.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reports;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @logoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo updated'**
+  String get logoUpdated;
+
+  /// No description provided for @logoUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo upload failed: {error}'**
+  String logoUploadFailed(Object error);
+
+  /// No description provided for @locationSelectedChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Selected (Change)'**
+  String get locationSelectedChange;
+
+  /// No description provided for @selectLocationFromMapRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Location from Map *'**
+  String get selectLocationFromMapRequired;
+
+  /// No description provided for @locationSelectionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Location selection from map is required'**
+  String get locationSelectionRequired;
+
+  /// No description provided for @addressAutoFillHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Address selected from map is auto-filled, you can edit manually'**
+  String get addressAutoFillHint;
+
+  /// No description provided for @selectLocationFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'You must select a location from map first'**
+  String get selectLocationFirst;
+
+  /// No description provided for @vendorLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor Login'**
+  String get vendorLogin;
+
+  /// No description provided for @welcomeBackVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back, Vendor!'**
+  String get welcomeBackVendor;
+
+  /// No description provided for @vendorLoginDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to manage your store and orders'**
+  String get vendorLoginDescription;
+
+  /// No description provided for @areYouCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you a customer?'**
+  String get areYouCustomer;
+
+  /// No description provided for @vendorNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get vendorNotificationsTitle;
+
+  /// No description provided for @vendorNotificationsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no notifications yet.'**
+  String get vendorNotificationsEmptyMessage;
+
+  /// No description provided for @vendorNotificationsErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while loading notifications.'**
+  String get vendorNotificationsErrorMessage;
+
+  /// No description provided for @vendorProductsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Products'**
+  String get vendorProductsTitle;
+
+  /// No description provided for @vendorProductsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products...'**
+  String get vendorProductsSearchHint;
+
+  /// No description provided for @vendorProductsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load products: {error}'**
+  String vendorProductsLoadError(Object error);
+
+  /// No description provided for @vendorProductsSetOutOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'{productName} set to out of stock'**
+  String vendorProductsSetOutOfStock(Object productName);
+
+  /// No description provided for @vendorProductsSetInStock.
+  ///
+  /// In en, this message translates to:
+  /// **'{productName} is in stock'**
+  String vendorProductsSetInStock(Object productName);
+
+  /// No description provided for @vendorProductsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Product'**
+  String get vendorProductsDeleteTitle;
+
+  /// No description provided for @vendorProductsDeleteConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {productName}?'**
+  String vendorProductsDeleteConfirmation(Object productName);
+
+  /// No description provided for @vendorProductsDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'{productName} has been deleted'**
+  String vendorProductsDeleteSuccess(Object productName);
+
+  /// No description provided for @vendorProductsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No products found'**
+  String get vendorProductsEmpty;
+
+  /// No description provided for @vendorProductsAddFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Your First Product'**
+  String get vendorProductsAddFirst;
+
+  /// No description provided for @vendorProductsAddNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New Product'**
+  String get vendorProductsAddNew;
+
+  /// No description provided for @vendorProductFormEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Product'**
+  String get vendorProductFormEditTitle;
+
+  /// No description provided for @vendorProductFormNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Product'**
+  String get vendorProductFormNewTitle;
+
+  /// No description provided for @vendorProductFormImageUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Image uploaded'**
+  String get vendorProductFormImageUploaded;
+
+  /// No description provided for @vendorProductFormImageUploadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload image: {error}'**
+  String vendorProductFormImageUploadError(Object error);
+
+  /// No description provided for @vendorProductFormSourceCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get vendorProductFormSourceCamera;
+
+  /// No description provided for @vendorProductFormSourceGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get vendorProductFormSourceGallery;
+
+  /// No description provided for @vendorProductFormCreateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Product created'**
+  String get vendorProductFormCreateSuccess;
+
+  /// No description provided for @vendorProductFormUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Product updated'**
+  String get vendorProductFormUpdateSuccess;
+
+  /// No description provided for @vendorProductFormError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String vendorProductFormError(Object error);
+
+  /// No description provided for @vendorProductFormNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Name *'**
+  String get vendorProductFormNameLabel;
+
+  /// No description provided for @vendorProductFormNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Product name is required'**
+  String get vendorProductFormNameRequired;
+
+  /// No description provided for @vendorProductFormDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get vendorProductFormDescriptionLabel;
+
+  /// No description provided for @vendorProductFormCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get vendorProductFormCategoryLabel;
+
+  /// No description provided for @vendorProductFormPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price *'**
+  String get vendorProductFormPriceLabel;
+
+  /// No description provided for @vendorProductFormPriceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Price is required'**
+  String get vendorProductFormPriceRequired;
+
+  /// No description provided for @vendorProductFormPriceInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid price'**
+  String get vendorProductFormPriceInvalid;
+
+  /// No description provided for @vendorProductFormStockLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Quantity'**
+  String get vendorProductFormStockLabel;
+
+  /// No description provided for @vendorProductFormInvalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid number'**
+  String get vendorProductFormInvalidNumber;
+
+  /// No description provided for @vendorProductFormPreparationTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation Time (minutes)'**
+  String get vendorProductFormPreparationTimeLabel;
+
+  /// No description provided for @vendorProductFormInStockLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'In Stock'**
+  String get vendorProductFormInStockLabel;
+
+  /// No description provided for @vendorProductFormInStockDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The product will be visible to customers'**
+  String get vendorProductFormInStockDescription;
+
+  /// No description provided for @vendorProductFormOutOfStockDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The product will be marked as out of stock'**
+  String get vendorProductFormOutOfStockDescription;
+
+  /// No description provided for @updateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateButton;
+
+  /// No description provided for @createButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get createButton;
+
+  /// No description provided for @vendorProductFormAddImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Image'**
+  String get vendorProductFormAddImage;
+
+  /// No description provided for @vendorProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Vendor Profile'**
+  String get vendorProfileTitle;
+
+  /// No description provided for @vendorFallbackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor'**
+  String get vendorFallbackSubtitle;
+
+  /// No description provided for @businessInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Information'**
+  String get businessInfo;
+
+  /// No description provided for @addressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get addressLabel;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phoneLabel;
+
+  /// No description provided for @generalSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'General Settings'**
+  String get generalSettings;
+
+  /// No description provided for @businessSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Settings'**
+  String get businessSettingsTitle;
+
+  /// No description provided for @businessSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum order, delivery fee, and other settings'**
+  String get businessSettingsSubtitle;
+
+  /// No description provided for @languageNameTr.
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish'**
+  String get languageNameTr;
+
+  /// No description provided for @languageNameEn.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageNameEn;
+
+  /// No description provided for @languageNameAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get languageNameAr;
+
+  /// No description provided for @businessNameFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name'**
+  String get businessNameFallback;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @markAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Read'**
+  String get markAsRead;
+
+  /// No description provided for @pendingReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Reviews'**
+  String get pendingReviews;
+
+  /// No description provided for @noPendingReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending reviews'**
+  String get noPendingReviews;
+
+  /// No description provided for @reviewsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load reviews: {error}'**
+  String reviewsLoadError(Object error);
+
+  /// No description provided for @salesReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales Reports'**
+  String get salesReports;
+
+  /// No description provided for @selectDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date Range'**
+  String get selectDateRange;
+
+  /// No description provided for @daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get daily;
+
+  /// No description provided for @weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @noReportFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No report found'**
+  String get noReportFound;
+
+  /// No description provided for @totalOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Orders'**
+  String get totalOrders;
+
+  /// No description provided for @totalRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get totalRevenue;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @cancelledOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelledOrders;
+
+  /// No description provided for @dailySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Sales'**
+  String get dailySales;
+
+  /// No description provided for @orderCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} orders'**
+  String orderCount(Object count);
 }
 
 class _AppLocalizationsDelegate

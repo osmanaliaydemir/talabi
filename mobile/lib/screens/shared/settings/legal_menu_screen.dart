@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/shared/settings/legal_content_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/widgets/connectivity_banner.dart';
-import 'package:mobile/widgets/persistent_bottom_nav_bar.dart';
+import 'package:mobile/widgets/common/connectivity_banner.dart';
+import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
 
 class LegalMenuScreen extends StatelessWidget {
   const LegalMenuScreen({Key? key}) : super(key: key);
@@ -98,7 +98,7 @@ class LegalMenuScreen extends StatelessWidget {
                     );
                   },
                 ),
-                Positioned(
+                const Positioned(
                   top: 0,
                   left: 0,
                   right: 0,

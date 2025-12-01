@@ -7,6 +7,8 @@ import 'package:mobile/screens/shared/profile/address_picker_screen.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
+
 class VendorEditProfileScreen extends StatefulWidget {
   const VendorEditProfileScreen({super.key});
 
@@ -82,9 +84,15 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Profil yüklenemedi: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.profileLoadFailed(e.toString()) ??
+                  'Profil yüklenemedi: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -116,9 +124,12 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Logo güncellendi')));
+          final localizations = AppLocalizations.of(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations?.logoUpdated ?? 'Logo güncellendi'),
+            ),
+          );
         }
       }
     } catch (e) {
@@ -126,9 +137,15 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         _isUploading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Logo yüklenemedi: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.logoUploadFailed(e.toString()) ??
+                  'Logo yüklenemedi: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -158,9 +175,14 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
       await _apiService.updateVendorProfile(data);
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Profil güncellendi')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.profileUpdated ?? 'Profil güncellendi',
+            ),
+          ),
+        );
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -168,19 +190,26 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         _isSaving = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.errorWithMessage(e.toString()) ?? 'Hata: $e',
+            ),
+          ),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: VendorHeader(
-        title: 'Profili Düzenle',
+        title: localizations?.editProfile ?? 'Profili Düzenle',
         leadingIcon: Icons.edit_outlined,
         showBackButton: true,
         onBack: () => Navigator.of(context).pop(),
@@ -252,14 +281,16 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   // Name
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'İşletme Adı *',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.store),
+                    decoration: InputDecoration(
+                      labelText:
+                          '${localizations?.businessName ?? 'İşletme Adı'} *',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.store),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'İşletme adı gerekli';
+                        return localizations?.businessNameRequired ??
+                            'İşletme adı gerekli';
                       }
                       return null;
                     },
@@ -339,9 +370,11 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                       ),
                       label: Text(
                         _isLocationSelected
-                            ? 'Konum Seçildi (Değiştir)'
-                            : 'Haritadan Konum Seç *',
-                        style: TextStyle(
+                            ? (localizations?.locationSelectedChange ??
+                                  'Konum Seçildi (Değiştir)')
+                            : (localizations?.selectLocationFromMapRequired ??
+                                  'Haritadan Konum Seç *'),
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -352,7 +385,8 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0, left: 12.0),
                       child: Text(
-                        'Haritadan konum seçimi zorunludur',
+                        localizations?.locationSelectionRequired ??
+                            'Haritadan konum seçimi zorunludur',
                         style: TextStyle(
                           color: Colors.red.shade700,
                           fontSize: 12,
@@ -365,19 +399,23 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   TextFormField(
                     controller: _addressController,
                     decoration: InputDecoration(
-                      labelText: 'Açık Adres *',
+                      labelText:
+                          '${localizations?.fullAddress ?? 'Açık Adres'} *',
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.location_on),
                       helperText:
+                          localizations?.addressAutoFillHint ??
                           'Haritadan seçilen adres otomatik doldurulur, manuel düzenleyebilirsiniz',
                     ),
                     maxLines: 3,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Açık adres gerekli';
+                        return localizations?.addressRequired ??
+                            'Açık adres gerekli';
                       }
                       if (!_isLocationSelected) {
-                        return 'Önce haritadan konum seçmelisiniz';
+                        return localizations?.selectLocationFirst ??
+                            'Önce haritadan konum seçmelisiniz';
                       }
                       return null;
                     },
@@ -387,10 +425,10 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   // City
                   TextFormField(
                     controller: _cityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Şehir',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.location_city),
+                    decoration: InputDecoration(
+                      labelText: localizations?.city ?? 'Şehir',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.location_city),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -398,10 +436,10 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   // Phone
                   TextFormField(
                     controller: _phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Telefon',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.phone),
+                    decoration: InputDecoration(
+                      labelText: localizations?.phoneNumber ?? 'Telefon',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.phone),
                     ),
                     keyboardType: TextInputType.phone,
                   ),
@@ -410,10 +448,10 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   // Description
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Açıklama',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.description),
+                    decoration: InputDecoration(
+                      labelText: localizations?.description ?? 'Açıklama',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.description),
                     ),
                     maxLines: 3,
                   ),
@@ -441,9 +479,9 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                               ),
                             ),
                           )
-                        : const Text(
-                            'Kaydet',
-                            style: TextStyle(
+                        : Text(
+                            localizations?.save ?? 'Kaydet',
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),

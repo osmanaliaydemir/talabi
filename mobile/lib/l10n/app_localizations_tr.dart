@@ -378,15 +378,15 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String orderPlacedMessage(Object orderId, Object total) {
-    return 'Sipariş numaranız: $orderId\\nToplam: $total';
+    return 'Sipariş numaranız: $orderId\nToplam: $total';
   }
 
   @override
   String get ok => 'Tamam';
 
   @override
-  String errorWithMessage(Object message) {
-    return 'Hata: $message';
+  String errorWithMessage(Object error) {
+    return 'Hata: $error';
   }
 
   @override
@@ -532,7 +532,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get failedToDeliverOrder => 'Sipariş teslim edilemedi';
 
   @override
-  String get failedToLoadProfile => 'Profil yüklenemedi';
+  String failedToLoadProfile(Object error) {
+    return 'Profil yüklenemedi: $error';
+  }
 
   @override
   String get failedToUpdateStatus => 'Durum güncellenemedi';
@@ -666,7 +668,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get notSelected => 'Seçilmedi';
 
   @override
-  String get profileLoadFailed => 'Profil yüklenemedi';
+  String profileLoadFailed(Object error) {
+    return 'Profil yüklenemedi: $error';
+  }
 
   @override
   String get settingsUpdateFailed => 'Ayarlar güncellenemedi';
@@ -762,7 +766,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deleteAddressConfirm =>
-      'Bu adresi silmek istediğinizden emin misin?';
+      'Bu adresi silmek istediğinizden emin misiniz?';
 
   @override
   String get delete => 'Sil';
@@ -998,12 +1002,12 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get resendCode => 'Tekrar Kod Gönder';
-
-  @override
   String codeExpiresIn(Object time) {
     return 'Kod $time sonra geçersiz olacak';
   }
+
+  @override
+  String get resendCode => 'Tekrar Kod Gönder';
 
   @override
   String settingsLoadError(Object error) {
@@ -1057,9 +1061,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noComment => 'Yorum yok';
 
   @override
-  String date(Object date) {
-    return 'Tarih: $date';
-  }
+  String get date => 'Tarih: null';
 
   @override
   String get approve => 'Onayla';
@@ -1161,4 +1163,329 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get onboardingDesc3 =>
       'Her gün özel teklifler ve rekabetçi fiyatların keyfini çıkarın';
+
+  @override
+  String get pending => 'Bekleyen';
+
+  @override
+  String get preparing => 'Hazırlanıyor';
+
+  @override
+  String get ready => 'Hazır';
+
+  @override
+  String get delivered => 'Teslim Edildi';
+
+  @override
+  String get cancelled => 'İptal Edildi';
+
+  @override
+  String get vendorOrders => 'Satıcı Siparişleri';
+
+  @override
+  String get noOrdersFound => 'Sipariş bulunamadı';
+
+  @override
+  String get order => 'Sipariş';
+
+  @override
+  String get customer => 'Müşteri';
+
+  @override
+  String get vendorDashboard => 'Satıcı Paneli';
+
+  @override
+  String summaryLoadError(Object error) {
+    return 'Özet yüklenemedi: $error';
+  }
+
+  @override
+  String welcomeVendor(Object name) {
+    return 'Hoş Geldiniz, $name';
+  }
+
+  @override
+  String get todayOrders => 'Bugünkü Siparişler';
+
+  @override
+  String get pendingOrders => 'Bekleyen Siparişler';
+
+  @override
+  String get todayRevenue => 'Bugünkü Gelir';
+
+  @override
+  String get weeklyRevenue => 'Haftalık Gelir';
+
+  @override
+  String get quickActions => 'Hızlı İşlemler';
+
+  @override
+  String get reports => 'Raporlar';
+
+  @override
+  String get reviews => 'Yorumlar';
+
+  @override
+  String get logoUpdated => 'Logo güncellendi';
+
+  @override
+  String logoUploadFailed(Object error) {
+    return 'Logo yüklenemedi: $error';
+  }
+
+  @override
+  String get locationSelectedChange => 'Konum Seçildi (Değiştir)';
+
+  @override
+  String get selectLocationFromMapRequired => 'Haritadan Konum Seç *';
+
+  @override
+  String get locationSelectionRequired => 'Haritadan konum seçimi zorunludur';
+
+  @override
+  String get addressAutoFillHint =>
+      'Haritadan seçilen adres otomatik doldurulur, manuel düzenleyebilirsiniz';
+
+  @override
+  String get selectLocationFirst => 'Önce haritadan konum seçmelisiniz';
+
+  @override
+  String get vendorLogin => 'Satıcı Girişi';
+
+  @override
+  String get welcomeBackVendor => 'Tekrar Hoş Geldiniz, Satıcı!';
+
+  @override
+  String get vendorLoginDescription =>
+      'Mağazanızı ve siparişlerinizi yönetmek için giriş yapın';
+
+  @override
+  String get areYouCustomer => 'Müşteri misiniz?';
+
+  @override
+  String get vendorNotificationsTitle => 'Bildirimler';
+
+  @override
+  String get vendorNotificationsEmptyMessage => 'Henüz bildiriminiz yok.';
+
+  @override
+  String get vendorNotificationsErrorMessage =>
+      'Bildirimler yüklenirken bir hata oluştu.';
+
+  @override
+  String get vendorProductsTitle => 'Ürünlerim';
+
+  @override
+  String get vendorProductsSearchHint => 'Ürün ara...';
+
+  @override
+  String vendorProductsLoadError(Object error) {
+    return 'Ürünler yüklenemedi: $error';
+  }
+
+  @override
+  String vendorProductsSetOutOfStock(Object productName) {
+    return '$productName stok dışı yapıldı';
+  }
+
+  @override
+  String vendorProductsSetInStock(Object productName) {
+    return '$productName stokta';
+  }
+
+  @override
+  String get vendorProductsDeleteTitle => 'Ürünü Sil';
+
+  @override
+  String vendorProductsDeleteConfirmation(Object productName) {
+    return '$productName ürününü silmek istediğinize emin misiniz?';
+  }
+
+  @override
+  String vendorProductsDeleteSuccess(Object productName) {
+    return '$productName silindi';
+  }
+
+  @override
+  String get vendorProductsEmpty => 'Ürün bulunamadı';
+
+  @override
+  String get vendorProductsAddFirst => 'İlk Ürününü Ekle';
+
+  @override
+  String get vendorProductsAddNew => 'Yeni Ürün';
+
+  @override
+  String get vendorProductFormEditTitle => 'Ürün Düzenle';
+
+  @override
+  String get vendorProductFormNewTitle => 'Yeni Ürün';
+
+  @override
+  String get vendorProductFormImageUploaded => 'Resim yüklendi';
+
+  @override
+  String vendorProductFormImageUploadError(Object error) {
+    return 'Resim yüklenemedi: $error';
+  }
+
+  @override
+  String get vendorProductFormSourceCamera => 'Kamera';
+
+  @override
+  String get vendorProductFormSourceGallery => 'Galeri';
+
+  @override
+  String get vendorProductFormCreateSuccess => 'Ürün oluşturuldu';
+
+  @override
+  String get vendorProductFormUpdateSuccess => 'Ürün güncellendi';
+
+  @override
+  String vendorProductFormError(Object error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get vendorProductFormNameLabel => 'Ürün Adı *';
+
+  @override
+  String get vendorProductFormNameRequired => 'Ürün adı gerekli';
+
+  @override
+  String get vendorProductFormDescriptionLabel => 'Açıklama';
+
+  @override
+  String get vendorProductFormCategoryLabel => 'Kategori';
+
+  @override
+  String get vendorProductFormPriceLabel => 'Fiyat *';
+
+  @override
+  String get vendorProductFormPriceRequired => 'Fiyat gerekli';
+
+  @override
+  String get vendorProductFormPriceInvalid => 'Geçerli bir fiyat girin';
+
+  @override
+  String get vendorProductFormStockLabel => 'Stok Miktarı';
+
+  @override
+  String get vendorProductFormInvalidNumber => 'Geçerli bir sayı girin';
+
+  @override
+  String get vendorProductFormPreparationTimeLabel =>
+      'Hazırlık Süresi (dakika)';
+
+  @override
+  String get vendorProductFormInStockLabel => 'Stokta';
+
+  @override
+  String get vendorProductFormInStockDescription =>
+      'Ürün müşterilere gösterilecek';
+
+  @override
+  String get vendorProductFormOutOfStockDescription =>
+      'Ürün stok dışı olarak işaretlenecek';
+
+  @override
+  String get updateButton => 'Güncelle';
+
+  @override
+  String get createButton => 'Oluştur';
+
+  @override
+  String get vendorProductFormAddImage => 'Resim Ekle';
+
+  @override
+  String get vendorProfileTitle => 'Satıcı Profilim';
+
+  @override
+  String get vendorFallbackSubtitle => 'Satıcı';
+
+  @override
+  String get businessInfo => 'İşletme Bilgileri';
+
+  @override
+  String get addressLabel => 'Adres';
+
+  @override
+  String get phoneLabel => 'Telefon';
+
+  @override
+  String get generalSettings => 'Genel Ayarlar';
+
+  @override
+  String get businessSettingsTitle => 'İşletme Ayarları';
+
+  @override
+  String get businessSettingsSubtitle =>
+      'Minimum sipariş, teslimat ücreti ve diğer ayarlar';
+
+  @override
+  String get languageNameTr => 'Türkçe';
+
+  @override
+  String get languageNameEn => 'English';
+
+  @override
+  String get languageNameAr => 'العربية';
+
+  @override
+  String get businessNameFallback => 'İşletme Adı';
+
+  @override
+  String get retry => 'Yeniden Dene';
+
+  @override
+  String get markAsRead => 'Okundu olarak işaretle';
+
+  @override
+  String get pendingReviews => 'Bekleyen Yorumlar';
+
+  @override
+  String get noPendingReviews => 'Bekleyen yorum yok';
+
+  @override
+  String reviewsLoadError(Object error) {
+    return 'Yorumlar yüklenemedi: $error';
+  }
+
+  @override
+  String get salesReports => 'Satış Raporları';
+
+  @override
+  String get selectDateRange => 'Tarih Aralığı Seç';
+
+  @override
+  String get daily => 'Günlük';
+
+  @override
+  String get weekly => 'Haftalık';
+
+  @override
+  String get monthly => 'Aylık';
+
+  @override
+  String get noReportFound => 'Rapor bulunamadı';
+
+  @override
+  String get totalOrders => 'Toplam Sipariş';
+
+  @override
+  String get totalRevenue => 'Toplam Gelir';
+
+  @override
+  String get completed => 'Tamamlanan';
+
+  @override
+  String get cancelledOrders => 'İptal Edilen';
+
+  @override
+  String get dailySales => 'Günlük Satışlar';
+
+  @override
+  String orderCount(Object count) {
+    return '$count sipariş';
+  }
 }

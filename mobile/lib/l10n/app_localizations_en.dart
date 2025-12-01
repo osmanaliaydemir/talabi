@@ -375,15 +375,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String orderPlacedMessage(Object orderId, Object total) {
-    return 'Your order number: $orderId\\nTotal: $total';
+    return 'Your order number: $orderId\nTotal: $total';
   }
 
   @override
   String get ok => 'OK';
 
   @override
-  String errorWithMessage(Object message) {
-    return 'Error: $message';
+  String errorWithMessage(Object error) {
+    return 'Error: $error';
   }
 
   @override
@@ -530,7 +530,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToDeliverOrder => 'Failed to deliver order';
 
   @override
-  String get failedToLoadProfile => 'Failed to load courier profile';
+  String failedToLoadProfile(Object error) {
+    return 'Failed to load courier profile: $error';
+  }
 
   @override
   String get failedToUpdateStatus => 'Failed to update status';
@@ -664,7 +666,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notSelected => 'Not selected';
 
   @override
-  String get profileLoadFailed => 'Failed to load profile';
+  String profileLoadFailed(Object error) {
+    return 'Failed to load profile: $error';
+  }
 
   @override
   String get settingsUpdateFailed => 'Failed to update settings';
@@ -998,12 +1002,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get resendCode => 'Resend Code';
-
-  @override
   String codeExpiresIn(Object time) {
     return 'Code will expire in $time';
   }
+
+  @override
+  String get resendCode => 'Resend Code';
 
   @override
   String settingsLoadError(Object error) {
@@ -1057,9 +1061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noComment => 'No comment';
 
   @override
-  String date(Object date) {
-    return 'Date: $date';
-  }
+  String get date => 'Date';
 
   @override
   String get approve => 'Approve';
@@ -1160,4 +1162,331 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingDesc3 =>
       'Enjoy exclusive deals and competitive prices every day';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get preparing => 'Preparing';
+
+  @override
+  String get ready => 'Ready';
+
+  @override
+  String get delivered => 'Delivered';
+
+  @override
+  String get cancelled => 'Cancelled';
+
+  @override
+  String get vendorOrders => 'Vendor Orders';
+
+  @override
+  String get noOrdersFound => 'No orders found';
+
+  @override
+  String get order => 'Order';
+
+  @override
+  String get customer => 'Customer';
+
+  @override
+  String get vendorDashboard => 'Vendor Dashboard';
+
+  @override
+  String summaryLoadError(Object error) {
+    return 'Failed to load summary: $error';
+  }
+
+  @override
+  String welcomeVendor(Object name) {
+    return 'Welcome, $name';
+  }
+
+  @override
+  String get todayOrders => 'Today\'s Orders';
+
+  @override
+  String get pendingOrders => 'Pending Orders';
+
+  @override
+  String get todayRevenue => 'Today\'s Revenue';
+
+  @override
+  String get weeklyRevenue => 'Weekly Revenue';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get reports => 'Reports';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get logoUpdated => 'Logo updated';
+
+  @override
+  String logoUploadFailed(Object error) {
+    return 'Logo upload failed: $error';
+  }
+
+  @override
+  String get locationSelectedChange => 'Location Selected (Change)';
+
+  @override
+  String get selectLocationFromMapRequired => 'Select Location from Map *';
+
+  @override
+  String get locationSelectionRequired =>
+      'Location selection from map is required';
+
+  @override
+  String get addressAutoFillHint =>
+      'Address selected from map is auto-filled, you can edit manually';
+
+  @override
+  String get selectLocationFirst => 'You must select a location from map first';
+
+  @override
+  String get vendorLogin => 'Vendor Login';
+
+  @override
+  String get welcomeBackVendor => 'Welcome Back, Vendor!';
+
+  @override
+  String get vendorLoginDescription =>
+      'Sign in to manage your store and orders';
+
+  @override
+  String get areYouCustomer => 'Are you a customer?';
+
+  @override
+  String get vendorNotificationsTitle => 'Notifications';
+
+  @override
+  String get vendorNotificationsEmptyMessage =>
+      'You have no notifications yet.';
+
+  @override
+  String get vendorNotificationsErrorMessage =>
+      'An error occurred while loading notifications.';
+
+  @override
+  String get vendorProductsTitle => 'My Products';
+
+  @override
+  String get vendorProductsSearchHint => 'Search products...';
+
+  @override
+  String vendorProductsLoadError(Object error) {
+    return 'Failed to load products: $error';
+  }
+
+  @override
+  String vendorProductsSetOutOfStock(Object productName) {
+    return '$productName set to out of stock';
+  }
+
+  @override
+  String vendorProductsSetInStock(Object productName) {
+    return '$productName is in stock';
+  }
+
+  @override
+  String get vendorProductsDeleteTitle => 'Delete Product';
+
+  @override
+  String vendorProductsDeleteConfirmation(Object productName) {
+    return 'Are you sure you want to delete $productName?';
+  }
+
+  @override
+  String vendorProductsDeleteSuccess(Object productName) {
+    return '$productName has been deleted';
+  }
+
+  @override
+  String get vendorProductsEmpty => 'No products found';
+
+  @override
+  String get vendorProductsAddFirst => 'Add Your First Product';
+
+  @override
+  String get vendorProductsAddNew => 'New Product';
+
+  @override
+  String get vendorProductFormEditTitle => 'Edit Product';
+
+  @override
+  String get vendorProductFormNewTitle => 'New Product';
+
+  @override
+  String get vendorProductFormImageUploaded => 'Image uploaded';
+
+  @override
+  String vendorProductFormImageUploadError(Object error) {
+    return 'Failed to upload image: $error';
+  }
+
+  @override
+  String get vendorProductFormSourceCamera => 'Camera';
+
+  @override
+  String get vendorProductFormSourceGallery => 'Gallery';
+
+  @override
+  String get vendorProductFormCreateSuccess => 'Product created';
+
+  @override
+  String get vendorProductFormUpdateSuccess => 'Product updated';
+
+  @override
+  String vendorProductFormError(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get vendorProductFormNameLabel => 'Product Name *';
+
+  @override
+  String get vendorProductFormNameRequired => 'Product name is required';
+
+  @override
+  String get vendorProductFormDescriptionLabel => 'Description';
+
+  @override
+  String get vendorProductFormCategoryLabel => 'Category';
+
+  @override
+  String get vendorProductFormPriceLabel => 'Price *';
+
+  @override
+  String get vendorProductFormPriceRequired => 'Price is required';
+
+  @override
+  String get vendorProductFormPriceInvalid => 'Please enter a valid price';
+
+  @override
+  String get vendorProductFormStockLabel => 'Stock Quantity';
+
+  @override
+  String get vendorProductFormInvalidNumber => 'Please enter a valid number';
+
+  @override
+  String get vendorProductFormPreparationTimeLabel =>
+      'Preparation Time (minutes)';
+
+  @override
+  String get vendorProductFormInStockLabel => 'In Stock';
+
+  @override
+  String get vendorProductFormInStockDescription =>
+      'The product will be visible to customers';
+
+  @override
+  String get vendorProductFormOutOfStockDescription =>
+      'The product will be marked as out of stock';
+
+  @override
+  String get updateButton => 'Update';
+
+  @override
+  String get createButton => 'Create';
+
+  @override
+  String get vendorProductFormAddImage => 'Add Image';
+
+  @override
+  String get vendorProfileTitle => 'My Vendor Profile';
+
+  @override
+  String get vendorFallbackSubtitle => 'Vendor';
+
+  @override
+  String get businessInfo => 'Business Information';
+
+  @override
+  String get addressLabel => 'Address';
+
+  @override
+  String get phoneLabel => 'Phone';
+
+  @override
+  String get generalSettings => 'General Settings';
+
+  @override
+  String get businessSettingsTitle => 'Business Settings';
+
+  @override
+  String get businessSettingsSubtitle =>
+      'Minimum order, delivery fee, and other settings';
+
+  @override
+  String get languageNameTr => 'Turkish';
+
+  @override
+  String get languageNameEn => 'English';
+
+  @override
+  String get languageNameAr => 'Arabic';
+
+  @override
+  String get businessNameFallback => 'Business Name';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get markAsRead => 'Mark as Read';
+
+  @override
+  String get pendingReviews => 'Pending Reviews';
+
+  @override
+  String get noPendingReviews => 'No pending reviews';
+
+  @override
+  String reviewsLoadError(Object error) {
+    return 'Failed to load reviews: $error';
+  }
+
+  @override
+  String get salesReports => 'Sales Reports';
+
+  @override
+  String get selectDateRange => 'Select Date Range';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get noReportFound => 'No report found';
+
+  @override
+  String get totalOrders => 'Total Orders';
+
+  @override
+  String get totalRevenue => 'Total Revenue';
+
+  @override
+  String get completed => 'Completed';
+
+  @override
+  String get cancelledOrders => 'Cancelled';
+
+  @override
+  String get dailySales => 'Daily Sales';
+
+  @override
+  String orderCount(Object count) {
+    return '$count orders';
+  }
 }

@@ -6,18 +6,18 @@ import 'package:mobile/models/vendor.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
 import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/customer/customer_header.dart';
 
-class VendorListScreen extends StatefulWidget {
-  const VendorListScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<VendorListScreen> createState() => _VendorListScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _VendorListScreenState extends State<VendorListScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Vendor>> _vendorsFuture;
   late Future<List<Product>> _popularProductsFuture;
@@ -176,7 +176,13 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         children: [
                           Expanded(
                             child: Container(
-                              decoration: AppTheme.inputBoxDecoration(),
+                              decoration: AppTheme.inputBoxDecoration()
+                                  .copyWith(
+                                    border: Border.all(
+                                      color: AppTheme.borderColor,
+                                      width: 1.0,
+                                    ),
+                                  ),
                               child: TextField(
                                 decoration: InputDecoration(
                                   hintText: localizations.search,

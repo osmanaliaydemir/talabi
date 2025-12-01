@@ -3,7 +3,13 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/order_detail.dart';
 import 'package:mobile/screens/customer/delivery_tracking_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/models/product.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:mobile/providers/cart_provider.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
@@ -125,18 +131,77 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
+  Future<void> _reorder() async {
+    setState(() => _isLoading = true);
+    try {
+      final cart = Provider.of<CartProvider>(context, listen: false);
+
+      for (var item in _orderDetail!.items) {
+        final product = Product(
+          id: item.productId,
+          vendorId: _orderDetail!.vendorId,
+          vendorName: _orderDetail!.vendorName,
+          name: item.productName,
+          price: item.unitPrice,
+          imageUrl: item.productImageUrl,
+          description: '',
+          isAvailable: true,
+        );
+
+        // Add item quantity times (since addItem adds 1)
+        for (int i = 0; i < item.quantity; i++) {
+          await cart.addItem(product, context);
+        }
+      }
+
+      if (mounted) {
+        ToastMessage.show(
+          context,
+          message: 'Ürünler sepete eklendi, sepete yönlendiriliyorsunuz...',
+          isSuccess: true,
+        );
+
+        // Navigate to Cart
+        final bottomNav = Provider.of<BottomNavProvider>(
+          context,
+          listen: false,
+        );
+        bottomNav.setIndex(2); // Index 2 is CartScreen
+
+        // Pop back to MainNavigationScreen to show the updated tab
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastMessage.show(
+          context,
+          message: 'Yeniden sipariş oluşturulamadı: $e',
+          isSuccess: false,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   String _getStatusText(String status) {
+    final localizations = AppLocalizations.of(context)!;
     switch (status) {
       case 'Pending':
-        return 'Beklemede';
+        return localizations.pending;
       case 'Preparing':
-        return 'Hazırlanıyor';
+        return localizations.preparing;
       case 'Ready':
-        return 'Hazır';
+        return localizations.ready;
+      case 'OnTheWay':
+      case 'OnWay':
+        return 'Yolda'; // localizations.onWay;
       case 'Delivered':
-        return 'Teslim Edildi';
+        return localizations.delivered;
       case 'Cancelled':
-        return 'İptal Edildi';
+        return localizations.cancelled;
       default:
         return status;
     }
@@ -145,15 +210,28 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('Sipariş #${widget.orderId}'),
+        backgroundColor: AppTheme.surfaceColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Sipariş #${widget.orderId}',
+          style: AppTheme.poppins(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           if (_orderDetail != null &&
               (_orderDetail!.status == 'Preparing' ||
                   _orderDetail!.status == 'OnTheWay' ||
                   _orderDetail!.status == 'Delivered'))
             IconButton(
-              icon: const Icon(Icons.location_on),
+              icon: Icon(Icons.map, color: AppTheme.primaryOrange),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -172,169 +250,402 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: CircularProgressIndicator(color: AppTheme.primaryOrange),
             )
           : _orderDetail == null
-          ? const Center(child: Text('Sipariş bulunamadı'))
-          : RefreshIndicator(
-              onRefresh: _loadOrderDetail,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Status Badge
-                    Center(
-                      child: Chip(
-                        label: Text(
-                          _getStatusText(_orderDetail!.status),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+          ? Center(
+              child: Text(
+                'Sipariş bulunamadı',
+                style: AppTheme.poppins(color: AppTheme.textSecondary),
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _loadOrderDetail,
+                    color: AppTheme.primaryOrange,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Vendor Card
+                          Container(
+                            padding: EdgeInsets.all(AppTheme.spacingMedium),
+                            decoration: AppTheme.cardDecoration(),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryOrange.withOpacity(
+                                      0.1,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.store,
+                                    color: AppTheme.primaryOrange,
+                                    size: 24,
+                                  ),
+                                ),
+                                SizedBox(width: AppTheme.spacingMedium),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _orderDetail!.vendorName,
+                                        style: AppTheme.poppins(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                      Text(
+                                        DateFormat(
+                                          'dd MMM yyyy, HH:mm',
+                                        ).format(_orderDetail!.createdAt),
+                                        style: AppTheme.poppins(
+                                          fontSize: 14,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getStatusColor(
+                                      _orderDetail!.status,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: _getStatusColor(
+                                        _orderDetail!.status,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _getStatusText(_orderDetail!.status),
+                                    style: AppTheme.poppins(
+                                      color: _getStatusColor(
+                                        _orderDetail!.status,
+                                      ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        backgroundColor: _getStatusColor(_orderDetail!.status),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                          SizedBox(height: AppTheme.spacingMedium),
 
-                    // Order Info
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                          // Products List
+                          Text(
+                            'Sipariş Detayı',
+                            style: AppTheme.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: AppTheme.spacingSmall),
+                          Container(
+                            decoration: AppTheme.cardDecoration(),
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _orderDetail!.items.length,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                color: AppTheme.borderColor,
+                              ),
+                              itemBuilder: (context, index) {
+                                final item = _orderDetail!.items[index];
+                                return Padding(
+                                  padding: EdgeInsets.all(
+                                    AppTheme.spacingMedium,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusSmall,
+                                        ),
+                                        child: item.productImageUrl != null
+                                            ? Image.network(
+                                                item.productImageUrl!,
+                                                width: 50,
+                                                height: 50,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Container(
+                                                width: 50,
+                                                height: 50,
+                                                color: Colors.grey[200],
+                                                child: const Icon(
+                                                  Icons.image,
+                                                  size: 30,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                      ),
+                                      SizedBox(width: AppTheme.spacingMedium),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.productName,
+                                              style: AppTheme.poppins(
+                                                fontWeight: FontWeight.w600,
+                                                color: AppTheme.textPrimary,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${item.quantity} adet',
+                                              style: AppTheme.poppins(
+                                                fontSize: 12,
+                                                color: AppTheme.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        '₺${item.totalPrice.toStringAsFixed(2)}',
+                                        style: AppTheme.poppins(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: AppTheme.spacingMedium),
+
+                          // Payment Summary
+                          Container(
+                            padding: EdgeInsets.all(AppTheme.spacingMedium),
+                            decoration: AppTheme.cardDecoration(),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Toplam Tutar',
+                                      style: AppTheme.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      '₺${_orderDetail!.totalAmount.toStringAsFixed(2)}',
+                                      style: AppTheme.poppins(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.primaryOrange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: AppTheme.spacingMedium),
+
+                          // Status History Timeline
+                          if (_orderDetail!.statusHistory.isNotEmpty) ...[
                             Text(
-                              _orderDetail!.vendorName,
-                              style: const TextStyle(
-                                fontSize: 18,
+                              'Sipariş Geçmişi',
+                              style: AppTheme.poppins(
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tarih: ${DateFormat('dd.MM.yyyy HH:mm').format(_orderDetail!.createdAt)}',
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Toplam: ₺${_orderDetail!.totalAmount.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                            SizedBox(height: AppTheme.spacingSmall),
+                            Container(
+                              padding: EdgeInsets.all(AppTheme.spacingMedium),
+                              decoration: AppTheme.cardDecoration(),
+                              child: Column(
+                                children: _orderDetail!.statusHistory
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                      final index = entry.key;
+                                      final history = entry.value;
+                                      final isLast =
+                                          index ==
+                                          _orderDetail!.statusHistory.length -
+                                              1;
+                                      return Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Column(
+                                            children: [
+                                              Container(
+                                                width: 12,
+                                                height: 12,
+                                                decoration: BoxDecoration(
+                                                  color: _getStatusColor(
+                                                    history.status,
+                                                  ),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              if (!isLast)
+                                                Container(
+                                                  width: 2,
+                                                  height: 40,
+                                                  color: Colors.grey[300],
+                                                ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            width: AppTheme.spacingMedium,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _getStatusText(
+                                                    history.status,
+                                                  ),
+                                                  style: AppTheme.poppins(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppTheme.textPrimary,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  DateFormat(
+                                                    'dd.MM.yyyy HH:mm',
+                                                  ).format(history.createdAt),
+                                                  style: AppTheme.poppins(
+                                                    fontSize: 12,
+                                                    color:
+                                                        AppTheme.textSecondary,
+                                                  ),
+                                                ),
+                                                if (history.note != null)
+                                                  Text(
+                                                    history.note!,
+                                                    style: AppTheme.poppins(
+                                                      fontSize: 12,
+                                                      color: AppTheme
+                                                          .textSecondary,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                    ),
+                                                  ),
+                                                if (!isLast)
+                                                  SizedBox(
+                                                    height:
+                                                        AppTheme.spacingMedium,
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ),
                           ],
-                        ),
+                          SizedBox(height: 100), // Bottom padding for button
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Items
-                    const Text(
-                      'Ürünler',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ..._orderDetail!.items.map(
-                      (item) => Card(
-                        child: ListTile(
-                          leading: item.productImageUrl != null
-                              ? Image.network(
-                                  item.productImageUrl!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                )
-                              : const Icon(Icons.image, size: 50),
-                          title: Text(item.productName),
-                          subtitle: Text(
-                            '${item.quantity} x ₺${item.unitPrice.toStringAsFixed(2)}',
-                          ),
-                          trailing: Text(
-                            '₺${item.totalPrice.toStringAsFixed(2)}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Status History
-                    const Text(
-                      'Durum Geçmişi',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ..._orderDetail!.statusHistory.map(
-                      (history) => Card(
-                        child: ListTile(
-                          leading: Icon(
-                            Icons.circle,
-                            color: _getStatusColor(history.status),
-                            size: 12,
-                          ),
-                          title: Text(_getStatusText(history.status)),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                DateFormat(
-                                  'dd.MM.yyyy HH:mm',
-                                ).format(history.createdAt),
-                              ),
-                              if (history.note != null) Text(history.note!),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Cancel Button
-                    if (_orderDetail!.status == 'Pending' ||
-                        _orderDetail!.status == 'Preparing')
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _cancelOrder,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.all(16),
-                          ),
-                          child: const Text('Siparişi İptal Et'),
-                        ),
-                      ),
-
-                    // Cancelled Info
-                    if (_orderDetail!.status == 'Cancelled' &&
-                        _orderDetail!.cancelReason != null)
-                      Card(
-                        color: Colors.red.shade50,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'İptal Nedeni:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(_orderDetail!.cancelReason!),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
+                // Bottom Action Bar
+                Container(
+                  padding: EdgeInsets.all(AppTheme.spacingMedium),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_orderDetail!.status == 'Pending' ||
+                            _orderDetail!.status == 'Preparing')
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _cancelOrder,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.error,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Siparişi İptal Et',
+                                style: AppTheme.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (_orderDetail!.status == 'Delivered')
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _reorder,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryOrange,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Yeniden Sipariş Ver',
+                                style: AppTheme.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }

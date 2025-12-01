@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/customer/product_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
-/// Reusable product card widget for displaying products in a grid/list format.
-///
-/// Features:
-/// - Product image with rating and favorite badges
-/// - Product name and metadata
-/// - Price display
-/// - Add to cart / quantity controls
-/// - Favorite toggle functionality
-/// - Navigation to product detail screen
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final Product product;
   final double? width;
   final bool isFavorite;
   final VoidCallback? onFavoriteTap;
   final VoidCallback? onTap;
+  final VoidCallback? onToggleAvailability;
+  final VoidCallback? onDelete;
   final bool showRating;
   final String? rating;
   final String? ratingCount;
@@ -33,35 +27,46 @@ class ProductCard extends StatelessWidget {
     this.isFavorite = false,
     this.onFavoriteTap,
     this.onTap,
+    this.onToggleAvailability,
+    this.onDelete,
     this.showRating = true,
     this.rating,
     this.ratingCount,
   });
 
   @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  bool _isAddingToCart = false;
+
+  @override
   Widget build(BuildContext context) {
     final localizationProvider = Provider.of<LocalizationProvider>(context);
+    final localizations = AppLocalizations.of(context)!;
     final cart = Provider.of<CartProvider>(context, listen: true);
-    final cartItem = cart.items[product.id];
+    final cartItem = cart.items[widget.product.id];
     final quantity = cartItem?.quantity ?? 0;
+    final bool isVendorCard =
+        widget.onToggleAvailability != null || widget.onDelete != null;
 
     return GestureDetector(
-      onTap:
-          onTap ??
+      onTap: widget.onTap ??
           () {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => ProductDetailScreen(
-                  productId: product.id,
-                  product: product,
+                  productId: widget.product.id,
+                  product: widget.product,
                 ),
               ),
             );
           },
       child: Container(
-        width: width,
-        margin: width != null
+        width: widget.width,
+        margin: widget.width != null
             ? const EdgeInsets.symmetric(horizontal: 8)
             : EdgeInsets.zero,
         child: Card(
@@ -80,9 +85,9 @@ class ProductCard extends StatelessWidget {
                 width: double.infinity,
                 child: Stack(
                   children: [
-                    product.imageUrl != null
+                    widget.product.imageUrl != null
                         ? Image.network(
-                            product.imageUrl!,
+                            widget.product.imageUrl!,
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
@@ -98,7 +103,7 @@ class ProductCard extends StatelessWidget {
                             child: const Icon(Icons.image, size: 50),
                           ),
                     // Rating Badge
-                    if (showRating)
+                    if (widget.showRating)
                       Positioned(
                         top: 8,
                         left: 8,
@@ -121,16 +126,16 @@ class ProductCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                rating ?? '4.7',
+                                widget.rating ?? '4.7',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (ratingCount != null) ...[
+                              if (widget.ratingCount != null) ...[
                                 const SizedBox(width: 2),
                                 Text(
-                                  '($ratingCount)',
+                                  '(${widget.ratingCount})',
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: Colors.grey[600],
@@ -142,15 +147,15 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     // Favorite Icon
-                    if (onFavoriteTap != null)
+                    if (widget.onFavoriteTap != null)
                       Positioned(
                         top: 8,
                         right: 8,
                         child: GestureDetector(
                           onTap: () {
                             // Stop propagation to prevent card tap
-                            if (onFavoriteTap != null) {
-                              onFavoriteTap!();
+                            if (widget.onFavoriteTap != null) {
+                              widget.onFavoriteTap!();
                             }
                           },
                           child: Container(
@@ -160,13 +165,46 @@ class ProductCard extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isFavorite
+                              widget.isFavorite
                                   ? Icons.favorite
                                   : Icons.favorite_border,
                               size: 20,
                               color: Colors.red,
                             ),
                           ),
+                        ),
+                      ),
+                    // Vendor Menu
+                    if (isVendorCard)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'toggle') {
+                              widget.onToggleAvailability?.call();
+                            } else if (value == 'delete') {
+                              widget.onDelete?.call();
+                            }
+                          },
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              value: 'toggle',
+                              child: Text(
+                                widget.product.isAvailable
+                                    ? localizations.outOfStock
+                                    : localizations.inStock,
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'delete',
+                              child: Text(
+                                localizations.delete,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -181,7 +219,7 @@ class ProductCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        product.name,
+                        widget.product.name,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -190,12 +228,13 @@ class ProductCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        '25 dk • Kolay • ${product.vendorName ?? "Talabi"}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      if (!isVendorCard)
+                        Text(
+                          '25 dk • Kolay • ${widget.product.vendorName ?? "Talabi"}',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -204,7 +243,7 @@ class ProductCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               CurrencyFormatter.format(
-                                product.price,
+                                widget.product.price,
                                 localizationProvider.currency,
                               ),
                               style: TextStyle(
@@ -217,146 +256,160 @@ class ProductCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          quantity > 0
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Minus button
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: IconButton(
-                                          icon: const Icon(
-                                            Icons.remove,
-                                            color: Colors.grey,
-                                            size: 14,
-                                          ),
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                          onPressed: () async {
-                                            try {
-                                              await cart.decreaseQuantity(
-                                                product.id,
-                                              );
-                                              if (context.mounted) {
-                                                ToastMessage.show(
-                                                  context,
-                                                  message:
-                                                      '${product.name} miktarı azaltıldı',
-                                                  isSuccess: true,
-                                                );
-                                              }
-                                            } catch (e) {
-                                              if (context.mounted) {
-                                                ToastMessage.show(
-                                                  context,
-                                                  message: 'Hata: $e',
-                                                  isSuccess: false,
-                                                );
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      // Quantity display
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                        ),
-                                        child: Text(
-                                          '$quantity',
-                                          style: TextStyle(
-                                            color: Colors.grey[800],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                      // Plus button
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.orange,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: IconButton(
-                                          icon: const Icon(
-                                            Icons.add,
-                                            color: Colors.white,
-                                            size: 14,
-                                          ),
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                          onPressed: () async {
-                                            try {
-                                              await cart.increaseQuantity(
-                                                product.id,
-                                              );
-                                              if (context.mounted) {
-                                                ToastMessage.show(
-                                                  context,
-                                                  message:
-                                                      '${product.name} miktarı artırıldı',
-                                                  isSuccess: true,
-                                                );
-                                              }
-                                            } catch (e) {
-                                              if (context.mounted) {
-                                                ToastMessage.show(
-                                                  context,
-                                                  message: 'Hata: $e',
-                                                  isSuccess: false,
-                                                );
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  width: 35,
-                                  height: 35,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.orange,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.add_shopping_cart,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    onPressed: () async {
-                                      try {
-                                        await cart.addItem(product, context);
-                                        if (context.mounted) {
-                                          ToastMessage.show(
-                                            context,
-                                            message:
-                                                '${product.name} sepete eklendi',
-                                            isSuccess: true,
-                                          );
-                                        }
-                                      } catch (e) {
-                                        // Error is handled by CartProvider (address popup, etc.)
-                                      }
-                                    },
-                                  ),
+                          if (!isVendorCard) ...[
+                            if (quantity > 0)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Minus button
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.remove,
+                                          color: Colors.grey,
+                                          size: 14,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        onPressed: () async {
+                                          try {
+                                            await cart.decreaseQuantity(
+                                              widget.product.id,
+                                            );
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ToastMessage.show(
+                                                context,
+                                                message: localizations
+                                                    .errorWithMessage(
+                                                  e.toString(),
+                                                ),
+                                                isSuccess: false,
+                                              );
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    // Quantity display
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      child: Text(
+                                        '$quantity',
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    // Plus button
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.orange,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.add,
+                                          color: Colors.white,
+                                          size: 14,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        onPressed: () async {
+                                          try {
+                                            await cart.increaseQuantity(
+                                              widget.product.id,
+                                            );
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ToastMessage.show(
+                                                context,
+                                                message: localizations
+                                                    .errorWithMessage(
+                                                  e.toString(),
+                                                ),
+                                                isSuccess: false,
+                                              );
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 35,
+                                height: 35,
+                                decoration: const BoxDecoration(
+                                  color: Colors.orange,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: _isAddingToCart
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : IconButton(
+                                        icon: const Icon(
+                                          Icons.add_shopping_cart,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        onPressed: () async {
+                                          if (_isAddingToCart) return;
+
+                                          setState(() {
+                                            _isAddingToCart = true;
+                                          });
+
+                                          try {
+                                            await cart.addItem(
+                                                widget.product, context);
+                                            if (mounted) {
+                                              ToastMessage.show(
+                                                context,
+                                                message:
+                                                    '${widget.product.name} ${localizations.addToCart}',
+                                                isSuccess: true,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            // Error is handled by CartProvider (address popup, etc.)
+                                          } finally {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isAddingToCart = false;
+                                              });
+                                            }
+                                          }
+                                        },
+                                      ),
+                              ),
+                          ]
                         ],
                       ),
                     ],

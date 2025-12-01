@@ -83,56 +83,204 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       ],
                     ),
                   )
-                : ListView.builder(
+                : ListView.separated(
+                    padding: EdgeInsets.all(AppTheme.spacingMedium),
                     itemCount: _orders.length,
+                    separatorBuilder: (context, index) =>
+                        SizedBox(height: AppTheme.spacingMedium),
                     itemBuilder: (context, index) {
                       final order = _orders[index];
-                      final date = DateTime.parse(order['createdAt']);
-                      return Card(
-                        margin: const EdgeInsets.all(8),
-                        child: ListTile(
-                          leading: const Icon(Icons.shopping_bag, size: 40),
-                          title: Text(order['vendorName']),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Sipariş #${order['id']}'),
-                              Text(DateFormat('dd.MM.yyyy HH:mm').format(date)),
-                              Text(
-                                'Durum: ${order['status']}',
-                                style: TextStyle(
-                                  color: order['status'] == 'Pending'
-                                      ? AppTheme.primaryOrange
-                                      : Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: Text(
-                            '₺${(order['totalAmount'] as num).toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    OrderDetailScreen(orderId: order['id']),
-                              ),
-                            );
-                          },
-                        ),
-                      );
+                      return _buildOrderCard(context, order);
                     },
                   ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildOrderCard(BuildContext context, dynamic order) {
+    final date = DateTime.parse(order['createdAt']);
+    final status = order['status'] ?? 'Unknown';
+    final statusColor = _getStatusColor(status);
+
+    return Container(
+      decoration: AppTheme.cardDecoration(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OrderDetailScreen(orderId: order['id']),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          child: Padding(
+            padding: EdgeInsets.all(AppTheme.spacingMedium),
+            child: Column(
+              children: [
+                // Header: Vendor Info & Status
+                Row(
+                  children: [
+                    // Vendor Icon
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryOrange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.store_rounded,
+                        color: AppTheme.primaryOrange,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Vendor Name & Date
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            order['vendorName'] ?? 'Unknown Vendor',
+                            style: AppTheme.poppins(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat('dd MMM yyyy, HH:mm').format(date),
+                            style: AppTheme.poppins(
+                              color: AppTheme.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Status Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusSmall,
+                        ),
+                        border: Border.all(color: statusColor.withOpacity(0.2)),
+                      ),
+                      child: Text(
+                        _getStatusText(context, status),
+                        style: AppTheme.poppins(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1, color: AppTheme.borderColor),
+                ),
+                // Footer: Order ID & Total
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          size: 16,
+                          color: AppTheme.textSecondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '#${order['id']}',
+                          style: AppTheme.poppins(
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '₺${(order['totalAmount'] as num).toStringAsFixed(2)}',
+                          style: AppTheme.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppTheme.primaryOrange,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'preparing':
+        return Colors.blue;
+      case 'onway':
+      case 'on_way':
+        return Colors.purple;
+      case 'delivered':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getStatusText(BuildContext context, String status) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return localizations.pending;
+      case 'preparing':
+        return localizations.preparing;
+      case 'ready':
+        return localizations.ready;
+      case 'onway':
+      case 'on_way':
+      case 'ontheway':
+        return 'Yolda'; // localizations.onWay; // Key added but not generated yet
+      case 'delivered':
+        return localizations.delivered;
+      case 'cancelled':
+        return localizations.cancelled;
+      default:
+        return status;
+    }
   }
 
   Widget _buildHeader(

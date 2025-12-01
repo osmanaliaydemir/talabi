@@ -276,6 +276,35 @@ class AppTheme {
     );
   }
 
+  // ÖZEL BUTON STİLLERİ
+  static final ButtonStyle primaryButtonVendor = ElevatedButton.styleFrom(
+    backgroundColor: vendorPrimary,
+    foregroundColor: Colors.white,
+    textStyle: poppins(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(radiusLarge),
+    ),
+    padding: const EdgeInsets.symmetric(vertical: spacingMedium),
+    elevation: elevationLow,
+  );
+
+  static final ButtonStyle primaryButtonCourier = ElevatedButton.styleFrom(
+    backgroundColor: courierPrimary,
+    foregroundColor: Colors.white,
+    textStyle: poppins(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(radiusLarge),
+    ),
+    padding: const EdgeInsets.symmetric(vertical: spacingMedium),
+    elevation: elevationLow,
+  );
+
   // Farklı fontlar için yardımcı metodlar
   static TextStyle poppins({
     double? fontSize,

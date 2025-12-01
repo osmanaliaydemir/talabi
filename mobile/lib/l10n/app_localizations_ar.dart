@@ -375,15 +375,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String orderPlacedMessage(Object orderId, Object total) {
-    return 'رقم طلبك: $orderId\\nالإجمالي: $total';
+    return 'رقم طلبك: $orderId\nالإجمالي: $total';
   }
 
   @override
   String get ok => 'حسنًا';
 
   @override
-  String errorWithMessage(Object message) {
-    return 'خطأ: $message';
+  String errorWithMessage(Object error) {
+    return 'خطأ: $error';
   }
 
   @override
@@ -528,7 +528,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedToDeliverOrder => 'فشل تسليم الطلب';
 
   @override
-  String get failedToLoadProfile => 'فشل تحميل ملف السائق الشخصي';
+  String failedToLoadProfile(Object error) {
+    return 'فشل تحميل الملف الشخصي: $error';
+  }
 
   @override
   String get failedToUpdateStatus => 'فشل تحديث الحالة';
@@ -661,7 +663,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notSelected => 'غير محدد';
 
   @override
-  String get profileLoadFailed => 'فشل تحميل الملف الشخصي';
+  String profileLoadFailed(Object error) {
+    return 'Failed to load profile: $error';
+  }
 
   @override
   String get settingsUpdateFailed => 'فشل تحديث الإعدادات';
@@ -988,12 +992,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get resendCode => 'إعادة إرسال الرمز';
-
-  @override
   String codeExpiresIn(Object time) {
     return 'ستنتهي صلاحية الرمز خلال $time';
   }
+
+  @override
+  String get resendCode => 'إعادة إرسال الرمز';
 
   @override
   String settingsLoadError(Object error) {
@@ -1047,9 +1051,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noComment => 'لا يوجد تعليق';
 
   @override
-  String date(Object date) {
-    return 'التاريخ: $date';
-  }
+  String get date => 'التاريخ';
 
   @override
   String get approve => 'موافقة';
@@ -1148,4 +1150,326 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingDesc3 => 'استمتع بصفقات حصرية وأسعار تنافسية كل يوم';
+
+  @override
+  String get pending => 'قيد الانتظار';
+
+  @override
+  String get preparing => 'قيد التجهيز';
+
+  @override
+  String get ready => 'جاهز';
+
+  @override
+  String get delivered => 'تم التوصيل';
+
+  @override
+  String get cancelled => 'ملغي';
+
+  @override
+  String get vendorOrders => 'طلبات البائع';
+
+  @override
+  String get noOrdersFound => 'لم يتم العثور على طلبات';
+
+  @override
+  String get order => 'طلب';
+
+  @override
+  String get customer => 'العميل';
+
+  @override
+  String get vendorDashboard => 'لوحة تحكم البائع';
+
+  @override
+  String summaryLoadError(Object error) {
+    return 'فشل تحميل الملخص: $error';
+  }
+
+  @override
+  String welcomeVendor(Object name) {
+    return 'مرحباً، $name';
+  }
+
+  @override
+  String get todayOrders => 'طلبات اليوم';
+
+  @override
+  String get pendingOrders => 'الطلبات المعلقة';
+
+  @override
+  String get todayRevenue => 'إيرادات اليوم';
+
+  @override
+  String get weeklyRevenue => 'إيرادات الأسبوع';
+
+  @override
+  String get quickActions => 'إجراءات سريعة';
+
+  @override
+  String get reports => 'التقارير';
+
+  @override
+  String get reviews => 'التقييمات';
+
+  @override
+  String get logoUpdated => 'تم تحديث الشعار';
+
+  @override
+  String logoUploadFailed(Object error) {
+    return 'فشل تحميل الشعار: $error';
+  }
+
+  @override
+  String get locationSelectedChange => 'تم تحديد الموقع (تغيير)';
+
+  @override
+  String get selectLocationFromMapRequired => 'اختر الموقع من الخريطة *';
+
+  @override
+  String get locationSelectionRequired => 'اختيار الموقع من الخريطة مطلوب';
+
+  @override
+  String get addressAutoFillHint =>
+      'يتم ملء العنوان المحدد من الخريطة تلقائيًا، يمكنك تعديله يدويًا';
+
+  @override
+  String get selectLocationFirst => 'يجب عليك اختيار موقع من الخريطة أولاً';
+
+  @override
+  String get vendorLogin => 'تسجيل دخول البائع';
+
+  @override
+  String get welcomeBackVendor => 'مرحباً بعودتك، أيها البائع!';
+
+  @override
+  String get vendorLoginDescription => 'سجل الدخول لإدارة متجرك وطلباتك';
+
+  @override
+  String get areYouCustomer => 'هل أنت عميل؟';
+
+  @override
+  String get vendorNotificationsTitle => 'الإشعارات';
+
+  @override
+  String get vendorNotificationsEmptyMessage => 'ليس لديك إشعارات بعد.';
+
+  @override
+  String get vendorNotificationsErrorMessage =>
+      'حدث خطأ أثناء تحميل الإشعارات.';
+
+  @override
+  String get vendorProductsTitle => 'منتجاتي';
+
+  @override
+  String get vendorProductsSearchHint => 'ابحث عن المنتجات...';
+
+  @override
+  String vendorProductsLoadError(Object error) {
+    return 'فشل تحميل المنتجات: $error';
+  }
+
+  @override
+  String vendorProductsSetOutOfStock(Object productName) {
+    return 'تم تعيين $productName كغير متوفر';
+  }
+
+  @override
+  String vendorProductsSetInStock(Object productName) {
+    return '$productName متوفر الآن';
+  }
+
+  @override
+  String get vendorProductsDeleteTitle => 'حذف المنتج';
+
+  @override
+  String vendorProductsDeleteConfirmation(Object productName) {
+    return 'هل أنت متأكد أنك تريد حذف $productName؟';
+  }
+
+  @override
+  String vendorProductsDeleteSuccess(Object productName) {
+    return 'تم حذف $productName';
+  }
+
+  @override
+  String get vendorProductsEmpty => 'لم يتم العثور على منتجات';
+
+  @override
+  String get vendorProductsAddFirst => 'أضف منتجك الأول';
+
+  @override
+  String get vendorProductsAddNew => 'منتج جديد';
+
+  @override
+  String get vendorProductFormEditTitle => 'تعديل المنتج';
+
+  @override
+  String get vendorProductFormNewTitle => 'منتج جديد';
+
+  @override
+  String get vendorProductFormImageUploaded => 'تم تحميل الصورة';
+
+  @override
+  String vendorProductFormImageUploadError(Object error) {
+    return 'فشل تحميل الصورة: $error';
+  }
+
+  @override
+  String get vendorProductFormSourceCamera => 'الكاميرا';
+
+  @override
+  String get vendorProductFormSourceGallery => 'المعرض';
+
+  @override
+  String get vendorProductFormCreateSuccess => 'تم إنشاء المنتج';
+
+  @override
+  String get vendorProductFormUpdateSuccess => 'تم تحديث المنتج';
+
+  @override
+  String vendorProductFormError(Object error) {
+    return 'خطأ: $error';
+  }
+
+  @override
+  String get vendorProductFormNameLabel => 'اسم المنتج *';
+
+  @override
+  String get vendorProductFormNameRequired => 'اسم المنتج مطلوب';
+
+  @override
+  String get vendorProductFormDescriptionLabel => 'الوصف';
+
+  @override
+  String get vendorProductFormCategoryLabel => 'الفئة';
+
+  @override
+  String get vendorProductFormPriceLabel => 'السعر *';
+
+  @override
+  String get vendorProductFormPriceRequired => 'السعر مطلوب';
+
+  @override
+  String get vendorProductFormPriceInvalid => 'الرجاء إدخال سعر صالح';
+
+  @override
+  String get vendorProductFormStockLabel => 'كمية المخزون';
+
+  @override
+  String get vendorProductFormInvalidNumber => 'الرجاء إدخال رقم صالح';
+
+  @override
+  String get vendorProductFormPreparationTimeLabel => 'وقت التحضير (دقائق)';
+
+  @override
+  String get vendorProductFormInStockLabel => 'متوفر';
+
+  @override
+  String get vendorProductFormInStockDescription => 'سيظهر المنتج للعملاء';
+
+  @override
+  String get vendorProductFormOutOfStockDescription =>
+      'سيتم وضع علامة على المنتج كغير متوفر';
+
+  @override
+  String get updateButton => 'تحديث';
+
+  @override
+  String get createButton => 'إنشاء';
+
+  @override
+  String get vendorProductFormAddImage => 'إضافة صورة';
+
+  @override
+  String get vendorProfileTitle => 'ملفي الشخصي كبائع';
+
+  @override
+  String get vendorFallbackSubtitle => 'بائع';
+
+  @override
+  String get businessInfo => 'معلومات العمل';
+
+  @override
+  String get addressLabel => 'العنوان';
+
+  @override
+  String get phoneLabel => 'الهاتف';
+
+  @override
+  String get generalSettings => 'الإعدادات العامة';
+
+  @override
+  String get businessSettingsTitle => 'إعدادات العمل';
+
+  @override
+  String get businessSettingsSubtitle =>
+      'الحد الأدنى للطلب، رسوم التوصيل، وإعدادات أخرى';
+
+  @override
+  String get languageNameTr => 'التركية';
+
+  @override
+  String get languageNameEn => 'الإنجليزية';
+
+  @override
+  String get languageNameAr => 'العربية';
+
+  @override
+  String get businessNameFallback => 'اسم العمل';
+
+  @override
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String get markAsRead => 'وضع علامة كمقروء';
+
+  @override
+  String get pendingReviews => 'المراجعات المعلقة';
+
+  @override
+  String get noPendingReviews => 'لا توجد مراجعات معلقة';
+
+  @override
+  String reviewsLoadError(Object error) {
+    return 'فشل تحميل المراجعات: $error';
+  }
+
+  @override
+  String get salesReports => 'تقارير المبيعات';
+
+  @override
+  String get selectDateRange => 'اختر نطاق التاريخ';
+
+  @override
+  String get daily => 'يومي';
+
+  @override
+  String get weekly => 'أسبوعي';
+
+  @override
+  String get monthly => 'شهري';
+
+  @override
+  String get noReportFound => 'لم يتم العثور على تقرير';
+
+  @override
+  String get totalOrders => 'إجمالي الطلبات';
+
+  @override
+  String get totalRevenue => 'إجمالي الإيرادات';
+
+  @override
+  String get completed => 'مكتمل';
+
+  @override
+  String get cancelledOrders => 'الطلبات الملغاة';
+
+  @override
+  String get dailySales => 'المبيعات اليومية';
+
+  @override
+  String orderCount(Object count) {
+    return '$count طلبات';
+  }
 }

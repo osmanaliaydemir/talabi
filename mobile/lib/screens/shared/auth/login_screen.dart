@@ -355,354 +355,417 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               // White Card Content
               Expanded(
-                child: SingleChildScrollView(
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(
-                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
                         ),
-                        topRight: Radius.circular(
-                          AppTheme.radiusXLarge + AppTheme.spacingSmall,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.shadowColor,
-                          blurRadius: 10,
-                          offset: const Offset(0, -4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(AppTheme.spacingLarge),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Welcome Message
-                            Text(
-                              localizations.welcomeBack,
-                              style: AppTheme.poppins(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
+                        child: Container(
+                          margin: EdgeInsets.only(
+                            top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.cardColor,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(
+                                AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                              ),
+                              topRight: Radius.circular(
+                                AppTheme.radiusXLarge + AppTheme.spacingSmall,
                               ),
                             ),
-                            AppTheme.verticalSpace(0.5),
-                            Text(
-                              localizations.loginDescription,
-                              style: AppTheme.poppins(
-                                fontSize: 14,
-                                color: AppTheme.textSecondary,
-                                height: 1.5,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.shadowColor,
+                                blurRadius: 10,
+                                offset: const Offset(0, -4),
                               ),
-                            ),
-                            AppTheme.verticalSpace(2),
-                            // Email Field
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.backgroundColor,
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusMedium,
-                                ),
-                              ),
-                              child: TextFormField(
-                                controller: _emailController,
-                                decoration: InputDecoration(
-                                  hintText: localizations.emailAddress,
-                                  hintStyle: AppTheme.poppins(
-                                    color: AppTheme.textHint,
-                                    fontSize: 14,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.email_outlined,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppTheme.spacingMedium,
-                                    vertical: AppTheme.spacingMedium,
-                                  ),
-                                ),
-                                keyboardType: TextInputType.emailAddress,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return localizations.emailRequired;
-                                  }
-                                  if (!value.contains('@')) {
-                                    return localizations.validEmail;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            AppTheme.verticalSpace(1),
-                            // Password Field
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.backgroundColor,
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusMedium,
-                                ),
-                              ),
-                              child: TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  hintText: localizations.password,
-                                  hintStyle: AppTheme.poppins(
-                                    color: AppTheme.textHint,
-                                    fontSize: 14,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.lock_outline,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                      color: AppTheme.textSecondary,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppTheme.spacingMedium,
-                                    vertical: AppTheme.spacingMedium,
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return localizations.passwordRequired;
-                                  }
-                                  if (value.length < 6) {
-                                    return localizations.passwordMinLength;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            // Remember me and Recovery Password
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: _rememberMe,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _rememberMe = value ?? false;
-                                        });
-                                      },
-                                      activeColor: Colors.orange,
-                                    ),
-                                    Text(
-                                      localizations.rememberMe,
-                                      style: TextStyle(
-                                        color: Colors.grey[700],
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ForgotPasswordScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    localizations.recoveryPassword,
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            // Login Button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _login,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : Text(
-                                        localizations.logIn,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                            // Or continue with separator
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Divider(color: Colors.grey[300]),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: Text(
-                                    localizations.orContinueWith,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Divider(color: Colors.grey[300]),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            // Social Login Buttons
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildSocialButton(
-                                    icon: Icons.g_mobiledata,
-                                    label: localizations.google,
-                                    onPressed: _isLoading
-                                        ? () {}
-                                        : _signInWithGoogle,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildSocialButton(
-                                    icon: Icons.apple,
-                                    label: localizations.apple,
-                                    onPressed: _isLoading
-                                        ? () {}
-                                        : _signInWithApple,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildSocialButton(
-                                    icon: Icons.facebook,
-                                    label: localizations.facebook,
-                                    onPressed: _isLoading
-                                        ? () {}
-                                        : _signInWithFacebook,
-                                    isFacebook: true,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildSocialButton(
-                                    icon: Icons.store,
-                                    label: 'Vendor',
-                                    onPressed: () {
-                                      TapLogger.logButtonPress(
-                                        'Vendor Login',
-                                        context: 'LoginScreen',
-                                      );
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const VendorLoginScreen(),
-                                        ),
-                                      );
-                                    },
-                                    isVendor: true,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 32),
-                            // Register Link
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            ],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // Welcome Message
                                   Text(
-                                    localizations.dontHaveAccount,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
+                                    localizations.welcomeBack,
+                                    style: AppTheme.poppins(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      TapLogger.logButtonPress(
-                                        'Register',
-                                        context: 'LoginScreen',
-                                      );
-                                      TapLogger.logNavigation(
-                                        'LoginScreen',
-                                        'RegisterScreen',
-                                      );
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const RegisterScreen(),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    localizations.loginDescription,
+                                    style: AppTheme.poppins(
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondary,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Email Field
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.backgroundColor,
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                    ),
+                                    child: TextFormField(
+                                      controller: _emailController,
+                                      decoration: InputDecoration(
+                                        hintText: localizations.emailAddress,
+                                        hintStyle: AppTheme.poppins(
+                                          color: AppTheme.textHint,
+                                          fontSize: 14,
                                         ),
-                                      );
-                                    },
-                                    child: Text(
-                                      localizations.register,
-                                      style: const TextStyle(
-                                        color: Colors.orange,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
+                                        prefixIcon: Icon(
+                                          Icons.email_outlined,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: AppTheme.spacingMedium,
+                                          vertical: AppTheme.spacingMedium,
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.emailAddress,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return localizations.emailRequired;
+                                        }
+                                        if (!value.contains('@')) {
+                                          return localizations.validEmail;
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Password Field
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.backgroundColor,
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                    ),
+                                    child: TextFormField(
+                                      controller: _passwordController,
+                                      obscureText: _obscurePassword,
+                                      decoration: InputDecoration(
+                                        hintText: localizations.password,
+                                        hintStyle: AppTheme.poppins(
+                                          color: AppTheme.textHint,
+                                          fontSize: 14,
+                                        ),
+                                        prefixIcon: Icon(
+                                          Icons.lock_outline,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility_off_outlined
+                                                : Icons.visibility_outlined,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscurePassword =
+                                                  !_obscurePassword;
+                                            });
+                                          },
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: AppTheme.spacingMedium,
+                                          vertical: AppTheme.spacingMedium,
+                                        ),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return localizations.passwordRequired;
+                                        }
+                                        if (value.length < 6) {
+                                          return localizations
+                                              .passwordMinLength;
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Remember me and Recovery Password
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Checkbox(
+                                            value: _rememberMe,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _rememberMe = value ?? false;
+                                              });
+                                            },
+                                            activeColor: Colors.orange,
+                                          ),
+                                          Text(
+                                            localizations.rememberMe,
+                                            style: TextStyle(
+                                              color: Colors.grey[700],
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const ForgotPasswordScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          localizations.recoveryPassword,
+                                          style: const TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Login Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _isLoading ? null : _login,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.orange,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : Text(
+                                              localizations.logIn,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Or continue with separator
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Divider(color: Colors.grey[300]),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                        child: Text(
+                                          localizations.orContinueWith,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Divider(color: Colors.grey[300]),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Social Login Buttons
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildSocialButton(
+                                          icon: Icons.g_translate_rounded,
+                                          label: localizations.google,
+                                          onPressed: _isLoading
+                                              ? () {}
+                                              : _signInWithGoogle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSocialButton(
+                                          icon: Icons.apple,
+                                          label: localizations.apple,
+                                          onPressed: _isLoading
+                                              ? () {}
+                                              : _signInWithApple,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSocialButton(
+                                          icon: Icons.facebook,
+                                          label: localizations.facebook,
+                                          onPressed: _isLoading
+                                              ? () {}
+                                              : _signInWithFacebook,
+                                          isFacebook: true,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSocialButton(
+                                          icon: Icons.store,
+                                          label: 'Vendor',
+                                          onPressed: () {
+                                            TapLogger.logButtonPress(
+                                              'Vendor Login',
+                                              context: 'LoginScreen',
+                                            );
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const VendorLoginScreen(),
+                                              ),
+                                            );
+                                          },
+                                          isVendor: true,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Register Link - Modern Design
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppTheme.primaryOrange.withOpacity(
+                                            0.1,
+                                          ),
+                                          AppTheme.lightOrange.withOpacity(
+                                            0.05,
+                                          ),
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      border: Border.all(
+                                        color: AppTheme.primaryOrange
+                                            .withOpacity(0.3),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusMedium,
+                                        ),
+                                        onTap: () {
+                                          TapLogger.logButtonPress(
+                                            'Register',
+                                            context: 'LoginScreen',
+                                          );
+                                          TapLogger.logNavigation(
+                                            'LoginScreen',
+                                            'RegisterScreen',
+                                          );
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const RegisterScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.person_add_alt_1_rounded,
+                                                color: AppTheme.primaryOrange,
+                                                size: 20,
+                                              ),
+                                              AppTheme.horizontalSpace(0.5),
+                                              Text(
+                                                localizations.dontHaveAccount,
+                                                style: AppTheme.poppins(
+                                                  color: AppTheme.textSecondary,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              AppTheme.horizontalSpace(0.25),
+                                              Text(
+                                                localizations.register,
+                                                style: AppTheme.poppins(
+                                                  color: AppTheme.primaryOrange,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              AppTheme.horizontalSpace(0.25),
+                                              Icon(
+                                                Icons.arrow_forward_rounded,
+                                                color: AppTheme.primaryOrange,
+                                                size: 18,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
+                                  AppTheme.verticalSpace(1),
                                 ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ],

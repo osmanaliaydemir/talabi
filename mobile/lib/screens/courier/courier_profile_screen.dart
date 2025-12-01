@@ -50,7 +50,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           content: Text(
             e.toString().contains('Failed to')
                 ? e.toString()
-                : (localizations?.failedToLoadProfile ??
+                : (localizations?.failedToLoadProfile as String? ??
                       'Error loading profile: $e'),
           ),
         ),
@@ -123,7 +123,8 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         ),
         body: Center(
           child: Text(
-            localizations?.failedToLoadProfile ?? 'Failed to load profile',
+            (localizations?.failedToLoadProfile as String?) ??
+                'Failed to load profile',
           ),
         ),
         bottomNavigationBar: const CourierBottomNav(currentIndex: 3),

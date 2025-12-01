@@ -190,9 +190,15 @@ public class OrderAssignmentService : IOrderAssignmentService
         _logger.LogInformation("Order {OrderId} picked up by courier {CourierId}", orderId, courierId);
 
         // Notify customer
-        if (!string.IsNullOrEmpty(order.CustomerId))
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
         {
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Ready");
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "OutForDelivery");
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                "Sipariş Yola Çıktı",
+                $"#{order.Id} numaralı siparişiniz teslim edilmek üzere yola çıktı.",
+                "OrderOutForDelivery",
+                order.Id);
         }
 
         return true;
@@ -233,9 +239,15 @@ public class OrderAssignmentService : IOrderAssignmentService
         _logger.LogInformation("Order {OrderId} delivered by courier {CourierId}", orderId, courierId);
 
         // Notify customer
-        if (!string.IsNullOrEmpty(order.CustomerId))
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
         {
             await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Delivered");
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                "Sipariş Teslim Edildi",
+                $"#{order.Id} numaralı siparişiniz başarıyla teslim edildi. Afiyet olsun!",
+                "OrderDelivered",
+                order.Id);
         }
 
         return true;
@@ -266,6 +278,31 @@ public class OrderAssignmentService : IOrderAssignmentService
         _context.CourierNotifications.Add(new CourierNotification
         {
             CourierId = courierId,
+            Title = title,
+            Message = message,
+            Type = type,
+            OrderId = orderId
+        });
+    }
+
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, int? orderId = null)
+    {
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+        if (customer == null)
+        {
+            // Create customer if doesn't exist
+            customer = new Customer
+            {
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+        }
+
+        _context.CustomerNotifications.Add(new CustomerNotification
+        {
+            CustomerId = customer.Id,
             Title = title,
             Message = message,
             Type = type,

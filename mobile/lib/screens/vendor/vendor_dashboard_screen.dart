@@ -13,6 +13,8 @@ import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
+
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
 
@@ -43,9 +45,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Özet yüklenemedi: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.summaryLoadError(e.toString()) ??
+                  'Özet yüklenemedi: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -54,11 +62,12 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final localizationProvider = Provider.of<LocalizationProvider>(context);
+    final localizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: VendorHeader(
-        title: 'Satıcı Paneli',
+        title: localizations?.vendorDashboard ?? 'Satıcı Paneli',
         subtitle: auth.email ?? '',
         onRefresh: _loadSummary,
       ),
@@ -89,7 +98,12 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Hoş Geldiniz, ${auth.fullName ?? "Satıcı"}',
+                                    localizations?.welcomeVendor(
+                                          auth.fullName ??
+                                              (localizations?.vendor ??
+                                                  "Satıcı"),
+                                        ) ??
+                                        'Hoş Geldiniz, ${auth.fullName ?? "Satıcı"}',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -117,7 +131,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         Expanded(
                           child: _buildStatCard(
                             context,
-                            'Bugünkü Siparişler',
+                            localizations?.todayOrders ?? 'Bugünkü Siparişler',
                             '${_summary?['todayOrders'] ?? 0}',
                             Icons.shopping_bag,
                             Colors.blue,
@@ -127,7 +141,8 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         Expanded(
                           child: _buildStatCard(
                             context,
-                            'Bekleyen Siparişler',
+                            localizations?.pendingOrders ??
+                                'Bekleyen Siparişler',
                             '${_summary?['pendingOrders'] ?? 0}',
                             Icons.pending,
                             Colors.deepPurple,
@@ -141,7 +156,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         Expanded(
                           child: _buildStatCard(
                             context,
-                            'Bugünkü Gelir',
+                            localizations?.todayRevenue ?? 'Bugünkü Gelir',
                             CurrencyFormatter.format(
                               (_summary?['todayRevenue'] ?? 0).toDouble(),
                               localizationProvider.currency,
@@ -154,7 +169,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         Expanded(
                           child: _buildStatCard(
                             context,
-                            'Haftalık Gelir',
+                            localizations?.weeklyRevenue ?? 'Haftalık Gelir',
                             CurrencyFormatter.format(
                               (_summary?['weekRevenue'] ?? 0).toDouble(),
                               localizationProvider.currency,
@@ -168,7 +183,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                     const SizedBox(height: 24),
                     // Quick actions
                     Text(
-                      'Hızlı İşlemler',
+                      localizations?.quickActions ?? 'Hızlı İşlemler',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -184,7 +199,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       children: [
                         _buildActionCard(
                           context,
-                          'Siparişler',
+                          localizations?.orders ?? 'Siparişler',
                           Icons.receipt_long,
                           Colors.blue,
                           () {
@@ -203,7 +218,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         ),
                         _buildActionCard(
                           context,
-                          'Ürünler',
+                          localizations?.products ?? 'Ürünler',
                           Icons.inventory_2,
                           Colors.purple,
                           () {
@@ -222,7 +237,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         ),
                         _buildActionCard(
                           context,
-                          'Raporlar',
+                          localizations?.reports ?? 'Raporlar',
                           Icons.bar_chart,
                           Colors.green,
                           () {
@@ -241,7 +256,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         ),
                         _buildActionCard(
                           context,
-                          'Yorumlar',
+                          localizations?.reviews ?? 'Yorumlar',
                           Icons.comment,
                           Colors.deepPurple,
                           () {

@@ -38,26 +38,23 @@ class PersistentBottomNavBar extends StatelessWidget {
           navigator.pop();
         }
       },
+      labelTextStyle: MaterialStateProperty.all(
+        AppTheme.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          color: AppTheme.textPrimary,
+        ),
+      ),
       destinations: [
         NavigationDestination(
           icon: const Icon(Icons.explore_outlined),
           selectedIcon: const Icon(Icons.explore),
           label: localizations.discover,
-          textStyle: AppTheme.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
         ),
         NavigationDestination(
           icon: const Icon(Icons.favorite_outline),
           selectedIcon: const Icon(Icons.favorite),
           label: localizations.myFavorites,
-          textStyle: AppTheme.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
         ),
         NavigationDestination(
           icon: Stack(
@@ -121,21 +118,11 @@ class PersistentBottomNavBar extends StatelessWidget {
             ],
           ),
           label: localizations.myCart,
-          textStyle: AppTheme.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
         ),
         NavigationDestination(
           icon: const Icon(Icons.receipt_long_outlined),
           selectedIcon: const Icon(Icons.receipt_long),
           label: localizations.myOrders,
-          textStyle: AppTheme.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
         ),
         NavigationDestination(
           icon: const Icon(Icons.person_outline),

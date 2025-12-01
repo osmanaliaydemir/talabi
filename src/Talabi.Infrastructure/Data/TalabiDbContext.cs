@@ -22,6 +22,8 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
     public DbSet<Courier> Couriers { get; set; }
     public DbSet<CourierNotification> CourierNotifications { get; set; }
+    public DbSet<VendorNotification> VendorNotifications { get; set; }
+    public DbSet<CustomerNotification> CustomerNotifications { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<DeliveryProof> DeliveryProofs { get; set; }
@@ -84,6 +86,14 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         // Vendor configuration
         builder.Entity<Vendor>()
             .Property(v => v.Rating)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Vendor>()
+            .Property(v => v.DeliveryFee)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Vendor>()
+            .Property(v => v.MinimumOrderAmount)
             .HasColumnType("decimal(18,2)");
 
         // Fix for: Introducing FOREIGN KEY constraint ... may cause cycles or multiple cascade paths.
@@ -174,6 +184,26 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .WithMany(c => c.Notifications)
             .HasForeignKey(cn => cn.CourierId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // VendorNotification configuration
+        builder.Entity<VendorNotification>()
+            .HasOne(vn => vn.Vendor)
+            .WithMany()
+            .HasForeignKey(vn => vn.VendorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // CustomerNotification configuration
+        builder.Entity<CustomerNotification>()
+            .HasOne(cn => cn.Customer)
+            .WithMany()
+            .HasForeignKey(cn => cn.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CustomerNotification>()
+            .HasOne(cn => cn.Order)
+            .WithMany()
+            .HasForeignKey(cn => cn.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Order - DeliveryAddress relationship
         builder.Entity<Order>()
