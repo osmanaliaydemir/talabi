@@ -4,6 +4,7 @@ import 'package:mobile/models/vendor.dart';
 class ProductSearchRequestDto {
   final String? query;
   final String? category;
+  final int? categoryId;
   final double? minPrice;
   final double? maxPrice;
   final int? vendorId;
@@ -14,6 +15,7 @@ class ProductSearchRequestDto {
   ProductSearchRequestDto({
     this.query,
     this.category,
+    this.categoryId,
     this.minPrice,
     this.maxPrice,
     this.vendorId,
@@ -30,6 +32,9 @@ class ProductSearchRequestDto {
     }
     if (category != null && category!.isNotEmpty) {
       map['category'] = category;
+    }
+    if (categoryId != null) {
+      map['categoryId'] = categoryId;
     }
     if (minPrice != null) {
       map['minPrice'] = minPrice;

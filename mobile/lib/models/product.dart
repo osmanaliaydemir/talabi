@@ -5,6 +5,7 @@ class Product {
   final String name;
   final String? description;
   final String? category;
+  final int? categoryId;
   final double price;
   final String? imageUrl;
   final bool isAvailable;
@@ -18,6 +19,7 @@ class Product {
     required this.name,
     this.description,
     this.category,
+    this.categoryId,
     required this.price,
     this.imageUrl,
     this.isAvailable = true,
@@ -33,6 +35,7 @@ class Product {
       name: json['name'],
       description: json['description'],
       category: json['category'],
+      categoryId: json['categoryId'],
       price: (json['price'] as num).toDouble(),
       imageUrl: json['imageUrl'],
       isAvailable: json['isAvailable'] ?? true,
@@ -49,6 +52,7 @@ class Product {
       'name': name,
       'description': description,
       'category': category,
+      'categoryId': categoryId,
       'price': price,
       'imageUrl': imageUrl,
       'isAvailable': isAvailable,

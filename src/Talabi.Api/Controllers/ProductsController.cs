@@ -24,13 +24,18 @@ public class ProductsController : ControllerBase
         // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
         {
-            query = query.Where(p => p.Name.Contains(request.Query) || 
+            query = query.Where(p => p.Name.Contains(request.Query) ||
                                     (p.Description != null && p.Description.Contains(request.Query)));
         }
 
         // Category filter
-        if (!string.IsNullOrWhiteSpace(request.Category))
+        if (request.CategoryId.HasValue)
         {
+            query = query.Where(p => p.CategoryId == request.CategoryId.Value);
+        }
+        else if (!string.IsNullOrWhiteSpace(request.Category))
+        {
+            // Fallback to string match (deprecated)
             query = query.Where(p => p.Category == request.Category);
         }
 
@@ -92,16 +97,25 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("categories")]
-    public async Task<ActionResult<List<string>>> GetCategories()
+    public async Task<ActionResult<List<CategoryDto>>> GetCategories([FromQuery] string? lang = "tr")
     {
-        var categories = await _context.Products
-            .Where(p => p.Category != null)
-            .Select(p => p.Category!)
-            .Distinct()
-            .OrderBy(c => c)
+        var categories = await _context.Categories
+            .Include(c => c.Translations)
             .ToListAsync();
 
-        return Ok(categories);
+        var categoryDtos = categories.Select(c =>
+        {
+            var translation = c.Translations.FirstOrDefault(t => t.LanguageCode == lang);
+            return new CategoryDto
+            {
+                Id = c.Id,
+                Name = translation?.Name ?? c.Name,
+                Icon = c.Icon,
+                Color = c.Color
+            };
+        }).OrderBy(c => c.Name).ToList();
+
+        return Ok(categoryDtos);
     }
 
     [HttpGet("autocomplete")]

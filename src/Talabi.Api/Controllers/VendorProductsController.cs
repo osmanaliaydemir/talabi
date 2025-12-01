@@ -117,6 +117,7 @@ public class VendorProductsController : ControllerBase
             Name = dto.Name,
             Description = dto.Description,
             Category = dto.Category,
+            CategoryId = dto.CategoryId,
             Price = dto.Price,
             ImageUrl = dto.ImageUrl,
             IsAvailable = dto.IsAvailable,
@@ -167,6 +168,8 @@ public class VendorProductsController : ControllerBase
             product.Description = dto.Description;
         if (dto.Category != null)
             product.Category = dto.Category;
+        if (dto.CategoryId.HasValue)
+            product.CategoryId = dto.CategoryId.Value;
         if (dto.Price.HasValue)
             product.Price = dto.Price.Value;
         if (dto.ImageUrl != null)

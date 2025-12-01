@@ -9,6 +9,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/customer/customer_header.dart';
+import 'package:mobile/screens/customer/category_products_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Vendor>> _vendorsFuture;
   late Future<List<Product>> _popularProductsFuture;
+  late Future<List<Map<String, dynamic>>> _categoriesFuture;
   List<dynamic> _addresses = [];
   Map<String, dynamic>? _selectedAddress;
   bool _isLoadingAddresses = false;
@@ -34,6 +36,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _popularProductsFuture = _apiService.getPopularProducts(limit: 8);
     _loadAddresses();
     _loadFavoriteStatus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = AppLocalizations.of(context)?.localeName;
+    _categoriesFuture = _apiService.getCategories(language: locale);
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -118,18 +127,49 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Categories data
-  final List<Map<String, dynamic>> _categories = [
-    {
-      'name': 'Yemek',
-      'icon': Icons.restaurant,
-      'color': AppTheme.primaryOrange,
-    },
-    {'name': 'Mağazalar', 'icon': Icons.store, 'color': Colors.blue},
-    {'name': 'Market', 'icon': Icons.shopping_basket, 'color': Colors.green},
-    {'name': 'İçecek', 'icon': Icons.local_drink, 'color': Colors.purple},
-    {'name': 'Tatlı', 'icon': Icons.cake, 'color': Colors.pink},
-  ];
+  // Helper to get category icon and color
+  // Helper to get category icon and color
+  Map<String, dynamic> _getCategoryStyle(Map<String, dynamic> category) {
+    // If API provides icon and color, use them (need mapping for icon string to IconData)
+    // For now, we'll stick to the existing logic but use the name from the map
+    final name = (category['name'] as String).toLowerCase();
+
+    // TODO: Implement proper icon mapping from string if needed
+    // final iconString = category['icon'] as String?;
+    // final colorString = category['color'] as String?;
+
+    if (name.contains('yemek') ||
+        name.contains('food') ||
+        name.contains('طعام')) {
+      return {'icon': Icons.restaurant, 'color': AppTheme.primaryOrange};
+    } else if (name.contains('mağaza') ||
+        name.contains('store') ||
+        name.contains('متاجر')) {
+      return {'icon': Icons.store, 'color': Colors.blue};
+    } else if (name.contains('market') ||
+        name.contains('grocery') ||
+        name.contains('بقالة')) {
+      return {'icon': Icons.shopping_basket, 'color': Colors.green};
+    } else if (name.contains('içecek') ||
+        name.contains('drink') ||
+        name.contains('مشروبات')) {
+      return {'icon': Icons.local_drink, 'color': Colors.purple};
+    } else if (name.contains('tatlı') ||
+        name.contains('dessert') ||
+        name.contains('حلويات')) {
+      return {'icon': Icons.cake, 'color': Colors.pink};
+    } else if (name.contains('elektronik') ||
+        name.contains('electronic') ||
+        name.contains('إلكترونيات')) {
+      return {'icon': Icons.devices, 'color': Colors.indigo};
+    } else if (name.contains('giyim') ||
+        name.contains('clothing') ||
+        name.contains('ملابس')) {
+      return {'icon': Icons.checkroom, 'color': Colors.teal};
+    } else {
+      return {'icon': Icons.category, 'color': Colors.orange};
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,6 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   _vendorsFuture = _apiService.getVendors();
                   _popularProductsFuture = _apiService.getPopularProducts(
                     limit: 8,
+                  );
+                  _categoriesFuture = _apiService.getCategories(
+                    language: AppLocalizations.of(context)?.localeName,
                   );
                 });
                 await _loadAddresses();
@@ -361,15 +404,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(
                           height: 100,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingSmall,
-                            ),
-                            itemCount: _categories.length,
-                            itemBuilder: (context, index) {
-                              final category = _categories[index];
-                              return _buildCategoryCard(category);
+                          child: FutureBuilder<List<Map<String, dynamic>>>(
+                            future: _categoriesFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppTheme.primaryOrange,
+                                  ),
+                                );
+                              }
+
+                              if (snapshot.hasError ||
+                                  !snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'Kategori bulunamadı',
+                                    style: AppTheme.poppins(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final categories = snapshot.data!;
+                              return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppTheme.spacingSmall,
+                                ),
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  return _buildCategoryCard(category);
+                                },
+                              );
                             },
                           ),
                         ),
@@ -534,35 +605,51 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryCard(Map<String, dynamic> category) {
-    return Container(
-      width: 80,
-      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: (category['color'] as Color).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-            ),
-            child: Icon(
-              category['icon'] as IconData,
-              color: category['color'] as Color,
-              size: 30,
+    final categoryName = category['name'] as String;
+    final style = _getCategoryStyle(category);
+    final icon = style['icon'] as IconData;
+    final color = style['color'] as Color;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryProductsScreen(
+              categoryName: categoryName,
+              categoryId: category['id'] as int?,
             ),
           ),
-          SizedBox(height: AppTheme.spacingSmall),
-          Text(
-            category['name'] as String,
-            style: AppTheme.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textPrimary,
+        );
+      },
+      child: Container(
+        width: 80,
+        margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
+        child: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              ),
+              child: Icon(icon, color: color, size: 30),
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            SizedBox(height: AppTheme.spacingSmall),
+            Text(
+              categoryName,
+              style: AppTheme.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

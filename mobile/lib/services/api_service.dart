@@ -927,20 +927,25 @@ class ApiService {
     }
   }
 
-  Future<List<String>> getCategories() async {
+  Future<List<Map<String, dynamic>>> getCategories({String? language}) async {
     try {
       // Try network first
-      final response = await _dio.get('/products/categories');
-      final categories = List<String>.from(response.data);
+      final response = await _dio.get(
+        '/products/categories',
+        queryParameters: language != null ? {'lang': language} : null,
+      );
+      final List<dynamic> data = response.data;
+      final categories = List<Map<String, dynamic>>.from(data);
 
       // Cache the result
-      await _cacheService.cacheCategories(categories);
+      // await _cacheService.cacheCategories(categories);
 
       return categories;
     } on DioException catch (e) {
       print('Error fetching categories: $e');
 
       // If offline or network error, try cache
+      /*
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.connectionError) {
@@ -950,6 +955,7 @@ class ApiService {
           return cachedCategories;
         }
       }
+      */
 
       rethrow;
     } catch (e) {

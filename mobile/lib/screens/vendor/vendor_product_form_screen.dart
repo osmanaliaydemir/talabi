@@ -24,7 +24,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
 
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
-  late TextEditingController _categoryController;
+  // late TextEditingController _categoryController; // Replaced by dropdown
   late TextEditingController _priceController;
   late TextEditingController _stockController;
   late TextEditingController _preparationTimeController;
@@ -35,6 +35,10 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   bool _isLoading = false;
   bool _isUploading = false;
 
+  List<Map<String, dynamic>> _categories = [];
+  int? _selectedCategoryId;
+  bool _isLoadingCategories = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,9 +46,13 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     _descriptionController = TextEditingController(
       text: widget.product?.description ?? '',
     );
-    _categoryController = TextEditingController(
-      text: widget.product?.category ?? '',
-    );
+    // _categoryController = TextEditingController(
+    //   text: widget.product?.category ?? '',
+    // );
+    // Initialize selected category if editing (need to map category name to ID if ID is not available in product)
+    // Ideally Product model should have categoryId. For now we might need to rely on name matching or update Product model.
+    // Assuming Product model will be updated or we just start fresh.
+    // Actually, I should fetch categories first then set selected ID.
     _priceController = TextEditingController(
       text: widget.product?.price.toString() ?? '',
     );
@@ -56,13 +64,53 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     );
     _isAvailable = widget.product?.isAvailable ?? true;
     _imageUrl = widget.product?.imageUrl;
+    _imageUrl = widget.product?.imageUrl;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+    try {
+      final categories = await _apiService.getCategories(
+        language: AppLocalizations.of(context)?.localeName,
+      );
+      setState(() {
+        _categories = categories;
+        _isLoadingCategories = false;
+
+        // Try to match existing category
+        if (widget.product?.categoryId != null) {
+          _selectedCategoryId = widget.product!.categoryId;
+        } else if (widget.product?.category != null) {
+          final existing = categories.firstWhere(
+            (c) => c['name'] == widget.product!.category,
+            orElse: () => {},
+          );
+          if (existing.isNotEmpty) {
+            _selectedCategoryId = existing['id'] as int;
+          }
+        }
+      });
+    } catch (e) {
+      print('Error loading categories: $e');
+      setState(() {
+        _isLoadingCategories = false;
+      });
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _categoryController.dispose();
+    // _categoryController.dispose();
     _priceController.dispose();
     _stockController.dispose();
     _preparationTimeController.dispose();
@@ -163,9 +211,8 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         'description': _descriptionController.text.isEmpty
             ? null
             : _descriptionController.text,
-        'category': _categoryController.text.isEmpty
-            ? null
-            : _categoryController.text,
+        'categoryId': _selectedCategoryId,
+        // 'category': _categoryController.text.isEmpty ? null : _categoryController.text, // Deprecated
         'price': double.parse(_priceController.text),
         'imageUrl': _imageUrl,
         'isAvailable': _isAvailable,
@@ -303,16 +350,43 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             const SizedBox(height: 16),
 
             // Category
-            TextFormField(
-              controller: _categoryController,
+            DropdownButtonFormField<int>(
+              value: _selectedCategoryId,
               decoration: InputDecoration(
                 labelText: localizations.vendorProductFormCategoryLabel,
                 border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.category),
+                prefixIcon: _isLoadingCategories
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : const Icon(Icons.category),
               ),
+              items: _isLoadingCategories
+                  ? []
+                  : _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category['id'] as int,
+                        child: Text(category['name'] as String),
+                      );
+                    }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCategoryId = value;
+                });
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Kategori seçimi zorunludur';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
-
             // Price
             TextFormField(
               controller: _priceController,

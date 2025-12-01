@@ -5,6 +5,7 @@ import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _SearchScreenState extends State<SearchScreen>
   bool _isLoadingVendors = false;
 
   // Filters
-  String? _selectedCategory;
+  int? _selectedCategoryId;
   String? _selectedCity;
   double? _minPrice;
   double? _maxPrice;
@@ -44,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen>
   String? _sortBy;
 
   // Filter options
-  List<String> _categories = [];
+  List<Map<String, dynamic>> _categories = [];
   List<String> _cities = [];
 
   // Search history
@@ -82,7 +83,9 @@ class _SearchScreenState extends State<SearchScreen>
 
   Future<void> _loadFilterOptions() async {
     try {
-      final categories = await _apiService.getCategories();
+      final categories = await _apiService.getCategories(
+        language: AppLocalizations.of(context)?.localeName,
+      );
       final cities = await _apiService.getCities();
       setState(() {
         _categories = categories;
@@ -144,7 +147,7 @@ class _SearchScreenState extends State<SearchScreen>
 
   Future<void> _searchProducts() async {
     if (_currentQuery.isEmpty &&
-        _selectedCategory == null &&
+        _selectedCategoryId == null &&
         _minPrice == null &&
         _maxPrice == null) {
       setState(() {
@@ -160,7 +163,7 @@ class _SearchScreenState extends State<SearchScreen>
     try {
       final request = ProductSearchRequestDto(
         query: _currentQuery.isEmpty ? null : _currentQuery,
-        category: _selectedCategory,
+        categoryId: _selectedCategoryId,
         minPrice: _minPrice,
         maxPrice: _maxPrice,
         sortBy: _sortBy,
@@ -272,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen>
               TextButton(
                 onPressed: () {
                   setState(() {
-                    _selectedCategory = null;
+                    _selectedCategoryId = null;
                     _selectedCity = null;
                     _minPrice = null;
                     _maxPrice = null;
@@ -297,18 +300,21 @@ class _SearchScreenState extends State<SearchScreen>
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
+            DropdownButtonFormField<int>(
+              value: _selectedCategoryId,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Kategori seçin',
               ),
               items: _categories.map((category) {
-                return DropdownMenuItem(value: category, child: Text(category));
+                return DropdownMenuItem(
+                  value: category['id'] as int,
+                  child: Text(category['name'] as String),
+                );
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedCategory = value;
+                  _selectedCategoryId = value;
                 });
               },
             ),

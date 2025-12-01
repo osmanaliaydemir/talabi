@@ -12,6 +12,8 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
 
     public DbSet<Vendor> Vendors { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<CategoryTranslation> CategoryTranslations { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Cart> Carts { get; set; }
@@ -74,6 +76,23 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<Product>()
             .Property(p => p.Price)
             .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Category>()
+            .HasMany(c => c.Products)
+            .WithOne(p => p.ProductCategory)
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<CategoryTranslation>()
+            .HasOne(ct => ct.Category)
+            .WithMany(c => c.Translations)
+            .HasForeignKey(ct => ct.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint for Category + Language
+        builder.Entity<CategoryTranslation>()
+            .HasIndex(ct => new { ct.CategoryId, ct.LanguageCode })
+            .IsUnique();
 
         builder.Entity<Order>()
             .Property(o => o.TotalAmount)

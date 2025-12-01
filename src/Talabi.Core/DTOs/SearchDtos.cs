@@ -4,6 +4,7 @@ public class ProductSearchRequestDto
 {
     public string? Query { get; set; }
     public string? Category { get; set; }
+    public int? CategoryId { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
     public int? VendorId { get; set; }
@@ -17,12 +18,12 @@ public class VendorSearchRequestDto
     public string? Query { get; set; }
     public string? City { get; set; }
     public decimal? MinRating { get; set; }
-    
+
     // Distance filtering (requires user location)
     public double? UserLatitude { get; set; }
     public double? UserLongitude { get; set; }
     public double? MaxDistanceInKm { get; set; }
-    
+
     public string? SortBy { get; set; } // "name", "newest", "rating_desc", "popularity", "distance"
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
