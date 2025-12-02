@@ -255,6 +255,12 @@
   "profileImageUrl": "رابط صورة الملف الشخصي",
   "dateOfBirth": "تاريخ الميلاد",
   "notSelected": "غير محدد",
+  "profileLoadFailed": "فشل تحميل الملف الشخصي: {error}",
+  "@profileLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "settingsUpdateFailed": "فشل تحديث الإعدادات",
   "notifications": "الإشعارات",
   "pushNotifications": "الإشعارات الفورية",
@@ -438,7 +444,6 @@
   "pleaseSelectPaymentMethod": "يرجى اختيار طريقة الدفع",
   "orderCreatedSuccess": "تم إنشاء طلبك بنجاح!",
   "noAddressFound": "لم يتم العثور على عنوان",
-  "addNewAddress": "إضافة عنوان جديد",
   "cashDescription": "يمكنك الدفع نقداً للمندوب عند الباب.",
   "paymentComingSoonDescription": "طريقة الدفع هذه ستكون متاحة قريباً.",
   "skip": "تخطي",
@@ -478,7 +483,6 @@
   "weeklyRevenue": "إيرادات الأسبوع",
   "quickActions": "إجراءات سريعة",
   "reports": "التقارير",
-  "reviews": "التقييمات",
   "logoUpdated": "تم تحديث الشعار",
   "logoUploadFailed": "فشل تحميل الشعار: {error}",
   "@logoUploadFailed": {
@@ -586,6 +590,11 @@
   "pendingReviews": "المراجعات المعلقة",
   "noPendingReviews": "لا توجد مراجعات معلقة",
   "reviewsLoadError": "فشل تحميل المراجعات: {error}",
+  "@reviewsLoadError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "salesReports": "تقارير المبيعات",
   "selectDateRange": "اختر نطاق التاريخ",
   "daily": "يومي",
@@ -618,7 +627,6 @@
       "error": {}
     }
   },
-  "locationServicesDisabled": "خدمات الموقع معطلة",
   "locationPermissionDenied": "تم رفض إذن الموقع",
   "locationPermissionDeniedForever": "تم رفض إذن الموقع بشكل دائم",
   "vendorsLoadFailed": "فشل تحميل المتاجر: {error}",
@@ -646,12 +654,10 @@
   },
   "filters": "المرشحات",
   "clear": "مسح",
-  "category": "الفئة",
   "selectCategory": "اختر الفئة",
   "priceRange": "نطاق السعر",
   "minPrice": "الحد الأدنى للسعر",
   "maxPrice": "الحد الأقصى للسعر",
-  "city": "المدينة",
   "selectCity": "اختر المدينة",
   "minimumRating": "التقييم الأدنى",
   "maximumDistance": "الحد الأقصى للمسافة (كم)",
@@ -667,11 +673,8 @@
   "distance": "المسافة",
   "applyFilters": "تطبيق المرشحات",
   "searchProductsOrVendors": "ابحث عن المنتجات أو المتاجر...",
-  "products": "المنتجات",
-  "vendors": "المتاجر",
   "suggestions": "الاقتراحات",
   "product": "منتج",
-  "vendor": "متجر",
   "searchHistory": "سجل البحث",
   "typeToSearch": "اكتب في المربع أعلاه للبحث",
   "recentSearches": "عمليات البحث الأخيرة",
@@ -715,7 +718,6 @@
   },
   "productNotFound": "المنتج غير موجود",
   "rateVendor": "تقييم المتجر",
-  "writeReview": "اكتب مراجعة",
   "shareYourThoughts": "شارك أفكارك...",
   "submit": "إرسال",
   "vendorReviewSubmitted": "تم إرسال تقييم المتجر!",
@@ -723,7 +725,6 @@
   "noDescription": "لا يوجد وصف متاح.",
   "readMore": "اقرأ المزيد",
   "showLess": "عرض أقل",
-  "description": "الوصف",
   "deliveryTime": "وقت التسليم",
   "deliveryType": "نوع التسليم",
   "reviews": "المراجعات ({count})",
@@ -734,7 +735,6 @@
   },
   "noReviewsYet": "لا توجد مراجعات بعد. كن أول من يراجع!",
   "seeAllReviews": "عرض جميع المراجعات",
-  "addToCart": "أضف إلى السلة",
   "by": "بواسطة: {vendorName}",
   "@by": {
     "placeholders": {
@@ -744,7 +744,6 @@
   "orderCreatedSuccessfully": "تم إنشاء طلبك بنجاح!",
   "orderCode": "رمز الطلب",
   "orderPreparationStarted": "بدأ تحضير طلبك. يمكنك تتبع حالة طلبك من صفحة \"طلباتي\".",
-  "myOrders": "طلباتي",
   "homePage": "الرئيسية",
   "ordersLoadFailed": "فشل تحميل الطلبات: {error}",
   "@ordersLoadFailed": {
@@ -761,6 +760,18 @@
   "itemCancelSuccess": "تم إلغاء المنتج بنجاح",
   "itemCancelFailed": "فشل إلغاء المنتج: {error}",
   "@itemCancelFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "promotionalBannerTitle": "سيكون يوماً رائعاً!",
+  "promotionalBannerSubtitle": "توصيل مجاني، رسوم منخفضة و 10% استرداد نقدي!",
+  "orderNow": "اطلب الآن",
+  "categories": "الفئات",
+  "categoryNotFound": "لم يتم العثور على فئات",
+  "picksForYou": "اختياراتنا لك",
+  "addressUpdateFailed": "فشل تحديث العنوان: {error}",
+  "@addressUpdateFailed": {
     "placeholders": {
       "error": {}
     }

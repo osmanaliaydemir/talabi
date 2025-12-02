@@ -101,7 +101,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       // Get delivery address ID as String (GUID)
       final addressId = _selectedAddress!['id'];
-      final addressIdString = addressId != null ? addressId.toString() : null;
+      final addressIdString = addressId?.toString();
 
       // Create order
       final order = await _apiService.createOrder(

@@ -60,7 +60,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get products => 'المنتجات';
 
   @override
-  String get vendors => 'المتاجر';
+  String get vendors => 'البائعون';
 
   @override
   String get cart => 'السلة';
@@ -181,7 +181,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get description => 'الوصف';
 
   @override
-  String get vendor => 'متجر';
+  String get vendor => 'البائع';
 
   @override
   String get category => 'الفئة';
@@ -688,7 +688,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String profileLoadFailed(Object error) {
-    return 'Failed to load profile: $error';
+    return 'فشل تحميل الملف الشخصي: $error';
   }
 
   @override
@@ -1251,11 +1251,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reports => 'التقارير';
 
   @override
-  String reviews(Object count) {
-    return 'المراجعات ($count)';
-  }
-
-  @override
   String get logoUpdated => 'تم تحديث الشعار';
 
   @override
@@ -1734,6 +1729,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get deliveryType => 'نوع التسليم';
 
   @override
+  String reviews(Object count) {
+    return 'المراجعات ($count)';
+  }
+
+  @override
   String get noReviewsYet => 'لا توجد مراجعات بعد. كن أول من يراجع!';
 
   @override
@@ -1786,5 +1786,29 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String itemCancelFailed(Object error) {
     return 'فشل إلغاء المنتج: $error';
+  }
+
+  @override
+  String get promotionalBannerTitle => 'سيكون يوماً رائعاً!';
+
+  @override
+  String get promotionalBannerSubtitle =>
+      'توصيل مجاني، رسوم منخفضة و 10% استرداد نقدي!';
+
+  @override
+  String get orderNow => 'اطلب الآن';
+
+  @override
+  String get categories => 'الفئات';
+
+  @override
+  String get categoryNotFound => 'لم يتم العثور على فئات';
+
+  @override
+  String get picksForYou => 'اختياراتنا لك';
+
+  @override
+  String addressUpdateFailed(Object error) {
+    return 'فشل تحديث العنوان: $error';
   }
 }

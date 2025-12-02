@@ -1264,11 +1264,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reports => 'Reports';
 
   @override
-  String reviews(Object count) {
-    return 'Reviews ($count)';
-  }
-
-  @override
   String get logoUpdated => 'Logo updated';
 
   @override
@@ -1753,6 +1748,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deliveryType => 'Delivery Type';
 
   @override
+  String reviews(Object count) {
+    return 'Reviews ($count)';
+  }
+
+  @override
   String get noReviewsYet => 'No reviews yet. Be the first to review!';
 
   @override
@@ -1806,5 +1806,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String itemCancelFailed(Object error) {
     return 'Failed to cancel item: $error';
+  }
+
+  @override
+  String get promotionalBannerTitle => 'It\'s Going to Be a Great Day!';
+
+  @override
+  String get promotionalBannerSubtitle =>
+      'Free delivery, low fees & 10% cashback!';
+
+  @override
+  String get orderNow => 'Order Now';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get categoryNotFound => 'No categories found';
+
+  @override
+  String get picksForYou => 'Picks For You';
+
+  @override
+  String addressUpdateFailed(Object error) {
+    return 'Address update failed: $error';
   }
 }

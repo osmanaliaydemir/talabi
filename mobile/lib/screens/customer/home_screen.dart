@@ -1,8 +1,10 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
+import 'package:mobile/models/promotional_banner.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
 import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -10,6 +12,7 @@ import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/customer/customer_header.dart';
 import 'package:mobile/screens/customer/category_products_screen.dart';
+import 'package:mobile/screens/customer/categories_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,13 +32,78 @@ class _HomeScreenState extends State<HomeScreen> {
   final Map<String, bool> _favoriteStatus =
       {}; // Track favorite status for each product
 
+  // Banner carousel state
+  int _currentBannerIndex = 0;
+  Timer? _bannerTimer;
+  List<PromotionalBanner> _banners = [];
+  late PageController _bannerPageController;
+
   @override
   void initState() {
     super.initState();
+    _bannerPageController = PageController(
+      initialPage: 0,
+      viewportFraction: 0.90, // Show 90% of current + 10% of next
+    );
     _vendorsFuture = _apiService.getVendors();
     _popularProductsFuture = _apiService.getPopularProducts(limit: 8);
     _loadAddresses();
     _loadFavoriteStatus();
+    _loadBanners();
+  }
+
+  @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerPageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadBanners() async {
+    try {
+      final locale = AppLocalizations.of(context)?.localeName ?? 'tr';
+      final banners = await _apiService.getBanners(language: locale);
+      if (mounted) {
+        setState(() {
+          _banners = banners;
+          _currentBannerIndex = 0;
+        });
+        // Reset page controller to first page
+        if (_banners.isNotEmpty) {
+          _bannerPageController.jumpToPage(0);
+          // Start timer after a short delay to ensure page controller is ready
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted && _banners.length > 1) {
+              _startBannerTimer();
+            }
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading banners: $e');
+    }
+  }
+
+  void _startBannerTimer() {
+    _bannerTimer?.cancel();
+    if (_banners.length > 1) {
+      // First change happens after 3 seconds, then continues every 3 seconds
+      _bannerTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        if (mounted && _banners.isNotEmpty) {
+          // Use the current page index from the controller to ensure accuracy
+          final currentPage =
+              _bannerPageController.page?.round() ?? _currentBannerIndex;
+          final nextIndex = (currentPage + 1) % _banners.length;
+          _bannerPageController.animateToPage(
+            nextIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          timer.cancel();
+        }
+      });
+    }
   }
 
   @override
@@ -43,6 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didChangeDependencies();
     final locale = AppLocalizations.of(context)?.localeName;
     _categoriesFuture = _apiService.getCategories(language: locale);
+    // Only reload banners if they haven't been loaded yet or locale changed
+    if (_banners.isEmpty) {
+      _loadBanners(); // Reload banners when locale changes
+    }
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -110,64 +182,365 @@ class _HomeScreenState extends State<HomeScreen> {
       // Reload addresses to get updated default status
       await _loadAddresses();
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Varsayılan adres başarıyla güncellendi',
+          message: localizations.defaultAddressUpdated,
           isSuccess: true,
         );
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Adres güncellenemedi: ${e.toString()}',
+          message: localizations.addressUpdateFailed(e.toString()),
           isSuccess: false,
         );
       }
     }
   }
 
-  // Helper to get category icon and color
+  // Helper to map icon string to IconData
+  IconData? _getIconFromString(String? iconString) {
+    if (iconString == null || iconString.isEmpty) return null;
+
+    final iconMap = {
+      'restaurant': Icons.restaurant,
+      'store': Icons.store,
+      'shopping_basket': Icons.shopping_basket,
+      'local_drink': Icons.local_drink,
+      'cake': Icons.cake,
+      'devices': Icons.devices,
+      'checkroom': Icons.checkroom,
+      'category': Icons.category,
+      'fastfood': Icons.fastfood,
+      'shopping_cart': Icons.shopping_cart,
+      'coffee': Icons.coffee,
+      'lunch_dining': Icons.lunch_dining,
+      'bakery_dining': Icons.bakery_dining,
+      'local_grocery_store': Icons.local_grocery_store,
+      'phone_android': Icons.phone_android,
+      'computer': Icons.computer,
+      'watch': Icons.watch,
+      'tshirt': Icons.checkroom,
+      'clothing': Icons.checkroom,
+      'shoes': Icons.shopping_bag,
+      'home': Icons.home,
+      'work': Icons.work,
+      'fitness_center': Icons.fitness_center,
+      'spa': Icons.spa,
+      'beach_access': Icons.beach_access,
+      'school': Icons.school,
+      'book': Icons.book,
+      'music_note': Icons.music_note,
+      'movie': Icons.movie,
+      'sports_soccer': Icons.sports_soccer,
+      'pets': Icons.pets,
+      'child_care': Icons.child_care,
+      'medical_services': Icons.medical_services,
+      'car_repair': Icons.car_repair,
+      'build': Icons.build,
+    };
+
+    return iconMap[iconString.toLowerCase()];
+  }
+
+  // Helper to map color string to Color
+  Color? _getColorFromString(String? colorString) {
+    if (colorString == null || colorString.isEmpty) return null;
+
+    // Try to parse hex color (e.g., "#FF5722" or "FF5722")
+    if (colorString.startsWith('#')) {
+      colorString = colorString.substring(1);
+    }
+    if (colorString.length == 6) {
+      try {
+        return Color(int.parse('FF$colorString', radix: 16));
+      } catch (e) {
+        // If parsing fails, try named colors
+      }
+    }
+
+    // Named color mapping
+    final colorMap = {
+      'orange': AppTheme.primaryOrange,
+      'blue': Colors.blue,
+      'green': Colors.green,
+      'purple': Colors.purple,
+      'pink': Colors.pink,
+      'indigo': Colors.indigo,
+      'teal': Colors.teal,
+      'red': Colors.red,
+      'amber': Colors.amber,
+      'cyan': Colors.cyan,
+      'deepOrange': Colors.deepOrange,
+      'deepPurple': Colors.deepPurple,
+      'lightBlue': Colors.lightBlue,
+      'lightGreen': Colors.lightGreen,
+      'lime': Colors.lime,
+      'yellow': Colors.yellow,
+      'brown': Colors.brown,
+      'grey': Colors.grey,
+      'gray': Colors.grey,
+    };
+
+    return colorMap[colorString.toLowerCase()];
+  }
+
+  Widget _buildPromotionalBanner() {
+    if (_banners.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 180,
+          child: PageView.builder(
+            controller: _bannerPageController,
+            itemCount: _banners.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentBannerIndex = index;
+              });
+              _startBannerTimer(); // Reset timer on manual swipe
+            },
+            itemBuilder: (context, index) {
+              final currentBanner = _banners[index];
+              return Container(
+                margin: EdgeInsets.only(
+                  left: AppTheme.spacingXSmall,
+                  right: AppTheme.spacingXSmall,
+                  top: AppTheme.spacingXSmall,
+                  bottom: AppTheme.spacingXSmall,
+                ),
+                padding: EdgeInsets.only(
+                  left: AppTheme.spacingMedium,
+                  right: AppTheme.spacingMedium,
+                  top: AppTheme.spacingMedium,
+                  bottom: AppTheme.spacingMedium,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppTheme.lightOrange, AppTheme.darkOrange],
+                  ),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              currentBanner.title,
+                              style: AppTheme.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textOnPrimary,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Flexible(
+                            child: Text(
+                              currentBanner.subtitle,
+                              style: AppTheme.poppins(
+                                fontSize: 13,
+                                color: AppTheme.textOnPrimary.withValues(
+                                  alpha: 0.9,
+                                ),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (currentBanner.buttonText != null) ...[
+                            SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Handle button action
+                                if (currentBanner.buttonAction == 'order') {
+                                  // Navigate to order/checkout
+                                } else if (currentBanner.buttonAction ==
+                                    'discover') {
+                                  // Navigate to discover/search
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.cardColor,
+                                foregroundColor: AppTheme.primaryOrange,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
+                                minimumSize: Size(0, 36),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusSmall,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                currentBanner.buttonText!,
+                                style: AppTheme.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryOrange,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    // Placeholder for image
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
+                      ),
+                      child: currentBanner.imageUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
+                              child: Image.network(
+                                currentBanner.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.fastfood,
+                                    size: 40,
+                                    color: AppTheme.textOnPrimary.withValues(
+                                      alpha: 0.8,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Icon(
+                              Icons.fastfood,
+                              size: 40,
+                              color: AppTheme.textOnPrimary.withValues(
+                                alpha: 0.8,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        // Page indicators
+        if (_banners.length > 1)
+          Padding(
+            padding: EdgeInsets.only(
+              top: AppTheme.spacingSmall,
+              left: AppTheme.spacingMedium,
+              right: AppTheme.spacingMedium,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                _banners.length,
+                (index) => Container(
+                  width: 8,
+                  height: 8,
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentBannerIndex == index
+                        ? AppTheme.primaryOrange
+                        : AppTheme.textSecondary.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   // Helper to get category icon and color
   Map<String, dynamic> _getCategoryStyle(Map<String, dynamic> category) {
-    // If API provides icon and color, use them (need mapping for icon string to IconData)
-    // For now, we'll stick to the existing logic but use the name from the map
-    final name = (category['name'] as String).toLowerCase();
+    // Try to use API-provided icon and color first
+    final iconString = category['icon'] as String?;
+    final colorString = category['color'] as String?;
 
-    // TODO: Implement proper icon mapping from string if needed
-    // final iconString = category['icon'] as String?;
-    // final colorString = category['color'] as String?;
+    IconData? icon;
+    Color? color;
+
+    // Map icon string to IconData if provided
+    if (iconString != null && iconString.isNotEmpty) {
+      icon = _getIconFromString(iconString);
+    }
+
+    // Map color string to Color if provided
+    if (colorString != null && colorString.isNotEmpty) {
+      color = _getColorFromString(colorString);
+    }
+
+    // If both icon and color are successfully mapped from API, use them
+    if (icon != null && color != null) {
+      return {'icon': icon, 'color': color};
+    }
+
+    // Fallback to name-based logic if API data is not available or mapping failed
+    final name = (category['name'] as String).toLowerCase();
 
     if (name.contains('yemek') ||
         name.contains('food') ||
         name.contains('طعام')) {
-      return {'icon': Icons.restaurant, 'color': AppTheme.primaryOrange};
+      return {
+        'icon': icon ?? Icons.restaurant,
+        'color': color ?? AppTheme.primaryOrange,
+      };
     } else if (name.contains('mağaza') ||
         name.contains('store') ||
         name.contains('متاجر')) {
-      return {'icon': Icons.store, 'color': Colors.blue};
+      return {'icon': icon ?? Icons.store, 'color': color ?? Colors.blue};
     } else if (name.contains('market') ||
         name.contains('grocery') ||
         name.contains('بقالة')) {
-      return {'icon': Icons.shopping_basket, 'color': Colors.green};
+      return {
+        'icon': icon ?? Icons.shopping_basket,
+        'color': color ?? Colors.green,
+      };
     } else if (name.contains('içecek') ||
         name.contains('drink') ||
         name.contains('مشروبات')) {
-      return {'icon': Icons.local_drink, 'color': Colors.purple};
+      return {
+        'icon': icon ?? Icons.local_drink,
+        'color': color ?? Colors.purple,
+      };
     } else if (name.contains('tatlı') ||
         name.contains('dessert') ||
         name.contains('حلويات')) {
-      return {'icon': Icons.cake, 'color': Colors.pink};
+      return {'icon': icon ?? Icons.cake, 'color': color ?? Colors.pink};
     } else if (name.contains('elektronik') ||
         name.contains('electronic') ||
         name.contains('إلكترونيات')) {
-      return {'icon': Icons.devices, 'color': Colors.indigo};
+      return {'icon': icon ?? Icons.devices, 'color': color ?? Colors.indigo};
     } else if (name.contains('giyim') ||
         name.contains('clothing') ||
         name.contains('ملابس')) {
-      return {'icon': Icons.checkroom, 'color': Colors.teal};
+      return {'icon': icon ?? Icons.checkroom, 'color': color ?? Colors.teal};
     } else {
-      return {'icon': Icons.category, 'color': Colors.orange};
+      return {'icon': icon ?? Icons.category, 'color': color ?? Colors.orange};
     }
   }
 
@@ -206,6 +579,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
                 await _loadAddresses();
                 await _loadFavoriteStatus();
+                await _loadBanners();
               },
               child: CustomScrollView(
                 slivers: [
@@ -279,94 +653,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   // Promotional Banner
                   SliverToBoxAdapter(
-                    child: Container(
-                      margin: EdgeInsets.all(AppTheme.spacingMedium),
-                      padding: EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppTheme.lightOrange, AppTheme.darkOrange],
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusMedium,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Harika Bir Gün Olacak!',
-                                  style: AppTheme.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textOnPrimary,
-                                  ),
-                                ),
-                                SizedBox(height: AppTheme.spacingSmall),
-                                Text(
-                                  'Ücretsiz teslimat, düşük ücretler & %10 nakit iade!',
-                                  style: AppTheme.poppins(
-                                    fontSize: 14,
-                                    color: AppTheme.textOnPrimary.withValues(
-                                      alpha: 0.9,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: AppTheme.spacingMedium),
-                                ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.cardColor,
-                                    foregroundColor: AppTheme.primaryOrange,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusSmall,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Şimdi Sipariş Ver',
-                                    style: AppTheme.poppins(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.primaryOrange,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    child: _banners.isEmpty
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: EdgeInsets.only(
+                              top: AppTheme.spacingSmall,
+                              bottom: AppTheme.spacingSmall,
                             ),
+                            child: _buildPromotionalBanner(),
                           ),
-                          SizedBox(width: AppTheme.spacingMedium),
-                          // Placeholder for image
-                          Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: AppTheme.textOnPrimary.withValues(
-                                alpha: 0.2,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusMedium,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.fastfood,
-                              size: 50,
-                              color: AppTheme.textOnPrimary.withValues(
-                                alpha: 0.8,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                   // Categories Section
                   SliverToBoxAdapter(
@@ -382,7 +677,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Kategoriler',
+                                localizations.categories,
                                 style: AppTheme.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -390,9 +685,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CategoriesScreen(),
+                                    ),
+                                  );
+                                },
                                 child: Text(
-                                  'Tümünü Gör',
+                                  localizations.viewAll,
                                   style: AppTheme.poppins(
                                     color: AppTheme.primaryOrange,
                                     fontWeight: FontWeight.w600,
@@ -421,7 +724,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   snapshot.data!.isEmpty) {
                                 return Center(
                                   child: Text(
-                                    'Kategori bulunamadı',
+                                    localizations.categoryNotFound,
                                     style: AppTheme.poppins(
                                       color: AppTheme.textSecondary,
                                     ),
@@ -430,14 +733,31 @@ class _HomeScreenState extends State<HomeScreen> {
                               }
 
                               final categories = snapshot.data!;
+                              // Sort by displayOrder if available, then by name
+                              final sortedCategories =
+                                  List<Map<String, dynamic>>.from(categories)
+                                    ..sort((a, b) {
+                                      final orderA =
+                                          a['displayOrder'] as int? ?? 999;
+                                      final orderB =
+                                          b['displayOrder'] as int? ?? 999;
+                                      if (orderA != orderB) {
+                                        return orderA.compareTo(orderB);
+                                      }
+                                      final nameA = (a['name'] as String)
+                                          .toLowerCase();
+                                      final nameB = (b['name'] as String)
+                                          .toLowerCase();
+                                      return nameA.compareTo(nameB);
+                                    });
                               return ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 padding: EdgeInsets.symmetric(
                                   horizontal: AppTheme.spacingSmall,
                                 ),
-                                itemCount: categories.length,
+                                itemCount: sortedCategories.length,
                                 itemBuilder: (context, index) {
-                                  final category = categories[index];
+                                  final category = sortedCategories[index];
                                   return _buildCategoryCard(category);
                                 },
                               );
@@ -486,7 +806,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Sizin İçin Seçtiklerimiz',
+                                    localizations.picksForYou,
                                     style: AppTheme.poppins(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
@@ -496,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   TextButton(
                                     onPressed: () {},
                                     child: Text(
-                                      'Tümünü Gör',
+                                      localizations.viewAll,
                                       style: AppTheme.poppins(
                                         color: AppTheme.primaryOrange,
                                         fontWeight: FontWeight.w600,
@@ -604,6 +924,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCategoryImage(String? imageUrl, IconData icon, Color color) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return Icon(icon, color: color, size: 30);
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      child: Image.network(
+        imageUrl,
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(icon, color: color, size: 30);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                    : null,
+                color: color,
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildCategoryCard(Map<String, dynamic> category) {
     final categoryName = category['name'] as String;
     final style = _getCategoryStyle(category);
@@ -634,7 +990,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               ),
-              child: Icon(icon, color: color, size: 30),
+              child: _buildCategoryImage(
+                category['imageUrl']?.toString(),
+                icon,
+                color,
+              ),
             ),
             SizedBox(height: AppTheme.spacingSmall),
             Text(
@@ -656,6 +1016,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPicksForYouCard(BuildContext context, Product product) {
     final isFavorite = _favoriteStatus[product.id] ?? false;
+    final localizations = AppLocalizations.of(context)!;
 
     return ProductCard(
       product: product,
@@ -673,7 +1034,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (mounted) {
               ToastMessage.show(
                 context,
-                message: '${product.name} favorilerden çıkarıldı',
+                message: localizations.removedFromFavorites(product.name),
                 isSuccess: true,
               );
             }
@@ -685,7 +1046,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (mounted) {
               ToastMessage.show(
                 context,
-                message: '${product.name} favorilere eklendi',
+                message: localizations.addedToFavorites(product.name),
                 isSuccess: true,
               );
             }
@@ -694,7 +1055,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (mounted) {
             ToastMessage.show(
               context,
-              message: 'Favori işlemi başarısız: $e',
+              message: localizations.favoriteOperationFailed(e.toString()),
               isSuccess: false,
             );
           }
@@ -891,7 +1252,10 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
     _tempSelectedAddress = widget.selectedAddress;
   }
 
-  String _getAddressDisplayText(Map<String, dynamic> address) {
+  String _getAddressDisplayText(
+    Map<String, dynamic> address,
+    AppLocalizations localizations,
+  ) {
     final district = address['district'] ?? '';
     final city = address['city'] ?? '';
     if (district.isNotEmpty && city.isNotEmpty) {
@@ -900,11 +1264,12 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
         address['fullAddress'].toString().isNotEmpty) {
       return address['fullAddress'].toString();
     }
-    return 'Adres';
+    return localizations.address;
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
@@ -936,7 +1301,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Adres Seçin',
+                  localizations.selectAddress,
                   style: AppTheme.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -963,7 +1328,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                   ),
                   SizedBox(height: AppTheme.spacingMedium),
                   Text(
-                    'Henüz adres eklenmemiş',
+                    localizations.noAddressesYet,
                     style: AppTheme.poppins(
                       fontSize: 16,
                       color: AppTheme.textSecondary,
@@ -1045,7 +1410,8 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        address['title'] ?? 'Adres',
+                                        address['title'] ??
+                                            localizations.address,
                                         style: AppTheme.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -1068,7 +1434,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                           ),
                                         ),
                                         child: Text(
-                                          'Varsayılan',
+                                          localizations.defaultLabel,
                                           style: AppTheme.poppins(
                                             color: AppTheme.textOnPrimary,
                                             fontSize: 10,
@@ -1080,7 +1446,10 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  _getAddressDisplayText(address),
+                                  _getAddressDisplayText(
+                                    address,
+                                    localizations,
+                                  ),
                                   style: AppTheme.poppins(
                                     fontSize: 14,
                                     color: AppTheme.textSecondary,
@@ -1144,7 +1513,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                     ),
                   ),
                   child: Text(
-                    'Varsayılan Adres Yap',
+                    localizations.setAsDefault,
                     style: AppTheme.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

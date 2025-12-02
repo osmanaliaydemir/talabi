@@ -450,7 +450,6 @@
   "pleaseSelectPaymentMethod": "Lütfen ödeme yöntemi seçin",
   "orderCreatedSuccess": "Siparişiniz başarıyla oluşturuldu!",
   "noAddressFound": "Kayıtlı adres bulunamadı",
-  "addNewAddress": "Yeni Adres Ekle",
   "cashDescription": "Nakit olarak kapıda kuryeye teslim edebilirsiniz.",
   "paymentComingSoonDescription": "Bu ödeme yöntemi yakında hizmete girecektir.",
   "skip": "Geç",
@@ -491,7 +490,6 @@
   "weeklyRevenue": "Haftalık Gelir",
   "quickActions": "Hızlı İşlemler",
   "reports": "Raporlar",
-  "reviews": "Yorumlar",
   "logoUpdated": "Logo güncellendi",
   "logoUploadFailed": "Logo yüklenemedi: {error}",
   "@logoUploadFailed": {
@@ -599,6 +597,11 @@
   "pendingReviews": "Bekleyen Yorumlar",
   "noPendingReviews": "Bekleyen yorum yok",
   "reviewsLoadError": "Yorumlar yüklenemedi: {error}",
+  "@reviewsLoadError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "salesReports": "Satış Raporları",
   "selectDateRange": "Tarih Aralığı Seç",
   "daily": "Günlük",
@@ -631,7 +634,6 @@
       "error": {}
     }
   },
-  "locationServicesDisabled": "Konum servisleri kapalı",
   "locationPermissionDenied": "Konum izni reddedildi",
   "locationPermissionDeniedForever": "Konum izni kalıcı olarak reddedildi",
   "vendorsLoadFailed": "Marketler yüklenemedi: {error}",
@@ -659,12 +661,10 @@
   },
   "filters": "Filtreler",
   "clear": "Temizle",
-  "category": "Kategori",
   "selectCategory": "Kategori seçin",
   "priceRange": "Fiyat Aralığı",
   "minPrice": "Min Fiyat",
   "maxPrice": "Max Fiyat",
-  "city": "Şehir",
   "selectCity": "Şehir seçin",
   "minimumRating": "Minimum Rating",
   "maximumDistance": "Maksimum Mesafe (km)",
@@ -680,11 +680,8 @@
   "distance": "Mesafe",
   "applyFilters": "Filtreleri Uygula",
   "searchProductsOrVendors": "Ürün veya market ara...",
-  "products": "Ürünler",
-  "vendors": "Marketler",
   "suggestions": "Öneriler",
   "product": "Ürün",
-  "vendor": "Market",
   "searchHistory": "Arama Geçmişi",
   "typeToSearch": "Arama yapmak için yukarıdaki kutuya yazın",
   "recentSearches": "Son Aramalar",
@@ -728,7 +725,6 @@
   },
   "productNotFound": "Ürün bulunamadı",
   "rateVendor": "Vendor'u Değerlendir",
-  "writeReview": "Yorum Yaz",
   "shareYourThoughts": "Düşüncelerinizi paylaşın...",
   "submit": "Gönder",
   "vendorReviewSubmitted": "Vendor değerlendirmesi gönderildi!",
@@ -736,7 +732,6 @@
   "noDescription": "Açıklama bulunmuyor.",
   "readMore": "Daha fazla oku",
   "showLess": "Daha az göster",
-  "description": "Açıklama",
   "deliveryTime": "Teslimat Süresi",
   "deliveryType": "Teslimat Türü",
   "reviews": "Yorumlar ({count})",
@@ -747,7 +742,6 @@
   },
   "noReviewsYet": "Henüz yorum yok. İlk yorumu siz yapın!",
   "seeAllReviews": "Tüm Yorumları Gör",
-  "addToCart": "Sepete Ekle",
   "by": "Tarafından: {vendorName}",
   "@by": {
     "placeholders": {
@@ -757,7 +751,6 @@
   "orderCreatedSuccessfully": "Siparişiniz Başarıyla Oluşturuldu!",
   "orderCode": "Sipariş Kodu",
   "orderPreparationStarted": "Siparişiniz hazırlanmaya başlandı. Sipariş durumunuzu \"Siparişlerim\" sayfasından takip edebilirsiniz.",
-  "myOrders": "Siparişlerim",
   "homePage": "Ana Sayfa",
   "ordersLoadFailed": "Siparişler yüklenemedi: {error}",
   "@ordersLoadFailed": {
@@ -766,7 +759,6 @@
     }
   },
   "noOrdersYet": "Henüz siparişiniz yok",
-  "onWay": "Yolda",
   "unknownVendor": "Bilinmeyen Satıcı",
   "unknown": "Bilinmeyen",
   "cancelItem": "Ürünü İptal Et",
@@ -774,6 +766,18 @@
   "itemCancelSuccess": "Ürün başarıyla iptal edildi",
   "itemCancelFailed": "Ürün iptal edilemedi: {error}",
   "@itemCancelFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "promotionalBannerTitle": "Harika Bir Gün Olacak!",
+  "promotionalBannerSubtitle": "Ücretsiz teslimat, düşük ücretler & %10 nakit iade!",
+  "orderNow": "Şimdi Sipariş Ver",
+  "categories": "Kategoriler",
+  "categoryNotFound": "Kategori bulunamadı",
+  "picksForYou": "Sizin İçin Seçtiklerimiz",
+  "addressUpdateFailed": "Adres güncellenemedi: {error}",
+  "@addressUpdateFailed": {
     "placeholders": {
       "error": {}
     }

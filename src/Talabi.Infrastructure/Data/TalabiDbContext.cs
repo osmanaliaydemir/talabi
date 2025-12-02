@@ -34,6 +34,8 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<LegalDocument> LegalDocuments { get; set; }
     public DbSet<UserActivityLog> UserActivityLogs { get; set; }
     public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
+    public DbSet<PromotionalBanner> PromotionalBanners { get; set; }
+    public DbSet<PromotionalBannerTranslation> PromotionalBannerTranslations { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -92,6 +94,18 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         // Unique constraint for Category + Language
         builder.Entity<CategoryTranslation>()
             .HasIndex(ct => new { ct.CategoryId, ct.LanguageCode })
+            .IsUnique();
+
+        // PromotionalBannerTranslation configuration
+        builder.Entity<PromotionalBannerTranslation>()
+            .HasOne(pbt => pbt.PromotionalBanner)
+            .WithMany(pb => pb.Translations)
+            .HasForeignKey(pbt => pbt.PromotionalBannerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint for PromotionalBanner + Language
+        builder.Entity<PromotionalBannerTranslation>()
+            .HasIndex(pbt => new { pbt.PromotionalBannerId, pbt.LanguageCode })
             .IsUnique();
 
         builder.Entity<Order>()

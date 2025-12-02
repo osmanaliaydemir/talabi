@@ -5,6 +5,7 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/models/review.dart';
+import 'package:mobile/models/promotional_banner.dart';
 import 'package:mobile/services/api_request_scheduler.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
@@ -264,6 +265,24 @@ class ApiService {
       return data.map((json) => Product.fromJson(json)).toList();
     } catch (e) {
       print('Error fetching popular products: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<PromotionalBanner>> getBanners({String? language}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (language != null) {
+        queryParams['language'] = language;
+      }
+      final response = await _dio.get(
+        '/banners',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      final List<dynamic> data = response.data;
+      return data.map((json) => PromotionalBanner.fromJson(json)).toList();
+    } catch (e) {
+      print('Error fetching banners: $e');
       rethrow;
     }
   }
@@ -890,9 +909,15 @@ class ApiService {
     }
   }
 
-  Future<void> cancelOrderItem(String customerOrderItemId, String reason) async {
+  Future<void> cancelOrderItem(
+    String customerOrderItemId,
+    String reason,
+  ) async {
     try {
-      await _dio.post('/orders/items/$customerOrderItemId/cancel', data: {'reason': reason});
+      await _dio.post(
+        '/orders/items/$customerOrderItemId/cancel',
+        data: {'reason': reason},
+      );
     } catch (e) {
       print('Error cancelling order item: $e');
       rethrow;

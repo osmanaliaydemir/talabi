@@ -2464,12 +2464,6 @@ abstract class AppLocalizations {
   /// **'Reports'**
   String get reports;
 
-  /// No description provided for @reviews.
-  ///
-  /// In en, this message translates to:
-  /// **'Reviews ({count})'**
-  String reviews(Object count);
-
   /// No description provided for @logoUpdated.
   ///
   /// In en, this message translates to:
@@ -3334,6 +3328,12 @@ abstract class AppLocalizations {
   /// **'Delivery Type'**
   String get deliveryType;
 
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews ({count})'**
+  String reviews(Object count);
+
   /// No description provided for @noReviewsYet.
   ///
   /// In en, this message translates to:
@@ -3429,6 +3429,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to cancel item: {error}'**
   String itemCancelFailed(Object error);
+
+  /// No description provided for @promotionalBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s Going to Be a Great Day!'**
+  String get promotionalBannerTitle;
+
+  /// No description provided for @promotionalBannerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free delivery, low fees & 10% cashback!'**
+  String get promotionalBannerSubtitle;
+
+  /// No description provided for @orderNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Now'**
+  String get orderNow;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// No description provided for @categoryNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found'**
+  String get categoryNotFound;
+
+  /// No description provided for @picksForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Picks For You'**
+  String get picksForYou;
+
+  /// No description provided for @addressUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Address update failed: {error}'**
+  String addressUpdateFailed(Object error);
 }
 
 class _AppLocalizationsDelegate

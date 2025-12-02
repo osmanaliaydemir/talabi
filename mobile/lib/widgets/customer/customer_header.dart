@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
@@ -96,15 +97,28 @@ class _CustomerHeaderState extends State<CustomerHeader> {
               Row(
                 children: [
                   if (widget.showBackButton)
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () {
+                    GestureDetector(
+                      onTap: () {
                         if (widget.onBack != null) {
                           widget.onBack!();
                         } else {
                           Navigator.of(context).pop();
                         }
                       },
+                      child: Container(
+                        padding: EdgeInsets.all(AppTheme.spacingSmall),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusSmall,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
                     )
                   else
                     Container(
@@ -235,27 +249,18 @@ class _CustomerHeaderState extends State<CustomerHeader> {
               const Icon(Icons.location_on, color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Expanded(
-                child: widget.isLoadingAddress
-                    ? const SizedBox(
-                        height: 14,
-                        width: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        widget.selectedAddress != null
-                            ? _getAddressDisplayText(widget.selectedAddress!)
-                            : localizations?.selectAddress ?? 'Adres seçin',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                child: Text(
+                  widget.selectedAddress != null
+                      ? _getAddressDisplayText(widget.selectedAddress!)
+                      : localizations?.selectAddress ?? 'Adres seçin',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const Icon(
                 Icons.keyboard_arrow_down,

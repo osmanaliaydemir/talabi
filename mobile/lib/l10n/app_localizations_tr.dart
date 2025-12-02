@@ -60,7 +60,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get products => 'Ürünler';
 
   @override
-  String get vendors => 'Marketler';
+  String get vendors => 'Satıcılar';
 
   @override
   String get cart => 'Sepet';
@@ -181,7 +181,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get description => 'Açıklama';
 
   @override
-  String get vendor => 'Market';
+  String get vendor => 'Satıcı';
 
   @override
   String get category => 'Kategori';
@@ -829,7 +829,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get locationServicesDisabled => 'Konum servisleri kapalı';
+  String get locationServicesDisabled => 'Konum servisleri devre dışı';
 
   @override
   String get pleaseSelectLocation => 'Lütfen bir konum seçin';
@@ -1263,11 +1263,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get reports => 'Raporlar';
-
-  @override
-  String reviews(Object count) {
-    return 'Yorumlar ($count)';
-  }
 
   @override
   String get logoUpdated => 'Logo güncellendi';
@@ -1752,6 +1747,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deliveryType => 'Teslimat Türü';
 
   @override
+  String reviews(Object count) {
+    return 'Yorumlar ($count)';
+  }
+
+  @override
   String get noReviewsYet => 'Henüz yorum yok. İlk yorumu siz yapın!';
 
   @override
@@ -1804,5 +1804,29 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String itemCancelFailed(Object error) {
     return 'Ürün iptal edilemedi: $error';
+  }
+
+  @override
+  String get promotionalBannerTitle => 'Harika Bir Gün Olacak!';
+
+  @override
+  String get promotionalBannerSubtitle =>
+      'Ücretsiz teslimat, düşük ücretler & %10 nakit iade!';
+
+  @override
+  String get orderNow => 'Şimdi Sipariş Ver';
+
+  @override
+  String get categories => 'Kategoriler';
+
+  @override
+  String get categoryNotFound => 'Kategori bulunamadı';
+
+  @override
+  String get picksForYou => 'Sizin İçin Seçtiklerimiz';
+
+  @override
+  String addressUpdateFailed(Object error) {
+    return 'Adres güncellenemedi: $error';
   }
 }

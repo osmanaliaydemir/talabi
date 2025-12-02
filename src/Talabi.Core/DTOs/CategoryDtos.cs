@@ -6,4 +6,6 @@ public class CategoryDto
     public string Name { get; set; } = string.Empty;
     public string? Icon { get; set; }
     public string? Color { get; set; }
+    public string? ImageUrl { get; set; }
+    public int DisplayOrder { get; set; } = 0;
 }

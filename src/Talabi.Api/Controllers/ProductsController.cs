@@ -111,9 +111,11 @@ public class ProductsController : ControllerBase
                 Id = c.Id,
                 Name = translation?.Name ?? c.Name,
                 Icon = c.Icon,
-                Color = c.Color
+                Color = c.Color,
+                ImageUrl = c.ImageUrl,
+                DisplayOrder = c.DisplayOrder
             };
-        }).OrderBy(c => c.Name).ToList();
+        }).OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
 
         return Ok(categoryDtos);
     }

@@ -449,7 +449,6 @@
   "pleaseSelectPaymentMethod": "Please select a payment method",
   "orderCreatedSuccess": "Your order has been created successfully!",
   "noAddressFound": "No address found",
-  "addNewAddress": "Add New Address",
   "cashDescription": "You can pay cash to the courier at the door.",
   "paymentComingSoonDescription": "This payment method will be available soon.",
   "skip": "Skip",
@@ -489,7 +488,6 @@
   "weeklyRevenue": "Weekly Revenue",
   "quickActions": "Quick Actions",
   "reports": "Reports",
-  "reviews": "Reviews",
   "logoUpdated": "Logo updated",
   "logoUploadFailed": "Logo upload failed: {error}",
   "@logoUploadFailed": {
@@ -597,6 +595,11 @@
   "pendingReviews": "Pending Reviews",
   "noPendingReviews": "No pending reviews",
   "reviewsLoadError": "Failed to load reviews: {error}",
+  "@reviewsLoadError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "salesReports": "Sales Reports",
   "selectDateRange": "Select Date Range",
   "daily": "Daily",
@@ -629,7 +632,6 @@
       "error": {}
     }
   },
-  "locationServicesDisabled": "Location services are disabled",
   "locationPermissionDenied": "Location permission denied",
   "locationPermissionDeniedForever": "Location permission permanently denied",
   "vendorsLoadFailed": "Failed to load vendors: {error}",
@@ -657,12 +659,10 @@
   },
   "filters": "Filters",
   "clear": "Clear",
-  "category": "Category",
   "selectCategory": "Select category",
   "priceRange": "Price Range",
   "minPrice": "Min Price",
   "maxPrice": "Max Price",
-  "city": "City",
   "selectCity": "Select city",
   "minimumRating": "Minimum Rating",
   "maximumDistance": "Maximum Distance (km)",
@@ -678,11 +678,8 @@
   "distance": "Distance",
   "applyFilters": "Apply Filters",
   "searchProductsOrVendors": "Search products or vendors...",
-  "products": "Products",
-  "vendors": "Vendors",
   "suggestions": "Suggestions",
   "product": "Product",
-  "vendor": "Vendor",
   "searchHistory": "Search History",
   "typeToSearch": "Type in the box above to search",
   "recentSearches": "Recent Searches",
@@ -726,7 +723,6 @@
   },
   "productNotFound": "Product not found",
   "rateVendor": "Rate Vendor",
-  "writeReview": "Write a Review",
   "shareYourThoughts": "Share your thoughts...",
   "submit": "Submit",
   "vendorReviewSubmitted": "Vendor review submitted!",
@@ -734,7 +730,6 @@
   "noDescription": "No description available.",
   "readMore": "Read more",
   "showLess": "Show less",
-  "description": "Description",
   "deliveryTime": "Delivery Time",
   "deliveryType": "Delivery Type",
   "reviews": "Reviews ({count})",
@@ -745,7 +740,6 @@
   },
   "noReviewsYet": "No reviews yet. Be the first to review!",
   "seeAllReviews": "See All Reviews",
-  "addToCart": "Add to Cart",
   "by": "By {vendorName}",
   "@by": {
     "placeholders": {
@@ -755,7 +749,6 @@
   "orderCreatedSuccessfully": "Your Order Has Been Created Successfully!",
   "orderCode": "Order Code",
   "orderPreparationStarted": "Your order has started being prepared. You can track your order status from the \"My Orders\" page.",
-  "myOrders": "My Orders",
   "homePage": "Home",
   "ordersLoadFailed": "Failed to load orders: {error}",
   "@ordersLoadFailed": {
@@ -772,6 +765,18 @@
   "itemCancelSuccess": "Item cancelled successfully",
   "itemCancelFailed": "Failed to cancel item: {error}",
   "@itemCancelFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "promotionalBannerTitle": "It's Going to Be a Great Day!",
+  "promotionalBannerSubtitle": "Free delivery, low fees & 10% cashback!",
+  "orderNow": "Order Now",
+  "categories": "Categories",
+  "categoryNotFound": "No categories found",
+  "picksForYou": "Picks For You",
+  "addressUpdateFailed": "Address update failed: {error}",
+  "@addressUpdateFailed": {
     "placeholders": {
       "error": {}
     }
