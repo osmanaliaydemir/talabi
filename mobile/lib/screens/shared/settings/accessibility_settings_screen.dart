@@ -27,37 +27,38 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSectionHeader(context, localizations.displaySettings),
-                    SwitchListTile(
-                      activeColor: AppTheme.primaryOrange,
-                      title: Text(
-                        localizations.darkMode,
-                        style: AppTheme.poppins(
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      subtitle: Text(
-                        localizations.darkModeDescription,
-                        style: AppTheme.poppins(
-                          fontSize: 12,
-                          color: AppTheme.textSecondary,
-                        ),
-                      ),
-                      value: themeProvider.themeMode == ThemeMode.dark,
-                      onChanged: (value) {
-                        themeProvider.setThemeMode(
-                          value ? ThemeMode.dark : ThemeMode.light,
-                        );
-                        ToastMessage.show(
-                          context,
-                          message: localizations.settingsSaved,
-                          isSuccess: true,
-                        );
-                      },
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingMedium,
-                      ),
-                    ),
+                    // Dark mode geçici olarak devre dışı bırakıldı
+                    // SwitchListTile(
+                    //   activeColor: AppTheme.primaryOrange,
+                    //   title: Text(
+                    //     localizations.darkMode,
+                    //     style: AppTheme.poppins(
+                    //       fontWeight: FontWeight.w500,
+                    //       color: AppTheme.textPrimary,
+                    //     ),
+                    //   ),
+                    //   subtitle: Text(
+                    //     localizations.darkModeDescription,
+                    //     style: AppTheme.poppins(
+                    //       fontSize: 12,
+                    //       color: AppTheme.textSecondary,
+                    //     ),
+                    //   ),
+                    //   value: themeProvider.themeMode == ThemeMode.dark,
+                    //   onChanged: (value) {
+                    //     themeProvider.setThemeMode(
+                    //       value ? ThemeMode.dark : ThemeMode.light,
+                    //     );
+                    //     ToastMessage.show(
+                    //       context,
+                    //       message: localizations.settingsSaved,
+                    //       isSuccess: true,
+                    //     );
+                    //   },
+                    //   contentPadding: EdgeInsets.symmetric(
+                    //     horizontal: AppTheme.spacingMedium,
+                    //   ),
+                    // ),
                     SwitchListTile(
                       activeColor: AppTheme.primaryOrange,
                       title: Text(

@@ -1,3 +1,5 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.DTOs;
 
 public class ProductDto
@@ -10,6 +12,7 @@ public class ProductDto
     public string? Category { get; set; }
     public Guid? CategoryId { get; set; }
     public decimal Price { get; set; }
+    public Currency Currency { get; set; } = Currency.TRY;
     public string? ImageUrl { get; set; }
 }
 
@@ -21,6 +24,7 @@ public class VendorProductDto
     public string? Description { get; set; }
     public string? Category { get; set; }
     public decimal Price { get; set; }
+    public Currency Currency { get; set; } = Currency.TRY;
     public string? ImageUrl { get; set; }
     public bool IsAvailable { get; set; }
     public int? Stock { get; set; }
@@ -36,6 +40,7 @@ public class CreateProductDto
     public string? Category { get; set; }
     public Guid? CategoryId { get; set; }
     public decimal Price { get; set; }
+    public Currency Currency { get; set; } = Currency.TRY; // Required
     public string? ImageUrl { get; set; }
     public bool IsAvailable { get; set; } = true;
     public int? Stock { get; set; }
@@ -49,6 +54,7 @@ public class UpdateProductDto
     public string? Category { get; set; }
     public Guid? CategoryId { get; set; }
     public decimal? Price { get; set; }
+    public Currency? Currency { get; set; }
     public string? ImageUrl { get; set; }
     public bool? IsAvailable { get; set; }
     public int? Stock { get; set; }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/customer/product_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
@@ -43,7 +42,6 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
     final localizations = AppLocalizations.of(context)!;
     final cart = Provider.of<CartProvider>(context, listen: true);
     final cartItem = cart.items[widget.product.id];
@@ -52,7 +50,8 @@ class _ProductCardState extends State<ProductCard> {
         widget.onToggleAvailability != null || widget.onDelete != null;
 
     return GestureDetector(
-      onTap: widget.onTap ??
+      onTap:
+          widget.onTap ??
           () {
             Navigator.push(
               context,
@@ -71,9 +70,7 @@ class _ProductCardState extends State<ProductCard> {
             : EdgeInsets.zero,
         child: Card(
           elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -189,22 +186,22 @@ class _ProductCardState extends State<ProductCard> {
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
-                            PopupMenuItem<String>(
-                              value: 'toggle',
-                              child: Text(
-                                widget.product.isAvailable
-                                    ? localizations.outOfStock
-                                    : localizations.inStock,
-                              ),
-                            ),
-                            PopupMenuItem<String>(
-                              value: 'delete',
-                              child: Text(
-                                localizations.delete,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
+                                PopupMenuItem<String>(
+                                  value: 'toggle',
+                                  child: Text(
+                                    widget.product.isAvailable
+                                        ? localizations.outOfStock
+                                        : localizations.inStock,
+                                  ),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'delete',
+                                  child: Text(
+                                    localizations.delete,
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
                         ),
                       ),
                   ],
@@ -231,7 +228,10 @@ class _ProductCardState extends State<ProductCard> {
                       if (!isVendorCard)
                         Text(
                           '25 dk • Kolay • ${widget.product.vendorName ?? "Talabi"}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -244,7 +244,7 @@ class _ProductCardState extends State<ProductCard> {
                             child: Text(
                               CurrencyFormatter.format(
                                 widget.product.price,
-                                localizationProvider.currency,
+                                widget.product.currency,
                               ),
                               style: TextStyle(
                                 fontSize: 18,
@@ -261,7 +261,7 @@ class _ProductCardState extends State<ProductCard> {
                               Container(
                                 decoration: BoxDecoration(
                                   color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -293,8 +293,8 @@ class _ProductCardState extends State<ProductCard> {
                                                 context,
                                                 message: localizations
                                                     .errorWithMessage(
-                                                  e.toString(),
-                                                ),
+                                                      e.toString(),
+                                                    ),
                                                 isSuccess: false,
                                               );
                                             }
@@ -343,8 +343,8 @@ class _ProductCardState extends State<ProductCard> {
                                                 context,
                                                 message: localizations
                                                     .errorWithMessage(
-                                                  e.toString(),
-                                                ),
+                                                      e.toString(),
+                                                    ),
                                                 isSuccess: false,
                                               );
                                             }
@@ -388,7 +388,9 @@ class _ProductCardState extends State<ProductCard> {
 
                                           try {
                                             await cart.addItem(
-                                                widget.product, context);
+                                              widget.product,
+                                              context,
+                                            );
                                             if (mounted) {
                                               ToastMessage.show(
                                                 context,
@@ -409,7 +411,7 @@ class _ProductCardState extends State<ProductCard> {
                                         },
                                       ),
                               ),
-                          ]
+                          ],
                         ],
                       ),
                     ],

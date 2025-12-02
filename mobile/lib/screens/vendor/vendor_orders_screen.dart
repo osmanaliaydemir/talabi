@@ -1,13 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/vendor/vendor_order_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/utils/navigation_logger.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
-import 'package:provider/provider.dart';
 
 class VendorOrdersScreen extends StatefulWidget {
   const VendorOrdersScreen({super.key});
@@ -105,8 +104,10 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
 
   @override
   Widget build(BuildContext context) {
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
     final localizations = AppLocalizations.of(context)!;
+
+    // Use TRY as default currency for order display
+    const Currency displayCurrency = Currency.try_;
 
     return Scaffold(
       appBar: VendorHeader(
@@ -190,7 +191,9 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 4),
-                                Text('${localizations.customer}: ${order['customerName']}'),
+                                Text(
+                                  '${localizations.customer}: ${order['customerName']}',
+                                ),
                                 Text(
                                   '${localizations.date}: ${DateTime.parse(order['createdAt']).toString().substring(0, 16)}',
                                 ),
@@ -207,7 +210,10 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    _getStatusText(order['status'], localizations),
+                                    _getStatusText(
+                                      order['status'],
+                                      localizations,
+                                    ),
                                     style: TextStyle(
                                       color: _getStatusColor(order['status']),
                                       fontWeight: FontWeight.bold,
@@ -224,7 +230,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                                 Text(
                                   CurrencyFormatter.format(
                                     (order['totalAmount'] as num).toDouble(),
-                                    localizationProvider.currency,
+                                    displayCurrency,
                                   ),
                                   style: const TextStyle(
                                     fontSize: 18,

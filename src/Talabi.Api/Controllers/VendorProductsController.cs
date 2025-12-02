@@ -58,6 +58,7 @@ public class VendorProductsController : ControllerBase
                 Description = p.Description,
                 Category = p.Category,
                 Price = p.Price,
+                Currency = p.Currency,
                 ImageUrl = p.ImageUrl,
                 IsAvailable = p.IsAvailable,
                 Stock = p.Stock,
@@ -88,6 +89,7 @@ public class VendorProductsController : ControllerBase
                 Description = p.Description,
                 Category = p.Category,
                 Price = p.Price,
+                Currency = p.Currency,
                 ImageUrl = p.ImageUrl,
                 IsAvailable = p.IsAvailable,
                 Stock = p.Stock,
@@ -119,6 +121,7 @@ public class VendorProductsController : ControllerBase
             Category = dto.Category,
             CategoryId = dto.CategoryId,
             Price = dto.Price,
+            Currency = dto.Currency,
             ImageUrl = dto.ImageUrl,
             IsAvailable = dto.IsAvailable,
             Stock = dto.Stock,
@@ -136,6 +139,7 @@ public class VendorProductsController : ControllerBase
             Description = product.Description,
             Category = product.Category,
             Price = product.Price,
+            Currency = product.Currency,
             ImageUrl = product.ImageUrl,
             IsAvailable = product.IsAvailable,
             Stock = product.Stock,
@@ -172,6 +176,8 @@ public class VendorProductsController : ControllerBase
             product.CategoryId = dto.CategoryId.Value;
         if (dto.Price.HasValue)
             product.Price = dto.Price.Value;
+        if (dto.Currency.HasValue)
+            product.Currency = dto.Currency.Value;
         if (dto.ImageUrl != null)
             product.ImageUrl = dto.ImageUrl;
         if (dto.IsAvailable.HasValue)

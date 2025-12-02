@@ -36,6 +36,7 @@ public class FavoritesController : ControllerBase
                 Name = f.Product.Name,
                 Description = f.Product.Description,
                 Price = f.Product.Price,
+                Currency = f.Product.Currency,
                 ImageUrl = f.Product.ImageUrl
             })
             .ToListAsync();

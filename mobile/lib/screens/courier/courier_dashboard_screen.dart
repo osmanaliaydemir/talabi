@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/models/courier_order.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/location_service.dart';
@@ -349,7 +350,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       title: localizations?.earnings ?? 'Earnings',
                       value: CurrencyFormatter.format(
                         _statistics?.todayEarnings ?? 0,
-                        'TRY',
+                        Currency.try_,
                       ),
                       subtitle: 'Today',
                       color: Colors.green,
@@ -541,7 +542,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                       Text(
                                         CurrencyFormatter.format(
                                           order.deliveryFee,
-                                          'TRY',
+                                          Currency.try_,
                                         ),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,

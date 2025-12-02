@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/models/currency.dart' as currency_model;
 
 class CurrencyFormatter {
-  static String format(double amount, String currency) {
+  static String format(double amount, currency_model.Currency currency) {
     final formatter = NumberFormat.currency(
-      symbol: _getCurrencySymbol(currency),
+      symbol: currency.symbol,
       decimalDigits: 2,
       locale: 'tr_TR', // Use Turkish locale for number formatting
     );
@@ -12,29 +13,23 @@ class CurrencyFormatter {
     return formatter.format(amount);
   }
 
+  static String formatWithString(double amount, String currencyCode) {
+    final currency = currency_model.Currency.fromString(currencyCode);
+    return format(amount, currency);
+  }
+
   static String formatWithLocale(
     double amount,
-    String currency,
+    currency_model.Currency currency,
     Locale locale,
   ) {
     final formatter = NumberFormat.currency(
-      symbol: _getCurrencySymbol(currency),
+      symbol: currency.symbol,
       decimalDigits: 2,
       locale: locale.toString(),
     );
 
     return formatter.format(amount);
-  }
-
-  static String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'TRY':
-        return '₺';
-      case 'USDT':
-        return 'USDT';
-      default:
-        return currency;
-    }
   }
 
   static double convert(

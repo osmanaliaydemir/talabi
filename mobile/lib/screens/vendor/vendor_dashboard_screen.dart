@@ -5,10 +5,10 @@ import 'package:mobile/screens/vendor/vendor_orders_screen.dart';
 import 'package:mobile/screens/vendor/vendor_products_screen.dart';
 import 'package:mobile/screens/vendor/vendor_reports_screen.dart';
 import 'package:mobile/screens/vendor/vendor_reviews_screen.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
@@ -59,8 +59,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
     final localizations = AppLocalizations.of(context);
+
+    // Use TRY as default currency for vendor dashboard revenue
+    const Currency displayCurrency = Currency.try_;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -157,7 +159,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             localizations?.todayRevenue ?? 'Bugünkü Gelir',
                             CurrencyFormatter.format(
                               (_summary?['todayRevenue'] ?? 0).toDouble(),
-                              localizationProvider.currency,
+                              displayCurrency,
                             ),
                             Icons.attach_money,
                             Colors.green,
@@ -170,7 +172,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             localizations?.weeklyRevenue ?? 'Haftalık Gelir',
                             CurrencyFormatter.format(
                               (_summary?['weekRevenue'] ?? 0).toDouble(),
-                              localizationProvider.currency,
+                              displayCurrency,
                             ),
                             Icons.trending_up,
                             Colors.purple,

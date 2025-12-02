@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 
 class VendorProductFormScreen extends StatefulWidget {
@@ -38,6 +39,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   List<Map<String, dynamic>> _categories = [];
   String? _selectedCategoryId;
   bool _isLoadingCategories = false;
+  Currency _selectedCurrency = Currency.try_;
 
   @override
   void initState() {
@@ -64,7 +66,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     );
     _isAvailable = widget.product?.isAvailable ?? true;
     _imageUrl = widget.product?.imageUrl;
-    _imageUrl = widget.product?.imageUrl;
+    _selectedCurrency = widget.product?.currency ?? Currency.try_;
   }
 
   @override
@@ -214,6 +216,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         'categoryId': _selectedCategoryId,
         // 'category': _categoryController.text.isEmpty ? null : _categoryController.text, // Deprecated
         'price': double.parse(_priceController.text),
+        'currency': _selectedCurrency.toInt(),
         'imageUrl': _imageUrl,
         'isAvailable': _isAvailable,
         'stock': _stockController.text.isEmpty
@@ -387,6 +390,31 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
               },
             ),
             const SizedBox(height: 16),
+
+            // Currency
+            DropdownButtonFormField<Currency>(
+              value: _selectedCurrency,
+              decoration: InputDecoration(
+                labelText: 'Para Birimi',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.currency_exchange),
+              ),
+              items: Currency.values.map((currency) {
+                return DropdownMenuItem(
+                  value: currency,
+                  child: Text('${currency.symbol} ${currency.code}'),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedCurrency = value;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
             // Price
             TextFormField(
               controller: _priceController,

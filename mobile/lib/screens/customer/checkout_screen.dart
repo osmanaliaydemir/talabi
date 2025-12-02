@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/customer/order_success_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
@@ -213,7 +213,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
+    
+    // Get currency from first item, or default to TRY
+    final Currency displayCurrency = widget.cartItems.isNotEmpty
+        ? widget.cartItems.values.first.product.currency
+        : Currency.try_;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -273,7 +277,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   // Order Summary Section
                   _buildSectionTitle(localizations.orderSummary, Icons.receipt),
                   SizedBox(height: 12),
-                  _buildOrderSummary(localizations, localizationProvider),
+                  _buildOrderSummary(localizations, displayCurrency),
                   SizedBox(height: 24),
 
                   // Confirm Order Button
@@ -312,7 +316,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 Text(
                                   CurrencyFormatter.format(
                                     widget.subtotal + widget.deliveryFee,
-                                    localizationProvider.currency,
+                                    displayCurrency,
                                   ),
                                   style: TextStyle(
                                     fontSize: 18,
@@ -757,7 +761,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildOrderSummary(
     AppLocalizations localizations,
-    LocalizationProvider localizationProvider,
+    Currency displayCurrency,
   ) {
     return Card(
       elevation: 2,
@@ -782,7 +786,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     Text(
                       CurrencyFormatter.format(
                         item.totalPrice,
-                        localizationProvider.currency,
+                        item.product.currency,
                       ),
                       style: TextStyle(fontSize: 14),
                     ),
@@ -799,7 +803,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Text(
                   CurrencyFormatter.format(
                     widget.subtotal,
-                    localizationProvider.currency,
+                    displayCurrency,
                   ),
                 ),
               ],
@@ -813,7 +817,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Text(
                   CurrencyFormatter.format(
                     widget.deliveryFee,
-                    localizationProvider.currency,
+                    displayCurrency,
                   ),
                 ),
               ],
@@ -830,7 +834,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Text(
                   CurrencyFormatter.format(
                     widget.subtotal + widget.deliveryFee,
-                    localizationProvider.currency,
+                    displayCurrency,
                   ),
                   style: TextStyle(
                     fontSize: 18,

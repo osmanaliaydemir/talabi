@@ -74,6 +74,7 @@ public class VendorsController : ControllerBase
                 Name = p.Name,
                 Description = p.Description,
                 Price = p.Price,
+                Currency = p.Currency,
                 ImageUrl = p.ImageUrl
             })
             .ToListAsync();
@@ -92,6 +93,7 @@ public class VendorsController : ControllerBase
                 Name = p.Name,
                 Description = p.Description,
                 Price = p.Price,
+                Currency = p.Currency,
                 ImageUrl = p.ImageUrl
             })
             .ToListAsync();

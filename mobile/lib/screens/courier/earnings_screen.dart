@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mobile/models/courier_earning.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/courier/courier_header.dart';
@@ -164,7 +165,10 @@ class _EarningsScreenState extends State<EarningsScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      CurrencyFormatter.format(summary.totalEarnings, 'TRY'),
+                      CurrencyFormatter.format(
+                        summary.totalEarnings,
+                        Currency.try_,
+                      ),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -183,7 +187,7 @@ class _EarningsScreenState extends State<EarningsScreen>
                           'Avg. per Delivery',
                           CurrencyFormatter.format(
                             summary.averageEarningPerDelivery,
-                            'TRY',
+                            Currency.try_,
                           ),
                         ),
                       ],
@@ -230,7 +234,10 @@ class _EarningsScreenState extends State<EarningsScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          CurrencyFormatter.format(earning.totalEarning, 'TRY'),
+                          CurrencyFormatter.format(
+                            earning.totalEarning,
+                            Currency.try_,
+                          ),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -239,7 +246,7 @@ class _EarningsScreenState extends State<EarningsScreen>
                         ),
                         if (earning.tipAmount > 0)
                           Text(
-                            '+${CurrencyFormatter.format(earning.tipAmount, 'TRY')} tip',
+                            '+${CurrencyFormatter.format(earning.tipAmount, Currency.try_)} tip',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.orange[700],

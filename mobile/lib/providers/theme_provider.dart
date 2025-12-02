@@ -128,30 +128,109 @@ class ThemeProvider with ChangeNotifier {
   }
 
   ThemeData get darkTheme {
+    // iOS 16+ Dark Mode Renkleri
+    const Color darkBackground = Color(0xFF000000); // iOS tam siyah
+    const Color darkSurface = Color(0xFF1C1C1E); // iOS surface
+    const Color darkCard = Color(0xFF2C2C2E); // iOS secondary surface
+    const Color darkTertiary = Color(0xFF3A3A3C); // iOS tertiary surface
+    const Color darkDivider = Color(0xFF38383A); // iOS separator
+    const Color darkBorder = Color(0xFF545458); // iOS divider
+    const Color darkTextPrimary = Color(0xFFFFFFFF);
+    const Color darkTextSecondary = Color(0xFFEBEBF5); // 60% opacity
+    const Color darkTextTertiary = Color(0xFFEBEBF5); // 30% opacity
+
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryOrange,
         primary: primaryOrange,
-        secondary: darkOrange,
+        secondary: lightOrange, // Dark mode'da daha açık turuncu
+        surface: darkSurface,
+        background: darkBackground,
         brightness: Brightness.dark,
       ),
 
       // 🎨 GOOGLE FONTS - Poppins (Dark Mode)
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
+          .copyWith(
+            displayLarge: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: darkTextPrimary,
+            ),
+            displayMedium: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: darkTextPrimary,
+            ),
+            displaySmall: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: darkTextPrimary,
+            ),
+            headlineLarge: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: darkTextPrimary,
+            ),
+            headlineMedium: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: darkTextPrimary,
+            ),
+            headlineSmall: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: darkTextPrimary,
+            ),
+            bodyLarge: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+              color: darkTextPrimary,
+            ),
+            bodyMedium: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+              color: darkTextPrimary,
+            ),
+            bodySmall: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+              color: darkTextSecondary,
+            ),
+            labelLarge: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: darkTextPrimary,
+            ),
+            labelMedium: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: darkTextPrimary,
+            ),
+            labelSmall: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: darkTextSecondary,
+            ),
+          ),
 
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: darkBackground,
+      canvasColor: darkBackground,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFF1E1E1E),
-        foregroundColor: Colors.white,
+        backgroundColor: darkSurface,
+        foregroundColor: darkTextPrimary,
         elevation: 0,
         centerTitle: true,
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: GoogleFonts.poppins(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: Colors.white,
+          color: darkTextPrimary,
         ),
+        iconTheme: IconThemeData(color: darkTextPrimary),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -166,8 +245,149 @@ class ThemeProvider with ChangeNotifier {
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
       ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryOrange,
+          textStyle: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          side: const BorderSide(color: primaryOrange, width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primaryOrange,
+          textStyle: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkCard,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: darkBorder.withOpacity(0.3)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: darkBorder.withOpacity(0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryOrange, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFF44336), width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        hintStyle: GoogleFonts.poppins(color: darkTextTertiary, fontSize: 14),
+        labelStyle: GoogleFonts.poppins(color: darkTextSecondary, fontSize: 14),
+      ),
+
+      cardTheme: CardThemeData(
+        color: darkCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        surfaceTintColor: Colors.transparent,
+      ),
+
+      dividerTheme: DividerThemeData(
+        color: darkDivider,
+        thickness: 0.5,
+        space: 1,
+      ),
+
+      iconTheme: IconThemeData(color: darkTextPrimary),
+
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: darkSurface,
+        selectedItemColor: primaryOrange,
+        unselectedItemColor: darkTextSecondary,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: darkCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: darkCard,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+      ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: darkTertiary,
+        labelStyle: GoogleFonts.poppins(color: darkTextPrimary, fontSize: 12),
+        selectedColor: primaryOrange.withOpacity(0.2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return primaryOrange;
+          }
+          return darkTextTertiary;
+        }),
+        trackColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return primaryOrange.withOpacity(0.5);
+          }
+          return darkTertiary;
+        }),
+      ),
+
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return primaryOrange;
+          }
+          return Colors.transparent;
+        }),
+        checkColor: MaterialStateProperty.all(Colors.white),
+        side: BorderSide(color: darkBorder, width: 2),
+      ),
+
+      radioTheme: RadioThemeData(
+        fillColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return primaryOrange;
+          }
+          return darkBorder;
+        }),
+      ),
+
+      listTileTheme: ListTileThemeData(
+        tileColor: Colors.transparent,
+        textColor: darkTextPrimary,
+        iconColor: darkTextPrimary,
+        selectedTileColor: darkTertiary,
+      ),
+
+      shadowColor: Colors.black.withOpacity(0.3),
     );
   }
 

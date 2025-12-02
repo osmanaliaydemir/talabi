@@ -2,28 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
-import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/widgets/customer/customer_header.dart';
 
-class CategoryProductsScreen extends StatefulWidget {
-  final String categoryName;
-  final String? categoryId;
-
-  const CategoryProductsScreen({
-    super.key,
-    required this.categoryName,
-    this.categoryId,
-  });
+class PopularProductListScreen extends StatefulWidget {
+  const PopularProductListScreen({super.key});
 
   @override
-  State<CategoryProductsScreen> createState() => _CategoryProductsScreenState();
+  State<PopularProductListScreen> createState() =>
+      _PopularProductListScreenState();
 }
 
-class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
+class _PopularProductListScreenState extends State<PopularProductListScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Product>> _productsFuture;
   final Map<String, bool> _favoriteStatus = {};
@@ -36,17 +29,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   }
 
   void _loadProducts() {
-    _productsFuture = _apiService
-        .searchProducts(
-          ProductSearchRequestDto(
-            category: widget.categoryId == null ? widget.categoryName : null,
-            categoryId: widget.categoryId,
-            pageSize: 50, // Fetch more items for the category page
-          ),
-        )
-        .then(
-          (pagedResult) => pagedResult.items.map((e) => e.toProduct()).toList(),
-        );
+    // Limitsiz ürün çekmek için limit parametresini çok yüksek bir değer yapıyoruz
+    // veya API'den tüm ürünleri çekiyoruz
+    _productsFuture = _apiService.getPopularProducts(limit: 1000);
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -72,9 +57,10 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           _favoriteStatus[product.id] = false;
         });
         if (mounted) {
+          final localizations = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: '${product.name} favorilerden çıkarıldı',
+            message: localizations.removedFromFavorites(product.name),
             isSuccess: true,
           );
         }
@@ -84,18 +70,20 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           _favoriteStatus[product.id] = true;
         });
         if (mounted) {
+          final localizations = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: '${product.name} favorilere eklendi',
+            message: localizations.addedToFavorites(product.name),
             isSuccess: true,
           );
         }
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Favori işlemi başarısız: $e',
+          message: localizations.favoriteOperationFailed(e.toString()),
           isSuccess: false,
         );
       }
@@ -110,9 +98,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       body: Column(
         children: [
           CustomerHeader(
-            title: widget.categoryName,
+            title: localizations.picksForYou,
             subtitle: localizations.products,
-            leadingIcon: Icons.category,
+            leadingIcon: Icons.star,
             showBackButton: true,
             showCart: true,
           ),
@@ -137,9 +125,30 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   );
                 } else if (snapshot.hasError) {
                   return Center(
-                    child: Text(
-                      'Hata: ${snapshot.error}',
-                      style: AppTheme.poppins(color: AppTheme.error),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: AppTheme.error,
+                        ),
+                        SizedBox(height: AppTheme.spacingMedium),
+                        Text(
+                          '${localizations.error}: ${snapshot.error}',
+                          style: AppTheme.poppins(color: AppTheme.error),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: AppTheme.spacingMedium),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _loadProducts();
+                            });
+                          },
+                          child: Text(localizations.retry),
+                        ),
+                      ],
                     ),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -148,13 +157,13 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.search_off,
+                          Icons.star_outline,
                           size: 64,
                           color: AppTheme.textSecondary.withValues(alpha: 0.5),
                         ),
                         SizedBox(height: AppTheme.spacingMedium),
                         Text(
-                          'Bu kategoride henüz ürün yok.',
+                          localizations.noProductsYet,
                           style: AppTheme.poppins(
                             color: AppTheme.textSecondary,
                             fontSize: 16,

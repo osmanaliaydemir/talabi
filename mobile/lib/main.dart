@@ -199,7 +199,8 @@ class _MyAppState extends State<MyApp> {
           darkTheme: themeProvider.isHighContrast
               ? themeProvider.highContrastTheme
               : themeProvider.darkTheme,
-          themeMode: themeProvider.themeMode,
+          // Dark mode geçici olarak kapatıldı - her zaman light mode kullan
+          themeMode: ThemeMode.light,
           routes: {'/login': (context) => const LoginScreen()},
           onGenerateRoute: AppRouter.generateRoute,
           home: _buildHome(),

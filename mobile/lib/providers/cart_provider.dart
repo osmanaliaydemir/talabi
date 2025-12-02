@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/screens/shared/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -74,6 +75,9 @@ class CartProvider with ChangeNotifier {
             name: item['productName'],
             description: null,
             price: (item['productPrice'] as num).toDouble(),
+            currency: item['currency'] != null
+                ? Currency.fromInt(item['currency'] as int?)
+                : Currency.fromString(item['currencyCode'] as String?),
             imageUrl: item['productImageUrl'],
           );
 

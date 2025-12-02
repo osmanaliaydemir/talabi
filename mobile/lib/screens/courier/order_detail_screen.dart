@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 
@@ -227,7 +228,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          CurrencyFormatter.format(_order!.deliveryFee, 'TRY'),
+                          CurrencyFormatter.format(_order!.deliveryFee, Currency.try_),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

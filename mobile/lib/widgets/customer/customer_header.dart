@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/cart_screen.dart';
+import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:provider/provider.dart';
 
 class CustomerHeader extends StatefulWidget implements PreferredSizeWidget {
@@ -14,6 +15,7 @@ class CustomerHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final VoidCallback? onRefresh;
   final bool showCart;
+  final bool showSearch;
   final bool showRefresh;
   // Address related
   final bool showAddress;
@@ -30,6 +32,7 @@ class CustomerHeader extends StatefulWidget implements PreferredSizeWidget {
     this.onBack,
     this.onRefresh,
     this.showCart = true,
+    this.showSearch = false,
     this.showRefresh = false,
     this.showAddress = false,
     this.selectedAddress,
@@ -168,6 +171,7 @@ class _CustomerHeaderState extends State<CustomerHeader> {
                       ),
                       onPressed: widget.onRefresh,
                     ),
+                  if (widget.showSearch) _buildSearchIcon(),
                   if (widget.showCart) _buildCartIcon(cart),
                 ],
               ),
@@ -179,6 +183,24 @@ class _CustomerHeaderState extends State<CustomerHeader> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSearchIcon() {
+    return IconButton(
+      icon: const Icon(
+        Icons.search,
+        color: Colors.white,
+        size: 24,
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SearchScreen(),
+          ),
+        );
+      },
     );
   }
 

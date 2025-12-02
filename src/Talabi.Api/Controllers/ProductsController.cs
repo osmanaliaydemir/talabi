@@ -82,6 +82,7 @@ public class ProductsController : ControllerBase
                 Description = p.Description,
                 Category = p.Category,
                 Price = p.Price,
+                Currency = p.Currency,
                 ImageUrl = p.ImageUrl
             })
             .ToListAsync();
@@ -187,6 +188,7 @@ public class ProductsController : ControllerBase
                 Description = p.Description,
                 Category = p.Category,
                 Price = p.Price,
+                Currency = p.Currency,
                 ImageUrl = p.ImageUrl
             })
             .FirstOrDefaultAsync();

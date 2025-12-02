@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/customer/checkout_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:provider/provider.dart';
@@ -13,10 +13,14 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // Get currency from first item, or default to TRY
+    final Currency displayCurrency = cart.items.isNotEmpty
+        ? cart.items.values.first.product.currency
+        : Currency.try_;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -76,7 +80,6 @@ class CartScreen extends StatelessWidget {
                                   product,
                                   cartItem.quantity,
                                   cart,
-                                  localizationProvider,
                                 ),
                                 if (!isLastItem)
                                   Padding(
@@ -136,7 +139,7 @@ class CartScreen extends StatelessWidget {
                               '${localizations.cartSubtotalLabel}:',
                               CurrencyFormatter.format(
                                 cart.totalAmount,
-                                localizationProvider.currency,
+                                displayCurrency,
                               ),
                               isBold: false,
                             ),
@@ -145,7 +148,7 @@ class CartScreen extends StatelessWidget {
                               '${localizations.cartDeliveryFeeLabel}:',
                               CurrencyFormatter.format(
                                 2.0, // Fixed delivery fee
-                                localizationProvider.currency,
+                                displayCurrency,
                               ),
                               isBold: false,
                             ),
@@ -156,7 +159,7 @@ class CartScreen extends StatelessWidget {
                               '${localizations.cartTotalAmountLabel}:',
                               CurrencyFormatter.format(
                                 cart.totalAmount + 2.0,
-                                localizationProvider.currency,
+                                displayCurrency,
                               ),
                               isBold: true,
                             ),
@@ -179,7 +182,7 @@ class CartScreen extends StatelessWidget {
                                 child: Text(
                                   CurrencyFormatter.format(
                                     cart.totalAmount + 2.0,
-                                    localizationProvider.currency,
+                                    displayCurrency,
                                   ),
                                   style: const TextStyle(
                                     color: Colors.white,
@@ -353,7 +356,6 @@ class CartScreen extends StatelessWidget {
     product,
     int quantity,
     CartProvider cart,
-    LocalizationProvider localizationProvider,
   ) {
     final localizations = AppLocalizations.of(context)!;
     return Container(
@@ -411,10 +413,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      CurrencyFormatter.format(
-                        product.price,
-                        localizationProvider.currency,
-                      ),
+                      CurrencyFormatter.format(product.price, product.currency),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[800],

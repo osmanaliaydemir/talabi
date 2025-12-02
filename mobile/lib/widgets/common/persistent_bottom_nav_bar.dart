@@ -23,118 +23,121 @@ class PersistentBottomNavBar extends StatelessWidget {
       localizations.myAccount,
     ];
 
-    return NavigationBar(
-      selectedIndex: bottomNav.currentIndex,
-      onDestinationSelected: (index) {
-        final fromIndex = bottomNav.currentIndex;
-        final toLabel = screenNames[index];
-        TapLogger.logBottomNavChange(fromIndex, index, toLabel);
-        bottomNav.setIndex(index);
+    return SizedBox(
+      height: 60,
+      child: NavigationBar(
+        selectedIndex: bottomNav.currentIndex,
+        height: 60,
+        onDestinationSelected: (index) {
+          final fromIndex = bottomNav.currentIndex;
+          final toLabel = screenNames[index];
+          TapLogger.logBottomNavChange(fromIndex, index, toLabel);
+          bottomNav.setIndex(index);
 
-        // Navigate back to MainNavigationScreen if we're on a sub-page
-        final navigator = Navigator.of(context);
-        // Pop all routes until we reach the main navigation screen
-        while (navigator.canPop()) {
-          navigator.pop();
-        }
-      },
-      labelTextStyle: MaterialStateProperty.all(
-        AppTheme.poppins(
-          fontSize: 11,
-          fontWeight: FontWeight.w400,
-          color: AppTheme.textPrimary,
-        ),
-      ),
-      destinations: [
-        NavigationDestination(
-          icon: const Icon(Icons.explore_outlined),
-          selectedIcon: const Icon(Icons.explore),
-          label: localizations.discover,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.favorite_outline),
-          selectedIcon: const Icon(Icons.favorite),
-          label: localizations.myFavorites,
-        ),
-        NavigationDestination(
-          icon: Stack(
-            children: [
-              const Icon(Icons.shopping_cart_outlined),
-              if (cart.itemCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppTheme.spacingXSmall / 2),
-                    decoration: BoxDecoration(
-                      color: AppTheme.error,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 14,
-                      minHeight: 14,
-                    ),
-                    child: Text(
-                      '${cart.itemCount}',
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 6,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          selectedIcon: Stack(
-            children: [
-              const Icon(Icons.shopping_cart),
-              if (cart.itemCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppTheme.spacingXSmall / 2),
-                    decoration: BoxDecoration(
-                      color: AppTheme.error,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 14,
-                      minHeight: 14,
-                    ),
-                    child: Text(
-                      '${cart.itemCount}',
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 6,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          label: localizations.myCart,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.receipt_long_outlined),
-          selectedIcon: const Icon(Icons.receipt_long),
-          label: localizations.myOrders,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.person_outline),
-          selectedIcon: const Icon(Icons.person),
-          label: localizations.myAccount,
-          textStyle: AppTheme.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+          // Navigate back to MainNavigationScreen if we're on a sub-page
+          final navigator = Navigator.of(context);
+          // Pop all routes until we reach the main navigation screen
+          while (navigator.canPop()) {
+            navigator.pop();
+          }
+        },
+        labelTextStyle: MaterialStateProperty.all(
+          AppTheme.poppins(
+            fontSize: 10,
+            fontWeight: FontWeight.w400,
             color: AppTheme.textPrimary,
           ),
         ),
-      ],
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.explore_outlined, size: 22),
+            selectedIcon: const Icon(Icons.explore, size: 22),
+            label: localizations.discover,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.favorite_outline, size: 22),
+            selectedIcon: const Icon(Icons.favorite, size: 22),
+            label: localizations.myFavorites,
+          ),
+          NavigationDestination(
+            icon: Stack(
+              children: [
+                const Icon(Icons.shopping_cart_outlined, size: 22),
+                if (cart.itemCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppTheme.spacingXSmall / 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.error,
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusSmall,
+                        ),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '${cart.itemCount}',
+                        style: AppTheme.poppins(
+                          color: AppTheme.textOnPrimary,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            selectedIcon: Stack(
+              children: [
+                const Icon(Icons.shopping_cart, size: 22),
+                if (cart.itemCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppTheme.spacingXSmall / 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.error,
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusSmall,
+                        ),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '${cart.itemCount}',
+                        style: AppTheme.poppins(
+                          color: AppTheme.textOnPrimary,
+                          fontSize: 6,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            label: localizations.myCart,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.receipt_long_outlined, size: 22),
+            selectedIcon: const Icon(Icons.receipt_long, size: 22),
+            label: localizations.myOrders,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.person_outline, size: 22),
+            selectedIcon: const Icon(Icons.person, size: 22),
+            label: localizations.myAccount,
+          ),
+        ],
+      ),
     );
   }
 }

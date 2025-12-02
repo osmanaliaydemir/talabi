@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/providers/localization_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 class VendorReportsScreen extends StatefulWidget {
@@ -84,9 +83,11 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
     final localizations = AppLocalizations.of(context)!;
     final dateFormat = DateFormat('dd/MM/yyyy');
+
+    // Use TRY as default currency for reports
+    const Currency displayCurrency = Currency.try_;
 
     return Scaffold(
       appBar: AppBar(
@@ -170,7 +171,7 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
                                   localizations.totalRevenue,
                                   CurrencyFormatter.format(
                                     (_report!['totalRevenue'] ?? 0).toDouble(),
-                                    localizationProvider.currency,
+                                    displayCurrency,
                                   ),
                                   Icons.attach_money,
                                   Colors.green,
@@ -274,8 +275,7 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
                                                   Text(
                                                     CurrencyFormatter.format(
                                                       revenue.toDouble(),
-                                                      localizationProvider
-                                                          .currency,
+                                                      displayCurrency,
                                                     ),
                                                     style: const TextStyle(
                                                       fontWeight:

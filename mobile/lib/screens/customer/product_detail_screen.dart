@@ -5,12 +5,12 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/models/review.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -259,8 +259,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context, listen: false);
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
+    final cart = Provider.of<CartProvider>(context, listen: true);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -320,19 +319,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   // Back Button
                   Container(
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back),
+                      icon: const Icon(Icons.arrow_back, size: 20),
+                      iconSize: 20,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  // Favorite and Share Buttons
+                  // Favorite, Share and Rating Buttons
                   Row(
                     children: [
                       Container(
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -342,21 +348,52 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             _isFavorite
                                 ? Icons.favorite
                                 : Icons.favorite_border,
+                            size: 20,
                             color: _isFavorite ? Colors.red : Colors.black,
                           ),
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                           onPressed: _toggleFavorite,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.share),
+                          icon: const Icon(Icons.share, size: 20),
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                           onPressed: () {
-                            // Share functionality
+                            _shareProduct();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.star_outline,
+                            size: 20,
+                            color: AppTheme.primaryOrange,
+                          ),
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            _showReviewDialog(isVendor: true);
                           },
                         ),
                       ),
@@ -461,92 +498,46 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        // Profile Section
+                        // Vendor Section
                         Row(
                           children: [
-                            // Profile Picture
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.grey[200],
+                            // Vendor Icon
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: AppTheme.vendorPrimary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppTheme.vendorPrimary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  width: 2,
+                                ),
+                              ),
                               child: Icon(
-                                Icons.person,
+                                Icons.store,
                                 size: 30,
-                                color: Colors.grey[600],
+                                color: AppTheme.vendorPrimary,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            // Name and ID
+                            // Vendor Name
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     _product!.vendorName ?? 'Talabi',
-                                    style: const TextStyle(
+                                    style: AppTheme.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'ID: ${_product!.vendorId}',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
-                            // Chat and Phone Buttons
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.grey[300]!),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.chat_bubble_outline,
-                                  color: Colors.grey[700],
-                                ),
-                                onPressed: () {
-                                  // Chat functionality
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.grey[300]!),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.phone,
-                                  color: Colors.grey[700],
-                                ),
-                                onPressed: () {
-                                  // Phone functionality
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.grey[300]!),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.star_outline,
-                                  color: AppTheme.primaryOrange,
-                                ),
-                                onPressed: () {
-                                  _showReviewDialog(isVendor: true);
-                                },
                               ),
                             ),
                           ],
@@ -836,7 +827,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       child: Text(
                         CurrencyFormatter.format(
                           _product!.price,
-                          localizationProvider.currency,
+                          _product!.currency,
                         ),
                         style: const TextStyle(
                           color: Colors.white,
@@ -846,44 +837,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Add to Cart Button
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          cart
-                              .addItem(_product!, context)
-                              .then((_) {
-                                final l10n = AppLocalizations.of(context)!;
-                                ToastMessage.show(
-                                  context,
-                                  message: l10n.productAddedToCart(
-                                    _product!.name,
-                                  ),
-                                  isSuccess: true,
-                                );
-                              })
-                              .catchError((e) {
-                                // Error is handled by CartProvider (popup shown)
-                              });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.orange,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: Colors.orange, width: 2),
-                          ),
-                        ),
-                        child: Text(
-                          AppLocalizations.of(context)!.addToCart,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Add to Cart Button or Quantity Controls
+                    Expanded(child: _buildCartButton(context, cart)),
                   ],
                 ),
               ),
@@ -893,5 +848,148 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
       bottomNavigationBar: const PersistentBottomNavBar(),
     );
+  }
+
+  Widget _buildCartButton(BuildContext context, CartProvider cart) {
+    final l10n = AppLocalizations.of(context)!;
+    final cartItem = cart.items[_product!.id];
+    final quantity = cartItem?.quantity ?? 0;
+
+    if (quantity > 0) {
+      // Quantity controls
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Minus button
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.remove, color: Colors.grey, size: 18),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () async {
+                try {
+                  await cart.decreaseQuantity(_product!.id);
+                } catch (e) {
+                  if (context.mounted) {
+                    ToastMessage.show(
+                      context,
+                      message: l10n.errorWithMessage(e.toString()),
+                      isSuccess: false,
+                    );
+                  }
+                }
+              },
+            ),
+          ),
+          // Quantity display
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              '$quantity',
+              style: AppTheme.poppins(
+                color: Colors.grey[800],
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          // Plus button
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryOrange,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Colors.white, size: 18),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () async {
+                try {
+                  await cart.increaseQuantity(_product!.id);
+                } catch (e) {
+                  if (context.mounted) {
+                    ToastMessage.show(
+                      context,
+                      message: l10n.errorWithMessage(e.toString()),
+                      isSuccess: false,
+                    );
+                  }
+                }
+              },
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Add to Cart Button
+      return ElevatedButton(
+        onPressed: () {
+          cart
+              .addItem(_product!, context)
+              .then((_) {
+                ToastMessage.show(
+                  context,
+                  message: l10n.productAddedToCart(_product!.name),
+                  isSuccess: true,
+                );
+              })
+              .catchError((e) {
+                // Error is handled by CartProvider (popup shown)
+              });
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: AppTheme.primaryOrange,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: AppTheme.primaryOrange, width: 2),
+          ),
+        ),
+        child: Text(
+          l10n.addToCart,
+          style: AppTheme.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.primaryOrange,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _shareProduct() async {
+    if (_product == null) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final priceText = CurrencyFormatter.format(
+      _product!.price,
+      _product!.currency,
+    );
+
+    final shareText =
+        '${_product!.name}\n'
+        '${l10n.price}: $priceText\n'
+        '${_product!.description ?? ""}';
+
+    try {
+      await Share.share(shareText, subject: _product!.name);
+    } catch (e) {
+      if (mounted) {
+        ToastMessage.show(
+          context,
+          message: l10n.errorWithMessage(e.toString()),
+          isSuccess: false,
+        );
+      }
+    }
   }
 }

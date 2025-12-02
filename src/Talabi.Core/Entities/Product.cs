@@ -1,3 +1,5 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.Entities;
 
 public class Product : BaseEntity
@@ -11,6 +13,7 @@ public class Product : BaseEntity
     public Guid? CategoryId { get; set; }
     public Category? ProductCategory { get; set; }
     public decimal Price { get; set; }
+    public Currency Currency { get; set; } = Currency.TRY; // Required currency
     public string? ImageUrl { get; set; }
 
     // Product availability and stock management

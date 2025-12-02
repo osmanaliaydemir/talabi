@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/courier/courier_header.dart';
@@ -359,7 +360,7 @@ class _CourierActiveDeliveriesScreenState
                     ),
                   ),
                   Text(
-                    CurrencyFormatter.format(order.deliveryFee, 'TRY'),
+                    CurrencyFormatter.format(order.deliveryFee, Currency.try_),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.green,
@@ -458,7 +459,7 @@ class _CourierActiveDeliveriesScreenState
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
                 Text(
-                  CurrencyFormatter.format(total, 'TRY'),
+                  CurrencyFormatter.format(total, Currency.try_),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -476,7 +477,7 @@ class _CourierActiveDeliveriesScreenState
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  CurrencyFormatter.format(deliveryFee, 'TRY'),
+                  CurrencyFormatter.format(deliveryFee, Currency.try_),
                   style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                 ),
               ],

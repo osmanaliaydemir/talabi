@@ -1,3 +1,5 @@
+import 'currency.dart';
+
 class Product {
   final String id;
   final String vendorId;
@@ -7,6 +9,7 @@ class Product {
   final String? category;
   final String? categoryId;
   final double price;
+  final Currency currency;
   final String? imageUrl;
   final bool isAvailable;
   final int? stock;
@@ -21,6 +24,7 @@ class Product {
     this.category,
     this.categoryId,
     required this.price,
+    this.currency = Currency.try_,
     this.imageUrl,
     this.isAvailable = true,
     this.stock,
@@ -37,6 +41,9 @@ class Product {
       category: json['category'],
       categoryId: json['categoryId']?.toString(),
       price: (json['price'] as num).toDouble(),
+      currency: json['currency'] != null
+          ? Currency.fromInt(json['currency'] as int?)
+          : Currency.fromString(json['currencyCode'] as String?),
       imageUrl: json['imageUrl'],
       isAvailable: json['isAvailable'] ?? true,
       stock: json['stock'],
@@ -54,6 +61,8 @@ class Product {
       'category': category,
       'categoryId': categoryId,
       'price': price,
+      'currency': currency.toInt(),
+      'currencyCode': currency.code,
       'imageUrl': imageUrl,
       'isAvailable': isAvailable,
       'stock': stock,

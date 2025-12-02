@@ -1,5 +1,6 @@
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
+import 'package:mobile/models/currency.dart';
 
 class ProductSearchRequestDto {
   final String? query;
@@ -164,6 +165,7 @@ class ProductDto {
   final String name;
   final String? description;
   final double price;
+  final Currency currency;
   final String? imageUrl;
 
   ProductDto({
@@ -172,6 +174,7 @@ class ProductDto {
     required this.name,
     this.description,
     required this.price,
+    this.currency = Currency.try_,
     this.imageUrl,
   });
 
@@ -182,6 +185,9 @@ class ProductDto {
       name: json['name'],
       description: json['description'],
       price: (json['price'] as num).toDouble(),
+      currency: json['currency'] != null
+          ? Currency.fromInt(json['currency'] as int?)
+          : Currency.fromString(json['currencyCode'] as String?),
       imageUrl: json['imageUrl'],
     );
   }
@@ -193,6 +199,7 @@ class ProductDto {
       name: name,
       description: description,
       price: price,
+      currency: currency,
       imageUrl: imageUrl,
     );
   }

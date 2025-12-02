@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
-import 'package:provider/provider.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -514,7 +513,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizationProvider = Provider.of<LocalizationProvider>(context);
+    // Use TRY as default currency for order display
+    // In the future, currency can be retrieved from order items if available
+    const Currency displayCurrency = Currency.try_;
 
     if (_isLoading) {
       return Scaffold(
@@ -636,7 +637,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '${item['quantity']} adet x ${CurrencyFormatter.format(item['unitPrice'].toDouble(), localizationProvider.currency)}',
+                                    '${item['quantity']} adet x ${CurrencyFormatter.format(item['unitPrice'].toDouble(), displayCurrency)}',
                                   ),
                                 ],
                               ),
@@ -644,7 +645,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                             Text(
                               CurrencyFormatter.format(
                                 item['totalPrice'].toDouble(),
-                                localizationProvider.currency,
+                                displayCurrency,
                               ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -668,7 +669,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                         Text(
                           CurrencyFormatter.format(
                             (_order!['totalAmount'] as num).toDouble(),
-                            localizationProvider.currency,
+                            displayCurrency,
                           ),
                           style: TextStyle(
                             fontSize: 20,

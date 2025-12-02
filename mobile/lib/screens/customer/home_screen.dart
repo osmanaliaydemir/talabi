@@ -6,13 +6,13 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/promotional_banner.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
-import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/widgets/common/product_card.dart';
 import 'package:mobile/widgets/customer/customer_header.dart';
 import 'package:mobile/screens/customer/category_products_screen.dart';
 import 'package:mobile/screens/customer/categories_screen.dart';
+import 'package:mobile/screens/customer/popular_product_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
       {}; // Track favorite status for each product
 
   // Banner carousel state
-  int _currentBannerIndex = 0;
+  int _currentBannerIndex = 1; // 2. banner'dan başla (index 1)
   Timer? _bannerTimer;
   List<PromotionalBanner> _banners = [];
   late PageController _bannerPageController;
@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _bannerPageController = PageController(
-      initialPage: 0,
+      initialPage: 1, // 2. banner'dan başla (index 1)
       viewportFraction: 0.90, // Show 90% of current + 10% of next
     );
     _vendorsFuture = _apiService.getVendors();
@@ -66,15 +66,28 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _banners = banners;
-          _currentBannerIndex = 0;
+          // 2. banner'dan başla (index 1), eğer 3'ten az banner varsa 0'dan başla
+          _currentBannerIndex = banners.length >= 3 ? 1 : 0;
         });
-        // Reset page controller to first page
+        // Reset page controller to second page (index 1)
         if (_banners.isNotEmpty) {
-          _bannerPageController.jumpToPage(0);
-          // Start timer after a short delay to ensure page controller is ready
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted && _banners.length > 1) {
-              _startBannerTimer();
+          // Wait for next frame to ensure page controller is ready
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              // 2. banner'dan başla (index 1), eğer 3'ten az banner varsa 0'dan başla
+              final startIndex = _banners.length >= 3 ? 1 : 0;
+              _bannerPageController.jumpToPage(startIndex);
+              setState(() {
+                _currentBannerIndex = startIndex;
+              });
+              // Start timer after page controller is ready
+              if (_banners.length > 1) {
+                Future.delayed(const Duration(milliseconds: 800), () {
+                  if (mounted && _banners.length > 1) {
+                    _startBannerTimer();
+                  }
+                });
+              }
             }
           });
         }
@@ -87,9 +100,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _startBannerTimer() {
     _bannerTimer?.cancel();
     if (_banners.length > 1) {
-      // First change happens after 3 seconds, then continues every 3 seconds
-      _bannerTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        if (mounted && _banners.isNotEmpty) {
+      // Banner'lar 20 saniye ekranda kalacak
+      _bannerTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
+        if (mounted &&
+            _banners.isNotEmpty &&
+            _bannerPageController.hasClients) {
           // Use the current page index from the controller to ensure accuracy
           final currentPage =
               _bannerPageController.page?.round() ?? _currentBannerIndex;
@@ -114,6 +129,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // Only reload banners if they haven't been loaded yet or locale changed
     if (_banners.isEmpty) {
       _loadBanners(); // Reload banners when locale changes
+    } else if (_banners.length > 1 && _bannerTimer == null) {
+      // Ensure timer is started if banners are already loaded
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && _banners.length > 1) {
+          _startBannerTimer();
+        }
+      });
     }
   }
 
@@ -295,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 180,
+          height: 200,
           child: PageView.builder(
             controller: _bannerPageController,
             itemCount: _banners.length,
@@ -307,6 +329,49 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             itemBuilder: (context, index) {
               final currentBanner = _banners[index];
+              // Bottom navigation menu renklerini kullan
+              // selectedItemColor: primaryOrange, unselectedItemColor: Colors.grey
+              final List<List<Color>> colorCombinations = [
+                [
+                  AppTheme.primaryOrange,
+                  AppTheme.darkOrange,
+                ], // Turuncu tonları (selected)
+                [
+                  const Color(0xFF757575), // Colors.grey.shade600
+                  const Color(0xFF424242), // Colors.grey.shade800
+                ], // Gri tonları (unselected)
+                [
+                  const Color(0xCCFF9800), // primaryOrange 80% opacity
+                  const Color(0xFF616161), // Colors.grey.shade700
+                ], // Turuncu-gri karışımı
+                [
+                  const Color(0xFF9E9E9E), // Colors.grey.shade500
+                  const Color(0x99FF9800), // primaryOrange 60% opacity
+                ], // Gri-turuncu karışımı
+                [
+                  AppTheme.lightOrange,
+                  const Color(0xFF757575), // Colors.grey.shade600
+                ], // Açık turuncu-gri
+              ];
+              final colorIndex = index % colorCombinations.length;
+              final gradientColors = colorCombinations[colorIndex];
+
+              // Her banner için farklı icon
+              final List<IconData> bannerIcons = [
+                Icons.local_offer,
+                Icons.star,
+                Icons.shopping_bag,
+                Icons.discount,
+                Icons.card_giftcard,
+                Icons.celebration,
+                Icons.percent,
+                Icons.flash_on,
+                Icons.trending_up,
+                Icons.favorite,
+              ];
+              final iconIndex = index % bannerIcons.length;
+              final bannerIcon = bannerIcons[iconIndex];
+
               return Container(
                 margin: EdgeInsets.only(
                   left: AppTheme.spacingXSmall,
@@ -324,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [AppTheme.lightOrange, AppTheme.darkOrange],
+                    colors: gradientColors,
                   ),
                   borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 ),
@@ -402,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     SizedBox(width: 12),
-                    // Placeholder for image
+                    // Icon container - her banner için farklı icon
                     Container(
                       width: 80,
                       height: 80,
@@ -422,20 +487,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Icon(
-                                    Icons.fastfood,
+                                    bannerIcon,
                                     size: 40,
                                     color: AppTheme.textOnPrimary.withValues(
-                                      alpha: 0.8,
+                                      alpha: 0.9,
                                     ),
                                   );
                                 },
                               ),
                             )
                           : Icon(
-                              Icons.fastfood,
+                              bannerIcon,
                               size: 40,
                               color: AppTheme.textOnPrimary.withValues(
-                                alpha: 0.8,
+                                alpha: 0.9,
                               ),
                             ),
                     ),
@@ -558,6 +623,7 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: 'Find your favorite products',
             leadingIcon: Icons.explore,
             showCart: true,
+            showSearch: true,
             showAddress: true,
             selectedAddress: _selectedAddress,
             isLoadingAddress: _isLoadingAddresses,
@@ -583,74 +649,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: CustomScrollView(
                 slivers: [
-                  // Search and Filter
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingMedium,
-                        vertical: AppTheme.spacingSmall,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: AppTheme.inputBoxDecoration()
-                                  .copyWith(
-                                    border: Border.all(
-                                      color: AppTheme.borderColor,
-                                      width: 1.0,
-                                    ),
-                                  ),
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: localizations.search,
-                                  hintStyle: AppTheme.poppins(
-                                    color: AppTheme.textHint,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppTheme.spacingMedium,
-                                    vertical: AppTheme.spacingSmall,
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SearchScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: AppTheme.spacingSmall),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange,
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusMedium,
-                              ),
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.tune,
-                                color: AppTheme.textOnPrimary,
-                              ),
-                              onPressed: () {
-                                // Open filter
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   // Promotional Banner
                   SliverToBoxAdapter(
                     child: _banners.isEmpty
@@ -753,7 +751,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               return ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: AppTheme.spacingSmall,
+                                  horizontal: AppTheme.spacingMedium,
                                 ),
                                 itemCount: sortedCategories.length,
                                 itemBuilder: (context, index) {
@@ -814,7 +812,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   TextButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const PopularProductListScreen(),
+                                        ),
+                                      );
+                                    },
                                     child: Text(
                                       localizations.viewAll,
                                       style: AppTheme.poppins(
@@ -980,7 +986,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Container(
         width: 80,
-        margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
+        margin: EdgeInsets.symmetric(horizontal: AppTheme.spacing1DotZero),
         child: Column(
           children: [
             Container(
@@ -1078,7 +1084,10 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 280,
         margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
         child: Container(
-          decoration: AppTheme.cardDecoration(),
+          decoration: AppTheme.cardDecoration(
+            color: Theme.of(context).cardColor,
+            context: context,
+          ),
           clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1127,10 +1136,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.cardColor.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMedium,
-                            ),
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -1156,7 +1163,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              Padding(
+              Container(
+                color: Theme.of(context).cardColor,
                 padding: EdgeInsets.all(AppTheme.spacingSmall),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

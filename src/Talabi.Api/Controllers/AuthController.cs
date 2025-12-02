@@ -30,14 +30,8 @@ public class AuthController : ControllerBase
     private readonly ILogger<AuthController> _logger;
     private const int VerificationCodeExpirationMinutes = 3;
 
-    public AuthController(
-        UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager,
-        IConfiguration configuration,
-        IEmailSender emailSender,
-        IMemoryCache memoryCache,
-        TalabiDbContext context,
-        ILogger<AuthController> logger)
+    public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration configuration,
+        IEmailSender emailSender, IMemoryCache memoryCache, TalabiDbContext context, ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
