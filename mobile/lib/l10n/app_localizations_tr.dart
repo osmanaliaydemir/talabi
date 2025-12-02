@@ -60,7 +60,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get products => 'Ürünler';
 
   @override
-  String get vendors => 'Satıcılar';
+  String get vendors => 'Marketler';
 
   @override
   String get cart => 'Sepet';
@@ -103,6 +103,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get selectCurrency => 'Para Birimi Seç';
+
+  @override
+  String get selectCurrencyDescription => 'Para birimi seçimi';
 
   @override
   String get regionalSettings => 'Bölgesel Ayarlar';
@@ -178,7 +181,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get description => 'Açıklama';
 
   @override
-  String get vendor => 'Satıcı';
+  String get vendor => 'Market';
 
   @override
   String get category => 'Kategori';
@@ -386,6 +389,25 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get ok => 'Tamam';
+
+  @override
+  String get duplicateEmail =>
+      'Bu email adresi ile zaten bir hesap bulunmaktadır.';
+
+  @override
+  String googleLoginFailed(Object error) {
+    return 'Google ile giriş başarısız: $error';
+  }
+
+  @override
+  String appleLoginFailed(Object error) {
+    return 'Apple ile giriş başarısız: $error';
+  }
+
+  @override
+  String facebookLoginFailed(Object error) {
+    return 'Facebook ile giriş başarısız: $error';
+  }
 
   @override
   String errorWithMessage(Object error) {
@@ -807,7 +829,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get locationServicesDisabled => 'Konum servisleri devre dışı';
+  String get locationServicesDisabled => 'Konum servisleri kapalı';
 
   @override
   String get pleaseSelectLocation => 'Lütfen bir konum seçin';
@@ -914,6 +936,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsSaved => 'Ayarlar kaydedildi';
 
   @override
+  String get regionalSettingsDescription => 'Tarih ve saat ayarları';
+
+  @override
+  String get timeZoneHint => 'Örn: Europe/Istanbul, America/New_York';
+
+  @override
   String get manageNotificationPreferences => 'Bildirim tercihlerinizi yönetin';
 
   @override
@@ -932,6 +960,17 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get selectLanguageDescription => 'Uygulama dilini değiştirin';
+
+  @override
+  String get selectLanguageSubtitle => 'Tercih ettiğiniz dili seçin';
+
+  @override
+  String get languageChanged => 'Dil değiştirildi';
+
+  @override
+  String languagesCount(Object count) {
+    return '$count dil';
+  }
 
   @override
   String get legalDocumentsDescription => 'Kullanım şartları ve politikalar';
@@ -1226,7 +1265,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get reports => 'Raporlar';
 
   @override
-  String get reviews => 'Yorumlar';
+  String reviews(Object count) {
+    return 'Yorumlar ($count)';
+  }
 
   @override
   String get logoUpdated => 'Logo güncellendi';
@@ -1494,4 +1535,274 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get refresh => 'Yenile';
+
+  @override
+  String get cancelOrder => 'Siparişi İptal Et';
+
+  @override
+  String get reorder => 'Yeniden Sipariş Ver';
+
+  @override
+  String get orderCancelled => 'Sipariş iptal edildi';
+
+  @override
+  String get cancelReason => 'İptal nedeni';
+
+  @override
+  String get cancelReasonDescription =>
+      'İptal nedeninizi belirtin (en az 10 karakter):';
+
+  @override
+  String get pieces => 'adet';
+
+  @override
+  String get orderNotFound => 'Sipariş bulunamadı';
+
+  @override
+  String get productsAddedToCart =>
+      'Ürünler sepete eklendi, sepete yönlendiriliyorsunuz...';
+
+  @override
+  String reorderFailed(Object error) {
+    return 'Yeniden sipariş oluşturulamadı: $error';
+  }
+
+  @override
+  String get locationPermissionDenied => 'Konum izni reddedildi';
+
+  @override
+  String get locationPermissionDeniedForever =>
+      'Konum izni kalıcı olarak reddedildi';
+
+  @override
+  String vendorsLoadFailed(Object error) {
+    return 'Marketler yüklenemedi: $error';
+  }
+
+  @override
+  String get yourLocation => 'Konumunuz';
+
+  @override
+  String get vendorsMap => 'Marketler Haritası';
+
+  @override
+  String get findMyLocation => 'Konumumu Bul';
+
+  @override
+  String get viewProducts => 'Ürünleri Görüntüle';
+
+  @override
+  String get gettingLocation => 'Konum alınıyor...';
+
+  @override
+  String searchError(Object error) {
+    return 'Arama hatası: $error';
+  }
+
+  @override
+  String productAddedToCart(Object productName) {
+    return '$productName sepete eklendi';
+  }
+
+  @override
+  String get filters => 'Filtreler';
+
+  @override
+  String get clear => 'Temizle';
+
+  @override
+  String get selectCategory => 'Kategori seçin';
+
+  @override
+  String get priceRange => 'Fiyat Aralığı';
+
+  @override
+  String get minPrice => 'Min Fiyat';
+
+  @override
+  String get maxPrice => 'Max Fiyat';
+
+  @override
+  String get selectCity => 'Şehir seçin';
+
+  @override
+  String get minimumRating => 'Minimum Rating';
+
+  @override
+  String get maximumDistance => 'Maksimum Mesafe (km)';
+
+  @override
+  String get distanceKm => 'Mesafe (km)';
+
+  @override
+  String get sortBy => 'Sıralama';
+
+  @override
+  String get selectSortBy => 'Sıralama seçin';
+
+  @override
+  String get priceLowToHigh => 'Fiyat (Düşükten Yükseğe)';
+
+  @override
+  String get priceHighToLow => 'Fiyat (Yüksekten Düşüğe)';
+
+  @override
+  String get sortByName => 'İsme Göre';
+
+  @override
+  String get newest => 'En Yeni';
+
+  @override
+  String get ratingHighToLow => 'Rating (Yüksekten Düşüğe)';
+
+  @override
+  String get popularity => 'Popülerlik';
+
+  @override
+  String get distance => 'Mesafe';
+
+  @override
+  String get applyFilters => 'Filtreleri Uygula';
+
+  @override
+  String get searchProductsOrVendors => 'Ürün veya market ara...';
+
+  @override
+  String get suggestions => 'Öneriler';
+
+  @override
+  String get product => 'Ürün';
+
+  @override
+  String get searchHistory => 'Arama Geçmişi';
+
+  @override
+  String get typeToSearch => 'Arama yapmak için yukarıdaki kutuya yazın';
+
+  @override
+  String get recentSearches => 'Son Aramalar';
+
+  @override
+  String get noResultsFound => 'Sonuç bulunamadı';
+
+  @override
+  String cityLabel(Object city) {
+    return 'Şehir: $city';
+  }
+
+  @override
+  String distanceLabel(Object distance) {
+    return 'Mesafe: $distance km';
+  }
+
+  @override
+  String removedFromFavorites(Object productName) {
+    return '$productName favorilerden çıkarıldı';
+  }
+
+  @override
+  String addedToFavorites(Object productName) {
+    return '$productName favorilere eklendi';
+  }
+
+  @override
+  String favoriteOperationFailed(Object error) {
+    return 'Favori işlemi başarısız: $error';
+  }
+
+  @override
+  String get noProductsYet => 'Henüz ürün yok.';
+
+  @override
+  String productLoadFailed(Object error) {
+    return 'Ürün yüklenemedi: $error';
+  }
+
+  @override
+  String get productNotFound => 'Ürün bulunamadı';
+
+  @override
+  String get rateVendor => 'Vendor\'u Değerlendir';
+
+  @override
+  String get shareYourThoughts => 'Düşüncelerinizi paylaşın...';
+
+  @override
+  String get submit => 'Gönder';
+
+  @override
+  String get vendorReviewSubmitted => 'Vendor değerlendirmesi gönderildi!';
+
+  @override
+  String get productReviewSubmitted => 'Ürün değerlendirmesi gönderildi!';
+
+  @override
+  String get noDescription => 'Açıklama bulunmuyor.';
+
+  @override
+  String get readMore => 'Daha fazla oku';
+
+  @override
+  String get showLess => 'Daha az göster';
+
+  @override
+  String get deliveryTime => 'Teslimat Süresi';
+
+  @override
+  String get deliveryType => 'Teslimat Türü';
+
+  @override
+  String get noReviewsYet => 'Henüz yorum yok. İlk yorumu siz yapın!';
+
+  @override
+  String get seeAllReviews => 'Tüm Yorumları Gör';
+
+  @override
+  String by(Object vendorName) {
+    return 'Tarafından: $vendorName';
+  }
+
+  @override
+  String get orderCreatedSuccessfully => 'Siparişiniz Başarıyla Oluşturuldu!';
+
+  @override
+  String get orderCode => 'Sipariş Kodu';
+
+  @override
+  String get orderPreparationStarted =>
+      'Siparişiniz hazırlanmaya başlandı. Sipariş durumunuzu \"Siparişlerim\" sayfasından takip edebilirsiniz.';
+
+  @override
+  String get homePage => 'Ana Sayfa';
+
+  @override
+  String ordersLoadFailed(Object error) {
+    return 'Siparişler yüklenemedi: $error';
+  }
+
+  @override
+  String get noOrdersYet => 'Henüz siparişiniz yok';
+
+  @override
+  String get onWay => 'Yolda';
+
+  @override
+  String get unknownVendor => 'Bilinmeyen Satıcı';
+
+  @override
+  String get unknown => 'Bilinmeyen';
+
+  @override
+  String get cancelItem => 'Ürünü İptal Et';
+
+  @override
+  String get itemCancelled => 'Ürün İptal Edildi';
+
+  @override
+  String get itemCancelSuccess => 'Ürün başarıyla iptal edildi';
+
+  @override
+  String itemCancelFailed(Object error) {
+    return 'Ürün iptal edilemedi: $error';
+  }
 }

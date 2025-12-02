@@ -1,5 +1,5 @@
 class CourierOrder {
-  final int id;
+  final String id;
   final String vendorName;
   final String vendorAddress;
   final double vendorLatitude;
@@ -31,7 +31,7 @@ class CourierOrder {
 
   factory CourierOrder.fromJson(Map<String, dynamic> json) {
     return CourierOrder(
-      id: json['id'],
+      id: json['id'].toString(),
       vendorName: json['vendorName'] ?? '',
       vendorAddress: json['vendorAddress'] ?? '',
       vendorLatitude: (json['vendorLatitude'] as num?)?.toDouble() ?? 0.0,

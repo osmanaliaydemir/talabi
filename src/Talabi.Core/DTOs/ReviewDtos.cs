@@ -4,7 +4,7 @@ namespace Talabi.Core.DTOs;
 
 public class CreateReviewDto
 {
-    public int TargetId { get; set; }
+    public Guid TargetId { get; set; }
     public string TargetType { get; set; } = "Product"; // "Product" or "Vendor"
     public int Rating { get; set; }
     public string Comment { get; set; } = string.Empty;
@@ -12,7 +12,7 @@ public class CreateReviewDto
 
 public class ReviewDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string UserId { get; set; } = string.Empty;
     public string UserFullName { get; set; } = string.Empty;
     public int Rating { get; set; }

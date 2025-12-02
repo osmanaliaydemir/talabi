@@ -22,7 +22,7 @@ public class OrderAssignmentService : IOrderAssignmentService
 
     // ...
 
-    public async Task<bool> AssignOrderToCourierAsync(int orderId, int courierId)
+    public async Task<bool> AssignOrderToCourierAsync(Guid orderId, Guid courierId)
     {
         var order = await _context.Orders
             .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -108,7 +108,7 @@ public class OrderAssignmentService : IOrderAssignmentService
     }
 
 
-    public async Task<bool> AcceptOrderAsync(int orderId, int courierId)
+    public async Task<bool> AcceptOrderAsync(Guid orderId, Guid courierId)
     {
         var order = await _context.Orders.FindAsync(orderId);
         var courier = await _context.Couriers.FindAsync(courierId);
@@ -132,7 +132,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         return true;
     }
 
-    public async Task<bool> RejectOrderAsync(int orderId, int courierId)
+    public async Task<bool> RejectOrderAsync(Guid orderId, Guid courierId)
     {
         var order = await _context.Orders.FindAsync(orderId);
         var courier = await _context.Couriers.FindAsync(courierId);
@@ -161,7 +161,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         return true;
     }
 
-    public async Task<bool> PickUpOrderAsync(int orderId, int courierId)
+    public async Task<bool> PickUpOrderAsync(Guid orderId, Guid courierId)
     {
         var order = await _context.Orders.FindAsync(orderId);
         var courier = await _context.Couriers.FindAsync(courierId);
@@ -204,7 +204,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         return true;
     }
 
-    public async Task<bool> DeliverOrderAsync(int orderId, int courierId)
+    public async Task<bool> DeliverOrderAsync(Guid orderId, Guid courierId)
     {
         var order = await _context.Orders
             .Include(o => o.DeliveryAddress)
@@ -253,7 +253,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         return true;
     }
 
-    public async Task<List<Order>> GetActiveOrdersForCourierAsync(int courierId)
+    public async Task<List<Order>> GetActiveOrdersForCourierAsync(Guid courierId)
     {
         return await _context.Orders
             .Include(o => o.Vendor)
@@ -269,11 +269,11 @@ public class OrderAssignmentService : IOrderAssignmentService
     }
 
     private void AddCourierNotification(
-        int courierId,
+        Guid courierId,
         string title,
         string message,
         string type,
-        int? orderId = null)
+        Guid? orderId = null)
     {
         _context.CourierNotifications.Add(new CourierNotification
         {
@@ -285,7 +285,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         });
     }
 
-    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, int? orderId = null)
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
     {
         var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
         if (customer == null)

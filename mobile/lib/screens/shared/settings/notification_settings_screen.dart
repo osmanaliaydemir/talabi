@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/notification_settings.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -35,14 +37,13 @@ class _NotificationSettingsScreenState
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        final localizations = AppLocalizations.of(context);
+        ToastMessage.show(
+          context,
+          message:
+              localizations?.settingsLoadError(e.toString()) ??
               'Ayarlar yüklenemedi: $e',
-              style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-            ),
-            backgroundColor: AppTheme.error,
-          ),
+          isSuccess: false,
         );
       }
     }
@@ -54,26 +55,20 @@ class _NotificationSettingsScreenState
     try {
       await _apiService.updateNotificationSettings(_settings!.toJson());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Ayarlar kaydedildi',
-              style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-            ),
-            backgroundColor: AppTheme.success,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.settingsSaved,
+          isSuccess: true,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Hata: $e',
-              style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-            ),
-            backgroundColor: AppTheme.error,
-          ),
+        final localizations = AppLocalizations.of(context);
+        ToastMessage.show(
+          context,
+          message: localizations?.errorWithMessage(e.toString()) ?? 'Hata: $e',
+          isSuccess: false,
         );
       }
     }
@@ -98,7 +93,8 @@ class _NotificationSettingsScreenState
                 : _settings == null
                 ? Center(
                     child: Text(
-                      'Ayarlar yüklenemedi',
+                      AppLocalizations.of(context)?.settingsLoadError('') ??
+                          'Ayarlar yüklenemedi',
                       style: AppTheme.poppins(color: AppTheme.textSecondary),
                     ),
                   )
@@ -112,14 +108,16 @@ class _NotificationSettingsScreenState
                         SwitchListTile(
                           activeColor: AppTheme.primaryOrange,
                           title: Text(
-                            'Sipariş Güncellemeleri',
+                            AppLocalizations.of(context)!.orderUpdates,
                             style: AppTheme.poppins(
                               fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary,
                             ),
                           ),
                           subtitle: Text(
-                            'Sipariş durumu değişikliklerinde bildirim al',
+                            AppLocalizations.of(
+                              context,
+                            )!.orderUpdatesDescription,
                             style: AppTheme.poppins(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
@@ -137,14 +135,14 @@ class _NotificationSettingsScreenState
                         SwitchListTile(
                           activeColor: AppTheme.primaryOrange,
                           title: Text(
-                            'Kampanyalar',
+                            AppLocalizations.of(context)!.promotions,
                             style: AppTheme.poppins(
                               fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary,
                             ),
                           ),
                           subtitle: Text(
-                            'Özel teklifler ve kampanyalar',
+                            AppLocalizations.of(context)!.promotionsDescription,
                             style: AppTheme.poppins(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
@@ -162,14 +160,16 @@ class _NotificationSettingsScreenState
                         SwitchListTile(
                           activeColor: AppTheme.primaryOrange,
                           title: Text(
-                            'Yeni Ürünler',
+                            AppLocalizations.of(context)!.newProducts,
                             style: AppTheme.poppins(
                               fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary,
                             ),
                           ),
                           subtitle: Text(
-                            'Yeni ürün eklendiğinde bildirim al',
+                            AppLocalizations.of(
+                              context,
+                            )!.newProductsDescription,
                             style: AppTheme.poppins(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
@@ -252,7 +252,7 @@ class _NotificationSettingsScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Bildirim Ayarları',
+                      AppLocalizations.of(context)!.notificationSettings,
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary,
                         fontSize: 20,
@@ -261,7 +261,9 @@ class _NotificationSettingsScreenState
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Bildirim tercihlerinizi yönetin',
+                      AppLocalizations.of(
+                        context,
+                      )!.notificationSettingsDescription,
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,

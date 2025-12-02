@@ -5,7 +5,7 @@ import 'package:mobile/services/api_service.dart';
 import 'dart:async';
 
 class DeliveryTrackingScreen extends StatefulWidget {
-  final int orderId;
+  final String orderId;
 
   const DeliveryTrackingScreen({super.key, required this.orderId});
 

@@ -19,13 +19,13 @@ namespace Talabi.Infrastructure.Services
             _context = context;
             _notificationService = notificationService;
             _logger = logger;
-            
+
             // Try to load resources from Talabi.Api assembly
             try
             {
                 var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
                     .FirstOrDefault(a => a.GetName().Name == "Talabi.Api");
-                
+
                 if (apiAssembly != null)
                 {
                     _resourceManager = new ResourceManager("Talabi.Api.Resources.NotificationResources", apiAssembly);
@@ -67,7 +67,7 @@ namespace Talabi.Infrastructure.Services
                     // Get user's preferred language
                     var userLanguage = await GetUserLanguageAsync(cart.UserId);
                     var culture = new CultureInfo(userLanguage);
-                    
+
                     var title = _resourceManager.GetString("AbandonedCartTitle", culture) ?? "Items in Your Cart! 🛒";
                     var body = _resourceManager.GetString("AbandonedCartBody", culture) ?? "Complete your cart items before they run out.";
 
@@ -82,7 +82,7 @@ namespace Talabi.Infrastructure.Services
             }
         }
 
-        public async Task NotifyNewProduct(int productId)
+        public async Task NotifyNewProduct(Guid productId)
         {
             var product = await _context.Products.Include(p => p.Vendor).FirstOrDefaultAsync(p => p.Id == productId);
 
@@ -105,7 +105,7 @@ namespace Talabi.Infrastructure.Services
             );
         }
 
-        public async Task NotifyNewVendor(int vendorId)
+        public async Task NotifyNewVendor(Guid vendorId)
         {
             var vendor = await _context.Vendors.FindAsync(vendorId);
             if (vendor == null) return;
@@ -116,7 +116,7 @@ namespace Talabi.Infrastructure.Services
             var bodyTemplate = _resourceManager.GetString("NewVendorBody", culture) ?? "{0} has joined us. Discover now!";
             var body = string.Format(bodyTemplate, vendor.Name);
 
-            await _notificationService.SendNotificationAsync("/topics/all_users", title, body, 
+            await _notificationService.SendNotificationAsync("/topics/all_users", title, body,
                 new { type = "vendor", vendorId = vendorId });
         }
 

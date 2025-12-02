@@ -6,7 +6,7 @@ class CourierNotification {
   final bool isRead;
   final DateTime createdAt;
   final DateTime? readAt;
-  final int? orderId;
+  final String? orderId;
 
   CourierNotification({
     required this.id,
@@ -28,7 +28,7 @@ class CourierNotification {
       isRead: json['isRead'] ?? false,
       createdAt: DateTime.parse(json['createdAt']),
       readAt: json['readAt'] != null ? DateTime.parse(json['readAt']) : null,
-      orderId: json['orderId'],
+      orderId: json['orderId']?.toString(),
     );
   }
 }
@@ -37,18 +37,15 @@ class CourierNotificationResponse {
   final List<CourierNotification> items;
   final int unreadCount;
 
-  CourierNotificationResponse({
-    required this.items,
-    required this.unreadCount,
-  });
+  CourierNotificationResponse({required this.items, required this.unreadCount});
 
   factory CourierNotificationResponse.fromJson(Map<String, dynamic> json) {
     final List<dynamic> rawItems = json['items'] ?? [];
     return CourierNotificationResponse(
-      items:
-          rawItems.map((notification) => CourierNotification.fromJson(notification)).toList(),
+      items: rawItems
+          .map((notification) => CourierNotification.fromJson(notification))
+          .toList(),
       unreadCount: json['unreadCount'] ?? 0,
     );
   }
 }
-

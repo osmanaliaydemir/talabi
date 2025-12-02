@@ -2,7 +2,7 @@ namespace Talabi.Core.DTOs;
 
 public class CourierDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
     public string? VehicleType { get; set; }
@@ -20,7 +20,7 @@ public class UpdateCourierLocationDto
 
 public class CourierLocationDto
 {
-    public int CourierId { get; set; }
+    public Guid CourierId { get; set; }
     public string CourierName { get; set; } = string.Empty;
     public double Latitude { get; set; }
     public double Longitude { get; set; }

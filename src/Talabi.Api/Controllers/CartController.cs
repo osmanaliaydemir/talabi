@@ -24,7 +24,7 @@ public class CartController : ControllerBase
     public async Task<ActionResult<CartDto>> GetCart()
     {
         var userId = GetUserId();
-        
+
         var cart = await _context.Carts
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
@@ -58,7 +58,7 @@ public class CartController : ControllerBase
     {
         var userId = GetUserId();
 
-        // Kullanıcının adresi var mı kontrol et (Customer için)
+        // Check if user has an address (Customer)
         var hasAddress = await _context.UserAddresses.AnyAsync(a => a.UserId == userId);
         if (!hasAddress)
         {
@@ -75,21 +75,22 @@ public class CartController : ControllerBase
             .Include(c => c.CartItems)
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
+        bool isNewCart = false;
         if (cart == null)
         {
             cart = new Core.Entities.Cart { UserId = userId };
             _context.Carts.Add(cart);
-            await _context.SaveChangesAsync();
+            isNewCart = true;
         }
 
-        // Check if product exists
+        // Verify product exists
         var product = await _context.Products.FindAsync(dto.ProductId);
         if (product == null)
         {
             return NotFound("Product not found");
         }
 
-        // Check if item already in cart
+        // Add or update cart item
         var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == dto.ProductId);
         if (existingItem != null)
         {
@@ -104,15 +105,18 @@ public class CartController : ControllerBase
             });
         }
 
-        // Mark cart as modified to trigger UpdatedAt
-        _context.Entry(cart).State = EntityState.Modified;
+        // If cart already existed, mark it as modified so UpdatedAt is refreshed
+        if (!isNewCart)
+        {
+            _context.Entry(cart).State = EntityState.Modified;
+        }
 
         await _context.SaveChangesAsync();
         return Ok(new { Message = "Item added to cart" });
     }
 
     [HttpPut("items/{itemId}")]
-    public async Task<ActionResult> UpdateCartItem(int itemId, UpdateCartItemDto dto)
+    public async Task<ActionResult> UpdateCartItem(Guid itemId, UpdateCartItemDto dto)
     {
         var userId = GetUserId();
 
@@ -142,7 +146,7 @@ public class CartController : ControllerBase
     }
 
     [HttpDelete("items/{itemId}")]
-    public async Task<ActionResult> RemoveFromCart(int itemId)
+    public async Task<ActionResult> RemoveFromCart(Guid itemId)
     {
         var userId = GetUserId();
 
@@ -156,10 +160,10 @@ public class CartController : ControllerBase
         }
 
         _context.CartItems.Remove(cartItem);
-        
+
         // Mark cart as modified to trigger UpdatedAt
         _context.Entry(cartItem.Cart!).State = EntityState.Modified;
-        
+
         await _context.SaveChangesAsync();
 
         return Ok(new { Message = "Item removed from cart" });
@@ -177,10 +181,10 @@ public class CartController : ControllerBase
         if (cart != null)
         {
             _context.CartItems.RemoveRange(cart.CartItems);
-            
+
             // Mark cart as modified to trigger UpdatedAt
             _context.Entry(cart).State = EntityState.Modified;
-            
+
             await _context.SaveChangesAsync();
         }
 

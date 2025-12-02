@@ -5,34 +5,36 @@
 namespace Talabi.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddUserDetailsToLogs : Migration
+    public partial class AddCustomerOrderIds : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "PhoneNumber",
-                table: "UserActivityLogs",
+                name: "CustomerOrderId",
+                table: "Orders",
                 type: "nvarchar(max)",
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
-                name: "UserEmail",
-                table: "UserActivityLogs",
+                name: "CustomerOrderItemId",
+                table: "OrderItems",
                 type: "nvarchar(max)",
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "PhoneNumber",
-                table: "UserActivityLogs");
+                name: "CustomerOrderId",
+                table: "Orders");
 
             migrationBuilder.DropColumn(
-                name: "UserEmail",
-                table: "UserActivityLogs");
+                name: "CustomerOrderItemId",
+                table: "OrderItems");
         }
     }
 }

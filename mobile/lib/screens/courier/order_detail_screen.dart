@@ -6,7 +6,7 @@ import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  final int orderId;
+  final String orderId;
 
   const OrderDetailScreen({super.key, required this.orderId});
 

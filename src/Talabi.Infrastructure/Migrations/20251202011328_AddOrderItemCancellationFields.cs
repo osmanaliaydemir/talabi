@@ -5,28 +5,28 @@
 namespace Talabi.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddProductAvailabilityFields : Migration
+    public partial class AddOrderItemCancellationFields : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
-                name: "IsAvailable",
-                table: "Products",
+                name: "IsCancelled",
+                table: "OrderItems",
                 type: "bit",
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.AddColumn<int>(
-                name: "PreparationTime",
-                table: "Products",
-                type: "int",
+            migrationBuilder.AddColumn<DateTime>(
+                name: "CancelledAt",
+                table: "OrderItems",
+                type: "datetime2",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "Stock",
-                table: "Products",
-                type: "int",
+            migrationBuilder.AddColumn<string>(
+                name: "CancelReason",
+                table: "OrderItems",
+                type: "nvarchar(max)",
                 nullable: true);
         }
 
@@ -34,16 +34,16 @@ namespace Talabi.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsAvailable",
-                table: "Products");
+                name: "IsCancelled",
+                table: "OrderItems");
 
             migrationBuilder.DropColumn(
-                name: "PreparationTime",
-                table: "Products");
+                name: "CancelledAt",
+                table: "OrderItems");
 
             migrationBuilder.DropColumn(
-                name: "Stock",
-                table: "Products");
+                name: "CancelReason",
+                table: "OrderItems");
         }
     }
 }

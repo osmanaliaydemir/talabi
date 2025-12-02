@@ -17,7 +17,7 @@ class CourierRouter {
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/courier/order-detail':
-        final orderId = settings.arguments as int;
+        final orderId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => OrderDetailScreen(orderId: orderId),
         );
@@ -64,7 +64,7 @@ class CourierRouter {
         );
 
       case '/courier/delivery-proof':
-        final orderId = settings.arguments as int;
+        final orderId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => DeliveryProofScreen(orderId: orderId),
         );

@@ -4,10 +4,10 @@ public class ProductSearchRequestDto
 {
     public string? Query { get; set; }
     public string? Category { get; set; }
-    public int? CategoryId { get; set; }
+    public Guid? CategoryId { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
-    public int? VendorId { get; set; }
+    public Guid? VendorId { get; set; }
     public string? SortBy { get; set; } // "price_asc", "price_desc", "name", "newest"
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
@@ -40,7 +40,7 @@ public class PagedResultDto<T>
 
 public class AutocompleteResultDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty; // "product" or "vendor"
 }

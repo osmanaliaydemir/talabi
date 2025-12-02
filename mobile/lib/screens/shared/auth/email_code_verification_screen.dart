@@ -8,6 +8,7 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/shared/auth/login_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 
@@ -110,11 +111,10 @@ class _EmailCodeVerificationScreenState
     final localizations = AppLocalizations.of(context)!;
     final code = _getCode();
     if (code.length != 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(localizations.enterFourDigitCode),
-          backgroundColor: Colors.red,
-        ),
+      ToastMessage.show(
+        context,
+        message: localizations.enterFourDigitCode,
+        isSuccess: false,
       );
       return;
     }
@@ -127,11 +127,10 @@ class _EmailCodeVerificationScreenState
       await _apiService.verifyEmailCode(widget.email, code);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(localizations.emailVerifiedSuccess),
-            backgroundColor: AppTheme.success,
-          ),
+        ToastMessage.show(
+          context,
+          message: localizations.emailVerifiedSuccess,
+          isSuccess: true,
         );
 
         // Eğer password varsa otomatik login yap ve Customer keşfet ekranına yönlendir
@@ -155,11 +154,10 @@ class _EmailCodeVerificationScreenState
           } catch (loginError) {
             // Login başarısız olursa login ekranına yönlendir
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(localizations.emailVerifiedLoginFailed),
-                  backgroundColor: AppTheme.warning,
-                ),
+              ToastMessage.show(
+                context,
+                message: localizations.emailVerifiedLoginFailed,
+                isSuccess: false,
               );
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -185,12 +183,7 @@ class _EmailCodeVerificationScreenState
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppTheme.error,
-          ),
-        );
+        ToastMessage.show(context, message: errorMessage, isSuccess: false);
 
         // Hatalı kodları temizle
         for (var controller in _controllers) {
@@ -200,11 +193,10 @@ class _EmailCodeVerificationScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(localizations.errorWithMessage(e.toString())),
-            backgroundColor: AppTheme.error,
-          ),
+        ToastMessage.show(
+          context,
+          message: localizations.errorWithMessage(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -236,11 +228,10 @@ class _EmailCodeVerificationScreenState
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(localizations.verificationCodeResent),
-            backgroundColor: AppTheme.success,
-          ),
+        ToastMessage.show(
+          context,
+          message: localizations.verificationCodeResent,
+          isSuccess: true,
         );
 
         // Timer'ı yeniden başlat
@@ -262,20 +253,14 @@ class _EmailCodeVerificationScreenState
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppTheme.error,
-          ),
-        );
+        ToastMessage.show(context, message: errorMessage, isSuccess: false);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(localizations.errorWithMessage(e.toString())),
-            backgroundColor: AppTheme.error,
-          ),
+        ToastMessage.show(
+          context,
+          message: localizations.errorWithMessage(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {

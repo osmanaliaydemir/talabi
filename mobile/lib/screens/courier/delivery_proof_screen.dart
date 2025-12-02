@@ -9,7 +9,7 @@ import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DeliveryProofScreen extends StatefulWidget {
-  final int orderId;
+  final String orderId;
 
   const DeliveryProofScreen({super.key, required this.orderId});
 

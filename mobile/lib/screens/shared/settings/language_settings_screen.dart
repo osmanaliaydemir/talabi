@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/localization_provider.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
@@ -115,15 +116,12 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
 
     // Show success message
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Dil değiştirildi',
-            style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-          ),
-          backgroundColor: AppTheme.success,
-          duration: const Duration(seconds: 1),
-        ),
+      final localizations = AppLocalizations.of(context);
+      ToastMessage.show(
+        context,
+        message: localizations?.languageChanged ?? 'Dil değiştirildi',
+        isSuccess: true,
+        duration: const Duration(seconds: 1),
       );
     }
   }
@@ -175,8 +173,8 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha:
-                                            0.1,
+                                            color: Colors.black.withValues(
+                                              alpha: 0.1,
                                             ),
                                             blurRadius: 15,
                                             spreadRadius: 3,
@@ -229,7 +227,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                   child: Transform.translate(
                                     offset: Offset(0, 20 * (1 - value)),
                                     child: Text(
-                                      'Choose your preferred language',
+                                      appLocalizations.selectLanguageSubtitle,
                                       style: AppTheme.poppins(
                                         fontSize: 14,
                                         color: AppTheme.textSecondary,
@@ -355,7 +353,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                     ),
                     SizedBox(height: 2),
                     Text(
-                      '${_languages.length} languages',
+                      localizations.languagesCount(_languages.length),
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,

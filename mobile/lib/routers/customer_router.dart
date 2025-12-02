@@ -19,7 +19,7 @@ class CustomerRouter {
         );
 
       case '/customer/order-detail':
-        final orderId = settings.arguments as int?;
+        final orderId = settings.arguments as String?;
         if (orderId == null) return null;
         return MaterialPageRoute(
           builder: (context) => OrderDetailScreen(orderId: orderId),

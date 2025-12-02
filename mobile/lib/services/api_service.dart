@@ -222,7 +222,7 @@ class ApiService {
     }
   }
 
-  Future<List<Product>> getProducts(int vendorId) async {
+  Future<List<Product>> getProducts(String vendorId) async {
     try {
       // Try network first
       final response = await _dio.get('/vendors/$vendorId/products');
@@ -268,7 +268,7 @@ class ApiService {
     }
   }
 
-  Future<Product> getProduct(int productId) async {
+  Future<Product> getProduct(String productId) async {
     try {
       final response = await _dio.get('/products/$productId');
       return Product.fromJson(response.data);
@@ -279,9 +279,9 @@ class ApiService {
   }
 
   Future<Order> createOrder(
-    int vendorId,
-    Map<int, int> items, {
-    int? deliveryAddressId,
+    String vendorId,
+    Map<String, int> items, {
+    String? deliveryAddressId,
     String? paymentMethod,
     String? note,
   }) async {
@@ -649,7 +649,7 @@ class ApiService {
     }
   }
 
-  Future<void> addToCart(int productId, int quantity) async {
+  Future<void> addToCart(String productId, int quantity) async {
     try {
       await _dio.post(
         '/cart/items',
@@ -661,7 +661,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateCartItem(int itemId, int quantity) async {
+  Future<void> updateCartItem(String itemId, int quantity) async {
     try {
       await _dio.put('/cart/items/$itemId', data: {'quantity': quantity});
     } catch (e) {
@@ -670,7 +670,7 @@ class ApiService {
     }
   }
 
-  Future<void> removeFromCart(int itemId) async {
+  Future<void> removeFromCart(String itemId) async {
     try {
       await _dio.delete('/cart/items/$itemId');
     } catch (e) {
@@ -764,7 +764,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateAddress(int id, Map<String, dynamic> data) async {
+  Future<void> updateAddress(String id, Map<String, dynamic> data) async {
     try {
       await _dio.put('/addresses/$id', data: data);
     } catch (e) {
@@ -773,7 +773,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteAddress(int id) async {
+  Future<void> deleteAddress(String id) async {
     try {
       await _dio.delete('/addresses/$id');
     } catch (e) {
@@ -782,7 +782,7 @@ class ApiService {
     }
   }
 
-  Future<void> setDefaultAddress(int id) async {
+  Future<void> setDefaultAddress(String id) async {
     try {
       await _dio.put('/addresses/$id/set-default');
     } catch (e) {
@@ -802,7 +802,7 @@ class ApiService {
     }
   }
 
-  Future<void> addToFavorites(int productId) async {
+  Future<void> addToFavorites(String productId) async {
     try {
       await _dio.post('/favorites/$productId');
     } catch (e) {
@@ -811,7 +811,7 @@ class ApiService {
     }
   }
 
-  Future<void> removeFromFavorites(int productId) async {
+  Future<void> removeFromFavorites(String productId) async {
     try {
       await _dio.delete('/favorites/$productId');
     } catch (e) {
@@ -820,7 +820,7 @@ class ApiService {
     }
   }
 
-  Future<bool> isFavorite(int productId) async {
+  Future<bool> isFavorite(String productId) async {
     try {
       final response = await _dio.get('/favorites/check/$productId');
       return response.data['isFavorite'];
@@ -861,7 +861,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getOrderDetails(int orderId) async {
+  Future<Map<String, dynamic>> getOrderDetails(String orderId) async {
     try {
       final response = await _dio.get('/orders/$orderId');
       return response.data;
@@ -871,7 +871,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getOrderDetailFull(int orderId) async {
+  Future<Map<String, dynamic>> getOrderDetailFull(String orderId) async {
     try {
       final response = await _dio.get('/orders/$orderId/detail');
       return response.data;
@@ -881,11 +881,20 @@ class ApiService {
     }
   }
 
-  Future<void> cancelOrder(int orderId, String reason) async {
+  Future<void> cancelOrder(String orderId, String reason) async {
     try {
       await _dio.post('/orders/$orderId/cancel', data: {'reason': reason});
     } catch (e) {
       print('Error cancelling order: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> cancelOrderItem(String customerOrderItemId, String reason) async {
+    try {
+      await _dio.post('/orders/items/$customerOrderItemId/cancel', data: {'reason': reason});
+    } catch (e) {
+      print('Error cancelling order item: $e');
       rethrow;
     }
   }
@@ -1020,7 +1029,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getDeliveryTracking(int orderId) async {
+  Future<Map<String, dynamic>> getDeliveryTracking(String orderId) async {
     try {
       final response = await _dio.get('/map/delivery-tracking/$orderId');
       return response.data;
@@ -1032,7 +1041,7 @@ class ApiService {
 
   // Courier location methods
   Future<void> updateCourierLocation(
-    int courierId,
+    String courierId,
     double latitude,
     double longitude,
   ) async {
@@ -1047,7 +1056,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getCourierLocation(int courierId) async {
+  Future<Map<String, dynamic>> getCourierLocation(String courierId) async {
     try {
       final response = await _dio.get('/courier/$courierId/location');
       return response.data;
@@ -1059,7 +1068,7 @@ class ApiService {
 
   // Review methods
   Future<Review> createReview(
-    int targetId,
+    String targetId,
     String targetType,
     int rating,
     String comment,
@@ -1081,7 +1090,7 @@ class ApiService {
     }
   }
 
-  Future<List<Review>> getProductReviews(int productId) async {
+  Future<List<Review>> getProductReviews(String productId) async {
     try {
       final response = await _dio.get('/reviews/products/$productId');
       final List<dynamic> data = response.data;
@@ -1092,7 +1101,7 @@ class ApiService {
     }
   }
 
-  Future<List<Review>> getVendorReviews(int vendorId) async {
+  Future<List<Review>> getVendorReviews(String vendorId) async {
     try {
       final response = await _dio.get('/reviews/vendors/$vendorId');
       final List<dynamic> data = response.data;
@@ -1114,7 +1123,7 @@ class ApiService {
     }
   }
 
-  Future<void> approveReview(int reviewId) async {
+  Future<void> approveReview(String reviewId) async {
     try {
       await _dio.patch('/reviews/$reviewId/approve');
     } catch (e) {
@@ -1123,7 +1132,7 @@ class ApiService {
     }
   }
 
-  Future<void> rejectReview(int reviewId) async {
+  Future<void> rejectReview(String reviewId) async {
     try {
       await _dio.patch('/reviews/$reviewId/reject');
     } catch (e) {
@@ -1222,7 +1231,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getVendorOrder(int orderId) async {
+  Future<Map<String, dynamic>> getVendorOrder(String orderId) async {
     try {
       final response = await _dio.get('/vendor/orders/$orderId');
       return response.data;
@@ -1232,7 +1241,7 @@ class ApiService {
     }
   }
 
-  Future<void> acceptOrder(int orderId) async {
+  Future<void> acceptOrder(String orderId) async {
     try {
       await _dio.post('/vendor/orders/$orderId/accept');
     } catch (e) {
@@ -1241,7 +1250,7 @@ class ApiService {
     }
   }
 
-  Future<void> rejectOrder(int orderId, String reason) async {
+  Future<void> rejectOrder(String orderId, String reason) async {
     try {
       await _dio.post(
         '/vendor/orders/$orderId/reject',
@@ -1254,7 +1263,7 @@ class ApiService {
   }
 
   Future<void> updateOrderStatus(
-    int orderId,
+    String orderId,
     String status, {
     String? note,
   }) async {
@@ -1270,7 +1279,9 @@ class ApiService {
   }
 
   // Get available couriers for order
-  Future<List<Map<String, dynamic>>> getAvailableCouriers(int orderId) async {
+  Future<List<Map<String, dynamic>>> getAvailableCouriers(
+    String orderId,
+  ) async {
     try {
       final response = await _dio.get(
         '/vendor/orders/$orderId/available-couriers',
@@ -1283,7 +1294,7 @@ class ApiService {
   }
 
   // Assign courier to order
-  Future<void> assignCourierToOrder(int orderId, int courierId) async {
+  Future<void> assignCourierToOrder(String orderId, String courierId) async {
     try {
       await _dio.post(
         '/vendor/orders/$orderId/assign-courier',
@@ -1296,7 +1307,7 @@ class ApiService {
   }
 
   // Auto-assign best courier
-  Future<Map<String, dynamic>> autoAssignCourier(int orderId) async {
+  Future<Map<String, dynamic>> autoAssignCourier(String orderId) async {
     try {
       final response = await _dio.post(
         '/vendor/orders/$orderId/auto-assign-courier',
@@ -1366,7 +1377,7 @@ class ApiService {
     }
   }
 
-  Future<Product> getVendorProduct(int productId) async {
+  Future<Product> getVendorProduct(String productId) async {
     try {
       final response = await _dio.get('/vendor/products/$productId');
       return Product.fromJson(response.data);
@@ -1386,7 +1397,10 @@ class ApiService {
     }
   }
 
-  Future<void> updateProduct(int productId, Map<String, dynamic> data) async {
+  Future<void> updateProduct(
+    String productId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       await _dio.put('/vendor/products/$productId', data: data);
     } catch (e) {
@@ -1395,7 +1409,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteProduct(int productId) async {
+  Future<void> deleteProduct(String productId) async {
     try {
       await _dio.delete('/vendor/products/$productId');
     } catch (e) {
@@ -1405,7 +1419,7 @@ class ApiService {
   }
 
   Future<void> updateProductAvailability(
-    int productId,
+    String productId,
     bool isAvailable,
   ) async {
     try {
@@ -1419,7 +1433,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateProductPrice(int productId, double price) async {
+  Future<void> updateProductPrice(String productId, double price) async {
     try {
       await _dio.put(
         '/vendor/products/$productId/price',
@@ -1574,7 +1588,7 @@ class ApiService {
   }
 
   // Mark notification as read
-  Future<void> markNotificationAsRead(String type, int id) async {
+  Future<void> markNotificationAsRead(String type, String id) async {
     try {
       final endpoint = type == 'vendor'
           ? '/vendor/notifications/$id/read'

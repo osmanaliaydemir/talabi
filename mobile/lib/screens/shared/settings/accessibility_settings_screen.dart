@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/theme_provider.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 class AccessibilitySettingsScreen extends StatelessWidget {
@@ -47,6 +48,11 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                         themeProvider.setThemeMode(
                           value ? ThemeMode.dark : ThemeMode.light,
                         );
+                        ToastMessage.show(
+                          context,
+                          message: localizations.settingsSaved,
+                          isSuccess: true,
+                        );
                       },
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingMedium,
@@ -71,6 +77,11 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                       value: themeProvider.isHighContrast,
                       onChanged: (value) {
                         themeProvider.toggleHighContrast(value);
+                        ToastMessage.show(
+                          context,
+                          message: localizations.settingsSaved,
+                          isSuccess: true,
+                        );
                       },
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingMedium,
@@ -108,6 +119,12 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                                       .toStringAsFixed(1),
                                   onChanged: (value) {
                                     themeProvider.setTextScaleFactor(value);
+                                    ToastMessage.show(
+                                      context,
+                                      message: localizations.settingsSaved,
+                                      isSuccess: true,
+                                      duration: const Duration(seconds: 1),
+                                    );
                                   },
                                 ),
                               ),

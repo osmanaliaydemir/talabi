@@ -69,7 +69,7 @@ public class AdminCourierController : ControllerBase
 
     // POST: api/admin/couriers/orders/{id}/assign
     [HttpPost("orders/{id}/assign")]
-    public async Task<IActionResult> AssignOrder(int id, [FromQuery] int courierId)
+    public async Task<IActionResult> AssignOrder(Guid id, [FromQuery] Guid courierId)
     {
         var success = await _assignmentService.AssignOrderToCourierAsync(id, courierId);
         if (!success)
@@ -82,7 +82,7 @@ public class AdminCourierController : ControllerBase
 
     // GET: api/admin/couriers/{id}/performance
     [HttpGet("{id}/performance")]
-    public async Task<IActionResult> GetPerformance(int id)
+    public async Task<IActionResult> GetPerformance(Guid id)
     {
         var courier = await _context.Couriers.FindAsync(id);
         if (courier == null) return NotFound(new { Message = "Courier not found" });
@@ -128,7 +128,7 @@ public class AdminCourierController : ControllerBase
 
     // PUT: api/admin/couriers/{id}/activate
     [HttpPut("{id}/activate")]
-    public async Task<IActionResult> ActivateCourier(int id)
+    public async Task<IActionResult> ActivateCourier(Guid id)
     {
         var courier = await _context.Couriers.FindAsync(id);
         if (courier == null) return NotFound(new { Message = "Courier not found" });
@@ -142,7 +142,7 @@ public class AdminCourierController : ControllerBase
 
     // PUT: api/admin/couriers/{id}/deactivate
     [HttpPut("{id}/deactivate")]
-    public async Task<IActionResult> DeactivateCourier(int id)
+    public async Task<IActionResult> DeactivateCourier(Guid id)
     {
         var courier = await _context.Couriers.FindAsync(id);
         if (courier == null) return NotFound(new { Message = "Courier not found" });
@@ -162,7 +162,7 @@ public class AdminCourierController : ControllerBase
 
     // PUT: api/admin/couriers/{id}/status
     [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateCourierStatus(int id, [FromBody] UpdateCourierStatusDto dto)
+    public async Task<IActionResult> UpdateCourierStatus(Guid id, [FromBody] UpdateCourierStatusDto dto)
     {
         var courier = await _context.Couriers.FindAsync(id);
         if (courier == null) return NotFound(new { Message = "Courier not found" });

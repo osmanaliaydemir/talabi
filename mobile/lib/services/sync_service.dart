@@ -28,22 +28,20 @@ class SyncAction {
   }) : timestamp = timestamp ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type.toString(),
-        'data': data,
-        'timestamp': timestamp.toIso8601String(),
-        'retryCount': retryCount,
-      };
+    'id': id,
+    'type': type.toString(),
+    'data': data,
+    'timestamp': timestamp.toIso8601String(),
+    'retryCount': retryCount,
+  };
 
   factory SyncAction.fromJson(Map<String, dynamic> json) => SyncAction(
-        id: json['id'],
-        type: SyncActionType.values.firstWhere(
-          (e) => e.toString() == json['type'],
-        ),
-        data: json['data'],
-        timestamp: DateTime.parse(json['timestamp']),
-        retryCount: json['retryCount'] ?? 0,
-      );
+    id: json['id'],
+    type: SyncActionType.values.firstWhere((e) => e.toString() == json['type']),
+    data: json['data'],
+    timestamp: DateTime.parse(json['timestamp']),
+    retryCount: json['retryCount'] ?? 0,
+  );
 }
 
 class SyncService {
@@ -131,7 +129,7 @@ class SyncService {
     for (var action in actions) {
       try {
         final success = await _executeAction(action);
-        
+
         if (success) {
           await removeFromQueue(action.id);
           print('✅ [SYNC] Action synced: ${action.type} (${action.id})');
@@ -148,16 +146,20 @@ class SyncService {
           if (updatedAction.retryCount >= _maxRetries) {
             // Remove after max retries
             await removeFromQueue(action.id);
-            print('❌ [SYNC] Action failed after max retries: ${action.type} (${action.id})');
+            print(
+              '❌ [SYNC] Action failed after max retries: ${action.type} (${action.id})',
+            );
           } else {
             // Update retry count
             await addToQueue(updatedAction);
-            print('🔄 [SYNC] Action retry queued: ${action.type} (${action.id}) - Retry ${updatedAction.retryCount}/$_maxRetries');
+            print(
+              '🔄 [SYNC] Action retry queued: ${action.type} (${action.id}) - Retry ${updatedAction.retryCount}/$_maxRetries',
+            );
           }
         }
       } catch (e) {
         print('❌ [SYNC] Error processing action ${action.id}: $e');
-        
+
         // Increment retry count on error
         final updatedAction = SyncAction(
           id: action.id,
@@ -181,28 +183,30 @@ class SyncService {
       switch (action.type) {
         case SyncActionType.addToCart:
           await _apiService.addToCart(
-            action.data['productId'] as int,
+            action.data['productId'] as String,
             action.data['quantity'] as int,
           );
           return true;
 
         case SyncActionType.removeFromCart:
-          await _apiService.removeFromCart(action.data['itemId'] as int);
+          await _apiService.removeFromCart(action.data['itemId'] as String);
           return true;
 
         case SyncActionType.updateCartItem:
           await _apiService.updateCartItem(
-            action.data['itemId'] as int,
+            action.data['itemId'] as String,
             action.data['quantity'] as int,
           );
           return true;
 
         case SyncActionType.addToFavorites:
-          await _apiService.addToFavorites(action.data['productId'] as int);
+          await _apiService.addToFavorites(action.data['productId'] as String);
           return true;
 
         case SyncActionType.removeFromFavorites:
-          await _apiService.removeFromFavorites(action.data['productId'] as int);
+          await _apiService.removeFromFavorites(
+            action.data['productId'] as String,
+          );
           return true;
 
         case SyncActionType.updateProfile:
@@ -231,4 +235,3 @@ class SyncService {
     return actions.length;
   }
 }
-

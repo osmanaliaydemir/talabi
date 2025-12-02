@@ -1,6 +1,7 @@
 class OrderDetail {
-  final int id;
-  final int vendorId;
+  final String id;
+  final String customerOrderId;
+  final String vendorId;
   final String vendorName;
   final String customerId;
   final String customerName;
@@ -14,6 +15,7 @@ class OrderDetail {
 
   OrderDetail({
     required this.id,
+    required this.customerOrderId,
     required this.vendorId,
     required this.vendorName,
     required this.customerId,
@@ -29,8 +31,9 @@ class OrderDetail {
 
   factory OrderDetail.fromJson(Map<String, dynamic> json) {
     return OrderDetail(
-      id: json['id'],
-      vendorId: json['vendorId'],
+      id: json['id'].toString(),
+      customerOrderId: json['customerOrderId']?.toString() ?? '',
+      vendorId: json['vendorId'].toString(),
       vendorName: json['vendorName'],
       customerId: json['customerId'],
       customerName: json['customerName'],
@@ -52,30 +55,44 @@ class OrderDetail {
 }
 
 class OrderItemDetail {
-  final int productId;
+  final String productId;
+  final String customerOrderItemId;
   final String productName;
   final String? productImageUrl;
   final int quantity;
   final double unitPrice;
   final double totalPrice;
+  final bool isCancelled;
+  final DateTime? cancelledAt;
+  final String? cancelReason;
 
   OrderItemDetail({
     required this.productId,
+    required this.customerOrderItemId,
     required this.productName,
     this.productImageUrl,
     required this.quantity,
     required this.unitPrice,
     required this.totalPrice,
+    this.isCancelled = false,
+    this.cancelledAt,
+    this.cancelReason,
   });
 
   factory OrderItemDetail.fromJson(Map<String, dynamic> json) {
     return OrderItemDetail(
-      productId: json['productId'],
+      productId: json['productId'].toString(),
+      customerOrderItemId: json['customerOrderItemId']?.toString() ?? '',
       productName: json['productName'],
       productImageUrl: json['productImageUrl'],
       quantity: json['quantity'],
       unitPrice: (json['unitPrice'] as num).toDouble(),
       totalPrice: (json['totalPrice'] as num).toDouble(),
+      isCancelled: json['isCancelled'] ?? false,
+      cancelledAt: json['cancelledAt'] != null
+          ? DateTime.parse(json['cancelledAt'])
+          : null,
+      cancelReason: json['cancelReason'],
     );
   }
 }

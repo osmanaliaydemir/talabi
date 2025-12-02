@@ -36,6 +36,7 @@
   "deliveryTracking": "Teslimat Takibi",
   "selectLanguage": "Dil Seç",
   "selectCurrency": "Para Birimi Seç",
+  "selectCurrencyDescription": "Para birimi seçimi",
   "regionalSettings": "Bölgesel Ayarlar",
   "dateFormat": "Tarih Formatı",
   "timeFormat": "Saat Formatı",
@@ -132,6 +133,25 @@
     }
   },
   "ok": "Tamam",
+  "duplicateEmail": "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+  "googleLoginFailed": "Google ile giriş başarısız: {error}",
+  "@googleLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "appleLoginFailed": "Apple ile giriş başarısız: {error}",
+  "@appleLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "facebookLoginFailed": "Facebook ile giriş başarısız: {error}",
+  "@facebookLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "errorWithMessage": "Hata: {error}",
   "@errorWithMessage": {
     "placeholders": {
@@ -319,12 +339,22 @@
   "promotionsDescription": "Özel teklifler ve kampanyalar",
   "newProductsDescription": "Yeni ürün eklendiğinde bildirim al",
   "settingsSaved": "Ayarlar kaydedildi",
+  "regionalSettingsDescription": "Tarih ve saat ayarları",
+  "timeZoneHint": "Örn: Europe/Istanbul, America/New_York",
   "manageNotificationPreferences": "Bildirim tercihlerinizi yönetin",
   "orderHistoryDescription": "Geçmiş siparişlerinizi görüntüleyin",
   "myAddressesDescription": "Teslimat adreslerinizi yönetin",
   "changePasswordSubtitle": "Şifrenizi değiştirin ve güvenliği artırın",
   "notificationSettingsDescription": "Bildirim tercihlerinizi yönetin",
   "selectLanguageDescription": "Uygulama dilini değiştirin",
+  "selectLanguageSubtitle": "Tercih ettiğiniz dili seçin",
+  "languageChanged": "Dil değiştirildi",
+  "languagesCount": "{count} dil",
+  "@languagesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "legalDocumentsDescription": "Kullanım şartları ve politikalar",
   "helpCenterDescription": "SSS ve destek hattı",
   "logoutDescription": "Hesabınızdan çıkış yapın",
@@ -586,5 +616,166 @@
       "count": {}
     }
   },
-  "refresh": "Yenile"
+  "refresh": "Yenile",
+  "cancelOrder": "Siparişi İptal Et",
+  "reorder": "Yeniden Sipariş Ver",
+  "orderCancelled": "Sipariş iptal edildi",
+  "cancelReason": "İptal nedeni",
+  "cancelReasonDescription": "İptal nedeninizi belirtin (en az 10 karakter):",
+  "pieces": "adet",
+  "orderNotFound": "Sipariş bulunamadı",
+  "productsAddedToCart": "Ürünler sepete eklendi, sepete yönlendiriliyorsunuz...",
+  "reorderFailed": "Yeniden sipariş oluşturulamadı: {error}",
+  "@reorderFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "locationServicesDisabled": "Konum servisleri kapalı",
+  "locationPermissionDenied": "Konum izni reddedildi",
+  "locationPermissionDeniedForever": "Konum izni kalıcı olarak reddedildi",
+  "vendorsLoadFailed": "Marketler yüklenemedi: {error}",
+  "@vendorsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "yourLocation": "Konumunuz",
+  "vendorsMap": "Marketler Haritası",
+  "findMyLocation": "Konumumu Bul",
+  "viewProducts": "Ürünleri Görüntüle",
+  "gettingLocation": "Konum alınıyor...",
+  "searchError": "Arama hatası: {error}",
+  "@searchError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "productAddedToCart": "{productName} sepete eklendi",
+  "@productAddedToCart": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "filters": "Filtreler",
+  "clear": "Temizle",
+  "category": "Kategori",
+  "selectCategory": "Kategori seçin",
+  "priceRange": "Fiyat Aralığı",
+  "minPrice": "Min Fiyat",
+  "maxPrice": "Max Fiyat",
+  "city": "Şehir",
+  "selectCity": "Şehir seçin",
+  "minimumRating": "Minimum Rating",
+  "maximumDistance": "Maksimum Mesafe (km)",
+  "distanceKm": "Mesafe (km)",
+  "sortBy": "Sıralama",
+  "selectSortBy": "Sıralama seçin",
+  "priceLowToHigh": "Fiyat (Düşükten Yükseğe)",
+  "priceHighToLow": "Fiyat (Yüksekten Düşüğe)",
+  "sortByName": "İsme Göre",
+  "newest": "En Yeni",
+  "ratingHighToLow": "Rating (Yüksekten Düşüğe)",
+  "popularity": "Popülerlik",
+  "distance": "Mesafe",
+  "applyFilters": "Filtreleri Uygula",
+  "searchProductsOrVendors": "Ürün veya market ara...",
+  "products": "Ürünler",
+  "vendors": "Marketler",
+  "suggestions": "Öneriler",
+  "product": "Ürün",
+  "vendor": "Market",
+  "searchHistory": "Arama Geçmişi",
+  "typeToSearch": "Arama yapmak için yukarıdaki kutuya yazın",
+  "recentSearches": "Son Aramalar",
+  "noResultsFound": "Sonuç bulunamadı",
+  "cityLabel": "Şehir: {city}",
+  "@cityLabel": {
+    "placeholders": {
+      "city": {}
+    }
+  },
+  "distanceLabel": "Mesafe: {distance} km",
+  "@distanceLabel": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "removedFromFavorites": "{productName} favorilerden çıkarıldı",
+  "@removedFromFavorites": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "addedToFavorites": "{productName} favorilere eklendi",
+  "@addedToFavorites": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "favoriteOperationFailed": "Favori işlemi başarısız: {error}",
+  "@favoriteOperationFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noProductsYet": "Henüz ürün yok.",
+  "productLoadFailed": "Ürün yüklenemedi: {error}",
+  "@productLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "productNotFound": "Ürün bulunamadı",
+  "rateVendor": "Vendor'u Değerlendir",
+  "writeReview": "Yorum Yaz",
+  "shareYourThoughts": "Düşüncelerinizi paylaşın...",
+  "submit": "Gönder",
+  "vendorReviewSubmitted": "Vendor değerlendirmesi gönderildi!",
+  "productReviewSubmitted": "Ürün değerlendirmesi gönderildi!",
+  "noDescription": "Açıklama bulunmuyor.",
+  "readMore": "Daha fazla oku",
+  "showLess": "Daha az göster",
+  "description": "Açıklama",
+  "deliveryTime": "Teslimat Süresi",
+  "deliveryType": "Teslimat Türü",
+  "reviews": "Yorumlar ({count})",
+  "@reviews": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "noReviewsYet": "Henüz yorum yok. İlk yorumu siz yapın!",
+  "seeAllReviews": "Tüm Yorumları Gör",
+  "addToCart": "Sepete Ekle",
+  "by": "Tarafından: {vendorName}",
+  "@by": {
+    "placeholders": {
+      "vendorName": {}
+    }
+  },
+  "orderCreatedSuccessfully": "Siparişiniz Başarıyla Oluşturuldu!",
+  "orderCode": "Sipariş Kodu",
+  "orderPreparationStarted": "Siparişiniz hazırlanmaya başlandı. Sipariş durumunuzu \"Siparişlerim\" sayfasından takip edebilirsiniz.",
+  "myOrders": "Siparişlerim",
+  "homePage": "Ana Sayfa",
+  "ordersLoadFailed": "Siparişler yüklenemedi: {error}",
+  "@ordersLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noOrdersYet": "Henüz siparişiniz yok",
+  "onWay": "Yolda",
+  "unknownVendor": "Bilinmeyen Satıcı",
+  "unknown": "Bilinmeyen",
+  "cancelItem": "Ürünü İptal Et",
+  "itemCancelled": "Ürün İptal Edildi",
+  "itemCancelSuccess": "Ürün başarıyla iptal edildi",
+  "itemCancelFailed": "Ürün iptal edilemedi: {error}",
+  "@itemCancelFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  }
 }

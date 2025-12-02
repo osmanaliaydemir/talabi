@@ -29,7 +29,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   List<CourierOrder> _activeOrders = [];
   bool _isLoading = true;
   bool _isStatusUpdating = false;
-  final Set<int> _processingOrders = {};
+  final Set<String> _processingOrders = {};
 
   @override
   void initState() {
@@ -878,7 +878,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   }
 
   Future<void> _performOrderAction({
-    required int orderId,
+    required String orderId,
     required Future<bool> Function() action,
     required String successMessage,
   }) async {

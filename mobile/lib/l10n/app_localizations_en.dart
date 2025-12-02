@@ -105,6 +105,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectCurrency => 'Select Currency';
 
   @override
+  String get selectCurrencyDescription => 'Currency selection';
+
+  @override
   String get regionalSettings => 'Regional Settings';
 
   @override
@@ -383,6 +386,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ok => 'OK';
+
+  @override
+  String get duplicateEmail =>
+      'An account with this email address already exists.';
+
+  @override
+  String googleLoginFailed(Object error) {
+    return 'Google login failed: $error';
+  }
+
+  @override
+  String appleLoginFailed(Object error) {
+    return 'Apple login failed: $error';
+  }
+
+  @override
+  String facebookLoginFailed(Object error) {
+    return 'Facebook login failed: $error';
+  }
 
   @override
   String errorWithMessage(Object error) {
@@ -914,6 +936,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSaved => 'Settings saved';
 
   @override
+  String get regionalSettingsDescription => 'Date and time settings';
+
+  @override
+  String get timeZoneHint => 'e.g., Europe/Istanbul, America/New_York';
+
+  @override
   String get manageNotificationPreferences =>
       'Manage your notification preferences';
 
@@ -933,6 +961,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectLanguageDescription => 'Change application language';
+
+  @override
+  String get selectLanguageSubtitle => 'Choose your preferred language';
+
+  @override
+  String get languageChanged => 'Language changed';
+
+  @override
+  String languagesCount(Object count) {
+    return '$count languages';
+  }
 
   @override
   String get legalDocumentsDescription => 'Terms of use and policies';
@@ -1225,7 +1264,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reports => 'Reports';
 
   @override
-  String get reviews => 'Reviews';
+  String reviews(Object count) {
+    return 'Reviews ($count)';
+  }
 
   @override
   String get logoUpdated => 'Logo updated';
@@ -1495,4 +1536,275 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refresh => 'Refresh';
+
+  @override
+  String get cancelOrder => 'Cancel Order';
+
+  @override
+  String get reorder => 'Reorder';
+
+  @override
+  String get orderCancelled => 'Order cancelled';
+
+  @override
+  String get cancelReason => 'Cancel reason';
+
+  @override
+  String get cancelReasonDescription =>
+      'Please specify your cancellation reason (at least 10 characters):';
+
+  @override
+  String get pieces => 'pieces';
+
+  @override
+  String get orderNotFound => 'Order not found';
+
+  @override
+  String get productsAddedToCart =>
+      'Products added to cart, redirecting to cart...';
+
+  @override
+  String reorderFailed(Object error) {
+    return 'Failed to reorder: $error';
+  }
+
+  @override
+  String get locationPermissionDenied => 'Location permission denied';
+
+  @override
+  String get locationPermissionDeniedForever =>
+      'Location permission permanently denied';
+
+  @override
+  String vendorsLoadFailed(Object error) {
+    return 'Failed to load vendors: $error';
+  }
+
+  @override
+  String get yourLocation => 'Your Location';
+
+  @override
+  String get vendorsMap => 'Vendors Map';
+
+  @override
+  String get findMyLocation => 'Find My Location';
+
+  @override
+  String get viewProducts => 'View Products';
+
+  @override
+  String get gettingLocation => 'Getting location...';
+
+  @override
+  String searchError(Object error) {
+    return 'Search error: $error';
+  }
+
+  @override
+  String productAddedToCart(Object productName) {
+    return '$productName added to cart';
+  }
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get selectCategory => 'Select category';
+
+  @override
+  String get priceRange => 'Price Range';
+
+  @override
+  String get minPrice => 'Min Price';
+
+  @override
+  String get maxPrice => 'Max Price';
+
+  @override
+  String get selectCity => 'Select city';
+
+  @override
+  String get minimumRating => 'Minimum Rating';
+
+  @override
+  String get maximumDistance => 'Maximum Distance (km)';
+
+  @override
+  String get distanceKm => 'Distance (km)';
+
+  @override
+  String get sortBy => 'Sort By';
+
+  @override
+  String get selectSortBy => 'Select sort by';
+
+  @override
+  String get priceLowToHigh => 'Price (Low to High)';
+
+  @override
+  String get priceHighToLow => 'Price (High to Low)';
+
+  @override
+  String get sortByName => 'Sort by Name';
+
+  @override
+  String get newest => 'Newest';
+
+  @override
+  String get ratingHighToLow => 'Rating (High to Low)';
+
+  @override
+  String get popularity => 'Popularity';
+
+  @override
+  String get distance => 'Distance';
+
+  @override
+  String get applyFilters => 'Apply Filters';
+
+  @override
+  String get searchProductsOrVendors => 'Search products or vendors...';
+
+  @override
+  String get suggestions => 'Suggestions';
+
+  @override
+  String get product => 'Product';
+
+  @override
+  String get searchHistory => 'Search History';
+
+  @override
+  String get typeToSearch => 'Type in the box above to search';
+
+  @override
+  String get recentSearches => 'Recent Searches';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String cityLabel(Object city) {
+    return 'City: $city';
+  }
+
+  @override
+  String distanceLabel(Object distance) {
+    return 'Distance: $distance km';
+  }
+
+  @override
+  String removedFromFavorites(Object productName) {
+    return '$productName removed from favorites';
+  }
+
+  @override
+  String addedToFavorites(Object productName) {
+    return '$productName added to favorites';
+  }
+
+  @override
+  String favoriteOperationFailed(Object error) {
+    return 'Favorite operation failed: $error';
+  }
+
+  @override
+  String get noProductsYet => 'No products yet.';
+
+  @override
+  String productLoadFailed(Object error) {
+    return 'Failed to load product: $error';
+  }
+
+  @override
+  String get productNotFound => 'Product not found';
+
+  @override
+  String get rateVendor => 'Rate Vendor';
+
+  @override
+  String get shareYourThoughts => 'Share your thoughts...';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get vendorReviewSubmitted => 'Vendor review submitted!';
+
+  @override
+  String get productReviewSubmitted => 'Product review submitted!';
+
+  @override
+  String get noDescription => 'No description available.';
+
+  @override
+  String get readMore => 'Read more';
+
+  @override
+  String get showLess => 'Show less';
+
+  @override
+  String get deliveryTime => 'Delivery Time';
+
+  @override
+  String get deliveryType => 'Delivery Type';
+
+  @override
+  String get noReviewsYet => 'No reviews yet. Be the first to review!';
+
+  @override
+  String get seeAllReviews => 'See All Reviews';
+
+  @override
+  String by(Object vendorName) {
+    return 'By $vendorName';
+  }
+
+  @override
+  String get orderCreatedSuccessfully =>
+      'Your Order Has Been Created Successfully!';
+
+  @override
+  String get orderCode => 'Order Code';
+
+  @override
+  String get orderPreparationStarted =>
+      'Your order has started being prepared. You can track your order status from the \"My Orders\" page.';
+
+  @override
+  String get homePage => 'Home';
+
+  @override
+  String ordersLoadFailed(Object error) {
+    return 'Failed to load orders: $error';
+  }
+
+  @override
+  String get noOrdersYet => 'No orders yet';
+
+  @override
+  String get onWay => 'On the Way';
+
+  @override
+  String get unknownVendor => 'Unknown Vendor';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get cancelItem => 'Cancel Item';
+
+  @override
+  String get itemCancelled => 'Item Cancelled';
+
+  @override
+  String get itemCancelSuccess => 'Item cancelled successfully';
+
+  @override
+  String itemCancelFailed(Object error) {
+    return 'Failed to cancel item: $error';
+  }
 }

@@ -1,5 +1,5 @@
 class Vendor {
-  final int id;
+  final String id;
   final String name;
   final String? imageUrl;
   final String address;
@@ -25,7 +25,7 @@ class Vendor {
 
   factory Vendor.fromJson(Map<String, dynamic> json) {
     return Vendor(
-      id: json['id'],
+      id: json['id'].toString(),
       name: json['name'],
       imageUrl: json['imageUrl'],
       address: json['address'],

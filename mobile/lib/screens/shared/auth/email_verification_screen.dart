@@ -3,6 +3,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/shared/auth/login_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String? email;
@@ -19,11 +20,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   Future<void> _resendEmail() async {
     if (widget.email == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.emailRequired),
-          backgroundColor: Colors.red,
-        ),
+      final localizations = AppLocalizations.of(context)!;
+      ToastMessage.show(
+        context,
+        message: localizations.emailRequired,
+        isSuccess: false,
       );
       return;
     }
@@ -43,24 +44,20 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.verificationEmailResent,
-            ),
-            backgroundColor: Colors.green,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.verificationEmailResent,
+          isSuccess: true,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${AppLocalizations.of(context)!.error}: ${e.toString()}',
-            ),
-            backgroundColor: Colors.red,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: '${localizations.error}: ${e.toString()}',
+          isSuccess: false,
         );
       }
     } finally {

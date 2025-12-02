@@ -90,7 +90,7 @@ public class AddressesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateAddress(int id, UpdateAddressDto dto)
+    public async Task<ActionResult> UpdateAddress(Guid id, UpdateAddressDto dto)
     {
         var userId = GetUserId();
 
@@ -116,7 +116,7 @@ public class AddressesController : ControllerBase
     }
 
     [HttpPut("{id}/set-default")]
-    public async Task<ActionResult> SetDefaultAddress(int id)
+    public async Task<ActionResult> SetDefaultAddress(Guid id)
     {
         var userId = GetUserId();
 
@@ -144,7 +144,7 @@ public class AddressesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAddress(int id)
+    public async Task<ActionResult> DeleteAddress(Guid id)
     {
         var userId = GetUserId();
 

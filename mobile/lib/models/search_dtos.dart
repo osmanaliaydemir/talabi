@@ -4,10 +4,10 @@ import 'package:mobile/models/vendor.dart';
 class ProductSearchRequestDto {
   final String? query;
   final String? category;
-  final int? categoryId;
+  final String? categoryId;
   final double? minPrice;
   final double? maxPrice;
-  final int? vendorId;
+  final String? vendorId;
   final String? sortBy; // "price_asc", "price_desc", "name", "newest"
   final int page;
   final int pageSize;
@@ -138,7 +138,7 @@ class PagedResultDto<T> {
 }
 
 class AutocompleteResultDto {
-  final int id;
+  final String id;
   final String name;
   final String type; // "product" or "vendor"
 
@@ -150,7 +150,7 @@ class AutocompleteResultDto {
 
   factory AutocompleteResultDto.fromJson(Map<String, dynamic> json) {
     return AutocompleteResultDto(
-      id: json['id'],
+      id: json['id'].toString(),
       name: json['name'],
       type: json['type'],
     );
@@ -159,8 +159,8 @@ class AutocompleteResultDto {
 
 // Helper classes for typed PagedResultDto
 class ProductDto {
-  final int id;
-  final int vendorId;
+  final String id;
+  final String vendorId;
   final String name;
   final String? description;
   final double price;
@@ -177,8 +177,8 @@ class ProductDto {
 
   factory ProductDto.fromJson(Map<String, dynamic> json) {
     return ProductDto(
-      id: json['id'],
-      vendorId: json['vendorId'],
+      id: json['id'].toString(),
+      vendorId: json['vendorId'].toString(),
       name: json['name'],
       description: json['description'],
       price: (json['price'] as num).toDouble(),
@@ -199,7 +199,7 @@ class ProductDto {
 }
 
 class VendorDto {
-  final int id;
+  final String id;
   final String name;
   final String? imageUrl;
   final String address;
@@ -225,7 +225,7 @@ class VendorDto {
 
   factory VendorDto.fromJson(Map<String, dynamic> json) {
     return VendorDto(
-      id: json['id'],
+      id: json['id'].toString(),
       name: json['name'],
       imageUrl: json['imageUrl'],
       address: json['address'],

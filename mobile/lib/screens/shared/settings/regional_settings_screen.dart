@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/localization_provider.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 class RegionalSettingsScreen extends StatefulWidget {
@@ -144,7 +145,9 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       controller: _timeZoneController,
                       style: AppTheme.poppins(color: AppTheme.textPrimary),
                       decoration: InputDecoration(
-                        hintText: 'e.g., Europe/Istanbul, America/New_York',
+                        hintText:
+                            appLocalizations?.timeZoneHint ??
+                            'e.g., Europe/Istanbul, America/New_York',
                         hintStyle: AppTheme.poppins(color: AppTheme.textHint),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(
@@ -168,16 +171,12 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                               : _timeZoneController.text,
                         );
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              appLocalizations?.save ?? 'Kaydedildi',
-                              style: AppTheme.poppins(
-                                color: AppTheme.textOnPrimary,
-                              ),
-                            ),
-                            backgroundColor: AppTheme.success,
-                          ),
+                        ToastMessage.show(
+                          context,
+                          message:
+                              appLocalizations?.settingsSaved ??
+                              'Ayarlar kaydedildi',
+                          isSuccess: true,
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -284,7 +283,8 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Tarih ve saat ayarları',
+                      appLocalizations?.regionalSettingsDescription ??
+                          'Tarih ve saat ayarları',
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,

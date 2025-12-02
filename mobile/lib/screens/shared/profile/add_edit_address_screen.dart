@@ -4,6 +4,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/address.dart';
 import 'package:mobile/screens/shared/profile/address_picker_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class AddEditAddressScreen extends StatefulWidget {
   final Address? address;
@@ -84,24 +85,22 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.address == null ? l10n.addressAdded : l10n.addressUpdated,
-            ),
-            backgroundColor: AppTheme.success,
-          ),
+        ToastMessage.show(
+          context,
+          message: widget.address == null
+              ? l10n.addressAdded
+              : l10n.addressUpdated,
+          isSuccess: true,
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.error}: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${l10n.error}: $e',
+          isSuccess: false,
         );
       }
     } finally {

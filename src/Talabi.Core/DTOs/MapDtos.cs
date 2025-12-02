@@ -2,7 +2,7 @@ namespace Talabi.Core.DTOs;
 
 public class MapMarkerDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public double Latitude { get; set; }
     public double Longitude { get; set; }
@@ -13,7 +13,7 @@ public class MapMarkerDto
 
 public class VendorMapDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public double Latitude { get; set; }
@@ -25,22 +25,22 @@ public class VendorMapDto
 
 public class DeliveryTrackingDto
 {
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
     public string OrderStatus { get; set; } = string.Empty;
     public DateTime? EstimatedDeliveryTime { get; set; }
-    
+
     // Vendor location
     public double VendorLatitude { get; set; }
     public double VendorLongitude { get; set; }
     public string VendorAddress { get; set; } = string.Empty;
-    
+
     // Delivery address
     public double DeliveryLatitude { get; set; }
     public double DeliveryLongitude { get; set; }
     public string DeliveryAddress { get; set; } = string.Empty;
-    
+
     // Courier location (if assigned)
-    public int? CourierId { get; set; }
+    public Guid? CourierId { get; set; }
     public string? CourierName { get; set; }
     public double? CourierLatitude { get; set; }
     public double? CourierLongitude { get; set; }

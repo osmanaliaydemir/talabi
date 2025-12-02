@@ -284,7 +284,7 @@ public class CourierController : ControllerBase
 
     // Legacy endpoints for backward compatibility
     [HttpPut("{courierId}/location")]
-    public async Task<ActionResult> UpdateLocationLegacy(int courierId, UpdateCourierLocationDto dto)
+    public async Task<ActionResult> UpdateLocationLegacy(Guid courierId, UpdateCourierLocationDto dto)
     {
         var courier = await _context.Couriers.FindAsync(courierId);
         if (courier == null)
@@ -303,7 +303,7 @@ public class CourierController : ControllerBase
     }
 
     [HttpGet("{courierId}/location")]
-    public async Task<ActionResult<Talabi.Core.DTOs.CourierLocationDto>> GetLocation(int courierId)
+    public async Task<ActionResult<Talabi.Core.DTOs.CourierLocationDto>> GetLocation(Guid courierId)
     {
         var courier = await _context.Couriers.FindAsync(courierId);
         if (courier == null)
@@ -378,7 +378,7 @@ public class CourierController : ControllerBase
 
     // POST: api/courier/orders/{id}/accept
     [HttpPost("orders/{id}/accept")]
-    public async Task<IActionResult> AcceptOrder(int id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<IActionResult> AcceptOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
         var courier = await GetCurrentCourier();
         if (courier == null) return NotFound(new { Message = "Courier profile not found" });
@@ -391,7 +391,7 @@ public class CourierController : ControllerBase
 
     // POST: api/courier/orders/{id}/reject
     [HttpPost("orders/{id}/reject")]
-    public async Task<IActionResult> RejectOrder(int id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<IActionResult> RejectOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
         var courier = await GetCurrentCourier();
         if (courier == null) return NotFound(new { Message = "Courier profile not found" });
@@ -404,7 +404,7 @@ public class CourierController : ControllerBase
 
     // POST: api/courier/orders/{id}/pickup
     [HttpPost("orders/{id}/pickup")]
-    public async Task<IActionResult> PickUpOrder(int id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<IActionResult> PickUpOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
         var courier = await GetCurrentCourier();
         if (courier == null) return NotFound(new { Message = "Courier profile not found" });
@@ -417,7 +417,7 @@ public class CourierController : ControllerBase
 
     // POST: api/courier/orders/{id}/deliver
     [HttpPost("orders/{id}/deliver")]
-    public async Task<IActionResult> DeliverOrder(int id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<IActionResult> DeliverOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
         var courier = await GetCurrentCourier();
         if (courier == null) return NotFound(new { Message = "Courier profile not found" });
@@ -430,7 +430,7 @@ public class CourierController : ControllerBase
 
     // POST: api/courier/orders/{id}/proof
     [HttpPost("orders/{id}/proof")]
-    public async Task<IActionResult> SubmitDeliveryProof(int id, [FromBody] SubmitDeliveryProofDto dto)
+    public async Task<IActionResult> SubmitDeliveryProof(Guid id, [FromBody] SubmitDeliveryProofDto dto)
     {
         var courier = await GetCurrentCourier();
         if (courier == null) return NotFound(new { Message = "Courier profile not found" });
@@ -525,7 +525,7 @@ public class CourierController : ControllerBase
 
     // GET: api/courier/orders/{id}
     [HttpGet("orders/{id}")]
-    public async Task<IActionResult> GetOrderDetail(int id)
+    public async Task<IActionResult> GetOrderDetail(Guid id)
     {
         var courier = await GetCurrentCourier();
         if (courier == null) return NotFound(new { Message = _localizer["CourierProfileNotFound"] });

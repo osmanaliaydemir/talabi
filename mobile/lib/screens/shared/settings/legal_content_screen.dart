@@ -95,7 +95,7 @@ class _LegalContentScreenState extends State<LegalContentScreen> {
                             const SizedBox(height: 8),
                             TextButton(
                               onPressed: _loadContent,
-                              child: const Text('Retry'),
+                              child: Text(l10n.retry),
                             ),
                           ],
                         ),

@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/screens/customer/order_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:intl/intl.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
@@ -35,9 +36,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('Siparişler yüklenemedi: $e')));
+          message: l10n.ordersLoadFailed(e.toString()),
+          isSuccess: false,
+        );
       }
     }
   }
@@ -74,7 +78,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Henüz siparişiniz yok',
+                          AppLocalizations.of(context)!.noOrdersYet,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[600],
@@ -100,8 +104,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   Widget _buildOrderCard(BuildContext context, dynamic order) {
+    final l10n = AppLocalizations.of(context)!;
     final date = DateTime.parse(order['createdAt']);
-    final status = order['status'] ?? 'Unknown';
+    final status = order['status'] ?? l10n.unknown;
     final statusColor = _getStatusColor(status);
 
     return Container(
@@ -147,7 +152,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            order['vendorName'] ?? 'Unknown Vendor',
+                            order['vendorName'] ?? l10n.unknownVendor,
                             style: AppTheme.poppins(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -176,7 +181,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         borderRadius: BorderRadius.circular(
                           AppTheme.radiusSmall,
                         ),
-                        border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Text(
                         _getStatusText(context, status),
@@ -206,7 +213,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '#${order['id']}',
+                          '#${order['customerOrderId'] ?? order['id']}',
                           style: AppTheme.poppins(
                             color: AppTheme.textSecondary,
                             fontWeight: FontWeight.w500,
@@ -273,7 +280,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       case 'onway':
       case 'on_way':
       case 'ontheway':
-        return 'Yolda'; // localizations.onWay; // Key added but not generated yet
+        return localizations.onWay;
       case 'delivered':
         return localizations.delivered;
       case 'cancelled':

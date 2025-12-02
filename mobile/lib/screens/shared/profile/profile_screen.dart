@@ -12,6 +12,7 @@ import 'package:mobile/screens/shared/settings/notification_settings_screen.dart
 import 'package:mobile/screens/customer/order_history_screen.dart';
 import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -35,20 +36,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadProfile() async {
     try {
       final profile = await _apiService.getProfile();
+      if (!mounted) return; // Prevent setState after dispose
       setState(() {
         _profile = profile;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return; // Prevent setState after dispose
       setState(() {
         _isLoading = false;
       });
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.profileLoadFailed}: $e')),
-        );
-      }
+      final l10n = AppLocalizations.of(context)!;
+      ToastMessage.show(
+        context,
+        message: '${l10n.profileLoadFailed}: $e',
+        isSuccess: false,
+      );
     }
   }
 

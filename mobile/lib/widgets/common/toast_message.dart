@@ -93,7 +93,9 @@ class _ToastWidgetState extends State<_ToastWidget>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: widget.isSuccess ? Colors.orange : Colors.red.shade700,
+                color: widget.isSuccess
+                    ? Colors.green.shade600
+                    : Colors.red.shade700,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(

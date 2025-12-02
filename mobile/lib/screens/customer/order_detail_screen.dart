@@ -6,13 +6,13 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:provider/provider.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  final int orderId;
+  final String orderId;
 
   const OrderDetailScreen({super.key, required this.orderId});
 
@@ -43,9 +43,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('Sipariş yüklenemedi: $e')));
+          message: localizations.failedToLoadOrderDetail,
+          isSuccess: false,
+        );
       }
     }
   }
@@ -53,20 +56,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Future<void> _cancelOrder() async {
     final reasonController = TextEditingController();
 
+    final localizations = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Siparişi İptal Et'),
+        title: Text(localizations.cancelOrder),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('İptal nedeninizi belirtin (en az 10 karakter):'),
+            Text(localizations.cancelReasonDescription),
             const SizedBox(height: 16),
             TextField(
               controller: reasonController,
-              decoration: const InputDecoration(
-                hintText: 'İptal nedeni',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: localizations.cancelReason,
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
@@ -75,21 +79,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Vazgeç'),
+            child: Text(localizations.cancel),
           ),
           TextButton(
             onPressed: () {
               if (reasonController.text.length < 10) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('İptal nedeni en az 10 karakter olmalı'),
-                  ),
+                ToastMessage.show(
+                  context,
+                  message: localizations.cancelReasonDescription,
+                  isSuccess: false,
                 );
                 return;
               }
               Navigator.pop(context, true);
             },
-            child: const Text('İptal Et', style: TextStyle(color: Colors.red)),
+            child: Text(
+              localizations.cancelOrder,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -99,16 +106,103 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       try {
         await _apiService.cancelOrder(widget.orderId, reasonController.text);
         if (mounted) {
-          ScaffoldMessenger.of(
+          final localizations = AppLocalizations.of(context)!;
+          ToastMessage.show(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Sipariş iptal edildi')));
+            message: localizations.orderCancelled,
+            isSuccess: true,
+          );
           _loadOrderDetail(); // Reload to show updated status
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
+          final localizations = AppLocalizations.of(context)!;
+          ToastMessage.show(
             context,
-          ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+            message: localizations.errorWithMessage(e.toString()),
+            isSuccess: false,
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _cancelOrderItem(OrderItemDetail item) async {
+    if (item.isCancelled) {
+      return; // Already cancelled
+    }
+
+    final reasonController = TextEditingController();
+    final localizations = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localizations.cancelItem),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${localizations.cancelReasonDescription}\n\n${item.productName}',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              decoration: InputDecoration(
+                hintText: localizations.cancelReason,
+                border: const OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(localizations.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              if (reasonController.text.length < 10) {
+                ToastMessage.show(
+                  context,
+                  message: localizations.cancelReasonDescription,
+                  isSuccess: false,
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: Text(
+              localizations.cancelItem,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && reasonController.text.isNotEmpty) {
+      try {
+        await _apiService.cancelOrderItem(
+          item.customerOrderItemId,
+          reasonController.text,
+        );
+        if (mounted) {
+          ToastMessage.show(
+            context,
+            message: localizations.itemCancelSuccess,
+            isSuccess: true,
+          );
+          _loadOrderDetail(); // Reload to show updated status
+        }
+      } catch (e) {
+        if (mounted) {
+          ToastMessage.show(
+            context,
+            message: localizations.itemCancelFailed(e.toString()),
+            isSuccess: false,
+          );
         }
       }
     }
@@ -155,9 +249,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       }
 
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Ürünler sepete eklendi, sepete yönlendiriliyorsunuz...',
+          message: localizations.productsAddedToCart,
           isSuccess: true,
         );
 
@@ -173,9 +268,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Yeniden sipariş oluşturulamadı: $e',
+          message: localizations.reorderFailed(e.toString()),
           isSuccess: false,
         );
       }
@@ -197,7 +293,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return localizations.ready;
       case 'OnTheWay':
       case 'OnWay':
-        return 'Yolda'; // localizations.onWay;
+        return localizations.onWay;
       case 'Delivered':
         return localizations.delivered;
       case 'Cancelled':
@@ -218,12 +314,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Sipariş #${widget.orderId}',
-          style: AppTheme.poppins(
-            color: AppTheme.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Builder(
+          builder: (context) {
+            final localizations = AppLocalizations.of(context)!;
+            // Only show CustomerOrderId, not GUID
+            final orderId = _orderDetail?.customerOrderId.isNotEmpty == true
+                ? _orderDetail!.customerOrderId
+                : null;
+            return Text(
+              orderId != null
+                  ? '${localizations.orderDetail} #$orderId'
+                  : localizations.orderDetail,
+              style: AppTheme.poppins(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
         actions: [
           if (_orderDetail != null &&
@@ -241,7 +348,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                 );
               },
-              tooltip: 'Teslimat Takibi',
+              tooltip: AppLocalizations.of(context)!.deliveryTracking,
             ),
         ],
       ),
@@ -252,7 +359,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           : _orderDetail == null
           ? Center(
               child: Text(
-                'Sipariş bulunamadı',
+                AppLocalizations.of(context)!.orderNotFound,
                 style: AppTheme.poppins(color: AppTheme.textSecondary),
               ),
             )
@@ -277,8 +384,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryOrange.withValues(alpha:
-                                    0.1,
+                                    color: AppTheme.primaryOrange.withValues(
+                                      alpha: 0.1,
                                     ),
                                     shape: BoxShape.circle,
                                   ),
@@ -348,7 +455,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
                           // Products List
                           Text(
-                            'Sipariş Detayı',
+                            AppLocalizations.of(context)!.orderDetail,
                             style: AppTheme.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -368,65 +475,230 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                               itemBuilder: (context, index) {
                                 final item = _orderDetail!.items[index];
-                                return Padding(
-                                  padding: EdgeInsets.all(
-                                    AppTheme.spacingMedium,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusSmall,
-                                        ),
-                                        child: item.productImageUrl != null
-                                            ? Image.network(
-                                                item.productImageUrl!,
-                                                width: 50,
-                                                height: 50,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Container(
-                                                width: 50,
-                                                height: 50,
-                                                color: Colors.grey[200],
-                                                child: const Icon(
-                                                  Icons.image,
-                                                  size: 30,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                      ),
-                                      SizedBox(width: AppTheme.spacingMedium),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                final localizations = AppLocalizations.of(
+                                  context,
+                                )!;
+                                final canCancelItem =
+                                    !item.isCancelled &&
+                                    (_orderDetail!.status == 'Pending' ||
+                                        _orderDetail!.status == 'Preparing') &&
+                                    _orderDetail!.items.length > 1;
+
+                                return Container(
+                                  decoration: item.isCancelled
+                                      ? BoxDecoration(
+                                          color: Colors.red.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            AppTheme.radiusSmall,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.red.shade200,
+                                            width: 1,
+                                          ),
+                                        )
+                                      : null,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(
+                                      AppTheme.spacingMedium,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Row(
                                           children: [
-                                            Text(
-                                              item.productName,
-                                              style: AppTheme.poppins(
-                                                fontWeight: FontWeight.w600,
-                                                color: AppTheme.textPrimary,
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppTheme.radiusSmall,
+                                                  ),
+                                              child:
+                                                  item.productImageUrl != null
+                                                  ? Image.network(
+                                                      item.productImageUrl!,
+                                                      width: 50,
+                                                      height: 50,
+                                                      fit: BoxFit.cover,
+                                                      color: item.isCancelled
+                                                          ? Colors.grey
+                                                          : null,
+                                                      colorBlendMode:
+                                                          item.isCancelled
+                                                          ? BlendMode.saturation
+                                                          : null,
+                                                    )
+                                                  : Container(
+                                                      width: 50,
+                                                      height: 50,
+                                                      color: Colors.grey[200],
+                                                      child: Icon(
+                                                        Icons.image,
+                                                        size: 30,
+                                                        color: item.isCancelled
+                                                            ? Colors.grey[400]
+                                                            : Colors.grey,
+                                                      ),
+                                                    ),
+                                            ),
+                                            SizedBox(
+                                              width: AppTheme.spacingMedium,
+                                            ),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          item.productName,
+                                                          style: AppTheme.poppins(
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                item.isCancelled
+                                                                ? Colors
+                                                                      .grey[600]
+                                                                : AppTheme
+                                                                      .textPrimary,
+                                                            decoration:
+                                                                item.isCancelled
+                                                                ? TextDecoration
+                                                                      .lineThrough
+                                                                : null,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      if (item.isCancelled)
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 8,
+                                                                vertical: 4,
+                                                              ),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.red,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                          child: Text(
+                                                            localizations
+                                                                .itemCancelled,
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 10,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        '${item.quantity} ${localizations.pieces}',
+                                                        style: AppTheme.poppins(
+                                                          fontSize: 12,
+                                                          color:
+                                                              item.isCancelled
+                                                              ? Colors.grey[500]
+                                                              : AppTheme
+                                                                    .textSecondary,
+                                                        ),
+                                                      ),
+                                                      if (item
+                                                          .customerOrderItemId
+                                                          .isNotEmpty) ...[
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        Text(
+                                                          '• #${item.customerOrderItemId}',
+                                                          style: AppTheme.poppins(
+                                                            fontSize: 12,
+                                                            color:
+                                                                item.isCancelled
+                                                                ? Colors
+                                                                      .grey[500]
+                                                                : AppTheme
+                                                                      .textSecondary,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                  if (item.isCancelled &&
+                                                      item.cancelReason !=
+                                                          null) ...[
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      '${localizations.cancelReason}: ${item.cancelReason}',
+                                                      style: AppTheme.poppins(
+                                                        fontSize: 11,
+                                                        color: Colors.red[700],
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
                                               ),
                                             ),
                                             Text(
-                                              '${item.quantity} adet',
+                                              '₺${item.totalPrice.toStringAsFixed(2)}',
                                               style: AppTheme.poppins(
-                                                fontSize: 12,
-                                                color: AppTheme.textSecondary,
+                                                fontWeight: FontWeight.bold,
+                                                color: item.isCancelled
+                                                    ? Colors.grey[500]
+                                                    : AppTheme.textPrimary,
+                                                decoration: item.isCancelled
+                                                    ? TextDecoration.lineThrough
+                                                    : null,
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      Text(
-                                        '₺${item.totalPrice.toStringAsFixed(2)}',
-                                        style: AppTheme.poppins(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.textPrimary,
-                                        ),
-                                      ),
-                                    ],
+                                        if (canCancelItem) ...[
+                                          const SizedBox(height: 8),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: OutlinedButton.icon(
+                                              onPressed: () =>
+                                                  _cancelOrderItem(item),
+                                              icon: const Icon(
+                                                Icons.cancel,
+                                                size: 16,
+                                              ),
+                                              label: Text(
+                                                localizations.cancelItem,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: Colors.red,
+                                                side: const BorderSide(
+                                                  color: Colors.red,
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -445,7 +717,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Toplam Tutar',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.cartTotalAmountLabel,
                                       style: AppTheme.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -470,7 +744,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           // Status History Timeline
                           if (_orderDetail!.statusHistory.isNotEmpty) ...[
                             Text(
-                              'Sipariş Geçmişi',
+                              AppLocalizations.of(context)!.orderHistory,
                               style: AppTheme.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -609,7 +883,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                               ),
                               child: Text(
-                                'Siparişi İptal Et',
+                                AppLocalizations.of(context)!.cancelOrder,
                                 style: AppTheme.poppins(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -633,7 +907,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                               ),
                               child: Text(
-                                'Yeniden Sipariş Ver',
+                                AppLocalizations.of(context)!.reorder,
                                 style: AppTheme.poppins(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,

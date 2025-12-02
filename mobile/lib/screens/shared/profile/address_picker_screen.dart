@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class AddressPickerScreen extends StatefulWidget {
   final Function(
@@ -58,9 +59,11 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       });
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+          message: '${l10n.error}: $e',
+          isSuccess: false,
+        );
       }
     }
   }
@@ -71,8 +74,10 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       if (!serviceEnabled) {
         if (mounted) {
           final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.locationServicesDisabled)),
+          ToastMessage.show(
+            context,
+            message: l10n.locationServicesDisabled,
+            isSuccess: false,
           );
         }
         setState(() {
@@ -184,9 +189,11 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     if (_selectedLocation == null || _selectedAddress == null) {
-      ScaffoldMessenger.of(
+      ToastMessage.show(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectLocation)));
+        message: l10n.pleaseSelectLocation,
+        isSuccess: false,
+      );
       return;
     }
 

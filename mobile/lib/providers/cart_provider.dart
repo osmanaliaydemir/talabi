@@ -11,7 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 class CartProvider with ChangeNotifier {
-  final Map<int, CartItem> _items = {};
+  final Map<String, CartItem> _items = {};
   final ApiService _apiService = ApiService();
   final SyncService? _syncService;
   final ConnectivityProvider? _connectivityProvider;
@@ -24,7 +24,7 @@ class CartProvider with ChangeNotifier {
   }) : _syncService = syncService,
        _connectivityProvider = connectivityProvider;
 
-  Map<int, CartItem> get items => _items;
+  Map<String, CartItem> get items => _items;
   int get itemCount => _items.length;
   bool get isLoading => _isLoading;
 
@@ -46,11 +46,11 @@ class CartProvider with ChangeNotifier {
 
       if (cartData['items'] != null) {
         for (var item in cartData['items']) {
-          int vendorId = item['vendorId'] ?? 0;
+          String vendorId = item['vendorId']?.toString() ?? "0";
           String? vendorName = item['vendorName'];
 
           // If backend doesn't provide vendorId, fetch it from product endpoint
-          if (vendorId == 0) {
+          if (vendorId == "0") {
             try {
               print(
                 '🛒 [CART] Backend missing vendorId for product ${item['productId']}, fetching...',
@@ -68,7 +68,7 @@ class CartProvider with ChangeNotifier {
           }
 
           final product = Product(
-            id: item['productId'],
+            id: item['productId'].toString(),
             vendorId: vendorId,
             vendorName: vendorName,
             name: item['productName'],
@@ -80,7 +80,7 @@ class CartProvider with ChangeNotifier {
           _items[product.id] = CartItem(
             product: product,
             quantity: item['quantity'],
-            backendId: item['id'], // Store backend cart item ID
+            backendId: item['id'].toString(), // Store backend cart item ID
           );
         }
       }
@@ -236,7 +236,7 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> removeItem(int productId) async {
+  Future<void> removeItem(String productId) async {
     final cartItem = _items[productId];
     final isOnline = _connectivityProvider?.isOnline ?? true;
 
@@ -274,7 +274,7 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> increaseQuantity(int productId) async {
+  Future<void> increaseQuantity(String productId) async {
     if (!_items.containsKey(productId)) return;
 
     final cartItem = _items[productId]!;
@@ -320,7 +320,7 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> decreaseQuantity(int productId) async {
+  Future<void> decreaseQuantity(String productId) async {
     if (!_items.containsKey(productId)) return;
 
     final cartItem = _items[productId]!;

@@ -22,10 +22,10 @@ public class VendorOrdersController : ControllerBase
         _assignmentService = assignmentService;
     }
 
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
         ?? throw new UnauthorizedAccessException();
 
-    private async Task<int?> GetVendorIdAsync()
+    private async Task<Guid?> GetVendorIdAsync()
     {
         var userId = GetUserId();
         var vendor = await _context.Vendors
@@ -94,7 +94,7 @@ public class VendorOrdersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<VendorOrderDto>> GetVendorOrder(int id)
+    public async Task<ActionResult<VendorOrderDto>> GetVendorOrder(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -135,7 +135,7 @@ public class VendorOrdersController : ControllerBase
     }
 
     [HttpPost("{id}/accept")]
-    public async Task<ActionResult> AcceptOrder(int id)
+    public async Task<ActionResult> AcceptOrder(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -183,7 +183,7 @@ public class VendorOrdersController : ControllerBase
     }
 
     [HttpPost("{id}/reject")]
-    public async Task<ActionResult> RejectOrder(int id, [FromBody] RejectOrderDto dto)
+    public async Task<ActionResult> RejectOrder(Guid id, [FromBody] RejectOrderDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -227,7 +227,7 @@ public class VendorOrdersController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
-    public async Task<ActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
+    public async Task<ActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -310,7 +310,7 @@ public class VendorOrdersController : ControllerBase
 
     // Get available couriers for manual assignment
     [HttpGet("{id}/available-couriers")]
-    public async Task<ActionResult<IEnumerable<AvailableCourierDto>>> GetAvailableCouriers(int id)
+    public async Task<ActionResult<IEnumerable<AvailableCourierDto>>> GetAvailableCouriers(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -382,7 +382,7 @@ public class VendorOrdersController : ControllerBase
 
     // Manually assign courier to order
     [HttpPost("{id}/assign-courier")]
-    public async Task<ActionResult> AssignCourier(int id, [FromBody] AssignCourierDto dto)
+    public async Task<ActionResult> AssignCourier(Guid id, [FromBody] AssignCourierDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -421,7 +421,7 @@ public class VendorOrdersController : ControllerBase
 
     // Auto-assign best courier
     [HttpPost("{id}/auto-assign-courier")]
-    public async Task<ActionResult> AutoAssignCourier(int id)
+    public async Task<ActionResult> AutoAssignCourier(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -490,7 +490,7 @@ public class VendorOrdersController : ControllerBase
         return deg * (Math.PI / 180);
     }
 
-    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, int? orderId = null)
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
     {
         var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
         if (customer == null)
@@ -523,12 +523,12 @@ public class RejectOrderDto
 
 public class AssignCourierDto
 {
-    public int CourierId { get; set; }
+    public Guid CourierId { get; set; }
 }
 
 public class AvailableCourierDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string VehicleType { get; set; } = string.Empty;

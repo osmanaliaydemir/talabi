@@ -31,7 +31,7 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
     }
   }
 
-  Future<void> _markAsRead(int id) async {
+  Future<void> _markAsRead(String id) async {
     try {
       await ApiService().markNotificationAsRead('vendor', id);
       setState(() {

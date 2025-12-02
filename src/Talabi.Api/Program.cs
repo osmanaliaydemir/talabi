@@ -134,7 +134,9 @@ if (app.Environment.IsDevelopment())
         {
             var context = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
 
-            // Test database connection first
+            // Apply migrations and test connection
+            await context.Database.MigrateAsync();
+
             if (await context.Database.CanConnectAsync())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();

@@ -60,7 +60,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get products => 'المنتجات';
 
   @override
-  String get vendors => 'البائعون';
+  String get vendors => 'المتاجر';
 
   @override
   String get cart => 'السلة';
@@ -103,6 +103,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get selectCurrency => 'اختر العملة';
+
+  @override
+  String get selectCurrencyDescription => 'اختيار العملة';
 
   @override
   String get regionalSettings => 'الإعدادات الإقليمية';
@@ -178,7 +181,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get description => 'الوصف';
 
   @override
-  String get vendor => 'البائع';
+  String get vendor => 'متجر';
 
   @override
   String get category => 'الفئة';
@@ -383,6 +386,24 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ok => 'حسنًا';
+
+  @override
+  String get duplicateEmail => 'يوجد بالفعل حساب بهذا البريد الإلكتروني';
+
+  @override
+  String googleLoginFailed(Object error) {
+    return 'فشل تسجيل الدخول عبر Google: $error';
+  }
+
+  @override
+  String appleLoginFailed(Object error) {
+    return 'فشل تسجيل الدخول عبر Apple: $error';
+  }
+
+  @override
+  String facebookLoginFailed(Object error) {
+    return 'فشل تسجيل الدخول عبر Facebook: $error';
+  }
 
   @override
   String errorWithMessage(Object error) {
@@ -908,6 +929,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsSaved => 'تم حفظ الإعدادات';
 
   @override
+  String get regionalSettingsDescription => 'إعدادات التاريخ والوقت';
+
+  @override
+  String get timeZoneHint => 'مثال: Europe/Istanbul, America/New_York';
+
+  @override
   String get manageNotificationPreferences => 'إدارة تفضيلات الإشعارات';
 
   @override
@@ -924,6 +951,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get selectLanguageDescription => 'تغيير لغة التطبيق';
+
+  @override
+  String get selectLanguageSubtitle => 'اختر لغتك المفضلة';
+
+  @override
+  String get languageChanged => 'تم تغيير اللغة';
+
+  @override
+  String languagesCount(Object count) {
+    return '$count لغة';
+  }
 
   @override
   String get legalDocumentsDescription => 'شروط الاستخدام والسياسات';
@@ -1213,7 +1251,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reports => 'التقارير';
 
   @override
-  String get reviews => 'التقييمات';
+  String reviews(Object count) {
+    return 'المراجعات ($count)';
+  }
 
   @override
   String get logoUpdated => 'تم تحديث الشعار';
@@ -1478,4 +1518,273 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get refresh => 'تحديث';
+
+  @override
+  String get cancelOrder => 'إلغاء الطلب';
+
+  @override
+  String get reorder => 'إعادة الطلب';
+
+  @override
+  String get orderCancelled => 'تم إلغاء الطلب';
+
+  @override
+  String get cancelReason => 'سبب الإلغاء';
+
+  @override
+  String get cancelReasonDescription =>
+      'يرجى تحديد سبب الإلغاء (10 أحرف على الأقل):';
+
+  @override
+  String get pieces => 'قطعة';
+
+  @override
+  String get orderNotFound => 'الطلب غير موجود';
+
+  @override
+  String get productsAddedToCart =>
+      'تمت إضافة المنتجات إلى السلة، جارٍ التوجيه إلى السلة...';
+
+  @override
+  String reorderFailed(Object error) {
+    return 'فشلت إعادة الطلب: $error';
+  }
+
+  @override
+  String get locationPermissionDenied => 'تم رفض إذن الموقع';
+
+  @override
+  String get locationPermissionDeniedForever => 'تم رفض إذن الموقع بشكل دائم';
+
+  @override
+  String vendorsLoadFailed(Object error) {
+    return 'فشل تحميل المتاجر: $error';
+  }
+
+  @override
+  String get yourLocation => 'موقعك';
+
+  @override
+  String get vendorsMap => 'خريطة المتاجر';
+
+  @override
+  String get findMyLocation => 'العثور على موقعي';
+
+  @override
+  String get viewProducts => 'عرض المنتجات';
+
+  @override
+  String get gettingLocation => 'جارٍ الحصول على الموقع...';
+
+  @override
+  String searchError(Object error) {
+    return 'خطأ في البحث: $error';
+  }
+
+  @override
+  String productAddedToCart(Object productName) {
+    return 'تمت إضافة $productName إلى السلة';
+  }
+
+  @override
+  String get filters => 'المرشحات';
+
+  @override
+  String get clear => 'مسح';
+
+  @override
+  String get selectCategory => 'اختر الفئة';
+
+  @override
+  String get priceRange => 'نطاق السعر';
+
+  @override
+  String get minPrice => 'الحد الأدنى للسعر';
+
+  @override
+  String get maxPrice => 'الحد الأقصى للسعر';
+
+  @override
+  String get selectCity => 'اختر المدينة';
+
+  @override
+  String get minimumRating => 'التقييم الأدنى';
+
+  @override
+  String get maximumDistance => 'الحد الأقصى للمسافة (كم)';
+
+  @override
+  String get distanceKm => 'المسافة (كم)';
+
+  @override
+  String get sortBy => 'ترتيب حسب';
+
+  @override
+  String get selectSortBy => 'اختر الترتيب';
+
+  @override
+  String get priceLowToHigh => 'السعر (من الأقل إلى الأعلى)';
+
+  @override
+  String get priceHighToLow => 'السعر (من الأعلى إلى الأقل)';
+
+  @override
+  String get sortByName => 'ترتيب حسب الاسم';
+
+  @override
+  String get newest => 'الأحدث';
+
+  @override
+  String get ratingHighToLow => 'التقييم (من الأعلى إلى الأقل)';
+
+  @override
+  String get popularity => 'الشعبية';
+
+  @override
+  String get distance => 'المسافة';
+
+  @override
+  String get applyFilters => 'تطبيق المرشحات';
+
+  @override
+  String get searchProductsOrVendors => 'ابحث عن المنتجات أو المتاجر...';
+
+  @override
+  String get suggestions => 'الاقتراحات';
+
+  @override
+  String get product => 'منتج';
+
+  @override
+  String get searchHistory => 'سجل البحث';
+
+  @override
+  String get typeToSearch => 'اكتب في المربع أعلاه للبحث';
+
+  @override
+  String get recentSearches => 'عمليات البحث الأخيرة';
+
+  @override
+  String get noResultsFound => 'لم يتم العثور على نتائج';
+
+  @override
+  String cityLabel(Object city) {
+    return 'المدينة: $city';
+  }
+
+  @override
+  String distanceLabel(Object distance) {
+    return 'المسافة: $distance كم';
+  }
+
+  @override
+  String removedFromFavorites(Object productName) {
+    return 'تمت إزالة $productName من المفضلة';
+  }
+
+  @override
+  String addedToFavorites(Object productName) {
+    return 'تمت إضافة $productName إلى المفضلة';
+  }
+
+  @override
+  String favoriteOperationFailed(Object error) {
+    return 'فشلت عملية المفضلة: $error';
+  }
+
+  @override
+  String get noProductsYet => 'لا توجد منتجات بعد.';
+
+  @override
+  String productLoadFailed(Object error) {
+    return 'فشل تحميل المنتج: $error';
+  }
+
+  @override
+  String get productNotFound => 'المنتج غير موجود';
+
+  @override
+  String get rateVendor => 'تقييم المتجر';
+
+  @override
+  String get shareYourThoughts => 'شارك أفكارك...';
+
+  @override
+  String get submit => 'إرسال';
+
+  @override
+  String get vendorReviewSubmitted => 'تم إرسال تقييم المتجر!';
+
+  @override
+  String get productReviewSubmitted => 'تم إرسال تقييم المنتج!';
+
+  @override
+  String get noDescription => 'لا يوجد وصف متاح.';
+
+  @override
+  String get readMore => 'اقرأ المزيد';
+
+  @override
+  String get showLess => 'عرض أقل';
+
+  @override
+  String get deliveryTime => 'وقت التسليم';
+
+  @override
+  String get deliveryType => 'نوع التسليم';
+
+  @override
+  String get noReviewsYet => 'لا توجد مراجعات بعد. كن أول من يراجع!';
+
+  @override
+  String get seeAllReviews => 'عرض جميع المراجعات';
+
+  @override
+  String by(Object vendorName) {
+    return 'بواسطة: $vendorName';
+  }
+
+  @override
+  String get orderCreatedSuccessfully => 'تم إنشاء طلبك بنجاح!';
+
+  @override
+  String get orderCode => 'رمز الطلب';
+
+  @override
+  String get orderPreparationStarted =>
+      'بدأ تحضير طلبك. يمكنك تتبع حالة طلبك من صفحة \"طلباتي\".';
+
+  @override
+  String get homePage => 'الرئيسية';
+
+  @override
+  String ordersLoadFailed(Object error) {
+    return 'فشل تحميل الطلبات: $error';
+  }
+
+  @override
+  String get noOrdersYet => 'لا توجد طلبات بعد';
+
+  @override
+  String get onWay => 'في الطريق';
+
+  @override
+  String get unknownVendor => 'متجر غير معروف';
+
+  @override
+  String get unknown => 'غير معروف';
+
+  @override
+  String get cancelItem => 'إلغاء المنتج';
+
+  @override
+  String get itemCancelled => 'تم إلغاء المنتج';
+
+  @override
+  String get itemCancelSuccess => 'تم إلغاء المنتج بنجاح';
+
+  @override
+  String itemCancelFailed(Object error) {
+    return 'فشل إلغاء المنتج: $error';
+  }
 }

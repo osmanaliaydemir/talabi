@@ -1,11 +1,11 @@
 class Product {
-  final int id;
-  final int vendorId;
+  final String id;
+  final String vendorId;
   final String? vendorName;
   final String name;
   final String? description;
   final String? category;
-  final int? categoryId;
+  final String? categoryId;
   final double price;
   final String? imageUrl;
   final bool isAvailable;
@@ -29,13 +29,13 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'],
-      vendorId: json['vendorId'],
+      id: json['id'].toString(),
+      vendorId: json['vendorId'].toString(),
       vendorName: json['vendorName'],
       name: json['name'],
       description: json['description'],
       category: json['category'],
-      categoryId: json['categoryId'],
+      categoryId: json['categoryId']?.toString(),
       price: (json['price'] as num).toDouble(),
       imageUrl: json['imageUrl'],
       isAvailable: json['isAvailable'] ?? true,

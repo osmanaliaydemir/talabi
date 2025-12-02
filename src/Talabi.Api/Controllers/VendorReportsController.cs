@@ -21,10 +21,10 @@ public class VendorReportsController : ControllerBase
         _logger = logger;
     }
 
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
         ?? throw new UnauthorizedAccessException();
 
-    private async Task<int?> GetVendorIdAsync()
+    private async Task<Guid?> GetVendorIdAsync()
     {
         var userId = GetUserId();
         var vendor = await _context.Vendors
@@ -61,8 +61,8 @@ public class VendorReportsController : ControllerBase
         var orders = await _context.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
-            .Where(o => o.VendorId == vendorId && 
-                       o.CreatedAt >= startDate.Value && 
+            .Where(o => o.VendorId == vendorId &&
+                       o.CreatedAt >= startDate.Value &&
                        o.CreatedAt <= endDate.Value)
             .ToListAsync();
 
@@ -139,7 +139,7 @@ public class VendorReportsController : ControllerBase
 
             var vendor = await _context.Vendors
                 .FirstOrDefaultAsync(v => v.OwnerId == userId);
-            
+
             if (vendor == null)
             {
                 _logger.LogWarning("Vendor not found for user ID: {UserId}", userId);
@@ -153,7 +153,7 @@ public class VendorReportsController : ControllerBase
             var thisWeek = today.AddDays(-7);
             var thisMonth = today.AddMonths(-1);
 
-            _logger.LogInformation("Calculating summary for vendor {VendorId}. Today: {Today}, Week: {Week}, Month: {Month}", 
+            _logger.LogInformation("Calculating summary for vendor {VendorId}. Today: {Today}, Week: {Week}, Month: {Month}",
                 vendorId, today, thisWeek, thisMonth);
 
             try
@@ -164,13 +164,13 @@ public class VendorReportsController : ControllerBase
                 var weekStart = DateTime.SpecifyKind(thisWeek, DateTimeKind.Utc);
                 var monthStart = DateTime.SpecifyKind(thisMonth, DateTimeKind.Utc);
 
-                _logger.LogInformation("Date ranges - Today: {TodayStart} to {TodayEnd}, Week: {Week}, Month: {Month}", 
+                _logger.LogInformation("Date ranges - Today: {TodayStart} to {TodayEnd}, Week: {Week}, Month: {Month}",
                     todayStart, todayEnd, weekStart, monthStart);
 
                 // Today's orders (from start of today to end of today)
                 var todayOrders = await _context.Orders
-                    .Where(o => o.VendorId == vendorId && 
-                               o.CreatedAt >= todayStart && 
+                    .Where(o => o.VendorId == vendorId &&
+                               o.CreatedAt >= todayStart &&
                                o.CreatedAt <= todayEnd)
                     .CountAsync();
 
@@ -178,8 +178,8 @@ public class VendorReportsController : ControllerBase
 
                 // Today's revenue (only delivered orders)
                 var todayRevenue = await _context.Orders
-                    .Where(o => o.VendorId == vendorId && 
-                               o.CreatedAt >= todayStart && 
+                    .Where(o => o.VendorId == vendorId &&
+                               o.CreatedAt >= todayStart &&
                                o.CreatedAt <= todayEnd &&
                                o.Status == OrderStatus.Delivered)
                     .Select(o => (decimal?)o.TotalAmount)
@@ -196,7 +196,7 @@ public class VendorReportsController : ControllerBase
 
                 // Week revenue (last 7 days, only delivered orders)
                 var weekRevenue = await _context.Orders
-                    .Where(o => o.VendorId == vendorId && 
+                    .Where(o => o.VendorId == vendorId &&
                                o.CreatedAt >= weekStart &&
                                o.Status == OrderStatus.Delivered)
                     .Select(o => (decimal?)o.TotalAmount)
@@ -206,7 +206,7 @@ public class VendorReportsController : ControllerBase
 
                 // Month revenue (last 30 days, only delivered orders)
                 var monthRevenue = await _context.Orders
-                    .Where(o => o.VendorId == vendorId && 
+                    .Where(o => o.VendorId == vendorId &&
                                o.CreatedAt >= monthStart &&
                                o.Status == OrderStatus.Delivered)
                     .Select(o => (decimal?)o.TotalAmount)
@@ -229,8 +229,9 @@ public class VendorReportsController : ControllerBase
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calculating summary for vendor {VendorId}", vendorId);
-                return StatusCode(500, new { 
-                    error = "An error occurred while calculating vendor summary", 
+                return StatusCode(500, new
+                {
+                    error = "An error occurred while calculating vendor summary",
                     message = ex.Message,
                     innerException = ex.InnerException?.Message
                 });
@@ -239,8 +240,9 @@ public class VendorReportsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error in GetSummary endpoint");
-            return StatusCode(500, new { 
-                error = "An error occurred while fetching vendor summary", 
+            return StatusCode(500, new
+            {
+                error = "An error occurred while fetching vendor summary",
                 message = ex.Message,
                 innerException = ex.InnerException?.Message,
                 stackTrace = ex.StackTrace

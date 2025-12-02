@@ -1,10 +1,10 @@
 class VendorNotification {
-  final int id;
+  final String id;
   final String type;
   final String title;
   final String message;
   final bool isRead;
-  final int? relatedEntityId;
+  final String? relatedEntityId;
   final DateTime createdAt;
 
   VendorNotification({
@@ -19,12 +19,12 @@ class VendorNotification {
 
   factory VendorNotification.fromJson(Map<String, dynamic> json) {
     return VendorNotification(
-      id: json['id'],
+      id: json['id'].toString(),
       type: json['type'],
       title: json['title'],
       message: json['message'],
       isRead: json['isRead'] ?? false,
-      relatedEntityId: json['relatedEntityId'],
+      relatedEntityId: json['relatedEntityId']?.toString(),
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

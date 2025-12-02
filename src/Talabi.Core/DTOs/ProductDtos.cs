@@ -2,21 +2,21 @@ namespace Talabi.Core.DTOs;
 
 public class ProductDto
 {
-    public int Id { get; set; }
-    public int VendorId { get; set; }
+    public Guid Id { get; set; }
+    public Guid VendorId { get; set; }
     public string? VendorName { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Category { get; set; }
-    public int? CategoryId { get; set; }
+    public Guid? CategoryId { get; set; }
     public decimal Price { get; set; }
     public string? ImageUrl { get; set; }
 }
 
 public class VendorProductDto
 {
-    public int Id { get; set; }
-    public int VendorId { get; set; }
+    public Guid Id { get; set; }
+    public Guid VendorId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Category { get; set; }
@@ -34,7 +34,7 @@ public class CreateProductDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Category { get; set; }
-    public int? CategoryId { get; set; }
+    public Guid? CategoryId { get; set; }
     public decimal Price { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsAvailable { get; set; } = true;
@@ -47,7 +47,7 @@ public class UpdateProductDto
     public string? Name { get; set; }
     public string? Description { get; set; }
     public string? Category { get; set; }
-    public int? CategoryId { get; set; }
+    public Guid? CategoryId { get; set; }
     public decimal? Price { get; set; }
     public string? ImageUrl { get; set; }
     public bool? IsAvailable { get; set; }

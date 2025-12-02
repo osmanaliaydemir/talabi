@@ -20,6 +20,36 @@ public class OrdersController : ControllerBase
         _assignmentService = assignmentService;
     }
 
+    private async Task<string> GenerateUniqueCustomerOrderIdAsync()
+    {
+        var random = new Random();
+        string customerOrderId;
+        bool isUnique;
+
+        do
+        {
+            customerOrderId = random.Next(100000, 999999).ToString();
+            isUnique = !await _context.Orders.AnyAsync(o => o.CustomerOrderId == customerOrderId);
+        } while (!isUnique);
+
+        return customerOrderId;
+    }
+
+    private async Task<string> GenerateUniqueCustomerOrderItemIdAsync()
+    {
+        var random = new Random();
+        string customerOrderItemId;
+        bool isUnique;
+
+        do
+        {
+            customerOrderItemId = random.Next(100000, 999999).ToString();
+            isUnique = !await _context.OrderItems.AnyAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
+        } while (!isUnique);
+
+        return customerOrderItemId;
+    }
+
     [HttpPost]
     public async Task<ActionResult<OrderDto>> CreateOrder(CreateOrderDto dto)
     {
@@ -43,25 +73,30 @@ public class OrdersController : ControllerBase
             }
 
             totalAmount += product.Price * item.Quantity;
+            var customerOrderItemId = await GenerateUniqueCustomerOrderItemIdAsync();
             orderItems.Add(new OrderItem
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                UnitPrice = product.Price
+                UnitPrice = product.Price,
+                CustomerOrderItemId = customerOrderItemId
             });
         }
 
         // Create order
         var customerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
+        var customerOrderId = await GenerateUniqueCustomerOrderIdAsync();
 
         var order = new Order
         {
             VendorId = dto.VendorId,
             CustomerId = customerId,
+            CustomerOrderId = customerOrderId,
             TotalAmount = totalAmount,
             Status = OrderStatus.Pending,
             OrderItems = orderItems,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DeliveryAddressId = dto.DeliveryAddressId,
         };
 
         _context.Orders.Add(order);
@@ -105,6 +140,7 @@ public class OrdersController : ControllerBase
         return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new OrderDto
         {
             Id = order.Id,
+            CustomerOrderId = order.CustomerOrderId,
             VendorId = order.VendorId,
             VendorName = vendor.Name,
             TotalAmount = order.TotalAmount,
@@ -114,7 +150,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<OrderDto>> GetOrder(int id)
+    public async Task<ActionResult<OrderDto>> GetOrder(Guid id)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -132,6 +168,7 @@ public class OrdersController : ControllerBase
         return new OrderDto
         {
             Id = order.Id,
+            CustomerOrderId = order.CustomerOrderId,
             VendorId = order.VendorId,
             VendorName = order.Vendor?.Name ?? "",
             TotalAmount = order.TotalAmount,
@@ -157,6 +194,7 @@ public class OrdersController : ControllerBase
             .Select(o => new OrderDto
             {
                 Id = o.Id,
+                CustomerOrderId = o.CustomerOrderId,
                 VendorId = o.VendorId,
                 VendorName = o.Vendor!.Name,
                 TotalAmount = o.TotalAmount,
@@ -169,7 +207,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("{id}/detail")]
-    public async Task<ActionResult<OrderDetailDto>> GetOrderDetail(int id)
+    public async Task<ActionResult<OrderDetailDto>> GetOrderDetail(Guid id)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -189,6 +227,7 @@ public class OrdersController : ControllerBase
         return Ok(new OrderDetailDto
         {
             Id = order.Id,
+            CustomerOrderId = order.CustomerOrderId,
             VendorId = order.VendorId,
             VendorName = order.Vendor?.Name ?? "",
             CustomerId = order.CustomerId,
@@ -201,11 +240,15 @@ public class OrdersController : ControllerBase
             Items = order.OrderItems.Select(oi => new OrderItemDetailDto
             {
                 ProductId = oi.ProductId,
+                CustomerOrderItemId = oi.CustomerOrderItemId,
                 ProductName = oi.Product?.Name ?? "",
                 ProductImageUrl = oi.Product?.ImageUrl,
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
-                TotalPrice = oi.Quantity * oi.UnitPrice
+                TotalPrice = oi.Quantity * oi.UnitPrice,
+                IsCancelled = oi.IsCancelled,
+                CancelledAt = oi.CancelledAt,
+                CancelReason = oi.CancelReason
             }).ToList(),
             StatusHistory = order.StatusHistory.Select(sh => new OrderStatusHistoryDto
             {
@@ -218,7 +261,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
-    public async Task<ActionResult> UpdateOrderStatus(int id, UpdateOrderStatusDto dto)
+    public async Task<ActionResult> UpdateOrderStatus(Guid id, UpdateOrderStatusDto dto)
     {
         var order = await _context.Orders
             .Include(o => o.StatusHistory)
@@ -282,7 +325,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost("{id}/cancel")]
-    public async Task<ActionResult> CancelOrder(int id, CancelOrderDto dto)
+    public async Task<ActionResult> CancelOrder(Guid id, CancelOrderDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -344,7 +387,123 @@ public class OrdersController : ControllerBase
         return Ok(new { Message = "Order cancelled successfully" });
     }
 
-    private async Task AddVendorNotificationAsync(int vendorId, string title, string message, string type, int? relatedEntityId = null)
+    [HttpPost("items/{customerOrderItemId}/cancel")]
+    public async Task<ActionResult> CancelOrderItem(string customerOrderItemId, CancelOrderDto dto)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        // Find the order item by CustomerOrderItemId
+        var orderItem = await _context.OrderItems
+            .Include(oi => oi.Order!)
+                .ThenInclude(o => o.StatusHistory)
+            .FirstOrDefaultAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
+
+        if (orderItem == null)
+        {
+            return NotFound("Order item not found");
+        }
+
+        // Check if order exists and belongs to user
+        if (orderItem.Order == null)
+        {
+            return NotFound("Order not found");
+        }
+
+        if (orderItem.Order.CustomerId != userId)
+        {
+            return Forbid("You don't have permission to cancel this order item");
+        }
+
+        // Check if already cancelled
+        if (orderItem.IsCancelled)
+        {
+            return BadRequest("Order item is already cancelled");
+        }
+
+        // Check if order can have items cancelled (only Pending or Preparing)
+        if (orderItem.Order.Status != OrderStatus.Pending && orderItem.Order.Status != OrderStatus.Preparing)
+        {
+            return BadRequest("Order items can only be cancelled when order status is Pending or Preparing");
+        }
+
+        // Validate reason
+        if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
+        {
+            return BadRequest("Cancellation reason must be at least 10 characters");
+        }
+
+        // Update order item
+        orderItem.IsCancelled = true;
+        orderItem.CancelledAt = DateTime.UtcNow;
+        orderItem.CancelReason = dto.Reason;
+
+        // Recalculate order total (subtract cancelled item's total)
+        var cancelledItemTotal = orderItem.Quantity * orderItem.UnitPrice;
+        orderItem.Order.TotalAmount -= cancelledItemTotal;
+
+        // Check if all items are cancelled, then cancel the whole order
+        // Note: We need to check after updating IsCancelled, so we check if count of non-cancelled items is 0
+        var remainingItemsCount = await _context.OrderItems
+            .Where(oi => oi.OrderId == orderItem.OrderId && oi.Id != orderItem.Id && !oi.IsCancelled)
+            .CountAsync();
+        
+        var allItemsCancelled = remainingItemsCount == 0;
+
+        // Ensure StatusHistory is initialized
+        if (orderItem.Order.StatusHistory == null)
+        {
+            orderItem.Order.StatusHistory = new List<OrderStatusHistory>();
+        }
+
+        if (allItemsCancelled)
+        {
+            orderItem.Order.Status = OrderStatus.Cancelled;
+            orderItem.Order.CancelledAt = DateTime.UtcNow;
+            orderItem.Order.CancelReason = "All items cancelled";
+
+            // Add to status history
+            orderItem.Order.StatusHistory.Add(new OrderStatusHistory
+            {
+                OrderId = orderItem.Order.Id,
+                Status = OrderStatus.Cancelled,
+                Note = "Order cancelled: All items were cancelled",
+                CreatedBy = userId
+            });
+        }
+        else
+        {
+            // Add status history note for item cancellation
+            orderItem.Order.StatusHistory.Add(new OrderStatusHistory
+            {
+                OrderId = orderItem.Order.Id,
+                Status = orderItem.Order.Status,
+                Note = $"Item #{customerOrderItemId} cancelled: {dto.Reason}",
+                CreatedBy = userId
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Add customer notification
+        if (!string.IsNullOrEmpty(orderItem.Order.CustomerId) && orderItem.Order.CustomerId != "anonymous")
+        {
+            await AddCustomerNotificationAsync(
+                orderItem.Order.CustomerId,
+                "Sipariş Ürünü İptal Edildi",
+                $"#{customerOrderItemId} numaralı ürün siparişinizden iptal edildi. Sebep: {dto.Reason}",
+                "OrderItemCancelled",
+                orderItem.Order.Id);
+        }
+
+        return Ok(new { Message = "Order item cancelled successfully" });
+    }
+
+    private async Task AddVendorNotificationAsync(Guid vendorId, string title, string message, string type, Guid? relatedEntityId = null)
     {
         _context.VendorNotifications.Add(new VendorNotification
         {
@@ -356,7 +515,7 @@ public class OrdersController : ControllerBase
         });
     }
 
-    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, int? orderId = null)
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
     {
         var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
         if (customer == null)

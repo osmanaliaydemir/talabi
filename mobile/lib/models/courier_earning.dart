@@ -1,6 +1,6 @@
 class CourierEarning {
   final int id;
-  final int orderId;
+  final String orderId;
   final double baseDeliveryFee;
   final double distanceBonus;
   final double tipAmount;
@@ -22,7 +22,7 @@ class CourierEarning {
   factory CourierEarning.fromJson(Map<String, dynamic> json) {
     return CourierEarning(
       id: json['id'],
-      orderId: json['orderId'],
+      orderId: json['orderId'].toString(),
       baseDeliveryFee: (json['baseDeliveryFee'] as num).toDouble(),
       distanceBonus: (json['distanceBonus'] as num).toDouble(),
       tipAmount: (json['tipAmount'] as num).toDouble(),

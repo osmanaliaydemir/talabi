@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _addresses = [];
   Map<String, dynamic>? _selectedAddress;
   bool _isLoadingAddresses = false;
-  final Map<int, bool> _favoriteStatus =
+  final Map<String, bool> _favoriteStatus =
       {}; // Track favorite status for each product
 
   @override
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _favoriteStatus.clear();
         for (var fav in favorites) {
-          _favoriteStatus[fav['id']] = true;
+          _favoriteStatus[fav['id'].toString()] = true;
         }
       });
     } catch (e) {
@@ -617,7 +617,7 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => CategoryProductsScreen(
               categoryName: categoryName,
-              categoryId: category['id'] as int?,
+              categoryId: category['id']?.toString(),
             ),
           ),
         );

@@ -183,7 +183,7 @@ class LegalMenuScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Sözleşmeler ve Politikalar',
+                      l10n.legalDocumentsDescription,
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,

@@ -11,6 +11,7 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
@@ -45,14 +46,11 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        final localizations = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              localizations?.summaryLoadError(e.toString()) ??
-                  'Özet yüklenemedi: $e',
-            ),
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.summaryLoadError(e.toString()),
+          isSuccess: false,
         );
       }
     }
@@ -98,11 +96,12 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    localizations?.welcomeVendor(
-                                          auth.fullName ??
-                                              (localizations.vendor),
-                                        ) ??
-                                        'Hoş Geldiniz, ${auth.fullName ?? "Satıcı"}',
+                                    localizations != null
+                                        ? localizations.welcomeVendor(
+                                            auth.fullName ??
+                                                localizations.vendor,
+                                          )
+                                        : 'Hoş Geldiniz, ${auth.fullName ?? "Satıcı"}',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -255,7 +254,9 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         ),
                         _buildActionCard(
                           context,
-                          localizations?.reviews ?? 'Yorumlar',
+                          localizations != null
+                              ? (localizations.reviews(0).split('(')[0].trim())
+                              : 'Yorumlar',
                           Icons.comment,
                           Colors.deepPurple,
                           () {

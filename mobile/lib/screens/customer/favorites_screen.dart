@@ -47,7 +47,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
   }
 
-  Future<void> _removeFromFavorites(int productId) async {
+  Future<void> _removeFromFavorites(String productId) async {
     try {
       await _apiService.removeFromFavorites(productId);
       setState(() {

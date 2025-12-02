@@ -7,7 +7,7 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=your-server; Database=your-database; User Id=your-user; Password=your-password; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True; Connection Timeout=30;"
+    "DefaultConnection": "Server=db29009.public.databaseasp.net; Database=db29009; User Id=db29009; Password=Ap6-=2PtcE!7; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;"
   },
   "JwtSettings": {
     "Secret": "your-super-secret-jwt-key-here-minimum-32-characters",

@@ -6,10 +6,10 @@
 -- DELETE FROM LegalDocuments;
 
 -- Türkçe Belgeler
-INSERT INTO LegalDocuments (Type, LanguageCode, Title, Content, LastUpdated, CreatedAt)
+INSERT INTO LegalDocuments (Id, Type, LanguageCode, Title, Content, LastUpdated, CreatedAt)
 VALUES 
 -- Kullanım Şartları (TR)
-(N'terms-of-use', N'tr', N'Kullanım Şartları', 
+(NEWID(), N'terms-of-use', N'tr', N'Kullanım Şartları', 
 N'<h1>Kullanım Şartları</h1>
 <p>Son Güncellenme: 27 Kasım 2024</p>
 
@@ -40,7 +40,7 @@ N'<h1>Kullanım Şartları</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Gizlilik Politikası (TR)
-(N'privacy-policy', N'tr', N'Gizlilik Politikası',
+(NEWID(), N'privacy-policy', N'tr', N'Gizlilik Politikası',
 N'<h1>Gizlilik Politikası</h1>
 <p>Son Güncellenme: 27 Kasım 2024</p>
 
@@ -74,7 +74,7 @@ N'<h1>Gizlilik Politikası</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- İade Politikası (TR)
-(N'refund-policy', N'tr', N'İade ve İptal Politikası',
+(NEWID(), N'refund-policy', N'tr', N'İade ve İptal Politikası',
 N'<h1>İade ve İptal Politikası</h1>
 <p>Son Güncellenme: 27 Kasım 2024</p>
 
@@ -111,7 +111,7 @@ N'<h1>İade ve İptal Politikası</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Mesafeli Satış Sözleşmesi (TR)
-(N'distance-sales-agreement', N'tr', N'Mesafeli Satış Sözleşmesi',
+(NEWID(), N'distance-sales-agreement', N'tr', N'Mesafeli Satış Sözleşmesi',
 N'<h1>Mesafeli Satış Sözleşmesi</h1>
 <p>6502 sayılı Tüketicinin Korunması Hakkında Kanun uyarınca</p>
 
@@ -143,10 +143,10 @@ N'<h1>Mesafeli Satış Sözleşmesi</h1>
 GETUTCDATE(), GETUTCDATE());
 
 -- İngilizce Belgeler
-INSERT INTO LegalDocuments (Type, LanguageCode, Title, Content, LastUpdated, CreatedAt)
+INSERT INTO LegalDocuments (Id, Type, LanguageCode, Title, Content, LastUpdated, CreatedAt)
 VALUES 
 -- Terms of Use (EN)
-(N'terms-of-use', N'en', N'Terms of Use',
+(NEWID(), N'terms-of-use', N'en', N'Terms of Use',
 N'<h1>Terms of Use</h1>
 <p>Last Updated: November 27, 2024</p>
 
@@ -177,7 +177,7 @@ N'<h1>Terms of Use</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Privacy Policy (EN)
-(N'privacy-policy', N'en', N'Privacy Policy',
+(NEWID(), N'privacy-policy', N'en', N'Privacy Policy',
 N'<h1>Privacy Policy</h1>
 <p>Last Updated: November 27, 2024</p>
 
@@ -211,7 +211,7 @@ N'<h1>Privacy Policy</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Refund Policy (EN)
-(N'refund-policy', N'en', N'Refund Policy',
+(NEWID(), N'refund-policy', N'en', N'Refund Policy',
 N'<h1>Refund Policy</h1>
 <p>Last Updated: November 27, 2024</p>
 
@@ -248,7 +248,7 @@ N'<h1>Refund Policy</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Distance Sales Agreement (EN)
-(N'distance-sales-agreement', N'en', N'Distance Sales Agreement',
+(NEWID(), N'distance-sales-agreement', N'en', N'Distance Sales Agreement',
 N'<h1>Distance Sales Agreement</h1>
 <p>In accordance with Consumer Protection Law</p>
 
@@ -280,10 +280,10 @@ N'<h1>Distance Sales Agreement</h1>
 GETUTCDATE(), GETUTCDATE());
 
 -- Arabic Documents
-INSERT INTO LegalDocuments (Type, LanguageCode, Title, Content, LastUpdated, CreatedAt)
+INSERT INTO LegalDocuments (Id, Type, LanguageCode, Title, Content, LastUpdated, CreatedAt)
 VALUES 
 -- Terms of Use (AR)
-(N'terms-of-use', N'ar', N'شروط الاستخدام',
+(NEWID(), N'terms-of-use', N'ar', N'شروط الاستخدام',
 N'<h1>شروط الاستخدام</h1>
 <p>آخر تحديث: 27 نوفمبر 2024</p>
 
@@ -314,7 +314,7 @@ N'<h1>شروط الاستخدام</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Privacy Policy (AR)
-(N'privacy-policy', N'ar', N'سياسة الخصوصية',
+(NEWID(), N'privacy-policy', N'ar', N'سياسة الخصوصية',
 N'<h1>سياسة الخصوصية</h1>
 <p>آخر تحديث: 27 نوفمبر 2024</p>
 
@@ -348,7 +348,7 @@ N'<h1>سياسة الخصوصية</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Refund Policy (AR)
-(N'refund-policy', N'ar', N'سياسة الاسترداد',
+(NEWID(), N'refund-policy', N'ar', N'سياسة الاسترداد',
 N'<h1>سياسة الاسترداد</h1>
 <p>آخر تحديث: 27 نوفمبر 2024</p>
 
@@ -385,7 +385,7 @@ N'<h1>سياسة الاسترداد</h1>
 GETUTCDATE(), GETUTCDATE()),
 
 -- Distance Sales Agreement (AR)
-(N'distance-sales-agreement', N'ar', N'اتفاقية البيع عن بعد',
+(NEWID(), N'distance-sales-agreement', N'ar', N'اتفاقية البيع عن بعد',
 N'<h1>اتفاقية البيع عن بعد</h1>
 <p>وفقاً لقانون حماية المستهلك</p>
 

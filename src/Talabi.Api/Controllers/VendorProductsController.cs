@@ -21,7 +21,7 @@ public class VendorProductsController : ControllerBase
 
     private string? GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-    private async Task<int?> GetVendorIdAsync()
+    private async Task<Guid?> GetVendorIdAsync()
     {
         var userId = GetUserId();
         var vendor = await _context.Vendors
@@ -72,7 +72,7 @@ public class VendorProductsController : ControllerBase
 
     // GET: api/vendor/products/{id}
     [HttpGet("{id}")]
-    public async Task<ActionResult<VendorProductDto>> GetProduct(int id)
+    public async Task<ActionResult<VendorProductDto>> GetProduct(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -149,7 +149,7 @@ public class VendorProductsController : ControllerBase
 
     // PUT: api/vendor/products/{id}
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto dto)
+    public async Task<IActionResult> UpdateProduct(Guid id, UpdateProductDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -190,7 +190,7 @@ public class VendorProductsController : ControllerBase
 
     // DELETE: api/vendor/products/{id}
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct(int id)
+    public async Task<IActionResult> DeleteProduct(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -210,7 +210,7 @@ public class VendorProductsController : ControllerBase
 
     // PUT: api/vendor/products/{id}/availability
     [HttpPut("{id}/availability")]
-    public async Task<IActionResult> UpdateProductAvailability(int id, UpdateProductAvailabilityDto dto)
+    public async Task<IActionResult> UpdateProductAvailability(Guid id, UpdateProductAvailabilityDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
@@ -232,7 +232,7 @@ public class VendorProductsController : ControllerBase
 
     // PUT: api/vendor/products/{id}/price
     [HttpPut("{id}/price")]
-    public async Task<IActionResult> UpdateProductPrice(int id, UpdateProductPriceDto dto)
+    public async Task<IActionResult> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)

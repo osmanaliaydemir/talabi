@@ -2,7 +2,7 @@ namespace Talabi.Core.Entities;
 
 public class CourierNotification : BaseEntity
 {
-    public int CourierId { get; set; }
+    public Guid CourierId { get; set; }
     public Courier? Courier { get; set; }
 
     public string Title { get; set; } = string.Empty;
@@ -12,7 +12,7 @@ public class CourierNotification : BaseEntity
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }
 
-    public int? OrderId { get; set; }
+    public Guid? OrderId { get; set; }
     public Order? Order { get; set; }
 }
 

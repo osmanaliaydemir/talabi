@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
@@ -20,7 +21,7 @@ class ProductListScreen extends StatefulWidget {
 class _ProductListScreenState extends State<ProductListScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Product>> _productsFuture;
-  final Map<int, bool> _favoriteStatus = {};
+  final Map<String, bool> _favoriteStatus = {};
 
   @override
   void initState() {
@@ -35,7 +36,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       setState(() {
         _favoriteStatus.clear();
         for (var fav in favorites) {
-          _favoriteStatus[fav['id']] = true;
+          _favoriteStatus[fav['id'].toString()] = true;
         }
       });
     } catch (e) {
@@ -52,9 +53,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
           _favoriteStatus[product.id] = false;
         });
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: '${product.name} favorilerden çıkarıldı',
+            message: l10n.removedFromFavorites(product.name),
             isSuccess: true,
           );
         }
@@ -64,18 +66,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
           _favoriteStatus[product.id] = true;
         });
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: '${product.name} favorilere eklendi',
+            message: l10n.addedToFavorites(product.name),
             isSuccess: true,
           );
         }
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Favori işlemi başarısız: $e',
+          message: l10n.favoriteOperationFailed(e.toString()),
           isSuccess: false,
         );
       }
@@ -116,16 +120,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
               },
             );
           } else if (snapshot.hasError) {
+            final l10n = AppLocalizations.of(context)!;
             return Center(
               child: Text(
-                'Hata: ${snapshot.error}',
+                '${l10n.error}: ${snapshot.error}',
                 style: AppTheme.poppins(color: AppTheme.error),
               ),
             );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            final l10n = AppLocalizations.of(context)!;
             return Center(
               child: Text(
-                'Henüz ürün yok.',
+                l10n.noProductsYet,
                 style: AppTheme.poppins(color: AppTheme.textSecondary),
               ),
             );

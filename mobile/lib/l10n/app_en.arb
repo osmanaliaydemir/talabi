@@ -35,6 +35,7 @@
   "deliveryTracking": "Delivery Tracking",
   "selectLanguage": "Select Language",
   "selectCurrency": "Select Currency",
+  "selectCurrencyDescription": "Currency selection",
   "regionalSettings": "Regional Settings",
   "dateFormat": "Date Format",
   "timeFormat": "Time Format",
@@ -131,6 +132,25 @@
     }
   },
   "ok": "OK",
+  "duplicateEmail": "An account with this email address already exists.",
+  "googleLoginFailed": "Google login failed: {error}",
+  "@googleLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "appleLoginFailed": "Apple login failed: {error}",
+  "@appleLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "facebookLoginFailed": "Facebook login failed: {error}",
+  "@facebookLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "errorWithMessage": "Error: {error}",
   "@errorWithMessage": {
     "placeholders": {
@@ -323,12 +343,22 @@
   "promotionsDescription": "Special offers and promotions",
   "newProductsDescription": "Get notified when new products are added",
   "settingsSaved": "Settings saved",
+  "regionalSettingsDescription": "Date and time settings",
+  "timeZoneHint": "e.g., Europe/Istanbul, America/New_York",
   "manageNotificationPreferences": "Manage your notification preferences",
   "orderHistoryDescription": "View your past orders",
   "myAddressesDescription": "Manage your delivery addresses",
   "changePasswordSubtitle": "Change your password and enhance security",
   "notificationSettingsDescription": "Manage your notification preferences",
   "selectLanguageDescription": "Change application language",
+  "selectLanguageSubtitle": "Choose your preferred language",
+  "languageChanged": "Language changed",
+  "languagesCount": "{count} languages",
+  "@languagesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "legalDocumentsDescription": "Terms of use and policies",
   "helpCenterDescription": "FAQ and support line",
   "logoutDescription": "Sign out from your account",
@@ -584,5 +614,166 @@
       "count": {}
     }
   },
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "cancelOrder": "Cancel Order",
+  "reorder": "Reorder",
+  "orderCancelled": "Order cancelled",
+  "cancelReason": "Cancel reason",
+  "cancelReasonDescription": "Please specify your cancellation reason (at least 10 characters):",
+  "pieces": "pieces",
+  "orderNotFound": "Order not found",
+  "productsAddedToCart": "Products added to cart, redirecting to cart...",
+  "reorderFailed": "Failed to reorder: {error}",
+  "@reorderFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "locationServicesDisabled": "Location services are disabled",
+  "locationPermissionDenied": "Location permission denied",
+  "locationPermissionDeniedForever": "Location permission permanently denied",
+  "vendorsLoadFailed": "Failed to load vendors: {error}",
+  "@vendorsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "yourLocation": "Your Location",
+  "vendorsMap": "Vendors Map",
+  "findMyLocation": "Find My Location",
+  "viewProducts": "View Products",
+  "gettingLocation": "Getting location...",
+  "searchError": "Search error: {error}",
+  "@searchError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "productAddedToCart": "{productName} added to cart",
+  "@productAddedToCart": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "filters": "Filters",
+  "clear": "Clear",
+  "category": "Category",
+  "selectCategory": "Select category",
+  "priceRange": "Price Range",
+  "minPrice": "Min Price",
+  "maxPrice": "Max Price",
+  "city": "City",
+  "selectCity": "Select city",
+  "minimumRating": "Minimum Rating",
+  "maximumDistance": "Maximum Distance (km)",
+  "distanceKm": "Distance (km)",
+  "sortBy": "Sort By",
+  "selectSortBy": "Select sort by",
+  "priceLowToHigh": "Price (Low to High)",
+  "priceHighToLow": "Price (High to Low)",
+  "sortByName": "Sort by Name",
+  "newest": "Newest",
+  "ratingHighToLow": "Rating (High to Low)",
+  "popularity": "Popularity",
+  "distance": "Distance",
+  "applyFilters": "Apply Filters",
+  "searchProductsOrVendors": "Search products or vendors...",
+  "products": "Products",
+  "vendors": "Vendors",
+  "suggestions": "Suggestions",
+  "product": "Product",
+  "vendor": "Vendor",
+  "searchHistory": "Search History",
+  "typeToSearch": "Type in the box above to search",
+  "recentSearches": "Recent Searches",
+  "noResultsFound": "No results found",
+  "cityLabel": "City: {city}",
+  "@cityLabel": {
+    "placeholders": {
+      "city": {}
+    }
+  },
+  "distanceLabel": "Distance: {distance} km",
+  "@distanceLabel": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "removedFromFavorites": "{productName} removed from favorites",
+  "@removedFromFavorites": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "addedToFavorites": "{productName} added to favorites",
+  "@addedToFavorites": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "favoriteOperationFailed": "Favorite operation failed: {error}",
+  "@favoriteOperationFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noProductsYet": "No products yet.",
+  "productLoadFailed": "Failed to load product: {error}",
+  "@productLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "productNotFound": "Product not found",
+  "rateVendor": "Rate Vendor",
+  "writeReview": "Write a Review",
+  "shareYourThoughts": "Share your thoughts...",
+  "submit": "Submit",
+  "vendorReviewSubmitted": "Vendor review submitted!",
+  "productReviewSubmitted": "Product review submitted!",
+  "noDescription": "No description available.",
+  "readMore": "Read more",
+  "showLess": "Show less",
+  "description": "Description",
+  "deliveryTime": "Delivery Time",
+  "deliveryType": "Delivery Type",
+  "reviews": "Reviews ({count})",
+  "@reviews": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "noReviewsYet": "No reviews yet. Be the first to review!",
+  "seeAllReviews": "See All Reviews",
+  "addToCart": "Add to Cart",
+  "by": "By {vendorName}",
+  "@by": {
+    "placeholders": {
+      "vendorName": {}
+    }
+  },
+  "orderCreatedSuccessfully": "Your Order Has Been Created Successfully!",
+  "orderCode": "Order Code",
+  "orderPreparationStarted": "Your order has started being prepared. You can track your order status from the \"My Orders\" page.",
+  "myOrders": "My Orders",
+  "homePage": "Home",
+  "ordersLoadFailed": "Failed to load orders: {error}",
+  "@ordersLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noOrdersYet": "No orders yet",
+  "onWay": "On the Way",
+  "unknownVendor": "Unknown Vendor",
+  "unknown": "Unknown",
+  "cancelItem": "Cancel Item",
+  "itemCancelled": "Item Cancelled",
+  "itemCancelSuccess": "Item cancelled successfully",
+  "itemCancelFailed": "Failed to cancel item: {error}",
+  "@itemCancelFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  }
 }

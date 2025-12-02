@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -36,27 +37,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       await _apiService.forgotPassword(_emailController.text.trim());
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)?.passwordResetEmailSent ??
-                  'Password reset email sent',
-            ),
-            backgroundColor: AppTheme.success,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.passwordResetEmailSent,
+          isSuccess: true,
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)?.passwordResetFailed ??
-                  'Failed to send reset email: $e',
-            ),
-            backgroundColor: AppTheme.error,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.passwordResetFailed,
+          isSuccess: false,
         );
       }
     } finally {

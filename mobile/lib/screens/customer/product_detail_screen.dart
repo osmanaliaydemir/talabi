@@ -9,10 +9,11 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  final int productId;
+  final String productId;
   final Product? product;
 
   const ProductDetailScreen({super.key, required this.productId, this.product});
@@ -57,9 +58,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('Ürün yüklenemedi: $e')));
+          message: l10n.productLoadFailed(e.toString()),
+          isSuccess: false,
+        );
       }
     }
   }
@@ -68,7 +72,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     try {
       final favorites = await _apiService.getFavorites();
       setState(() {
-        _isFavorite = favorites.any((f) => f['id'] == _product?.id);
+        _isFavorite = favorites.any((f) => f['id'].toString() == _product?.id);
       });
     } catch (e) {
       // Ignore error
@@ -89,9 +93,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+          message: '${l10n.error}: $e',
+          isSuccess: false,
+        );
       }
     }
   }
@@ -146,7 +153,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     int rating = 5;
     final commentController = TextEditingController();
-    final title = isVendor ? 'Rate Vendor' : 'Write a Review';
+    final l10n = AppLocalizations.of(context)!;
+    final title = isVendor ? l10n.rateVendor : l10n.writeReview;
     // Store parent context before showing dialog
     final rootContext = context;
 
@@ -180,9 +188,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Share your thoughts...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: l10n.shareYourThoughts,
+                      border: const OutlineInputBorder(),
                     ),
                     maxLines: 3,
                   ),
@@ -191,7 +199,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -210,22 +218,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       if (!isVendor) {
                         _loadReviews();
                       }
-                      // Use root context for snackbar
+                      // Use root context for toast message
                       if (mounted) {
-                        ScaffoldMessenger.of(rootContext).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${isVendor ? 'Vendor' : 'Product'} review submitted!',
-                            ),
-                          ),
+                        final rootL10n = AppLocalizations.of(rootContext)!;
+                        ToastMessage.show(
+                          rootContext,
+                          message: isVendor
+                              ? rootL10n.vendorReviewSubmitted
+                              : rootL10n.productReviewSubmitted,
+                          isSuccess: true,
                         );
                       }
                     } catch (e) {
-                      // Use root context for snackbar
+                      // Use root context for toast message
                       if (mounted) {
-                        ScaffoldMessenger.of(
+                        final rootL10n = AppLocalizations.of(rootContext)!;
+                        ToastMessage.show(
                           rootContext,
-                        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                          message: '${rootL10n.error}: $e',
+                          isSuccess: false,
+                        );
                       }
                     } finally {
                       commentController.dispose();
@@ -235,7 +247,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     backgroundColor: AppTheme.primaryOrange,
                     foregroundColor: AppTheme.textOnPrimary,
                   ),
-                  child: const Text('Submit'),
+                  child: Text(l10n.submit),
                 ),
               ],
             );
@@ -264,10 +276,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     if (_product == null) {
+      final l10n = AppLocalizations.of(context)!;
       return Scaffold(
         body: Container(
           color: Colors.white,
-          child: const Center(child: Text('Ürün bulunamadı')),
+          child: Center(child: Text(l10n.productNotFound)),
         ),
       );
     }
@@ -404,7 +417,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   const SizedBox(height: 4),
                                   if (_product!.vendorName != null)
                                     Text(
-                                      'By ${_product!.vendorName}',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.by(_product!.vendorName!),
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Colors.grey[600],
@@ -538,16 +553,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         const SizedBox(height: 24),
                         // Description
-                        const Text(
-                          'Description',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)!.description,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          _product!.description ?? 'Açıklama bulunmuyor.',
+                          _product!.description ??
+                              AppLocalizations.of(context)!.noDescription,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[700],
@@ -568,8 +584,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             },
                             child: Text(
                               _isDescriptionExpanded
-                                  ? 'Daha az göster'
-                                  : 'Read more',
+                                  ? AppLocalizations.of(context)!.showLess
+                                  : AppLocalizations.of(context)!.readMore,
                               style: TextStyle(color: colorScheme.primary),
                             ),
                           ),
@@ -595,7 +611,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          'Delivery Time',
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.deliveryTime,
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey[600],
@@ -634,7 +652,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          'Delivery Type',
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.deliveryType,
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey[600],
@@ -663,12 +683,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Reviews (${_reviews.length})',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final l10n = AppLocalizations.of(context)!;
+                                return Text(
+                                  l10n.reviews(_reviews.length),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                             Builder(
                               builder: (context) {
@@ -696,9 +721,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           )
                         else if (_reviews.isEmpty)
-                          const Text(
-                            'No reviews yet. Be the first to review!',
-                            style: TextStyle(color: Colors.grey),
+                          Text(
+                            AppLocalizations.of(context)!.noReviewsYet,
+                            style: const TextStyle(color: Colors.grey),
                           )
                         else
                           ListView.builder(
@@ -765,7 +790,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               onPressed: () {
                                 // Show all reviews page
                               },
-                              child: const Text('See All Reviews'),
+                              child: Text(
+                                AppLocalizations.of(context)!.seeAllReviews,
+                              ),
                             ),
                           ),
                         const SizedBox(height: 100), // Bottom padding for FAB
@@ -826,12 +853,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           cart
                               .addItem(_product!, context)
                               .then((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '${_product!.name} sepete eklendi',
-                                    ),
+                                final l10n = AppLocalizations.of(context)!;
+                                ToastMessage.show(
+                                  context,
+                                  message: l10n.productAddedToCart(
+                                    _product!.name,
                                   ),
+                                  isSuccess: true,
                                 );
                               })
                               .catchError((e) {
@@ -847,9 +875,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             side: BorderSide(color: Colors.orange, width: 2),
                           ),
                         ),
-                        child: const Text(
-                          'Add to Cart',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.addToCart,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),

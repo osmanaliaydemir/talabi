@@ -9,6 +9,7 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
 import 'package:mobile/screens/vendor/vendor_register_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -114,8 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               );
 
               if (duplicateError != null) {
-                errorMessage =
-                    'Bu email adresi ile zaten bir hesap bulunmaktadır.';
+                errorMessage = localizations.duplicateEmail;
               } else if (responseData.containsKey('message')) {
                 errorMessage = responseData['message'].toString();
               }
@@ -130,19 +130,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ? errorMessage
             : localizations.registerFailed;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(displayMessage),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 7),
-            action: SnackBarAction(
-              label: 'Tamam',
-              textColor: Colors.white,
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-            ),
-          ),
+        ToastMessage.show(
+          context,
+          message: displayMessage,
+          isSuccess: false,
+          duration: const Duration(seconds: 7),
         );
 
         // Hata durumunda ekranda kal - kod giriş ekranına yönlendirme YOK
@@ -193,11 +185,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       print('🔴 [GOOGLE_LOGIN] Error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google login failed: ${e.toString()}'),
-            backgroundColor: AppTheme.error,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.googleLoginFailed(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -246,11 +238,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       print('🔴 [APPLE_LOGIN] Error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Apple login failed: ${e.toString()}'),
-            backgroundColor: AppTheme.error,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.appleLoginFailed(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -299,11 +291,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       print('🔴 [FACEBOOK_LOGIN] Error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Facebook login failed: ${e.toString()}'),
-            backgroundColor: AppTheme.error,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.facebookLoginFailed(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -673,7 +665,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       Expanded(
                                         child: _buildSocialButton(
                                           icon: Icons.store,
-                                          label: 'Vendor',
+                                          label: localizations.vendor,
                                           onPressed: () {
                                             TapLogger.logButtonPress(
                                               'Vendor Register',

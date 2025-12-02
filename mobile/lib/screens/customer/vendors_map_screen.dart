@@ -2,9 +2,11 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/screens/customer/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class VendorsMapScreen extends StatefulWidget {
   const VendorsMapScreen({super.key});
@@ -48,8 +50,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: AppTheme.error),
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: '${l10n.error}: $e',
+          isSuccess: false,
         );
       }
     }
@@ -64,14 +69,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Konum servisleri kapalı',
-                style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-              ),
-              backgroundColor: AppTheme.warning,
-            ),
+          final l10n = AppLocalizations.of(context)!;
+          ToastMessage.show(
+            context,
+            message: l10n.locationServicesDisabled,
+            isSuccess: false,
           );
         }
         setState(() {
@@ -85,14 +87,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Konum izni reddedildi',
-                  style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-                ),
-                backgroundColor: AppTheme.error,
-              ),
+            final l10n = AppLocalizations.of(context)!;
+            ToastMessage.show(
+              context,
+              message: l10n.locationPermissionDenied,
+              isSuccess: false,
             );
           }
           setState(() {
@@ -104,14 +103,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
 
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Konum izni kalıcı olarak reddedildi',
-                style: AppTheme.poppins(color: AppTheme.textOnPrimary),
-              ),
-              backgroundColor: AppTheme.error,
-            ),
+          final l10n = AppLocalizations.of(context)!;
+          ToastMessage.show(
+            context,
+            message: l10n.locationPermissionDeniedForever,
+            isSuccess: false,
           );
         }
         setState(() {
@@ -158,11 +154,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Marketler yüklenemedi: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: l10n.vendorsLoadFailed(e.toString()),
+          isSuccess: false,
         );
       }
     }
@@ -170,6 +166,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
 
   void _updateMarkers() {
     final markers = <Marker>{};
+    final l10n = AppLocalizations.of(context);
 
     // Add user location marker
     if (_userLocation != null) {
@@ -178,7 +175,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
           markerId: const MarkerId('user_location'),
           position: _userLocation!,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: const InfoWindow(title: 'Konumunuz'),
+          infoWindow: InfoWindow(title: l10n?.yourLocation ?? 'Your Location'),
         ),
       );
     }
@@ -226,6 +223,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
   }
 
   void _showVendorInfo(Map<String, dynamic> vendorData) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.cardColor,
@@ -330,7 +328,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                   ),
                 ),
                 child: Text(
-                  'Ürünleri Görüntüle',
+                  l10n.viewProducts,
                   style: AppTheme.poppins(
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textOnPrimary,
@@ -367,7 +365,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         backgroundColor: AppTheme.primaryOrange,
         foregroundColor: AppTheme.textOnPrimary,
         title: Text(
-          'Marketler Haritası',
+          AppLocalizations.of(context)!.vendorsMap,
           style: AppTheme.poppins(
             fontWeight: FontWeight.bold,
             color: AppTheme.textOnPrimary,
@@ -377,7 +375,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
           IconButton(
             icon: Icon(Icons.my_location, color: AppTheme.textOnPrimary),
             onPressed: _getUserLocation,
-            tooltip: 'Konumumu Bul',
+            tooltip: AppLocalizations.of(context)!.findMyLocation,
           ),
         ],
       ),
@@ -423,7 +421,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                       ),
                       SizedBox(width: AppTheme.spacingSmall),
                       Text(
-                        'Konum alınıyor...',
+                        AppLocalizations.of(context)!.gettingLocation,
                         style: AppTheme.poppins(
                           fontSize: 12,
                           color: AppTheme.textPrimary,

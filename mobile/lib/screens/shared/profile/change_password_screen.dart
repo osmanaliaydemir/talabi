@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -37,11 +38,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.passwordsDoNotMatch),
-          backgroundColor: AppTheme.error,
-        ),
+      ToastMessage.show(
+        context,
+        message: l10n.passwordsDoNotMatch,
+        isSuccess: false,
       );
       return;
     }
@@ -57,21 +57,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.passwordChangedSuccess),
-            backgroundColor: AppTheme.success,
-          ),
+        ToastMessage.show(
+          context,
+          message: l10n.passwordChangedSuccess,
+          isSuccess: true,
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.error}: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${l10n.error}: $e',
+          isSuccess: false,
         );
       }
     } finally {

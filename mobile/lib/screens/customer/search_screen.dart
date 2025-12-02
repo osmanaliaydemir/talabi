@@ -6,6 +6,7 @@ import 'package:mobile/screens/customer/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _SearchScreenState extends State<SearchScreen>
   bool _isLoadingVendors = false;
 
   // Filters
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
   String? _selectedCity;
   double? _minPrice;
   double? _maxPrice;
@@ -179,9 +180,12 @@ class _SearchScreenState extends State<SearchScreen>
         _isLoadingProducts = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('Arama hatası: $e')));
+          message: l10n.searchError(e.toString()),
+          isSuccess: false,
+        );
       }
     }
   }
@@ -220,9 +224,12 @@ class _SearchScreenState extends State<SearchScreen>
         _isLoadingVendors = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
+        final l10n = AppLocalizations.of(context)!;
+        ToastMessage.show(
           context,
-        ).showSnackBar(SnackBar(content: Text('Arama hatası: $e')));
+          message: l10n.searchError(e.toString()),
+          isSuccess: false,
+        );
       }
     }
   }
@@ -259,6 +266,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildFiltersSheet() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -268,9 +276,12 @@ class _SearchScreenState extends State<SearchScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Filtreler',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                l10n.filters,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               TextButton(
                 onPressed: () {
@@ -287,7 +298,7 @@ class _SearchScreenState extends State<SearchScreen>
                   _searchVendors();
                   Navigator.pop(context);
                 },
-                child: const Text('Temizle'),
+                child: Text(l10n.clear),
               ),
             ],
           ),
@@ -295,20 +306,20 @@ class _SearchScreenState extends State<SearchScreen>
 
           // Category filter (for products)
           if (_tabController.index == 0) ...[
-            const Text(
-              'Kategori',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.category,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<int>(
+            DropdownButtonFormField<String>(
               value: _selectedCategoryId,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Kategori seçin',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: l10n.selectCategory,
               ),
               items: _categories.map((category) {
                 return DropdownMenuItem(
-                  value: category['id'] as int,
+                  value: category['id'].toString(),
                   child: Text(category['name'] as String),
                 );
               }).toList(),
@@ -321,18 +332,18 @@ class _SearchScreenState extends State<SearchScreen>
             const SizedBox(height: 16),
 
             // Price range
-            const Text(
-              'Fiyat Aralığı',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.priceRange,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Min Fiyat',
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: l10n.minPrice,
                     ),
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
@@ -343,9 +354,9 @@ class _SearchScreenState extends State<SearchScreen>
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Max Fiyat',
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: l10n.maxPrice,
                     ),
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
@@ -359,13 +370,16 @@ class _SearchScreenState extends State<SearchScreen>
 
           // City and Rating filter (for vendors)
           if (_tabController.index == 1) ...[
-            const Text('Şehir', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              l10n.city,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedCity,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Şehir seçin',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: l10n.selectCity,
               ),
               items: _cities.map((city) {
                 return DropdownMenuItem(value: city, child: Text(city));
@@ -379,9 +393,9 @@ class _SearchScreenState extends State<SearchScreen>
             const SizedBox(height: 16),
 
             // Rating filter
-            const Text(
-              'Minimum Rating',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.minimumRating,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Slider(
@@ -399,15 +413,15 @@ class _SearchScreenState extends State<SearchScreen>
             const SizedBox(height: 16),
 
             // Distance filter
-            const Text(
-              'Maksimum Mesafe (km)',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.maximumDistance,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             TextField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Mesafe (km)',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.distanceKm,
               ),
               keyboardType: TextInputType.number,
               onChanged: (value) {
@@ -419,53 +433,50 @@ class _SearchScreenState extends State<SearchScreen>
           const SizedBox(height: 16),
 
           // Sort options
-          const Text('Sıralama', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            l10n.sortBy,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _sortBy,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Sıralama seçin',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              hintText: l10n.selectSortBy,
             ),
             items: _tabController.index == 0
                 ? [
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'price_asc',
-                      child: Text('Fiyat (Düşükten Yükseğe)'),
+                      child: Text(l10n.priceLowToHigh),
                     ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'price_desc',
-                      child: Text('Fiyat (Yüksekten Düşüğe)'),
+                      child: Text(l10n.priceHighToLow),
                     ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'name',
-                      child: Text('İsme Göre'),
+                      child: Text(l10n.sortByName),
                     ),
-                    const DropdownMenuItem(
-                      value: 'newest',
-                      child: Text('En Yeni'),
-                    ),
+                    DropdownMenuItem(value: 'newest', child: Text(l10n.newest)),
                   ]
                 : [
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'name',
-                      child: Text('İsme Göre'),
+                      child: Text(l10n.sortByName),
                     ),
-                    const DropdownMenuItem(
-                      value: 'newest',
-                      child: Text('En Yeni'),
-                    ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(value: 'newest', child: Text(l10n.newest)),
+                    DropdownMenuItem(
                       value: 'rating_desc',
-                      child: Text('Rating (Yüksekten Düşüğe)'),
+                      child: Text(l10n.ratingHighToLow),
                     ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'popularity',
-                      child: Text('Popülerlik'),
+                      child: Text(l10n.popularity),
                     ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'distance',
-                      child: Text('Mesafe'),
+                      child: Text(l10n.distance),
                     ),
                   ],
             onChanged: (value) {
@@ -484,7 +495,7 @@ class _SearchScreenState extends State<SearchScreen>
                 _searchVendors();
                 Navigator.pop(context);
               },
-              child: const Text('Filtreleri Uygula'),
+              child: Text(l10n.applyFilters),
             ),
           ),
         ],
@@ -494,14 +505,15 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: TextField(
           controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Ürün veya market ara...',
+          decoration: InputDecoration(
+            hintText: l10n.searchProductsOrVendors,
             border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.white70),
+            hintStyle: const TextStyle(color: Colors.white70),
           ),
           style: const TextStyle(color: Colors.white),
           onSubmitted: _onSearchSubmitted,
@@ -519,9 +531,9 @@ class _SearchScreenState extends State<SearchScreen>
             _searchProducts();
             _searchVendors();
           },
-          tabs: const [
-            Tab(text: 'Ürünler'),
-            Tab(text: 'Marketler'),
+          tabs: [
+            Tab(text: l10n.products),
+            Tab(text: l10n.vendors),
           ],
         ),
       ),
@@ -554,14 +566,15 @@ class _SearchScreenState extends State<SearchScreen>
                   shrinkWrap: true,
                   children: [
                     if (_autocompleteResults.isNotEmpty) ...[
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          'Öneriler',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          AppLocalizations.of(context)!.suggestions,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       ..._autocompleteResults.map((result) {
+                        final l10n = AppLocalizations.of(context)!;
                         return ListTile(
                           leading: Icon(
                             result.type == 'product'
@@ -570,7 +583,9 @@ class _SearchScreenState extends State<SearchScreen>
                           ),
                           title: Text(result.name),
                           subtitle: Text(
-                            result.type == 'product' ? 'Ürün' : 'Market',
+                            result.type == 'product'
+                                ? l10n.product
+                                : l10n.vendor,
                           ),
                           onTap: () => _onAutocompleteSelected(result),
                         );
@@ -578,11 +593,11 @@ class _SearchScreenState extends State<SearchScreen>
                     ],
                     if (_searchHistory.isNotEmpty &&
                         _autocompleteResults.isEmpty) ...[
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          'Arama Geçmişi',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          AppLocalizations.of(context)!.searchHistory,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       ..._searchHistory.take(5).map((query) {
@@ -617,15 +632,15 @@ class _SearchScreenState extends State<SearchScreen>
           children: [
             const Icon(Icons.search, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text(
-              'Arama yapmak için yukarıdaki kutuya yazın',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              AppLocalizations.of(context)!.typeToSearch,
+              style: const TextStyle(color: Colors.grey),
             ),
             if (_searchHistory.isNotEmpty) ...[
               const SizedBox(height: 24),
-              const Text(
-                'Son Aramalar',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                AppLocalizations.of(context)!.recentSearches,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               ..._searchHistory.take(5).map((query) {
@@ -645,7 +660,7 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     if (_productResults!.items.isEmpty) {
-      return const Center(child: Text('Sonuç bulunamadı'));
+      return Center(child: Text(AppLocalizations.of(context)!.noResultsFound));
     }
 
     final cart = Provider.of<CartProvider>(context, listen: false);
@@ -691,11 +706,11 @@ class _SearchScreenState extends State<SearchScreen>
                 cart
                     .addItem(product, context)
                     .then((_) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${product.name} sepete eklendi'),
-                          duration: const Duration(seconds: 1),
-                        ),
+                      final l10n = AppLocalizations.of(context)!;
+                      ToastMessage.show(
+                        context,
+                        message: l10n.productAddedToCart(product.name),
+                        isSuccess: true,
                       );
                     })
                     .catchError((e) {
@@ -733,7 +748,7 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     if (_vendorResults!.items.isEmpty) {
-      return const Center(child: Text('Sonuç bulunamadı'));
+      return Center(child: Text(AppLocalizations.of(context)!.noResultsFound));
     }
 
     return ListView.builder(
@@ -758,7 +773,13 @@ class _SearchScreenState extends State<SearchScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(vendor.address),
-                if (vendor.city != null) Text('Şehir: ${vendor.city}'),
+                if (vendor.city != null)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return Text(l10n.cityLabel(vendor.city!));
+                    },
+                  ),
                 if (vendor.rating != null)
                   Row(
                     children: [
@@ -769,7 +790,16 @@ class _SearchScreenState extends State<SearchScreen>
                     ],
                   ),
                 if (vendor.distanceInKm != null)
-                  Text('Mesafe: ${vendor.distanceInKm!.toStringAsFixed(1)} km'),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return Text(
+                        l10n.distanceLabel(
+                          vendor.distanceInKm!.toStringAsFixed(1),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
             onTap: () {

@@ -40,7 +40,7 @@ public class SignalRNotificationService : INotificationService
         return Task.CompletedTask;
     }
 
-    public async Task SendOrderAssignmentNotificationAsync(string userId, int orderId, string? languageCode = null)
+    public async Task SendOrderAssignmentNotificationAsync(string userId, Guid orderId, string? languageCode = null)
     {
         await _hubContext.Clients.User(userId).SendAsync("ReceiveOrderAssignment", new
         {
@@ -49,7 +49,7 @@ public class SignalRNotificationService : INotificationService
         });
     }
 
-    public async Task SendOrderStatusUpdateNotificationAsync(string userId, int orderId, string status, string? languageCode = null)
+    public async Task SendOrderStatusUpdateNotificationAsync(string userId, Guid orderId, string status, string? languageCode = null)
     {
         await _hubContext.Clients.User(userId).SendAsync("ReceiveOrderStatusUpdate", new
         {

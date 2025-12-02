@@ -171,7 +171,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductDto>> GetProduct(int id)
+    public async Task<ActionResult<ProductDto>> GetProduct(Guid id)
     {
         var product = await _context.Products
             .Include(p => p.Vendor)

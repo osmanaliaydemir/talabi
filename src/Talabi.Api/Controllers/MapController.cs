@@ -59,7 +59,7 @@ public class MapController : ControllerBase
     // Get delivery tracking information
     [HttpGet("delivery-tracking/{orderId}")]
     [Authorize]
-    public async Task<ActionResult<DeliveryTrackingDto>> GetDeliveryTracking(int orderId)
+    public async Task<ActionResult<DeliveryTrackingDto>> GetDeliveryTracking(Guid orderId)
     {
         var order = await _context.Orders
             .Include(o => o.Vendor)
@@ -78,8 +78,8 @@ public class MapController : ControllerBase
             return Forbid();
         }
 
-        if (order.DeliveryAddress == null || 
-            !order.DeliveryAddress.Latitude.HasValue || 
+        if (order.DeliveryAddress == null ||
+            !order.DeliveryAddress.Latitude.HasValue ||
             !order.DeliveryAddress.Longitude.HasValue)
         {
             return BadRequest("Delivery address location not available");

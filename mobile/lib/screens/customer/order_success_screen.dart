@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:provider/provider.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
-  final int orderId;
+  final String orderId;
 
   const OrderSuccessScreen({super.key, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return WillPopScope(
       onWillPop: () async {
         // Prevent back button, force user to use buttons
@@ -53,7 +55,7 @@ class OrderSuccessScreen extends StatelessWidget {
 
                 // Success Title
                 Text(
-                  'Siparişiniz Başarıyla Oluşturuldu!',
+                  l10n.orderCreatedSuccessfully,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 26,
@@ -78,7 +80,7 @@ class OrderSuccessScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        'Sipariş Kodu',
+                        l10n.orderCode,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -117,7 +119,7 @@ class OrderSuccessScreen extends StatelessWidget {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Siparişiniz hazırlanmaya başlandı. Sipariş durumunuzu "Siparişlerim" sayfasından takip edebilirsiniz.',
+                          l10n.orderPreparationStarted,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[700],
@@ -152,7 +154,7 @@ class OrderSuccessScreen extends StatelessWidget {
                     },
                     icon: Icon(Icons.receipt_long, size: 24),
                     label: Text(
-                      'Siparişlerim',
+                      l10n.myOrders,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -192,7 +194,7 @@ class OrderSuccessScreen extends StatelessWidget {
                     },
                     icon: Icon(Icons.home, size: 24),
                     label: Text(
-                      'Ana Sayfa',
+                      l10n.homePage,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

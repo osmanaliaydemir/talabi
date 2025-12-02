@@ -5,6 +5,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/address.dart';
 import 'package:mobile/screens/shared/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
@@ -91,17 +92,16 @@ class _AddressesScreenState extends State<AddressesScreen>
       });
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.addressesLoadFailed}: $e'),
-            backgroundColor: Colors.red,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${l10n.addressesLoadFailed}: $e',
+          isSuccess: false,
         );
       }
     }
   }
 
-  Future<void> _deleteAddress(int id) async {
+  Future<void> _deleteAddress(String id) async {
     final l10n = AppLocalizations.of(context)!;
 
     final confirm = await showDialog<bool>(
@@ -127,47 +127,43 @@ class _AddressesScreenState extends State<AddressesScreen>
         await _apiService.deleteAddress(id);
         _loadAddresses();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.addressDeleted),
-              backgroundColor: Colors.green,
-            ),
+          ToastMessage.show(
+            context,
+            message: l10n.addressDeleted,
+            isSuccess: true,
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${l10n.error}: $e'),
-              backgroundColor: Colors.red,
-            ),
+          ToastMessage.show(
+            context,
+            message: '${l10n.error}: $e',
+            isSuccess: false,
           );
         }
       }
     }
   }
 
-  Future<void> _setDefaultAddress(int id) async {
+  Future<void> _setDefaultAddress(String id) async {
     final l10n = AppLocalizations.of(context)!;
 
     try {
       await _apiService.setDefaultAddress(id);
       _loadAddresses();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.defaultAddressUpdated),
-            backgroundColor: Colors.green,
-          ),
+        ToastMessage.show(
+          context,
+          message: l10n.defaultAddressUpdated,
+          isSuccess: true,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.error}: $e'),
-            backgroundColor: Colors.red,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${l10n.error}: $e',
+          isSuccess: false,
         );
       }
     }

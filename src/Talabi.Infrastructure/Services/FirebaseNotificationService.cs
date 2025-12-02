@@ -20,20 +20,20 @@ namespace Talabi.Infrastructure.Services
         private readonly IConfiguration _configuration;
 
         public FirebaseNotificationService(
-            TalabiDbContext context, 
+            TalabiDbContext context,
             ILogger<FirebaseNotificationService> logger,
             IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
             _configuration = configuration;
-            
+
             // Try to load resources from Talabi.Api assembly
             try
             {
                 var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
                     .FirstOrDefault(a => a.GetName().Name == "Talabi.Api");
-                
+
                 if (apiAssembly != null)
                 {
                     _resourceManager = new ResourceManager("Talabi.Api.Resources.NotificationResources", apiAssembly);
@@ -58,7 +58,7 @@ namespace Talabi.Infrastructure.Services
 
                     // 1. Öncelik: Environment Variable
                     credentialPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
-                    
+
                     if (!string.IsNullOrEmpty(credentialPath) && File.Exists(credentialPath))
                     {
                         FirebaseApp.Create(new AppOptions()
@@ -71,7 +71,7 @@ namespace Talabi.Infrastructure.Services
 
                     // 2. İkinci öncelik: appsettings.json
                     credentialPath = _configuration["Firebase:CredentialPath"];
-                    
+
                     if (!string.IsNullOrEmpty(credentialPath))
                     {
                         // Relative path ise, base directory ile birleştir
@@ -208,7 +208,7 @@ namespace Talabi.Infrastructure.Services
             }
         }
 
-        public async Task SendOrderAssignmentNotificationAsync(string userId, int orderId, string? languageCode = null)
+        public async Task SendOrderAssignmentNotificationAsync(string userId, Guid orderId, string? languageCode = null)
         {
             var tokens = await _context.UserDeviceTokens
                 .Where(t => t.UserId == userId)
@@ -240,7 +240,7 @@ namespace Talabi.Infrastructure.Services
             );
         }
 
-        public async Task SendOrderStatusUpdateNotificationAsync(string userId, int orderId, string status, string? languageCode = null)
+        public async Task SendOrderStatusUpdateNotificationAsync(string userId, Guid orderId, string status, string? languageCode = null)
         {
             var tokens = await _context.UserDeviceTokens
                 .Where(t => t.UserId == userId)
@@ -292,7 +292,7 @@ namespace Talabi.Infrastructure.Services
             }
         }
 
-        private (string title, string body) GetStatusNotificationText(string status, int orderId, CultureInfo culture)
+        private (string title, string body) GetStatusNotificationText(string status, Guid orderId, CultureInfo culture)
         {
             var titleKey = status switch
             {

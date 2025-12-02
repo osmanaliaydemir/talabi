@@ -1,5 +1,5 @@
 class Address {
-  final int id;
+  final String id;
   final String title;
   final String fullAddress;
   final String city;
@@ -23,7 +23,7 @@ class Address {
 
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(
-      id: json['id'],
+      id: json['id'].toString(),
       title: json['title'],
       fullAddress: json['fullAddress'],
       city: json['city'],

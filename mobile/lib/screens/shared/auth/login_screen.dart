@@ -5,11 +5,11 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/shared/auth/email_verification_screen.dart';
 import 'package:mobile/screens/shared/auth/forgot_password_screen.dart';
-import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 import 'package:mobile/screens/shared/auth/register_screen.dart';
 import 'package:mobile/screens/vendor/vendor_login_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -67,11 +67,11 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google login failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.googleLoginFailed(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -115,11 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Apple login failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.appleLoginFailed(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -163,11 +163,11 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Facebook login failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.facebookLoginFailed(e.toString()),
+          isSuccess: false,
         );
       }
     } finally {
@@ -206,9 +206,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Login başarılı olduysa ana ekrana yönlendir
       if (mounted && authProvider.isAuthenticated) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-        );
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/customer/home', (route) => false);
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -239,33 +239,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   EmailVerificationScreen(email: _emailController.text.trim()),
             ),
           );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(localizations.pleaseVerifyEmail),
-              backgroundColor: Colors.orange,
-            ),
+          ToastMessage.show(
+            context,
+            message: localizations.pleaseVerifyEmail,
+            isSuccess: false,
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                errorMessage.isNotEmpty
-                    ? errorMessage
-                    : '${localizations.loginFailed}: ${e.message}',
-              ),
-              backgroundColor: Colors.red,
-            ),
+          ToastMessage.show(
+            context,
+            message: errorMessage.isNotEmpty
+                ? errorMessage
+                : '${localizations.loginFailed}: ${e.message}',
+            isSuccess: false,
           );
         }
       }
     } catch (e) {
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${localizations.loginFailed}: $e'),
-            backgroundColor: Colors.red,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${localizations.loginFailed}: $e',
+          isSuccess: false,
         );
       }
     } finally {
@@ -616,7 +611,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     children: [
                                       Expanded(
                                         child: _buildSocialButton(
-                                          icon: Icons.g_translate_rounded,
+                                          icon: Icons.g_mobiledata,
                                           label: localizations.google,
                                           onPressed: _isLoading
                                               ? () {}
@@ -648,7 +643,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       Expanded(
                                         child: _buildSocialButton(
                                           icon: Icons.store,
-                                          label: 'Vendor',
+                                          label: localizations.vendor,
                                           onPressed: () {
                                             TapLogger.logButtonPress(
                                               'Vendor Login',

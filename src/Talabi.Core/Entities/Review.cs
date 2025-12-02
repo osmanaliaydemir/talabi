@@ -7,10 +7,10 @@ public class Review : BaseEntity
     public string UserId { get; set; } = string.Empty;
     public AppUser? User { get; set; }
 
-    public int? ProductId { get; set; }
+    public Guid? ProductId { get; set; }
     public Product? Product { get; set; }
 
-    public int? VendorId { get; set; }
+    public Guid? VendorId { get; set; }
     public Vendor? Vendor { get; set; }
 
     public int Rating { get; set; }

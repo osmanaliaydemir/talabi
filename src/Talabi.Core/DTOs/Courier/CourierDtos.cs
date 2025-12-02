@@ -2,7 +2,7 @@ namespace Talabi.Core.DTOs.Courier;
 
 public class CourierProfileDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string UserId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
@@ -63,49 +63,20 @@ public class CourierStatisticsDto
     public decimal MonthEarnings { get; set; }
 
     public double AverageRating { get; set; }
-    public int TotalRatings { get; set; }
-
-    public TimeSpan? AverageDeliveryTime { get; set; }
     public int ActiveOrders { get; set; }
-}
-
-public class SubmitDeliveryProofDto
-{
-    public string? PhotoUrl { get; set; }
-    public string? SignatureUrl { get; set; }
-    public string? Notes { get; set; }
-}
-
-public class CourierEarningDto
-{
-    public int Id { get; set; }
-    public int OrderId { get; set; }
-    public decimal BaseDeliveryFee { get; set; }
-    public decimal DistanceBonus { get; set; }
-    public decimal TipAmount { get; set; }
-    public decimal TotalEarning { get; set; }
-    public DateTime EarnedAt { get; set; }
-    public bool IsPaid { get; set; }
-}
-
-public class EarningsSummaryDto
-{
-    public decimal TotalEarnings { get; set; }
-    public int TotalDeliveries { get; set; }
-    public decimal AverageEarningPerDelivery { get; set; }
-    public List<CourierEarningDto> Earnings { get; set; } = new List<CourierEarningDto>();
+    public int TotalRatings { get; set; }
 }
 
 public class CourierNotificationDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     public string Type { get; set; } = "general";
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? ReadAt { get; set; }
-    public int? OrderId { get; set; }
+    public Guid? OrderId { get; set; }
 }
 
 public class CourierNotificationResponseDto

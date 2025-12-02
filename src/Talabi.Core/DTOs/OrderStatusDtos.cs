@@ -2,8 +2,9 @@ namespace Talabi.Core.DTOs;
 
 public class OrderDetailDto
 {
-    public int Id { get; set; }
-    public int VendorId { get; set; }
+    public Guid Id { get; set; }
+    public string CustomerOrderId { get; set; } = string.Empty;
+    public Guid VendorId { get; set; }
     public string VendorName { get; set; } = string.Empty;
     public string CustomerId { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
@@ -12,19 +13,23 @@ public class OrderDetailDto
     public DateTime CreatedAt { get; set; }
     public DateTime? CancelledAt { get; set; }
     public string? CancelReason { get; set; }
-    
+
     public List<OrderItemDetailDto> Items { get; set; } = new();
     public List<OrderStatusHistoryDto> StatusHistory { get; set; } = new();
 }
 
 public class OrderItemDetailDto
 {
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
+    public string CustomerOrderItemId { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string? ProductImageUrl { get; set; }
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }
+    public bool IsCancelled { get; set; } = false;
+    public DateTime? CancelledAt { get; set; }
+    public string? CancelReason { get; set; }
 }
 
 public class OrderStatusHistoryDto

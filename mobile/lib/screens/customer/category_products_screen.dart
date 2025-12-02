@@ -9,7 +9,7 @@ import 'package:mobile/widgets/common/toast_message.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
-  final int? categoryId;
+  final String? categoryId;
 
   const CategoryProductsScreen({
     super.key,
@@ -24,7 +24,7 @@ class CategoryProductsScreen extends StatefulWidget {
 class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Product>> _productsFuture;
-  final Map<int, bool> _favoriteStatus = {};
+  final Map<String, bool> _favoriteStatus = {};
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       setState(() {
         _favoriteStatus.clear();
         for (var fav in favorites) {
-          _favoriteStatus[fav['id']] = true;
+          _favoriteStatus[fav['id'].toString()] = true;
         }
       });
     } catch (e) {

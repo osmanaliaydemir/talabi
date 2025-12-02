@@ -5,10 +5,10 @@ namespace Talabi.Core.Interfaces;
 public interface IOrderAssignmentService
 {
     Task<Courier?> FindBestCourierAsync(Order order);
-    Task<bool> AssignOrderToCourierAsync(int orderId, int courierId);
-    Task<bool> AcceptOrderAsync(int orderId, int courierId);
-    Task<bool> RejectOrderAsync(int orderId, int courierId);
-    Task<bool> PickUpOrderAsync(int orderId, int courierId);
-    Task<bool> DeliverOrderAsync(int orderId, int courierId);
-    Task<List<Order>> GetActiveOrdersForCourierAsync(int courierId);
+    Task<bool> AssignOrderToCourierAsync(Guid orderId, Guid courierId);
+    Task<bool> AcceptOrderAsync(Guid orderId, Guid courierId);
+    Task<bool> RejectOrderAsync(Guid orderId, Guid courierId);
+    Task<bool> PickUpOrderAsync(Guid orderId, Guid courierId);
+    Task<bool> DeliverOrderAsync(Guid orderId, Guid courierId);
+    Task<List<Order>> GetActiveOrdersForCourierAsync(Guid courierId);
 }

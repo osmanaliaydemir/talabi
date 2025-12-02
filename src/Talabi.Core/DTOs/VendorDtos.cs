@@ -2,7 +2,7 @@ namespace Talabi.Core.DTOs;
 
 public class VendorDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string Address { get; set; } = string.Empty;
@@ -26,7 +26,7 @@ public class CreateVendorDto
 
 public class VendorOrderDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerEmail { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
@@ -38,7 +38,7 @@ public class VendorOrderDto
 
 public class VendorOrderItemDto
 {
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public string? ProductImageUrl { get; set; }
     public int Quantity { get; set; }
@@ -67,7 +67,7 @@ public class DailySalesDto
 
 public class ProductSalesDto
 {
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public int QuantitySold { get; set; }
     public decimal TotalRevenue { get; set; }

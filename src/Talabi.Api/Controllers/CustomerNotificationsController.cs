@@ -107,7 +107,7 @@ public class CustomerNotificationsController : ControllerBase
     }
 
     [HttpPost("{id}/read")]
-    public async Task<IActionResult> MarkAsRead(int id)
+    public async Task<IActionResult> MarkAsRead(Guid id)
     {
         var customer = await GetCurrentCustomerAsync(createIfMissing: true);
         if (customer == null)
@@ -164,7 +164,7 @@ public class CustomerNotificationsController : ControllerBase
         return Ok(new { Message = "All notifications marked as read" });
     }
 
-    private async Task EnsureWelcomeNotificationAsync(int customerId)
+    private async Task EnsureWelcomeNotificationAsync(Guid customerId)
     {
         var hasNotification = await _context.CustomerNotifications
             .AnyAsync(n => n.CustomerId == customerId);

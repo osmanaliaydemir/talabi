@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:intl/intl.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -82,22 +83,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.profileUpdated),
-            backgroundColor: Colors.green,
-          ),
+        ToastMessage.show(
+          context,
+          message: l10n.profileUpdated,
+          isSuccess: true,
         );
         Navigator.pop(context, true); // Return true to indicate update
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.error}: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${l10n.error}: $e',
+          isSuccess: false,
         );
       }
     } finally {

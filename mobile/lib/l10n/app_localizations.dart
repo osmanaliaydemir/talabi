@@ -292,6 +292,12 @@ abstract class AppLocalizations {
   /// **'Select Currency'**
   String get selectCurrency;
 
+  /// No description provided for @selectCurrencyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency selection'**
+  String get selectCurrencyDescription;
+
   /// No description provided for @regionalSettings.
   ///
   /// In en, this message translates to:
@@ -831,6 +837,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OK'**
   String get ok;
+
+  /// No description provided for @duplicateEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email address already exists.'**
+  String get duplicateEmail;
+
+  /// No description provided for @googleLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google login failed: {error}'**
+  String googleLoginFailed(Object error);
+
+  /// No description provided for @appleLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple login failed: {error}'**
+  String appleLoginFailed(Object error);
+
+  /// No description provided for @facebookLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook login failed: {error}'**
+  String facebookLoginFailed(Object error);
 
   /// No description provided for @errorWithMessage.
   ///
@@ -1834,6 +1864,18 @@ abstract class AppLocalizations {
   /// **'Settings saved'**
   String get settingsSaved;
 
+  /// No description provided for @regionalSettingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Date and time settings'**
+  String get regionalSettingsDescription;
+
+  /// No description provided for @timeZoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Europe/Istanbul, America/New_York'**
+  String get timeZoneHint;
+
   /// No description provided for @manageNotificationPreferences.
   ///
   /// In en, this message translates to:
@@ -1869,6 +1911,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change application language'**
   String get selectLanguageDescription;
+
+  /// No description provided for @selectLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred language'**
+  String get selectLanguageSubtitle;
+
+  /// No description provided for @languageChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Language changed'**
+  String get languageChanged;
+
+  /// No description provided for @languagesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} languages'**
+  String languagesCount(Object count);
 
   /// No description provided for @legalDocumentsDescription.
   ///
@@ -2407,8 +2467,8 @@ abstract class AppLocalizations {
   /// No description provided for @reviews.
   ///
   /// In en, this message translates to:
-  /// **'Reviews'**
-  String get reviews;
+  /// **'Reviews ({count})'**
+  String reviews(Object count);
 
   /// No description provided for @logoUpdated.
   ///
@@ -2889,6 +2949,486 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh'**
   String get refresh;
+
+  /// No description provided for @cancelOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Order'**
+  String get cancelOrder;
+
+  /// No description provided for @reorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder'**
+  String get reorder;
+
+  /// No description provided for @orderCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Order cancelled'**
+  String get orderCancelled;
+
+  /// No description provided for @cancelReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reason'**
+  String get cancelReason;
+
+  /// No description provided for @cancelReasonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please specify your cancellation reason (at least 10 characters):'**
+  String get cancelReasonDescription;
+
+  /// No description provided for @pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'pieces'**
+  String get pieces;
+
+  /// No description provided for @orderNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Order not found'**
+  String get orderNotFound;
+
+  /// No description provided for @productsAddedToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Products added to cart, redirecting to cart...'**
+  String get productsAddedToCart;
+
+  /// No description provided for @reorderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reorder: {error}'**
+  String reorderFailed(Object error);
+
+  /// No description provided for @locationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied'**
+  String get locationPermissionDenied;
+
+  /// No description provided for @locationPermissionDeniedForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission permanently denied'**
+  String get locationPermissionDeniedForever;
+
+  /// No description provided for @vendorsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load vendors: {error}'**
+  String vendorsLoadFailed(Object error);
+
+  /// No description provided for @yourLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Location'**
+  String get yourLocation;
+
+  /// No description provided for @vendorsMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendors Map'**
+  String get vendorsMap;
+
+  /// No description provided for @findMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Find My Location'**
+  String get findMyLocation;
+
+  /// No description provided for @viewProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'View Products'**
+  String get viewProducts;
+
+  /// No description provided for @gettingLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting location...'**
+  String get gettingLocation;
+
+  /// No description provided for @searchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Search error: {error}'**
+  String searchError(Object error);
+
+  /// No description provided for @productAddedToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'{productName} added to cart'**
+  String productAddedToCart(Object productName);
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select category'**
+  String get selectCategory;
+
+  /// No description provided for @priceRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Range'**
+  String get priceRange;
+
+  /// No description provided for @minPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Min Price'**
+  String get minPrice;
+
+  /// No description provided for @maxPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Price'**
+  String get maxPrice;
+
+  /// No description provided for @selectCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Select city'**
+  String get selectCity;
+
+  /// No description provided for @minimumRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum Rating'**
+  String get minimumRating;
+
+  /// No description provided for @maximumDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum Distance (km)'**
+  String get maximumDistance;
+
+  /// No description provided for @distanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (km)'**
+  String get distanceKm;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort By'**
+  String get sortBy;
+
+  /// No description provided for @selectSortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Select sort by'**
+  String get selectSortBy;
+
+  /// No description provided for @priceLowToHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (Low to High)'**
+  String get priceLowToHigh;
+
+  /// No description provided for @priceHighToLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (High to Low)'**
+  String get priceHighToLow;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by Name'**
+  String get sortByName;
+
+  /// No description provided for @newest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get newest;
+
+  /// No description provided for @ratingHighToLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating (High to Low)'**
+  String get ratingHighToLow;
+
+  /// No description provided for @popularity.
+  ///
+  /// In en, this message translates to:
+  /// **'Popularity'**
+  String get popularity;
+
+  /// No description provided for @distance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get distance;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get applyFilters;
+
+  /// No description provided for @searchProductsOrVendors.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products or vendors...'**
+  String get searchProductsOrVendors;
+
+  /// No description provided for @suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestions'**
+  String get suggestions;
+
+  /// No description provided for @product.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get product;
+
+  /// No description provided for @searchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Search History'**
+  String get searchHistory;
+
+  /// No description provided for @typeToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Type in the box above to search'**
+  String get typeToSearch;
+
+  /// No description provided for @recentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Searches'**
+  String get recentSearches;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @cityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City: {city}'**
+  String cityLabel(Object city);
+
+  /// No description provided for @distanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance: {distance} km'**
+  String distanceLabel(Object distance);
+
+  /// No description provided for @removedFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'{productName} removed from favorites'**
+  String removedFromFavorites(Object productName);
+
+  /// No description provided for @addedToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'{productName} added to favorites'**
+  String addedToFavorites(Object productName);
+
+  /// No description provided for @favoriteOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite operation failed: {error}'**
+  String favoriteOperationFailed(Object error);
+
+  /// No description provided for @noProductsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No products yet.'**
+  String get noProductsYet;
+
+  /// No description provided for @productLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load product: {error}'**
+  String productLoadFailed(Object error);
+
+  /// No description provided for @productNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Product not found'**
+  String get productNotFound;
+
+  /// No description provided for @rateVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Vendor'**
+  String get rateVendor;
+
+  /// No description provided for @shareYourThoughts.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your thoughts...'**
+  String get shareYourThoughts;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// No description provided for @vendorReviewSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendor review submitted!'**
+  String get vendorReviewSubmitted;
+
+  /// No description provided for @productReviewSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Product review submitted!'**
+  String get productReviewSubmitted;
+
+  /// No description provided for @noDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description available.'**
+  String get noDescription;
+
+  /// No description provided for @readMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get readMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get showLess;
+
+  /// No description provided for @deliveryTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Time'**
+  String get deliveryTime;
+
+  /// No description provided for @deliveryType.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Type'**
+  String get deliveryType;
+
+  /// No description provided for @noReviewsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet. Be the first to review!'**
+  String get noReviewsYet;
+
+  /// No description provided for @seeAllReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'See All Reviews'**
+  String get seeAllReviews;
+
+  /// No description provided for @by.
+  ///
+  /// In en, this message translates to:
+  /// **'By {vendorName}'**
+  String by(Object vendorName);
+
+  /// No description provided for @orderCreatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Order Has Been Created Successfully!'**
+  String get orderCreatedSuccessfully;
+
+  /// No description provided for @orderCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Code'**
+  String get orderCode;
+
+  /// No description provided for @orderPreparationStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order has started being prepared. You can track your order status from the \"My Orders\" page.'**
+  String get orderPreparationStarted;
+
+  /// No description provided for @homePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homePage;
+
+  /// No description provided for @ordersLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load orders: {error}'**
+  String ordersLoadFailed(Object error);
+
+  /// No description provided for @noOrdersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet'**
+  String get noOrdersYet;
+
+  /// No description provided for @onWay.
+  ///
+  /// In en, this message translates to:
+  /// **'On the Way'**
+  String get onWay;
+
+  /// No description provided for @unknownVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Vendor'**
+  String get unknownVendor;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @cancelItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Item'**
+  String get cancelItem;
+
+  /// No description provided for @itemCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Cancelled'**
+  String get itemCancelled;
+
+  /// No description provided for @itemCancelSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Item cancelled successfully'**
+  String get itemCancelSuccess;
+
+  /// No description provided for @itemCancelFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to cancel item: {error}'**
+  String itemCancelFailed(Object error);
 }
 
 class _AppLocalizationsDelegate

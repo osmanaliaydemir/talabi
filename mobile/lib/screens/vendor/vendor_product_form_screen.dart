@@ -36,7 +36,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   bool _isUploading = false;
 
   List<Map<String, dynamic>> _categories = [];
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
   bool _isLoadingCategories = false;
 
   @override
@@ -94,7 +94,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             orElse: () => {},
           );
           if (existing.isNotEmpty) {
-            _selectedCategoryId = existing['id'] as int;
+            _selectedCategoryId = existing['id'].toString();
           }
         }
       });
@@ -350,7 +350,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             const SizedBox(height: 16),
 
             // Category
-            DropdownButtonFormField<int>(
+            DropdownButtonFormField<String>(
               value: _selectedCategoryId,
               decoration: InputDecoration(
                 labelText: localizations.vendorProductFormCategoryLabel,
@@ -370,7 +370,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                   ? []
                   : _categories.map((category) {
                       return DropdownMenuItem(
-                        value: category['id'] as int,
+                        value: category['id'].toString(),
                         child: Text(category['name'] as String),
                       );
                     }).toList(),

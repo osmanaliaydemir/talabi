@@ -7,7 +7,7 @@ import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:provider/provider.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
-  final int orderId;
+  final String orderId;
 
   const VendorOrderDetailScreen({super.key, required this.orderId});
 
@@ -239,7 +239,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       );
 
       if (selectedCourier != null) {
-        await _assignCourier(selectedCourier['id']);
+        await _assignCourier(selectedCourier['id'].toString());
       }
     } catch (e) {
       if (mounted) {
@@ -383,7 +383,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     );
   }
 
-  Future<void> _assignCourier(int courierId) async {
+  Future<void> _assignCourier(String courierId) async {
     try {
       await _apiService.assignCourierToOrder(widget.orderId, courierId);
       if (mounted) {
@@ -607,7 +607,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                                         color: Colors.grey[200],
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Icon(Icons.image_not_supported),
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                      ),
                                     );
                                   },
                                 ),
@@ -807,7 +809,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[400], size: 16),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.grey[400],
+              size: 16,
+            ),
           ],
         ),
       ),

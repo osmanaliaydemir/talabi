@@ -46,16 +46,16 @@ public class ReviewsController : ControllerBase
         {
             var product = await _context.Products.FindAsync(dto.TargetId);
             if (product == null) return NotFound("Product not found");
-            
+
             // Kullanıcının bu ürüne daha önce review verip vermediğini kontrol et
             var existingReview = await _context.Reviews
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.ProductId == dto.TargetId);
-            
+
             if (existingReview != null)
             {
                 return BadRequest("You have already reviewed this product. You cannot create another review.");
             }
-            
+
             review.ProductId = dto.TargetId;
             // Product review'ları otomatik onaylanır
             review.IsApproved = true;
@@ -66,26 +66,26 @@ public class ReviewsController : ControllerBase
                 .Include(v => v.Products)
                 .FirstOrDefaultAsync(v => v.Id == dto.TargetId);
             if (vendor == null) return NotFound("Vendor not found");
-            
+
             // Vendor review'ı için o vendor'ın bir ürününe de review atanmalı
             var firstProduct = vendor.Products?.FirstOrDefault();
             if (firstProduct == null)
             {
                 return BadRequest("Vendor has no products. Cannot create vendor review without a product.");
             }
-            
+
             // Kullanıcının bu vendor'a ait ürüne daha önce review verip vermediğini kontrol et
             var existingReview = await _context.Reviews
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.ProductId == firstProduct.Id);
-            
+
             if (existingReview != null)
             {
                 return BadRequest("You have already reviewed a product from this vendor. You cannot create another review.");
             }
-            
+
             review.VendorId = dto.TargetId;
             review.ProductId = firstProduct.Id;
-            
+
             // Vendor review'ları varsayılan olarak onaylanmamış olarak oluşturulur
             review.IsApproved = false;
         }
@@ -129,7 +129,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet("products/{productId}")]
-    public async Task<ActionResult<List<ReviewDto>>> GetProductReviews(int productId)
+    public async Task<ActionResult<List<ReviewDto>>> GetProductReviews(Guid productId)
     {
         var reviews = await _context.Reviews
             .Include(r => r.User)
@@ -151,7 +151,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet("vendors/{vendorId}")]
-    public async Task<ActionResult<List<ReviewDto>>> GetVendorReviews(int vendorId)
+    public async Task<ActionResult<List<ReviewDto>>> GetVendorReviews(Guid vendorId)
     {
         var reviews = await _context.Reviews
             .Include(r => r.User)
@@ -174,7 +174,7 @@ public class ReviewsController : ControllerBase
 
     [HttpPatch("{reviewId}/approve")]
     [Authorize]
-    public async Task<ActionResult> ApproveReview(int reviewId)
+    public async Task<ActionResult> ApproveReview(Guid reviewId)
     {
         var userId = TryGetUserId();
         if (string.IsNullOrWhiteSpace(userId))
@@ -213,7 +213,7 @@ public class ReviewsController : ControllerBase
 
     [HttpPatch("{reviewId}/reject")]
     [Authorize]
-    public async Task<ActionResult> RejectReview(int reviewId)
+    public async Task<ActionResult> RejectReview(Guid reviewId)
     {
         var userId = TryGetUserId();
         if (string.IsNullOrWhiteSpace(userId))

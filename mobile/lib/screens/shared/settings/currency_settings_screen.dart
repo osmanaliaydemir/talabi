@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/localization_provider.dart';
+import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 
 class CurrencySettingsScreen extends StatelessWidget {
@@ -45,6 +46,13 @@ class CurrencySettingsScreen extends StatelessWidget {
                     onChanged: (value) {
                       if (value != null) {
                         localization.setCurrency(value);
+                        if (appLocalizations != null) {
+                          ToastMessage.show(
+                            context,
+                            message: appLocalizations.settingsSaved,
+                            isSuccess: true,
+                          );
+                        }
                       }
                     },
                   ),
@@ -70,6 +78,13 @@ class CurrencySettingsScreen extends StatelessWidget {
                     onChanged: (value) {
                       if (value != null) {
                         localization.setCurrency(value);
+                        if (appLocalizations != null) {
+                          ToastMessage.show(
+                            context,
+                            message: appLocalizations.settingsSaved,
+                            isSuccess: true,
+                          );
+                        }
                       }
                     },
                   ),
@@ -154,7 +169,8 @@ class CurrencySettingsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Para birimi seçimi',
+                      appLocalizations?.selectCurrencyDescription ??
+                          'Para birimi seçimi',
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                         fontSize: 12,

@@ -35,6 +35,7 @@
   "deliveryTracking": "تتبع التسليم",
   "selectLanguage": "اختر اللغة",
   "selectCurrency": "اختر العملة",
+  "selectCurrencyDescription": "اختيار العملة",
   "regionalSettings": "الإعدادات الإقليمية",
   "dateFormat": "تنسيق التاريخ",
   "timeFormat": "تنسيق الوقت",
@@ -131,6 +132,25 @@
     }
   },
   "ok": "حسنًا",
+  "duplicateEmail": "يوجد بالفعل حساب بهذا البريد الإلكتروني",
+  "googleLoginFailed": "فشل تسجيل الدخول عبر Google: {error}",
+  "@googleLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "appleLoginFailed": "فشل تسجيل الدخول عبر Apple: {error}",
+  "@appleLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "facebookLoginFailed": "فشل تسجيل الدخول عبر Facebook: {error}",
+  "@facebookLoginFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "errorWithMessage": "خطأ: {error}",
   "@errorWithMessage": {
     "placeholders": {
@@ -312,12 +332,22 @@
   "promotionsDescription": "عروض خاصة وحملات ترويجية",
   "newProductsDescription": "احصل على إشعارات عند إضافة منتجات جديدة",
   "settingsSaved": "تم حفظ الإعدادات",
+  "regionalSettingsDescription": "إعدادات التاريخ والوقت",
+  "timeZoneHint": "مثال: Europe/Istanbul, America/New_York",
   "manageNotificationPreferences": "إدارة تفضيلات الإشعارات",
   "orderHistoryDescription": "عرض طلباتك السابقة",
   "myAddressesDescription": "إدارة عناوين التوصيل الخاصة بك",
   "changePasswordSubtitle": "تغيير كلمة المرور وتعزيز الأمان",
   "notificationSettingsDescription": "إدارة تفضيلات الإشعارات",
   "selectLanguageDescription": "تغيير لغة التطبيق",
+  "selectLanguageSubtitle": "اختر لغتك المفضلة",
+  "languageChanged": "تم تغيير اللغة",
+  "languagesCount": "{count} لغة",
+  "@languagesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "legalDocumentsDescription": "شروط الاستخدام والسياسات",
   "helpCenterDescription": "الأسئلة الشائعة وخط الدعم",
   "logoutDescription": "تسجيل الخروج من حسابك",
@@ -573,5 +603,166 @@
       "count": {}
     }
   },
-  "refresh": "تحديث"
+  "refresh": "تحديث",
+  "cancelOrder": "إلغاء الطلب",
+  "reorder": "إعادة الطلب",
+  "orderCancelled": "تم إلغاء الطلب",
+  "cancelReason": "سبب الإلغاء",
+  "cancelReasonDescription": "يرجى تحديد سبب الإلغاء (10 أحرف على الأقل):",
+  "pieces": "قطعة",
+  "orderNotFound": "الطلب غير موجود",
+  "productsAddedToCart": "تمت إضافة المنتجات إلى السلة، جارٍ التوجيه إلى السلة...",
+  "reorderFailed": "فشلت إعادة الطلب: {error}",
+  "@reorderFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "locationServicesDisabled": "خدمات الموقع معطلة",
+  "locationPermissionDenied": "تم رفض إذن الموقع",
+  "locationPermissionDeniedForever": "تم رفض إذن الموقع بشكل دائم",
+  "vendorsLoadFailed": "فشل تحميل المتاجر: {error}",
+  "@vendorsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "yourLocation": "موقعك",
+  "vendorsMap": "خريطة المتاجر",
+  "findMyLocation": "العثور على موقعي",
+  "viewProducts": "عرض المنتجات",
+  "gettingLocation": "جارٍ الحصول على الموقع...",
+  "searchError": "خطأ في البحث: {error}",
+  "@searchError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "productAddedToCart": "تمت إضافة {productName} إلى السلة",
+  "@productAddedToCart": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "filters": "المرشحات",
+  "clear": "مسح",
+  "category": "الفئة",
+  "selectCategory": "اختر الفئة",
+  "priceRange": "نطاق السعر",
+  "minPrice": "الحد الأدنى للسعر",
+  "maxPrice": "الحد الأقصى للسعر",
+  "city": "المدينة",
+  "selectCity": "اختر المدينة",
+  "minimumRating": "التقييم الأدنى",
+  "maximumDistance": "الحد الأقصى للمسافة (كم)",
+  "distanceKm": "المسافة (كم)",
+  "sortBy": "ترتيب حسب",
+  "selectSortBy": "اختر الترتيب",
+  "priceLowToHigh": "السعر (من الأقل إلى الأعلى)",
+  "priceHighToLow": "السعر (من الأعلى إلى الأقل)",
+  "sortByName": "ترتيب حسب الاسم",
+  "newest": "الأحدث",
+  "ratingHighToLow": "التقييم (من الأعلى إلى الأقل)",
+  "popularity": "الشعبية",
+  "distance": "المسافة",
+  "applyFilters": "تطبيق المرشحات",
+  "searchProductsOrVendors": "ابحث عن المنتجات أو المتاجر...",
+  "products": "المنتجات",
+  "vendors": "المتاجر",
+  "suggestions": "الاقتراحات",
+  "product": "منتج",
+  "vendor": "متجر",
+  "searchHistory": "سجل البحث",
+  "typeToSearch": "اكتب في المربع أعلاه للبحث",
+  "recentSearches": "عمليات البحث الأخيرة",
+  "noResultsFound": "لم يتم العثور على نتائج",
+  "cityLabel": "المدينة: {city}",
+  "@cityLabel": {
+    "placeholders": {
+      "city": {}
+    }
+  },
+  "distanceLabel": "المسافة: {distance} كم",
+  "@distanceLabel": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "removedFromFavorites": "تمت إزالة {productName} من المفضلة",
+  "@removedFromFavorites": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "addedToFavorites": "تمت إضافة {productName} إلى المفضلة",
+  "@addedToFavorites": {
+    "placeholders": {
+      "productName": {}
+    }
+  },
+  "favoriteOperationFailed": "فشلت عملية المفضلة: {error}",
+  "@favoriteOperationFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noProductsYet": "لا توجد منتجات بعد.",
+  "productLoadFailed": "فشل تحميل المنتج: {error}",
+  "@productLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "productNotFound": "المنتج غير موجود",
+  "rateVendor": "تقييم المتجر",
+  "writeReview": "اكتب مراجعة",
+  "shareYourThoughts": "شارك أفكارك...",
+  "submit": "إرسال",
+  "vendorReviewSubmitted": "تم إرسال تقييم المتجر!",
+  "productReviewSubmitted": "تم إرسال تقييم المنتج!",
+  "noDescription": "لا يوجد وصف متاح.",
+  "readMore": "اقرأ المزيد",
+  "showLess": "عرض أقل",
+  "description": "الوصف",
+  "deliveryTime": "وقت التسليم",
+  "deliveryType": "نوع التسليم",
+  "reviews": "المراجعات ({count})",
+  "@reviews": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "noReviewsYet": "لا توجد مراجعات بعد. كن أول من يراجع!",
+  "seeAllReviews": "عرض جميع المراجعات",
+  "addToCart": "أضف إلى السلة",
+  "by": "بواسطة: {vendorName}",
+  "@by": {
+    "placeholders": {
+      "vendorName": {}
+    }
+  },
+  "orderCreatedSuccessfully": "تم إنشاء طلبك بنجاح!",
+  "orderCode": "رمز الطلب",
+  "orderPreparationStarted": "بدأ تحضير طلبك. يمكنك تتبع حالة طلبك من صفحة \"طلباتي\".",
+  "myOrders": "طلباتي",
+  "homePage": "الرئيسية",
+  "ordersLoadFailed": "فشل تحميل الطلبات: {error}",
+  "@ordersLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noOrdersYet": "لا توجد طلبات بعد",
+  "onWay": "في الطريق",
+  "unknownVendor": "متجر غير معروف",
+  "unknown": "غير معروف",
+  "cancelItem": "إلغاء المنتج",
+  "itemCancelled": "تم إلغاء المنتج",
+  "itemCancelSuccess": "تم إلغاء المنتج بنجاح",
+  "itemCancelFailed": "فشل إلغاء المنتج: {error}",
+  "@itemCancelFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  }
 }

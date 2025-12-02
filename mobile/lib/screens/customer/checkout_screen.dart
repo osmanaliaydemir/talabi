@@ -10,8 +10,8 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  final Map<int, CartItem> cartItems;
-  final int vendorId;
+  final Map<String, CartItem> cartItems;
+  final String vendorId;
   final double subtotal;
   final double deliveryFee;
 
@@ -94,16 +94,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     try {
       // Prepare order items
-      final orderItems = <int, int>{};
+      final orderItems = <String, int>{};
       for (var item in widget.cartItems.values) {
         orderItems[item.product.id] = item.quantity;
       }
+
+      // Get delivery address ID as String (GUID)
+      final addressId = _selectedAddress!['id'];
+      final addressIdString = addressId != null ? addressId.toString() : null;
 
       // Create order
       final order = await _apiService.createOrder(
         widget.vendorId,
         orderItems,
-        deliveryAddressId: _selectedAddress!['id'],
+        deliveryAddressId: addressIdString,
         paymentMethod: _selectedPaymentMethod,
         note: _noteController.text.trim().isEmpty
             ? null
@@ -121,7 +125,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => OrderSuccessScreen(orderId: order.id),
+            builder: (context) =>
+                OrderSuccessScreen(orderId: order.customerOrderId),
           ),
         );
       }

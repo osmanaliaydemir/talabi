@@ -59,9 +59,9 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.vendorProductsLoadError(
-                e.toString(),
-              ),
+              AppLocalizations.of(
+                context,
+              )!.vendorProductsLoadError(e.toString()),
             ),
           ),
         );
@@ -98,10 +98,12 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
           SnackBar(
             content: Text(
               product.isAvailable
-                  ? AppLocalizations.of(context)!
-                      .vendorProductsSetOutOfStock(product.name)
-                  : AppLocalizations.of(context)!
-                      .vendorProductsSetInStock(product.name),
+                  ? AppLocalizations.of(
+                      context,
+                    )!.vendorProductsSetOutOfStock(product.name)
+                  : AppLocalizations.of(
+                      context,
+                    )!.vendorProductsSetInStock(product.name),
             ),
           ),
         );
@@ -109,7 +111,11 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.errorWithMessage(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -145,14 +151,18 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(localizations.vendorProductsDeleteSuccess(product.name)),
+              content: Text(
+                localizations.vendorProductsDeleteSuccess(product.name),
+              ),
             ),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(localizations.errorWithMessage(e.toString()))),
+            SnackBar(
+              content: Text(localizations.errorWithMessage(e.toString())),
+            ),
           );
         }
       }
@@ -209,85 +219,82 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                       ),
                     )
                   : _filteredProducts.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.inventory_2_outlined,
-                                size: 64,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                localizations.vendorProductsEmpty,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const VendorProductFormScreen(),
-                                    ),
-                                  );
-                                  if (result == true) _loadProducts();
-                                },
-                                icon: const Icon(Icons.add),
-                                label: Text(localizations.vendorProductsAddFirst),
-                              ),
-                            ],
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
                           ),
-                        )
-                      : GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                          const SizedBox(height: 16),
+                          Text(
+                            localizations.vendorProductsEmpty,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const VendorProductFormScreen(),
+                                ),
+                              );
+                              if (result == true) _loadProducts();
+                            },
+                            icon: const Icon(Icons.add),
+                            label: Text(localizations.vendorProductsAddFirst),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             childAspectRatio: 0.7,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                           ),
-                          itemCount: _filteredProducts.length,
-                          itemBuilder: (context, index) {
-                            final product = _filteredProducts[index];
-                            return ProductCard(
-                              product: product,
-                              onTap: () async {
-                                TapLogger.logTap(
-                                  'Product #${product.id}',
-                                  action: localizations.edit,
-                                );
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        VendorProductFormScreen(product: product),
-                                  ),
-                                );
-                                if (result == true) _loadProducts();
-                              },
-                              onToggleAvailability: () =>
-                                  _toggleAvailability(product),
-                              onDelete: () => _deleteProduct(product),
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = _filteredProducts[index];
+                        return ProductCard(
+                          product: product,
+                          onTap: () async {
+                            TapLogger.logTap(
+                              'Product #${product.id}',
+                              action: localizations.edit,
                             );
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    VendorProductFormScreen(product: product),
+                              ),
+                            );
+                            if (result == true) _loadProducts();
                           },
-                        ),
+                          onToggleAvailability: () =>
+                              _toggleAvailability(product),
+                          onDelete: () => _deleteProduct(product),
+                        );
+                      },
+                    ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          TapLogger.logNavigation(
-            'VendorProducts',
-            'VendorProductForm',
-          );
+          TapLogger.logNavigation('VendorProducts', 'VendorProductForm');
           final result = await Navigator.push(
             context,
             MaterialPageRoute(

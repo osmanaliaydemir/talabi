@@ -44,7 +44,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpPost("{productId}")]
-    public async Task<ActionResult> AddToFavorites(int productId)
+    public async Task<ActionResult> AddToFavorites(Guid productId)
     {
         var userId = GetUserId();
 
@@ -77,7 +77,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpDelete("{productId}")]
-    public async Task<ActionResult> RemoveFromFavorites(int productId)
+    public async Task<ActionResult> RemoveFromFavorites(Guid productId)
     {
         var userId = GetUserId();
 
@@ -96,7 +96,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpGet("check/{productId}")]
-    public async Task<ActionResult<bool>> IsFavorite(int productId)
+    public async Task<ActionResult<bool>> IsFavorite(Guid productId)
     {
         var userId = GetUserId();
 

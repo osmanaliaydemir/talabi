@@ -1,5 +1,5 @@
 class Review {
-  final int id;
+  final String id;
   final String userId;
   final String userFullName;
   final int rating;
@@ -17,7 +17,7 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      id: json['id'],
+      id: json['id'].toString(),
       userId: json['userId'] ?? '',
       userFullName: json['userFullName'] ?? 'Anonymous',
       rating: json['rating'],

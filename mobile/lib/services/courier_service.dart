@@ -107,7 +107,7 @@ class CourierService {
     throw Exception(errorMessage);
   }
 
-  Future<bool> acceptOrder(int orderId) async {
+  Future<bool> acceptOrder(String orderId) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/accept'),
@@ -119,7 +119,7 @@ class CourierService {
     return response.statusCode == 200;
   }
 
-  Future<bool> rejectOrder(int orderId) async {
+  Future<bool> rejectOrder(String orderId) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/reject'),
@@ -131,7 +131,7 @@ class CourierService {
     return response.statusCode == 200;
   }
 
-  Future<CourierOrder> getOrderDetail(int orderId) async {
+  Future<CourierOrder> getOrderDetail(String orderId) async {
     final token = await _getToken();
     final response = await http.get(
       Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId'),
@@ -148,7 +148,7 @@ class CourierService {
     }
   }
 
-  Future<bool> pickupOrder(int orderId) async {
+  Future<bool> pickupOrder(String orderId) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/pickup'),
@@ -160,7 +160,7 @@ class CourierService {
     return response.statusCode == 200;
   }
 
-  Future<bool> deliverOrder(int orderId) async {
+  Future<bool> deliverOrder(String orderId) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/deliver'),
@@ -379,7 +379,7 @@ class CourierService {
   }
 
   Future<void> submitProof(
-    int orderId,
+    String orderId,
     String? photoUrl,
     String? signatureUrl,
     String? notes,

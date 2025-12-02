@@ -63,7 +63,7 @@ public class VendorsController : ControllerBase
     }
 
     [HttpGet("{id}/products")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByVendor(int id)
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByVendor(Guid id)
     {
         var products = await _context.Products
             .Where(p => p.VendorId == id)
@@ -109,7 +109,7 @@ public class VendorsController : ControllerBase
         // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
         {
-            query = query.Where(v => v.Name.Contains(request.Query) || 
+            query = query.Where(v => v.Name.Contains(request.Query) ||
                                     v.Address.Contains(request.Query));
         }
 
@@ -148,7 +148,7 @@ public class VendorsController : ControllerBase
             "popularity" => query.OrderByDescending(v => v.Orders.Count),
             "distance" when request.UserLatitude.HasValue && request.UserLongitude.HasValue =>
                 query.OrderBy(v => v.Latitude.HasValue && v.Longitude.HasValue
-                    ? CalculateDistance(request.UserLatitude!.Value, request.UserLongitude!.Value, 
+                    ? CalculateDistance(request.UserLatitude!.Value, request.UserLongitude!.Value,
                         v.Latitude!.Value, v.Longitude!.Value)
                     : double.MaxValue),
             _ => query.OrderBy(v => v.Name)
