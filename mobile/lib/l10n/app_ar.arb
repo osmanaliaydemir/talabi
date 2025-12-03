@@ -29,6 +29,7 @@
   "price": "السعر",
   "addToCart": "أضف إلى السلة",
   "total": "المجموع",
+  "totalPrice": "السعر الإجمالي",
   "checkout": "الدفع",
   "orderHistory": "سجل الطلبات",
   "orderDetail": "تفاصيل الطلب",
@@ -764,7 +765,7 @@
       "error": {}
     }
   },
-  "promotionalBannerTitle": "سيكون يوماً رائعاً!",
+  "promotionalBannerTitle": "جائع؟\nنحن نلبي احتياجاتك!",
   "promotionalBannerSubtitle": "توصيل مجاني، رسوم منخفضة و 10% استرداد نقدي!",
   "orderNow": "اطلب الآن",
   "categories": "الفئات",
@@ -775,5 +776,34 @@
     "placeholders": {
       "error": {}
     }
-  }
+  },
+  "unreadNotificationsCount": "{count} إشعارات غير مقروءة",
+  "@unreadNotificationsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "campaigns": "الحملات",
+  "productsCount": "{count} منتجات",
+  "@productsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "campaignsCount": "{count} حملات",
+  "@campaignsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "vendorsCount": "{count} شركات",
+  "@vendorsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "similarProducts": "منتجات مماثلة",
+  "areYouHungry": "هل أنت جائع؟",
+  "onboardingDescription": "اطلب ما تحتاجه، وسنقوم بتوصيله إليك في أسرع وقت ممكن.\nالطلب مع طلبي أصبح الآن سهلاً بلمسة واحدة.",
+  "unlockDescription": "انزلق إلى الطالبي!"
 }

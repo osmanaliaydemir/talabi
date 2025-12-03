@@ -30,6 +30,7 @@
   "price": "Fiyat",
   "addToCart": "Sepete Ekle",
   "total": "Toplam",
+  "totalPrice": "Toplam Fiyat",
   "checkout": "Ödeme",
   "orderHistory": "Sipariş Geçmişi",
   "orderDetail": "Sipariş Detayı",
@@ -454,7 +455,7 @@
   "paymentComingSoonDescription": "Bu ödeme yöntemi yakında hizmete girecektir.",
   "skip": "Geç",
   "next": "İleri",
-  "getStarted": "Başla",
+  "getStarted": "Hadi Başlayın!",
   "onboardingTitle1": "İhtiyacınız Olan Her Şey",
   "onboardingDesc1": "Taze market ürünleri, günlük ihtiyaçlar ve daha fazlası—tek uygulamada",
   "onboardingTitle2": "Hızlı ve Güvenilir Teslimat",
@@ -770,9 +771,9 @@
       "error": {}
     }
   },
-  "promotionalBannerTitle": "Harika Bir Gün Olacak!",
+  "promotionalBannerTitle": "Acıktınız mı?\nSizi düşündük!",
   "promotionalBannerSubtitle": "Ücretsiz teslimat, düşük ücretler & %10 nakit iade!",
-  "orderNow": "Şimdi Sipariş Ver",
+  "orderNow": "Sipariş Ver",
   "categories": "Kategoriler",
   "categoryNotFound": "Kategori bulunamadı",
   "picksForYou": "Sizin İçin Seçtiklerimiz",
@@ -781,5 +782,34 @@
     "placeholders": {
       "error": {}
     }
-  }
+  },
+  "unreadNotificationsCount": "{count} okunmamış bildirim",
+  "@unreadNotificationsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "campaigns": "Kampanyalar",
+  "productsCount": "{count} ürün",
+  "@productsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "campaignsCount": "{count} kampanya",
+  "@campaignsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "vendorsCount": "{count} işletme",
+  "@vendorsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "similarProducts": "Benzer Ürünler",
+  "areYouHungry": "Acıktınız mı?",
+  "onboardingDescription": "İhtiyacını talep et, en hızlı şekilde sana ulaştıralım.\nSipariş vermek artık tek dokunuş kadar kolay.",
+  "unlockDescription": "Talabî'ye doğru kaydırın!"
 }

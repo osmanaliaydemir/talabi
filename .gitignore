@@ -221,3 +221,7 @@ mobile/.pub/
 src/**/bin/
 src/**/obj/
 
+# Uploaded images (keep folder structure, ignore actual files)
+src/Talabi.Api/wwwroot/images/*
+!src/Talabi.Api/wwwroot/images/.gitkeep
+

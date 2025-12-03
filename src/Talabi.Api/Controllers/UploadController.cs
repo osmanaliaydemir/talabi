@@ -31,15 +31,15 @@ public class UploadController : ControllerBase
 
         try
         {
-            // Ensure uploads directory exists
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
-            if (!Directory.Exists(uploadsPath))
-                Directory.CreateDirectory(uploadsPath);
+            // Ensure images directory exists
+            var imagesPath = Path.Combine(_environment.WebRootPath, "images");
+            if (!Directory.Exists(imagesPath))
+                Directory.CreateDirectory(imagesPath);
 
             // Generate unique filename
             var extension = Path.GetExtension(file.FileName);
             var fileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsPath, fileName);
+            var filePath = Path.Combine(imagesPath, fileName);
 
             // Save file
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -50,7 +50,7 @@ public class UploadController : ControllerBase
             // Return URL
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
-            var url = $"{baseUrl}/uploads/{fileName}";
+            var url = $"{baseUrl}/images/{fileName}";
 
             return Ok(new { Url = url });
         }

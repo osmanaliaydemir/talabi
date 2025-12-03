@@ -329,7 +329,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               // Header with decorative shapes
               SizedBox(
-                height: 180,
+                height: 170,
                 child: Stack(
                   children: [
                     // Decorative shape in top right
@@ -338,7 +338,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       right: -50,
                       child: Container(
                         width: 200,
-                        height: 200,
+                        height: 220,
                         decoration: BoxDecoration(
                           color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
@@ -347,7 +347,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     // Decorative shape on left side (rounded pill shape)
                     Positioned(
-                      bottom: -20,
+                      bottom: 20, // Moved up to be fully visible
                       left: -30,
                       child: Container(
                         width: 100,
@@ -394,9 +394,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(
-                            top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
-                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
@@ -573,7 +570,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _register,
+                                      onPressed: _isLoading ? () {} : _register,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primaryOrange,
                                         foregroundColor: AppTheme.textOnPrimary,

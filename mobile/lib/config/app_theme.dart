@@ -42,7 +42,7 @@ class AppTheme {
   static const Color courierDark = Color(0xFF00796B);
 
   // 🎭 ARKA PLAN RENKLERİ (Light Mode)
-  static const Color backgroundColor = Color(0xFFF5F5F5);
+  static const Color backgroundColor = Color.fromARGB(255, 255, 255, 255);
   static const Color cardColor = Colors.white;
   static const Color surfaceColor = Colors.white;
   static const Color dividerColor = Color(0xFFE0E0E0);
@@ -135,70 +135,70 @@ class AppTheme {
       ),
 
       // Font Tanımları
-      textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+      textTheme: GoogleFonts.plusJakartaSansTextTheme().copyWith(
         // Büyük Başlıklar
-        displayLarge: GoogleFonts.poppins(
+        displayLarge: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.bold,
           color: textPrimary,
         ),
-        displayMedium: GoogleFonts.poppins(
+        displayMedium: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.bold,
           color: textPrimary,
         ),
-        displaySmall: GoogleFonts.poppins(
+        displaySmall: GoogleFonts.plusJakartaSans(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
 
         // Başlıklar
-        headlineLarge: GoogleFonts.poppins(
+        headlineLarge: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
-        headlineMedium: GoogleFonts.poppins(
+        headlineMedium: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
-        headlineSmall: GoogleFonts.poppins(
+        headlineSmall: GoogleFonts.plusJakartaSans(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
 
         // Body Metinler
-        bodyLarge: GoogleFonts.poppins(
+        bodyLarge: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: textPrimary,
         ),
-        bodyMedium: GoogleFonts.poppins(
+        bodyMedium: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.normal,
           color: textPrimary,
         ),
-        bodySmall: GoogleFonts.poppins(
+        bodySmall: GoogleFonts.plusJakartaSans(
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: textSecondary,
         ),
 
         // Label/Button Metinler
-        labelLarge: GoogleFonts.poppins(
+        labelLarge: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: textPrimary,
         ),
-        labelMedium: GoogleFonts.poppins(
+        labelMedium: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: textPrimary,
         ),
-        labelSmall: GoogleFonts.poppins(
+        labelSmall: GoogleFonts.plusJakartaSans(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: textSecondary,
@@ -211,7 +211,7 @@ class AppTheme {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: Colors.white,
@@ -223,7 +223,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryOrange,
           foregroundColor: Colors.white,
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -238,7 +238,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryOrange,
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -253,7 +253,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryOrange,
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -284,8 +284,11 @@ class AppTheme {
           horizontal: 16,
           vertical: 16,
         ),
-        hintStyle: GoogleFonts.poppins(color: textHint, fontSize: 14),
-        labelStyle: GoogleFonts.poppins(color: textSecondary, fontSize: 14),
+        hintStyle: GoogleFonts.plusJakartaSans(color: textHint, fontSize: 14),
+        labelStyle: GoogleFonts.plusJakartaSans(
+          color: textSecondary,
+          fontSize: 14,
+        ),
       ),
 
       // Card Theme
@@ -315,71 +318,73 @@ class AppTheme {
       ),
 
       // Font Tanımları (Dark Mode)
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
-          .copyWith(
+      textTheme:
+          GoogleFonts.plusJakartaSansTextTheme(
+            ThemeData.dark().textTheme,
+          ).copyWith(
             // Büyük Başlıklar
-            displayLarge: GoogleFonts.poppins(
+            displayLarge: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: darkTextPrimary,
             ),
-            displayMedium: GoogleFonts.poppins(
+            displayMedium: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.bold,
               color: darkTextPrimary,
             ),
-            displaySmall: GoogleFonts.poppins(
+            displaySmall: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: darkTextPrimary,
             ),
 
             // Başlıklar
-            headlineLarge: GoogleFonts.poppins(
+            headlineLarge: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: darkTextPrimary,
             ),
-            headlineMedium: GoogleFonts.poppins(
+            headlineMedium: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: darkTextPrimary,
             ),
-            headlineSmall: GoogleFonts.poppins(
+            headlineSmall: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: darkTextPrimary,
             ),
 
             // Body Metinler
-            bodyLarge: GoogleFonts.poppins(
+            bodyLarge: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.normal,
               color: darkTextPrimary,
             ),
-            bodyMedium: GoogleFonts.poppins(
+            bodyMedium: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.normal,
               color: darkTextPrimary,
             ),
-            bodySmall: GoogleFonts.poppins(
+            bodySmall: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.normal,
               color: darkTextSecondary,
             ),
 
             // Label/Button Metinler
-            labelLarge: GoogleFonts.poppins(
+            labelLarge: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: darkTextPrimary,
             ),
-            labelMedium: GoogleFonts.poppins(
+            labelMedium: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: darkTextPrimary,
             ),
-            labelSmall: GoogleFonts.poppins(
+            labelSmall: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: darkTextSecondary,
@@ -393,7 +398,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: darkTextPrimary,
@@ -406,7 +411,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryOrange,
           foregroundColor: Colors.white,
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -421,7 +426,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryOrange,
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -436,7 +441,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryOrange,
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -467,8 +472,14 @@ class AppTheme {
           horizontal: 16,
           vertical: 16,
         ),
-        hintStyle: GoogleFonts.poppins(color: darkTextTertiary, fontSize: 14),
-        labelStyle: GoogleFonts.poppins(color: darkTextSecondary, fontSize: 14),
+        hintStyle: GoogleFonts.plusJakartaSans(
+          color: darkTextTertiary,
+          fontSize: 14,
+        ),
+        labelStyle: GoogleFonts.plusJakartaSans(
+          color: darkTextSecondary,
+          fontSize: 14,
+        ),
       ),
 
       // Card Theme (Dark Mode)
@@ -517,7 +528,10 @@ class AppTheme {
       // Chip Theme (Dark Mode)
       chipTheme: ChipThemeData(
         backgroundColor: darkTertiarySurface,
-        labelStyle: GoogleFonts.poppins(color: darkTextPrimary, fontSize: 12),
+        labelStyle: GoogleFonts.plusJakartaSans(
+          color: darkTextPrimary,
+          fontSize: 12,
+        ),
         selectedColor: primaryOrange.withOpacity(0.2),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -579,7 +593,7 @@ class AppTheme {
   static final ButtonStyle primaryButtonVendor = ElevatedButton.styleFrom(
     backgroundColor: vendorPrimary,
     foregroundColor: Colors.white,
-    textStyle: poppins(fontSize: 16, fontWeight: FontWeight.w600),
+    textStyle: plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radiusLarge),
     ),
@@ -590,7 +604,7 @@ class AppTheme {
   static final ButtonStyle primaryButtonCourier = ElevatedButton.styleFrom(
     backgroundColor: courierPrimary,
     foregroundColor: Colors.white,
-    textStyle: poppins(fontSize: 16, fontWeight: FontWeight.w600),
+    textStyle: plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radiusLarge),
     ),
@@ -599,6 +613,28 @@ class AppTheme {
   );
 
   // Farklı fontlar için yardımcı metodlar
+  static TextStyle plusJakartaSans({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? height,
+    TextDecoration? decoration,
+    double? letterSpacing,
+    FontStyle? fontStyle,
+  }) {
+    return GoogleFonts.plusJakartaSans(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      height: height,
+      decoration: decoration,
+      letterSpacing: letterSpacing,
+      fontStyle: fontStyle,
+    );
+  }
+
+  // Geriye dönük uyumluluk için poppins() metodu (plusJakartaSans'a yönlendirir)
+  // Backward compatibility: poppins() now redirects to plusJakartaSans()
   static TextStyle poppins({
     double? fontSize,
     FontWeight? fontWeight,
@@ -608,7 +644,7 @@ class AppTheme {
     double? letterSpacing,
     FontStyle? fontStyle,
   }) {
-    return GoogleFonts.poppins(
+    return plusJakartaSans(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
@@ -800,11 +836,11 @@ class AppTheme {
         horizontal: spacingMedium,
         vertical: spacingMedium,
       ),
-      hintStyle: GoogleFonts.poppins(
+      hintStyle: GoogleFonts.plusJakartaSans(
         color: isDark ? darkTextTertiary : textHint,
         fontSize: 14,
       ),
-      labelStyle: GoogleFonts.poppins(
+      labelStyle: GoogleFonts.plusJakartaSans(
         color: isDark ? darkTextSecondary : textSecondary,
         fontSize: 14,
       ),

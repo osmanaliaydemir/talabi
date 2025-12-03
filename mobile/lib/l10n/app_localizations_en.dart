@@ -87,6 +87,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get total => 'Total';
 
   @override
+  String get totalPrice => 'Total Price';
+
+  @override
   String get checkout => 'Checkout';
 
   @override
@@ -1809,7 +1812,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get promotionalBannerTitle => 'It\'s Going to Be a Great Day!';
+  String get promotionalBannerTitle => 'Hungry?\nWe’ve got you covered!';
 
   @override
   String get promotionalBannerSubtitle =>
@@ -1831,4 +1834,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String addressUpdateFailed(Object error) {
     return 'Address update failed: $error';
   }
+
+  @override
+  String unreadNotificationsCount(Object count) {
+    return '$count unread notifications';
+  }
+
+  @override
+  String get campaigns => 'Campaigns';
+
+  @override
+  String productsCount(Object count) {
+    return '$count products';
+  }
+
+  @override
+  String campaignsCount(Object count) {
+    return '$count campaigns';
+  }
+
+  @override
+  String vendorsCount(Object count) {
+    return '$count businesses';
+  }
+
+  @override
+  String get similarProducts => 'Similar Products';
+
+  @override
+  String get areYouHungry => 'Are you Hungry?';
+
+  @override
+  String get onboardingDescription =>
+      'Request what you need, and we\'ll deliver it to you as fast as possible.\nOrdering with Talabi is now as easy as a single touch.';
+
+  @override
+  String get unlockDescription => 'Slide to Talabî!';
 }

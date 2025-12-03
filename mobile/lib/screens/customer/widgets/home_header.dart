@@ -78,7 +78,6 @@ class _HomeHeaderState extends State<HomeHeader> {
           end: Alignment.bottomRight,
           colors: [AppTheme.primaryOrange, AppTheme.darkOrange],
         ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),

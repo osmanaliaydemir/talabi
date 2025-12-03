@@ -7,7 +7,8 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/screens/customer/widgets/persistent_bottom_nav_bar.dart';
+
+import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,6 +31,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isDescriptionExpanded = false;
   List<Review> _reviews = [];
   bool _isLoadingReviews = false;
+  List<Product> _similarProducts = [];
+  bool _isLoadingSimilarProducts = false;
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _isLoading = false;
       _checkFavorite();
       _loadReviews();
+      _loadSimilarProducts();
     } else {
       _loadProduct();
     }
@@ -53,6 +57,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       });
       _checkFavorite();
       _loadReviews();
+      _loadSimilarProducts();
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -118,6 +123,42 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       print('Error loading reviews: $e');
       setState(() {
         _isLoadingReviews = false;
+      });
+    }
+  }
+
+  Future<void> _loadSimilarProducts() async {
+    if (_product == null) return;
+    setState(() {
+      _isLoadingSimilarProducts = true;
+    });
+    try {
+      // Fetch products from the same vendor
+      final products = await _apiService.getProducts(_product!.vendorId);
+
+      // Filter products:
+      // 1. Exclude current product
+      // 2. If categoryId exists, filter by same category
+      // 3. Take first 5
+      final similar = products
+          .where((p) {
+            bool isNotCurrent = p.id != _product!.id;
+            bool isSameCategory = _product!.categoryId != null
+                ? p.categoryId == _product!.categoryId
+                : true;
+            return isNotCurrent && isSameCategory;
+          })
+          .take(5)
+          .toList();
+
+      setState(() {
+        _similarProducts = similar;
+        _isLoadingSimilarProducts = false;
+      });
+    } catch (e) {
+      print('Error loading similar products: $e');
+      setState(() {
+        _isLoadingSimilarProducts = false;
       });
     }
   }
@@ -260,8 +301,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context, listen: true);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_isLoading) {
       return Scaffold(
@@ -275,7 +315,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     if (_product == null) {
-      final l10n = AppLocalizations.of(context)!;
       return Scaffold(
         body: Container(
           color: Colors.white,
@@ -285,426 +324,244 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: Stack(
         children: [
-          // Product Image Background
+          // 1. Scrollable Area (Image + Content)
           Positioned.fill(
-            bottom: MediaQuery.of(context).size.height * 0.5,
-            child: _product!.imageUrl != null
-                ? Hero(
-                    tag: 'product-${_product!.id}',
-                    child: Image.network(
-                      _product!.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.image, size: 100),
-                        );
-                      },
-                    ),
-                  )
-                : Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image, size: 100),
-                  ),
-          ),
-          // Top Action Buttons
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: SingleChildScrollView(
+              child: Stack(
                 children: [
-                  // Back Button
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, size: 20),
-                      iconSize: 20,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                  // Favorite, Share and Rating Buttons
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            _isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            size: 20,
-                            color: _isFavorite ? Colors.red : Colors.black,
+                  // Header Image
+                  SizedBox(
+                    height: 300,
+                    width: double.infinity,
+                    child: _product!.imageUrl != null
+                        ? Image.network(
+                            _product!.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: const Icon(
+                                  Icons.image,
+                                  size: 80,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: Colors.grey[300],
+                            child: const Icon(
+                              Icons.image,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
                           ),
-                          iconSize: 20,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: _toggleFavorite,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.share, size: 20),
-                          iconSize: 20,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () {
-                            _shareProduct();
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.star_outline,
-                            size: 20,
-                            color: AppTheme.primaryOrange,
-                          ),
-                          iconSize: 20,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () {
-                            _showReviewDialog(isVendor: true);
-                          },
-                        ),
-                      ),
-                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-          // Bottom Content Card
-          DraggableScrollableSheet(
-            initialChildSize: 0.6,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
+
+                  // Content
+                  Padding(
+                    padding: const EdgeInsets.only(top: 220, bottom: 100),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Drag Handle
-                        Center(
-                          child: Container(
-                            width: 40,
-                            height: 4,
-                            margin: const EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(2),
-                            ),
+                        // Floating Info Card
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
                           ),
-                        ),
-                        // Product Name and Rating
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    _product!.name,
-                                    style: const TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _product!.name,
+                                          style: AppTheme.poppins(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF1A1A1A),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.location_on,
+                                              size: 16,
+                                              color: Color(0xFFCE181B),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                _product!.vendorName ??
+                                                    'Talabi Vendor',
+                                                style: AppTheme.poppins(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[500],
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  if (_product!.vendorName != null)
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.by(_product!.vendorName!),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey[600],
-                                      ),
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFCE181B),
+                                      shape: BoxShape.circle,
                                     ),
-                                ],
-                              ),
-                            ),
-                            // Rating
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryOrange,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.star,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    '4.7',
-                                    style: TextStyle(
+                                    child: const Icon(
+                                      Icons.map,
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      size: 20,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        // Vendor Section
-                        Row(
-                          children: [
-                            // Vendor Icon
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: AppTheme.vendorPrimary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppTheme.vendorPrimary.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  width: 2,
-                                ),
+                              const SizedBox(height: 20),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFEEEEEE),
                               ),
-                              child: Icon(
-                                Icons.store,
-                                size: 30,
-                                color: AppTheme.vendorPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Vendor Name
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _product!.vendorName ?? 'Talabi',
-                                    style: AppTheme.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimary,
-                                    ),
+                                  _buildInfoItem(
+                                    icon: Icons.star,
+                                    iconColor: Colors.orange,
+                                    text: '4.9',
+                                    subText: '(200+)',
+                                  ),
+                                  _buildInfoItem(
+                                    icon: Icons.access_time_filled,
+                                    iconColor: const Color(0xFFCE181B),
+                                    text: '10 - 20 min',
+                                    subText: l10n.deliveryTime,
+                                  ),
+                                  _buildInfoItem(
+                                    icon: Icons.delivery_dining,
+                                    iconColor: Colors.green,
+                                    text: 'Free',
+                                    subText: l10n.deliveryFee,
                                   ),
                                 ],
                               ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Description / Recommended Menu Title
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            l10n.description,
+                            style: AppTheme.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A1A1A),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        // Description
-                        Text(
-                          AppLocalizations.of(context)!.description,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _product!.description ??
-                              AppLocalizations.of(context)!.noDescription,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                            height: 1.5,
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            _product!.description ?? l10n.noDescription,
+                            style: AppTheme.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              height: 1.5,
+                            ),
+                            maxLines: _isDescriptionExpanded ? null : 3,
+                            overflow: _isDescriptionExpanded
+                                ? TextOverflow.visible
+                                : TextOverflow.ellipsis,
                           ),
-                          maxLines: _isDescriptionExpanded ? null : 3,
-                          overflow: _isDescriptionExpanded
-                              ? TextOverflow.visible
-                              : TextOverflow.ellipsis,
                         ),
                         if ((_product!.description?.length ?? 0) > 100)
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isDescriptionExpanded =
-                                    !_isDescriptionExpanded;
-                              });
-                            },
-                            child: Text(
-                              _isDescriptionExpanded
-                                  ? AppLocalizations.of(context)!.showLess
-                                  : AppLocalizations.of(context)!.readMore,
-                              style: TextStyle(color: colorScheme.primary),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isDescriptionExpanded =
+                                      !_isDescriptionExpanded;
+                                });
+                              },
+                              child: Text(
+                                _isDescriptionExpanded
+                                    ? l10n.showLess
+                                    : l10n.readMore,
+                                style: AppTheme.poppins(
+                                  color: AppTheme.primaryOrange,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
+
                         const SizedBox(height: 24),
-                        // Delivery Info Cards
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.delivery_dining,
-                                          color: AppTheme.primaryOrange,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          AppLocalizations.of(
-                                            context,
-                                          )!.deliveryTime,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      '25 min',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.shopping_cart,
-                                          color: AppTheme.primaryOrange,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          AppLocalizations.of(
-                                            context,
-                                          )!.deliveryType,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      _product!.vendorName ?? 'Talabi',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 32),
+
                         // Reviews Section
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Builder(
-                              builder: (context) {
-                                final l10n = AppLocalizations.of(context)!;
-                                return Text(
-                                  l10n.reviews(_reviews.length),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                l10n.reviews(_reviews.length),
+                                style: AppTheme.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _hasUserReviewed()
+                                    ? null
+                                    : _showReviewDialog,
+                                child: Text(
+                                  l10n.writeReview,
+                                  style: AppTheme.poppins(
+                                    color: AppTheme.primaryOrange,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                );
-                              },
-                            ),
-                            Builder(
-                              builder: (context) {
-                                final localizations = AppLocalizations.of(
-                                  context,
-                                );
-                                return TextButton(
-                                  onPressed: _hasUserReviewed()
-                                      ? null
-                                      : _showReviewDialog,
-                                  child: Text(
-                                    localizations?.writeReview ??
-                                        'Write a Review',
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         if (_isLoadingReviews)
                           Center(
                             child: CircularProgressIndicator(
@@ -712,25 +569,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           )
                         else if (_reviews.isEmpty)
-                          Text(
-                            AppLocalizations.of(context)!.noReviewsYet,
-                            style: const TextStyle(color: Colors.grey),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              l10n.noReviewsYet,
+                              style: AppTheme.poppins(color: Colors.grey),
+                            ),
                           )
                         else
-                          ListView.builder(
+                          ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: _reviews.length > 3
                                 ? 3
                                 : _reviews.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final review = _reviews[index];
                               return Container(
-                                margin: const EdgeInsets.only(bottom: 16),
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[50],
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey[200]!),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -741,8 +604,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       children: [
                                         Text(
                                           review.userFullName,
-                                          style: const TextStyle(
+                                          style: AppTheme.poppins(
                                             fontWeight: FontWeight.bold,
+                                            fontSize: 14,
                                           ),
                                         ),
                                         Row(
@@ -753,21 +617,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                               starIndex < review.rating
                                                   ? Icons.star
                                                   : Icons.star_border,
-                                              color: AppTheme.primaryOrange,
-                                              size: 16,
+                                              color: Colors.orange,
+                                              size: 14,
                                             );
                                           }),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(review.comment),
-                                    const SizedBox(height: 4),
                                     Text(
-                                      review.createdAt.toString().split(' ')[0],
-                                      style: TextStyle(
-                                        color: Colors.grey[500],
-                                        fontSize: 12,
+                                      review.comment,
+                                      style: AppTheme.poppins(
+                                        fontSize: 13,
+                                        color: Colors.grey[700],
                                       ),
                                     ),
                                   ],
@@ -775,70 +637,156 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               );
                             },
                           ),
-                        if (_reviews.length > 3)
-                          Center(
-                            child: TextButton(
-                              onPressed: () {
-                                // Show all reviews page
-                              },
-                              child: Text(
-                                AppLocalizations.of(context)!.seeAllReviews,
+
+                        // Similar Products Section
+                        if (_similarProducts.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              l10n.similarProducts,
+                              style: AppTheme.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1A1A1A),
                               ),
                             ),
                           ),
-                        const SizedBox(height: 100), // Bottom padding for FAB
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 270,
+                            child: ListView.separated(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _similarProducts.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(width: 8),
+                              itemBuilder: (context, index) {
+                                return ProductCard(
+                                  product: _similarProducts[index],
+                                  width: 180,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ProductDetailScreen(
+                                              productId:
+                                                  _similarProducts[index].id,
+                                              product: _similarProducts[index],
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           ),
-          // Bottom Action Bar
+
+          // 3. Top Action Buttons
           Positioned(
+            top: 0,
             left: 0,
             right: 0,
-            bottom: 0,
             child: SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildCircleButton(
+                      icon: Icons.arrow_back,
+                      onTap: () => Navigator.pop(context),
+                    ),
+                    Row(
+                      children: [
+                        _buildCircleButton(
+                          icon: _isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: _isFavorite ? Colors.red : Colors.black,
+                          onTap: _toggleFavorite,
+                        ),
+                        const SizedBox(width: 12),
+                        _buildCircleButton(
+                          icon: Icons.share,
+                          onTap: _shareProduct,
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+
+          // 4. Bottom Bar
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
                 child: Row(
                   children: [
-                    // Price
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        CurrencyFormatter.format(
-                          _product!.price,
-                          _product!.currency,
-                        ),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.totalPrice,
+                            style: AppTheme.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            CurrencyFormatter.format(
+                              _product!.price,
+                              _product!.currency,
+                            ),
+                            style: AppTheme.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    // Add to Cart Button or Quantity Controls
-                    Expanded(child: _buildCartButton(context, cart)),
+                    const SizedBox(width: 20),
+                    _buildBottomActionButton(context, cart),
                   ],
                 ),
               ),
@@ -846,120 +794,150 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const PersistentBottomNavBar(),
+      bottomNavigationBar:
+          null, // Removed persistent bottom nav bar to match design focus
     );
   }
 
-  Widget _buildCartButton(BuildContext context, CartProvider cart) {
+  Widget _buildInfoItem({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+    required String subText,
+  }) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 4),
+            Text(
+              text,
+              style: AppTheme.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1A1A1A),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subText,
+          style: AppTheme.poppins(fontSize: 12, color: Colors.grey[500]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = Colors.black,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: color),
+      ),
+    );
+  }
+
+  Widget _buildBottomActionButton(BuildContext context, CartProvider cart) {
     final l10n = AppLocalizations.of(context)!;
     final cartItem = cart.items[_product!.id];
     final quantity = cartItem?.quantity ?? 0;
 
     if (quantity > 0) {
-      // Quantity controls
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Minus button
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.remove, color: Colors.grey, size: 18),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+      return Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFFCE181B),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove, color: Colors.white, size: 20),
               onPressed: () async {
                 try {
                   await cart.decreaseQuantity(_product!.id);
                 } catch (e) {
-                  if (context.mounted) {
-                    ToastMessage.show(
-                      context,
-                      message: l10n.errorWithMessage(e.toString()),
-                      isSuccess: false,
-                    );
-                  }
+                  // Handle error
                 }
               },
-            ),
-          ),
-          // Quantity display
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              '$quantity',
-              style: AppTheme.poppins(
-                color: Colors.grey[800],
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          // Plus button
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryOrange,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.add, color: Colors.white, size: 18),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              '$quantity',
+              style: AppTheme.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 16),
+            IconButton(
+              icon: const Icon(Icons.add, color: Colors.white, size: 20),
               onPressed: () async {
                 try {
                   await cart.increaseQuantity(_product!.id);
                 } catch (e) {
-                  if (context.mounted) {
-                    ToastMessage.show(
-                      context,
-                      message: l10n.errorWithMessage(e.toString()),
-                      isSuccess: false,
-                    );
-                  }
+                  // Handle error
                 }
               },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     } else {
-      // Add to Cart Button
-      return ElevatedButton(
-        onPressed: () {
-          cart
-              .addItem(_product!, context)
-              .then((_) {
-                ToastMessage.show(
-                  context,
-                  message: l10n.productAddedToCart(_product!.name),
-                  isSuccess: true,
-                );
-              })
-              .catchError((e) {
-                // Error is handled by CartProvider (popup shown)
-              });
+      return GestureDetector(
+        onTap: () {
+          cart.addItem(_product!, context).then((_) {
+            ToastMessage.show(
+              context,
+              message: l10n.productAddedToCart(_product!.name),
+              isSuccess: true,
+            );
+          });
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppTheme.primaryOrange,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: AppTheme.primaryOrange, width: 2),
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          decoration: BoxDecoration(
+            color: const Color(0xFFCE181B),
+            borderRadius: BorderRadius.circular(100),
           ),
-        ),
-        child: Text(
-          l10n.addToCart,
-          style: AppTheme.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primaryOrange,
+          alignment: Alignment.center,
+          child: Row(
+            children: [
+              const Icon(
+                Icons.shopping_bag_outlined,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.addToCart,
+                style: AppTheme.poppins(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       );

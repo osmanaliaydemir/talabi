@@ -28,10 +28,21 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
     _loadFavoriteStatus();
   }
 
+  int? _productCount;
+
   void _loadProducts() {
     // Limitsiz ürün çekmek için limit parametresini çok yüksek bir değer yapıyoruz
     // veya API'den tüm ürünleri çekiyoruz
-    _productsFuture = _apiService.getPopularProducts(limit: 1000);
+    _productsFuture = _apiService.getPopularProducts(limit: 1000).then((
+      products,
+    ) {
+      if (mounted) {
+        setState(() {
+          _productCount = products.length;
+        });
+      }
+      return products;
+    });
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -99,7 +110,9 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
         children: [
           HomeHeader(
             title: localizations.picksForYou,
-            subtitle: localizations.products,
+            subtitle: _productCount != null
+                ? localizations.productsCount(_productCount!)
+                : localizations.products,
             leadingIcon: Icons.star,
             showBackButton: true,
             showCart: true,

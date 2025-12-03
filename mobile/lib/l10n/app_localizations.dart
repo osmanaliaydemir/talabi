@@ -256,6 +256,12 @@ abstract class AppLocalizations {
   /// **'Total'**
   String get total;
 
+  /// No description provided for @totalPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Price'**
+  String get totalPrice;
+
   /// No description provided for @checkout.
   ///
   /// In en, this message translates to:
@@ -3433,7 +3439,7 @@ abstract class AppLocalizations {
   /// No description provided for @promotionalBannerTitle.
   ///
   /// In en, this message translates to:
-  /// **'It\'s Going to Be a Great Day!'**
+  /// **'Hungry?\nWe’ve got you covered!'**
   String get promotionalBannerTitle;
 
   /// No description provided for @promotionalBannerSubtitle.
@@ -3471,6 +3477,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Address update failed: {error}'**
   String addressUpdateFailed(Object error);
+
+  /// No description provided for @unreadNotificationsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unread notifications'**
+  String unreadNotificationsCount(Object count);
+
+  /// No description provided for @campaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get campaigns;
+
+  /// No description provided for @productsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} products'**
+  String productsCount(Object count);
+
+  /// No description provided for @campaignsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} campaigns'**
+  String campaignsCount(Object count);
+
+  /// No description provided for @vendorsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} businesses'**
+  String vendorsCount(Object count);
+
+  /// No description provided for @similarProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar Products'**
+  String get similarProducts;
+
+  /// No description provided for @areYouHungry.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you Hungry?'**
+  String get areYouHungry;
+
+  /// No description provided for @onboardingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Request what you need, and we\'ll deliver it to you as fast as possible.\nOrdering with Talabi is now as easy as a single touch.'**
+  String get onboardingDescription;
+
+  /// No description provided for @unlockDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide to Talabî!'**
+  String get unlockDescription;
 }
 
 class _AppLocalizationsDelegate

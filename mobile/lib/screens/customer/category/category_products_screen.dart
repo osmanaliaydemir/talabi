@@ -35,6 +35,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     _loadFavoriteStatus();
   }
 
+  int? _productCount;
+
   void _loadProducts() {
     _productsFuture = _apiService
         .searchProducts(
@@ -44,9 +46,15 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             pageSize: 50, // Fetch more items for the category page
           ),
         )
-        .then(
-          (pagedResult) => pagedResult.items.map((e) => e.toProduct()).toList(),
-        );
+        .then((pagedResult) {
+          final products = pagedResult.items.map((e) => e.toProduct()).toList();
+          if (mounted) {
+            setState(() {
+              _productCount = products.length;
+            });
+          }
+          return products;
+        });
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -111,7 +119,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         children: [
           HomeHeader(
             title: widget.categoryName,
-            subtitle: localizations.products,
+            subtitle: _productCount != null
+                ? localizations.productsCount(_productCount!)
+                : localizations.products,
             leadingIcon: Icons.category,
             showBackButton: true,
             showCart: true,

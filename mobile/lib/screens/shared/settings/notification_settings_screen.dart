@@ -4,6 +4,7 @@ import 'package:mobile/models/notification_settings.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -193,90 +194,12 @@ class _NotificationSettingsScreenState
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMedium,
-            vertical: AppTheme.spacingMedium,
-          ),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
-                  decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios_new,
-                    color: AppTheme.textOnPrimary,
-                    size: 18,
-                  ),
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Icon
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
-                decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: Icon(
-                  Icons.notifications,
-                  color: AppTheme.textOnPrimary,
-                  size: AppTheme.iconSizeSmall,
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Title
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.notificationSettings,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      AppLocalizations.of(
-                        context,
-                      )!.notificationSettingsDescription,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return SharedHeader(
+      title: AppLocalizations.of(context)!.notificationSettings,
+      subtitle: AppLocalizations.of(context)!.notificationSettingsDescription,
+      icon: Icons.notifications,
+      showBackButton: true,
+      onBack: () => Navigator.of(context).pop(),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:mobile/models/promotional_banner.dart';
 import 'package:mobile/services/api_request_scheduler.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
+import 'package:mobile/models/customer_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _requestPermitKey = '_apiRequestPermit';
@@ -654,6 +655,27 @@ class ApiService {
     } catch (e) {
       print('Error registering device token: $e');
       // Don't rethrow, just log, as this shouldn't block app usage
+    }
+  }
+
+  Future<List<CustomerNotification>> getCustomerNotifications() async {
+    try {
+      final response = await _dio.get('/customer/notifications');
+      final dynamic data = response.data;
+      List<dynamic> items;
+
+      if (data is Map<String, dynamic> && data.containsKey('items')) {
+        items = data['items'];
+      } else if (data is List) {
+        items = data;
+      } else {
+        items = [];
+      }
+
+      return items.map((json) => CustomerNotification.fromJson(json)).toList();
+    } catch (e) {
+      print('Error fetching customer notifications: $e');
+      rethrow;
     }
   }
 
@@ -1597,17 +1619,6 @@ class ApiService {
       return response.data['items'] ?? [];
     } catch (e) {
       print('Error fetching vendor notifications: $e');
-      rethrow;
-    }
-  }
-
-  // Customer notifications
-  Future<List<dynamic>> getCustomerNotifications() async {
-    try {
-      final response = await _dio.get('/customer/notifications');
-      return response.data['items'] ?? [];
-    } catch (e) {
-      print('Error fetching customer notifications: $e');
       rethrow;
     }
   }

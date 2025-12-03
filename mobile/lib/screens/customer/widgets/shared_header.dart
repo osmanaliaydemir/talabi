@@ -61,20 +61,6 @@ class SharedHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: AppTheme.spacingSmall),
               ],
-              // Icon
-              Container(
-                padding: const EdgeInsets.all(AppTheme.spacingSmall),
-                decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: Icon(
-                  icon ?? Icons.person,
-                  color: AppTheme.textOnPrimary,
-                  size: AppTheme.iconSizeSmall,
-                ),
-              ),
-              const SizedBox(width: AppTheme.spacingSmall),
               // Title and Subtitle
               Expanded(
                 child: Column(
@@ -99,6 +85,20 @@ class SharedHeader extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacingSmall),
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacingSmall),
+                decoration: BoxDecoration(
+                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: Icon(
+                  icon ?? Icons.person,
+                  color: AppTheme.textOnPrimary,
+                  size: AppTheme.iconSizeSmall,
                 ),
               ),
               if (action != null) ...[

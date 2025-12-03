@@ -5,14 +5,20 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/promotional_banner.dart';
-import 'package:mobile/screens/customer/product/product_list_screen.dart';
+
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
-import 'package:mobile/screens/customer/widgets/home_header.dart';
+import 'package:mobile/screens/customer/widgets/special_home_header.dart';
 import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/screens/customer/category/categories_screen.dart';
 import 'package:mobile/screens/customer/product/popular_product_list_screen.dart';
+import 'package:mobile/screens/customer/notifications_screen.dart';
+import 'package:mobile/widgets/common/bouncing_circle.dart';
+import 'package:mobile/screens/customer/campaigns/campaigns_screen.dart';
+import 'package:mobile/screens/customer/vendor/vendor_list_screen.dart';
+import 'package:mobile/screens/customer/vendor/vendor_detail_screen.dart';
+import 'package:mobile/screens/customer/search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Map<String, dynamic>>> _categoriesFuture;
   List<dynamic> _addresses = [];
   Map<String, dynamic>? _selectedAddress;
-  bool _isLoadingAddresses = false;
+
   final Map<String, bool> _favoriteStatus =
       {}; // Track favorite status for each product
 
@@ -154,9 +160,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAddresses() async {
-    setState(() {
-      _isLoadingAddresses = true;
-    });
     try {
       final addresses = await _apiService.getAddresses();
       setState(() {
@@ -166,13 +169,9 @@ class _HomeScreenState extends State<HomeScreen> {
           (addr) => addr['isDefault'] == true,
           orElse: () => addresses.isNotEmpty ? addresses.first : null,
         );
-        _isLoadingAddresses = false;
       });
     } catch (e) {
       print('Error loading addresses: $e');
-      setState(() {
-        _isLoadingAddresses = false;
-      });
     }
   }
 
@@ -221,6 +220,21 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  String _getAddressDisplayText(
+    Map<String, dynamic> address,
+    AppLocalizations localizations,
+  ) {
+    final district = address['district'] ?? '';
+    final city = address['city'] ?? '';
+    if (district.isNotEmpty && city.isNotEmpty) {
+      return '$district, $city';
+    } else if (address['fullAddress'] != null &&
+        address['fullAddress'].toString().isNotEmpty) {
+      return address['fullAddress'].toString();
+    }
+    return localizations.address;
   }
 
   // Helper to map icon string to IconData
@@ -331,30 +345,11 @@ class _HomeScreenState extends State<HomeScreen> {
               final currentBanner = _banners[index];
               // Bottom navigation menu renklerini kullan
               // selectedItemColor: primaryOrange, unselectedItemColor: Colors.grey
-              final List<List<Color>> colorCombinations = [
-                [
-                  AppTheme.primaryOrange,
-                  AppTheme.darkOrange,
-                ], // Turuncu tonları (selected)
-                [
-                  const Color(0xFF757575), // Colors.grey.shade600
-                  const Color(0xFF424242), // Colors.grey.shade800
-                ], // Gri tonları (unselected)
-                [
-                  const Color(0xCCFF9800), // primaryOrange 80% opacity
-                  const Color(0xFF616161), // Colors.grey.shade700
-                ], // Turuncu-gri karışımı
-                [
-                  const Color(0xFF9E9E9E), // Colors.grey.shade500
-                  const Color(0x99FF9800), // primaryOrange 60% opacity
-                ], // Gri-turuncu karışımı
-                [
-                  AppTheme.lightOrange,
-                  const Color(0xFF757575), // Colors.grey.shade600
-                ], // Açık turuncu-gri
+              // Use header background color for all banners
+              final gradientColors = [
+                const Color(0xFFCE181B),
+                const Color(0xFFCE181B),
               ];
-              final colorIndex = index % colorCombinations.length;
-              final gradientColors = colorCombinations[colorIndex];
 
               // Her banner için farklı icon
               final List<IconData> bannerIcons = [
@@ -468,41 +463,51 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(width: 12),
                     // Icon container - her banner için farklı icon
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusMedium,
-                        ),
-                      ),
-                      child: currentBanner.imageUrl != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusMedium,
-                              ),
-                              child: Image.network(
-                                currentBanner.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                    bannerIcon,
-                                    size: 40,
-                                    color: AppTheme.textOnPrimary.withValues(
-                                      alpha: 0.9,
+                    // Icon container - her banner için farklı icon
+                    SizedBox(
+                      width: 120,
+                      height: 120,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            right: -18,
+                            bottom: -35,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                BouncingCircle(
+                                  color: Colors.white.withOpacity(0.2),
+                                ),
+                                if (currentBanner.imageUrl != null)
+                                  ClipOval(
+                                    child: Image.network(
+                                      currentBanner.imageUrl!,
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Icon(
+                                              bannerIcon,
+                                              size: 50,
+                                              color: Colors.white,
+                                            );
+                                          },
                                     ),
-                                  );
-                                },
-                              ),
-                            )
-                          : Icon(
-                              bannerIcon,
-                              size: 40,
-                              color: AppTheme.textOnPrimary.withValues(
-                                alpha: 0.9,
-                              ),
+                                  )
+                                else
+                                  Icon(
+                                    bannerIcon,
+                                    size: 50,
+                                    color: Colors.white,
+                                  ),
+                              ],
                             ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -618,58 +623,250 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      body: Column(
-        children: [
-          // Header
-          // Header
-          HomeHeader(
-            title: localizations.discover,
-            subtitle: 'Find your favorite products',
-            leadingIcon: Icons.explore,
-            showCart: true,
-            showSearch: true,
-            showAddress: true,
-            selectedAddress: _selectedAddress,
-            isLoadingAddress: _isLoadingAddresses,
-            onAddressTap: _showAddressBottomSheet,
-          ),
-          // Main Content
-          Expanded(
-            child: RefreshIndicator(
-              color: AppTheme.primaryOrange,
-              onRefresh: () async {
-                setState(() {
-                  _vendorsFuture = _apiService.getVendors();
-                  _popularProductsFuture = _apiService.getPopularProducts(
-                    limit: 8,
+      body: RefreshIndicator(
+        color: AppTheme.primaryOrange,
+        onRefresh: () async {
+          setState(() {
+            _vendorsFuture = _apiService.getVendors();
+            _popularProductsFuture = _apiService.getPopularProducts(limit: 8);
+            _categoriesFuture = _apiService.getCategories(
+              language: AppLocalizations.of(context)?.localeName,
+            );
+          });
+          await _loadAddresses();
+          await _loadFavoriteStatus();
+          await _loadBanners();
+        },
+        child: CustomScrollView(
+          slivers: [
+            // Header (Sticky)
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _HomeHeaderDelegate(
+                expandedHeight: 310,
+                collapsedHeight:
+                    kToolbarHeight + MediaQuery.of(context).padding.top,
+                paddingTop: MediaQuery.of(context).padding.top,
+                onLocationTap: _showAddressBottomSheet,
+                onNotificationTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
                   );
-                  _categoriesFuture = _apiService.getCategories(
-                    language: AppLocalizations.of(context)?.localeName,
+                },
+                onSearchTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SearchScreen()),
                   );
-                });
-                await _loadAddresses();
-                await _loadFavoriteStatus();
-                await _loadBanners();
-              },
-              child: CustomScrollView(
-                slivers: [
-                  // Promotional Banner
-                  SliverToBoxAdapter(
-                    child: _banners.isEmpty
-                        ? const SizedBox.shrink()
-                        : Padding(
-                            padding: EdgeInsets.only(
-                              top: AppTheme.spacingSmall,
-                              bottom: AppTheme.spacingSmall,
-                            ),
-                            child: _buildPromotionalBanner(),
+                },
+                currentLocation: _selectedAddress != null
+                    ? _getAddressDisplayText(_selectedAddress!, localizations)
+                    : null,
+              ),
+            ),
+            // Spacing
+            SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacingSmall)),
+            // Categories Section
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingMedium,
+                      vertical: AppTheme.spacingSmall,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          localizations.categories,
+                          style: AppTheme.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
                           ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CategoriesScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            localizations.viewAll,
+                            style: AppTheme.poppins(
+                              color: AppTheme.primaryOrange,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  // Categories Section
-                  SliverToBoxAdapter(
-                    child: Column(
+                  SizedBox(
+                    height: 100,
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
+                      future: _categoriesFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryOrange,
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError ||
+                            !snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              localizations.categoryNotFound,
+                              style: AppTheme.poppins(
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final categories = snapshot.data!;
+                        // Sort by displayOrder if available, then by name
+                        final sortedCategories =
+                            List<Map<String, dynamic>>.from(categories)..sort((
+                              a,
+                              b,
+                            ) {
+                              final orderA = a['displayOrder'] as int? ?? 999;
+                              final orderB = b['displayOrder'] as int? ?? 999;
+                              if (orderA != orderB) {
+                                return orderA.compareTo(orderB);
+                              }
+                              final nameA = (a['name'] as String).toLowerCase();
+                              final nameB = (b['name'] as String).toLowerCase();
+                              return nameA.compareTo(nameB);
+                            });
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingMedium,
+                          ),
+                          itemCount: sortedCategories.length,
+                          itemBuilder: (context, index) {
+                            final category = sortedCategories[index];
+                            return _buildCategoryCard(category);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Picks For You Section (Popular Products)
+            SliverToBoxAdapter(
+              child: FutureBuilder<List<Product>>(
+                future: _popularProductsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Column(
+                      children: [
+                        SizedBox(height: AppTheme.spacingSmall),
+                        SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryOrange,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final products = snapshot.data!;
+                  if (products.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: AppTheme.spacingSmall),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMedium,
+                          vertical: AppTheme.spacingSmall,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              localizations.picksForYou,
+                              style: AppTheme.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PopularProductListScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                localizations.viewAll,
+                                style: AppTheme.poppins(
+                                  color: AppTheme.primaryOrange,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 240,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingSmall,
+                          ),
+                          itemCount: products.length,
+                          itemBuilder: (context, index) {
+                            final product = products[index];
+                            return _buildPicksForYouCard(context, product);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            // Promotional Banner Section (Campaigns)
+            SliverToBoxAdapter(
+              child: _banners.isNotEmpty
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        SizedBox(height: AppTheme.spacingSmall),
                         Padding(
                           padding: EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingMedium,
@@ -679,7 +876,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                localizations.categories,
+                                localizations.campaigns,
                                 style: AppTheme.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -692,7 +889,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          const CategoriesScreen(),
+                                          const CampaignsScreen(),
                                     ),
                                   );
                                 },
@@ -707,229 +904,112 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: AppTheme.spacingSmall,
+                            right: AppTheme.spacingSmall,
+                            bottom: AppTheme.spacingMedium,
+                          ),
+                          child: _buildPromotionalBanner(),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            // Popular Vendors Section
+            SliverToBoxAdapter(
+              child: FutureBuilder<List<Vendor>>(
+                future: _vendorsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Column(
+                      children: [
+                        SizedBox(height: AppTheme.spacingSmall),
                         SizedBox(
-                          height: 100,
-                          child: FutureBuilder<List<Map<String, dynamic>>>(
-                            future: _categoriesFuture,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppTheme.primaryOrange,
-                                  ),
-                                );
-                              }
-
-                              if (snapshot.hasError ||
-                                  !snapshot.hasData ||
-                                  snapshot.data!.isEmpty) {
-                                return Center(
-                                  child: Text(
-                                    localizations.categoryNotFound,
-                                    style: AppTheme.poppins(
-                                      color: AppTheme.textSecondary,
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              final categories = snapshot.data!;
-                              // Sort by displayOrder if available, then by name
-                              final sortedCategories =
-                                  List<Map<String, dynamic>>.from(categories)
-                                    ..sort((a, b) {
-                                      final orderA =
-                                          a['displayOrder'] as int? ?? 999;
-                                      final orderB =
-                                          b['displayOrder'] as int? ?? 999;
-                                      if (orderA != orderB) {
-                                        return orderA.compareTo(orderB);
-                                      }
-                                      final nameA = (a['name'] as String)
-                                          .toLowerCase();
-                                      final nameB = (b['name'] as String)
-                                          .toLowerCase();
-                                      return nameA.compareTo(nameB);
-                                    });
-                              return ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppTheme.spacingMedium,
-                                ),
-                                itemCount: sortedCategories.length,
-                                itemBuilder: (context, index) {
-                                  final category = sortedCategories[index];
-                                  return _buildCategoryCard(category);
-                                },
-                              );
-                            },
+                          height: 200,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryOrange,
+                            ),
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  // Picks For You Section (Popular Products)
-                  SliverToBoxAdapter(
-                    child: FutureBuilder<List<Product>>(
-                      future: _popularProductsFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return SizedBox(
-                            height: 200,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppTheme.primaryOrange,
-                              ),
-                            ),
-                          );
-                        }
+                    );
+                  }
 
-                        if (snapshot.hasError || !snapshot.hasData) {
-                          return const SizedBox.shrink();
-                        }
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
 
-                        final products = snapshot.data!;
-                        if (products.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
+                  final vendors = snapshot.data!;
+                  if (vendors.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: AppTheme.spacingSmall),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMedium,
+                          vertical: AppTheme.spacingSmall,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppTheme.spacingMedium,
-                                vertical: AppTheme.spacingSmall,
+                            Text(
+                              localizations.popularVendors,
+                              style: AppTheme.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    localizations.picksForYou,
-                                    style: AppTheme.poppins(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimary,
-                                    ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const VendorListScreen(),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const PopularProductListScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      localizations.viewAll,
-                                      style: AppTheme.poppins(
-                                        color: AppTheme.primaryOrange,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 240,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppTheme.spacingSmall,
-                                ),
-                                itemCount: products.length,
-                                itemBuilder: (context, index) {
-                                  final product = products[index];
-                                  return _buildPicksForYouCard(
-                                    context,
-                                    product,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(height: AppTheme.spacingMedium),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  // Popular Vendors Section
-                  SliverToBoxAdapter(
-                    child: FutureBuilder<List<Vendor>>(
-                      future: _vendorsFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return SizedBox(
-                            height: 200,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppTheme.primaryOrange,
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (snapshot.hasError || !snapshot.hasData) {
-                          return const SizedBox.shrink();
-                        }
-
-                        final vendors = snapshot.data!;
-                        if (vendors.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppTheme.spacingMedium,
-                                vertical: AppTheme.spacingSmall,
-                              ),
+                                );
+                              },
                               child: Text(
-                                localizations.popularVendors,
+                                localizations.viewAll,
                                 style: AppTheme.poppins(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimary,
+                                  color: AppTheme.primaryOrange,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              height: 200,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppTheme.spacingSmall,
-                                ),
-                                itemCount: vendors.length,
-                                itemBuilder: (context, index) {
-                                  final vendor = vendors[index];
-                                  return _buildVendorCardHorizontal(
-                                    context,
-                                    vendor,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(height: AppTheme.spacingMedium),
                           ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingSmall,
+                          ),
+                          itemCount: vendors.length,
+                          itemBuilder: (context, index) {
+                            final vendor = vendors[index];
+                            return _buildVendorCardHorizontal(context, vendor);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-          ),
-        ],
+            // Bottom Spacing
+            SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacingLarge)),
+          ],
+        ),
       ),
     );
   }
@@ -1080,7 +1160,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductListScreen(vendor: vendor),
+            builder: (context) => VendorDetailScreen(vendor: vendor),
           ),
         );
       },
@@ -1538,5 +1618,174 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
         ],
       ),
     );
+  }
+}
+
+class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double expandedHeight;
+  final double collapsedHeight;
+  final double paddingTop;
+  final VoidCallback onNotificationTap;
+  final VoidCallback onLocationTap;
+  final String? currentLocation;
+  final VoidCallback onSearchTap;
+
+  _HomeHeaderDelegate({
+    required this.expandedHeight,
+    required this.collapsedHeight,
+    required this.paddingTop,
+    required this.onNotificationTap,
+    required this.onLocationTap,
+    required this.currentLocation,
+    required this.onSearchTap,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final double progress = shrinkOffset / (expandedHeight - collapsedHeight);
+    // Show sticky bar when mostly collapsed (e.g. > 80% scrolled)
+    final bool showSticky = progress > 0.8;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Full Header (Scrolls away)
+        // We use OverflowBox to keep the header at full height while it scrolls up
+        Positioned(
+          top: -shrinkOffset,
+          left: 0,
+          right: 0,
+          height: expandedHeight,
+          child: SpecialHomeHeader(
+            onLocationTap: onLocationTap,
+            onNotificationTap: onNotificationTap,
+            currentLocation: currentLocation,
+          ),
+        ),
+
+        // Sticky Bar (Fades in)
+        if (showSticky)
+          Opacity(
+            opacity: ((progress - 0.8) * 5.0).clamp(
+              0.0,
+              1.0,
+            ), // Quick fade in at the end
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryOrange,
+                    AppTheme
+                        .darkOrange, // Using darkOrange as secondary color for gradient
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.only(
+                top: paddingTop,
+                left: 16,
+                right:
+                    8, // Reduced right padding as icons have internal padding
+              ),
+              alignment: Alignment.center,
+              child: SizedBox(
+                height: kToolbarHeight,
+                child: Row(
+                  children: [
+                    // Address
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: onLocationTap,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  currentLocation ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const Spacer(),
+                              const Icon(
+                                Icons.keyboard_arrow_down,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Search Icon
+                    IconButton(
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      onPressed: onSearchTap,
+                      tooltip: 'Search',
+                    ),
+                    // Notification Icon
+                    IconButton(
+                      icon: const Icon(
+                        Icons.notifications,
+                        color: Colors.white,
+                      ),
+                      onPressed: onNotificationTap,
+                      tooltip: 'Notifications',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  double get maxExtent => expandedHeight;
+
+  @override
+  double get minExtent => collapsedHeight;
+
+  @override
+  bool shouldRebuild(covariant _HomeHeaderDelegate oldDelegate) {
+    return currentLocation != oldDelegate.currentLocation ||
+        expandedHeight != oldDelegate.expandedHeight ||
+        collapsedHeight != oldDelegate.collapsedHeight ||
+        paddingTop != oldDelegate.paddingTop;
   }
 }

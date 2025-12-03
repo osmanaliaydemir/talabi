@@ -29,6 +29,7 @@
   "price": "Price",
   "addToCart": "Add to Cart",
   "total": "Total",
+  "totalPrice": "Total Price",
   "checkout": "Checkout",
   "orderHistory": "Order History",
   "orderDetail": "Order Detail",
@@ -769,7 +770,7 @@
       "error": {}
     }
   },
-  "promotionalBannerTitle": "It's Going to Be a Great Day!",
+  "promotionalBannerTitle": "Hungry?\nWe’ve got you covered!",
   "promotionalBannerSubtitle": "Free delivery, low fees & 10% cashback!",
   "orderNow": "Order Now",
   "categories": "Categories",
@@ -780,5 +781,34 @@
     "placeholders": {
       "error": {}
     }
-  }
+  },
+  "unreadNotificationsCount": "{count} unread notifications",
+  "@unreadNotificationsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "campaigns": "Campaigns",
+  "productsCount": "{count} products",
+  "@productsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "campaignsCount": "{count} campaigns",
+  "@campaignsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "vendorsCount": "{count} businesses",
+  "@vendorsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "similarProducts": "Similar Products",
+  "areYouHungry": "Are you Hungry?",
+  "onboardingDescription": "Request what you need, and we'll deliver it to you as fast as possible.\nOrdering with Talabi is now as easy as a single touch.",
+  "unlockDescription": "Slide to Talabî!"
 }

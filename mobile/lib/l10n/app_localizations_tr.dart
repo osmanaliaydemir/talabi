@@ -87,6 +87,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get total => 'Toplam';
 
   @override
+  String get totalPrice => 'Toplam Fiyat';
+
+  @override
   String get checkout => 'Ödeme';
 
   @override
@@ -1183,7 +1186,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get next => 'İleri';
 
   @override
-  String get getStarted => 'Başla';
+  String get getStarted => 'Hadi Başlayın!';
 
   @override
   String get onboardingTitle1 => 'İhtiyacınız Olan Her Şey';
@@ -1807,14 +1810,14 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get promotionalBannerTitle => 'Harika Bir Gün Olacak!';
+  String get promotionalBannerTitle => 'Acıktınız mı?\nSizi düşündük!';
 
   @override
   String get promotionalBannerSubtitle =>
       'Ücretsiz teslimat, düşük ücretler & %10 nakit iade!';
 
   @override
-  String get orderNow => 'Şimdi Sipariş Ver';
+  String get orderNow => 'Sipariş Ver';
 
   @override
   String get categories => 'Kategoriler';
@@ -1829,4 +1832,40 @@ class AppLocalizationsTr extends AppLocalizations {
   String addressUpdateFailed(Object error) {
     return 'Adres güncellenemedi: $error';
   }
+
+  @override
+  String unreadNotificationsCount(Object count) {
+    return '$count okunmamış bildirim';
+  }
+
+  @override
+  String get campaigns => 'Kampanyalar';
+
+  @override
+  String productsCount(Object count) {
+    return '$count ürün';
+  }
+
+  @override
+  String campaignsCount(Object count) {
+    return '$count kampanya';
+  }
+
+  @override
+  String vendorsCount(Object count) {
+    return '$count işletme';
+  }
+
+  @override
+  String get similarProducts => 'Benzer Ürünler';
+
+  @override
+  String get areYouHungry => 'Acıktınız mı?';
+
+  @override
+  String get onboardingDescription =>
+      'İhtiyacını talep et, en hızlı şekilde sana ulaştıralım.\nSipariş vermek artık tek dokunuş kadar kolay.';
+
+  @override
+  String get unlockDescription => 'Talabî\'ye doğru kaydırın!';
 }

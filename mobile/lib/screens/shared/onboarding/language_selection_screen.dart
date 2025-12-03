@@ -188,6 +188,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
     // Mark language selection as completed
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('language_selection_completed', true);
+    // Reset onboarding so it shows up again
+    await prefs.setBool('onboarding_completed', false);
 
     // Animate out
     await _scaleController.reverse();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/cart_provider.dart';
@@ -69,17 +70,29 @@ class _ProductCardState extends State<ProductCard> {
             ? const EdgeInsets.symmetric(horizontal: 8)
             : EdgeInsets.zero,
         child: Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 0,
+          color: Colors.transparent,
+          margin: EdgeInsets.zero,
           clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Image with Rating and Favorite
-              SizedBox(
-                height: 120,
+              // Product Image
+              Container(
+                height: 140,
                 width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                clipBehavior: Clip.antiAlias,
                 child: Stack(
                   children: [
                     widget.product.imageUrl != null
@@ -110,7 +123,7 @@ class _ProductCardState extends State<ProductCard> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -124,16 +137,17 @@ class _ProductCardState extends State<ProductCard> {
                               const SizedBox(width: 4),
                               Text(
                                 widget.rating ?? '4.7',
-                                style: const TextStyle(
+                                style: AppTheme.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
+                                  color: Colors.black,
                                 ),
                               ),
                               if (widget.ratingCount != null) ...[
                                 const SizedBox(width: 2),
                                 Text(
                                   '(${widget.ratingCount})',
-                                  style: TextStyle(
+                                  style: AppTheme.poppins(
                                     fontSize: 10,
                                     color: Colors.grey[600],
                                   ),
@@ -150,7 +164,6 @@ class _ProductCardState extends State<ProductCard> {
                         right: 8,
                         child: GestureDetector(
                           onTap: () {
-                            // Stop propagation to prevent card tap
                             if (widget.onFavoriteTap != null) {
                               widget.onFavoriteTap!();
                             }
@@ -158,264 +171,288 @@ class _ProductCardState extends State<ProductCard> {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.9),
+                              color: Colors.white.withOpacity(0.9),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               widget.isFavorite
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              size: 20,
+                              size: 18,
                               color: Colors.red,
                             ),
                           ),
                         ),
                       ),
+                    // Best Seller Badge
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFF7F00),
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.stars,
+                              size: 12,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Best Seller',
+                              style: AppTheme.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     // Vendor Menu
                     if (isVendorCard)
                       Positioned(
                         top: 4,
                         right: 4,
-                        child: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'toggle') {
-                              widget.onToggleAvailability?.call();
-                            } else if (value == 'delete') {
-                              widget.onDelete?.call();
-                            }
-                          },
-                          itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  value: 'toggle',
-                                  child: Text(
-                                    widget.product.isAvailable
-                                        ? localizations.outOfStock
-                                        : localizations.inStock,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, size: 20),
+                            onSelected: (value) {
+                              if (value == 'toggle') {
+                                widget.onToggleAvailability?.call();
+                              } else if (value == 'delete') {
+                                widget.onDelete?.call();
+                              }
+                            },
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                                  PopupMenuItem<String>(
+                                    value: 'toggle',
+                                    child: Text(
+                                      widget.product.isAvailable
+                                          ? localizations.outOfStock
+                                          : localizations.inStock,
+                                    ),
                                   ),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'delete',
-                                  child: Text(
-                                    localizations.delete,
-                                    style: const TextStyle(color: Colors.red),
+                                  PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text(
+                                      localizations.delete,
+                                      style: AppTheme.poppins(
+                                        color: Colors.red,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                          ),
                         ),
                       ),
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
               // Product Info
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.product.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.product.name,
+                      style: AppTheme.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1A1A1A),
                       ),
-                      const SizedBox(height: 2),
-                      if (!isVendorCard)
-                        Text(
-                          '25 dk • Kolay • ${widget.product.vendorName ?? "Talabi"}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              CurrencyFormatter.format(
-                                widget.product.price,
-                                widget.product.currency,
-                              ),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.product.description ??
+                          '${widget.product.vendorName ?? "Talabi"} • 25 dk',
+                      style: AppTheme.poppins(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            CurrencyFormatter.format(
+                              widget.product.price,
+                              widget.product.currency,
                             ),
+                            style: AppTheme.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A1A1A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(width: 4),
-                          if (!isVendorCard) ...[
-                            if (quantity > 0)
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8),
+                        ),
+                        if (!isVendorCard) ...[
+                          if (quantity > 0)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Minus button
+                                GestureDetector(
+                                  onTap: () async {
+                                    try {
+                                      await cart.decreaseQuantity(
+                                        widget.product.id,
+                                      );
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ToastMessage.show(
+                                          context,
+                                          message: localizations
+                                              .errorWithMessage(e.toString()),
+                                          isSuccess: false,
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFFEE8E9),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.remove,
+                                      color: Color(0xFFCE181B),
+                                      size: 16,
+                                    ),
+                                  ),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Minus button
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: IconButton(
-                                        icon: const Icon(
-                                          Icons.remove,
-                                          color: Colors.grey,
-                                          size: 14,
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                        onPressed: () async {
-                                          try {
-                                            await cart.decreaseQuantity(
-                                              widget.product.id,
-                                            );
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              ToastMessage.show(
-                                                context,
-                                                message: localizations
-                                                    .errorWithMessage(
-                                                      e.toString(),
-                                                    ),
-                                                isSuccess: false,
-                                              );
-                                            }
-                                          }
-                                        },
-                                      ),
+                                // Quantity display
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Text(
+                                    '$quantity',
+                                    style: AppTheme.poppins(
+                                      color: const Color(0xFF1A1A1A),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    // Quantity display
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: Text(
-                                        '$quantity',
-                                        style: TextStyle(
-                                          color: Colors.grey[800],
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    // Plus button
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.orange,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: IconButton(
-                                        icon: const Icon(
-                                          Icons.add,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                        onPressed: () async {
-                                          try {
-                                            await cart.increaseQuantity(
-                                              widget.product.id,
-                                            );
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              ToastMessage.show(
-                                                context,
-                                                message: localizations
-                                                    .errorWithMessage(
-                                                      e.toString(),
-                                                    ),
-                                                isSuccess: false,
-                                              );
-                                            }
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              )
-                            else
-                              Container(
-                                width: 35,
-                                height: 35,
+                                // Plus button
+                                GestureDetector(
+                                  onTap: () async {
+                                    try {
+                                      await cart.increaseQuantity(
+                                        widget.product.id,
+                                      );
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ToastMessage.show(
+                                          context,
+                                          message: localizations
+                                              .errorWithMessage(e.toString()),
+                                          isSuccess: false,
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFCE181B),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            GestureDetector(
+                              onTap: () async {
+                                if (_isAddingToCart) return;
+
+                                setState(() {
+                                  _isAddingToCart = true;
+                                });
+
+                                try {
+                                  await cart.addItem(widget.product, context);
+                                  if (mounted) {
+                                    ToastMessage.show(
+                                      context,
+                                      message:
+                                          '${widget.product.name} ${localizations.addToCart}',
+                                      isSuccess: true,
+                                    );
+                                  }
+                                } catch (e) {
+                                  // Error is handled by CartProvider
+                                } finally {
+                                  if (mounted) {
+                                    setState(() {
+                                      _isAddingToCart = false;
+                                    });
+                                  }
+                                }
+                              },
+                              child: Container(
+                                width: 28,
+                                height: 28,
                                 decoration: const BoxDecoration(
-                                  color: Colors.orange,
+                                  color: Color(0xFFCE181B),
                                   shape: BoxShape.circle,
                                 ),
                                 child: _isAddingToCart
                                     ? const Padding(
-                                        padding: EdgeInsets.all(8.0),
+                                        padding: EdgeInsets.all(6.0),
                                         child: CircularProgressIndicator(
                                           color: Colors.white,
                                           strokeWidth: 2,
                                         ),
                                       )
-                                    : IconButton(
-                                        icon: const Icon(
-                                          Icons.add_shopping_cart,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                        onPressed: () async {
-                                          if (_isAddingToCart) return;
-
-                                          setState(() {
-                                            _isAddingToCart = true;
-                                          });
-
-                                          try {
-                                            await cart.addItem(
-                                              widget.product,
-                                              context,
-                                            );
-                                            if (mounted) {
-                                              ToastMessage.show(
-                                                context,
-                                                message:
-                                                    '${widget.product.name} ${localizations.addToCart}',
-                                                isSuccess: true,
-                                              );
-                                            }
-                                          } catch (e) {
-                                            // Error is handled by CartProvider (address popup, etc.)
-                                          } finally {
-                                            if (mounted) {
-                                              setState(() {
-                                                _isAddingToCart = false;
-                                              });
-                                            }
-                                          }
-                                        },
+                                    : const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                        size: 16,
                                       ),
                               ),
-                          ],
+                            ),
                         ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],

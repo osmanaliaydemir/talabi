@@ -87,6 +87,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get total => 'المجموع';
 
   @override
+  String get totalPrice => 'السعر الإجمالي';
+
+  @override
   String get checkout => 'الدفع';
 
   @override
@@ -1789,7 +1792,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get promotionalBannerTitle => 'سيكون يوماً رائعاً!';
+  String get promotionalBannerTitle => 'جائع؟\nنحن نلبي احتياجاتك!';
 
   @override
   String get promotionalBannerSubtitle =>
@@ -1811,4 +1814,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String addressUpdateFailed(Object error) {
     return 'فشل تحديث العنوان: $error';
   }
+
+  @override
+  String unreadNotificationsCount(Object count) {
+    return '$count إشعارات غير مقروءة';
+  }
+
+  @override
+  String get campaigns => 'الحملات';
+
+  @override
+  String productsCount(Object count) {
+    return '$count منتجات';
+  }
+
+  @override
+  String campaignsCount(Object count) {
+    return '$count حملات';
+  }
+
+  @override
+  String vendorsCount(Object count) {
+    return '$count شركات';
+  }
+
+  @override
+  String get similarProducts => 'منتجات مماثلة';
+
+  @override
+  String get areYouHungry => 'هل أنت جائع؟';
+
+  @override
+  String get onboardingDescription =>
+      'اطلب ما تحتاجه، وسنقوم بتوصيله إليك في أسرع وقت ممكن.\nالطلب مع طلبي أصبح الآن سهلاً بلمسة واحدة.';
+
+  @override
+  String get unlockDescription => 'انزلق إلى الطالبي!';
 }

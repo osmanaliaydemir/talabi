@@ -1,4 +1,4 @@
-import 'currency.dart';
+import 'package:mobile/models/currency.dart';
 
 class Product {
   final String id;

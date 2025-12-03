@@ -23,66 +23,149 @@ class PersistentBottomNavBar extends StatelessWidget {
       localizations.myAccount,
     ];
 
-    return SizedBox(
-      height: 60,
-      child: NavigationBar(
-        selectedIndex: bottomNav.currentIndex,
-        height: 60,
-        onDestinationSelected: (index) {
-          final fromIndex = bottomNav.currentIndex;
-          final toLabel = screenNames[index];
-          TapLogger.logBottomNavChange(fromIndex, index, toLabel);
-          bottomNav.setIndex(index);
-
-          // Navigate back to MainNavigationScreen if we're on a sub-page
-          final navigator = Navigator.of(context);
-          // Pop all routes until we reach the main navigation screen
-          while (navigator.canPop()) {
-            navigator.pop();
-          }
-        },
-        labelTextStyle: MaterialStateProperty.all(
-          AppTheme.poppins(
-            fontSize: 10,
-            fontWeight: FontWeight.w400,
-            color: AppTheme.textPrimary,
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0x1A1A1A1A).withValues(alpha: 0.10),
+            blurRadius: 20,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildNavItem(
+                context,
+                index: 0,
+                icon: Icons.explore_outlined,
+                selectedIcon: Icons.explore,
+                label: localizations.discover,
+                isSelected: bottomNav.currentIndex == 0,
+                onTap: () => _onItemTapped(context, 0, bottomNav, screenNames),
+              ),
+              _buildNavItem(
+                context,
+                index: 1,
+                icon: Icons.favorite_outline,
+                selectedIcon: Icons.favorite,
+                label: localizations.myFavorites,
+                isSelected: bottomNav.currentIndex == 1,
+                onTap: () => _onItemTapped(context, 1, bottomNav, screenNames),
+              ),
+              _buildNavItem(
+                context,
+                index: 2,
+                icon: Icons.shopping_cart_outlined,
+                selectedIcon: Icons.shopping_cart,
+                label: localizations.myCart,
+                isSelected: bottomNav.currentIndex == 2,
+                onTap: () => _onItemTapped(context, 2, bottomNav, screenNames),
+                badge: cart.itemCount > 0 ? cart.itemCount : null,
+              ),
+              _buildNavItem(
+                context,
+                index: 3,
+                icon: Icons.receipt_long_outlined,
+                selectedIcon: Icons.receipt_long,
+                label: localizations.myOrders,
+                isSelected: bottomNav.currentIndex == 3,
+                onTap: () => _onItemTapped(context, 3, bottomNav, screenNames),
+              ),
+              _buildNavItem(
+                context,
+                index: 4,
+                icon: Icons.person_outline,
+                selectedIcon: Icons.person,
+                label: localizations.myAccount,
+                isSelected: bottomNav.currentIndex == 4,
+                onTap: () => _onItemTapped(context, 4, bottomNav, screenNames),
+              ),
+            ],
           ),
         ),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.explore_outlined, size: 22),
-            selectedIcon: const Icon(Icons.explore, size: 22),
-            label: localizations.discover,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.favorite_outline, size: 22),
-            selectedIcon: const Icon(Icons.favorite, size: 22),
-            label: localizations.myFavorites,
-          ),
-          NavigationDestination(
-            icon: Stack(
+      ),
+    );
+  }
+
+  void _onItemTapped(
+    BuildContext context,
+    int index,
+    BottomNavProvider bottomNav,
+    List<String> screenNames,
+  ) {
+    final fromIndex = bottomNav.currentIndex;
+    final toLabel = screenNames[index];
+    TapLogger.logBottomNavChange(fromIndex, index, toLabel);
+    bottomNav.setIndex(index);
+
+    // Navigate back to MainNavigationScreen if we're on a sub-page
+    final navigator = Navigator.of(context);
+    // Pop all routes until we reach the main navigation screen
+    while (navigator.canPop()) {
+      navigator.pop();
+    }
+  }
+
+  Widget _buildNavItem(
+    BuildContext context, {
+    required int index,
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    int? badge,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 10,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryOrange : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
               children: [
-                const Icon(Icons.shopping_cart_outlined, size: 22),
-                if (cart.itemCount > 0)
+                Icon(
+                  isSelected ? selectedIcon : icon,
+                  size: 24,
+                  color: isSelected ? Colors.white : AppTheme.textSecondary,
+                ),
+                if (badge != null)
                   Positioned(
-                    right: 0,
-                    top: 0,
+                    right: -6,
+                    top: -6,
                     child: Container(
-                      padding: const EdgeInsets.all(AppTheme.spacingXSmall / 2),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: AppTheme.error,
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusSmall,
-                        ),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       constraints: const BoxConstraints(
-                        minWidth: 14,
-                        minHeight: 14,
+                        minWidth: 16,
+                        minHeight: 16,
                       ),
                       child: Text(
-                        '${cart.itemCount}',
+                        '$badge',
                         style: AppTheme.poppins(
-                          color: AppTheme.textOnPrimary,
+                          color: Colors.white,
                           fontSize: 8,
                           fontWeight: FontWeight.bold,
                         ),
@@ -92,51 +175,23 @@ class PersistentBottomNavBar extends StatelessWidget {
                   ),
               ],
             ),
-            selectedIcon: Stack(
-              children: [
-                const Icon(Icons.shopping_cart, size: 22),
-                if (cart.itemCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppTheme.spacingXSmall / 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.error,
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusSmall,
-                        ),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 14,
-                        minHeight: 14,
-                      ),
-                      child: Text(
-                        '${cart.itemCount}',
-                        style: AppTheme.poppins(
-                          color: AppTheme.textOnPrimary,
-                          fontSize: 6,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: AppTheme.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
-              ],
-            ),
-            label: localizations.myCart,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.receipt_long_outlined, size: 22),
-            selectedIcon: const Icon(Icons.receipt_long, size: 22),
-            label: localizations.myOrders,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline, size: 22),
-            selectedIcon: const Icon(Icons.person, size: 22),
-            label: localizations.myAccount,
-          ),
-        ],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

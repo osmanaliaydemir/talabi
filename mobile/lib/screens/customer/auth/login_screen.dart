@@ -294,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               // Header with decorative shapes (Forgot Password Style)
               SizedBox(
-                height: 180,
+                height: 170,
                 child: Stack(
                   children: [
                     // Decorative shape in top right
@@ -303,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       right: -50,
                       child: Container(
                         width: 200,
-                        height: 200,
+                        height: 220,
                         decoration: BoxDecoration(
                           color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
@@ -312,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     // Decorative shape on left side (rounded pill shape)
                     Positioned(
-                      bottom: -20,
+                      bottom: 20, // Moved up to be fully visible
                       left: -30,
                       child: Container(
                         width: 100,
@@ -359,9 +359,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(
-                            top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
-                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
@@ -513,12 +510,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 _rememberMe = value ?? false;
                                               });
                                             },
-                                            activeColor: Colors.orange,
+                                            activeColor: AppTheme.primaryOrange,
                                           ),
                                           Text(
                                             localizations.rememberMe,
                                             style: TextStyle(
-                                              color: Colors.grey[700],
+                                              color: AppTheme.textSecondary,
                                               fontSize: 14,
                                             ),
                                           ),
@@ -537,7 +534,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         child: Text(
                                           localizations.recoveryPassword,
                                           style: const TextStyle(
-                                            color: Colors.orange,
+                                            color: AppTheme.primaryOrange,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -549,10 +546,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _login,
+                                      onPressed: _isLoading ? () {} : _login,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.orange,
-                                        foregroundColor: Colors.white,
+                                        backgroundColor: AppTheme.primaryOrange,
+                                        foregroundColor: AppTheme.textOnPrimary,
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 16,
                                         ),
@@ -564,11 +561,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                         elevation: 0,
                                       ),
                                       child: _isLoading
-                                          ? const SizedBox(
+                                          ? SizedBox(
                                               height: 20,
                                               width: 20,
                                               child: CircularProgressIndicator(
-                                                color: Colors.white,
+                                                color: AppTheme.textOnPrimary,
                                                 strokeWidth: 2,
                                               ),
                                             )
@@ -586,7 +583,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: Divider(color: Colors.grey[300]),
+                                        child: Divider(
+                                          color: AppTheme.dividerColor,
+                                        ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
@@ -595,13 +594,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                         child: Text(
                                           localizations.orContinueWith,
                                           style: TextStyle(
-                                            color: Colors.grey[600],
+                                            color: AppTheme.textSecondary,
                                             fontSize: 14,
                                           ),
                                         ),
                                       ),
                                       Expanded(
-                                        child: Divider(color: Colors.grey[300]),
+                                        child: Divider(
+                                          color: AppTheme.dividerColor,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -782,9 +783,9 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        side: BorderSide(color: Colors.grey[300]!),
+        side: BorderSide(color: AppTheme.dividerColor),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardColor,
       ),
       child: isFacebook
           ? Column(
@@ -823,7 +824,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.store, color: Colors.orange, size: 20),
+                Icon(Icons.store, color: AppTheme.primaryOrange, size: 20),
                 const SizedBox(height: 4),
                 Text(
                   label,
