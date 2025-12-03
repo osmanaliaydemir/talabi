@@ -4,15 +4,16 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 
 import 'package:mobile/screens/shared/settings/accessibility_settings_screen.dart';
-import 'package:mobile/screens/shared/profile/addresses_screen.dart';
-import 'package:mobile/screens/shared/profile/change_password_screen.dart';
-import 'package:mobile/screens/shared/profile/edit_profile_screen.dart';
+import 'package:mobile/screens/customer/profile/addresses_screen.dart';
+import 'package:mobile/screens/customer/profile/change_password_screen.dart';
+import 'package:mobile/screens/customer/profile/edit_profile_screen.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
 import 'package:mobile/screens/shared/settings/notification_settings_screen.dart';
-import 'package:mobile/screens/customer/order_history_screen.dart';
+import 'package:mobile/screens/customer/order/order_history_screen.dart';
 import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -68,8 +69,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
           : Column(
               children: [
-                // Header with Geometric Background
-                _buildHeader(context, localizations, colorScheme),
+                // Header
+                SharedHeader(fullName: _profile?['fullName']),
                 // Main Content Card
                 Expanded(
                   child: SingleChildScrollView(
@@ -83,75 +84,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Row(
-            children: [
-              // Profile Icon
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
-                decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: Icon(
-                  Icons.person,
-                  color: AppTheme.textOnPrimary,
-                  size: AppTheme.iconSizeSmall,
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Title and User Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      localizations.myProfile,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      _profile?['fullName'] ?? localizations.user,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

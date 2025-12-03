@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/screens/shared/profile/address_picker_screen.dart';
+//Todo: remove this import OAA
+import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
 

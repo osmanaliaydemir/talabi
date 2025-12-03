@@ -7,7 +7,7 @@ import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:provider/provider.dart';
 
-class CustomerHeader extends StatefulWidget implements PreferredSizeWidget {
+class HomeHeader extends StatefulWidget implements PreferredSizeWidget {
   final String? title;
   final String? subtitle;
   final IconData leadingIcon;
@@ -23,7 +23,7 @@ class CustomerHeader extends StatefulWidget implements PreferredSizeWidget {
   final bool isLoadingAddress;
   final VoidCallback? onAddressTap;
 
-  const CustomerHeader({
+  const HomeHeader({
     super.key,
     this.title,
     this.subtitle,
@@ -44,10 +44,10 @@ class CustomerHeader extends StatefulWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(showAddress ? 120 : 90);
 
   @override
-  State<CustomerHeader> createState() => _CustomerHeaderState();
+  State<HomeHeader> createState() => _HomeHeaderState();
 }
 
-class _CustomerHeaderState extends State<CustomerHeader> {
+class _HomeHeaderState extends State<HomeHeader> {
   String _getAddressDisplayText(Map<String, dynamic> address) {
     final district = address['district'] ?? '';
     final city = address['city'] ?? '';
@@ -73,15 +73,12 @@ class _CustomerHeaderState extends State<CustomerHeader> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.orange.shade700,
-            Colors.orange.shade500,
-            Colors.orange.shade300,
-          ],
+          colors: [AppTheme.primaryOrange, AppTheme.darkOrange],
         ),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -188,17 +185,11 @@ class _CustomerHeaderState extends State<CustomerHeader> {
 
   Widget _buildSearchIcon() {
     return IconButton(
-      icon: const Icon(
-        Icons.search,
-        color: Colors.white,
-        size: 24,
-      ),
+      icon: const Icon(Icons.search, color: Colors.white, size: 24),
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const SearchScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const SearchScreen()),
         );
       },
     );

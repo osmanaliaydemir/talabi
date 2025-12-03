@@ -1,13 +1,16 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/screens/customer/order_detail_screen.dart';
+import 'package:mobile/screens/customer/order/order_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:intl/intl.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({super.key});
+  final bool showBackButton;
+
+  const OrderHistoryScreen({super.key, this.showBackButton = true});
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
@@ -49,15 +52,18 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
           // Header
-          _buildHeader(context, localizations, colorScheme),
+          SharedHeader(
+            title: localizations.myOrders,
+            subtitle: '${_orders.length} ${localizations.orders}',
+            icon: Icons.shopping_bag,
+            showBackButton: widget.showBackButton,
+          ),
           // Main Content
           Expanded(
             child: _isLoading
@@ -288,74 +294,5 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       default:
         return status;
     }
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Row(
-            children: [
-              // Order Icon
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.shopping_bag,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Title and Count
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      localizations.myOrders,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${_orders.length} ${localizations.orders}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

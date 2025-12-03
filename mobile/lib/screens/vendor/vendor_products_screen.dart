@@ -6,7 +6,8 @@ import 'package:mobile/screens/vendor/vendor_product_form_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
 import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
-import 'package:mobile/widgets/common/product_card.dart';
+//Todo: Remove this import OAA
+import 'package:mobile/screens/customer/widgets/product_card.dart';
 
 class VendorProductsScreen extends StatefulWidget {
   const VendorProductsScreen({super.key});

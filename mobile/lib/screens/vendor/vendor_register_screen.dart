@@ -4,8 +4,9 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/courier/courier_login_screen.dart';
-import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
-import 'package:mobile/screens/shared/auth/register_screen.dart';
+// Todo: Email verification screen OAA
+import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
+import 'package:mobile/screens/customer/auth/register_screen.dart';
 import 'package:mobile/screens/vendor/vendor_login_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';

@@ -5,14 +5,14 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/promotional_banner.dart';
-import 'package:mobile/screens/customer/product_list_screen.dart';
+import 'package:mobile/screens/customer/product/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/widgets/common/product_card.dart';
-import 'package:mobile/widgets/customer/customer_header.dart';
-import 'package:mobile/screens/customer/category_products_screen.dart';
-import 'package:mobile/screens/customer/categories_screen.dart';
-import 'package:mobile/screens/customer/popular_product_list_screen.dart';
+import 'package:mobile/screens/customer/widgets/product_card.dart';
+import 'package:mobile/screens/customer/widgets/home_header.dart';
+import 'package:mobile/screens/customer/category/category_products_screen.dart';
+import 'package:mobile/screens/customer/category/categories_screen.dart';
+import 'package:mobile/screens/customer/product/popular_product_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -605,7 +605,10 @@ class _HomeScreenState extends State<HomeScreen> {
         name.contains('ملابس')) {
       return {'icon': icon ?? Icons.checkroom, 'color': color ?? Colors.teal};
     } else {
-      return {'icon': icon ?? Icons.category, 'color': color ?? Colors.orange};
+      return {
+        'icon': icon ?? Icons.category,
+        'color': color ?? AppTheme.primaryOrange,
+      };
     }
   }
 
@@ -618,7 +621,8 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           // Header
-          CustomerHeader(
+          // Header
+          HomeHeader(
             title: localizations.discover,
             subtitle: 'Find your favorite products',
             leadingIcon: Icons.explore,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/screens/customer/category_products_screen.dart';
+import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/customer/customer_header.dart';
+import 'package:mobile/screens/customer/widgets/home_header.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -186,7 +186,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          CustomerHeader(
+          HomeHeader(
             title: localizations.categories,
             subtitle: localizations.discover,
             leadingIcon: Icons.category,

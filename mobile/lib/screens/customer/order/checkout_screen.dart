@@ -4,7 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/screens/customer/order_success_screen.dart';
+import 'package:mobile/screens/customer/order/order_success_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:provider/provider.dart';
@@ -213,7 +213,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     // Get currency from first item, or default to TRY
     final Currency displayCurrency = widget.cartItems.isNotEmpty
         ? widget.cartItems.values.first.product.currency
@@ -801,10 +801,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               children: [
                 Text(localizations.cartSubtotalLabel),
                 Text(
-                  CurrencyFormatter.format(
-                    widget.subtotal,
-                    displayCurrency,
-                  ),
+                  CurrencyFormatter.format(widget.subtotal, displayCurrency),
                 ),
               ],
             ),
@@ -815,10 +812,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               children: [
                 Text(localizations.cartDeliveryFeeLabel),
                 Text(
-                  CurrencyFormatter.format(
-                    widget.deliveryFee,
-                    displayCurrency,
-                  ),
+                  CurrencyFormatter.format(widget.deliveryFee, displayCurrency),
                 ),
               ],
             ),

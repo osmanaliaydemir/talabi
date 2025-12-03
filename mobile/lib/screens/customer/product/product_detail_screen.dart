@@ -7,7 +7,7 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
+import 'package:mobile/screens/customer/widgets/persistent_bottom_nav_bar.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';

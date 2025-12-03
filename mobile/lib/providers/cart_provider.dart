@@ -4,7 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/models/product.dart';
-import 'package:mobile/screens/shared/profile/add_edit_address_screen.dart';
+import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/providers/connectivity_provider.dart';

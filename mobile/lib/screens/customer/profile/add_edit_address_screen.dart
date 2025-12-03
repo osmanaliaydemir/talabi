@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/address.dart';
-import 'package:mobile/screens/shared/profile/address_picker_screen.dart';
+import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddEditAddressScreen extends StatefulWidget {
   final Address? address;
@@ -115,8 +116,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+
     final isEdit = widget.address != null;
 
     return Scaffold(
@@ -124,7 +124,16 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       body: Column(
         children: [
           // Header
-          _buildHeader(context, localizations, colorScheme, isEdit),
+          SharedHeader(
+            title: isEdit
+                ? localizations.editAddress
+                : localizations.addAddress,
+            subtitle: isEdit
+                ? localizations.updateAddressDetails
+                : localizations.createNewAddress,
+            icon: Icons.location_on,
+            showBackButton: true,
+          ),
           // Main Content
           Expanded(
             child: SingleChildScrollView(
@@ -404,101 +413,6 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    ColorScheme colorScheme,
-    bool isEdit,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMedium,
-            vertical: AppTheme.spacingMedium,
-          ),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
-                  decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios_new,
-                    color: AppTheme.textOnPrimary,
-                    size: 18,
-                  ),
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Location Icon
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
-                decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: Icon(
-                  Icons.location_on,
-                  color: AppTheme.textOnPrimary,
-                  size: AppTheme.iconSizeSmall,
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Title and Subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isEdit
-                          ? localizations.editAddress
-                          : localizations.addAddress,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      isEdit
-                          ? localizations.updateAddressDetails
-                          : localizations.createNewAddress,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

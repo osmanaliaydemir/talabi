@@ -4,11 +4,11 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/favorites_screen.dart';
-import 'package:mobile/screens/customer/order_history_screen.dart';
-import 'package:mobile/screens/shared/profile/profile_screen.dart';
+import 'package:mobile/screens/customer/order/order_history_screen.dart';
+import 'package:mobile/screens/customer/profile/profile_screen.dart';
 import 'package:mobile/screens/customer/home_screen.dart';
 import 'package:mobile/widgets/common/connectivity_banner.dart';
-import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
+import 'package:mobile/screens/customer/widgets/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -23,7 +23,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const HomeScreen(),
     const FavoritesScreen(),
     const CartScreen(),
-    const OrderHistoryScreen(),
+    const OrderHistoryScreen(showBackButton: false),
     const ProfileScreen(),
   ];
 

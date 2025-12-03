@@ -6,7 +6,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/screens/shared/auth/login_screen.dart';
+import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:dio/dio.dart';

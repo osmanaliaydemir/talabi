@@ -3,7 +3,6 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/connectivity_banner.dart';
-import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
 
 class LegalContentScreen extends StatefulWidget {
   final String documentType;
@@ -66,7 +65,7 @@ class _LegalContentScreenState extends State<LegalContentScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      bottomNavigationBar: const PersistentBottomNavBar(),
+
       body: Column(
         children: [
           // Header

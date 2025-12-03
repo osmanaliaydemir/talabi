@@ -6,6 +6,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddressPickerScreen extends StatefulWidget {
   final Function(
@@ -218,12 +219,18 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading || _googleMapsApiKey == null) {
       return Scaffold(
         backgroundColor: Colors.grey[100],
         body: Column(
           children: [
-            _buildHeader(context),
+            SharedHeader(
+              title: l10n.selectAddress,
+              subtitle: l10n.selectLocationFromMap,
+              icon: Icons.map,
+              showBackButton: true,
+            ),
             const Expanded(child: Center(child: CircularProgressIndicator())),
           ],
         ),
@@ -239,7 +246,27 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       body: Column(
         children: [
           // Header
-          _buildHeader(context),
+          SharedHeader(
+            title: l10n.selectAddress,
+            subtitle: l10n.selectLocationFromMap,
+            icon: Icons.map,
+            showBackButton: true,
+            action: GestureDetector(
+              onTap: _getUserLocation,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.my_location,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
           // Map and Address Form
           Expanded(
             child: Column(
@@ -374,103 +401,6 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Icon
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.map, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 12),
-              // Title
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l10n.selectAddress,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.selectLocationFromMap,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // My Location Button
-              GestureDetector(
-                onTap: _getUserLocation,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.my_location,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

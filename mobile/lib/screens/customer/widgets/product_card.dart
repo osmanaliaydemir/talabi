@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/cart_provider.dart';
-import 'package:mobile/screens/customer/product_detail_screen.dart';
+import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';

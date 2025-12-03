@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/address.dart';
-import 'package:mobile/screens/shared/profile/add_edit_address_screen.dart';
+import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
@@ -180,7 +181,14 @@ class _AddressesScreenState extends State<AddressesScreen>
       body: Column(
         children: [
           // Header
-          _buildHeader(context, localizations, colorScheme),
+          SharedHeader(
+            title: localizations.myAddresses,
+            subtitle: _addresses.length == 1
+                ? localizations.addressCountSingular
+                : localizations.addressCountPlural(_addresses.length),
+            icon: Icons.location_on,
+            showBackButton: true,
+          ),
           // Main Content
           Expanded(
             child: Container(
@@ -573,95 +581,6 @@ class _AddressesScreenState extends State<AddressesScreen>
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Location Icon
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.location_on,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Title and Count
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      localizations.myAddresses,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _addresses.length == 1
-                          ? localizations.addressCountSingular
-                          : localizations.addressCountPlural(_addresses.length),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ),
       ),

@@ -3,7 +3,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/courier/courier_login_screen.dart';
-import 'package:mobile/screens/shared/auth/login_screen.dart';
+import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/vendor/vendor_dashboard_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';

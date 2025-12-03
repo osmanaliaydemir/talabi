@@ -9,7 +9,7 @@ import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/providers/theme_provider.dart';
 import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart';
-import 'package:mobile/screens/shared/auth/login_screen.dart';
+import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
 import 'package:mobile/screens/courier/courier_dashboard_screen.dart';
@@ -206,9 +206,9 @@ class _MyAppState extends State<MyApp> {
           home: _buildHome(),
           builder: (context, child) {
             return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.linear(themeProvider.textScaleFactor)),
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(themeProvider.textScaleFactor),
+              ),
               child: child!,
             );
           },

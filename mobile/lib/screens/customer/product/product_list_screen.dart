@@ -4,9 +4,9 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/product_card.dart';
+import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
-import 'package:mobile/widgets/common/persistent_bottom_nav_bar.dart';
+import 'package:mobile/screens/customer/widgets/persistent_bottom_nav_bar.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 
 class ProductListScreen extends StatefulWidget {

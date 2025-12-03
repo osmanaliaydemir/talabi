@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/vendor.dart';
-import 'package:mobile/screens/customer/product_list_screen.dart';
+import 'package:mobile/screens/customer/product/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 

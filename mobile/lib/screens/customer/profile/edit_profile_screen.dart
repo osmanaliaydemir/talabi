@@ -3,6 +3,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:intl/intl.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -111,15 +112,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
-          _buildHeader(context, localizations, colorScheme),
+          SharedHeader(
+            title: localizations.editProfile,
+            subtitle: widget.profile['fullName'] ?? localizations.user,
+            icon: Icons.person,
+            showBackButton: true,
+          ),
           // Main Content
           Expanded(
             child: SingleChildScrollView(
@@ -326,96 +330,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMedium,
-            vertical: AppTheme.spacingMedium,
-          ),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
-                  decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios_new,
-                    color: AppTheme.textOnPrimary,
-                    size: 18,
-                  ),
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Profile Icon
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
-                decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: Icon(
-                  Icons.person,
-                  color: AppTheme.textOnPrimary,
-                  size: AppTheme.iconSizeSmall,
-                ),
-              ),
-              SizedBox(width: AppTheme.spacingSmall),
-              // Title and Subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      localizations.editProfile,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      widget.profile['fullName'] ?? localizations.user,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

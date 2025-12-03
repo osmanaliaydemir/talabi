@@ -2,12 +2,12 @@
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/models/vendor.dart';
-import 'package:mobile/screens/customer/product_list_screen.dart';
-import 'package:mobile/screens/customer/product_detail_screen.dart';
+import 'package:mobile/screens/customer/product/product_list_screen.dart';
+import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/widgets/common/product_card.dart';
+import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {

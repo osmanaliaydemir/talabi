@@ -3,13 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // 🎨 ANA RENKLER
-  static const Color primaryOrange = Color(0xFFFF9800);
-  static const Color darkOrange = Color(0xFFF57C00);
-  static const Color lightOrange = Color(0xFFFFB74D);
-  static const Color deepOrange = Color(0xFFF4511E);
+  static const Color primaryOrange = Color(0xFFCE181B); // Updated to Red
+  static const Color darkOrange = Color(0xFFB71518); // Updated to Dark Red
+  static const Color lightOrange = Color(0xFFEF5350); // Updated to Light Red
+  static const Color deepOrange = Color(0xFFC62828); // Updated to Deep Red
   static const Color primaryOrangeShade50 = Color(
-    0xFFFFE0B2,
-  ); // %50 açık turuncu
+    0xFFFFEBEE,
+  ); // Updated to Red Shade 50
 
   // 🟢 BAŞARI RENKLERİ
   static const Color success = Color(0xFF4CAF50);

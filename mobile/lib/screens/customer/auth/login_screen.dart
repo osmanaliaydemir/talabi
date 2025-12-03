@@ -3,149 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/providers/localization_provider.dart';
-import 'package:mobile/services/api_service.dart';
-import 'package:mobile/utils/navigation_logger.dart';
-import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
-import 'package:mobile/screens/vendor/vendor_register_screen.dart';
+import 'package:mobile/screens/customer/auth/email_verification_screen.dart';
+import 'package:mobile/screens/customer/auth/forgot_password_screen.dart';
+import 'package:mobile/screens/customer/auth/register_screen.dart';
+import 'package:mobile/screens/vendor/vendor_login_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
+import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _fullNameController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _rememberMe = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _fullNameController.dispose();
     super.dispose();
-  }
-
-  Future<void> _register() async {
-    TapLogger.logButtonPress('Register', context: 'RegisterScreen');
-
-    if (!_formKey.currentState!.validate()) {
-      TapLogger.logButtonPress(
-        'Register',
-        context: 'RegisterScreen - Validation Failed',
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text;
-      final fullName = _fullNameController.text.trim();
-
-      print('🟡 [REGISTER_SCREEN] Calling authProvider.register');
-      print('🟡 [REGISTER_SCREEN] Email: $email');
-      print('🟡 [REGISTER_SCREEN] FullName: $fullName');
-      print('🟡 [REGISTER_SCREEN] Password length: ${password.length}');
-
-      // Get user's language preference
-      final localizationProvider = Provider.of<LocalizationProvider>(
-        context,
-        listen: false,
-      );
-      final languageCode = localizationProvider.locale.languageCode;
-
-      final apiService = ApiService();
-      await apiService.register(
-        email,
-        password,
-        fullName,
-        language: languageCode,
-      );
-
-      print('🟢 [REGISTER_SCREEN] Register successful!');
-
-      if (mounted) {
-        // Email kod doğrulama ekranına yönlendir (password ile otomatik login için)
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => EmailCodeVerificationScreen(
-              email: email,
-              password: password, // Otomatik login için password geçiliyor
-            ),
-          ),
-        );
-      }
-    } catch (e, stackTrace) {
-      print('🔴 [REGISTER_SCREEN] Register error: $e');
-      print('🔴 [REGISTER_SCREEN] Stack trace: $stackTrace');
-
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-
-        // Hata mesajını parse et
-        String errorMessage = e.toString().replaceAll('Exception: ', '');
-        if (e is DioException && e.response?.data != null) {
-          final responseData = e.response!.data;
-
-          // Duplicate email/username hatası için özel mesaj
-          if (responseData is Map) {
-            if (responseData.containsKey('errors') &&
-                responseData['errors'] is List) {
-              final errors = responseData['errors'] as List;
-              final duplicateError = errors.firstWhere(
-                (error) =>
-                    error is Map &&
-                    (error['code'] == 'DuplicateEmail' ||
-                        error['code'] == 'DuplicateUserName'),
-                orElse: () => null,
-              );
-
-              if (duplicateError != null) {
-                errorMessage = localizations.duplicateEmail;
-              } else if (responseData.containsKey('message')) {
-                errorMessage = responseData['message'].toString();
-              }
-            } else if (responseData.containsKey('message')) {
-              errorMessage = responseData['message'].toString();
-            }
-          }
-        }
-
-        // Hata mesajını göster - kod ekranına yönlendirme YOK
-        final displayMessage = errorMessage.isNotEmpty
-            ? errorMessage
-            : localizations.registerFailed;
-
-        ToastMessage.show(
-          context,
-          message: displayMessage,
-          isSuccess: false,
-          duration: const Duration(seconds: 7),
-        );
-
-        // Hata durumunda ekranda kal - kod giriş ekranına yönlendirme YOK
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   Future<void> _signInWithGoogle() async {
@@ -158,11 +45,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await socialAuthService.signInWithGoogle();
 
       if (response == null) {
-        // User cancelled
         return;
       }
 
-      // Save tokens
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', response['token']);
       await prefs.setString('refreshToken', response['refreshToken']);
@@ -170,7 +55,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await prefs.setString('userRole', response['role']);
 
       if (mounted) {
-        // Update auth provider
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         await authProvider.setAuthData(
           response['token'],
@@ -179,11 +63,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           response['role'],
         );
 
-        // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
-      print('🔴 [GOOGLE_LOGIN] Error: $e');
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -211,11 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await socialAuthService.signInWithApple();
 
       if (response == null) {
-        // User cancelled
         return;
       }
 
-      // Save tokens
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', response['token']);
       await prefs.setString('refreshToken', response['refreshToken']);
@@ -223,7 +103,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await prefs.setString('userRole', response['role']);
 
       if (mounted) {
-        // Update auth provider
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         await authProvider.setAuthData(
           response['token'],
@@ -232,11 +111,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           response['role'],
         );
 
-        // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
-      print('🔴 [APPLE_LOGIN] Error: $e');
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -264,11 +141,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await socialAuthService.signInWithFacebook();
 
       if (response == null) {
-        // User cancelled
         return;
       }
 
-      // Save tokens
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', response['token']);
       await prefs.setString('refreshToken', response['refreshToken']);
@@ -276,7 +151,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await prefs.setString('userRole', response['role']);
 
       if (mounted) {
-        // Update auth provider
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         await authProvider.setAuthData(
           response['token'],
@@ -285,16 +159,107 @@ class _RegisterScreenState extends State<RegisterScreen> {
           response['role'],
         );
 
-        // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
-      print('🔴 [FACEBOOK_LOGIN] Error: $e');
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
           message: localizations.facebookLoginFailed(e.toString()),
+          isSuccess: false,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) {
+      TapLogger.logButtonPress(
+        'Login',
+        context: 'LoginScreen - Validation Failed',
+      );
+      return;
+    }
+
+    TapLogger.logButtonPress('Login', context: 'LoginScreen');
+    TapLogger.logTap(
+      'Login Button',
+      action: 'Email: ${_emailController.text.trim()}',
+    );
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      // Login başarılı olduysa ana ekrana yönlendir
+      if (mounted && authProvider.isAuthenticated) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/customer/home', (route) => false);
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
+        String errorMessage = '';
+
+        // Extract error message from response
+        if (e.response?.data != null) {
+          final responseData = e.response!.data;
+          if (responseData is Map) {
+            errorMessage = responseData['message']?.toString() ?? '';
+          } else if (responseData is String) {
+            errorMessage = responseData;
+          }
+        }
+
+        // If no message in response, use exception message
+        if (errorMessage.isEmpty) {
+          errorMessage = e.message ?? e.toString();
+        }
+
+        // Check if email is not confirmed
+        if (errorMessage.toLowerCase().contains('email not confirmed') ||
+            errorMessage.toLowerCase().contains('email not verified')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  EmailVerificationScreen(email: _emailController.text.trim()),
+            ),
+          );
+          ToastMessage.show(
+            context,
+            message: localizations.pleaseVerifyEmail,
+            isSuccess: false,
+          );
+        } else {
+          ToastMessage.show(
+            context,
+            message: errorMessage.isNotEmpty
+                ? errorMessage
+                : '${localizations.loginFailed}: ${e.message}',
+            isSuccess: false,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: '${localizations.loginFailed}: $e',
           isSuccess: false,
         );
       }
@@ -327,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header with decorative shapes
+              // Header with decorative shapes (Forgot Password Style)
               SizedBox(
                 height: 180,
                 child: Stack(
@@ -372,7 +337,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Text(
-                          localizations.signUp,
+                          localizations.signIn,
                           style: AppTheme.poppins(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
@@ -424,7 +389,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 children: [
                                   // Welcome Message
                                   Text(
-                                    localizations.createAccount,
+                                    localizations.welcomeBack,
                                     style: AppTheme.poppins(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
@@ -433,49 +398,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    localizations.registerDescription,
+                                    localizations.loginDescription,
                                     style: AppTheme.poppins(
                                       fontSize: 13,
                                       color: AppTheme.textSecondary,
                                       height: 1.3,
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  // Full Name Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _fullNameController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.fullName,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: Icon(
-                                          Icons.person_outline,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.fullNameRequired;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 20),
                                   // Email Field
                                   Container(
                                     decoration: BoxDecoration(
@@ -514,7 +444,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       },
                                     ),
                                   ),
-                                  AppTheme.verticalSpace(1),
+                                  const SizedBox(height: 12),
                                   // Password Field
                                   Container(
                                     decoration: BoxDecoration(
@@ -568,72 +498,114 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       },
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
-                                  // Register Button
+                                  const SizedBox(height: 16),
+                                  // Remember me and Recovery Password
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Checkbox(
+                                            value: _rememberMe,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _rememberMe = value ?? false;
+                                              });
+                                            },
+                                            activeColor: Colors.orange,
+                                          ),
+                                          Text(
+                                            localizations.rememberMe,
+                                            style: TextStyle(
+                                              color: Colors.grey[700],
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const ForgotPasswordScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          localizations.recoveryPassword,
+                                          style: const TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Login Button
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _register,
+                                      onPressed: _isLoading ? null : _login,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.primaryOrange,
-                                        foregroundColor: AppTheme.textOnPrimary,
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: AppTheme.spacingMedium,
+                                        backgroundColor: Colors.orange,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
                                         ),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
-                                            AppTheme.radiusMedium,
+                                            12,
                                           ),
                                         ),
-                                        elevation: AppTheme.elevationNone,
+                                        elevation: 0,
                                       ),
                                       child: _isLoading
-                                          ? SizedBox(
+                                          ? const SizedBox(
                                               height: 20,
                                               width: 20,
                                               child: CircularProgressIndicator(
-                                                color: AppTheme.textOnPrimary,
+                                                color: Colors.white,
                                                 strokeWidth: 2,
                                               ),
                                             )
                                           : Text(
-                                              localizations.signUp,
-                                              style: AppTheme.poppins(
+                                              localizations.logIn,
+                                              style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 20),
                                   // Or continue with separator
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: Divider(
-                                          color: AppTheme.dividerColor,
-                                        ),
+                                        child: Divider(color: Colors.grey[300]),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
                                         ),
                                         child: Text(
                                           localizations.orContinueWith,
-                                          style: AppTheme.poppins(
-                                            color: AppTheme.textSecondary,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
                                             fontSize: 14,
                                           ),
                                         ),
                                       ),
                                       Expanded(
-                                        child: Divider(
-                                          color: AppTheme.dividerColor,
-                                        ),
+                                        child: Divider(color: Colors.grey[300]),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 16),
                                   // Social Login Buttons
                                   Row(
                                     children: [
@@ -641,7 +613,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         child: _buildSocialButton(
                                           icon: Icons.g_mobiledata,
                                           label: localizations.google,
-                                          onPressed: _signInWithGoogle,
+                                          onPressed: _isLoading
+                                              ? () {}
+                                              : _signInWithGoogle,
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -649,7 +623,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         child: _buildSocialButton(
                                           icon: Icons.apple,
                                           label: localizations.apple,
-                                          onPressed: _signInWithApple,
+                                          onPressed: _isLoading
+                                              ? () {}
+                                              : _signInWithApple,
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -657,7 +633,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         child: _buildSocialButton(
                                           icon: Icons.facebook,
                                           label: localizations.facebook,
-                                          onPressed: _signInWithFacebook,
+                                          onPressed: _isLoading
+                                              ? () {}
+                                              : _signInWithFacebook,
                                           isFacebook: true,
                                         ),
                                       ),
@@ -668,14 +646,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           label: localizations.vendor,
                                           onPressed: () {
                                             TapLogger.logButtonPress(
-                                              'Vendor Register',
-                                              context: 'RegisterScreen',
+                                              'Vendor Login',
+                                              context: 'LoginScreen',
                                             );
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    const VendorRegisterScreen(),
+                                                    const VendorLoginScreen(),
                                               ),
                                             );
                                           },
@@ -685,7 +663,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 16),
-                                  // Login Link - Modern Design
+                                  // Register Link - Modern Design
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
@@ -716,7 +694,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           AppTheme.radiusMedium,
                                         ),
                                         onTap: () {
-                                          Navigator.pop(context);
+                                          TapLogger.logButtonPress(
+                                            'Register',
+                                            context: 'LoginScreen',
+                                          );
+                                          TapLogger.logNavigation(
+                                            'LoginScreen',
+                                            'RegisterScreen',
+                                          );
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const RegisterScreen(),
+                                            ),
+                                          );
                                         },
                                         child: Padding(
                                           padding: EdgeInsets.symmetric(
@@ -728,14 +720,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Icon(
-                                                Icons.login_rounded,
+                                                Icons.person_add_alt_1_rounded,
                                                 color: AppTheme.primaryOrange,
                                                 size: 20,
                                               ),
                                               AppTheme.horizontalSpace(0.5),
                                               Text(
-                                                localizations
-                                                    .alreadyHaveAccount,
+                                                localizations.dontHaveAccount,
                                                 style: AppTheme.poppins(
                                                   color: AppTheme.textSecondary,
                                                   fontSize: 14,
@@ -743,7 +734,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                               ),
                                               AppTheme.horizontalSpace(0.25),
                                               Text(
-                                                localizations.signIn,
+                                                localizations.register,
                                                 style: AppTheme.poppins(
                                                   color: AppTheme.primaryOrange,
                                                   fontSize: 15,
@@ -790,12 +781,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall + 4),
-        side: BorderSide(color: AppTheme.borderColor),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        ),
-        backgroundColor: AppTheme.cardColor,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        side: BorderSide(color: Colors.grey[300]!),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.white,
       ),
       child: isFacebook
           ? Column(
@@ -822,8 +811,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: AppTheme.poppins(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -834,12 +823,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.store, color: AppTheme.primaryOrange, size: 20),
+                Icon(Icons.store, color: Colors.orange, size: 20),
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: AppTheme.poppins(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -882,12 +871,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   )
                 else
-                  Icon(icon, color: AppTheme.textPrimary, size: 20),
+                  Icon(icon, color: Colors.black87, size: 20),
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: AppTheme.poppins(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

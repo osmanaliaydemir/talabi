@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/order_detail.dart';
-import 'package:mobile/screens/customer/delivery_tracking_screen.dart';
+import 'package:mobile/screens/customer/order/delivery_tracking_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
@@ -9,6 +9,7 @@ import 'package:mobile/providers/cart_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:provider/provider.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -305,68 +306,64 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final customerOrderId = _orderDetail?.customerOrderId;
+    final title = (customerOrderId != null && customerOrderId.isNotEmpty)
+        ? '${localizations.orderDetail} #$customerOrderId'
+        : localizations.orderDetail;
+
+    Widget? action;
+    if (_orderDetail != null &&
+        (_orderDetail!.status == 'Preparing' ||
+            _orderDetail!.status == 'OnTheWay' ||
+            _orderDetail!.status == 'Delivered')) {
+      action = GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  DeliveryTrackingScreen(orderId: widget.orderId),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.map, color: Colors.white, size: 20),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppTheme.surfaceColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Builder(
-          builder: (context) {
-            final localizations = AppLocalizations.of(context)!;
-            // Only show CustomerOrderId, not GUID
-            final orderId = _orderDetail?.customerOrderId.isNotEmpty == true
-                ? _orderDetail!.customerOrderId
-                : null;
-            return Text(
-              orderId != null
-                  ? '${localizations.orderDetail} #$orderId'
-                  : localizations.orderDetail,
-              style: AppTheme.poppins(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          },
-        ),
-        actions: [
-          if (_orderDetail != null &&
-              (_orderDetail!.status == 'Preparing' ||
-                  _orderDetail!.status == 'OnTheWay' ||
-                  _orderDetail!.status == 'Delivered'))
-            IconButton(
-              icon: Icon(Icons.map, color: AppTheme.primaryOrange),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        DeliveryTrackingScreen(orderId: widget.orderId),
-                  ),
-                );
-              },
-              tooltip: AppLocalizations.of(context)!.deliveryTracking,
-            ),
-        ],
-      ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryOrange),
-            )
-          : _orderDetail == null
-          ? Center(
-              child: Text(
-                AppLocalizations.of(context)!.orderNotFound,
-                style: AppTheme.poppins(color: AppTheme.textSecondary),
-              ),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: RefreshIndicator(
+      body: Column(
+        children: [
+          SharedHeader(
+            title: title,
+            subtitle: _orderDetail?.vendorName,
+            icon: Icons.receipt_long,
+            showBackButton: true,
+            action: action,
+          ),
+          Expanded(
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryOrange,
+                    ),
+                  )
+                : _orderDetail == null
+                ? Center(
+                    child: Text(
+                      localizations.orderNotFound,
+                      style: AppTheme.poppins(color: AppTheme.textSecondary),
+                    ),
+                  )
+                : RefreshIndicator(
                     onRefresh: _loadOrderDetail,
                     color: AppTheme.primaryOrange,
                     child: SingleChildScrollView(
@@ -848,79 +845,79 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                   ),
-                ),
-                // Bottom Action Bar
-                Container(
-                  padding: EdgeInsets.all(AppTheme.spacingMedium),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_orderDetail!.status == 'Pending' ||
-                            _orderDetail!.status == 'Preparing')
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _cancelOrder,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.error,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusMedium,
-                                  ),
-                                ),
-                              ),
-                              child: Text(
-                                AppLocalizations.of(context)!.cancelOrder,
-                                style: AppTheme.poppins(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (_orderDetail!.status == 'Delivered')
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _reorder,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryOrange,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusMedium,
-                                  ),
-                                ),
-                              ),
-                              child: Text(
-                                AppLocalizations.of(context)!.reorder,
-                                style: AppTheme.poppins(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+          ),
+          // Bottom Action Bar
+          Container(
+            padding: EdgeInsets.all(AppTheme.spacingMedium),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
                 ),
               ],
             ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_orderDetail!.status == 'Pending' ||
+                      _orderDetail!.status == 'Preparing')
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _cancelOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.error,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusMedium,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.cancelOrder,
+                          style: AppTheme.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (_orderDetail!.status == 'Delivered')
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _reorder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryOrange,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusMedium,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.reorder,
+                          style: AppTheme.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

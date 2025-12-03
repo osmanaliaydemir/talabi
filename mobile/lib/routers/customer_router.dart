@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/customer/order_history_screen.dart';
-import 'package:mobile/screens/customer/order_detail_screen.dart';
+import 'package:mobile/screens/customer/order/order_history_screen.dart';
+import 'package:mobile/screens/customer/order/order_detail_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 
 /// Customer modülü için route yöneticisi
