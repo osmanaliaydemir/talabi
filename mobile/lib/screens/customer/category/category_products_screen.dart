@@ -153,7 +153,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  widget.imageUrl != null
+                  widget.imageUrl != null && widget.imageUrl!.isNotEmpty
                       ? Image.network(
                           widget.imageUrl!,
                           fit: BoxFit.cover,

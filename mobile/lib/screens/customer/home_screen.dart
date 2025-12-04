@@ -1082,6 +1082,7 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context) => CategoryProductsScreen(
               categoryName: categoryName,
               categoryId: category['id']?.toString(),
+              imageUrl: category['imageUrl']?.toString(),
             ),
           ),
         );
