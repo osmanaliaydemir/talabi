@@ -811,5 +811,6 @@
   "similarProducts": "Benzer Ürünler",
   "areYouHungry": "Acıktınız mı?",
   "onboardingDescription": "İhtiyacını talep et, en hızlı şekilde sana ulaştıralım.\nSipariş vermek artık tek dokunuş kadar kolay.",
-  "unlockDescription": "Talabî'ye doğru kaydırın!"
+  "unlockDescription": "Talabî'ye doğru kaydırın!",
+  "addAddressToOrder": "Sipariş vermek için adres ekleyin"
 }

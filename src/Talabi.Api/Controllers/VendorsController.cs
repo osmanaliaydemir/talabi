@@ -2,25 +2,37 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Extensions;
+using Talabi.Core.Helpers;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Satıcı işlemleri için controller
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class VendorsController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public VendorsController(TalabiDbContext context)
+    /// <summary>
+    /// VendorsController constructor
+    /// </summary>
+    public VendorsController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
+    /// <summary>
+    /// Tüm satıcıları getirir
+    /// </summary>
+    /// <returns>Satıcı listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<VendorDto>>> GetVendors()
+    public async Task<ActionResult<ApiResponse<List<VendorDto>>>> GetVendors()
     {
-        return await _context.Vendors
+        var vendors = await _unitOfWork.Vendors.Query()
             .Select(v => new VendorDto
             {
                 Id = v.Id,
@@ -34,10 +46,17 @@ public class VendorsController : ControllerBase
                 Longitude = v.Longitude.HasValue ? (double)v.Longitude.Value : null
             })
             .ToListAsync();
+
+        return Ok(new ApiResponse<List<VendorDto>>(vendors, "Satıcılar başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Yeni satıcı oluşturur
+    /// </summary>
+    /// <param name="dto">Satıcı bilgileri</param>
+    /// <returns>Oluşturulan satıcı</returns>
     [HttpPost]
-    public async Task<ActionResult<VendorDto>> CreateVendor(CreateVendorDto dto)
+    public async Task<ActionResult<ApiResponse<VendorDto>>> CreateVendor(CreateVendorDto dto)
     {
         var vendor = new Vendor
         {
@@ -47,10 +66,10 @@ public class VendorsController : ControllerBase
             OwnerId = "temp-user-id" // TODO: Get from User.Identity
         };
 
-        _context.Vendors.Add(vendor);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Vendors.AddAsync(vendor);
+        await _unitOfWork.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetVendors), new { id = vendor.Id }, new VendorDto
+        var vendorDto = new VendorDto
         {
             Id = vendor.Id,
             Name = vendor.Name,
@@ -59,13 +78,23 @@ public class VendorsController : ControllerBase
             City = vendor.City,
             Rating = vendor.Rating,
             RatingCount = vendor.RatingCount
-        });
+        };
+
+        return CreatedAtAction(
+            nameof(GetVendors),
+            new { id = vendor.Id },
+            new ApiResponse<VendorDto>(vendorDto, "Satıcı başarıyla oluşturuldu"));
     }
 
+    /// <summary>
+    /// Belirli bir satıcının ürünlerini getirir
+    /// </summary>
+    /// <param name="id">Satıcı ID'si</param>
+    /// <returns>Ürün listesi</returns>
     [HttpGet("{id}/products")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByVendor(Guid id)
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetProductsByVendor(Guid id)
     {
-        var products = await _context.Products
+        var products = await _unitOfWork.Products.Query()
             .Where(p => p.VendorId == id)
             .Select(p => new ProductDto
             {
@@ -79,13 +108,17 @@ public class VendorsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(products);
+        return Ok(new ApiResponse<List<ProductDto>>(products, "Satıcı ürünleri başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Tüm ürünleri getirir (Debug endpoint)
+    /// </summary>
+    /// <returns>Ürün listesi</returns>
     [HttpGet("debug/products")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAllProducts()
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetAllProducts()
     {
-        var products = await _context.Products
+        var products = await _unitOfWork.Products.Query()
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -98,21 +131,25 @@ public class VendorsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(products);
+        return Ok(new ApiResponse<List<ProductDto>>(products, "Tüm ürünler başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Satıcıları arama ve filtreleme ile getirir
+    /// </summary>
+    /// <param name="request">Arama ve filtreleme parametreleri</param>
+    /// <returns>Sayfalanmış satıcı listesi</returns>
     [HttpGet("search")]
-    public async Task<ActionResult<PagedResultDto<VendorDto>>> Search([FromQuery] VendorSearchRequestDto request)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> Search([FromQuery] VendorSearchRequestDto request)
     {
-        var query = _context.Vendors
-            .Include(v => v.Orders)
-            .AsQueryable();
+        IQueryable<Vendor> query = _unitOfWork.Vendors.Query()
+            .Include(v => v.Orders);
 
-        // Text search
+        // Text search - Case-insensitive search helper kullanımı
         if (!string.IsNullOrWhiteSpace(request.Query))
         {
-            query = query.Where(v => v.Name.Contains(request.Query) ||
-                                    v.Address.Contains(request.Query));
+            query = query.WhereContainsIgnoreCase(v => v.Name, request.Query);
+            query = query.WhereContainsIgnoreCase(v => v.Address, request.Query);
         }
 
         // City filter
@@ -138,11 +175,8 @@ public class VendorsController : ControllerBase
                 CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= maxDistance);
         }
 
-        // Get total count before pagination
-        var totalCount = await query.CountAsync();
-
         // Sorting
-        query = request.SortBy?.ToLower() switch
+        IOrderedQueryable<Vendor> orderedQuery = request.SortBy?.ToLower() switch
         {
             "name" => query.OrderBy(v => v.Name),
             "newest" => query.OrderByDescending(v => v.CreatedAt),
@@ -156,10 +190,9 @@ public class VendorsController : ControllerBase
             _ => query.OrderBy(v => v.Name)
         };
 
-        // Get vendors with order count for popularity
-        var vendors = await query
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        // Pagination - Gelişmiş query helper kullanımı
+        var vendors = await orderedQuery
+            .Paginate(request.Page, request.PageSize)
             .ToListAsync();
 
         // Calculate distance and map to DTOs
@@ -192,14 +225,19 @@ public class VendorsController : ControllerBase
             return dto;
         }).ToList();
 
-        return Ok(new PagedResultDto<VendorDto>
+        // Total count hesapla
+        var totalCount = await query.CountAsync();
+
+        var result = new PagedResultDto<VendorDto>
         {
             Items = items,
             TotalCount = totalCount,
             Page = request.Page,
             PageSize = request.PageSize,
             TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
-        });
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<VendorDto>>(result, "Satıcı arama sonuçları başarıyla getirildi"));
     }
 
     // Haversine formula to calculate distance between two coordinates in kilometers
@@ -224,28 +262,37 @@ public class VendorsController : ControllerBase
         return degrees * Math.PI / 180.0;
     }
 
+    /// <summary>
+    /// Satıcıların bulunduğu şehirleri getirir
+    /// </summary>
+    /// <returns>Şehir listesi</returns>
     [HttpGet("cities")]
-    public async Task<ActionResult<List<string>>> GetCities()
+    public async Task<ActionResult<ApiResponse<List<string>>>> GetCities()
     {
-        var cities = await _context.Vendors
+        var cities = await _unitOfWork.Vendors.Query()
             .Where(v => v.City != null)
             .Select(v => v.City!)
             .Distinct()
             .OrderBy(c => c)
             .ToListAsync();
 
-        return Ok(cities);
+        return Ok(new ApiResponse<List<string>>(cities, "Şehirler başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Satıcı adları için otomatik tamamlama sonuçları getirir
+    /// </summary>
+    /// <param name="query">Arama sorgusu</param>
+    /// <returns>Otomatik tamamlama sonuçları</returns>
     [HttpGet("autocomplete")]
-    public async Task<ActionResult<List<AutocompleteResultDto>>> Autocomplete([FromQuery] string query)
+    public async Task<ActionResult<ApiResponse<List<AutocompleteResultDto>>>> Autocomplete([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Ok(new List<AutocompleteResultDto>());
+            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(), "Arama sorgusu boş"));
         }
 
-        var results = await _context.Vendors
+        var results = await _unitOfWork.Vendors.Query()
             .Where(v => v.Name.Contains(query))
             .Take(10)
             .Select(v => new AutocompleteResultDto
@@ -256,6 +303,6 @@ public class VendorsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(results);
+        return Ok(new ApiResponse<List<AutocompleteResultDto>>(results, "Otomatik tamamlama sonuçları başarıyla getirildi"));
     }
 }

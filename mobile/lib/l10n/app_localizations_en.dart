@@ -1870,4 +1870,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlockDescription => 'Slide to Talabî!';
+
+  @override
+  String get addAddressToOrder => 'Add address to order';
 }

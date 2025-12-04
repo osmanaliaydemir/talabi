@@ -1,26 +1,39 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Courier;
 using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Enums;
+using Talabi.Core.Extensions;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Kurye bildirim işlemleri için controller
+/// </summary>
 [Route("api/courier/notifications")]
 [ApiController]
 [Authorize(Roles = "Courier")]
 public class CourierNotificationsController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<CourierNotificationsController> _logger;
 
+    /// <summary>
+    /// CourierNotificationsController constructor
+    /// </summary>
     public CourierNotificationsController(
-        TalabiDbContext context,
+        IUnitOfWork unitOfWork,
+        UserManager<AppUser> userManager,
         ILogger<CourierNotificationsController> logger)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -31,11 +44,12 @@ public class CourierNotificationsController : ControllerBase
     private async Task<Courier?> GetCurrentCourierAsync(bool createIfMissing = false)
     {
         var userId = GetUserId();
-        var courier = await _context.Couriers.FirstOrDefaultAsync(c => c.UserId == userId);
+        var courier = await _unitOfWork.Couriers.Query()
+            .FirstOrDefaultAsync(c => c.UserId == userId);
 
         if (courier == null && createIfMissing)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return null;
@@ -47,12 +61,12 @@ public class CourierNotificationsController : ControllerBase
                 Name = user.FullName ?? user.Email ?? "Courier",
                 PhoneNumber = user.PhoneNumber,
                 IsActive = true,
-                Status = Core.Enums.CourierStatus.Offline,
+                Status = CourierStatus.Offline,
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.Couriers.Add(courier);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.Couriers.AddAsync(courier);
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Courier profile auto-created for notifications. UserId: {UserId}", userId);
         }
@@ -60,8 +74,14 @@ public class CourierNotificationsController : ControllerBase
         return courier;
     }
 
+    /// <summary>
+    /// Kuryenin bildirimlerini getirir
+    /// </summary>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 20, maksimum: 100)</param>
+    /// <returns>Bildirim listesi ve okunmamış sayısı</returns>
     [HttpGet]
-    public async Task<ActionResult<CourierNotificationResponseDto>> GetNotifications(
+    public async Task<ActionResult<ApiResponse<CourierNotificationResponseDto>>> GetNotifications(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -72,24 +92,26 @@ public class CourierNotificationsController : ControllerBase
         if (courier == null)
         {
             _logger.LogWarning("Courier not found for notifications (UserId: {UserId})", GetUserId());
-            return Ok(new CourierNotificationResponseDto
+            var emptyResponse = new CourierNotificationResponseDto
             {
                 Items = Array.Empty<CourierNotificationDto>(),
                 UnreadCount = 0
-            });
+            };
+            return Ok(new ApiResponse<CourierNotificationResponseDto>(emptyResponse, "Kurye profili bulunamadı, boş bildirim listesi döndürülüyor"));
         }
 
         await EnsureWelcomeNotificationAsync(courier.Id);
 
-        var query = _context.CourierNotifications
-            .Where(n => n.CourierId == courier.Id)
-            .OrderByDescending(n => n.CreatedAt);
+        IQueryable<CourierNotification> query = _unitOfWork.CourierNotifications.Query()
+            .Where(n => n.CourierId == courier.Id);
 
         var unreadCount = await query.CountAsync(n => !n.IsRead);
 
-        var notifications = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        IOrderedQueryable<CourierNotification> orderedQuery = query.OrderByDescending(n => n.CreatedAt);
+
+        // Gelişmiş query helper kullanımı - Pagination
+        var notifications = await orderedQuery
+            .Paginate(page, pageSize)
             .Select(n => new CourierNotificationDto
             {
                 Id = n.Id,
@@ -103,28 +125,35 @@ public class CourierNotificationsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new CourierNotificationResponseDto
+        var response = new CourierNotificationResponseDto
         {
             Items = notifications,
             UnreadCount = unreadCount
-        });
+        };
+
+        return Ok(new ApiResponse<CourierNotificationResponseDto>(response, "Bildirimler başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Belirli bir bildirimi okundu olarak işaretler
+    /// </summary>
+    /// <param name="id">Bildirim ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("{id}/read")]
-    public async Task<IActionResult> MarkAsRead(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> MarkAsRead(Guid id)
     {
         var courier = await GetCurrentCourierAsync(createIfMissing: true);
         if (courier == null)
         {
-            return NotFound(new { Message = "Courier profile not found" });
+            return NotFound(new ApiResponse<object>("Kurye profili bulunamadı", "COURIER_PROFILE_NOT_FOUND"));
         }
 
-        var notification = await _context.CourierNotifications
+        var notification = await _unitOfWork.CourierNotifications.Query()
             .FirstOrDefaultAsync(n => n.Id == id && n.CourierId == courier.Id);
 
         if (notification == null)
         {
-            return NotFound(new { Message = "Notification not found" });
+            return NotFound(new ApiResponse<object>("Bildirim bulunamadı", "NOTIFICATION_NOT_FOUND"));
         }
 
         if (!notification.IsRead)
@@ -132,28 +161,33 @@ public class CourierNotificationsController : ControllerBase
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             notification.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            _unitOfWork.CourierNotifications.Update(notification);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new { Message = "Notification marked as read" });
+        return Ok(new ApiResponse<object>(new { }, "Bildirim okundu olarak işaretlendi"));
     }
 
+    /// <summary>
+    /// Tüm bildirimleri okundu olarak işaretler
+    /// </summary>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("read-all")]
-    public async Task<IActionResult> MarkAllAsRead()
+    public async Task<ActionResult<ApiResponse<object>>> MarkAllAsRead()
     {
         var courier = await GetCurrentCourierAsync(createIfMissing: true);
         if (courier == null)
         {
-            return NotFound(new { Message = "Courier profile not found" });
+            return NotFound(new ApiResponse<object>("Kurye profili bulunamadı", "COURIER_PROFILE_NOT_FOUND"));
         }
 
-        var unreadNotifications = await _context.CourierNotifications
+        var unreadNotifications = await _unitOfWork.CourierNotifications.Query()
             .Where(n => n.CourierId == courier.Id && !n.IsRead)
             .ToListAsync();
 
         if (unreadNotifications.Count == 0)
         {
-            return Ok(new { Message = "All notifications are already read" });
+            return Ok(new ApiResponse<object>(new { }, "Tüm bildirimler zaten okunmuş"));
         }
 
         foreach (var notification in unreadNotifications)
@@ -161,21 +195,22 @@ public class CourierNotificationsController : ControllerBase
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             notification.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.CourierNotifications.Update(notification);
         }
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "All notifications marked as read" });
+        return Ok(new ApiResponse<object>(new { }, "Tüm bildirimler okundu olarak işaretlendi"));
     }
 
     private async Task EnsureWelcomeNotificationAsync(Guid courierId)
     {
-        var hasNotification = await _context.CourierNotifications
+        var hasNotification = await _unitOfWork.CourierNotifications.Query()
             .AnyAsync(n => n.CourierId == courierId);
 
         if (!hasNotification)
         {
-            _context.CourierNotifications.Add(new CourierNotification
+            await _unitOfWork.CourierNotifications.AddAsync(new CourierNotification
             {
                 CourierId = courierId,
                 Title = "Talabi'ye Hoş Geldin!",
@@ -183,7 +218,7 @@ public class CourierNotificationsController : ControllerBase
                 Type = "info"
             });
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

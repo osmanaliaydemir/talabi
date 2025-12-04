@@ -8,6 +8,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
+import 'package:mobile/services/analytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -53,16 +54,28 @@ class _SearchScreenState extends State<SearchScreen>
   // Search history
   List<String> _searchHistory = [];
 
+  // Flag to ensure filter options are loaded only once
+  bool _hasLoadedFilterOptions = false;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadFilterOptions();
     _loadSearchHistory();
     _searchController.addListener(_onSearchChanged);
     _searchController.addListener(() {
       setState(() {}); // Rebuild to show/hide clear button
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Load filter options after context is available
+    if (!_hasLoadedFilterOptions) {
+      _hasLoadedFilterOptions = true;
+      _loadFilterOptions();
+    }
   }
 
   @override
@@ -245,6 +258,7 @@ class _SearchScreenState extends State<SearchScreen>
     });
 
     _saveToSearchHistory(query);
+    AnalyticsService.logSearch(searchTerm: query);
     _searchProducts();
     _searchVendors();
   }
@@ -257,6 +271,7 @@ class _SearchScreenState extends State<SearchScreen>
     });
 
     _saveToSearchHistory(result.name);
+    AnalyticsService.logSearch(searchTerm: result.name);
     _searchProducts();
     _searchVendors();
   }

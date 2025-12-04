@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 
 import 'package:mobile/screens/shared/settings/accessibility_settings_screen.dart';
 import 'package:mobile/screens/customer/profile/addresses_screen.dart';
@@ -402,47 +403,138 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.logoutConfirmTitle),
-        content: Text(localizations.logoutConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(localizations.cancel),
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final role = await auth.logout();
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.logout, color: Colors.red, size: 32),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  localizations.logoutConfirmTitle,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  localizations.logoutConfirmMessage,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey[300]!),
+                          ),
+                        ),
+                        child: Text(
+                          localizations.cancel,
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
 
-              // Navigate to login screen and clear navigation stack
-              if (mounted) {
-                // Role'e göre ilgili login sayfasına yönlendir
-                if (role?.toLowerCase() == 'courier') {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
-                } else if (role?.toLowerCase() == 'vendor') {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
-                } else {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/login', (route) => false);
-                }
-              }
-            },
-            child: Text(
-              localizations.logout,
-              style: AppTheme.poppins(
-                color: AppTheme.error,
-                fontWeight: FontWeight.w600,
-              ),
+                          // Reset bottom navigation index
+                          if (mounted) {
+                            Provider.of<BottomNavProvider>(
+                              context,
+                              listen: false,
+                            ).reset();
+                          }
+
+                          final role = await auth.logout();
+
+                          // Navigate to login screen and clear navigation stack
+                          if (mounted) {
+                            // Role'e göre ilgili login sayfasına yönlendir
+                            if (role?.toLowerCase() == 'courier') {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/courier/login',
+                                (route) => false,
+                              );
+                            } else if (role?.toLowerCase() == 'vendor') {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/vendor/login',
+                                (route) => false,
+                              );
+                            } else {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/login',
+                                (route) => false,
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          localizations.logout,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

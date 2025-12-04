@@ -5,6 +5,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
   final VoidCallback? onLanguageSelected;
@@ -44,22 +45,22 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
     {
       'code': 'tr',
       'name': 'Türkçe',
-      'nativeName': 'Türkçe',
-      'flag': '🇹🇷',
+      'nativeName': 'Turkish',
+      'shortCode': 'TR',
       'color': AppTheme.error, // Red
     },
     {
       'code': 'en',
       'name': 'English',
       'nativeName': 'English',
-      'flag': '🇬🇧',
+      'shortCode': 'EN',
       'color': AppTheme.info, // Blue
     },
     {
       'code': 'ar',
       'name': 'العربية',
-      'nativeName': 'العربية',
-      'flag': '🇸🇦',
+      'nativeName': 'Arabic',
+      'shortCode': 'AR',
       'color': AppTheme.success, // Green
     },
   ];
@@ -197,8 +198,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
     await _fadeController.reverse();
 
     if (mounted) {
-      // Trigger rebuild of MaterialApp
-      widget.onLanguageSelected?.call();
+      // Navigate to OnboardingScreen or LoginScreen
+      // Since we reset onboarding_completed to false above, we should go to OnboardingScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
     }
   }
 
@@ -357,45 +361,46 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
             curve: Curves.easeInOut,
             padding: EdgeInsets.symmetric(
               horizontal: AppTheme.spacingLarge,
-              vertical: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+              vertical: AppTheme.spacingLarge,
             ),
             decoration: BoxDecoration(
               color: AppTheme.cardColor,
               borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
               border: Border.all(
                 color: isSelected ? color : AppTheme.dividerColor,
-                width: isSelected ? 3 : 1,
+                width: isSelected ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isSelected
-                      ? color.withValues(alpha: 0.4)
+                      ? color.withValues(alpha: 0.2)
                       : AppTheme.shadowColor,
-                  blurRadius: isSelected ? 20 : 10,
-                  spreadRadius: isSelected ? 2 : 0,
+                  blurRadius: isSelected ? 15 : 10,
+                  spreadRadius: isSelected ? 1 : 0,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Row(
               children: [
-                // Flag with animation
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 60,
-                  height: 60,
+                // Stylized Language Code
+                Container(
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? color : Colors.transparent,
-                      width: 2,
-                    ),
+                    color: isSelected
+                        ? color.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
                     child: Text(
-                      language['flag'] as String,
-                      style: const TextStyle(fontSize: 32),
+                      language['shortCode'] as String,
+                      style: AppTheme.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? color : Colors.grey[600],
+                      ),
                     ),
                   ),
                 ),
@@ -408,57 +413,36 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                       Text(
                         language['name'] as String,
                         style: AppTheme.poppins(
-                          fontSize: 22,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? color : AppTheme.textPrimary,
+                          color: AppTheme.textPrimary,
                         ),
                       ),
-                      AppTheme.verticalSpace(0.25),
                       Text(
                         language['nativeName'] as String,
                         style: AppTheme.poppins(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: AppTheme.textSecondary,
-                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
                   ),
                 ),
                 // Selection Indicator
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? color : Colors.grey[300]!,
+                      width: 2,
+                    ),
+                    color: isSelected ? color : Colors.transparent,
+                  ),
                   child: isSelected
-                      ? Container(
-                          key: const ValueKey('selected'),
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.check,
-                            color: AppTheme.textOnPrimary,
-                            size: 20,
-                          ),
-                        )
-                      : Container(
-                          key: const ValueKey('unselected'),
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: AppTheme.backgroundColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
+                      ? Icon(Icons.check, size: 16, color: Colors.white)
+                      : null,
                 ),
               ],
             ),

@@ -2,24 +2,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Promosyonel banner'lar için controller
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class BannersController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public BannersController(TalabiDbContext context)
+    /// <summary>
+    /// BannersController constructor
+    /// </summary>
+    public BannersController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
-    // GET: api/banners
+    /// <summary>
+    /// Aktif promosyonel banner'ları getirir
+    /// </summary>
+    /// <param name="language">Dil kodu (tr, en, ar). Varsayılan: tr</param>
+    /// <returns>Banner listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<PromotionalBannerDto>>> GetBanners(
+    public async Task<ActionResult<ApiResponse<List<PromotionalBannerDto>>>> GetBanners(
         [FromQuery] string? language = "tr")
     {
         var now = DateTime.UtcNow;
@@ -31,14 +41,17 @@ public class BannersController : ControllerBase
             languageCode = "tr"; // Default to Turkish
         }
 
-        var banners = await _context.PromotionalBanners
+        IQueryable<PromotionalBanner> query = _unitOfWork.PromotionalBanners.Query()
             .Include(b => b.Translations)
             .Where(b => b.IsActive &&
                        (b.StartDate == null || b.StartDate <= now) &&
-                       (b.EndDate == null || b.EndDate >= now))
+                       (b.EndDate == null || b.EndDate >= now));
+
+        IOrderedQueryable<PromotionalBanner> orderedQuery = query
             .OrderBy(b => b.DisplayOrder)
-            .ThenBy(b => b.CreatedAt)
-            .ToListAsync();
+            .ThenBy(b => b.CreatedAt);
+
+        var banners = await orderedQuery.ToListAsync();
 
         var result = banners.Select(b =>
         {
@@ -62,12 +75,17 @@ public class BannersController : ControllerBase
             };
         }).ToList();
 
-        return Ok(result);
+        return Ok(new ApiResponse<List<PromotionalBannerDto>>(result, "Banner'lar başarıyla getirildi"));
     }
 
-    // GET: api/banners/{id}
+    /// <summary>
+    /// ID'ye göre banner getirir
+    /// </summary>
+    /// <param name="id">Banner ID'si</param>
+    /// <param name="language">Dil kodu (tr, en, ar). Varsayılan: tr</param>
+    /// <returns>Banner detayı</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<PromotionalBannerDto>> GetBanner(
+    public async Task<ActionResult<ApiResponse<PromotionalBannerDto>>> GetBanner(
         Guid id,
         [FromQuery] string? language = "tr")
     {
@@ -79,13 +97,16 @@ public class BannersController : ControllerBase
             languageCode = "tr"; // Default to Turkish
         }
 
-        var banner = await _context.PromotionalBanners
+        var banner = await _unitOfWork.PromotionalBanners.Query()
             .Include(b => b.Translations)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (banner == null)
         {
-            return NotFound();
+            return NotFound(new ApiResponse<PromotionalBannerDto>(
+                "Banner bulunamadı",
+                "BANNER_NOT_FOUND"
+            ));
         }
 
         // Try to get translation for the requested language
@@ -107,7 +128,7 @@ public class BannersController : ControllerBase
             LanguageCode = languageCode
         };
 
-        return Ok(result);
+        return Ok(new ApiResponse<PromotionalBannerDto>(result, "Banner başarıyla getirildi"));
     }
 }
 

@@ -2,28 +2,39 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Harita işlemleri için controller
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class MapController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public MapController(TalabiDbContext context)
+    /// <summary>
+    /// MapController constructor
+    /// </summary>
+    public MapController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
-    // Get all vendors with location for map display
+    /// <summary>
+    /// Harita görüntüleme için konum bilgisi olan tüm satıcıları getirir
+    /// </summary>
+    /// <param name="userLatitude">Kullanıcı enlemi (opsiyonel)</param>
+    /// <param name="userLongitude">Kullanıcı boylamı (opsiyonel)</param>
+    /// <returns>Satıcı harita bilgileri listesi</returns>
     [HttpGet("vendors")]
-    public async Task<ActionResult<List<VendorMapDto>>> GetVendorsForMap(
+    public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap(
         [FromQuery] double? userLatitude,
         [FromQuery] double? userLongitude)
     {
-        var vendors = await _context.Vendors
+        var vendors = await _unitOfWork.Vendors.Query()
             .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
             .Select(v => new VendorMapDto
             {
@@ -53,15 +64,19 @@ public class MapController : ControllerBase
             vendors = vendors.OrderBy(v => v.DistanceInKm).ToList();
         }
 
-        return Ok(vendors);
+        return Ok(new ApiResponse<List<VendorMapDto>>(vendors, "Satıcı harita bilgileri başarıyla getirildi"));
     }
 
-    // Get delivery tracking information
+    /// <summary>
+    /// Teslimat takip bilgilerini getirir
+    /// </summary>
+    /// <param name="orderId">Sipariş ID'si</param>
+    /// <returns>Teslimat takip bilgileri</returns>
     [HttpGet("delivery-tracking/{orderId}")]
     [Authorize]
-    public async Task<ActionResult<DeliveryTrackingDto>> GetDeliveryTracking(Guid orderId)
+    public async Task<ActionResult<ApiResponse<DeliveryTrackingDto>>> GetDeliveryTracking(Guid orderId)
     {
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.DeliveryAddress)
             .Include(o => o.Courier)
@@ -69,27 +84,36 @@ public class MapController : ControllerBase
 
         if (order == null)
         {
-            return NotFound("Order not found");
+            return NotFound(new ApiResponse<DeliveryTrackingDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (order.CustomerId != userId)
         {
-            return Forbid();
+            return StatusCode(403, new ApiResponse<DeliveryTrackingDto>(
+                "Bu siparişe erişim yetkiniz yok",
+                "FORBIDDEN"
+            ));
         }
 
         if (order.DeliveryAddress == null ||
             !order.DeliveryAddress.Latitude.HasValue ||
             !order.DeliveryAddress.Longitude.HasValue)
         {
-            return BadRequest("Delivery address location not available");
+            return BadRequest(new ApiResponse<DeliveryTrackingDto>(
+                "Teslimat adresi konumu mevcut değil",
+                "DELIVERY_ADDRESS_LOCATION_NOT_AVAILABLE"
+            ));
         }
 
         if (order.Vendor == null ||
             !order.Vendor.Latitude.HasValue ||
             !order.Vendor.Longitude.HasValue)
         {
-            return BadRequest("Vendor location not available");
+            return BadRequest(new ApiResponse<DeliveryTrackingDto>(
+                "Satıcı konumu mevcut değil",
+                "VENDOR_LOCATION_NOT_AVAILABLE"
+            ));
         }
 
         var tracking = new DeliveryTrackingDto
@@ -116,20 +140,24 @@ public class MapController : ControllerBase
             tracking.CourierLastUpdate = order.Courier.LastLocationUpdate;
         }
 
-        return Ok(tracking);
+        return Ok(new ApiResponse<DeliveryTrackingDto>(tracking, "Teslimat takip bilgileri başarıyla getirildi"));
     }
 
-    // Get Google Maps API key (for frontend)
+    /// <summary>
+    /// Google Maps API anahtarını getirir (frontend için)
+    /// </summary>
+    /// <param name="configuration">Configuration servisi</param>
+    /// <returns>Google Maps API anahtarı</returns>
     [HttpGet("api-key")]
-    public ActionResult GetApiKey([FromServices] IConfiguration configuration)
+    public ActionResult<ApiResponse<object>> GetApiKey([FromServices] IConfiguration configuration)
     {
         var apiKey = configuration["GoogleMaps:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
         {
-            return NotFound("Google Maps API key not configured");
+            return NotFound(new ApiResponse<object>("Google Maps API anahtarı yapılandırılmamış", "API_KEY_NOT_CONFIGURED"));
         }
 
-        return Ok(new { ApiKey = apiKey });
+        return Ok(new ApiResponse<object>(new { ApiKey = apiKey }, "Google Maps API anahtarı başarıyla getirildi"));
     }
 
     // Haversine formula to calculate distance between two coordinates in kilometers

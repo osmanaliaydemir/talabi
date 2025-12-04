@@ -2,6 +2,7 @@
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
+import 'package:mobile/providers/notification_provider.dart';
 import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/favorites_screen.dart';
 import 'package:mobile/screens/customer/order/order_history_screen.dart';
@@ -37,6 +38,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         // Load cart from backend
         final cart = Provider.of<CartProvider>(context, listen: false);
         cart.loadCart();
+
+        // Load notifications
+        final notifications = Provider.of<NotificationProvider>(
+          context,
+          listen: false,
+        );
+        notifications.loadNotifications();
       }
     });
   }

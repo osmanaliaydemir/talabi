@@ -2,30 +2,40 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Kullanıcı tercihleri işlemleri için controller
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
 public class UserPreferencesController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UserPreferencesController(TalabiDbContext context)
+    /// <summary>
+    /// UserPreferencesController constructor
+    /// </summary>
+    public UserPreferencesController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
+    /// <summary>
+    /// Kullanıcı tercihlerini getirir (yoksa varsayılan tercihleri oluşturur)
+    /// </summary>
+    /// <returns>Kullanıcı tercihleri</returns>
     [HttpGet]
-    public async Task<ActionResult<UserPreferencesDto>> GetPreferences()
+    public async Task<ActionResult<ApiResponse<UserPreferencesDto>>> GetPreferences()
     {
         var userId = GetUserId();
 
-        var preferences = await _context.UserPreferences
+        var preferences = await _unitOfWork.UserPreferences.Query()
             .FirstOrDefaultAsync(up => up.UserId == userId);
 
         if (preferences == null)
@@ -40,26 +50,33 @@ public class UserPreferencesController : ControllerBase
                 DateFormat = "dd/MM/yyyy"
             };
 
-            _context.UserPreferences.Add(preferences);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.UserPreferences.AddAsync(preferences);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new UserPreferencesDto
+        var preferencesDto = new UserPreferencesDto
         {
             Language = preferences.Language,
             Currency = preferences.Currency,
             TimeZone = preferences.TimeZone,
             DateFormat = preferences.DateFormat,
             TimeFormat = preferences.TimeFormat
-        });
+        };
+
+        return Ok(new ApiResponse<UserPreferencesDto>(preferencesDto, "Kullanıcı tercihleri başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Kullanıcı tercihlerini günceller
+    /// </summary>
+    /// <param name="dto">Güncellenecek tercih bilgileri</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut]
-    public async Task<ActionResult> UpdatePreferences(UpdateUserPreferencesDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdatePreferences(UpdateUserPreferencesDto dto)
     {
         var userId = GetUserId();
 
-        var preferences = await _context.UserPreferences
+        var preferences = await _unitOfWork.UserPreferences.Query()
             .FirstOrDefaultAsync(up => up.UserId == userId);
 
         if (preferences == null)
@@ -68,7 +85,7 @@ public class UserPreferencesController : ControllerBase
             {
                 UserId = userId
             };
-            _context.UserPreferences.Add(preferences);
+            await _unitOfWork.UserPreferences.AddAsync(preferences);
         }
 
         // Validate and update
@@ -100,33 +117,46 @@ public class UserPreferencesController : ControllerBase
         }
 
         preferences.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _unitOfWork.UserPreferences.Update(preferences);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Preferences updated successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Tercihler başarıyla güncellendi"));
     }
 
+    /// <summary>
+    /// Desteklenen dilleri getirir
+    /// </summary>
+    /// <returns>Desteklenen diller listesi</returns>
     [HttpGet("supported-languages")]
     [AllowAnonymous]
-    public ActionResult<List<SupportedLanguageDto>> GetSupportedLanguages()
+    public ActionResult<ApiResponse<List<SupportedLanguageDto>>> GetSupportedLanguages()
     {
-        return Ok(new List<SupportedLanguageDto>
+        var languages = new List<SupportedLanguageDto>
         {
             new() { Code = "tr", Name = "Turkish", NativeName = "Türkçe" },
             new() { Code = "en", Name = "English", NativeName = "English" },
             new() { Code = "ar", Name = "Arabic", NativeName = "العربية" }
-        });
+        };
+
+        return Ok(new ApiResponse<List<SupportedLanguageDto>>(languages, "Desteklenen diller başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Desteklenen para birimlerini getirir
+    /// </summary>
+    /// <returns>Desteklenen para birimleri listesi</returns>
     [HttpGet("supported-currencies")]
     [AllowAnonymous]
-    public ActionResult<List<SupportedCurrencyDto>> GetSupportedCurrencies()
+    public ActionResult<ApiResponse<List<SupportedCurrencyDto>>> GetSupportedCurrencies()
     {
         // TODO: Get real-time exchange rates from an API
-        return Ok(new List<SupportedCurrencyDto>
+        var currencies = new List<SupportedCurrencyDto>
         {
             new() { Code = "TRY", Name = "Turkish Lira", Symbol = "₺", ExchangeRate = 1.0m },
-            new() { Code = "USDT", Name = "Tether", Symbol = "USDT", ExchangeRate = 0.034m } // Example rate
-        });
+            new() { Code = "USD", Name = "Dolar", Symbol = "USD", ExchangeRate = 0.034m } // Example rate
+        };
+
+        return Ok(new ApiResponse<List<SupportedCurrencyDto>>(currencies, "Desteklenen para birimleri başarıyla getirildi"));
     }
 }
 

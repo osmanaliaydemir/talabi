@@ -162,6 +162,7 @@ class AutocompleteResultDto {
 class ProductDto {
   final String id;
   final String vendorId;
+  final String? vendorName;
   final String name;
   final String? description;
   final double price;
@@ -171,6 +172,7 @@ class ProductDto {
   ProductDto({
     required this.id,
     required this.vendorId,
+    this.vendorName,
     required this.name,
     this.description,
     required this.price,
@@ -182,6 +184,7 @@ class ProductDto {
     return ProductDto(
       id: json['id'].toString(),
       vendorId: json['vendorId'].toString(),
+      vendorName: json['vendorName'],
       name: json['name'],
       description: json['description'],
       price: (json['price'] as num).toDouble(),
@@ -196,6 +199,7 @@ class ProductDto {
     return Product(
       id: id,
       vendorId: vendorId,
+      vendorName: vendorName,
       name: name,
       description: description,
       price: price,

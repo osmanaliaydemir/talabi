@@ -12,11 +12,14 @@ using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Email;
 using Talabi.Core.Email;
 using Talabi.Core.Entities;
+using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
-using Talabi.Infrastructure.Data;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Kimlik doğrulama ve yetkilendirme işlemleri için controller
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
@@ -26,19 +29,22 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IEmailSender _emailSender;
     private readonly IMemoryCache _memoryCache;
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AuthController> _logger;
     private const int VerificationCodeExpirationMinutes = 3;
 
+    /// <summary>
+    /// AuthController constructor
+    /// </summary>
     public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration configuration,
-        IEmailSender emailSender, IMemoryCache memoryCache, TalabiDbContext context, ILogger<AuthController> logger)
+        IEmailSender emailSender, IMemoryCache memoryCache, IUnitOfWork unitOfWork, ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _emailSender = emailSender;
         _memoryCache = memoryCache;
-        _context = context;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -126,8 +132,13 @@ public class AuthController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Yeni kullanıcı kaydı oluşturur
+    /// </summary>
+    /// <param name="dto">Kayıt bilgileri</param>
+    /// <returns>Kayıt sonucu</returns>
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> Register(RegisterDto dto)
     {
         try
         {
@@ -138,11 +149,10 @@ public class AuthController : ControllerBase
                 // Kullanıcı zaten var, ancak email doğrulanmamış olabilir
                 if (await _userManager.IsEmailConfirmedAsync(existingUser))
                 {
-                    return BadRequest(new
-                    {
-                        Message = "Bu email adresi ile zaten bir hesap bulunmaktadır.",
-                        Error = "DuplicateEmail"
-                    });
+                    return BadRequest(new ApiResponse<object>(
+                        "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+                        "DuplicateEmail"
+                    ));
                 }
                 else
                 {
@@ -150,20 +160,18 @@ public class AuthController : ControllerBase
                     try
                     {
                         await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
-                        return Ok(new
-                        {
-                            Message = "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin.",
-                            Email = dto.Email
-                        });
+                        return Ok(new ApiResponse<object>(
+                            new { Email = dto.Email },
+                            "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin."
+                        ));
                     }
                     catch (Exception emailEx)
                     {
                         _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-                        return BadRequest(new
-                        {
-                            Message = "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
-                            Error = "Email gönderimi başarısız"
-                        });
+                        return BadRequest(new ApiResponse<object>(
+                            "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+                            "Email gönderimi başarısız"
+                        ));
                     }
                 }
             }
@@ -179,12 +187,11 @@ public class AuthController : ControllerBase
                 // Email gönderilemezse kullanıcıyı oluşturma ve hata döndür
                 _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
 
-                return BadRequest(new
-                {
-                    Message = "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin veya daha sonra tekrar deneyin.",
-                    Error = "Email gönderimi başarısız",
-                    Details = emailEx.Message
-                });
+                return BadRequest(new ApiResponse<object>(
+                    "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin veya daha sonra tekrar deneyin.",
+                    "Email gönderimi başarısız",
+                    new List<string> { emailEx.Message }
+                ));
             }
 
             // Email başarıyla gönderildi, şimdi kullanıcıyı oluştur
@@ -203,14 +210,13 @@ public class AuthController : ControllerBase
                     {
                         UserId = user.Id
                     };
-                    _context.Customers.Add(customer);
-                    await _context.SaveChangesAsync();
+                    await _unitOfWork.Customers.AddAsync(customer);
+                    await _unitOfWork.SaveChangesAsync();
 
-                    return Ok(new
-                    {
-                        Message = "Kullanıcı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.",
-                        Email = user.Email
-                    });
+                    return Ok(new ApiResponse<object>(
+                        new { Email = user.Email },
+                        "Kullanıcı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz."
+                    ));
                 }
                 catch (Exception dbEx)
                 {
@@ -223,11 +229,11 @@ public class AuthController : ControllerBase
                     // Kullanıcıyı sil (rollback)
                     await _userManager.DeleteAsync(user);
 
-                    return StatusCode(500, new
-                    {
-                        Message = "Kullanıcı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
-                        Error = innerExceptionMessage
-                    });
+                    return StatusCode(500, new ApiResponse<object>(
+                        "Kullanıcı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+                        "DATABASE_ERROR",
+                        new List<string> { innerExceptionMessage }
+                    ));
                 }
             }
 
@@ -235,11 +241,12 @@ public class AuthController : ControllerBase
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);
 
-            return BadRequest(new
-            {
-                Message = "Kullanıcı oluşturulamadı",
-                Errors = result.Errors
-            });
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new ApiResponse<object>(
+                "Kullanıcı oluşturulamadı",
+                "USER_CREATION_FAILED",
+                errorMessages
+            ));
         }
         catch (Exception ex)
         {
@@ -249,16 +256,21 @@ public class AuthController : ControllerBase
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);
 
-            return StatusCode(500, new
-            {
-                Message = "Kayıt sırasında bir hata oluştu",
-                Error = ex.Message
-            });
+            return StatusCode(500, new ApiResponse<object>(
+                "Kayıt sırasında bir hata oluştu",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 
+    /// <summary>
+    /// Yeni satıcı kaydı oluşturur
+    /// </summary>
+    /// <param name="dto">Satıcı kayıt bilgileri</param>
+    /// <returns>Kayıt sonucu</returns>
     [HttpPost("vendor-register")]
-    public async Task<IActionResult> VendorRegister(VendorRegisterDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> VendorRegister(VendorRegisterDto dto)
     {
         try
         {
@@ -268,11 +280,10 @@ public class AuthController : ControllerBase
             {
                 if (await _userManager.IsEmailConfirmedAsync(existingUser))
                 {
-                    return BadRequest(new
-                    {
-                        Message = "Bu email adresi ile zaten bir hesap bulunmaktadır.",
-                        Error = "DuplicateEmail"
-                    });
+                    return BadRequest(new ApiResponse<object>(
+                        "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+                        "DuplicateEmail"
+                    ));
                 }
                 else
                 {
@@ -280,20 +291,18 @@ public class AuthController : ControllerBase
                     try
                     {
                         await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
-                        return Ok(new
-                        {
-                            Message = "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin.",
-                            Email = dto.Email
-                        });
+                        return Ok(new ApiResponse<object>(
+                            new { Email = dto.Email },
+                            "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin."
+                        ));
                     }
                     catch (Exception emailEx)
                     {
                         _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-                        return BadRequest(new
-                        {
-                            Message = "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
-                            Error = "Email gönderimi başarısız"
-                        });
+                        return BadRequest(new ApiResponse<object>(
+                            "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+                            "Email gönderimi başarısız"
+                        ));
                     }
                 }
             }
@@ -306,12 +315,11 @@ public class AuthController : ControllerBase
             catch (Exception emailEx)
             {
                 _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-                return BadRequest(new
-                {
-                    Message = "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin.",
-                    Error = "Email gönderimi başarısız",
-                    Details = emailEx.Message
-                });
+                return BadRequest(new ApiResponse<object>(
+                    "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin.",
+                    "Email gönderimi başarısız",
+                    new List<string> { emailEx.Message }
+                ));
             }
 
             // Email başarıyla gönderildi, kullanıcıyı oluştur
@@ -342,14 +350,13 @@ public class AuthController : ControllerBase
                         Description = dto.Description,
                         IsActive = false // Admin onayı bekleyecek
                     };
-                    _context.Vendors.Add(vendor);
-                    await _context.SaveChangesAsync();
+                    await _unitOfWork.Vendors.AddAsync(vendor);
+                    await _unitOfWork.SaveChangesAsync();
 
-                    return Ok(new
-                    {
-                        Message = "Satıcı hesabı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.",
-                        Email = user.Email
-                    });
+                    return Ok(new ApiResponse<object>(
+                        new { Email = user.Email },
+                        "Satıcı hesabı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz."
+                    ));
                 }
                 catch (Exception dbEx)
                 {
@@ -360,11 +367,11 @@ public class AuthController : ControllerBase
                     // Kullanıcıyı sil (rollback)
                     await _userManager.DeleteAsync(user);
 
-                    return StatusCode(500, new
-                    {
-                        Message = "Satıcı hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
-                        Error = innerExceptionMessage
-                    });
+                    return StatusCode(500, new ApiResponse<object>(
+                        "Satıcı hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+                        "DATABASE_ERROR",
+                        new List<string> { innerExceptionMessage }
+                    ));
                 }
             }
 
@@ -372,11 +379,12 @@ public class AuthController : ControllerBase
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);
 
-            return BadRequest(new
-            {
-                Message = "Satıcı hesabı oluşturulamadı",
-                Errors = result.Errors
-            });
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new ApiResponse<object>(
+                "Satıcı hesabı oluşturulamadı",
+                "VENDOR_CREATION_FAILED",
+                errorMessages
+            ));
         }
         catch (Exception ex)
         {
@@ -385,40 +393,45 @@ public class AuthController : ControllerBase
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);
 
-            return StatusCode(500, new
-            {
-                Message = "Kayıt sırasında bir hata oluştu",
-                Error = ex.Message
-            });
+            return StatusCode(500, new ApiResponse<object>(
+                "Kayıt sırasında bir hata oluştu",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 
+    /// <summary>
+    /// Email doğrulama kodunu kontrol eder ve email'i doğrular
+    /// </summary>
+    /// <param name="dto">Doğrulama kodu bilgileri</param>
+    /// <returns>Doğrulama sonucu</returns>
     [HttpPost("verify-email-code")]
-    public async Task<IActionResult> VerifyEmailCode([FromBody] VerifyEmailCodeDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> VerifyEmailCode([FromBody] VerifyEmailCodeDto dto)
     {
         try
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                return BadRequest(new { Message = "Kullanıcı bulunamadı." });
+                return BadRequest(new ApiResponse<object>("Kullanıcı bulunamadı.", "USER_NOT_FOUND"));
             }
 
             // Check if email is already confirmed
             if (await _userManager.IsEmailConfirmedAsync(user))
             {
-                return BadRequest(new { Message = "Email adresi zaten doğrulanmış." });
+                return BadRequest(new ApiResponse<object>("Email adresi zaten doğrulanmış.", "EMAIL_ALREADY_CONFIRMED"));
             }
 
             var cacheKey = $"verification_code_{dto.Email}";
             if (!_memoryCache.TryGetValue(cacheKey, out string? cachedCode))
             {
-                return BadRequest(new { Message = "Doğrulama kodu süresi dolmuş veya geçersiz." });
+                return BadRequest(new ApiResponse<object>("Doğrulama kodu süresi dolmuş veya geçersiz.", "CODE_EXPIRED"));
             }
 
             if (cachedCode != dto.Code)
             {
-                return BadRequest(new { Message = "Doğrulama kodu hatalı." });
+                return BadRequest(new ApiResponse<object>("Doğrulama kodu hatalı.", "INVALID_CODE"));
             }
 
             // Confirm email
@@ -430,19 +443,33 @@ public class AuthController : ControllerBase
                 // Remove code from cache
                 _memoryCache.Remove(cacheKey);
 
-                return Ok(new { Message = "Email adresi başarıyla doğrulandı." });
+                return Ok(new ApiResponse<object>(new { }, "Email adresi başarıyla doğrulandı."));
             }
 
-            return BadRequest(new { Message = "Email doğrulama başarısız.", Errors = result.Errors });
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new ApiResponse<object>(
+                "Email doğrulama başarısız.",
+                "EMAIL_VERIFICATION_FAILED",
+                errorMessages
+            ));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { Message = "Doğrulama sırasında bir hata oluştu", Error = ex.Message });
+            return StatusCode(500, new ApiResponse<object>(
+                "Doğrulama sırasında bir hata oluştu",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 
+    /// <summary>
+    /// Email doğrulama kodunu yeniden gönderir
+    /// </summary>
+    /// <param name="dto">Yeniden gönderme bilgileri</param>
+    /// <returns>Gönderme sonucu</returns>
     [HttpPost("resend-verification-code")]
-    public async Task<IActionResult> ResendVerificationCode([FromBody] ResendVerificationCodeDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> ResendVerificationCode([FromBody] ResendVerificationCodeDto dto)
     {
         try
         {
@@ -450,18 +477,18 @@ public class AuthController : ControllerBase
             if (user == null)
             {
                 // Don't reveal if user exists or not for security
-                return Ok(new { Message = "Eğer bu email adresi kayıtlıysa, doğrulama kodu gönderildi." });
+                return Ok(new ApiResponse<object>(new { }, "Eğer bu email adresi kayıtlıysa, doğrulama kodu gönderildi."));
             }
 
             // Check if email is already confirmed
             if (await _userManager.IsEmailConfirmedAsync(user))
             {
-                return BadRequest(new { Message = "Email adresi zaten doğrulanmış." });
+                return BadRequest(new ApiResponse<object>("Email adresi zaten doğrulanmış.", "EMAIL_ALREADY_CONFIRMED"));
             }
 
             // Try to get language from UserPreferences if user has preferences
             string? userLanguage = null;
-            var userPreferences = await _context.UserPreferences
+            var userPreferences = await _unitOfWork.UserPreferences.Query()
                 .FirstOrDefaultAsync(up => up.UserId == user.Id);
 
             if (userPreferences != null)
@@ -475,11 +502,15 @@ public class AuthController : ControllerBase
             // Send new verification code with language preference
             await SendVerificationCodeAsync(user.Email!, user.FullName, languageToUse);
 
-            return Ok(new { Message = "Doğrulama kodu yeniden gönderildi." });
+                return Ok(new ApiResponse<object>(new { }, "Doğrulama kodu yeniden gönderildi."));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { Message = "Kod gönderme sırasında bir hata oluştu", Error = ex.Message });
+            return StatusCode(500, new ApiResponse<object>(
+                "Kod gönderme sırasında bir hata oluştu",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 
@@ -498,8 +529,13 @@ public class AuthController : ControllerBase
         return BadRequest("Error confirming email.");
     }
 
+    /// <summary>
+    /// Şifre sıfırlama linki gönderir
+    /// </summary>
+    /// <param name="dto">Email bilgisi</param>
+    /// <returns>Gönderme sonucu</returns>
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
         try
         {
@@ -507,11 +543,10 @@ public class AuthController : ControllerBase
             if (user == null)
             {
                 // Don't reveal if user exists or not for security
-                return Ok(new { Message = "If the email exists, a password reset link has been sent." });
+                return Ok(new ApiResponse<object>(new { }, "If the email exists, a password reset link has been sent."));
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
 
             await _emailSender.SendEmailAsync(new EmailTemplateRequest
             {
@@ -525,35 +560,44 @@ public class AuthController : ControllerBase
                 }
             });
 
-            return Ok(new { Message = "If the email exists, a password reset link has been sent." });
+            return Ok(new ApiResponse<object>(new { }, "If the email exists, a password reset link has been sent."));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { Message = "An error occurred", Error = ex.Message });
+            return StatusCode(500, new ApiResponse<object>(
+                "An error occurred",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 
+    /// <summary>
+    /// Kullanıcı girişi yapar ve JWT token döndürür
+    /// </summary>
+    /// <param name="dto">Giriş bilgileri</param>
+    /// <returns>JWT token ve kullanıcı bilgileri</returns>
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto)
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login(LoginDto dto)
     {
         try
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                return Unauthorized(new { Message = "Invalid email or password" });
+                return Unauthorized(new ApiResponse<LoginResponseDto>("Invalid email or password", "INVALID_CREDENTIALS"));
             }
 
             // Check if email is confirmed
             if (!await _userManager.IsEmailConfirmedAsync(user))
             {
-                return Unauthorized(new { Message = "Email not confirmed. Please check your email." });
+                return Unauthorized(new ApiResponse<LoginResponseDto>("Email not confirmed. Please check your email.", "EMAIL_NOT_CONFIRMED"));
             }
 
             // Check if password hash is valid before attempting to verify
             if (string.IsNullOrEmpty(user.PasswordHash))
             {
-                return Unauthorized(new { Message = "Account password not set. Please reset your password." });
+                return Unauthorized(new ApiResponse<LoginResponseDto>("Account password not set. Please reset your password.", "PASSWORD_NOT_SET"));
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
@@ -567,10 +611,20 @@ public class AuthController : ControllerBase
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role.ToString() });
+                var loginResponse = new LoginResponseDto
+                {
+                    Token = token,
+                    RefreshToken = refreshToken,
+                    UserId = user.Id,
+                    Email = user.Email!,
+                    FullName = user.FullName,
+                    Role = user.Role.ToString()
+                };
+
+                return Ok(new ApiResponse<LoginResponseDto>(loginResponse, "Giriş başarılı"));
             }
 
-            return Unauthorized(new { Message = "Invalid email or password" });
+            return Unauthorized(new ApiResponse<LoginResponseDto>("Invalid email or password", "INVALID_CREDENTIALS"));
         }
         catch (FormatException ex) when (ex.Message.Contains("Base-64"))
         {
@@ -595,40 +649,62 @@ public class AuthController : ControllerBase
                         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
                         await _userManager.UpdateAsync(user);
 
-                        return Ok(new { Token = token, RefreshToken = refreshToken, UserId = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role.ToString() });
+                        var loginResponse = new LoginResponseDto
+                        {
+                            Token = token,
+                            RefreshToken = refreshToken,
+                            UserId = user.Id,
+                            Email = user.Email!,
+                            FullName = user.FullName,
+                            Role = user.Role.ToString()
+                        };
+
+                        return Ok(new ApiResponse<LoginResponseDto>(loginResponse, "Giriş başarılı"));
                     }
                 }
             }
 
-            return StatusCode(500, new { Message = "Account password is corrupted. Please contact support or register a new account." });
+            return StatusCode(500, new ApiResponse<LoginResponseDto>(
+                "Account password is corrupted. Please contact support or register a new account.",
+                "PASSWORD_CORRUPTED"
+            ));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { Message = "An error occurred during login", Error = ex.Message });
+            return StatusCode(500, new ApiResponse<LoginResponseDto>(
+                "An error occurred during login",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 
+    /// <summary>
+    /// JWT token'ı yeniler
+    /// </summary>
+    /// <param name="dto">Token bilgileri</param>
+    /// <returns>Yeni token'lar</returns>
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken(RefreshTokenDto dto)
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> RefreshToken(RefreshTokenDto dto)
     {
         if (dto is null)
-            return BadRequest("Invalid client request");
+            return BadRequest(new ApiResponse<LoginResponseDto>("Invalid client request", "INVALID_REQUEST"));
 
         string? accessToken = dto.Token;
         string? refreshToken = dto.RefreshToken;
 
         var principal = GetPrincipalFromExpiredToken(accessToken);
         if (principal == null)
-            return BadRequest("Invalid access token or refresh token");
+            return BadRequest(new ApiResponse<LoginResponseDto>("Invalid access token or refresh token", "INVALID_TOKEN"));
 
         var email = principal.FindFirstValue(ClaimTypes.Email) ?? principal.FindFirstValue(JwtRegisteredClaimNames.Email);
         if (email == null)
-            return BadRequest("Invalid access token or refresh token");
+            return BadRequest(new ApiResponse<LoginResponseDto>("Invalid access token or refresh token", "INVALID_TOKEN"));
 
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            return BadRequest("Invalid access token or refresh token");
+            return BadRequest(new ApiResponse<LoginResponseDto>("Invalid access token or refresh token", "INVALID_TOKEN"));
 
         var newAccessToken = await GenerateJwtToken(user);
         var newRefreshToken = GenerateRefreshToken();
@@ -636,7 +712,17 @@ public class AuthController : ControllerBase
         user.RefreshToken = newRefreshToken;
         await _userManager.UpdateAsync(user);
 
-        return Ok(new { Token = newAccessToken, RefreshToken = newRefreshToken });
+        var loginResponse = new LoginResponseDto
+        {
+            Token = newAccessToken,
+            RefreshToken = newRefreshToken,
+            UserId = user.Id,
+            Email = user.Email!,
+            FullName = user.FullName,
+            Role = user.Role.ToString()
+        };
+
+        return Ok(new ApiResponse<LoginResponseDto>(loginResponse, "Token başarıyla yenilendi"));
     }
 
     private async Task<string> GenerateJwtToken(AppUser user)
@@ -712,8 +798,13 @@ public class AuthController : ControllerBase
         return principal;
     }
 
+    /// <summary>
+    /// Sosyal medya ile giriş yapar (Google, Apple, Facebook)
+    /// </summary>
+    /// <param name="dto">Sosyal medya giriş bilgileri</param>
+    /// <returns>JWT token ve kullanıcı bilgileri</returns>
     [HttpPost("external-login")]
-    public async Task<IActionResult> ExternalLogin([FromBody] ExternalAuthDto dto)
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> ExternalLogin([FromBody] ExternalAuthDto dto)
     {
         try
         {
@@ -721,7 +812,7 @@ public class AuthController : ControllerBase
             if (string.IsNullOrEmpty(dto.Provider) ||
                 !new[] { "Google", "Apple", "Facebook" }.Contains(dto.Provider))
             {
-                return BadRequest(new { Message = "Invalid provider" });
+                return BadRequest(new ApiResponse<LoginResponseDto>("Invalid provider", "INVALID_PROVIDER"));
             }
 
             // For now, we trust the token from mobile app
@@ -730,7 +821,7 @@ public class AuthController : ControllerBase
 
             if (string.IsNullOrEmpty(dto.Email))
             {
-                return BadRequest(new { Message = "Email is required" });
+                return BadRequest(new ApiResponse<LoginResponseDto>("Email is required", "EMAIL_REQUIRED"));
             }
 
             // Check if user exists
@@ -751,7 +842,12 @@ public class AuthController : ControllerBase
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new { Message = "User creation failed", Errors = result.Errors });
+                    var errorMessages = result.Errors.Select(e => e.Description).ToList();
+                    return BadRequest(new ApiResponse<LoginResponseDto>(
+                        "User creation failed",
+                        "USER_CREATION_FAILED",
+                        errorMessages
+                    ));
                 }
 
                 // Assign Customer role
@@ -762,8 +858,8 @@ public class AuthController : ControllerBase
                 {
                     UserId = user.Id
                 };
-                _context.Customers.Add(customer);
-                await _context.SaveChangesAsync();
+                await _unitOfWork.Customers.AddAsync(customer);
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation($"New user created via {dto.Provider}: {dto.Email}");
             }
@@ -781,21 +877,27 @@ public class AuthController : ControllerBase
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _userManager.UpdateAsync(user);
 
-            return Ok(new
+            var loginResponse = new LoginResponseDto
             {
                 Token = token,
                 RefreshToken = refreshToken,
                 UserId = user.Id,
-                Email = user.Email,
+                Email = user.Email!,
                 FullName = user.FullName,
                 Role = user.Role.ToString(),
                 Provider = dto.Provider
-            });
+            };
+
+            return Ok(new ApiResponse<LoginResponseDto>(loginResponse, "Giriş başarılı"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"External login failed for provider: {dto.Provider}");
-            return StatusCode(500, new { Message = "External login failed", Error = ex.Message });
+            return StatusCode(500, new ApiResponse<LoginResponseDto>(
+                "External login failed",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
         }
     }
 }

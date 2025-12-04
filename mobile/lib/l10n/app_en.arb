@@ -810,5 +810,6 @@
   "similarProducts": "Similar Products",
   "areYouHungry": "Are you Hungry?",
   "onboardingDescription": "Request what you need, and we'll deliver it to you as fast as possible.\nOrdering with Talabi is now as easy as a single touch.",
-  "unlockDescription": "Slide to Talabî!"
+  "unlockDescription": "Slide to Talabî!",
+  "addAddressToOrder": "Add address to order"
 }

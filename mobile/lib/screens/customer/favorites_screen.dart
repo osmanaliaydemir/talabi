@@ -30,16 +30,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Future<void> _loadFavorites() async {
     try {
       final favoritesData = await _apiService.getFavorites();
-      setState(() {
-        _favorites = favoritesData
-            .map((data) => Product.fromJson(data))
-            .toList();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _favorites = favoritesData
+              .map((data) => Product.fromJson(data))
+              .toList();
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       if (mounted) {
         ScaffoldMessenger.of(
           context,

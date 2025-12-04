@@ -1868,4 +1868,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get unlockDescription => 'Talabî\'ye doğru kaydırın!';
+
+  @override
+  String get addAddressToOrder => 'Sipariş vermek için adres ekleyin';
 }

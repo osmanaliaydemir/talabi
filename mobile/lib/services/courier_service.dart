@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:mobile/models/api_response.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/models/courier_earning.dart';
@@ -25,9 +26,29 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return Courier.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => Courier.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Kurye profili getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt Courier)
+      return Courier.fromJson(responseData);
     } else {
-      throw Exception('Failed to load courier profile');
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to load courier profile',
+      );
+      throw Exception(error);
     }
   }
 
@@ -42,9 +63,25 @@ class CourierService {
       body: json.encode({'status': status}),
     );
 
-    if (response.statusCode != 200) {
-      final error =
-          json.decode(response.body)['message'] ?? 'Failed to update status';
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Durum güncellenemedi');
+        }
+      }
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to update status',
+      );
       throw Exception(error);
     }
   }
@@ -60,7 +97,21 @@ class CourierService {
       body: json.encode({'latitude': latitude, 'longitude': longitude}),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Konum güncellenemedi');
+        }
+      }
+    } else {
       final error = _extractErrorMessage(
         response.body,
         'Failed to update location',
@@ -80,9 +131,29 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return CourierStatistics.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => CourierStatistics.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'İstatistikler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt CourierStatistics)
+      return CourierStatistics.fromJson(responseData);
     } else {
-      throw Exception('Failed to load statistics');
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to load statistics',
+      );
+      throw Exception(error);
     }
   }
 
@@ -97,7 +168,29 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => (json as List<dynamic>)
+              .map((e) => e as Map<String, dynamic>)
+              .toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Aktif siparişler getirilemedi',
+          );
+        }
+
+        return apiResponse.data!
+            .map((json) => CourierOrder.fromJson(json))
+            .toList();
+      }
+      // Eski format (direkt liste)
+      final List<dynamic> data = responseData as List;
       return data.map((json) => CourierOrder.fromJson(json)).toList();
     }
     final errorMessage = _extractErrorMessage(
@@ -116,7 +209,29 @@ class CourierService {
         'Content-Type': 'application/json',
       },
     );
-    return response.statusCode == 200;
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş kabul edilemedi');
+        }
+      }
+      return true;
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to accept order',
+      );
+      throw Exception(error);
+    }
   }
 
   Future<bool> rejectOrder(String orderId) async {
@@ -128,7 +243,29 @@ class CourierService {
         'Content-Type': 'application/json',
       },
     );
-    return response.statusCode == 200;
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş reddedilemedi');
+        }
+      }
+      return true;
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to reject order',
+      );
+      throw Exception(error);
+    }
   }
 
   Future<CourierOrder> getOrderDetail(String orderId) async {
@@ -142,9 +279,29 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return CourierOrder.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => CourierOrder.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Sipariş detayı getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt CourierOrder)
+      return CourierOrder.fromJson(responseData);
     } else {
-      throw Exception('Failed to load order detail');
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to load order detail',
+      );
+      throw Exception(error);
     }
   }
 
@@ -157,7 +314,29 @@ class CourierService {
         'Content-Type': 'application/json',
       },
     );
-    return response.statusCode == 200;
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş teslim alınamadı');
+        }
+      }
+      return true;
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to pickup order',
+      );
+      throw Exception(error);
+    }
   }
 
   Future<bool> deliverOrder(String orderId) async {
@@ -169,7 +348,29 @@ class CourierService {
         'Content-Type': 'application/json',
       },
     );
-    return response.statusCode == 200;
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş teslim edilemedi');
+        }
+      }
+      return true;
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to deliver order',
+      );
+      throw Exception(error);
+    }
   }
 
   Future<CourierNotificationResponse> getNotifications({
@@ -190,7 +391,25 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return CourierNotificationResponse.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => CourierNotificationResponse.fromJson(
+            json as Map<String, dynamic>,
+          ),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Bildirimler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt CourierNotificationResponse)
+      return CourierNotificationResponse.fromJson(responseData);
     }
 
     final error = _extractErrorMessage(
@@ -210,7 +429,23 @@ class CourierService {
       },
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Bildirim okundu olarak işaretlenemedi',
+          );
+        }
+      }
+    } else {
       final error = _extractErrorMessage(
         response.body,
         'Failed to mark notification as read',
@@ -229,7 +464,24 @@ class CourierService {
       },
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ??
+                'Tüm bildirimler okundu olarak işaretlenemedi',
+          );
+        }
+      }
+    } else {
       final error = _extractErrorMessage(
         response.body,
         'Failed to mark all notifications as read',
@@ -249,9 +501,31 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return EarningsSummary.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => EarningsSummary.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Bugünkü kazançlar getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt EarningsSummary)
+      return EarningsSummary.fromJson(responseData);
     } else {
-      throw Exception('Failed to load today earnings');
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to load today earnings',
+      );
+      throw Exception(error);
     }
   }
 
@@ -266,9 +540,31 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return EarningsSummary.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => EarningsSummary.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Haftalık kazançlar getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt EarningsSummary)
+      return EarningsSummary.fromJson(responseData);
     } else {
-      throw Exception('Failed to load weekly earnings');
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to load weekly earnings',
+      );
+      throw Exception(error);
     }
   }
 
@@ -283,9 +579,31 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return EarningsSummary.fromJson(json.decode(response.body));
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => EarningsSummary.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Aylık kazançlar getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt EarningsSummary)
+      return EarningsSummary.fromJson(responseData);
     } else {
-      throw Exception('Failed to load monthly earnings');
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to load monthly earnings',
+      );
+      throw Exception(error);
     }
   }
 
@@ -305,7 +623,23 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Kazanç geçmişi getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt Map)
+      return responseData;
     } else {
       final error = _extractErrorMessage(
         response.body,
@@ -326,7 +660,25 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Müsaitlik durumu kontrol edilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt Map)
+      return responseData;
     } else {
       final error = _extractErrorMessage(
         response.body,
@@ -352,7 +704,25 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Sipariş geçmişi getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt Map)
+      return responseData;
     } else {
       final error = _extractErrorMessage(
         response.body,
@@ -398,9 +768,27 @@ class CourierService {
       }),
     );
 
-    if (response.statusCode != 200) {
-      final error =
-          json.decode(response.body)['message'] ?? 'Failed to submit proof';
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Teslimat kanıtı gönderilemedi',
+          );
+        }
+      }
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to submit proof',
+      );
       throw Exception(error);
     }
   }
@@ -416,9 +804,25 @@ class CourierService {
       body: json.encode(data),
     );
 
-    if (response.statusCode != 200) {
-      final error =
-          json.decode(response.body)['message'] ?? 'Failed to update profile';
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Profil güncellenemedi');
+        }
+      }
+    } else {
+      final error = _extractErrorMessage(
+        response.body,
+        'Failed to update profile',
+      );
       throw Exception(error);
     }
   }
@@ -454,7 +858,27 @@ class CourierService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      final responseData = json.decode(response.body);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => (json as List<dynamic>)
+              .map((e) => e as Map<String, dynamic>)
+              .toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Araç tipleri getirilemedi');
+        }
+
+        return apiResponse.data!
+            .map((e) => VehicleTypeOption.fromJson(e))
+            .toList();
+      }
+      // Eski format (direkt liste)
+      final List<dynamic> data = responseData;
       return data
           .map((e) => VehicleTypeOption.fromJson(e as Map<String, dynamic>))
           .toList();

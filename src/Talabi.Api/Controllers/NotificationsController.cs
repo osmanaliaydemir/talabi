@@ -2,36 +2,47 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Entities;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Bildirim ayarları için controller
+/// </summary>
 [Route("api/notifications")]
 [ApiController]
 [Authorize]
 public class NotificationsController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public NotificationsController(TalabiDbContext context)
+    /// <summary>
+    /// NotificationsController constructor
+    /// </summary>
+    public NotificationsController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
+    /// <summary>
+    /// Kullanıcının bildirim ayarlarını getirir
+    /// </summary>
+    /// <returns>Bildirim ayarları</returns>
     [HttpGet("settings")]
-    public async Task<ActionResult<NotificationSettingsDto>> GetSettings()
+    public async Task<ActionResult<ApiResponse<NotificationSettingsDto>>> GetSettings()
     {
         var userId = GetUserId();
 
-        var settings = await _context.NotificationSettings
+        var settings = await _unitOfWork.NotificationSettings.Query()
             .FirstOrDefaultAsync(ns => ns.UserId == userId);
 
         if (settings == null)
         {
             // Create default settings
-            settings = new Core.Entities.NotificationSettings
+            settings = new NotificationSettings
             {
                 UserId = userId,
                 OrderUpdates = true,
@@ -39,41 +50,49 @@ public class NotificationsController : ControllerBase
                 NewProducts = true
             };
 
-            _context.NotificationSettings.Add(settings);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.NotificationSettings.AddAsync(settings);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new NotificationSettingsDto
+        var dto = new NotificationSettingsDto
         {
             OrderUpdates = settings.OrderUpdates,
             Promotions = settings.Promotions,
             NewProducts = settings.NewProducts
-        });
+        };
+
+        return Ok(new ApiResponse<NotificationSettingsDto>(dto, "Bildirim ayarları başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Kullanıcının bildirim ayarlarını günceller
+    /// </summary>
+    /// <param name="dto">Güncellenecek bildirim ayarları</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("settings")]
-    public async Task<ActionResult> UpdateSettings(NotificationSettingsDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(NotificationSettingsDto dto)
     {
         var userId = GetUserId();
 
-        var settings = await _context.NotificationSettings
+        var settings = await _unitOfWork.NotificationSettings.Query()
             .FirstOrDefaultAsync(ns => ns.UserId == userId);
 
         if (settings == null)
         {
-            settings = new Core.Entities.NotificationSettings
+            settings = new NotificationSettings
             {
                 UserId = userId
             };
-            _context.NotificationSettings.Add(settings);
+            await _unitOfWork.NotificationSettings.AddAsync(settings);
         }
 
         settings.OrderUpdates = dto.OrderUpdates;
         settings.Promotions = dto.Promotions;
         settings.NewProducts = dto.NewProducts;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.NotificationSettings.Update(settings);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Settings updated successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Bildirim ayarları başarıyla güncellendi"));
     }
 }

@@ -2,23 +2,30 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
+using Talabi.Core.Entities;
 using Talabi.Core.Enums;
+using Talabi.Core.Extensions;
 using Talabi.Core.Interfaces;
-using Talabi.Infrastructure.Data;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Satıcı sipariş işlemleri için controller
+/// </summary>
 [Route("api/vendor/orders")]
 [ApiController]
 [Authorize]
 public class VendorOrdersController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderAssignmentService _assignmentService;
 
-    public VendorOrdersController(TalabiDbContext context, IOrderAssignmentService assignmentService)
+    /// <summary>
+    /// VendorOrdersController constructor
+    /// </summary>
+    public VendorOrdersController(IUnitOfWork unitOfWork, IOrderAssignmentService assignmentService)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _assignmentService = assignmentService;
     }
 
@@ -28,13 +35,20 @@ public class VendorOrdersController : ControllerBase
     private async Task<Guid?> GetVendorIdAsync()
     {
         var userId = GetUserId();
-        var vendor = await _context.Vendors
+        var vendor = await _unitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor?.Id;
     }
 
+    /// <summary>
+    /// Satıcının siparişlerini getirir
+    /// </summary>
+    /// <param name="status">Sipariş durumu filtresi (opsiyonel)</param>
+    /// <param name="startDate">Başlangıç tarihi filtresi (opsiyonel)</param>
+    /// <param name="endDate">Bitiş tarihi filtresi (opsiyonel)</param>
+    /// <returns>Sipariş listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<VendorOrderDto>>> GetVendorOrders(
+    public async Task<ActionResult<ApiResponse<List<VendorOrderDto>>>> GetVendorOrders(
         [FromQuery] string? status = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
@@ -42,10 +56,10 @@ public class VendorOrdersController : ControllerBase
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<List<VendorOrderDto>>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var query = _context.Orders
+        IQueryable<Order> query = _unitOfWork.Orders.Query()
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -57,18 +71,12 @@ public class VendorOrdersController : ControllerBase
             query = query.Where(o => o.Status == statusEnum);
         }
 
-        // Filter by date range
-        if (startDate.HasValue)
-        {
-            query = query.Where(o => o.CreatedAt >= startDate.Value);
-        }
-        if (endDate.HasValue)
-        {
-            query = query.Where(o => o.CreatedAt <= endDate.Value);
-        }
+        // Filter by date range - Gelişmiş query helper kullanımı
+        query = query.WhereDateRange(o => o.CreatedAt, startDate, endDate);
 
-        var orders = await query
-            .OrderByDescending(o => o.CreatedAt)
+        IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.CreatedAt);
+
+        var orders = await orderedQuery
             .Select(o => new VendorOrderDto
             {
                 Id = o.Id,
@@ -90,19 +98,24 @@ public class VendorOrdersController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(orders);
+        return Ok(new ApiResponse<List<VendorOrderDto>>(orders, "Satıcı siparişleri başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Belirli bir siparişi getirir
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <returns>Sipariş bilgileri</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<VendorOrderDto>> GetVendorOrder(Guid id)
+    public async Task<ActionResult<ApiResponse<VendorOrderDto>>> GetVendorOrder(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<VendorOrderDto>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -110,10 +123,10 @@ public class VendorOrdersController : ControllerBase
 
         if (order == null)
         {
-            return NotFound();
+            return NotFound(new ApiResponse<VendorOrderDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
-        return Ok(new VendorOrderDto
+        var orderDto = new VendorOrderDto
         {
             Id = order.Id,
             CustomerName = order.Customer!.FullName,
@@ -131,34 +144,41 @@ public class VendorOrdersController : ControllerBase
                 UnitPrice = oi.UnitPrice,
                 TotalPrice = oi.Quantity * oi.UnitPrice
             }).ToList()
-        });
+        };
+
+        return Ok(new ApiResponse<VendorOrderDto>(orderDto, "Sipariş başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Siparişi kabul eder
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("{id}/accept")]
-    public async Task<ActionResult> AcceptOrder(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> AcceptOrder(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .Include(o => o.StatusHistory)
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound();
+            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Pending)
         {
-            return BadRequest("Order can only be accepted when status is Pending");
+            return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken kabul edilebilir", "INVALID_ORDER_STATUS"));
         }
 
         order.Status = OrderStatus.Preparing;
-        order.StatusHistory.Add(new Talabi.Core.Entities.OrderStatusHistory
+        order.StatusHistory.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = OrderStatus.Preparing,
@@ -177,43 +197,50 @@ public class VendorOrdersController : ControllerBase
                 order.Id);
         }
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Orders.Update(order);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Order accepted successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla kabul edildi"));
     }
 
+    /// <summary>
+    /// Siparişi reddeder
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <param name="dto">Reddetme nedeni</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("{id}/reject")]
-    public async Task<ActionResult> RejectOrder(Guid id, [FromBody] RejectOrderDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> RejectOrder(Guid id, [FromBody] RejectOrderDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .Include(o => o.StatusHistory)
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound();
+            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Pending)
         {
-            return BadRequest("Order can only be rejected when status is Pending");
+            return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken reddedilebilir", "INVALID_ORDER_STATUS"));
         }
 
         if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
         {
-            return BadRequest("Rejection reason must be at least 10 characters");
+            return BadRequest(new ApiResponse<object>("Reddetme nedeni en az 10 karakter olmalıdır", "INVALID_REJECTION_REASON"));
         }
 
         order.Status = OrderStatus.Cancelled;
         order.CancelledAt = DateTime.UtcNow;
         order.CancelReason = $"Rejected by vendor: {dto.Reason}";
-        order.StatusHistory.Add(new Talabi.Core.Entities.OrderStatusHistory
+        order.StatusHistory.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = OrderStatus.Cancelled,
@@ -221,42 +248,49 @@ public class VendorOrdersController : ControllerBase
             CreatedBy = GetUserId()
         });
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Orders.Update(order);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Order rejected successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla reddedildi"));
     }
 
+    /// <summary>
+    /// Sipariş durumunu günceller
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <param name="dto">Yeni durum bilgisi</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/status")]
-    public async Task<ActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .Include(o => o.StatusHistory)
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound();
+            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         if (!Enum.TryParse<OrderStatus>(dto.Status, out var newStatus))
         {
-            return BadRequest("Invalid status");
+            return BadRequest(new ApiResponse<object>("Geçersiz durum", "INVALID_STATUS"));
         }
 
         // Validate status transition for vendor
         if (!IsValidVendorStatusTransition(order.Status, newStatus))
         {
-            return BadRequest($"Cannot transition from {order.Status} to {newStatus}");
+            return BadRequest(new ApiResponse<object>($"Durum {order.Status} durumundan {newStatus} durumuna geçirilemez", "INVALID_STATUS_TRANSITION"));
         }
 
         order.Status = newStatus;
-        order.StatusHistory.Add(new Talabi.Core.Entities.OrderStatusHistory
+        order.StatusHistory.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = newStatus,
@@ -290,9 +324,10 @@ public class VendorOrdersController : ControllerBase
                 order.Id);
         }
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Orders.Update(order);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Order status updated successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Sipariş durumu başarıyla güncellendi"));
     }
 
     private bool IsValidVendorStatusTransition(OrderStatus current, OrderStatus next)
@@ -308,41 +343,45 @@ public class VendorOrdersController : ControllerBase
         };
     }
 
-    // Get available couriers for manual assignment
+    /// <summary>
+    /// Manuel atama için müsait kuryeleri getirir
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <returns>Müsait kurye listesi</returns>
     [HttpGet("{id}/available-couriers")]
-    public async Task<ActionResult<IEnumerable<AvailableCourierDto>>> GetAvailableCouriers(Guid id)
+    public async Task<ActionResult<ApiResponse<List<AvailableCourierDto>>>> GetAvailableCouriers(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<List<AvailableCourierDto>>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound("Order not found");
+            return NotFound(new ApiResponse<List<AvailableCourierDto>>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Ready)
         {
-            return BadRequest("Order must be in Ready status to assign courier");
+            return BadRequest(new ApiResponse<List<AvailableCourierDto>>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
         }
 
         // Get vendor location
         var vendor = order.Vendor;
         if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue)
         {
-            return BadRequest("Vendor location not set");
+            return BadRequest(new ApiResponse<List<AvailableCourierDto>>("Satıcı konumu ayarlanmamış", "VENDOR_LOCATION_NOT_SET"));
         }
 
         // Get available couriers (first get all, then calculate distance in memory)
-        var availableCouriersQuery = await _context.Couriers
+        var availableCouriersQuery = await _unitOfWork.Couriers.Query()
             .Where(c => c.IsActive
-                && c.Status == Talabi.Core.Enums.CourierStatus.Available
+                && c.Status == CourierStatus.Available
                 && c.CurrentActiveOrders < c.MaxActiveOrders
                 && c.CurrentLatitude.HasValue
                 && c.CurrentLongitude.HasValue)
@@ -377,35 +416,40 @@ public class VendorOrdersController : ControllerBase
             })
             .ToList();
 
-        return Ok(availableCouriers);
+        return Ok(new ApiResponse<List<AvailableCourierDto>>(availableCouriers, "Müsait kuryeler başarıyla getirildi"));
     }
 
-    // Manually assign courier to order
+    /// <summary>
+    /// Siparişe manuel olarak kurye atar
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <param name="dto">Kurye bilgisi</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("{id}/assign-courier")]
-    public async Task<ActionResult> AssignCourier(Guid id, [FromBody] AssignCourierDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> AssignCourier(Guid id, [FromBody] AssignCourierDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound("Order not found");
+            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Ready)
         {
-            return BadRequest("Order must be in Ready status to assign courier");
+            return BadRequest(new ApiResponse<object>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
         }
 
         if (order.CourierId.HasValue)
         {
-            return BadRequest("Order already has a courier assigned");
+            return BadRequest(new ApiResponse<object>("Siparişe zaten bir kurye atanmış", "COURIER_ALREADY_ASSIGNED"));
         }
 
         // Assign courier using the service
@@ -413,38 +457,42 @@ public class VendorOrdersController : ControllerBase
 
         if (!success)
         {
-            return BadRequest("Failed to assign courier. Courier may not be available or order status is invalid.");
+            return BadRequest(new ApiResponse<object>("Kurye atanamadı. Kurye müsait olmayabilir veya sipariş durumu geçersiz olabilir", "COURIER_ASSIGNMENT_FAILED"));
         }
 
-        return Ok(new { Message = "Courier assigned successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Kurye başarıyla atandı"));
     }
 
-    // Auto-assign best courier
+    /// <summary>
+    /// En uygun kuryeyi otomatik olarak atar
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <returns>İşlem sonucu ve atanan kurye bilgisi</returns>
     [HttpPost("{id}/auto-assign-courier")]
-    public async Task<ActionResult> AutoAssignCourier(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> AutoAssignCourier(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return Forbid("User is not a vendor");
+            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
-        var order = await _context.Orders
+        var order = await _unitOfWork.Orders.Query()
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound("Order not found");
+            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Ready)
         {
-            return BadRequest("Order must be in Ready status to assign courier");
+            return BadRequest(new ApiResponse<object>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
         }
 
         if (order.CourierId.HasValue)
         {
-            return BadRequest("Order already has a courier assigned");
+            return BadRequest(new ApiResponse<object>("Siparişe zaten bir kurye atanmış", "COURIER_ALREADY_ASSIGNED"));
         }
 
         // Find best courier
@@ -452,7 +500,7 @@ public class VendorOrdersController : ControllerBase
 
         if (bestCourier == null)
         {
-            return BadRequest("No available couriers found nearby");
+            return BadRequest(new ApiResponse<object>("Yakınlarda müsait kurye bulunamadı", "NO_AVAILABLE_COURIERS"));
         }
 
         // Assign courier
@@ -460,15 +508,14 @@ public class VendorOrdersController : ControllerBase
 
         if (!success)
         {
-            return BadRequest("Failed to assign courier");
+            return BadRequest(new ApiResponse<object>("Kurye atanamadı", "COURIER_ASSIGNMENT_FAILED"));
         }
 
-        return Ok(new
+        return Ok(new ApiResponse<object>(new
         {
-            Message = "Courier auto-assigned successfully",
             CourierId = bestCourier.Id,
             CourierName = bestCourier.Name
-        });
+        }, "Kurye otomatik olarak başarıyla atandı"));
     }
 
     private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
@@ -492,20 +539,21 @@ public class VendorOrdersController : ControllerBase
 
     private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
     {
-        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+        var customer = await _unitOfWork.Customers.Query()
+            .FirstOrDefaultAsync(c => c.UserId == userId);
         if (customer == null)
         {
             // Create customer if doesn't exist
-            customer = new Talabi.Core.Entities.Customer
+            customer = new Customer
             {
                 UserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.Customers.AddAsync(customer);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        _context.CustomerNotifications.Add(new Talabi.Core.Entities.CustomerNotification
+        await _unitOfWork.CustomerNotifications.AddAsync(new CustomerNotification
         {
             CustomerId = customer.Id,
             Title = title,

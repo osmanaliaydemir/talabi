@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/analytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -41,6 +42,10 @@ class AuthProvider with ChangeNotifier {
     if (_role != null) {
       await prefs.setString('role', _role!);
     }
+
+    // Analytics
+    await AnalyticsService.setUserId(_userId!);
+    await AnalyticsService.logLogin(method: 'email');
 
     notifyListeners();
   }
@@ -86,6 +91,11 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString('fullName', _fullName!);
 
         print('🟢 [AUTH_PROVIDER] Data saved to SharedPreferences');
+
+        // Analytics
+        await AnalyticsService.setUserId(_userId!);
+        await AnalyticsService.logSignUp(method: 'email');
+
         notifyListeners();
       }
     } catch (e, stackTrace) {
@@ -109,6 +119,10 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
+    // Analytics - clear user id (pass empty string or handle in service, usually null is not allowed in setUserId but we can just not set it or set to empty)
+    // Firebase setUserId accepts nullable String?
+    await AnalyticsService.setUserId('');
+
     notifyListeners();
 
     // Role bilgisini döndür ki logout sonrası doğru login sayfasına yönlendirilebilsin
@@ -128,6 +142,10 @@ class AuthProvider with ChangeNotifier {
     _fullName = prefs.getString('fullName');
     _role = prefs.getString('role');
 
+    if (_userId != null) {
+      await AnalyticsService.setUserId(_userId!);
+    }
+
     notifyListeners();
   }
 
@@ -141,6 +159,8 @@ class AuthProvider with ChangeNotifier {
     _refreshToken = refreshToken;
     _userId = userId;
     _role = role;
+
+    await AnalyticsService.setUserId(userId);
 
     notifyListeners();
   }

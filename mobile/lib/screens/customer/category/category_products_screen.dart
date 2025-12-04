@@ -7,16 +7,17 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/screens/customer/widgets/home_header.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
   final String? categoryId;
+  final String? imageUrl;
 
   const CategoryProductsScreen({
     super.key,
     required this.categoryName,
     this.categoryId,
+    this.imageUrl,
   });
 
   @override
@@ -80,9 +81,10 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           _favoriteStatus[product.id] = false;
         });
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: '${product.name} favorilerden çıkarıldı',
+            message: l10n.removedFromFavorites(product.name),
             isSuccess: true,
           );
         }
@@ -92,18 +94,20 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           _favoriteStatus[product.id] = true;
         });
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: '${product.name} favorilere eklendi',
+            message: l10n.addedToFavorites(product.name),
             isSuccess: true,
           );
         }
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: 'Favori işlemi başarısız: $e',
+          message: l10n.favoriteOperationFailed(e.toString()),
           isSuccess: false,
         );
       }
@@ -115,56 +119,175 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     final localizations = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      body: Column(
-        children: [
-          HomeHeader(
-            title: widget.categoryName,
-            subtitle: _productCount != null
-                ? localizations.productsCount(_productCount!)
-                : localizations.products,
-            leadingIcon: Icons.category,
-            showBackButton: true,
-            showCart: true,
-          ),
-          Expanded(
-            child: FutureBuilder<List<Product>>(
-              future: _productsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return GridView.builder(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: AppTheme.spacingSmall,
-                          mainAxisSpacing: AppTheme.spacingSmall,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: AppTheme.primaryOrange,
+            leading: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                widget.categoryName,
+                style: AppTheme.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  widget.imageUrl != null
+                      ? Image.network(
+                          widget.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: AppTheme.primaryOrange,
+                              child: Icon(
+                                Icons.category,
+                                size: 64,
+                                color: Colors.white.withOpacity(0.5),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppTheme.primaryOrange,
+                                AppTheme.primaryOrange.withOpacity(0.8),
+                              ],
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.category,
+                            size: 64,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
                         ),
-                    itemCount: 6,
-                    itemBuilder: (context, index) {
-                      return const ProductSkeletonItem();
-                    },
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
+                  // Gradient overlay for better text visibility
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        localizations.products,
+                        style: AppTheme.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      if (_productCount != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryOrange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            localizations.productsCount(_productCount!),
+                            style: AppTheme.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryOrange,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          FutureBuilder<List<Product>>(
+            future: _productsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SliverPadding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingMedium,
+                  ),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: AppTheme.spacingSmall,
+                      mainAxisSpacing: AppTheme.spacingSmall,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => const ProductSkeletonItem(),
+                      childCount: 6,
+                    ),
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  child: Center(
                     child: Text(
-                      'Hata: ${snapshot.error}',
+                      '${localizations.error}: ${snapshot.error}',
                       style: AppTheme.poppins(color: AppTheme.error),
                     ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return SliverFillRemaining(
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.search_off,
                           size: 64,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                          color: AppTheme.textSecondary.withOpacity(0.5),
                         ),
                         SizedBox(height: AppTheme.spacingMedium),
                         Text(
-                          'Bu kategoride henüz ürün yok.',
+                          localizations.noProductsYet,
                           style: AppTheme.poppins(
                             color: AppTheme.textSecondary,
                             fontSize: 16,
@@ -172,45 +295,38 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         ),
                       ],
                     ),
-                  );
-                }
-
-                final products = snapshot.data!;
-                return RefreshIndicator(
-                  color: AppTheme.primaryOrange,
-                  onRefresh: () async {
-                    setState(() {
-                      _loadProducts();
-                    });
-                    await _productsFuture;
-                    await _loadFavoriteStatus();
-                  },
-                  child: GridView.builder(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: AppTheme.spacingSmall,
-                          mainAxisSpacing: AppTheme.spacingSmall,
-                        ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      final isFavorite = _favoriteStatus[product.id] ?? false;
-                      return ProductCard(
-                        product: product,
-                        width: null, // Full width in grid
-                        isFavorite: isFavorite,
-                        rating: '4.7', // Placeholder rating
-                        ratingCount: '2.3k', // Placeholder count
-                        onFavoriteTap: () => _toggleFavorite(product),
-                      );
-                    },
                   ),
                 );
-              },
-            ),
+              }
+
+              final products = snapshot.data!;
+              return SliverPadding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingMedium,
+                  vertical: AppTheme.spacingSmall,
+                ),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: AppTheme.spacingSmall,
+                    mainAxisSpacing: AppTheme.spacingSmall,
+                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final product = products[index];
+                    final isFavorite = _favoriteStatus[product.id] ?? false;
+                    return ProductCard(
+                      product: product,
+                      width: null,
+                      isFavorite: isFavorite,
+                      rating: '4.7', // Placeholder
+                      ratingCount: '2.3k', // Placeholder
+                      onFavoriteTap: () => _toggleFavorite(product),
+                    );
+                  }, childCount: products.length),
+                ),
+              );
+            },
           ),
         ],
       ),

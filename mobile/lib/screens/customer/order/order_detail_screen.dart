@@ -863,8 +863,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_orderDetail!.status == 'Pending' ||
-                      _orderDetail!.status == 'Preparing')
+                  if (_orderDetail != null &&
+                      (_orderDetail!.status == 'Pending' ||
+                          _orderDetail!.status == 'Preparing'))
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -888,7 +889,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                       ),
                     ),
-                  if (_orderDetail!.status == 'Delivered')
+                  if (_orderDetail != null &&
+                      _orderDetail!.status == 'Delivered')
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

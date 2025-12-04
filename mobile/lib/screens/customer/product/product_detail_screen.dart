@@ -6,8 +6,10 @@ import 'package:mobile/models/review.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 
+import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
@@ -43,6 +45,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _checkFavorite();
       _loadReviews();
       _loadSimilarProducts();
+      // Log view_item
+      AnalyticsService.logViewItem(product: widget.product!);
     } else {
       _loadProduct();
     }
@@ -58,6 +62,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _checkFavorite();
       _loadReviews();
       _loadSimilarProducts();
+      // Log view_item
+      AnalyticsService.logViewItem(product: product);
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -639,7 +645,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
 
                         // Similar Products Section
-                        if (_similarProducts.isNotEmpty) ...[
+                        if (_isLoadingSimilarProducts)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppTheme.primaryOrange,
+                              ),
+                            ),
+                          )
+                        else if (_similarProducts.isNotEmpty) ...[
                           const SizedBox(height: 24),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -724,6 +739,49 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         _buildCircleButton(
                           icon: Icons.share,
                           onTap: _shareProduct,
+                        ),
+                        const SizedBox(width: 12),
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            _buildCircleButton(
+                              icon: Icons.shopping_cart_outlined,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CartScreen(showBackButton: true),
+                                  ),
+                                );
+                              },
+                            ),
+                            if (cart.itemCount > 0)
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  child: Text(
+                                    '${cart.itemCount}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ],
                     ),
@@ -904,14 +962,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     } else {
       return GestureDetector(
-        onTap: () {
-          cart.addItem(_product!, context).then((_) {
-            ToastMessage.show(
-              context,
-              message: l10n.productAddedToCart(_product!.name),
-              isSuccess: true,
-            );
-          });
+        onTap: () async {
+          try {
+            await cart.addItem(_product!, context);
+            if (context.mounted) {
+              ToastMessage.show(
+                context,
+                message: l10n.productAddedToCart(_product!.name),
+                isSuccess: true,
+              );
+            }
+          } catch (e) {
+            // Error is handled globally by ApiService interceptor
+            print('Error adding to cart: $e');
+          }
         },
         child: Container(
           height: 50,

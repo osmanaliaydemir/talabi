@@ -11,6 +11,8 @@ import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/models/customer_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/models/api_response.dart';
+import 'package:mobile/services/navigation_service.dart';
 
 const String _requestPermitKey = '_apiRequestPermit';
 
@@ -96,6 +98,31 @@ class ApiService {
           print('❌ [HTTP ERROR] Message: ${error.message}');
           print('❌ [HTTP ERROR] Response: ${error.response?.data}');
 
+          // Try to parse standardized API response
+          String? friendlyMessage;
+          String? errorCode;
+          if (error.response?.data != null &&
+              error.response?.data is Map<String, dynamic>) {
+            try {
+              final apiResponse = ApiResponse.fromJson(
+                error.response!.data,
+                (json) => json,
+              );
+              friendlyMessage = apiResponse.message;
+              errorCode = apiResponse.errorCode;
+              if (errorCode != null) {
+                print('❌ [HTTP ERROR] Error Code: $errorCode');
+              }
+              if (apiResponse.errors != null &&
+                  apiResponse.errors!.isNotEmpty) {
+                friendlyMessage =
+                    '${friendlyMessage ?? ''}\n${apiResponse.errors!.join('\n')}';
+              }
+            } catch (_) {
+              // Failed to parse as ApiResponse, fallback to existing logic
+            }
+          }
+
           // Handle 401 Unauthorized - Refresh Token Logic
           if (error.response?.statusCode == 401 &&
               !error.requestOptions.path.contains('login') &&
@@ -160,8 +187,49 @@ class ApiService {
               print('🔴 [REFRESH TOKEN] Failed: $e');
               _isRefreshing = false;
               _refreshCompleter = null;
-              // If refresh fails, let the error propagate (user will be logged out by AuthProvider)
+
+              // If refresh fails, redirect to login
+              NavigationService.navigateToRemoveUntil(
+                '/login',
+                (route) => false,
+              );
             }
+          } else if (error.response?.statusCode == 401) {
+            // If it's a login/refresh request that failed with 401, or no tokens
+            NavigationService.navigateToRemoveUntil('/login', (route) => false);
+          }
+
+          // Handle 409 Conflict (Concurrency)
+          if (error.response?.statusCode == 409) {
+            if (friendlyMessage != null) {
+              NavigationService.showSnackBar(friendlyMessage, isError: true);
+            }
+          }
+
+          // Handle 500 Server Error
+          if (error.response?.statusCode == 500) {
+            if (friendlyMessage != null) {
+              NavigationService.showSnackBar(friendlyMessage, isError: true);
+            }
+          }
+
+          // Update the error with the friendly message if available
+          if (friendlyMessage != null) {
+            // If not already handled by specific status codes above, show generic error
+            if (error.response?.statusCode != 409 &&
+                error.response?.statusCode != 500 &&
+                error.response?.statusCode != 401) {
+              NavigationService.showSnackBar(friendlyMessage, isError: true);
+            }
+
+            final newError = DioException(
+              requestOptions: error.requestOptions,
+              response: error.response,
+              type: error.type,
+              error: friendlyMessage,
+              message: friendlyMessage,
+            );
+            return handler.next(newError);
           }
 
           return handler.next(error);
@@ -182,7 +250,22 @@ class ApiService {
         '/auth/refresh-token',
         data: {'token': token, 'refreshToken': refreshToken},
       );
-      final data = response.data as Map<String, dynamic>;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) =>
+            json
+                as Map<
+                  String,
+                  dynamic
+                >, // LoginResponseDto direkt Map olarak döndürüyoruz
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Token yenileme başarısız');
+      }
+
+      final data = apiResponse.data!;
       return {
         'token': data['token'] as String,
         'refreshToken': data['refreshToken'] as String,
@@ -196,8 +279,28 @@ class ApiService {
     try {
       // Try network first
       final response = await _dio.get('/vendors');
-      final List<dynamic> data = response.data;
-      final vendors = data.map((json) => Vendor.fromJson(json)).toList();
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      List<Vendor> vendors;
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Satıcılar getirilemedi');
+        }
+
+        vendors = apiResponse.data!
+            .map((json) => Vendor.fromJson(json))
+            .toList();
+      } else {
+        // Eski format (direkt liste)
+        final List<dynamic> data = response.data;
+        vendors = data.map((json) => Vendor.fromJson(json)).toList();
+      }
 
       // Cache the result
       await _cacheService.cacheVendors(vendors);
@@ -228,8 +331,30 @@ class ApiService {
     try {
       // Try network first
       final response = await _dio.get('/vendors/$vendorId/products');
-      final List<dynamic> data = response.data;
-      final products = data.map((json) => Product.fromJson(json)).toList();
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      List<Product> products;
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı ürünleri getirilemedi',
+          );
+        }
+
+        products = apiResponse.data!
+            .map((json) => Product.fromJson(json))
+            .toList();
+      } else {
+        // Eski format (direkt liste)
+        final List<dynamic> data = response.data;
+        products = data.map((json) => Product.fromJson(json)).toList();
+      }
 
       // Cache the result
       await _cacheService.cacheProducts(products);
@@ -262,8 +387,20 @@ class ApiService {
         '/products/popular',
         queryParameters: {'limit': limit},
       );
-      final List<dynamic> data = response.data;
-      return data.map((json) => Product.fromJson(json)).toList();
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List)
+            .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Popüler ürünler getirilemedi');
+      }
+
+      // ProductDto'yu Product'a çevir
+      return apiResponse.data!.map((dto) => dto.toProduct()).toList();
     } catch (e) {
       print('Error fetching popular products: $e');
       rethrow;
@@ -280,8 +417,19 @@ class ApiService {
         '/banners',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-      final List<dynamic> data = response.data;
-      return data.map((json) => PromotionalBanner.fromJson(json)).toList();
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List).map((e) => e as Map<String, dynamic>).toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Banner\'lar getirilemedi');
+      }
+
+      return apiResponse.data!
+          .map((json) => PromotionalBanner.fromJson(json))
+          .toList();
     } catch (e) {
       print('Error fetching banners: $e');
       rethrow;
@@ -291,7 +439,18 @@ class ApiService {
   Future<Product> getProduct(String productId) async {
     try {
       final response = await _dio.get('/products/$productId');
-      return Product.fromJson(response.data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => ProductDto.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Ürün bulunamadı');
+      }
+
+      // ProductDto'yu Product'a çevir
+      return apiResponse.data!.toProduct();
     } catch (e) {
       print('Error fetching product: $e');
       rethrow;
@@ -317,6 +476,25 @@ class ApiService {
       };
 
       final response = await _dio.post('/orders', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic>) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // OrderDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Sipariş oluşturulamadı');
+        }
+
+        return Order.fromJson(apiResponse.data!);
+      }
+      // Eski format (direkt Order)
       return Order.fromJson(response.data);
     } catch (e) {
       print('Error creating order: $e');
@@ -330,7 +508,22 @@ class ApiService {
         '/auth/login',
         data: {'email': email, 'password': password},
       );
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) =>
+            json
+                as Map<
+                  String,
+                  dynamic
+                >, // LoginResponseDto direkt Map olarak döndürüyoruz
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Giriş başarısız');
+      }
+
+      return apiResponse.data!;
     } catch (e) {
       print('Error logging in: $e');
       rethrow;
@@ -364,7 +557,22 @@ class ApiService {
       print('🟢 [REGISTER] Success! Status: ${response.statusCode}');
       print('🟢 [REGISTER] Response data: ${response.data}');
 
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        final errorMessage =
+            apiResponse.message ??
+            (apiResponse.errors?.isNotEmpty == true
+                ? apiResponse.errors!.join(', ')
+                : 'Kayıt başarısız');
+        throw Exception(errorMessage);
+      }
+
+      return Map<String, dynamic>.from(apiResponse.data ?? {});
     } on DioException catch (e) {
       print('🔴 [REGISTER] DioException occurred!');
       print('🔴 [REGISTER] Error type: ${e.type}');
@@ -391,6 +599,18 @@ class ApiService {
           } else {
             errorMessage = firstError.toString();
           }
+        }
+        // Handle ApiResponse format
+        else if (responseData is Map && responseData.containsKey('success')) {
+          final apiResponse = ApiResponse.fromJson(
+            Map<String, dynamic>.from(responseData),
+            (json) => json as Map<String, dynamic>?,
+          );
+          errorMessage =
+              apiResponse.message ??
+              (apiResponse.errors?.isNotEmpty == true
+                  ? apiResponse.errors!.join(', ')
+                  : 'Unknown error');
         }
         // Handle object response
         else if (responseData is Map) {
@@ -464,7 +684,22 @@ class ApiService {
       print('🟢 [VENDOR_REGISTER] Success! Status: ${response.statusCode}');
       print('🟢 [VENDOR_REGISTER] Response data: ${response.data}');
 
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        final errorMessage =
+            apiResponse.message ??
+            (apiResponse.errors?.isNotEmpty == true
+                ? apiResponse.errors!.join(', ')
+                : 'Satıcı kaydı başarısız');
+        throw Exception(errorMessage);
+      }
+
+      return Map<String, dynamic>.from(apiResponse.data ?? {});
     } on DioException catch (e) {
       print('🔴 [VENDOR_REGISTER] DioException occurred!');
       print('🔴 [VENDOR_REGISTER] Error type: ${e.type}');
@@ -490,6 +725,18 @@ class ApiService {
           } else {
             errorMessage = firstError.toString();
           }
+        }
+        // Handle ApiResponse format
+        else if (responseData is Map && responseData.containsKey('success')) {
+          final apiResponse = ApiResponse.fromJson(
+            Map<String, dynamic>.from(responseData),
+            (json) => json as Map<String, dynamic>?,
+          );
+          errorMessage =
+              apiResponse.message ??
+              (apiResponse.errors?.isNotEmpty == true
+                  ? apiResponse.errors!.join(', ')
+                  : 'Unknown error');
         }
         // Handle object response
         else if (responseData is Map) {
@@ -527,7 +774,19 @@ class ApiService {
 
   Future<void> forgotPassword(String email) async {
     try {
-      await _dio.post('/auth/forgot-password', data: {'email': email});
+      final response = await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Şifre sıfırlama başarısız');
+      }
     } catch (e) {
       print('Error sending forgot password request: $e');
       rethrow;
@@ -555,7 +814,22 @@ class ApiService {
         '/auth/verify-email-code',
         data: {'email': email, 'code': code},
       );
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        final errorMessage =
+            apiResponse.message ??
+            (apiResponse.errors?.isNotEmpty == true
+                ? apiResponse.errors!.join(', ')
+                : 'Email doğrulama başarısız');
+        throw Exception(errorMessage);
+      }
+
+      return Map<String, dynamic>.from(apiResponse.data ?? {});
     } catch (e) {
       print('Error verifying email code: $e');
       rethrow;
@@ -576,7 +850,17 @@ class ApiService {
         '/auth/resend-verification-code',
         data: requestData,
       );
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Doğrulama kodu gönderilemedi');
+      }
+
+      return Map<String, dynamic>.from(apiResponse.data ?? {});
     } catch (e) {
       print('Error resending verification code: $e');
       rethrow;
@@ -612,7 +896,27 @@ class ApiService {
       print('🟢 [EXTERNAL_LOGIN] Success! Status: ${response.statusCode}');
       print('🟢 [EXTERNAL_LOGIN] Response data: ${response.data}');
 
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) =>
+            json
+                as Map<
+                  String,
+                  dynamic
+                >, // LoginResponseDto direkt Map olarak döndürüyoruz
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        final errorMessage =
+            apiResponse.message ??
+            (apiResponse.errors?.isNotEmpty == true
+                ? apiResponse.errors!.join(', ')
+                : 'Sosyal medya girişi başarısız');
+        throw Exception(errorMessage);
+      }
+
+      return apiResponse.data!;
     } on DioException catch (e) {
       print('🔴 [EXTERNAL_LOGIN] DioException occurred!');
       print('🔴 [EXTERNAL_LOGIN] Error type: ${e.type}');
@@ -648,10 +952,22 @@ class ApiService {
   // Notification methods
   Future<void> registerDeviceToken(String token, String deviceType) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         '/notification/register-device',
         data: {'token': token, 'deviceType': deviceType},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic>) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          print('Error registering device token: ${apiResponse.message}');
+          // Don't rethrow, just log, as this shouldn't block app usage
+        }
+      }
     } catch (e) {
       print('Error registering device token: $e');
       // Don't rethrow, just log, as this shouldn't block app usage
@@ -661,18 +977,53 @@ class ApiService {
   Future<List<CustomerNotification>> getCustomerNotifications() async {
     try {
       final response = await _dio.get('/customer/notifications');
-      final dynamic data = response.data;
-      List<dynamic> items;
+      final responseData = response.data;
 
-      if (data is Map<String, dynamic> && data.containsKey('items')) {
-        items = data['items'];
-      } else if (data is List) {
-        items = data;
-      } else {
-        items = [];
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          responseData,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Müşteri bildirimleri getirilemedi',
+          );
+        }
+
+        // ApiResponse.data içinde CustomerNotificationResponseDto var
+        final data = apiResponse.data as Map<String, dynamic>;
+        final items = data['items'] as List<dynamic>? ?? [];
+        return items
+            .map(
+              (json) =>
+                  CustomerNotification.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
       }
 
-      return items.map((json) => CustomerNotification.fromJson(json)).toList();
+      // Eski format (direkt CustomerNotificationResponseDto veya liste)
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('items')) {
+        final items = responseData['items'] as List<dynamic>? ?? [];
+        return items
+            .map(
+              (json) =>
+                  CustomerNotification.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      } else if (responseData is List) {
+        return responseData
+            .map(
+              (json) =>
+                  CustomerNotification.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      } else {
+        return [];
+      }
     } catch (e) {
       print('Error fetching customer notifications: $e');
       rethrow;
@@ -683,7 +1034,27 @@ class ApiService {
   Future<Map<String, dynamic>> getCart() async {
     try {
       final response = await _dio.get('/cart');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // CartDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Sepet getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt CartDto)
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       print('Error fetching cart: $e');
       rethrow;
@@ -692,10 +1063,30 @@ class ApiService {
 
   Future<void> addToCart(String productId, int quantity) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         '/cart/items',
         data: {'productId': productId, 'quantity': quantity},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          // ADDRESS_REQUIRED hatası için özel kontrol
+          if (apiResponse.errorCode == 'ADDRESS_REQUIRED' &&
+              apiResponse.data != null) {
+            final data = apiResponse.data as Map<String, dynamic>;
+            if (data['requiresAddress'] == true) {
+              throw Exception(apiResponse.message ?? 'Adres gerekli');
+            }
+          }
+          throw Exception(apiResponse.message ?? 'Ürün sepete eklenemedi');
+        }
+      }
     } catch (e) {
       print('Error adding to cart: $e');
       rethrow;
@@ -704,7 +1095,22 @@ class ApiService {
 
   Future<void> updateCartItem(String itemId, int quantity) async {
     try {
-      await _dio.put('/cart/items/$itemId', data: {'quantity': quantity});
+      final response = await _dio.put(
+        '/cart/items/$itemId',
+        data: {'quantity': quantity},
+      );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sepet öğesi güncellenemedi');
+        }
+      }
     } catch (e) {
       print('Error updating cart item: $e');
       rethrow;
@@ -713,7 +1119,19 @@ class ApiService {
 
   Future<void> removeFromCart(String itemId) async {
     try {
-      await _dio.delete('/cart/items/$itemId');
+      final response = await _dio.delete('/cart/items/$itemId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Ürün sepetten çıkarılamadı');
+        }
+      }
     } catch (e) {
       print('Error removing from cart: $e');
       rethrow;
@@ -722,7 +1140,19 @@ class ApiService {
 
   Future<void> clearCart() async {
     try {
-      await _dio.delete('/cart');
+      final response = await _dio.delete('/cart');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sepet temizlenemedi');
+        }
+      }
     } catch (e) {
       print('Error clearing cart: $e');
       rethrow;
@@ -734,7 +1164,32 @@ class ApiService {
     try {
       // Try network first
       final response = await _dio.get('/profile');
-      final profile = response.data as Map<String, dynamic>;
+
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      Map<String, dynamic> profile;
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // UserProfileDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Profil bilgileri getirilemedi',
+          );
+        }
+
+        profile = apiResponse.data!;
+      } else {
+        // Eski format (direkt UserProfileDto)
+        profile = response.data as Map<String, dynamic>;
+      }
 
       // Cache the result
       await _cacheService.cacheProfile(profile);
@@ -763,7 +1218,24 @@ class ApiService {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      await _dio.put('/profile', data: data);
+      final response = await _dio.put('/profile', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          final errorMessage =
+              apiResponse.message ??
+              (apiResponse.errors?.isNotEmpty == true
+                  ? apiResponse.errors!.join(', ')
+                  : 'Profil güncellenemedi');
+          throw Exception(errorMessage);
+        }
+      }
     } catch (e) {
       print('Error updating profile: $e');
       rethrow;
@@ -775,10 +1247,27 @@ class ApiService {
     String newPassword,
   ) async {
     try {
-      await _dio.put(
+      final response = await _dio.put(
         '/profile/password',
         data: {'currentPassword': currentPassword, 'newPassword': newPassword},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          final errorMessage =
+              apiResponse.message ??
+              (apiResponse.errors?.isNotEmpty == true
+                  ? apiResponse.errors!.join(', ')
+                  : 'Şifre değiştirilemedi');
+          throw Exception(errorMessage);
+        }
+      }
     } catch (e) {
       print('Error changing password: $e');
       rethrow;
@@ -789,7 +1278,23 @@ class ApiService {
   Future<List<dynamic>> getAddresses() async {
     try {
       final response = await _dio.get('/addresses');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Adresler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
+      return response.data as List;
     } catch (e) {
       print('Error fetching addresses: $e');
       rethrow;
@@ -798,7 +1303,19 @@ class ApiService {
 
   Future<void> createAddress(Map<String, dynamic> data) async {
     try {
-      await _dio.post('/addresses', data: data);
+      final response = await _dio.post('/addresses', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Adres oluşturulamadı');
+        }
+      }
     } catch (e) {
       print('Error creating address: $e');
       rethrow;
@@ -807,7 +1324,19 @@ class ApiService {
 
   Future<void> updateAddress(String id, Map<String, dynamic> data) async {
     try {
-      await _dio.put('/addresses/$id', data: data);
+      final response = await _dio.put('/addresses/$id', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Adres güncellenemedi');
+        }
+      }
     } catch (e) {
       print('Error updating address: $e');
       rethrow;
@@ -816,7 +1345,19 @@ class ApiService {
 
   Future<void> deleteAddress(String id) async {
     try {
-      await _dio.delete('/addresses/$id');
+      final response = await _dio.delete('/addresses/$id');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Adres silinemedi');
+        }
+      }
     } catch (e) {
       print('Error deleting address: $e');
       rethrow;
@@ -825,7 +1366,21 @@ class ApiService {
 
   Future<void> setDefaultAddress(String id) async {
     try {
-      await _dio.put('/addresses/$id/set-default');
+      final response = await _dio.put('/addresses/$id/set-default');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Varsayılan adres ayarlanamadı',
+          );
+        }
+      }
     } catch (e) {
       print('Error setting default address: $e');
       rethrow;
@@ -836,7 +1391,32 @@ class ApiService {
   Future<List<dynamic>> getFavorites() async {
     try {
       final response = await _dio.get('/favorites');
-      return response.data;
+
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      // Eğer response.data bir Map ise (ApiResponse formatı), parse et
+      if (response.data is Map<String, dynamic>) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Favori ürünler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eğer response.data direkt bir List ise (eski format veya boş liste), direkt döndür
+      else if (response.data is List) {
+        return response.data as List<dynamic>;
+      }
+      // Beklenmeyen format
+      else {
+        throw Exception(
+          'Beklenmeyen response formatı: ${response.data.runtimeType}',
+        );
+      }
     } catch (e) {
       print('Error fetching favorites: $e');
       rethrow;
@@ -845,7 +1425,16 @@ class ApiService {
 
   Future<void> addToFavorites(String productId) async {
     try {
-      await _dio.post('/favorites/$productId');
+      final response = await _dio.post('/favorites/$productId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Favorilere eklenemedi');
+      }
     } catch (e) {
       print('Error adding to favorites: $e');
       rethrow;
@@ -854,7 +1443,16 @@ class ApiService {
 
   Future<void> removeFromFavorites(String productId) async {
     try {
-      await _dio.delete('/favorites/$productId');
+      final response = await _dio.delete('/favorites/$productId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Favorilerden çıkarılamadı');
+      }
     } catch (e) {
       print('Error removing from favorites: $e');
       rethrow;
@@ -864,7 +1462,17 @@ class ApiService {
   Future<bool> isFavorite(String productId) async {
     try {
       final response = await _dio.get('/favorites/check/$productId');
-      return response.data['isFavorite'];
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        return false;
+      }
+
+      return apiResponse.data!['isFavorite'] ?? false;
     } catch (e) {
       print('Error checking favorite: $e');
       return false;
@@ -875,7 +1483,24 @@ class ApiService {
   Future<Map<String, dynamic>> getNotificationSettings() async {
     try {
       final response = await _dio.get('/notifications/settings');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) =>
+            json
+                as Map<
+                  String,
+                  dynamic
+                >, // NotificationSettingsDto direkt Map olarak döndürüyoruz
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(
+          apiResponse.message ?? 'Bildirim ayarları getirilemedi',
+        );
+      }
+
+      return apiResponse.data!;
     } catch (e) {
       print('Error fetching notification settings: $e');
       rethrow;
@@ -884,7 +1509,18 @@ class ApiService {
 
   Future<void> updateNotificationSettings(Map<String, dynamic> data) async {
     try {
-      await _dio.put('/notifications/settings', data: data);
+      final response = await _dio.put('/notifications/settings', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(
+          apiResponse.message ?? 'Bildirim ayarları güncellenemedi',
+        );
+      }
     } catch (e) {
       print('Error updating notification settings: $e');
       rethrow;
@@ -895,7 +1531,22 @@ class ApiService {
   Future<List<dynamic>> getOrders() async {
     try {
       final response = await _dio.get('/orders');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic>) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Siparişler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
+      return response.data as List<dynamic>;
     } catch (e) {
       print('Error fetching orders: $e');
       rethrow;
@@ -905,7 +1556,27 @@ class ApiService {
   Future<Map<String, dynamic>> getOrderDetails(String orderId) async {
     try {
       final response = await _dio.get('/orders/$orderId');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // OrderDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Sipariş detayı getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt OrderDto)
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       print('Error fetching order details: $e');
       rethrow;
@@ -915,7 +1586,27 @@ class ApiService {
   Future<Map<String, dynamic>> getOrderDetailFull(String orderId) async {
     try {
       final response = await _dio.get('/orders/$orderId/detail');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // OrderDetailDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Sipariş detayı getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt OrderDetailDto)
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       print('Error fetching order detail: $e');
       rethrow;
@@ -924,7 +1615,29 @@ class ApiService {
 
   Future<void> cancelOrder(String orderId, String reason) async {
     try {
-      await _dio.post('/orders/$orderId/cancel', data: {'reason': reason});
+      final response = await _dio.post(
+        '/orders/$orderId/cancel',
+        data: {'reason': reason},
+      );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş iptal edilemedi');
+        }
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 500) {
+        throw Exception(
+          'Server error while cancelling order. Please contact support.',
+        );
+      }
+      rethrow;
     } catch (e) {
       print('Error cancelling order: $e');
       rethrow;
@@ -936,10 +1649,24 @@ class ApiService {
     String reason,
   ) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         '/orders/items/$customerOrderItemId/cancel',
         data: {'reason': reason},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Sipariş ürünü iptal edilemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error cancelling order item: $e');
       rethrow;
@@ -955,10 +1682,20 @@ class ApiService {
         '/products/search',
         queryParameters: request.toJson(),
       );
-      return PagedResultDto.fromJson(
-        response.data,
-        (json) => ProductDto.fromJson(json),
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => PagedResultDto.fromJson(
+          json as Map<String, dynamic>,
+          (itemJson) => ProductDto.fromJson(itemJson),
+        ),
       );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Ürün arama başarısız');
+      }
+
+      return apiResponse.data!;
     } catch (e) {
       print('Error searching products: $e');
       rethrow;
@@ -973,6 +1710,31 @@ class ApiService {
         '/vendors/search',
         queryParameters: request.toJson(),
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // PagedResultDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı arama sonuçları getirilemedi',
+          );
+        }
+
+        return PagedResultDto.fromJson(
+          apiResponse.data!,
+          (json) => VendorDto.fromJson(json),
+        );
+      }
+      // Eski format (direkt PagedResultDto)
       return PagedResultDto.fromJson(
         response.data,
         (json) => VendorDto.fromJson(json),
@@ -990,8 +1752,17 @@ class ApiService {
         '/products/categories',
         queryParameters: language != null ? {'lang': language} : null,
       );
-      final List<dynamic> data = response.data;
-      final categories = List<Map<String, dynamic>>.from(data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List).map((e) => e as Map<String, dynamic>).toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Kategoriler getirilemedi');
+      }
+
+      final categories = apiResponse.data!;
 
       // Cache the result
       // await _cacheService.cacheCategories(categories);
@@ -1023,6 +1794,21 @@ class ApiService {
   Future<List<String>> getCities() async {
     try {
       final response = await _dio.get('/vendors/cities');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => (json as List).map((e) => e as String).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Şehirler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return List<String>.from(response.data);
     } catch (e) {
       print('Error fetching cities: $e');
@@ -1036,6 +1822,26 @@ class ApiService {
         '/search/autocomplete',
         queryParameters: {'query': query},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Otomatik tamamlama sonuçları getirilemedi',
+          );
+        }
+
+        return apiResponse.data!
+            .map((e) => AutocompleteResultDto.fromJson(e))
+            .toList();
+      }
+      // Eski format (direkt liste)
       return (response.data as List)
           .map((e) => AutocompleteResultDto.fromJson(e))
           .toList();
@@ -1049,7 +1855,29 @@ class ApiService {
   Future<String> getGoogleMapsApiKey() async {
     try {
       final response = await _dio.get('/map/api-key');
-      return response.data['apiKey'];
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // ApiKey objesi direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Google Maps API anahtarı getirilemedi',
+          );
+        }
+
+        return apiResponse.data!['apiKey'] as String;
+      }
+      // Eski format (direkt { apiKey: "..." })
+      return response.data['apiKey'] as String;
     } catch (e) {
       print('Error fetching Google Maps API key: $e');
       rethrow;
@@ -1069,6 +1897,24 @@ class ApiService {
         '/map/vendors',
         queryParameters: queryParams,
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı harita bilgileri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
       print('Error fetching vendors for map: $e');
@@ -1079,7 +1925,29 @@ class ApiService {
   Future<Map<String, dynamic>> getDeliveryTracking(String orderId) async {
     try {
       final response = await _dio.get('/map/delivery-tracking/$orderId');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // DeliveryTrackingDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Teslimat takip bilgileri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt DeliveryTrackingDto)
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       print('Error fetching delivery tracking: $e');
       rethrow;
@@ -1130,6 +1998,28 @@ class ApiService {
           'comment': comment,
         },
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // ReviewDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Değerlendirme oluşturulamadı',
+          );
+        }
+
+        return Review.fromJson(apiResponse.data!);
+      }
+      // Eski format (direkt ReviewDto)
       return Review.fromJson(response.data);
     } catch (e) {
       print('Error creating review: $e');
@@ -1140,6 +2030,24 @@ class ApiService {
   Future<List<Review>> getProductReviews(String productId) async {
     try {
       final response = await _dio.get('/reviews/products/$productId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Ürün değerlendirmeleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!.map((json) => Review.fromJson(json)).toList();
+      }
+      // Eski format (direkt liste)
       final List<dynamic> data = response.data;
       return data.map((json) => Review.fromJson(json)).toList();
     } catch (e) {
@@ -1151,6 +2059,24 @@ class ApiService {
   Future<List<Review>> getVendorReviews(String vendorId) async {
     try {
       final response = await _dio.get('/reviews/vendors/$vendorId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı değerlendirmeleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!.map((json) => Review.fromJson(json)).toList();
+      }
+      // Eski format (direkt liste)
       final List<dynamic> data = response.data;
       return data.map((json) => Review.fromJson(json)).toList();
     } catch (e) {
@@ -1162,6 +2088,24 @@ class ApiService {
   Future<List<Review>> getPendingReviews() async {
     try {
       final response = await _dio.get('/reviews/pending');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Bekleyen değerlendirmeler getirilemedi',
+          );
+        }
+
+        return apiResponse.data!.map((json) => Review.fromJson(json)).toList();
+      }
+      // Eski format (direkt liste)
       final List<dynamic> data = response.data;
       return data.map((json) => Review.fromJson(json)).toList();
     } catch (e) {
@@ -1172,7 +2116,19 @@ class ApiService {
 
   Future<void> approveReview(String reviewId) async {
     try {
-      await _dio.patch('/reviews/$reviewId/approve');
+      final response = await _dio.patch('/reviews/$reviewId/approve');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Değerlendirme onaylanamadı');
+        }
+      }
     } catch (e) {
       print('Error approving review: $e');
       rethrow;
@@ -1181,7 +2137,19 @@ class ApiService {
 
   Future<void> rejectReview(String reviewId) async {
     try {
-      await _dio.patch('/reviews/$reviewId/reject');
+      final response = await _dio.patch('/reviews/$reviewId/reject');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Değerlendirme reddedilemedi');
+        }
+      }
     } catch (e) {
       print('Error rejecting review: $e');
       rethrow;
@@ -1202,7 +2170,29 @@ class ApiService {
   Future<Map<String, dynamic>> getUserPreferences() async {
     try {
       final response = await _dio.get('/userpreferences');
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // UserPreferencesDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Kullanıcı tercihleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt UserPreferencesDto)
+      return response.data as Map<String, dynamic>;
     } catch (e) {
       print('Error fetching user preferences: $e');
       rethrow;
@@ -1224,7 +2214,21 @@ class ApiService {
       if (dateFormat != null) data['dateFormat'] = dateFormat;
       if (timeFormat != null) data['timeFormat'] = timeFormat;
 
-      await _dio.put('/userpreferences', data: data);
+      final response = await _dio.put('/userpreferences', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Kullanıcı tercihleri güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error updating user preferences: $e');
       rethrow;
@@ -1234,6 +2238,24 @@ class ApiService {
   Future<List<Map<String, dynamic>>> getSupportedLanguages() async {
     try {
       final response = await _dio.get('/userpreferences/supported-languages');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Desteklenen diller getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
       print('Error fetching supported languages: $e');
@@ -1244,6 +2266,24 @@ class ApiService {
   Future<List<Map<String, dynamic>>> getSupportedCurrencies() async {
     try {
       final response = await _dio.get('/userpreferences/supported-currencies');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Desteklenen para birimleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
       print('Error fetching supported currencies: $e');
@@ -1271,6 +2311,24 @@ class ApiService {
         '/vendor/orders',
         queryParameters: queryParams,
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı siparişleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return response.data;
     } catch (e) {
       print('Error fetching vendor orders: $e');
@@ -1281,6 +2339,28 @@ class ApiService {
   Future<Map<String, dynamic>> getVendorOrder(String orderId) async {
     try {
       final response = await _dio.get('/vendor/orders/$orderId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // VendorOrderDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı siparişi getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt VendorOrderDto)
       return response.data;
     } catch (e) {
       print('Error fetching vendor order: $e');
@@ -1290,7 +2370,19 @@ class ApiService {
 
   Future<void> acceptOrder(String orderId) async {
     try {
-      await _dio.post('/vendor/orders/$orderId/accept');
+      final response = await _dio.post('/vendor/orders/$orderId/accept');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş kabul edilemedi');
+        }
+      }
     } catch (e) {
       print('Error accepting order: $e');
       rethrow;
@@ -1299,10 +2391,22 @@ class ApiService {
 
   Future<void> rejectOrder(String orderId, String reason) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         '/vendor/orders/$orderId/reject',
         data: {'reason': reason},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Sipariş reddedilemedi');
+        }
+      }
     } catch (e) {
       print('Error rejecting order: $e');
       rethrow;
@@ -1315,10 +2419,24 @@ class ApiService {
     String? note,
   }) async {
     try {
-      await _dio.put(
+      final response = await _dio.put(
         '/vendor/orders/$orderId/status',
         data: {'status': status, 'note': note},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Sipariş durumu güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error updating order status: $e');
       rethrow;
@@ -1333,6 +2451,24 @@ class ApiService {
       final response = await _dio.get(
         '/vendor/orders/$orderId/available-couriers',
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Müsait kuryeler getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e) {
       print('Error getting available couriers: $e');
@@ -1343,10 +2479,22 @@ class ApiService {
   // Assign courier to order
   Future<void> assignCourierToOrder(String orderId, String courierId) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         '/vendor/orders/$orderId/assign-courier',
         data: {'courierId': courierId},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Kurye atanamadı');
+        }
+      }
     } catch (e) {
       print('Error assigning courier: $e');
       rethrow;
@@ -1359,6 +2507,21 @@ class ApiService {
       final response = await _dio.post(
         '/vendor/orders/$orderId/auto-assign-courier',
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Kurye otomatik atanamadı');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt Map)
       return response.data;
     } catch (e) {
       print('Error auto-assigning courier: $e');
@@ -1385,6 +2548,26 @@ class ApiService {
         '/vendor/reports/sales',
         queryParameters: queryParams,
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // SalesReportDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Satış raporu getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt SalesReportDto)
       return response.data;
     } catch (e) {
       print('Error fetching sales report: $e');
@@ -1395,6 +2578,28 @@ class ApiService {
   Future<Map<String, dynamic>> getVendorSummary() async {
     try {
       final response = await _dio.get('/vendor/reports/summary');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // Summary object direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı özet istatistikleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt summary object)
       return response.data;
     } catch (e) {
       print('Error fetching vendor summary: $e');
@@ -1416,6 +2621,24 @@ class ApiService {
         '/vendor/products',
         queryParameters: queryParams,
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı ürünleri getirilemedi',
+          );
+        }
+
+        return apiResponse.data!.map((json) => Product.fromJson(json)).toList();
+      }
+      // Eski format (direkt liste)
       final List<dynamic> data = response.data;
       return data.map((json) => Product.fromJson(json)).toList();
     } catch (e) {
@@ -1427,6 +2650,26 @@ class ApiService {
   Future<Product> getVendorProduct(String productId) async {
     try {
       final response = await _dio.get('/vendor/products/$productId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // VendorProductDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Satıcı ürünü getirilemedi');
+        }
+
+        return Product.fromJson(apiResponse.data!);
+      }
+      // Eski format (direkt ProductDto)
       return Product.fromJson(response.data);
     } catch (e) {
       print('Error fetching vendor product: $e');
@@ -1437,6 +2680,26 @@ class ApiService {
   Future<Product> createProduct(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/vendor/products', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // VendorProductDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Ürün oluşturulamadı');
+        }
+
+        return Product.fromJson(apiResponse.data!);
+      }
+      // Eski format (direkt ProductDto)
       return Product.fromJson(response.data);
     } catch (e) {
       print('Error creating product: $e');
@@ -1449,7 +2712,22 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     try {
-      await _dio.put('/vendor/products/$productId', data: data);
+      final response = await _dio.put(
+        '/vendor/products/$productId',
+        data: data,
+      );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Ürün güncellenemedi');
+        }
+      }
     } catch (e) {
       print('Error updating product: $e');
       rethrow;
@@ -1458,7 +2736,19 @@ class ApiService {
 
   Future<void> deleteProduct(String productId) async {
     try {
-      await _dio.delete('/vendor/products/$productId');
+      final response = await _dio.delete('/vendor/products/$productId');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Ürün silinemedi');
+        }
+      }
     } catch (e) {
       print('Error deleting product: $e');
       rethrow;
@@ -1470,10 +2760,24 @@ class ApiService {
     bool isAvailable,
   ) async {
     try {
-      await _dio.put(
+      final response = await _dio.put(
         '/vendor/products/$productId/availability',
         data: {'isAvailable': isAvailable},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Ürün müsaitlik durumu güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error updating product availability: $e');
       rethrow;
@@ -1482,10 +2786,22 @@ class ApiService {
 
   Future<void> updateProductPrice(String productId, double price) async {
     try {
-      await _dio.put(
+      final response = await _dio.put(
         '/vendor/products/$productId/price',
         data: {'price': price},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(apiResponse.message ?? 'Ürün fiyatı güncellenemedi');
+        }
+      }
     } catch (e) {
       print('Error updating product price: $e');
       rethrow;
@@ -1495,6 +2811,21 @@ class ApiService {
   Future<List<String>> getVendorProductCategories() async {
     try {
       final response = await _dio.get('/vendor/products/categories');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => (json as List).map((e) => e as String).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Kategoriler getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt liste)
       return List<String>.from(response.data);
     } catch (e) {
       print('Error fetching vendor product categories: $e');
@@ -1518,6 +2849,26 @@ class ApiService {
   Future<Map<String, dynamic>> getVendorProfile() async {
     try {
       final response = await _dio.get('/vendor/profile');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // VendorProfileDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(apiResponse.message ?? 'Satıcı profili getirilemedi');
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt VendorProfileDto)
       return response.data;
     } catch (e) {
       print('Error fetching vendor profile: $e');
@@ -1527,7 +2878,21 @@ class ApiService {
 
   Future<void> updateVendorProfile(Map<String, dynamic> data) async {
     try {
-      await _dio.put('/vendor/profile', data: data);
+      final response = await _dio.put('/vendor/profile', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı profili güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error updating vendor profile: $e');
       rethrow;
@@ -1536,7 +2901,24 @@ class ApiService {
 
   Future<void> updateVendorImage(String imageUrl) async {
     try {
-      await _dio.put('/vendor/profile/image', data: {'imageUrl': imageUrl});
+      final response = await _dio.put(
+        '/vendor/profile/image',
+        data: {'imageUrl': imageUrl},
+      );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı profil resmi güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error updating vendor image: $e');
       rethrow;
@@ -1546,6 +2928,28 @@ class ApiService {
   Future<Map<String, dynamic>> getVendorSettings() async {
     try {
       final response = await _dio.get('/vendor/profile/settings');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // VendorSettingsDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı ayarları getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      // Eski format (direkt VendorSettingsDto)
       return response.data;
     } catch (e) {
       print('Error fetching vendor settings: $e');
@@ -1555,7 +2959,21 @@ class ApiService {
 
   Future<void> updateVendorSettings(Map<String, dynamic> data) async {
     try {
-      await _dio.put('/vendor/profile/settings', data: data);
+      final response = await _dio.put('/vendor/profile/settings', data: data);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı ayarları güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error updating vendor settings: $e');
       rethrow;
@@ -1564,10 +2982,24 @@ class ApiService {
 
   Future<void> toggleVendorActive(bool isActive) async {
     try {
-      await _dio.put(
+      final response = await _dio.put(
         '/vendor/profile/settings/active',
         data: {'isActive': isActive},
       );
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı aktiflik durumu güncellenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error toggling vendor active: $e');
       rethrow;
@@ -1605,7 +3037,22 @@ class ApiService {
         '/content/legal/$type',
         queryParameters: {'lang': langCode},
       );
-      return response.data;
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) =>
+            json
+                as Map<
+                  String,
+                  dynamic
+                >, // Legal document direkt Map olarak döndürüyoruz
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Yasal belge getirilemedi');
+      }
+
+      return apiResponse.data!;
     } catch (e) {
       print('Error fetching legal content: $e');
       rethrow;
@@ -1616,6 +3063,29 @@ class ApiService {
   Future<List<dynamic>> getVendorNotifications() async {
     try {
       final response = await _dio.get('/vendor/notifications');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              json
+                  as Map<
+                    String,
+                    dynamic
+                  >, // VendorNotificationResponseDto direkt Map olarak döndürüyoruz
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı bildirimleri getirilemedi',
+          );
+        }
+
+        // VendorNotificationResponseDto içindeki 'items' alanını döndür
+        return apiResponse.data!['items'] ?? [];
+      }
+      // Eski format (direkt VendorNotificationResponseDto)
       return response.data['items'] ?? [];
     } catch (e) {
       print('Error fetching vendor notifications: $e');
@@ -1631,7 +3101,21 @@ class ApiService {
           : type == 'customer'
           ? '/customer/notifications/$id/read'
           : '/courier/notifications/$id/read';
-      await _dio.post(endpoint);
+      final response = await _dio.post(endpoint);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Bildirim okundu olarak işaretlenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error marking notification as read: $e');
       rethrow;
@@ -1646,7 +3130,22 @@ class ApiService {
           : type == 'customer'
           ? '/customer/notifications/read-all'
           : '/courier/notifications/read-all';
-      await _dio.post(endpoint);
+      final response = await _dio.post(endpoint);
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ??
+                'Tüm bildirimler okundu olarak işaretlenemedi',
+          );
+        }
+      }
     } catch (e) {
       print('Error marking all notifications as read: $e');
       rethrow;

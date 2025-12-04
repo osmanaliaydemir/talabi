@@ -183,7 +183,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Column(
         children: [
           HomeHeader(
@@ -254,8 +254,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     padding: EdgeInsets.all(AppTheme.spacingMedium),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.85,
+                          crossAxisCount: 1,
+                          childAspectRatio: 2.1,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
                         ),
@@ -274,43 +274,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildCategoryImage(String? imageUrl, IconData icon, Color color) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return Icon(icon, color: color, size: 48);
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      child: Image.network(
-        imageUrl,
-        width: 90,
-        height: 90,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(icon, color: color, size: 48);
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                  : null,
-              color: color,
-              strokeWidth: 2,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildCategoryCard(Map<String, dynamic> category) {
     final categoryName = category['name'] as String;
     final style = _getCategoryStyle(category);
     final icon = style['icon'] as IconData;
     final color = style['color'] as Color;
+    final imageUrl = category['imageUrl']?.toString();
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
 
     return GestureDetector(
       onTap: () {
@@ -320,72 +290,110 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             builder: (context) => CategoryProductsScreen(
               categoryName: categoryName,
               categoryId: category['id']?.toString(),
+              imageUrl: imageUrl,
             ),
           ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    color.withValues(alpha: 0.2),
-                    color.withValues(alpha: 0.1),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background Layer
+              if (hasImage)
+                Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildFallbackBackground(color, icon);
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      color: AppTheme.cardColor,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: color,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    );
+                  },
+                )
+              else
+                _buildFallbackBackground(color, icon),
+
+              // Gradient Overlay (only if hasImage)
+              if (hasImage)
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                      stops: const [0.5, 1.0],
+                    ),
+                  ),
+                ),
+
+              // Content Layer
+              Padding(
+                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      categoryName,
+                      style: AppTheme.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
               ),
-              child: _buildCategoryImage(
-                category['imageUrl']?.toString(),
-                icon,
-                color,
-              ),
-            ),
-            SizedBox(height: AppTheme.spacingMedium),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
-              child: Text(
-                categoryName,
-                style: AppTheme.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackBackground(Color color, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color.withOpacity(0.8), color],
+        ),
+      ),
+      child: Center(
+        child: Icon(icon, color: Colors.white.withOpacity(0.5), size: 64),
       ),
     );
   }

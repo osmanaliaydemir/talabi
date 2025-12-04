@@ -31,4 +31,25 @@ class CustomerNotification {
       relatedEntityId: json['relatedEntityId']?.toString(),
     );
   }
+  CustomerNotification copyWith({
+    String? id,
+    String? title,
+    String? message,
+    String? type,
+    bool? isRead,
+    DateTime? createdAt,
+    DateTime? readAt,
+    String? relatedEntityId,
+  }) {
+    return CustomerNotification(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      message: message ?? this.message,
+      type: type ?? this.type,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+      readAt: readAt ?? this.readAt,
+      relatedEntityId: relatedEntityId ?? this.relatedEntityId,
+    );
+  }
 }

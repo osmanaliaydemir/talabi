@@ -3531,6 +3531,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Slide to Talabî!'**
   String get unlockDescription;
+
+  /// No description provided for @addAddressToOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add address to order'**
+  String get addAddressToOrder;
 }
 
 class _AppLocalizationsDelegate

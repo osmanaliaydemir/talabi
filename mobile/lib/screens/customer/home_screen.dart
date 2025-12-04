@@ -19,6 +19,9 @@ import 'package:mobile/screens/customer/campaigns/campaigns_screen.dart';
 import 'package:mobile/screens/customer/vendor/vendor_list_screen.dart';
 import 'package:mobile/screens/customer/vendor/vendor_detail_screen.dart';
 import 'package:mobile/screens/customer/search_screen.dart';
+import 'package:mobile/screens/customer/profile/addresses_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/providers/notification_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Map<String, dynamic>>> _categoriesFuture;
   List<dynamic> _addresses = [];
   Map<String, dynamic>? _selectedAddress;
+  bool _isAddressesLoading = true;
 
   final Map<String, bool> _favoriteStatus =
       {}; // Track favorite status for each product
@@ -55,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _popularProductsFuture = _apiService.getPopularProducts(limit: 8);
     _loadAddresses();
     _loadFavoriteStatus();
-    _loadBanners();
   }
 
   @override
@@ -162,16 +165,31 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadAddresses() async {
     try {
       final addresses = await _apiService.getAddresses();
-      setState(() {
-        _addresses = addresses;
-        // Find default address or use first one
-        _selectedAddress = addresses.firstWhere(
-          (addr) => addr['isDefault'] == true,
-          orElse: () => addresses.isNotEmpty ? addresses.first : null,
-        );
-      });
+      if (mounted) {
+        setState(() {
+          _addresses = addresses;
+          // Find default address or use first one
+          if (addresses.isNotEmpty) {
+            try {
+              _selectedAddress = addresses.firstWhere(
+                (addr) => addr['isDefault'] == true,
+              );
+            } catch (_) {
+              _selectedAddress = addresses.first;
+            }
+          } else {
+            _selectedAddress = null;
+          }
+          _isAddressesLoading = false;
+        });
+      }
     } catch (e) {
       print('Error loading addresses: $e');
+      if (mounted) {
+        setState(() {
+          _isAddressesLoading = false;
+        });
+      }
     }
   }
 
@@ -665,6 +683,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 currentLocation: _selectedAddress != null
                     ? _getAddressDisplayText(_selectedAddress!, localizations)
                     : null,
+                isAddressesLoading: _isAddressesLoading,
               ),
             ),
             // Spacing
@@ -842,7 +861,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       SizedBox(
-                        height: 240,
+                        height: 220,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: EdgeInsets.symmetric(
@@ -866,11 +885,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: AppTheme.spacingSmall),
                         Padding(
                           padding: EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingMedium,
-                            vertical: AppTheme.spacingSmall,
+                            vertical: 0,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1426,6 +1444,39 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       color: AppTheme.textSecondary,
                     ),
                   ),
+                  SizedBox(height: AppTheme.spacingLarge),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close bottom sheet
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddressesScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryOrange,
+                      foregroundColor: AppTheme.textOnPrimary,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingLarge,
+                        vertical: AppTheme.spacingMedium,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      localizations.addAddress,
+                      style: AppTheme.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textOnPrimary,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             )
@@ -1629,6 +1680,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onLocationTap;
   final String? currentLocation;
   final VoidCallback onSearchTap;
+  final bool isAddressesLoading;
 
   _HomeHeaderDelegate({
     required this.expandedHeight,
@@ -1638,6 +1690,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onLocationTap,
     required this.currentLocation,
     required this.onSearchTap,
+    required this.isAddressesLoading,
   });
 
   @override
@@ -1647,14 +1700,13 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     final double progress = shrinkOffset / (expandedHeight - collapsedHeight);
-    // Show sticky bar when mostly collapsed (e.g. > 80% scrolled)
+    // Show sticky bar later (e.g. > 80% scrolled) to avoid "large header" ghost effect
     final bool showSticky = progress > 0.8;
 
     return Stack(
       fit: StackFit.expand,
       children: [
         // Full Header (Scrolls away)
-        // We use OverflowBox to keep the header at full height while it scrolls up
         Positioned(
           top: -shrinkOffset,
           left: 0,
@@ -1664,24 +1716,18 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             onLocationTap: onLocationTap,
             onNotificationTap: onNotificationTap,
             currentLocation: currentLocation,
+            isAddressesLoading: isAddressesLoading,
           ),
         ),
 
         // Sticky Bar (Fades in)
         if (showSticky)
           Opacity(
-            opacity: ((progress - 0.8) * 5.0).clamp(
-              0.0,
-              1.0,
-            ), // Quick fade in at the end
+            opacity: ((progress - 0.8) * 5.0).clamp(0.0, 1.0),
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primaryOrange,
-                    AppTheme
-                        .darkOrange, // Using darkOrange as secondary color for gradient
-                  ],
+                  colors: [AppTheme.primaryOrange, AppTheme.darkOrange],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1693,12 +1739,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 ],
               ),
-              padding: EdgeInsets.only(
-                top: paddingTop,
-                left: 16,
-                right:
-                    8, // Reduced right padding as icons have internal padding
-              ),
+              padding: EdgeInsets.only(top: paddingTop, left: 16, right: 8),
               alignment: Alignment.center,
               child: SizedBox(
                 height: kToolbarHeight,
@@ -1758,13 +1799,56 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                       tooltip: 'Search',
                     ),
                     // Notification Icon
-                    IconButton(
-                      icon: const Icon(
-                        Icons.notifications,
-                        color: Colors.white,
-                      ),
-                      onPressed: onNotificationTap,
-                      tooltip: 'Notifications',
+                    // Notification Icon
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.notifications,
+                            color: Colors.white,
+                          ),
+                          onPressed: onNotificationTap,
+                          tooltip: 'Notifications',
+                        ),
+                        Consumer<NotificationProvider>(
+                          builder: (context, notificationProvider, child) {
+                            if (notificationProvider.unreadCount > 0) {
+                              return Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.fromBorderSide(
+                                      BorderSide(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  child: Text(
+                                    '${notificationProvider.unreadCount}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1784,6 +1868,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _HomeHeaderDelegate oldDelegate) {
     return currentLocation != oldDelegate.currentLocation ||
+        isAddressesLoading != oldDelegate.isAddressesLoading ||
         expandedHeight != oldDelegate.expandedHeight ||
         collapsedHeight != oldDelegate.collapsedHeight ||
         paddingTop != oldDelegate.paddingTop;

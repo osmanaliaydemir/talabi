@@ -805,5 +805,6 @@
   "similarProducts": "منتجات مماثلة",
   "areYouHungry": "هل أنت جائع؟",
   "onboardingDescription": "اطلب ما تحتاجه، وسنقوم بتوصيله إليك في أسرع وقت ممكن.\nالطلب مع طلبي أصبح الآن سهلاً بلمسة واحدة.",
-  "unlockDescription": "انزلق إلى الطالبي!"
+  "unlockDescription": "انزلق إلى الطالبي!",
+  "addAddressToOrder": "أضف عنوانًا للطلب"
 }

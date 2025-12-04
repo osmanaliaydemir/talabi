@@ -3,6 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/connectivity_banner.dart';
+import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class LegalContentScreen extends StatefulWidget {
   final String documentType;
@@ -69,7 +70,12 @@ class _LegalContentScreenState extends State<LegalContentScreen> {
       body: Column(
         children: [
           // Header
-          _buildHeader(context),
+          SharedHeader(
+            title: widget.title,
+            subtitle: l10n.legalDocuments,
+            showBackButton: true,
+            action: const SizedBox.shrink(),
+          ),
           // Content
           Expanded(
             child: Stack(
@@ -120,72 +126,6 @@ class _LegalContentScreenState extends State<LegalContentScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-            Colors.orange.shade800,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Icon
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.article, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 12),
-              // Title
-              Expanded(
-                child: Text(
-                  widget.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

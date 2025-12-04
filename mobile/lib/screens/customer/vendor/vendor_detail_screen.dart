@@ -98,6 +98,21 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
             floating: false,
             pinned: true,
             backgroundColor: AppTheme.primaryOrange,
+            leading: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.vendor.name,

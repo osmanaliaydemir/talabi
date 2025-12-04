@@ -6,6 +6,7 @@ import 'package:mobile/models/currency.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/order/order_success_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:provider/provider.dart';
 
@@ -112,6 +113,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
+      );
+
+      // Log purchase
+      await AnalyticsService.logPurchase(
+        orderId: order.customerOrderId,
+        totalAmount: widget.subtotal + widget.deliveryFee,
+        currency: widget.cartItems.values.first.product.currency.code,
+        cartItems: widget.cartItems.values.toList(),
+        shippingAddress:
+            '${_selectedAddress!['city']} / ${_selectedAddress!['district']}',
       );
 
       // Clear cart

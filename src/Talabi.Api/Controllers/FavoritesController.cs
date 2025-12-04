@@ -3,30 +3,40 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Favori ürünler için controller
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
 public class FavoritesController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public FavoritesController(TalabiDbContext context)
+    /// <summary>
+    /// FavoritesController constructor
+    /// </summary>
+    public FavoritesController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
+    /// <summary>
+    /// Kullanıcının favori ürünlerini getirir
+    /// </summary>
+    /// <returns>Favori ürün listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetFavorites()
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetFavorites()
     {
         var userId = GetUserId();
 
-        var favorites = await _context.FavoriteProducts
+        var favorites = await _unitOfWork.FavoriteProducts.Query()
             .Where(f => f.UserId == userId)
             .Include(f => f.Product)
             .Select(f => new ProductDto
@@ -41,28 +51,33 @@ public class FavoritesController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(favorites);
+        return Ok(new ApiResponse<List<ProductDto>>(favorites, "Favori ürünler başarıyla getirildi"));
     }
 
+    /// <summary>
+    /// Ürünü favorilere ekler
+    /// </summary>
+    /// <param name="productId">Ürün ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("{productId}")]
-    public async Task<ActionResult> AddToFavorites(Guid productId)
+    public async Task<ActionResult<ApiResponse<object>>> AddToFavorites(Guid productId)
     {
         var userId = GetUserId();
 
         // Check if product exists
-        var product = await _context.Products.FindAsync(productId);
+        var product = await _unitOfWork.Products.GetByIdAsync(productId);
         if (product == null)
         {
-            return NotFound("Product not found");
+            return NotFound(new ApiResponse<object>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
         }
 
         // Check if already favorited
-        var exists = await _context.FavoriteProducts
+        var exists = await _unitOfWork.FavoriteProducts.Query()
             .AnyAsync(f => f.UserId == userId && f.ProductId == productId);
 
         if (exists)
         {
-            return BadRequest("Product already in favorites");
+            return BadRequest(new ApiResponse<object>("Ürün zaten favorilerde", "ALREADY_IN_FAVORITES"));
         }
 
         var favorite = new FavoriteProduct
@@ -71,39 +86,49 @@ public class FavoritesController : ControllerBase
             ProductId = productId
         };
 
-        _context.FavoriteProducts.Add(favorite);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.FavoriteProducts.AddAsync(favorite);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Added to favorites" });
+        return Ok(new ApiResponse<object>(new { }, "Favorilere eklendi"));
     }
 
+    /// <summary>
+    /// Ürünü favorilerden çıkarır
+    /// </summary>
+    /// <param name="productId">Ürün ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpDelete("{productId}")]
-    public async Task<ActionResult> RemoveFromFavorites(Guid productId)
+    public async Task<ActionResult<ApiResponse<object>>> RemoveFromFavorites(Guid productId)
     {
         var userId = GetUserId();
 
-        var favorite = await _context.FavoriteProducts
+        var favorite = await _unitOfWork.FavoriteProducts.Query()
             .FirstOrDefaultAsync(f => f.UserId == userId && f.ProductId == productId);
 
         if (favorite == null)
         {
-            return NotFound("Favorite not found");
+            return NotFound(new ApiResponse<object>("Favori bulunamadı", "FAVORITE_NOT_FOUND"));
         }
 
-        _context.FavoriteProducts.Remove(favorite);
-        await _context.SaveChangesAsync();
+        _unitOfWork.FavoriteProducts.Remove(favorite);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Removed from favorites" });
+        return Ok(new ApiResponse<object>(new { }, "Favorilerden çıkarıldı"));
     }
 
+    /// <summary>
+    /// Ürünün favorilerde olup olmadığını kontrol eder
+    /// </summary>
+    /// <param name="productId">Ürün ID'si</param>
+    /// <returns>Favori durumu</returns>
     [HttpGet("check/{productId}")]
-    public async Task<ActionResult<bool>> IsFavorite(Guid productId)
+    public async Task<ActionResult<ApiResponse<object>>> IsFavorite(Guid productId)
     {
         var userId = GetUserId();
 
-        var isFavorite = await _context.FavoriteProducts
+        var isFavorite = await _unitOfWork.FavoriteProducts.Query()
             .AnyAsync(f => f.UserId == userId && f.ProductId == productId);
 
-        return Ok(new { IsFavorite = isFavorite });
+        return Ok(new ApiResponse<object>(new { IsFavorite = isFavorite }, "Favori durumu kontrol edildi"));
     }
 }

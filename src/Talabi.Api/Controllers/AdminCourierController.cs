@@ -1,33 +1,44 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Courier;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
-using Talabi.Infrastructure.Data;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Admin kurye yönetimi işlemleri için controller
+/// </summary>
 [Route("api/admin/couriers")]
 [ApiController]
 [Authorize(Roles = "Admin")]
 public class AdminCourierController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderAssignmentService _assignmentService;
 
-    public AdminCourierController(TalabiDbContext context, IOrderAssignmentService assignmentService)
+    /// <summary>
+    /// AdminCourierController constructor
+    /// </summary>
+    public AdminCourierController(IUnitOfWork unitOfWork, IOrderAssignmentService assignmentService)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _assignmentService = assignmentService;
     }
 
-    // GET: api/admin/couriers
+    /// <summary>
+    /// Tüm kuryeleri getirir (filtreleme ile)
+    /// </summary>
+    /// <param name="status">Kurye durumu filtresi (opsiyonel)</param>
+    /// <param name="isActive">Aktiflik filtresi (opsiyonel)</param>
+    /// <returns>Kurye listesi</returns>
     [HttpGet]
-    public async Task<IActionResult> GetCouriers([FromQuery] string? status, [FromQuery] bool? isActive)
+    public async Task<ActionResult<ApiResponse<List<CourierProfileDto>>>> GetCouriers([FromQuery] string? status, [FromQuery] bool? isActive)
     {
-        var query = _context.Couriers.AsQueryable();
+        IQueryable<Courier> query = _unitOfWork.Couriers.Query();
 
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<CourierStatus>(status, true, out var statusEnum))
         {
@@ -64,34 +75,46 @@ public class AdminCourierController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(couriers);
+        return Ok(new ApiResponse<List<CourierProfileDto>>(couriers, "Kuryeler başarıyla getirildi"));
     }
 
-    // POST: api/admin/couriers/orders/{id}/assign
+    /// <summary>
+    /// Siparişi belirli bir kuryeye atar
+    /// </summary>
+    /// <param name="id">Sipariş ID'si</param>
+    /// <param name="courierId">Kurye ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPost("orders/{id}/assign")]
-    public async Task<IActionResult> AssignOrder(Guid id, [FromQuery] Guid courierId)
+    public async Task<ActionResult<ApiResponse<object>>> AssignOrder(Guid id, [FromQuery] Guid courierId)
     {
         var success = await _assignmentService.AssignOrderToCourierAsync(id, courierId);
         if (!success)
         {
-            return BadRequest(new { Message = "Failed to assign order. Check if order is ready and courier is available." });
+            return BadRequest(new ApiResponse<object>("Sipariş atanamadı. Siparişin hazır durumda olduğundan ve kuryenin müsait olduğundan emin olun", "ORDER_ASSIGNMENT_FAILED"));
         }
 
-        return Ok(new { Message = "Order assigned successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla atandı"));
     }
 
-    // GET: api/admin/couriers/{id}/performance
+    /// <summary>
+    /// Belirli bir kuryenin performans istatistiklerini getirir
+    /// </summary>
+    /// <param name="id">Kurye ID'si</param>
+    /// <returns>Kurye performans istatistikleri</returns>
     [HttpGet("{id}/performance")]
-    public async Task<IActionResult> GetPerformance(Guid id)
+    public async Task<ActionResult<ApiResponse<CourierStatisticsDto>>> GetPerformance(Guid id)
     {
-        var courier = await _context.Couriers.FindAsync(id);
-        if (courier == null) return NotFound(new { Message = "Courier not found" });
+        var courier = await _unitOfWork.Couriers.GetByIdAsync(id);
+        if (courier == null)
+        {
+            return NotFound(new ApiResponse<CourierStatisticsDto>("Kurye bulunamadı", "COURIER_NOT_FOUND"));
+        }
 
         var today = DateTime.Today;
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTime(today.Year, today.Month, 1);
 
-        var orders = await _context.Orders
+        var orders = await _unitOfWork.Orders.Query()
             .Where(o => o.CourierId == id && o.Status == OrderStatus.Delivered)
             .ToListAsync();
 
@@ -100,7 +123,7 @@ public class AdminCourierController : ControllerBase
         var monthOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date >= monthStart);
 
         // Calculate earnings (this could be optimized by querying CourierEarnings table directly)
-        var earnings = await _context.CourierEarnings
+        var earnings = await _unitOfWork.CourierEarnings.Query()
             .Where(e => e.CourierId == id)
             .ToListAsync();
 
@@ -123,81 +146,109 @@ public class AdminCourierController : ControllerBase
             ActiveOrders = courier.CurrentActiveOrders
         };
 
-        return Ok(stats);
+        return Ok(new ApiResponse<CourierStatisticsDto>(stats, "Kurye performans istatistikleri başarıyla getirildi"));
     }
 
-    // PUT: api/admin/couriers/{id}/activate
+    /// <summary>
+    /// Kuryeyi aktif hale getirir
+    /// </summary>
+    /// <param name="id">Kurye ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/activate")]
-    public async Task<IActionResult> ActivateCourier(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> ActivateCourier(Guid id)
     {
-        var courier = await _context.Couriers.FindAsync(id);
-        if (courier == null) return NotFound(new { Message = "Courier not found" });
+        var courier = await _unitOfWork.Couriers.GetByIdAsync(id);
+        if (courier == null)
+        {
+            return NotFound(new ApiResponse<object>("Kurye bulunamadı", "COURIER_NOT_FOUND"));
+        }
 
         courier.IsActive = true;
         courier.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _unitOfWork.Couriers.Update(courier);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Courier activated successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Kurye başarıyla aktifleştirildi"));
     }
 
-    // PUT: api/admin/couriers/{id}/deactivate
+    /// <summary>
+    /// Kuryeyi pasif hale getirir
+    /// </summary>
+    /// <param name="id">Kurye ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/deactivate")]
-    public async Task<IActionResult> DeactivateCourier(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> DeactivateCourier(Guid id)
     {
-        var courier = await _context.Couriers.FindAsync(id);
-        if (courier == null) return NotFound(new { Message = "Courier not found" });
+        var courier = await _unitOfWork.Couriers.GetByIdAsync(id);
+        if (courier == null)
+        {
+            return NotFound(new ApiResponse<object>("Kurye bulunamadı", "COURIER_NOT_FOUND"));
+        }
 
         if (courier.CurrentActiveOrders > 0)
         {
-            return BadRequest(new { Message = "Cannot deactivate courier with active orders" });
+            return BadRequest(new ApiResponse<object>("Aktif siparişi olan kurye pasifleştirilemez", "CANNOT_DEACTIVATE_WITH_ACTIVE_ORDERS"));
         }
 
         courier.IsActive = false;
         courier.Status = CourierStatus.Offline;
         courier.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _unitOfWork.Couriers.Update(courier);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Courier deactivated successfully" });
+        return Ok(new ApiResponse<object>(new { }, "Kurye başarıyla pasifleştirildi"));
     }
 
-    // PUT: api/admin/couriers/{id}/status
+    /// <summary>
+    /// Kurye durumunu günceller
+    /// </summary>
+    /// <param name="id">Kurye ID'si</param>
+    /// <param name="dto">Yeni durum bilgisi</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateCourierStatus(Guid id, [FromBody] UpdateCourierStatusDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateCourierStatus(Guid id, [FromBody] UpdateCourierStatusDto dto)
     {
-        var courier = await _context.Couriers.FindAsync(id);
-        if (courier == null) return NotFound(new { Message = "Courier not found" });
+        var courier = await _unitOfWork.Couriers.GetByIdAsync(id);
+        if (courier == null)
+        {
+            return NotFound(new ApiResponse<object>("Kurye bulunamadı", "COURIER_NOT_FOUND"));
+        }
 
         if (!Enum.TryParse<CourierStatus>(dto.Status, true, out var newStatus))
         {
-            return BadRequest(new { Message = "Invalid status" });
+            return BadRequest(new ApiResponse<object>("Geçersiz durum", "INVALID_STATUS"));
         }
 
         courier.Status = newStatus;
         courier.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _unitOfWork.Couriers.Update(courier);
+        await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = $"Courier status updated to {newStatus}" });
+        return Ok(new ApiResponse<object>(new { Status = newStatus.ToString() }, $"Kurye durumu {newStatus} olarak güncellendi"));
     }
 
-    // GET: api/admin/couriers/statistics
+    /// <summary>
+    /// Genel kurye istatistiklerini getirir
+    /// </summary>
+    /// <returns>Genel kurye istatistikleri</returns>
     [HttpGet("statistics")]
-    public async Task<IActionResult> GetOverallStatistics()
+    public async Task<ActionResult<ApiResponse<object>>> GetOverallStatistics()
     {
-        var totalCouriers = await _context.Couriers.CountAsync();
-        var activeCouriers = await _context.Couriers.CountAsync(c => c.IsActive);
-        var availableCouriers = await _context.Couriers.CountAsync(c => c.Status == CourierStatus.Available);
-        var busyCouriers = await _context.Couriers.CountAsync(c => c.Status == CourierStatus.Busy);
+        var totalCouriers = await _unitOfWork.Couriers.CountAsync();
+        var activeCouriers = await _unitOfWork.Couriers.CountAsync(c => c.IsActive);
+        var availableCouriers = await _unitOfWork.Couriers.CountAsync(c => c.Status == CourierStatus.Available);
+        var busyCouriers = await _unitOfWork.Couriers.CountAsync(c => c.Status == CourierStatus.Busy);
 
         var today = DateTime.Today;
-        var todayDeliveries = await _context.Orders
+        var todayDeliveries = await _unitOfWork.Orders.Query()
             .Where(o => o.Status == OrderStatus.Delivered && o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date == today)
             .CountAsync();
 
-        var todayEarnings = await _context.CourierEarnings
+        var todayEarnings = await _unitOfWork.CourierEarnings.Query()
             .Where(e => e.EarnedAt.Date == today)
             .SumAsync(e => e.TotalEarning);
 
-        return Ok(new
+        var stats = new
         {
             TotalCouriers = totalCouriers,
             ActiveCouriers = activeCouriers,
@@ -205,6 +256,8 @@ public class AdminCourierController : ControllerBase
             BusyCouriers = busyCouriers,
             TodayDeliveries = todayDeliveries,
             TodayEarnings = todayEarnings
-        });
+        };
+
+        return Ok(new ApiResponse<object>(stats, "Genel kurye istatistikleri başarıyla getirildi"));
     }
 }

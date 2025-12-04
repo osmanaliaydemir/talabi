@@ -1850,4 +1850,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get unlockDescription => 'انزلق إلى الطالبي!';
+
+  @override
+  String get addAddressToOrder => 'أضف عنوانًا للطلب';
 }

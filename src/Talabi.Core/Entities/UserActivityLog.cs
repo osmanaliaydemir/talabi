@@ -2,9 +2,8 @@ using System;
 
 namespace Talabi.Core.Entities
 {
-    public class UserActivityLog
+    public class UserActivityLog : BaseEntity
     {
-        public Guid Id { get; set; }
         public string? UserId { get; set; }
         public string? UserEmail { get; set; }
         public string? PhoneNumber { get; set; }
@@ -17,7 +16,6 @@ namespace Talabi.Core.Entities
         public long DurationMs { get; set; }
         public string? IpAddress { get; set; }
         public string? UserAgent { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string? Exception { get; set; }
     }
 }

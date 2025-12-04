@@ -3,20 +3,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
 
+/// <summary>
+/// Satıcı ürün işlemleri için controller
+/// </summary>
 [Route("api/vendor/products")]
 [ApiController]
 [Authorize]
 public class VendorProductsController : ControllerBase
 {
-    private readonly TalabiDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public VendorProductsController(TalabiDbContext context)
+    /// <summary>
+    /// VendorProductsController constructor
+    /// </summary>
+    public VendorProductsController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     private string? GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -24,22 +30,29 @@ public class VendorProductsController : ControllerBase
     private async Task<Guid?> GetVendorIdAsync()
     {
         var userId = GetUserId();
-        var vendor = await _context.Vendors
+        var vendor = await _unitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor?.Id;
     }
 
-    // GET: api/vendor/products
+    /// <summary>
+    /// Satıcının ürünlerini getirir
+    /// </summary>
+    /// <param name="category">Kategori filtresi (opsiyonel)</param>
+    /// <param name="isAvailable">Müsaitlik filtresi (opsiyonel)</param>
+    /// <returns>Ürün listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<VendorProductDto>>> GetProducts(
+    public async Task<ActionResult<ApiResponse<List<VendorProductDto>>>> GetProducts(
         [FromQuery] string? category = null,
         [FromQuery] bool? isAvailable = null)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<List<VendorProductDto>>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var query = _context.Products
+        IQueryable<Product> query = _unitOfWork.Products.Query()
             .Where(p => p.VendorId == vendorId.Value);
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -48,8 +61,9 @@ public class VendorProductsController : ControllerBase
         if (isAvailable.HasValue)
             query = query.Where(p => p.IsAvailable == isAvailable.Value);
 
-        var products = await query
-            .OrderByDescending(p => p.CreatedAt)
+        IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt);
+
+        var products = await orderedQuery
             .Select(p => new VendorProductDto
             {
                 Id = p.Id,
@@ -68,18 +82,24 @@ public class VendorProductsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(products);
+        return Ok(new ApiResponse<List<VendorProductDto>>(products, "Satıcı ürünleri başarıyla getirildi"));
     }
 
-    // GET: api/vendor/products/{id}
+    /// <summary>
+    /// Belirli bir ürünü getirir
+    /// </summary>
+    /// <param name="id">Ürün ID'si</param>
+    /// <returns>Ürün bilgileri</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<VendorProductDto>> GetProduct(Guid id)
+    public async Task<ActionResult<ApiResponse<VendorProductDto>>> GetProduct(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<VendorProductDto>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var product = await _context.Products
+        var product = await _unitOfWork.Products.Query()
             .Where(p => p.Id == id && p.VendorId == vendorId.Value)
             .Select(p => new VendorProductDto
             {
@@ -100,18 +120,26 @@ public class VendorProductsController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (product == null)
-            return NotFound("Product not found or you don't have permission to access it");
+        {
+            return NotFound(new ApiResponse<VendorProductDto>("Ürün bulunamadı veya bu ürüne erişim yetkiniz yok", "PRODUCT_NOT_FOUND"));
+        }
 
-        return Ok(product);
+        return Ok(new ApiResponse<VendorProductDto>(product, "Ürün başarıyla getirildi"));
     }
 
-    // POST: api/vendor/products
+    /// <summary>
+    /// Yeni ürün oluşturur
+    /// </summary>
+    /// <param name="dto">Ürün bilgileri</param>
+    /// <returns>Oluşturulan ürün</returns>
     [HttpPost]
-    public async Task<ActionResult<VendorProductDto>> CreateProduct(CreateProductDto dto)
+    public async Task<ActionResult<ApiResponse<VendorProductDto>>> CreateProduct(CreateProductDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<VendorProductDto>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
         var product = new Product
         {
@@ -128,8 +156,8 @@ public class VendorProductsController : ControllerBase
             PreparationTime = dto.PreparationTime
         };
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Products.AddAsync(product);
+        await _unitOfWork.SaveChangesAsync();
 
         var result = new VendorProductDto
         {
@@ -148,22 +176,34 @@ public class VendorProductsController : ControllerBase
             UpdatedAt = product.UpdatedAt
         };
 
-        return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, result);
+        return CreatedAtAction(
+            nameof(GetProduct),
+            new { id = product.Id },
+            new ApiResponse<VendorProductDto>(result, "Ürün başarıyla oluşturuldu"));
     }
 
-    // PUT: api/vendor/products/{id}
+    /// <summary>
+    /// Ürün bilgilerini günceller
+    /// </summary>
+    /// <param name="id">Ürün ID'si</param>
+    /// <param name="dto">Güncellenecek ürün bilgileri</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(Guid id, UpdateProductDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateProduct(Guid id, UpdateProductDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var product = await _context.Products
+        var product = await _unitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
-            return NotFound("Product not found or you don't have permission to update it");
+        {
+            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü güncelleme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+        }
 
         // Update only provided fields
         if (dto.Name != null)
@@ -189,90 +229,124 @@ public class VendorProductsController : ControllerBase
 
         product.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Products.Update(product);
+        await _unitOfWork.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(new ApiResponse<object>(new { }, "Ürün başarıyla güncellendi"));
     }
 
-    // DELETE: api/vendor/products/{id}
+    /// <summary>
+    /// Ürünü siler
+    /// </summary>
+    /// <param name="id">Ürün ID'si</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var product = await _context.Products
+        var product = await _unitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
-            return NotFound("Product not found or you don't have permission to delete it");
+        {
+            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü silme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+        }
 
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
+        _unitOfWork.Products.Remove(product);
+        await _unitOfWork.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(new ApiResponse<object>(new { }, "Ürün başarıyla silindi"));
     }
 
-    // PUT: api/vendor/products/{id}/availability
+    /// <summary>
+    /// Ürün müsaitlik durumunu günceller
+    /// </summary>
+    /// <param name="id">Ürün ID'si</param>
+    /// <param name="dto">Müsaitlik bilgisi</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/availability")]
-    public async Task<IActionResult> UpdateProductAvailability(Guid id, UpdateProductAvailabilityDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateProductAvailability(Guid id, UpdateProductAvailabilityDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var product = await _context.Products
+        var product = await _unitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
-            return NotFound("Product not found or you don't have permission to update it");
+        {
+            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü güncelleme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+        }
 
         product.IsAvailable = dto.IsAvailable;
         product.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Products.Update(product);
+        await _unitOfWork.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(new ApiResponse<object>(new { }, "Ürün müsaitlik durumu başarıyla güncellendi"));
     }
 
-    // PUT: api/vendor/products/{id}/price
+    /// <summary>
+    /// Ürün fiyatını günceller
+    /// </summary>
+    /// <param name="id">Ürün ID'si</param>
+    /// <param name="dto">Fiyat bilgisi</param>
+    /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/price")]
-    public async Task<IActionResult> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var product = await _context.Products
+        var product = await _unitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
-            return NotFound("Product not found or you don't have permission to update it");
+        {
+            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü güncelleme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+        }
 
         product.Price = dto.Price;
         product.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Products.Update(product);
+        await _unitOfWork.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(new ApiResponse<object>(new { }, "Ürün fiyatı başarıyla güncellendi"));
     }
 
-    // GET: api/vendor/products/categories
+    /// <summary>
+    /// Satıcının ürün kategorilerini getirir
+    /// </summary>
+    /// <returns>Kategori listesi</returns>
     [HttpGet("categories")]
-    public async Task<ActionResult<IEnumerable<string>>> GetCategories()
+    public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
-            return NotFound("Vendor not found for current user");
+        {
+            return NotFound(new ApiResponse<List<string>>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+        }
 
-        var categories = await _context.Products
+        var categories = await _unitOfWork.Products.Query()
             .Where(p => p.VendorId == vendorId.Value && p.Category != null)
             .Select(p => p.Category!)
             .Distinct()
             .OrderBy(c => c)
             .ToListAsync();
 
-        return Ok(categories);
+        return Ok(new ApiResponse<List<string>>(categories, "Kategoriler başarıyla getirildi"));
     }
 }

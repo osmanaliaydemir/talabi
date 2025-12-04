@@ -6,6 +6,7 @@ import 'package:mobile/models/currency.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:dio/dio.dart';
@@ -103,6 +104,10 @@ class CartProvider with ChangeNotifier {
       try {
         // First, check API - don't update local state until success
         await _apiService.addToCart(product.id, 1);
+
+        // Log add_to_cart
+        await AnalyticsService.logAddToCart(product: product, quantity: 1);
+
         // Reload from backend to get correct IDs
         await loadCart();
       } catch (e) {
@@ -123,6 +128,12 @@ class CartProvider with ChangeNotifier {
 
         // If online but request failed, update local state optimistically and queue it
         if (_syncService != null) {
+          // Check if it's a 409 Conflict or other non-retriable error
+          if (e is DioException && e.response?.statusCode == 409) {
+            print('🔴 [CART] Conflict error (409), NOT queuing action.');
+            rethrow;
+          }
+
           // Update local state for offline/queued scenarios
           if (_items.containsKey(product.id)) {
             _items[product.id]!.quantity++;
@@ -251,6 +262,12 @@ class CartProvider with ChangeNotifier {
     if (isOnline && cartItem != null && cartItem.backendId != null) {
       try {
         await _apiService.removeFromCart(cartItem.backendId!);
+
+        // Log remove_from_cart
+        await AnalyticsService.logRemoveFromCart(
+          product: cartItem.product,
+          quantity: cartItem.quantity,
+        );
       } catch (e) {
         print('Error removing item: $e');
         // If online but request failed, queue it
