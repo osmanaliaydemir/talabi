@@ -10,6 +10,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/screens/customer/widgets/special_home_header.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/screens/customer/category/categories_screen.dart';
 import 'package:mobile/screens/customer/product/popular_product_list_screen.dart';
@@ -500,19 +501,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 if (currentBanner.imageUrl != null)
                                   ClipOval(
-                                    child: Image.network(
-                                      currentBanner.imageUrl!,
+                                    child: CachedNetworkImageWidget(
+                                      imageUrl: currentBanner.imageUrl!,
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Icon(
-                                              bannerIcon,
-                                              size: 50,
-                                              color: Colors.white,
-                                            );
-                                          },
+                                      maxWidth: 200,
+                                      maxHeight: 200,
+                                      errorWidget: Icon(
+                                        bannerIcon,
+                                        size: 50,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   )
                                 else
@@ -1037,33 +1037,21 @@ class _HomeScreenState extends State<HomeScreen> {
       return Icon(icon, color: color, size: 30);
     }
 
-    return ClipRRect(
+    return CachedNetworkImageWidget(
+      imageUrl: imageUrl,
+      width: 60,
+      height: 60,
+      fit: BoxFit.cover,
+      maxWidth: 150,
+      maxHeight: 150,
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      child: Image.network(
-        imageUrl,
-        width: 60,
-        height: 60,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(icon, color: color, size: 30);
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                    : null,
-                color: color,
-                strokeWidth: 2,
-              ),
-            ),
-          );
-        },
+      errorWidget: Icon(icon, color: color, size: 30),
+      placeholder: Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(color: color, strokeWidth: 2),
+        ),
       ),
     );
   }
@@ -1201,23 +1189,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Stack(
                   children: [
                     vendor.imageUrl != null
-                        ? Image.network(
-                            vendor.imageUrl!,
+                        ? OptimizedCachedImage.vendorLogo(
+                            imageUrl: vendor.imageUrl!,
                             width: double.infinity,
                             height: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: AppTheme.textSecondary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                child: Icon(
-                                  Icons.store,
-                                  size: 50,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              );
-                            },
+                            borderRadius: BorderRadius.zero,
                           )
                         : Container(
                             color: AppTheme.textSecondary.withValues(

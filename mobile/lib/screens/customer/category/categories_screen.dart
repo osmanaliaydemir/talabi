@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/home_header.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -313,28 +314,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             children: [
               // Background Layer
               if (hasImage)
-                Image.network(
-                  imageUrl,
+                CachedNetworkImageWidget(
+                  imageUrl: imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildFallbackBackground(color, icon);
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: AppTheme.cardColor,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: color,
-                          strokeWidth: 2,
-                        ),
+                  maxWidth: 400,
+                  maxHeight: 300,
+                  errorWidget: _buildFallbackBackground(color, icon),
+                  placeholder: Container(
+                    color: AppTheme.cardColor,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: color,
+                        strokeWidth: 2,
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 )
               else
                 _buildFallbackBackground(color, icon),

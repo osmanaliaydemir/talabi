@@ -6,6 +6,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/widgets/common/bouncing_circle.dart';
 import 'package:mobile/screens/customer/campaigns/campaign_detail_screen.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class CampaignsScreen extends StatefulWidget {
   const CampaignsScreen({super.key});
@@ -215,18 +216,18 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                         BouncingCircle(color: Colors.white.withOpacity(0.2)),
                         if (banner.imageUrl != null)
                           ClipOval(
-                            child: Image.network(
-                              banner.imageUrl!,
+                            child: CachedNetworkImageWidget(
+                              imageUrl: banner.imageUrl!,
                               width: 80,
                               height: 80,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  bannerIcon,
-                                  size: 50,
-                                  color: Colors.white,
-                                );
-                              },
+                              maxWidth: 200,
+                              maxHeight: 200,
+                              errorWidget: Icon(
+                                bannerIcon,
+                                size: 50,
+                                color: Colors.white,
+                              ),
                             ),
                           )
                         else

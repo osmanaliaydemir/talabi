@@ -6,6 +6,7 @@ import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class ProductCard extends StatefulWidget {
@@ -96,17 +97,11 @@ class _ProductCardState extends State<ProductCard> {
                 child: Stack(
                   children: [
                     widget.product.imageUrl != null
-                        ? Image.network(
-                            widget.product.imageUrl!,
+                        ? OptimizedCachedImage.productThumbnail(
+                            imageUrl: widget.product.imageUrl!,
                             width: double.infinity,
                             height: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.image, size: 50),
-                              );
-                            },
+                            borderRadius: BorderRadius.circular(12),
                           )
                         : Container(
                             color: Colors.grey[200],

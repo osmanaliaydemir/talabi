@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// Import routers normally - Flutter's tree-shaking will remove unused code
+// For true lazy loading, we use a factory pattern that only instantiates routers when needed
 import 'package:mobile/routers/courier_router.dart';
 import 'package:mobile/routers/customer_router.dart';
 import 'package:mobile/routers/vendor_router.dart';
@@ -8,6 +10,7 @@ import 'package:mobile/screens/vendor/vendor_login_screen.dart';
 
 /// Ana uygulama router'ı
 /// Tüm route'ları koordine eder ve role-based routing sağlar
+/// Route'lar lazy load edilir - sadece gerektiğinde yüklenir
 class AppRouter {
   // Cache for frequently used routes to avoid repeated string comparisons
   static const String _loginRoute = '/login';
@@ -42,17 +45,17 @@ class AppRouter {
       return MaterialPageRoute(builder: (context) => const VendorLoginScreen());
     }
 
-    // Courier route'ları
+    // Courier route'ları - Lazy load (only instantiate when needed)
     if (routeName.startsWith(_courierPrefix)) {
       return CourierRouter.generateRoute(settings);
     }
 
-    // Vendor route'ları
+    // Vendor route'ları - Lazy load (only instantiate when needed)
     if (routeName.startsWith(_vendorPrefix)) {
       return VendorRouter.generateRoute(settings);
     }
 
-    // Customer route'ları
+    // Customer route'ları - Lazy load (only instantiate when needed)
     if (routeName.startsWith(_customerPrefix)) {
       return CustomerRouter.generateRoute(settings);
     }

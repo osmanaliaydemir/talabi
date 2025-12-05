@@ -5,6 +5,7 @@ import 'package:mobile/models/vendor.dart';
 import 'package:mobile/screens/customer/vendor/vendor_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class VendorListScreen extends StatefulWidget {
   const VendorListScreen({super.key});
@@ -106,21 +107,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
               child: Stack(
                 children: [
                   vendor.imageUrl != null
-                      ? Image.network(
-                          vendor.imageUrl!,
+                      ? OptimizedCachedImage.vendorLogo(
+                          imageUrl: vendor.imageUrl!,
                           width: double.infinity,
                           height: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: AppTheme.textSecondary.withOpacity(0.1),
-                              child: Icon(
-                                Icons.store,
-                                size: 50,
-                                color: AppTheme.textSecondary,
-                              ),
-                            );
-                          },
+                          borderRadius: BorderRadius.zero,
                         )
                       : Container(
                           color: AppTheme.textSecondary.withOpacity(0.1),

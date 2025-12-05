@@ -165,6 +165,8 @@ class ProductDto {
   final String? vendorName;
   final String name;
   final String? description;
+  final String? category;
+  final String? categoryId;
   final double price;
   final Currency currency;
   final String? imageUrl;
@@ -175,6 +177,8 @@ class ProductDto {
     this.vendorName,
     required this.name,
     this.description,
+    this.category,
+    this.categoryId,
     required this.price,
     this.currency = Currency.try_,
     this.imageUrl,
@@ -187,6 +191,8 @@ class ProductDto {
       vendorName: json['vendorName'],
       name: json['name'],
       description: json['description'],
+      category: json['category'],
+      categoryId: json['categoryId']?.toString(),
       price: (json['price'] as num).toDouble(),
       currency: json['currency'] != null
           ? Currency.fromInt(json['currency'] as int?)
@@ -202,6 +208,8 @@ class ProductDto {
       vendorName: vendorName,
       name: name,
       description: description,
+      category: category,
+      categoryId: categoryId,
       price: price,
       currency: currency,
       imageUrl: imageUrl,

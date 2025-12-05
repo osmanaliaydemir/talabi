@@ -7,6 +7,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class VendorProductFormScreen extends StatefulWidget {
   final Product? product;
@@ -309,14 +310,13 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                         child: Image.file(_imageFile!, fit: BoxFit.cover),
                       )
                     : _imageUrl != null
-                    ? ClipRRect(
+                    ? CachedNetworkImageWidget(
+                        imageUrl: _imageUrl!,
+                        fit: BoxFit.cover,
+                        maxWidth: 600,
+                        maxHeight: 600,
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          _imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildImagePlaceholder(),
-                        ),
+                        errorWidget: _buildImagePlaceholder(),
                       )
                     : _buildImagePlaceholder(),
               ),

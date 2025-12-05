@@ -9,6 +9,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -1447,21 +1448,13 @@ class _SearchScreenState extends State<SearchScreen>
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusMedium,
                             ),
-                            child: Image.network(
-                              vendor.imageUrl!,
+                            child: OptimizedCachedImage.vendorLogo(
+                              imageUrl: vendor.imageUrl!,
                               width: 80,
                               height: 80,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: AppTheme.backgroundColor,
-                                  child: Icon(
-                                    Icons.store,
-                                    size: 40,
-                                    color: AppTheme.vendorPrimary,
-                                  ),
-                                );
-                              },
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                           )
                         : Icon(

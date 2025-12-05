@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/services/preferences_service.dart';
+import 'package:mobile/services/asset_preloader_service.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart';
@@ -33,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.wait([
         CacheService.init(), // Independent
         NotificationService().initialize(), // Independent
+        AssetPreloaderService.preloadCriticalAssets(), // Preload critical assets
       ]);
 
       // Check app state

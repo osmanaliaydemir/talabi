@@ -8,6 +8,7 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatefulWidget {
@@ -357,19 +358,11 @@ class _CartScreenState extends State<CartScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: product.imageUrl != null
-                  ? Image.network(
-                      product.imageUrl!,
+                  ? OptimizedCachedImage.productThumbnail(
+                      imageUrl: product.imageUrl!,
                       width: 100,
                       height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 100,
-                          height: 100,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.fastfood, size: 50),
-                        );
-                      },
+                      borderRadius: BorderRadius.circular(12),
                     )
                   : Container(
                       width: 100,

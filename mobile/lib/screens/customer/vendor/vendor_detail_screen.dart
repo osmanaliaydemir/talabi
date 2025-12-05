@@ -7,6 +7,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class VendorDetailScreen extends StatefulWidget {
   final Vendor vendor;
@@ -126,19 +127,11 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                 fit: StackFit.expand,
                 children: [
                   widget.vendor.imageUrl != null
-                      ? Image.network(
-                          widget.vendor.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: Icon(
-                                Icons.store,
-                                size: 64,
-                                color: Colors.grey[500],
-                              ),
-                            );
-                          },
+                      ? OptimizedCachedImage.banner(
+                          imageUrl: widget.vendor.imageUrl!,
+                          width: double.infinity,
+                          height: double.infinity,
+                          borderRadius: BorderRadius.zero,
                         )
                       : Container(
                           color: Colors.grey[300],

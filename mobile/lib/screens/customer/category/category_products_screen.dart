@@ -7,6 +7,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
@@ -154,19 +155,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                 fit: StackFit.expand,
                 children: [
                   widget.imageUrl != null && widget.imageUrl!.isNotEmpty
-                      ? Image.network(
-                          widget.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: AppTheme.primaryOrange,
-                              child: Icon(
-                                Icons.category,
-                                size: 64,
-                                color: Colors.white.withOpacity(0.5),
-                              ),
-                            );
-                          },
+                      ? OptimizedCachedImage.banner(
+                          imageUrl: widget.imageUrl!,
+                          width: double.infinity,
+                          height: double.infinity,
+                          borderRadius: BorderRadius.zero,
                         )
                       : Container(
                           decoration: BoxDecoration(

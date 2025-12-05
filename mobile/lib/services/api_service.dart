@@ -457,6 +457,33 @@ class ApiService {
     }
   }
 
+  /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
+  Future<List<Product>> getSimilarProducts(String productId, {int limit = 5}) async {
+    try {
+      final response = await _dio.get('/products/$productId/similar', queryParameters: {
+        'limit': limit,
+      });
+      
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List<dynamic>)
+            .map((item) => ProductDto.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        return [];
+      }
+
+      // ProductDto listesini Product listesine çevir
+      return apiResponse.data!.map((dto) => dto.toProduct()).toList();
+    } catch (e) {
+      print('Error fetching similar products: $e');
+      return [];
+    }
+  }
+
   Future<Order> createOrder(
     String vendorId,
     Map<String, int> items, {

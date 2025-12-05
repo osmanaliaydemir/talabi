@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/promotional_banner.dart';
 import 'package:mobile/widgets/common/bouncing_circle.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class CampaignDetailScreen extends StatelessWidget {
   final PromotionalBanner banner;
@@ -54,18 +55,18 @@ class CampaignDetailScreen extends StatelessWidget {
                   if (banner.imageUrl != null)
                     Center(
                       child: ClipOval(
-                        child: Image.network(
-                          banner.imageUrl!,
+                        child: CachedNetworkImageWidget(
+                          imageUrl: banner.imageUrl!,
                           width: 120,
                           height: 120,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.local_offer,
-                              size: 80,
-                              color: Colors.white,
-                            );
-                          },
+                          maxWidth: 300,
+                          maxHeight: 300,
+                          errorWidget: Icon(
+                            Icons.local_offer,
+                            size: 80,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     )

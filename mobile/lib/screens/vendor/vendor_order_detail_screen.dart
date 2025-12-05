@@ -4,6 +4,7 @@ import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/vendor/vendor_header.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -593,27 +594,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                         child: Row(
                           children: [
                             if (item['productImageUrl'] != null)
-                              ClipRRect(
+                              OptimizedCachedImage.productThumbnail(
+                                imageUrl: item['productImageUrl'],
+                                width: 50,
+                                height: 50,
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  item['productImageUrl'],
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.image_not_supported,
-                                      ),
-                                    );
-                                  },
-                                ),
                               )
                             else
                               Container(

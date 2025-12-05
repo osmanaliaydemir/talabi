@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -509,19 +510,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                   ),
                                               child:
                                                   item.productImageUrl != null
-                                                  ? Image.network(
-                                                      item.productImageUrl!,
-                                                      width: 50,
-                                                      height: 50,
-                                                      fit: BoxFit.cover,
-                                                      color: item.isCancelled
-                                                          ? Colors.grey
-                                                          : null,
-                                                      colorBlendMode:
-                                                          item.isCancelled
-                                                          ? BlendMode.saturation
-                                                          : null,
-                                                    )
+                                                  ? item.isCancelled
+                                                      ? ColorFiltered(
+                                                          colorFilter: ColorFilter.mode(
+                                                            Colors.grey,
+                                                            BlendMode.saturation,
+                                                          ),
+                                                          child: OptimizedCachedImage.productThumbnail(
+                                                            imageUrl: item.productImageUrl!,
+                                                            width: 50,
+                                                            height: 50,
+                                                            borderRadius: BorderRadius.zero,
+                                                          ),
+                                                        )
+                                                      : OptimizedCachedImage.productThumbnail(
+                                                          imageUrl: item.productImageUrl!,
+                                                          width: 50,
+                                                          height: 50,
+                                                          borderRadius: BorderRadius.zero,
+                                                        )
                                                   : Container(
                                                       width: 50,
                                                       height: 50,

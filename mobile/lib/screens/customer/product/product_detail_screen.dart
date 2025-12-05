@@ -12,6 +12,7 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -139,23 +140,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _isLoadingSimilarProducts = true;
     });
     try {
-      // Fetch products from the same vendor
-      final products = await _apiService.getProducts(_product!.vendorId);
-
-      // Filter products:
-      // 1. Exclude current product
-      // 2. If categoryId exists, filter by same category
-      // 3. Take first 5
-      final similar = products
-          .where((p) {
-            bool isNotCurrent = p.id != _product!.id;
-            bool isSameCategory = _product!.categoryId != null
-                ? p.categoryId == _product!.categoryId
-                : true;
-            return isNotCurrent && isSameCategory;
-          })
-          .take(5)
-          .toList();
+      // API'den aynı kategorideki benzer ürünleri getir
+      final similar = await _apiService.getSimilarProducts(_product!.id, limit: 5);
 
       setState(() {
         _similarProducts = similar;
@@ -164,6 +150,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     } catch (e) {
       print('Error loading similar products: $e');
       setState(() {
+        _similarProducts = [];
         _isLoadingSimilarProducts = false;
       });
     }
@@ -181,17 +168,84 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (!isVendor && _hasUserReviewed()) {
       final localizations = AppLocalizations.of(context);
       if (localizations != null) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final backgroundColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+        final secondaryTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
+
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(localizations.alreadyReviewedTitle),
-            content: Text(localizations.alreadyReviewedMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(localizations.ok),
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(24),
               ),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryOrange.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.info_outline,
+                      color: AppTheme.primaryOrange,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    localizations.alreadyReviewedTitle,
+                    style: AppTheme.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    localizations.alreadyReviewedMessage,
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: secondaryTextColor,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryOrange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        localizations.ok,
+                        style: AppTheme.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       }
@@ -207,101 +261,287 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     showDialog(
       context: rootContext,
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
+        final backgroundColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+        final secondaryTextColor = isDark ? Colors.grey[400] : Colors.grey[700];
+        final borderColor = isDark ? Colors.grey[700] : Colors.grey[300];
+        final inputFillColor = isDark ? Colors.grey[900] : Colors.grey[50];
+        final closeButtonColor = isDark ? Colors.grey[800] : Colors.grey[100];
+
         return StatefulBuilder(
           builder: (dialogContext, setState) {
-            return AlertDialog(
-              title: Text(title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        icon: Icon(
-                          index < rating ? Icons.star : Icons.star_border,
-                          color: AppTheme.primaryOrange,
-                          size: 32,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            rating = index + 1;
-                          });
-                        },
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: commentController,
-                    decoration: InputDecoration(
-                      hintText: l10n.shareYourThoughts,
-                      border: const OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-                ],
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: Text(l10n.cancel),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    // Close dialog first
-                    Navigator.of(dialogContext, rootNavigator: true).pop();
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with close button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: AppTheme.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.of(dialogContext).pop(),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: closeButtonColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
 
-                    try {
-                      final product = _product;
-                      if (product == null) return;
-                      await _apiService.createReview(
-                        isVendor ? product.vendorId : product.id,
-                        isVendor ? 'Vendor' : 'Product',
-                        rating,
-                        commentController.text,
-                      );
-                      if (!isVendor) {
-                        _loadReviews();
-                      }
-                      // Use root context for toast message
-                      if (mounted) {
-                        final rootL10n = AppLocalizations.of(rootContext)!;
-                        ToastMessage.show(
-                          rootContext,
-                          message: isVendor
-                              ? rootL10n.vendorReviewSubmitted
-                              : rootL10n.productReviewSubmitted,
-                          isSuccess: true,
-                        );
-                      }
-                    } catch (e) {
-                      // Use root context for toast message
-                      if (mounted) {
-                        final rootL10n = AppLocalizations.of(rootContext)!;
-                        ToastMessage.show(
-                          rootContext,
-                          message: '${rootL10n.error}: $e',
-                          isSuccess: false,
-                        );
-                      }
-                    } finally {
-                      commentController.dispose();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryOrange,
-                    foregroundColor: AppTheme.textOnPrimary,
-                  ),
-                  child: Text(l10n.submit),
+                    // Rating Section
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Deneyiminiz nasıldı?',
+                            style: AppTheme.poppins(
+                              fontSize: 16,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Modern star rating with animation
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(5, (index) {
+                              final isSelected = index < rating;
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    rating = index + 1;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOut,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                  ),
+                                  child: Icon(
+                                    isSelected ? Icons.star : Icons.star_border,
+                                    color: isSelected
+                                        ? AppTheme.primaryOrange
+                                        : (isDark
+                                              ? Colors.grey[600]
+                                              : Colors.grey[300]),
+                                    size: isSelected ? 42 : 40,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                          const SizedBox(height: 8),
+                          // Rating text
+                          Text(
+                            _getRatingText(rating, l10n),
+                            style: AppTheme.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryOrange,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Comment Section
+                    Text(
+                      l10n.shareYourThoughts,
+                      style: AppTheme.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: commentController,
+                      maxLines: 4,
+                      style: AppTheme.poppins(fontSize: 14, color: textColor),
+                      decoration: InputDecoration(
+                        hintText: l10n.shareYourThoughts,
+                        filled: true,
+                        fillColor: inputFillColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: borderColor!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: borderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppTheme.primaryOrange,
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.all(16),
+                        hintStyle: AppTheme.poppins(
+                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: borderColor),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.cancel,
+                              style: AppTheme.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              // Close dialog first
+                              Navigator.of(
+                                dialogContext,
+                                rootNavigator: true,
+                              ).pop();
+
+                              try {
+                                final product = _product;
+                                if (product == null) return;
+                                await _apiService.createReview(
+                                  isVendor ? product.vendorId : product.id,
+                                  isVendor ? 'Vendor' : 'Product',
+                                  rating,
+                                  commentController.text,
+                                );
+                                if (!isVendor) {
+                                  _loadReviews();
+                                }
+                                // Use root context for toast message
+                                if (mounted) {
+                                  final rootL10n = AppLocalizations.of(
+                                    rootContext,
+                                  )!;
+                                  ToastMessage.show(
+                                    rootContext,
+                                    message: isVendor
+                                        ? rootL10n.vendorReviewSubmitted
+                                        : rootL10n.productReviewSubmitted,
+                                    isSuccess: true,
+                                  );
+                                }
+                              } catch (e) {
+                                // Use root context for toast message
+                                if (mounted) {
+                                  final rootL10n = AppLocalizations.of(
+                                    rootContext,
+                                  )!;
+                                  ToastMessage.show(
+                                    rootContext,
+                                    message: '${rootL10n.error}: $e',
+                                    isSuccess: false,
+                                  );
+                                }
+                              } finally {
+                                commentController.dispose();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryOrange,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              l10n.submit,
+                              style: AppTheme.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
       },
     );
+  }
+
+  String _getRatingText(int rating, AppLocalizations l10n) {
+    switch (rating) {
+      case 1:
+        return 'Çok Kötü';
+      case 2:
+        return 'Kötü';
+      case 3:
+        return 'Orta';
+      case 4:
+        return 'İyi';
+      case 5:
+        return 'Mükemmel';
+      default:
+        return '';
+    }
   }
 
   @override
@@ -343,19 +583,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     height: 300,
                     width: double.infinity,
                     child: _product!.imageUrl != null
-                        ? Image.network(
-                            _product!.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[300],
-                                child: const Icon(
-                                  Icons.image,
-                                  size: 80,
-                                  color: Colors.grey,
-                                ),
-                              );
-                            },
+                        ? OptimizedCachedImage.productImage(
+                            imageUrl: _product!.imageUrl!,
+                            width: double.infinity,
+                            height: 300,
+                            borderRadius: BorderRadius.zero,
                           )
                         : Container(
                             color: Colors.grey[300],
@@ -679,22 +911,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               separatorBuilder: (context, index) =>
                                   const SizedBox(width: 8),
                               itemBuilder: (context, index) {
-                                return ProductCard(
-                                  product: _similarProducts[index],
+                                // SizedBox ile sarmalayarak width ve height belirt (hit test hatası önlemek için)
+                                return SizedBox(
                                   width: 180,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ProductDetailScreen(
-                                              productId:
-                                                  _similarProducts[index].id,
-                                              product: _similarProducts[index],
-                                            ),
-                                      ),
-                                    );
-                                  },
+                                  height: 270,
+                                  child: ProductCard(
+                                    product: _similarProducts[index],
+                                    width: 180,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ProductDetailScreen(
+                                                productId:
+                                                    _similarProducts[index].id,
+                                                product:
+                                                    _similarProducts[index],
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 );
                               },
                             ),

@@ -227,6 +227,7 @@ public class ProductsController : ControllerBase
                 Name = p.Name,
                 Description = p.Description,
                 Category = p.Category,
+                CategoryId = p.CategoryId,
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl
@@ -239,5 +240,68 @@ public class ProductsController : ControllerBase
         }
 
         return Ok(new ApiResponse<ProductDto>(product, "Ürün başarıyla getirildi"));
+    }
+
+    /// <summary>
+    /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
+    /// </summary>
+    /// <param name="id">Mevcut ürün ID'si</param>
+    /// <param name="limit">Getirilecek ürün sayısı - Varsayılan: 5</param>
+    /// <returns>Benzer ürün listesi</returns>
+    [HttpGet("{id}/similar")]
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetSimilarProducts(
+        Guid id,
+        [FromQuery] int limit = 5)
+    {
+        // Mevcut ürünü getir
+        var currentProduct = await _unitOfWork.Products.Query()
+            .Where(p => p.Id == id)
+            .FirstOrDefaultAsync();
+
+        if (currentProduct == null)
+        {
+            return NotFound(new ApiResponse<List<ProductDto>>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+        }
+
+        // Aynı kategorideki diğer ürünleri getir
+        IQueryable<Product> query = _unitOfWork.Products.Query()
+            .Include(p => p.Vendor)
+            .Where(p => p.Id != id && p.IsAvailable); // Mevcut ürünü hariç tut ve sadece müsait olanları getir
+
+        // CategoryId varsa ona göre filtrele (öncelikli)
+        if (currentProduct.CategoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == currentProduct.CategoryId.Value);
+        }
+        // CategoryId yoksa Category string'ine göre filtrele (fallback)
+        else if (!string.IsNullOrWhiteSpace(currentProduct.Category))
+        {
+            query = query.Where(p => p.Category == currentProduct.Category);
+        }
+        else
+        {
+            // Ne CategoryId ne de Category varsa boş liste döndür
+            return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(), "Benzer ürün bulunamadı"));
+        }
+
+        var similarProducts = await query
+            .OrderByDescending(p => p.CreatedAt) // En yeni ürünler önce
+            .Take(limit)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                VendorId = p.VendorId,
+                VendorName = p.Vendor != null ? p.Vendor.Name : null,
+                Name = p.Name,
+                Description = p.Description,
+                Category = p.Category,
+                CategoryId = p.CategoryId,
+                Price = p.Price,
+                Currency = p.Currency,
+                ImageUrl = p.ImageUrl
+            })
+            .ToListAsync();
+
+        return Ok(new ApiResponse<List<ProductDto>>(similarProducts, "Benzer ürünler başarıyla getirildi"));
     }
 }
