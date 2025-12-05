@@ -23,8 +23,7 @@ class CacheService {
 
     try {
       // Use initFlutter which handles path_provider internally
-      // Add a small delay to ensure platform channels are ready (especially after hot restart)
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Delay removed for faster startup - Hive.initFlutter() handles platform channels internally
       await Hive.initFlutter();
       _initialized = true;
       print('✅ [CACHE] Hive initialized successfully');

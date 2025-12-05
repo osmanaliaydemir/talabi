@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/notification_service.dart';
+import 'package:mobile/services/preferences_service.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart';
 import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
@@ -29,14 +28,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initializeApp() async {
     try {
-      // Initialize Firebase
-      await Firebase.initializeApp();
-
-      // Initialize cache service
-      await CacheService.init();
-
-      // Initialize Notification Service
-      await NotificationService().initialize();
+      // Firebase is already initialized in main.dart, skip here
+      // Parallel initialization for independent services
+      await Future.wait([
+        CacheService.init(), // Independent
+        NotificationService().initialize(), // Independent
+      ]);
 
       // Check app state
       if (mounted) {
@@ -52,12 +49,12 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAppState() async {
-    // Artificial delay to show splash screen (optional, but good for UX if init is too fast)
-    await Future.delayed(const Duration(seconds: 2));
+    // Artificial delay removed for faster startup
+    // Minimum splash duration handled by initialization time
 
     if (!mounted) return;
 
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await PreferencesService.instance;
     final languageSelected =
         prefs.getBool('language_selection_completed') ?? false;
 

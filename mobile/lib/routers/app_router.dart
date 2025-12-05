@@ -9,6 +9,14 @@ import 'package:mobile/screens/vendor/vendor_login_screen.dart';
 /// Ana uygulama router'ı
 /// Tüm route'ları koordine eder ve role-based routing sağlar
 class AppRouter {
+  // Cache for frequently used routes to avoid repeated string comparisons
+  static const String _loginRoute = '/login';
+  static const String _courierLoginRoute = '/courier/login';
+  static const String _vendorLoginRoute = '/vendor/login';
+  static const String _courierPrefix = '/courier/';
+  static const String _vendorPrefix = '/vendor/';
+  static const String _customerPrefix = '/customer/';
+
   /// Route'un hangi modüle ait olduğunu belirler ve ilgili router'a yönlendirir
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     final routeName = settings.name;
@@ -17,35 +25,35 @@ class AppRouter {
       return null;
     }
 
-    // Shared/Auth route'ları
-    if (routeName == '/login') {
+    // Shared/Auth route'ları - Most common routes first
+    if (routeName == _loginRoute) {
       return MaterialPageRoute(builder: (context) => const LoginScreen());
     }
 
     // Courier login route
-    if (routeName == '/courier/login') {
+    if (routeName == _courierLoginRoute) {
       return MaterialPageRoute(
         builder: (context) => const CourierLoginScreen(),
       );
     }
 
     // Vendor login route
-    if (routeName == '/vendor/login') {
+    if (routeName == _vendorLoginRoute) {
       return MaterialPageRoute(builder: (context) => const VendorLoginScreen());
     }
 
     // Courier route'ları
-    if (routeName.startsWith('/courier/')) {
+    if (routeName.startsWith(_courierPrefix)) {
       return CourierRouter.generateRoute(settings);
     }
 
     // Vendor route'ları
-    if (routeName.startsWith('/vendor/')) {
+    if (routeName.startsWith(_vendorPrefix)) {
       return VendorRouter.generateRoute(settings);
     }
 
     // Customer route'ları
-    if (routeName.startsWith('/customer/')) {
+    if (routeName.startsWith(_customerPrefix)) {
       return CustomerRouter.generateRoute(settings);
     }
 

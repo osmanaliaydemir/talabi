@@ -20,12 +20,16 @@ import 'package:mobile/routers/app_router.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/services/navigation_service.dart';
+import 'package:mobile/services/preferences_service.dart';
 import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize SharedPreferences first (singleton pattern)
+  await PreferencesService.init();
 
   await Firebase.initializeApp();
 
@@ -48,20 +52,29 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
+        // Critical providers (initialize immediately)
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => LocalizationProvider()),
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(
           create: (context) => ConnectivityProvider(connectivityService),
         ),
-        ChangeNotifierProvider(create: (context) => AuthProvider()),
+        // Lazy providers (initialize on first use - using lazy factory pattern)
         ChangeNotifierProvider(
           create: (context) => CartProvider(
             syncService: syncService,
             connectivityProvider: context.read<ConnectivityProvider>(),
           ),
+          lazy: true,
         ),
-        ChangeNotifierProvider(create: (context) => BottomNavProvider()),
-        ChangeNotifierProvider(create: (context) => NotificationProvider()),
+        ChangeNotifierProvider(
+          create: (context) => BottomNavProvider(),
+          lazy: true,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NotificationProvider(),
+          lazy: true,
+        ),
       ],
       child: const MyApp(),
     ),
@@ -88,7 +101,10 @@ class MyApp extends StatelessWidget {
           locale: localization.locale,
           navigatorKey: NavigationService.navigatorKey,
           scaffoldMessengerKey: NavigationService.scaffoldMessengerKey,
-          navigatorObservers: [NavigationLogger(), observer],
+          navigatorObservers: [
+            if (kDebugMode) NavigationLogger(), // Only in debug mode
+            observer,
+          ],
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,

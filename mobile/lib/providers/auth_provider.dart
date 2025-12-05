@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/services/preferences_service.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _token;
@@ -31,7 +31,7 @@ class AuthProvider with ChangeNotifier {
     _role = response['role'];
 
     // Save to shared preferences
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await PreferencesService.instance;
     await prefs.setString('token', _token!);
     if (_refreshToken != null) {
       await prefs.setString('refreshToken', _refreshToken!);
@@ -81,7 +81,7 @@ class AuthProvider with ChangeNotifier {
         print('🟢 [AUTH_PROVIDER] FullName: $_fullName');
 
         // Save to shared preferences
-        final prefs = await SharedPreferences.getInstance();
+        final prefs = await PreferencesService.instance;
         await prefs.setString('token', _token!);
         if (_refreshToken != null) {
           await prefs.setString('refreshToken', _refreshToken!);
@@ -116,7 +116,7 @@ class AuthProvider with ChangeNotifier {
     _fullName = null;
     _role = null;
 
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await PreferencesService.instance;
     await prefs.clear();
 
     // Analytics - clear user id (pass empty string or handle in service, usually null is not allowed in setUserId but we can just not set it or set to empty)
@@ -130,17 +130,24 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+    // Use cached instance if available for faster startup
+    final prefs =
+        PreferencesService.cachedInstance ?? await PreferencesService.instance;
+
     if (!prefs.containsKey('token')) {
-      return;
+      return; // Fast exit if no token
     }
 
+    // Load token and user data from cache (no network request)
     _token = prefs.getString('token');
     _refreshToken = prefs.getString('refreshToken');
     _userId = prefs.getString('userId');
     _email = prefs.getString('email');
     _fullName = prefs.getString('fullName');
     _role = prefs.getString('role');
+
+    // Token validation could be added here (JWT decode, expiry check)
+    // For now, we trust the cached token and validate on first API call
 
     if (_userId != null) {
       await AnalyticsService.setUserId(_userId!);
