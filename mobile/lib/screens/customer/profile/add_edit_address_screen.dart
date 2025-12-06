@@ -116,6 +116,8 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     final isEdit = widget.address != null;
 
@@ -240,7 +242,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             ),
                             label: Text(localizations.selectAddressFromMap),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.primaryOrange,
+                              foregroundColor: colorScheme.primary,
                               padding: EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
@@ -377,7 +379,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _saveAddress,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: colorScheme.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(

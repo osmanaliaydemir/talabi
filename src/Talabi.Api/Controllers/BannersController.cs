@@ -27,14 +27,16 @@ public class BannersController : ControllerBase
     /// Aktif promosyonel banner'ları getirir
     /// </summary>
     /// <param name="language">Dil kodu (tr, en, ar). Varsayılan: tr</param>
+    /// <param name="vendorType">Satıcı türü (1: Restaurant, 2: Market). Opsiyonel</param>
     /// <returns>Banner listesi</returns>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<PromotionalBannerDto>>>> GetBanners(
-        [FromQuery] string? language = "tr")
+        [FromQuery] string? language = "tr",
+        [FromQuery] int? vendorType = null)
     {
         var now = DateTime.UtcNow;
         var languageCode = language?.ToLower() ?? "tr";
-        
+
         // Validate language code
         if (languageCode != "tr" && languageCode != "en" && languageCode != "ar")
         {
@@ -46,6 +48,13 @@ public class BannersController : ControllerBase
             .Where(b => b.IsActive &&
                        (b.StartDate == null || b.StartDate <= now) &&
                        (b.EndDate == null || b.EndDate >= now));
+
+        // Filter by VendorType if provided
+        // Logic: Return banners specific to that vendor type OR generic banners (null)
+        if (vendorType.HasValue)
+        {
+            query = query.Where(b => b.VendorType == null || b.VendorType == vendorType.Value);
+        }
 
         IOrderedQueryable<PromotionalBanner> orderedQuery = query
             .OrderBy(b => b.DisplayOrder)
@@ -71,7 +80,8 @@ public class BannersController : ControllerBase
                 IsActive = b.IsActive,
                 StartDate = b.StartDate,
                 EndDate = b.EndDate,
-                LanguageCode = languageCode
+                LanguageCode = languageCode,
+                VendorType = b.VendorType
             };
         }).ToList();
 
@@ -90,7 +100,7 @@ public class BannersController : ControllerBase
         [FromQuery] string? language = "tr")
     {
         var languageCode = language?.ToLower() ?? "tr";
-        
+
         // Validate language code
         if (languageCode != "tr" && languageCode != "en" && languageCode != "ar")
         {
@@ -125,7 +135,8 @@ public class BannersController : ControllerBase
             IsActive = banner.IsActive,
             StartDate = banner.StartDate,
             EndDate = banner.EndDate,
-            LanguageCode = languageCode
+            LanguageCode = languageCode,
+            VendorType = banner.VendorType
         };
 
         return Ok(new ApiResponse<PromotionalBannerDto>(result, "Banner başarıyla getirildi"));

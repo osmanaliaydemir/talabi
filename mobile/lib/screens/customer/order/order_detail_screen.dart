@@ -210,10 +210,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (status) {
       case 'Pending':
-        return AppTheme.primaryOrange;
+        return colorScheme.primary;
       case 'Preparing':
         return Colors.blue;
       case 'Ready':
@@ -308,6 +309,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final customerOrderId = _orderDetail?.customerOrderId;
     final title = (customerOrderId != null && customerOrderId.isNotEmpty)
         ? '${localizations.orderDetail} #$customerOrderId'
@@ -354,7 +357,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             child: _isLoading
                 ? Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.primaryOrange,
+                      color: colorScheme.primary,
                     ),
                   )
                 : _orderDetail == null
@@ -366,7 +369,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   )
                 : RefreshIndicator(
                     onRefresh: _loadOrderDetail,
-                    color: AppTheme.primaryOrange,
+                    color: colorScheme.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.all(AppTheme.spacingMedium),
@@ -382,14 +385,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryOrange.withValues(
+                                    color: colorScheme.primary.withValues(
                                       alpha: 0.1,
                                     ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     Icons.store,
-                                    color: AppTheme.primaryOrange,
+                                    color: colorScheme.primary,
                                     size: 24,
                                   ),
                                 ),
@@ -427,11 +430,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   decoration: BoxDecoration(
                                     color: _getStatusColor(
                                       _orderDetail!.status,
+                                      context,
                                     ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: _getStatusColor(
                                         _orderDetail!.status,
+                                        context,
                                       ),
                                     ),
                                   ),
@@ -440,6 +445,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     style: AppTheme.poppins(
                                       color: _getStatusColor(
                                         _orderDetail!.status,
+                                        context,
                                       ),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
@@ -511,24 +517,32 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                               child:
                                                   item.productImageUrl != null
                                                   ? item.isCancelled
-                                                      ? ColorFiltered(
-                                                          colorFilter: ColorFilter.mode(
-                                                            Colors.grey,
-                                                            BlendMode.saturation,
-                                                          ),
-                                                          child: OptimizedCachedImage.productThumbnail(
-                                                            imageUrl: item.productImageUrl!,
+                                                        ? ColorFiltered(
+                                                            colorFilter:
+                                                                ColorFilter.mode(
+                                                                  Colors.grey,
+                                                                  BlendMode
+                                                                      .saturation,
+                                                                ),
+                                                            child: OptimizedCachedImage.productThumbnail(
+                                                              imageUrl: item
+                                                                  .productImageUrl!,
+                                                              width: 50,
+                                                              height: 50,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .zero,
+                                                            ),
+                                                          )
+                                                        : OptimizedCachedImage.productThumbnail(
+                                                            imageUrl: item
+                                                                .productImageUrl!,
                                                             width: 50,
                                                             height: 50,
-                                                            borderRadius: BorderRadius.zero,
-                                                          ),
-                                                        )
-                                                      : OptimizedCachedImage.productThumbnail(
-                                                          imageUrl: item.productImageUrl!,
-                                                          width: 50,
-                                                          height: 50,
-                                                          borderRadius: BorderRadius.zero,
-                                                        )
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .zero,
+                                                          )
                                                   : Container(
                                                       width: 50,
                                                       height: 50,
@@ -735,7 +749,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       style: AppTheme.poppins(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: AppTheme.primaryOrange,
+                                        color: colorScheme.primary,
                                       ),
                                     ),
                                   ],
@@ -782,6 +796,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                 decoration: BoxDecoration(
                                                   color: _getStatusColor(
                                                     history.status,
+                                                    context,
                                                   ),
                                                   shape: BoxShape.circle,
                                                 ),
@@ -903,7 +918,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: ElevatedButton(
                         onPressed: _reorder,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryOrange,
+                          backgroundColor: colorScheme.primary,
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(

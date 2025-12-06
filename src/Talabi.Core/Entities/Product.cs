@@ -6,6 +6,7 @@ public class Product : BaseEntity
 {
     public Guid VendorId { get; set; }
     public Vendor? Vendor { get; set; }
+    public VendorType? VendorType { get; set; }
 
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }

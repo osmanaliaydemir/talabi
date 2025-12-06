@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/address.dart';
 import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
@@ -221,6 +220,9 @@ class _AddressesScreenState extends State<AddressesScreen>
                                     ),
                                     curve: Curves.elasticOut,
                                     builder: (context, value, child) {
+                                      final colorScheme = Theme.of(
+                                        context,
+                                      ).colorScheme;
                                       return Transform.scale(
                                         scale: value,
                                         child: Transform.rotate(
@@ -229,8 +231,8 @@ class _AddressesScreenState extends State<AddressesScreen>
                                             width: 90,
                                             height: 90,
                                             decoration: BoxDecoration(
-                                              color:
-                                                  AppTheme.primaryOrangeShade50,
+                                              color: colorScheme.primary
+                                                  .withValues(alpha: 0.1),
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
@@ -244,7 +246,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                                             child: Icon(
                                               Icons.location_on,
                                               size: 40,
-                                              color: AppTheme.primaryOrange,
+                                              color: colorScheme.primary,
                                             ),
                                           ),
                                         ),
@@ -352,7 +354,7 @@ class _AddressesScreenState extends State<AddressesScreen>
             _loadAddresses();
           }
         },
-        backgroundColor: AppTheme.primaryOrange,
+        backgroundColor: colorScheme.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -387,6 +389,7 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Widget _buildAddressCard(Address address, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Material(
@@ -411,14 +414,14 @@ class _AddressesScreenState extends State<AddressesScreen>
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: address.isDefault
-                    ? AppTheme.primaryOrange
+                    ? colorScheme.primary
                     : Colors.grey[300]!,
                 width: address.isDefault ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: address.isDefault
-                      ? AppTheme.primaryOrange.withValues(alpha: 0.2)
+                      ? colorScheme.primary.withValues(alpha: 0.2)
                       : Colors.black.withValues(alpha: 0.05),
                   blurRadius: address.isDefault ? 15 : 10,
                   spreadRadius: address.isDefault ? 1 : 0,
@@ -435,12 +438,12 @@ class _AddressesScreenState extends State<AddressesScreen>
                   height: 50,
                   decoration: BoxDecoration(
                     color: address.isDefault
-                        ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                        ? colorScheme.primary.withValues(alpha: 0.1)
                         : Colors.grey[100],
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: address.isDefault
-                          ? AppTheme.primaryOrange
+                          ? colorScheme.primary
                           : Colors.transparent,
                       width: 2,
                     ),
@@ -448,7 +451,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                   child: Icon(
                     address.isDefault ? Icons.home : Icons.location_on,
                     color: address.isDefault
-                        ? AppTheme.primaryOrange
+                        ? colorScheme.primary
                         : Colors.grey[600],
                     size: 24,
                   ),
@@ -468,7 +471,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: address.isDefault
-                                    ? AppTheme.primaryOrange
+                                    ? colorScheme.primary
                                     : Colors.black87,
                               ),
                             ),
@@ -477,13 +480,16 @@ class _AddressesScreenState extends State<AddressesScreen>
                             Builder(
                               builder: (context) {
                                 final l10n = AppLocalizations.of(context)!;
+                                final cardColorScheme = Theme.of(
+                                  context,
+                                ).colorScheme;
                                 return Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryOrange,
+                                    color: cardColorScheme.primary,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

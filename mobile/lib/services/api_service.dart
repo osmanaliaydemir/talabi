@@ -275,10 +275,17 @@ class ApiService {
     }
   }
 
-  Future<List<Vendor>> getVendors() async {
+  Future<List<Vendor>> getVendors({int? vendorType}) async {
     try {
       // Try network first
-      final response = await _dio.get('/vendors');
+      final queryParams = <String, dynamic>{};
+      if (vendorType != null) {
+        queryParams['vendorType'] = vendorType;
+      }
+      final response = await _dio.get(
+        '/vendors',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       List<Vendor> vendors;
       if (response.data is Map<String, dynamic> &&
@@ -381,11 +388,18 @@ class ApiService {
     }
   }
 
-  Future<List<Product>> getPopularProducts({int limit = 10}) async {
+  Future<List<Product>> getPopularProducts({
+    int limit = 10,
+    int? vendorType,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{'limit': limit};
+      if (vendorType != null) {
+        queryParams['vendorType'] = vendorType;
+      }
       final response = await _dio.get(
         '/products/popular',
-        queryParameters: {'limit': limit},
+        queryParameters: queryParams,
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
@@ -407,11 +421,17 @@ class ApiService {
     }
   }
 
-  Future<List<PromotionalBanner>> getBanners({String? language}) async {
+  Future<List<PromotionalBanner>> getBanners({
+    String? language,
+    int? vendorType,
+  }) async {
     try {
       final queryParams = <String, dynamic>{};
       if (language != null) {
         queryParams['language'] = language;
+      }
+      if (vendorType != null) {
+        queryParams['vendorType'] = vendorType;
       }
       final response = await _dio.get(
         '/banners',
@@ -458,12 +478,16 @@ class ApiService {
   }
 
   /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
-  Future<List<Product>> getSimilarProducts(String productId, {int limit = 5}) async {
+  Future<List<Product>> getSimilarProducts(
+    String productId, {
+    int limit = 5,
+  }) async {
     try {
-      final response = await _dio.get('/products/$productId/similar', queryParameters: {
-        'limit': limit,
-      });
-      
+      final response = await _dio.get(
+        '/products/$productId/similar',
+        queryParameters: {'limit': limit},
+      );
+
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -680,6 +704,7 @@ class ApiService {
     String? city,
     String? description,
     String? language,
+    int vendorType = 1, // 1 = Restaurant, 2 = Market (default: Restaurant)
   }) async {
     try {
       print('🔵 [VENDOR_REGISTER] Starting vendor registration...');
@@ -696,6 +721,7 @@ class ApiService {
         'fullName': fullName,
         'businessName': businessName,
         'phone': phone,
+        'vendorType': vendorType,
         if (address != null) 'address': address,
         if (city != null) 'city': city,
         if (description != null) 'description': description,
@@ -1772,12 +1798,22 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getCategories({String? language}) async {
+  Future<List<Map<String, dynamic>>> getCategories({
+    String? language,
+    int? vendorType,
+  }) async {
     try {
       // Try network first
+      final queryParams = <String, dynamic>{};
+      if (language != null) {
+        queryParams['lang'] = language;
+      }
+      if (vendorType != null) {
+        queryParams['vendorType'] = vendorType;
+      }
       final response = await _dio.get(
         '/products/categories',
-        queryParameters: language != null ? {'lang': language} : null,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
@@ -1790,6 +1826,15 @@ class ApiService {
       }
 
       final categories = apiResponse.data!;
+
+      // İstemci tarafı filtreleme (Backend tarafında filtreleme çalışmıyorsa)
+      if (vendorType != null) {
+        return categories.where((c) {
+          final itemVendorType = c['vendorType'];
+          // Eğer vendorType belirtilmemişse göster, belirtilmişse eşleşeni göster
+          return itemVendorType == null || itemVendorType == vendorType;
+        }).toList();
+      }
 
       // Cache the result
       // await _cacheService.cacheCategories(categories);

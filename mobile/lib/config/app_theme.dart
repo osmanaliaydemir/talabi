@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 
 class AppTheme {
   // 🎨 ANA RENKLER
@@ -845,5 +846,396 @@ class AppTheme {
         fontSize: 14,
       ),
     );
+  }
+
+  // 🎨 VENDOR TYPE BAZLI RENK PALETLERİ
+
+  /// Restaurant için renk paleti (Kırmızı)
+  static const Color restaurantPrimary = Color(0xFFCE181B);
+  static const Color restaurantDark = Color(0xFFB71518);
+  static const Color restaurantLight = Color(0xFFEF5350);
+  static const Color restaurantShade50 = Color(0xFFFFEBEE);
+
+  /// Market için renk paleti (Yeşil)
+  static const Color marketPrimary = Color(0xFF4CAF50);
+  static const Color marketDark = Color(0xFF388E3C);
+  static const Color marketLight = Color(0xFF81C784);
+  static const Color marketShade50 = Color(0xFFE8F5E9);
+
+  /// VendorType'a göre primary color döndürür
+  static Color getPrimaryColorForVendorType(MainCategory category) {
+    return category == MainCategory.restaurant ? restaurantPrimary : marketPrimary;
+  }
+
+  /// VendorType'a göre dark color döndürür
+  static Color getDarkColorForVendorType(MainCategory category) {
+    return category == MainCategory.restaurant ? restaurantDark : marketDark;
+  }
+
+  /// VendorType'a göre light color döndürür
+  static Color getLightColorForVendorType(MainCategory category) {
+    return category == MainCategory.restaurant ? restaurantLight : marketLight;
+  }
+
+  /// VendorType'a göre shade50 color döndürür
+  static Color getShade50ForVendorType(MainCategory category) {
+    return category == MainCategory.restaurant ? restaurantShade50 : marketShade50;
+  }
+
+  /// VendorType'a göre ColorScheme döndürür
+  static ColorScheme getColorsForVendorType(
+    MainCategory category, {
+    Brightness brightness = Brightness.light,
+  }) {
+    final primary = getPrimaryColorForVendorType(category);
+    final dark = getDarkColorForVendorType(category);
+    final light = getLightColorForVendorType(category);
+
+    return ColorScheme.fromSeed(
+      seedColor: primary,
+      primary: primary,
+      secondary: brightness == Brightness.dark ? light : dark,
+      surface: brightness == Brightness.dark ? darkSurfaceColor : cardColor,
+      background: brightness == Brightness.dark ? darkBackgroundColor : backgroundColor,
+      brightness: brightness,
+    );
+  }
+
+  /// VendorType'a göre ThemeData döndürür (Light Mode)
+  static ThemeData getThemeForVendorType(
+    MainCategory category, {
+    bool isDark = false,
+  }) {
+    final primary = getPrimaryColorForVendorType(category);
+    final dark = getDarkColorForVendorType(category);
+    final light = getLightColorForVendorType(category);
+
+    if (isDark) {
+      return ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primary,
+          primary: primary,
+          secondary: light,
+          surface: darkSurfaceColor,
+          background: darkBackgroundColor,
+          brightness: Brightness.dark,
+        ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(
+          ThemeData.dark().textTheme,
+        ).copyWith(
+          displayLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: darkTextPrimary,
+          ),
+          displayMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: darkTextPrimary,
+          ),
+          displaySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: darkTextPrimary,
+          ),
+          headlineLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: darkTextPrimary,
+          ),
+          headlineMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: darkTextPrimary,
+          ),
+          headlineSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: darkTextPrimary,
+          ),
+          bodyLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            color: darkTextPrimary,
+          ),
+          bodyMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: darkTextPrimary,
+          ),
+          bodySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: darkTextSecondary,
+          ),
+          labelLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: darkTextPrimary,
+          ),
+          labelMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: darkTextPrimary,
+          ),
+          labelSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: darkTextSecondary,
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: darkSurfaceColor,
+          foregroundColor: darkTextPrimary,
+          elevation: 0,
+          centerTitle: true,
+          surfaceTintColor: Colors.transparent,
+          titleTextStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: darkTextPrimary,
+          ),
+          iconTheme: IconThemeData(color: darkTextPrimary),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primary,
+            foregroundColor: Colors.white,
+            textStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: primary,
+            textStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            side: BorderSide(color: primary, width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: primary,
+            textStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: darkCardColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: darkBorderColor.withOpacity(0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: darkBorderColor.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: primary, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: error, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          hintStyle: GoogleFonts.plusJakartaSans(
+            color: darkTextTertiary,
+            fontSize: 14,
+          ),
+          labelStyle: GoogleFonts.plusJakartaSans(
+            color: darkTextSecondary,
+            fontSize: 14,
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: darkCardColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          surfaceTintColor: Colors.transparent,
+        ),
+        scaffoldBackgroundColor: darkBackgroundColor,
+        canvasColor: darkBackgroundColor,
+        shadowColor: Colors.black.withOpacity(0.3),
+      );
+    } else {
+      return ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primary,
+          primary: primary,
+          secondary: dark,
+          surface: cardColor,
+          background: backgroundColor,
+        ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme().copyWith(
+          displayLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textPrimary,
+          ),
+          displayMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: textPrimary,
+          ),
+          displaySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
+          ),
+          headlineLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
+          ),
+          headlineMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
+          ),
+          headlineSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
+          ),
+          bodyLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            color: textPrimary,
+          ),
+          bodyMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: textPrimary,
+          ),
+          bodySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: textSecondary,
+          ),
+          labelLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
+          ),
+          labelMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: textPrimary,
+          ),
+          labelSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: textSecondary,
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primary,
+            foregroundColor: Colors.white,
+            textStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: primary,
+            textStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            side: BorderSide(color: primary, width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: primary,
+            textStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: primary, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: error, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          hintStyle: GoogleFonts.plusJakartaSans(color: textHint, fontSize: 14),
+          labelStyle: GoogleFonts.plusJakartaSans(
+            color: textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: cardColor,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        scaffoldBackgroundColor: backgroundColor,
+      );
+    }
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/config/app_theme.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -324,6 +323,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                 Builder(
                   builder: (context) {
                     final l10n = AppLocalizations.of(context)!;
+                    final cardColorScheme = Theme.of(context).colorScheme;
                     return Card(
                       margin: const EdgeInsets.all(8),
                       child: Padding(
@@ -341,7 +341,11 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                             ),
                             const SizedBox(height: 16),
                             if (_isLoadingAddress)
-                              const Center(child: CircularProgressIndicator())
+                              Center(
+                                child: CircularProgressIndicator(
+                                  color: cardColorScheme.primary,
+                                ),
+                              )
                             else if (_selectedAddress != null) ...[
                               Text(
                                 '${l10n.address}:',
@@ -373,7 +377,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                               child: ElevatedButton(
                                 onPressed: _saveAddress,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryOrange,
+                                  backgroundColor: cardColorScheme.primary,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,

@@ -29,13 +29,27 @@ public class VendorsController : ControllerBase
     /// Tüm satıcıları getirir
     /// </summary>
     /// <returns>Satıcı listesi</returns>
+    /// <summary>
+    /// Tüm satıcıları getirir
+    /// </summary>
+    /// <param name="vendorType">Satıcı türü filtresi (opsiyonel)</param>
+    /// <returns>Satıcı listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<VendorDto>>>> GetVendors()
+    public async Task<ActionResult<ApiResponse<List<VendorDto>>>> GetVendors([FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
-        var vendors = await _unitOfWork.Vendors.Query()
+        IQueryable<Vendor> query = _unitOfWork.Vendors.Query();
+
+        // VendorType filtresi
+        if (vendorType.HasValue)
+        {
+            query = query.Where(v => v.Type == vendorType.Value);
+        }
+
+        var vendors = await query
             .Select(v => new VendorDto
             {
                 Id = v.Id,
+                Type = v.Type,
                 Name = v.Name,
                 ImageUrl = v.ImageUrl,
                 Address = v.Address,
@@ -152,6 +166,12 @@ public class VendorsController : ControllerBase
             query = query.WhereContainsIgnoreCase(v => v.Address, request.Query);
         }
 
+        // VendorType filter
+        if (request.VendorType.HasValue)
+        {
+            query = query.Where(v => v.Type == request.VendorType.Value);
+        }
+
         // City filter
         if (!string.IsNullOrWhiteSpace(request.City))
         {
@@ -201,6 +221,7 @@ public class VendorsController : ControllerBase
             var dto = new VendorDto
             {
                 Id = v.Id,
+                Type = v.Type,
                 Name = v.Name,
                 ImageUrl = v.ImageUrl,
                 Address = v.Address,

@@ -1,3 +1,5 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.DTOs;
 
 public class ProductSearchRequestDto
@@ -5,6 +7,7 @@ public class ProductSearchRequestDto
     public string? Query { get; set; }
     public string? Category { get; set; }
     public Guid? CategoryId { get; set; }
+    public VendorType? VendorType { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
     public Guid? VendorId { get; set; }
@@ -17,6 +20,7 @@ public class VendorSearchRequestDto
 {
     public string? Query { get; set; }
     public string? City { get; set; }
+    public VendorType? VendorType { get; set; }
     public decimal? MinRating { get; set; }
 
     // Distance filtering (requires user location)

@@ -5,6 +5,7 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/screens/customer/widgets/category_selection_bottom_sheet.dart';
 
 class PersistentBottomNavBar extends StatelessWidget {
   const PersistentBottomNavBar({super.key});
@@ -17,7 +18,7 @@ class PersistentBottomNavBar extends StatelessWidget {
 
     final List<String> screenNames = [
       localizations.discover,
-      localizations.myFavorites,
+      localizations.category,
       localizations.myCart,
       localizations.myOrders,
       localizations.myAccount,
@@ -54,11 +55,16 @@ class PersistentBottomNavBar extends StatelessWidget {
               _buildNavItem(
                 context,
                 index: 1,
-                icon: Icons.favorite_outline,
-                selectedIcon: Icons.favorite,
-                label: localizations.myFavorites,
+                icon: bottomNav.selectedCategory == MainCategory.restaurant
+                    ? Icons.restaurant_outlined
+                    : Icons.shopping_basket_outlined,
+                selectedIcon:
+                    bottomNav.selectedCategory == MainCategory.restaurant
+                    ? Icons.restaurant
+                    : Icons.shopping_basket,
+                label: localizations.category,
                 isSelected: bottomNav.currentIndex == 1,
-                onTap: () => _onItemTapped(context, 1, bottomNav, screenNames),
+                onTap: () => _showCategoryBottomSheet(context, bottomNav),
               ),
               _buildNavItem(
                 context,
@@ -91,6 +97,24 @@ class PersistentBottomNavBar extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCategoryBottomSheet(
+    BuildContext context,
+    BottomNavProvider bottomNav,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => CategorySelectionBottomSheet(
+        currentCategory: bottomNav.selectedCategory,
+        onCategorySelected: (category) {
+          bottomNav.setCategory(category);
+          Navigator.pop(context);
+        },
       ),
     );
   }
@@ -134,7 +158,9 @@ class PersistentBottomNavBar extends StatelessWidget {
           vertical: 10,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryOrange : Colors.transparent,
+          color: isSelected
+              ? Theme.of(context).primaryColor
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(

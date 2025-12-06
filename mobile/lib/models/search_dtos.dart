@@ -9,6 +9,7 @@ class ProductSearchRequestDto {
   final double? minPrice;
   final double? maxPrice;
   final String? vendorId;
+  final int? vendorType; // 1 = Restaurant, 2 = Market
   final String? sortBy; // "price_asc", "price_desc", "name", "newest"
   final int page;
   final int pageSize;
@@ -20,6 +21,7 @@ class ProductSearchRequestDto {
     this.minPrice,
     this.maxPrice,
     this.vendorId,
+    this.vendorType,
     this.sortBy,
     this.page = 1,
     this.pageSize = 20,
@@ -46,6 +48,9 @@ class ProductSearchRequestDto {
     if (vendorId != null) {
       map['vendorId'] = vendorId;
     }
+    if (vendorType != null) {
+      map['vendorType'] = vendorType;
+    }
     if (sortBy != null && sortBy!.isNotEmpty) {
       map['sortBy'] = sortBy;
     }
@@ -61,6 +66,7 @@ class VendorSearchRequestDto {
   final double? userLatitude;
   final double? userLongitude;
   final double? maxDistanceInKm;
+  final int? vendorType; // 1 = Restaurant, 2 = Market
   final String?
   sortBy; // "name", "newest", "rating_desc", "popularity", "distance"
   final int page;
@@ -73,6 +79,7 @@ class VendorSearchRequestDto {
     this.userLatitude,
     this.userLongitude,
     this.maxDistanceInKm,
+    this.vendorType,
     this.sortBy,
     this.page = 1,
     this.pageSize = 20,
@@ -98,6 +105,9 @@ class VendorSearchRequestDto {
     }
     if (maxDistanceInKm != null) {
       map['maxDistanceInKm'] = maxDistanceInKm;
+    }
+    if (vendorType != null) {
+      map['vendorType'] = vendorType;
     }
     if (sortBy != null && sortBy!.isNotEmpty) {
       map['sortBy'] = sortBy;

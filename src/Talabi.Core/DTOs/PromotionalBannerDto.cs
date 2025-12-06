@@ -12,6 +12,7 @@ public class PromotionalBannerDto
     public bool IsActive { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public int? VendorType { get; set; }
     public string? LanguageCode { get; set; } // For client to know which language version
 }
 

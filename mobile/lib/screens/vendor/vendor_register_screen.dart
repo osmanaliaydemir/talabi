@@ -28,6 +28,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  int _selectedVendorType = 1; // 1 = Restaurant, 2 = Market (default: Restaurant)
 
   @override
   void dispose() {
@@ -86,6 +87,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         businessName: businessName,
         phone: phone,
         language: languageCode,
+        vendorType: _selectedVendorType,
       );
 
       print('🟢 [VENDOR_REGISTER] Register successful!');
@@ -545,6 +547,132 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                         return null;
                                       },
                                     ),
+                                  ),
+                                  AppTheme.verticalSpace(1),
+                                  // Business Type Selection
+                                  Text(
+                                    'İşletme Türü',
+                                    style: AppTheme.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  AppTheme.verticalSpace(0.5),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedVendorType = 1; // Restaurant
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.all(
+                                              AppTheme.spacingMedium,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: _selectedVendorType == 1
+                                                  ? AppTheme.vendorPrimary
+                                                      .withValues(alpha: 0.1)
+                                                  : AppTheme.backgroundColor,
+                                              borderRadius: BorderRadius.circular(
+                                                AppTheme.radiusMedium,
+                                              ),
+                                              border: Border.all(
+                                                color: _selectedVendorType == 1
+                                                    ? AppTheme.vendorPrimary
+                                                    : AppTheme.borderColor,
+                                                width: _selectedVendorType == 1
+                                                    ? 2
+                                                    : 1,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.restaurant,
+                                                  color: _selectedVendorType == 1
+                                                      ? AppTheme.vendorPrimary
+                                                      : AppTheme.textSecondary,
+                                                  size: 24,
+                                                ),
+                                                AppTheme.horizontalSpace(0.5),
+                                                Text(
+                                                  'Restoran',
+                                                  style: AppTheme.poppins(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: _selectedVendorType == 1
+                                                        ? AppTheme.vendorPrimary
+                                                        : AppTheme.textSecondary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      AppTheme.horizontalSpace(1),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedVendorType = 2; // Market
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.all(
+                                              AppTheme.spacingMedium,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: _selectedVendorType == 2
+                                                  ? Colors.green.withValues(
+                                                      alpha: 0.1)
+                                                  : AppTheme.backgroundColor,
+                                              borderRadius: BorderRadius.circular(
+                                                AppTheme.radiusMedium,
+                                              ),
+                                              border: Border.all(
+                                                color: _selectedVendorType == 2
+                                                    ? Colors.green
+                                                    : AppTheme.borderColor,
+                                                width: _selectedVendorType == 2
+                                                    ? 2
+                                                    : 1,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.shopping_basket,
+                                                  color: _selectedVendorType == 2
+                                                      ? Colors.green
+                                                      : AppTheme.textSecondary,
+                                                  size: 24,
+                                                ),
+                                                AppTheme.horizontalSpace(0.5),
+                                                Text(
+                                                  'Market',
+                                                  style: AppTheme.poppins(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: _selectedVendorType == 2
+                                                        ? Colors.green
+                                                        : AppTheme.textSecondary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   AppTheme.verticalSpace(1),
                                   // Phone Field

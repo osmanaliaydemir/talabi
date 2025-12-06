@@ -20,13 +20,37 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const FavoritesScreen(),
-    const CartScreen(),
-    const OrderHistoryScreen(showBackButton: false),
-    const ProfileScreen(),
-  ];
+  @override
+  Widget build(BuildContext context) {
+    final bottomNav = Provider.of<BottomNavProvider>(context);
+
+    // HomeScreen zaten VendorType'a göre dinamik olarak çalışıyor
+    const homeScreen = HomeScreen();
+
+    final List<Widget> screens = [
+      homeScreen,
+      const FavoritesScreen(),
+      const CartScreen(),
+      const OrderHistoryScreen(showBackButton: false),
+      const ProfileScreen(),
+    ];
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          IndexedStack(index: bottomNav.currentIndex, children: screens),
+          // Floating banner at the top
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ConnectivityBanner(),
+          ),
+        ],
+      ),
+      bottomNavigationBar: const PersistentBottomNavBar(),
+    );
+  }
 
   @override
   void initState() {
@@ -47,26 +71,5 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         notifications.loadNotifications();
       }
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomNav = Provider.of<BottomNavProvider>(context);
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(index: bottomNav.currentIndex, children: _screens),
-          // Floating banner at the top
-          const Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ConnectivityBanner(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: const PersistentBottomNavBar(),
-    );
   }
 }

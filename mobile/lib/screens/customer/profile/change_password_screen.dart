@@ -85,6 +85,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -268,7 +270,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _changePassword,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.buttonPrimary,
+                              backgroundColor: colorScheme.primary,
                               foregroundColor: AppTheme.textOnPrimary,
                               padding: EdgeInsets.symmetric(
                                 vertical: AppTheme.spacingMedium,

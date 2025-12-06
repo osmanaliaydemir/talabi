@@ -11,6 +11,7 @@ public class PromotionalBanner : BaseEntity
     public bool IsActive { get; set; } = true;
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public int? VendorType { get; set; } // 1: Restaurant, 2: Market, null: All
     public ICollection<PromotionalBannerTranslation> Translations { get; set; } = new List<PromotionalBannerTranslation>();
 }
 

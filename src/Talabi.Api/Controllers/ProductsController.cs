@@ -44,9 +44,15 @@ public class ProductsController : ControllerBase
             // Description için de case-insensitive search
             if (!string.IsNullOrWhiteSpace(request.Query))
             {
-                query = query.Where(p => p.Description != null && 
+                query = query.Where(p => p.Description != null &&
                     p.Description.ToLower().Contains(request.Query.ToLower()));
             }
+        }
+
+        // VendorType filter (Vendor üzerinden - performans için)
+        if (request.VendorType.HasValue)
+        {
+            query = query.Where(p => p.Vendor != null && p.Vendor.Type == request.VendorType.Value);
         }
 
         // Category filter
@@ -122,12 +128,27 @@ public class ProductsController : ControllerBase
     /// </summary>
     /// <param name="lang">Dil kodu (tr, en, ar) - Varsayılan: tr</param>
     /// <returns>Kategori listesi</returns>
+    /// <summary>
+    /// Kategorileri getirir - Dil ve VendorType desteği ile
+    /// </summary>
+    /// <param name="lang">Dil kodu (tr, en, ar) - Varsayılan: tr</param>
+    /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
+    /// <returns>Kategori listesi</returns>
     [HttpGet("categories")]
-    public async Task<ActionResult<ApiResponse<List<CategoryDto>>>> GetCategories([FromQuery] string? lang = "tr")
+    public async Task<ActionResult<ApiResponse<List<CategoryDto>>>> GetCategories(
+        [FromQuery] string? lang = "tr",
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
-        var categories = await _unitOfWork.Categories.Query()
-            .Include(c => c.Translations)
-            .ToListAsync();
+        IQueryable<Category> query = _unitOfWork.Categories.Query()
+            .Include(c => c.Translations);
+
+        // VendorType filtresi
+        if (vendorType.HasValue)
+        {
+            query = query.Where(c => c.VendorType == vendorType.Value);
+        }
+
+        var categories = await query.ToListAsync();
 
         var categoryDtos = categories.Select(c =>
         {
@@ -135,6 +156,7 @@ public class ProductsController : ControllerBase
             return new CategoryDto
             {
                 Id = c.Id,
+                VendorType = c.VendorType,
                 Name = translation?.Name ?? c.Name,
                 Icon = c.Icon,
                 Color = c.Color,
@@ -179,11 +201,21 @@ public class ProductsController : ControllerBase
     /// <param name="limit">Getirilecek ürün sayısı - Varsayılan: 10</param>
     /// <returns>Popüler ürün listesi</returns>
     [HttpGet("popular")]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetPopularProducts([FromQuery] int limit = 10)
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetPopularProducts(
+        [FromQuery] int limit = 10,
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
-        // Get popular products based on order count
-        var popularProducts = await _unitOfWork.Products.Query()
+        var query = _unitOfWork.Products.Query()
             .Include(p => p.Vendor)
+            .AsQueryable();
+
+        if (vendorType.HasValue)
+        {
+            query = query.Where(p => (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)) == vendorType.Value);
+        }
+
+        // Get popular products based on order count
+        var popularProducts = await query
             .Select(p => new
             {
                 Product = p,
@@ -201,7 +233,8 @@ public class ProductsController : ControllerBase
                 Description = x.Product.Description,
                 Category = x.Product.Category,
                 Price = x.Product.Price,
-                ImageUrl = x.Product.ImageUrl
+                ImageUrl = x.Product.ImageUrl,
+                VendorType = x.Product.VendorType ?? (x.Product.Vendor != null ? x.Product.Vendor.Type : null)
             })
             .ToListAsync();
 

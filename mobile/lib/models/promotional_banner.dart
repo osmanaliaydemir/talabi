@@ -10,6 +10,7 @@ class PromotionalBanner {
   final DateTime? startDate;
   final DateTime? endDate;
   final String? languageCode;
+  final int? vendorType;
 
   PromotionalBanner({
     required this.id,
@@ -23,6 +24,7 @@ class PromotionalBanner {
     this.startDate,
     this.endDate,
     this.languageCode,
+    this.vendorType,
   });
 
   factory PromotionalBanner.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class PromotionalBanner {
           : null,
       endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
       languageCode: json['languageCode'],
+      vendorType: json['vendorType'],
     );
   }
 
@@ -56,6 +59,7 @@ class PromotionalBanner {
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
       'languageCode': languageCode,
+      'vendorType': vendorType,
     };
   }
 }

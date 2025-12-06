@@ -141,7 +141,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
     try {
       // API'den aynı kategorideki benzer ürünleri getir
-      final similar = await _apiService.getSimilarProducts(_product!.id, limit: 5);
+      final similar = await _apiService.getSimilarProducts(
+        _product!.id,
+        limit: 5,
+      );
 
       setState(() {
         _similarProducts = similar;
@@ -188,18 +191,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryOrange.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.info_outline,
-                      color: AppTheme.primaryOrange,
-                      size: 32,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final dialogColorScheme = Theme.of(context).colorScheme;
+                      return Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: dialogColorScheme.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.info_outline,
+                          color: dialogColorScheme.primary,
+                          size: 32,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -222,26 +230,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryOrange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Builder(
+                    builder: (context) {
+                      final dialogColorScheme = Theme.of(context).colorScheme;
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: dialogColorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            localizations.ok,
+                            style: AppTheme.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        localizations.ok,
-                        style: AppTheme.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -271,6 +284,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         final inputFillColor = isDark ? Colors.grey[900] : Colors.grey[50];
         final closeButtonColor = isDark ? Colors.grey[800] : Colors.grey[100];
 
+        final dialogColorScheme = Theme.of(dialogContext).colorScheme;
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return Dialog(
@@ -355,7 +369,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   child: Icon(
                                     isSelected ? Icons.star : Icons.star_border,
                                     color: isSelected
-                                        ? AppTheme.primaryOrange
+                                        ? dialogColorScheme.primary
                                         : (isDark
                                               ? Colors.grey[600]
                                               : Colors.grey[300]),
@@ -372,7 +386,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             style: AppTheme.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.primaryOrange,
+                              color: dialogColorScheme.primary,
                             ),
                           ),
                         ],
@@ -408,8 +422,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppTheme.primaryOrange,
+                          borderSide: BorderSide(
+                            color: dialogColorScheme.primary,
                             width: 2,
                           ),
                         ),
@@ -498,7 +512,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryOrange,
+                              backgroundColor: dialogColorScheme.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -548,13 +562,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context, listen: true);
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     if (_isLoading) {
       return Scaffold(
         body: Container(
           color: AppTheme.backgroundColor,
           child: Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+            child: CircularProgressIndicator(color: colorScheme.primary),
           ),
         ),
       );
@@ -644,10 +660,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         const SizedBox(height: 8),
                                         Row(
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Icons.location_on,
                                               size: 16,
-                                              color: Color(0xFFCE181B),
+                                              color: colorScheme.primary,
                                             ),
                                             const SizedBox(width: 4),
                                             Expanded(
@@ -670,8 +686,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Container(
                                     width: 40,
                                     height: 40,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFCE181B),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.primary,
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -700,7 +716,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                   _buildInfoItem(
                                     icon: Icons.access_time_filled,
-                                    iconColor: const Color(0xFFCE181B),
+                                    iconColor: colorScheme.primary,
                                     text: '10 - 20 min',
                                     subText: l10n.deliveryTime,
                                   ),
@@ -761,7 +777,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     ? l10n.showLess
                                     : l10n.readMore,
                                 style: AppTheme.poppins(
-                                  color: AppTheme.primaryOrange,
+                                  color: colorScheme.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -791,7 +807,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 child: Text(
                                   l10n.writeReview,
                                   style: AppTheme.poppins(
-                                    color: AppTheme.primaryOrange,
+                                    color: colorScheme.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -803,7 +819,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         if (_isLoadingReviews)
                           Center(
                             child: CircularProgressIndicator(
-                              color: AppTheme.primaryOrange,
+                              color: colorScheme.primary,
                             ),
                           )
                         else if (_reviews.isEmpty)
@@ -882,7 +898,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 24),
                             child: Center(
                               child: CircularProgressIndicator(
-                                color: AppTheme.primaryOrange,
+                                color: colorScheme.primary,
                               ),
                             ),
                           )
@@ -1151,10 +1167,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final quantity = cartItem?.quantity ?? 0;
 
     if (quantity > 0) {
+      final bottomColorScheme = Theme.of(context).colorScheme;
       return Container(
         height: 50,
         decoration: BoxDecoration(
-          color: const Color(0xFFCE181B),
+          color: bottomColorScheme.primary,
           borderRadius: BorderRadius.circular(100),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1215,32 +1232,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             print('Error adding to cart: $e');
           }
         },
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          decoration: BoxDecoration(
-            color: const Color(0xFFCE181B),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          alignment: Alignment.center,
-          child: Row(
-            children: [
-              const Icon(
-                Icons.shopping_bag_outlined,
-                color: Colors.white,
-                size: 20,
+        child: Builder(
+          builder: (context) {
+            final addToCartColorScheme = Theme.of(context).colorScheme;
+            return Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              decoration: BoxDecoration(
+                color: addToCartColorScheme.primary,
+                borderRadius: BorderRadius.circular(100),
               ),
-              const SizedBox(width: 8),
-              Text(
-                l10n.addToCart,
-                style: AppTheme.poppins(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
+              alignment: Alignment.center,
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.addToCart,
+                    style: AppTheme.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       );
     }

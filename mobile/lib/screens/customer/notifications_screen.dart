@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/customer_notification.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/providers/theme_provider.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -88,7 +90,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             children: [
                               Icon(
                                 Icons.done_all,
-                                color: AppTheme.primaryOrange,
+                                color: Theme.of(context).primaryColor,
                                 size: 20,
                               ),
                               const SizedBox(width: 12),
@@ -294,17 +296,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Color _getIconColor(String type) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final category = themeProvider.currentCategory ?? MainCategory.restaurant;
+
     switch (type.toLowerCase()) {
       case 'order':
-        return AppTheme.primaryOrange;
+        return Theme.of(context).primaryColor;
       case 'promo':
-        return AppTheme.lightOrange;
+        return AppTheme.getLightColorForVendorType(category);
       case 'system':
         return AppTheme.textSecondary;
       case 'delivery':
         return AppTheme.courierPrimary;
       default:
-        return AppTheme.primaryOrange;
+        return Theme.of(context).primaryColor;
     }
   }
 

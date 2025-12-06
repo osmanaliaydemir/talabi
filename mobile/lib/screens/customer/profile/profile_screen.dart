@@ -297,6 +297,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showHelpCenter(BuildContext context, AppLocalizations localizations) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -317,24 +318,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.help_outline,
               title: localizations.faq,
               subtitle: localizations.frequentlyAskedQuestions,
+              colorScheme: colorScheme,
             ),
             SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.email_outlined,
               title: localizations.contactSupport,
               subtitle: 'support@talabi.com',
+              colorScheme: colorScheme,
             ),
             SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.phone_outlined,
               title: localizations.callUs,
               subtitle: '+90 (555) 123 45 67',
+              colorScheme: colorScheme,
             ),
             SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.chat_bubble_outline,
               title: localizations.liveChat,
               subtitle: localizations.available24x7,
+              colorScheme: colorScheme,
             ),
           ],
         ),
@@ -352,6 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     required String title,
     required String subtitle,
+    required ColorScheme colorScheme,
   }) {
     return InkWell(
       onTap: () {
@@ -363,7 +369,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Icon(
               icon,
-              color: AppTheme.primaryOrange,
+              color: colorScheme.primary,
               size: AppTheme.iconSizeMedium,
             ),
             SizedBox(width: AppTheme.spacingSmall),

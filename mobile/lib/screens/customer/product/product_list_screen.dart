@@ -88,10 +88,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryOrange,
+        backgroundColor: colorScheme.primary,
         foregroundColor: AppTheme.textOnPrimary,
         title: Text(
           widget.vendor.name,
@@ -139,7 +141,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
           final products = snapshot.data!;
           return RefreshIndicator(
-            color: AppTheme.primaryOrange,
+            color: colorScheme.primary,
             onRefresh: () async {
               setState(() {
                 _productsFuture = _apiService.getProducts(widget.vendor.id);

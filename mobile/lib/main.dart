@@ -69,7 +69,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => BottomNavProvider(),
-          lazy: true,
+          // lazy: false - ThemeProvider ile senkronize olması için hemen yüklenmeli
         ),
         ChangeNotifierProvider(
           create: (context) => NotificationProvider(),
@@ -93,8 +93,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<LocalizationProvider, ThemeProvider>(
-      builder: (context, localization, themeProvider, _) {
+    return Consumer3<LocalizationProvider, ThemeProvider, BottomNavProvider>(
+      builder: (context, localization, themeProvider, bottomNav, _) {
+        // BottomNavProvider'dan kategori değişikliğini ThemeProvider'a bildir
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (themeProvider.currentCategory != bottomNav.selectedCategory) {
+            themeProvider.setCategory(bottomNav.selectedCategory);
+          }
+        });
+
         return MaterialApp(
           title: 'Talabi',
           debugShowCheckedModeBanner: false,

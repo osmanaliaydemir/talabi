@@ -1,8 +1,11 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.DTOs;
 
 public class CategoryDto
 {
     public Guid Id { get; set; }
+    public VendorType VendorType { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Icon { get; set; }
     public string? Color { get; set; }

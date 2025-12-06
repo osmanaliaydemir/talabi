@@ -334,13 +334,16 @@ class _ProductCardState extends State<ProductCard> {
                                   child: Container(
                                     width: 28,
                                     height: 28,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFFEE8E9),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.remove,
-                                      color: Color(0xFFCE181B),
+                                      color: Theme.of(context).primaryColor,
                                       size: 16,
                                     ),
                                   ),
@@ -380,8 +383,8 @@ class _ProductCardState extends State<ProductCard> {
                                   child: Container(
                                     width: 28,
                                     height: 28,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFCE181B),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).primaryColor,
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -425,8 +428,8 @@ class _ProductCardState extends State<ProductCard> {
                               child: Container(
                                 width: 28,
                                 height: 28,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFCE181B),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
                                   shape: BoxShape.circle,
                                 ),
                                 child: _isAddingToCart

@@ -343,6 +343,7 @@ public class AuthController : ControllerBase
                     var vendor = new Vendor
                     {
                         OwnerId = user.Id,
+                        Type = dto.VendorType,
                         Name = dto.BusinessName,
                         PhoneNumber = dto.Phone,
                         Address = dto.Address ?? string.Empty,

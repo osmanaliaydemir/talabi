@@ -7,6 +7,9 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/widgets/common/cached_network_image_widget.dart';
 
+import 'package:provider/provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
+
 class VendorListScreen extends StatefulWidget {
   const VendorListScreen({super.key});
 
@@ -19,17 +22,34 @@ class _VendorListScreenState extends State<VendorListScreen> {
   late Future<List<Vendor>> _vendorsFuture;
 
   int? _vendorCount;
+  int? _currentVendorType;
 
   @override
-  void initState() {
-    super.initState();
-    _vendorsFuture = _apiService.getVendors().then((vendors) {
-      if (mounted) {
-        setState(() {
-          _vendorCount = vendors.length;
-        });
-      }
-      return vendors;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
+    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+        ? 1
+        : 2;
+
+    if (_currentVendorType != vendorType) {
+      _currentVendorType = vendorType;
+      _loadVendors();
+    }
+  }
+
+  void _loadVendors() {
+    setState(() {
+      _vendorsFuture = _apiService
+          .getVendors(vendorType: _currentVendorType)
+          .then((vendors) {
+            if (mounted) {
+              setState(() {
+                _vendorCount = vendors.length;
+              });
+            }
+            return vendors;
+          });
     });
   }
 

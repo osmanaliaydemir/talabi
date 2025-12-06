@@ -1,8 +1,11 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.DTOs;
 
 public class VendorDto
 {
     public Guid Id { get; set; }
+    public VendorType Type { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string Address { get; set; } = string.Empty;

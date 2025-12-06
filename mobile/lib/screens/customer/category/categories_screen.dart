@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/home_header.dart';
 import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:provider/provider.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -29,8 +31,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _loadCategories() {
+    final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+        ? 1
+        : 2;
     final locale = AppLocalizations.of(context)?.localeName;
-    _categoriesFuture = _apiService.getCategories(language: locale);
+    _categoriesFuture = _apiService.getCategories(
+      language: locale,
+      vendorType: vendorType,
+    );
   }
 
   IconData? _getIconFromString(String? iconString) {
@@ -77,7 +86,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return iconMap[iconString.toLowerCase()];
   }
 
-  Color? _getColorFromString(String? colorString) {
+  Color? _getColorFromString(
+    String? colorString, {
+    Color? primaryColor,
+    required ColorScheme colorScheme,
+  }) {
     if (colorString == null || colorString.isEmpty) return null;
 
     if (colorString.startsWith('#')) {
@@ -92,7 +105,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
 
     final colorMap = {
-      'orange': AppTheme.primaryOrange,
+      'orange': primaryColor ?? colorScheme.primary,
       'blue': Colors.blue,
       'green': Colors.green,
       'purple': Colors.purple,
@@ -116,7 +129,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return colorMap[colorString.toLowerCase()];
   }
 
-  Map<String, dynamic> _getCategoryStyle(Map<String, dynamic> category) {
+  Map<String, dynamic> _getCategoryStyle(
+    Map<String, dynamic> category, {
+    Color? primaryColor,
+    required ColorScheme colorScheme,
+  }) {
     final iconString = category['icon'] as String?;
     final colorString = category['color'] as String?;
 
@@ -128,7 +145,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
 
     if (colorString != null && colorString.isNotEmpty) {
-      color = _getColorFromString(colorString);
+      color = _getColorFromString(
+        colorString,
+        primaryColor: primaryColor,
+        colorScheme: colorScheme,
+      );
     }
 
     if (icon != null && color != null) {
@@ -136,13 +157,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
 
     final name = (category['name'] as String).toLowerCase();
+    final defaultPrimary = primaryColor ?? colorScheme.primary;
 
     if (name.contains('yemek') ||
         name.contains('food') ||
         name.contains('طعام')) {
       return {
         'icon': icon ?? Icons.restaurant,
-        'color': color ?? AppTheme.primaryOrange,
+        'color': color ?? defaultPrimary,
       };
     } else if (name.contains('mağaza') ||
         name.contains('store') ||
@@ -175,109 +197,133 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         name.contains('ملابس')) {
       return {'icon': icon ?? Icons.checkroom, 'color': color ?? Colors.teal};
     } else {
-      return {'icon': icon ?? Icons.category, 'color': color ?? Colors.orange};
+      return {'icon': icon ?? Icons.category, 'color': color ?? defaultPrimary};
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      body: Column(
-        children: [
-          HomeHeader(
-            title: localizations.categories,
-            subtitle: localizations.discover,
-            leadingIcon: Icons.category,
-            showBackButton: true,
-            showCart: true,
-          ),
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _categoriesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.primaryOrange,
-                    ),
-                  );
-                }
+    return Consumer<BottomNavProvider>(
+      builder: (context, bottomNav, _) {
+        // Kategori değiştiğinde verileri yeniden yükle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadCategories();
+          }
+        });
 
-                if (snapshot.hasError ||
-                    !snapshot.hasData ||
-                    snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.category_outlined,
-                          size: 64,
-                          color: AppTheme.textSecondary,
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          body: Column(
+            children: [
+              HomeHeader(
+                title: localizations.categories,
+                subtitle: localizations.discover,
+                leadingIcon: Icons.category,
+                showBackButton: true,
+                showCart: true,
+              ),
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _categoriesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: colorScheme.primary,
                         ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        Text(
-                          localizations.categoryNotFound,
-                          style: AppTheme.poppins(
-                            fontSize: 16,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                      );
+                    }
 
-                final categories = snapshot.data!;
-                // Sort by displayOrder if available, then by name
-                final sortedCategories =
-                    List<Map<String, dynamic>>.from(categories)..sort((a, b) {
-                      final orderA = a['displayOrder'] as int? ?? 999;
-                      final orderB = b['displayOrder'] as int? ?? 999;
-                      if (orderA != orderB) {
-                        return orderA.compareTo(orderB);
-                      }
-                      final nameA = (a['name'] as String).toLowerCase();
-                      final nameB = (b['name'] as String).toLowerCase();
-                      return nameA.compareTo(nameB);
-                    });
-                return RefreshIndicator(
-                  color: AppTheme.primaryOrange,
-                  onRefresh: () async {
-                    setState(() {
-                      _loadCategories();
-                    });
+                    if (snapshot.hasError ||
+                        !snapshot.hasData ||
+                        snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.category_outlined,
+                              size: 64,
+                              color: AppTheme.textSecondary,
+                            ),
+                            SizedBox(height: AppTheme.spacingMedium),
+                            Text(
+                              localizations.categoryNotFound,
+                              style: AppTheme.poppins(
+                                fontSize: 16,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final categories = snapshot.data!;
+                    // Sort by displayOrder if available, then by name
+                    final sortedCategories =
+                        List<Map<String, dynamic>>.from(categories)
+                          ..sort((a, b) {
+                            final orderA = a['displayOrder'] as int? ?? 999;
+                            final orderB = b['displayOrder'] as int? ?? 999;
+                            if (orderA != orderB) {
+                              return orderA.compareTo(orderB);
+                            }
+                            final nameA = (a['name'] as String).toLowerCase();
+                            final nameB = (b['name'] as String).toLowerCase();
+                            return nameA.compareTo(nameB);
+                          });
+                    return RefreshIndicator(
+                      color: colorScheme.primary,
+                      onRefresh: () async {
+                        setState(() {
+                          _loadCategories();
+                        });
+                      },
+                      child: GridView.builder(
+                        padding: EdgeInsets.all(AppTheme.spacingMedium),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 1,
+                              childAspectRatio: 2.1,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                        itemCount: sortedCategories.length,
+                        itemBuilder: (context, index) {
+                          final category = sortedCategories[index];
+                          return _buildCategoryCard(
+                            category,
+                            colorScheme: colorScheme,
+                          );
+                        },
+                      ),
+                    );
                   },
-                  child: GridView.builder(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 1,
-                          childAspectRatio: 2.1,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                    itemCount: sortedCategories.length,
-                    itemBuilder: (context, index) {
-                      final category = sortedCategories[index];
-                      return _buildCategoryCard(category);
-                    },
-                  ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildCategoryCard(Map<String, dynamic> category) {
+  Widget _buildCategoryCard(
+    Map<String, dynamic> category, {
+    required ColorScheme colorScheme,
+  }) {
     final categoryName = category['name'] as String;
-    final style = _getCategoryStyle(category);
+    final style = _getCategoryStyle(
+      category,
+      primaryColor: colorScheme.primary,
+      colorScheme: colorScheme,
+    );
     final icon = style['icon'] as IconData;
     final color = style['color'] as Color;
     final imageUrl = category['imageUrl']?.toString();

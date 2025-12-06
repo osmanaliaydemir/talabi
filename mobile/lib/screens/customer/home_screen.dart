@@ -23,6 +23,7 @@ import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:mobile/screens/customer/profile/addresses_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,6 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PromotionalBanner> _banners = [];
   late PageController _bannerPageController;
 
+  // Track current category to detect changes
+  MainCategory? _lastCategory;
+
   @override
   void initState() {
     super.initState();
@@ -56,10 +60,33 @@ class _HomeScreenState extends State<HomeScreen> {
       initialPage: 1, // 2. banner'dan başla (index 1)
       viewportFraction: 0.90, // Show 90% of current + 10% of next
     );
-    _vendorsFuture = _apiService.getVendors();
-    _popularProductsFuture = _apiService.getPopularProducts(limit: 8);
     _loadAddresses();
     _loadFavoriteStatus();
+  }
+
+  /// VendorType'a göre verileri yükle
+  void _loadData({int? vendorType}) {
+    // Eğer vendorType parametre olarak verilmediyse, provider'dan al
+    if (vendorType == null) {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
+    }
+    final locale = AppLocalizations.of(context)?.localeName;
+
+    setState(() {
+      _vendorsFuture = _apiService.getVendors(vendorType: vendorType);
+      _popularProductsFuture = _apiService.getPopularProducts(
+        limit: 8,
+        vendorType: vendorType,
+      );
+      _categoriesFuture = _apiService.getCategories(
+        language: locale,
+        vendorType: vendorType,
+      );
+    });
+    _loadBanners(vendorType: vendorType);
   }
 
   @override
@@ -69,10 +96,17 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _loadBanners() async {
+  Future<void> _loadBanners({int? vendorType}) async {
     try {
+      // Önce eski timer'ı iptal et
+      _bannerTimer?.cancel();
+      _bannerTimer = null;
+
       final locale = AppLocalizations.of(context)?.localeName ?? 'tr';
-      final banners = await _apiService.getBanners(language: locale);
+      final banners = await _apiService.getBanners(
+        language: locale,
+        vendorType: vendorType,
+      );
       if (mounted) {
         setState(() {
           _banners = banners;
@@ -134,11 +168,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final locale = AppLocalizations.of(context)?.localeName;
-    _categoriesFuture = _apiService.getCategories(language: locale);
-    // Only reload banners if they haven't been loaded yet or locale changed
-    if (_banners.isEmpty) {
-      _loadBanners(); // Reload banners when locale changes
+    // Context hazır olduğunda verileri yükle (sadece ilk kez veya kategori değiştiyse)
+    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
+    final currentCategory = bottomNav.selectedCategory;
+    final vendorType = currentCategory == MainCategory.restaurant ? 1 : 2;
+
+    if (_lastCategory == null || _lastCategory != currentCategory) {
+      // Kategori değişti veya ilk yükleme - tüm verileri yeniden yükle
+      _loadData(vendorType: vendorType); // Bu _loadBanners'ı da çağırıyor
+      _lastCategory = currentCategory;
+    } else if (_banners.isEmpty) {
+      // Kategori aynı ama banner'lar yüklenmemiş - sadece banner'ları yükle
+      _loadBanners(vendorType: vendorType);
     } else if (_banners.length > 1 && _bannerTimer == null) {
       // Ensure timer is started if banners are already loaded
       Future.delayed(const Duration(milliseconds: 500), () {
@@ -199,20 +240,25 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _AddressBottomSheet(
-        addresses: _addresses,
-        selectedAddress: _selectedAddress,
-        onAddressSelected: (address) {
-          setState(() {
-            _selectedAddress = address;
-          });
-          // Don't close bottom sheet, just update selection
-        },
-        onSetDefault: (address) async {
-          await _setDefaultAddress(address);
-          Navigator.pop(context);
-        },
-      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return _AddressBottomSheet(
+          addresses: _addresses,
+          selectedAddress: _selectedAddress,
+          colorScheme: colorScheme,
+          onAddressSelected: (address) {
+            setState(() {
+              _selectedAddress = address;
+            });
+            // Don't close bottom sheet, just update selection
+          },
+          onSetDefault: (address) async {
+            await _setDefaultAddress(address);
+            Navigator.pop(context);
+          },
+        );
+      },
     );
   }
 
@@ -302,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Helper to map color string to Color
-  Color? _getColorFromString(String? colorString) {
+  Color? _getColorFromString(String? colorString, {Color? primaryColor}) {
     if (colorString == null || colorString.isEmpty) return null;
 
     // Try to parse hex color (e.g., "#FF5722" or "FF5722")
@@ -319,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Named color mapping
     final colorMap = {
-      'orange': AppTheme.primaryOrange,
+      'orange': primaryColor ?? AppTheme.primaryOrange,
       'blue': Colors.blue,
       'green': Colors.green,
       'purple': Colors.purple,
@@ -343,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return colorMap[colorString.toLowerCase()];
   }
 
-  Widget _buildPromotionalBanner() {
+  Widget _buildPromotionalBanner({required ColorScheme colorScheme}) {
     if (_banners.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -365,10 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Bottom navigation menu renklerini kullan
               // selectedItemColor: primaryOrange, unselectedItemColor: Colors.grey
               // Use header background color for all banners
-              final gradientColors = [
-                const Color(0xFFCE181B),
-                const Color(0xFFCE181B),
-              ];
+              final gradientColors = [colorScheme.primary, colorScheme.primary];
 
               // Her banner için farklı icon
               final List<IconData> bannerIcons = [
@@ -455,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.cardColor,
-                                foregroundColor: AppTheme.primaryOrange,
+                                foregroundColor: colorScheme.primary,
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 10,
@@ -472,7 +515,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: AppTheme.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryOrange,
+                                  color: colorScheme.primary,
                                 ),
                               ),
                             ),
@@ -552,7 +595,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentBannerIndex == index
-                        ? AppTheme.primaryOrange
+                        ? colorScheme.primary
                         : AppTheme.textSecondary.withValues(alpha: 0.3),
                   ),
                 ),
@@ -564,7 +607,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Helper to get category icon and color
-  Map<String, dynamic> _getCategoryStyle(Map<String, dynamic> category) {
+  Map<String, dynamic> _getCategoryStyle(
+    Map<String, dynamic> category, {
+    Color? primaryColor,
+  }) {
     // Try to use API-provided icon and color first
     final iconString = category['icon'] as String?;
     final colorString = category['color'] as String?;
@@ -579,7 +625,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Map color string to Color if provided
     if (colorString != null && colorString.isNotEmpty) {
-      color = _getColorFromString(colorString);
+      color = _getColorFromString(colorString, primaryColor: primaryColor);
     }
 
     // If both icon and color are successfully mapped from API, use them
@@ -589,13 +635,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Fallback to name-based logic if API data is not available or mapping failed
     final name = (category['name'] as String).toLowerCase();
+    final defaultPrimary = primaryColor ?? AppTheme.primaryOrange;
 
     if (name.contains('yemek') ||
         name.contains('food') ||
         name.contains('طعام')) {
       return {
         'icon': icon ?? Icons.restaurant,
-        'color': color ?? AppTheme.primaryOrange,
+        'color': color ?? defaultPrimary,
       };
     } else if (name.contains('mağaza') ||
         name.contains('store') ||
@@ -628,407 +675,430 @@ class _HomeScreenState extends State<HomeScreen> {
         name.contains('ملابس')) {
       return {'icon': icon ?? Icons.checkroom, 'color': color ?? Colors.teal};
     } else {
-      return {
-        'icon': icon ?? Icons.category,
-        'color': color ?? AppTheme.primaryOrange,
-      };
+      return {'icon': icon ?? Icons.category, 'color': color ?? defaultPrimary};
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: RefreshIndicator(
-        color: AppTheme.primaryOrange,
-        onRefresh: () async {
-          setState(() {
-            _vendorsFuture = _apiService.getVendors();
-            _popularProductsFuture = _apiService.getPopularProducts(limit: 8);
-            _categoriesFuture = _apiService.getCategories(
-              language: AppLocalizations.of(context)?.localeName,
-            );
-          });
-          await _loadAddresses();
-          await _loadFavoriteStatus();
-          await _loadBanners();
-        },
-        child: CustomScrollView(
-          slivers: [
-            // Header (Sticky)
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _HomeHeaderDelegate(
-                expandedHeight: 310,
-                collapsedHeight:
-                    kToolbarHeight + MediaQuery.of(context).padding.top,
-                paddingTop: MediaQuery.of(context).padding.top,
-                onLocationTap: _showAddressBottomSheet,
-                onNotificationTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationsScreen(),
-                    ),
-                  );
-                },
-                onSearchTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SearchScreen()),
-                  );
-                },
-                currentLocation: _selectedAddress != null
-                    ? _getAddressDisplayText(_selectedAddress!, localizations)
-                    : null,
-                isAddressesLoading: _isAddressesLoading,
-              ),
-            ),
-            // Spacing
-            SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacingSmall)),
-            // Categories Section
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingMedium,
-                      vertical: AppTheme.spacingSmall,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          localizations.categories,
-                          style: AppTheme.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimary,
-                          ),
+    return Consumer<BottomNavProvider>(
+      builder: (context, bottomNav, _) {
+        // Consumer sadece renkleri güncellemek için kullanılıyor
+        // Veri yükleme didChangeDependencies'de yapılıyor
+        return Scaffold(
+          backgroundColor: AppTheme.backgroundColor,
+          body: RefreshIndicator(
+            color: colorScheme.primary,
+            onRefresh: () async {
+              final bottomNav = Provider.of<BottomNavProvider>(
+                context,
+                listen: false,
+              );
+              final vendorType =
+                  bottomNav.selectedCategory == MainCategory.restaurant ? 1 : 2;
+              _loadData(vendorType: vendorType);
+              await _loadAddresses();
+              await _loadFavoriteStatus();
+            },
+            child: CustomScrollView(
+              slivers: [
+                // Header (Sticky)
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _HomeHeaderDelegate(
+                    expandedHeight: 310,
+                    collapsedHeight:
+                        kToolbarHeight + MediaQuery.of(context).padding.top,
+                    paddingTop: MediaQuery.of(context).padding.top,
+                    onLocationTap: _showAddressBottomSheet,
+                    onNotificationTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CategoriesScreen(),
+                      );
+                    },
+                    onSearchTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SearchScreen()),
+                      );
+                    },
+                    currentLocation: _selectedAddress != null
+                        ? _getAddressDisplayText(
+                            _selectedAddress!,
+                            localizations,
+                          )
+                        : null,
+                    isAddressesLoading: _isAddressesLoading,
+                  ),
+                ),
+                // Spacing
+                SliverToBoxAdapter(
+                  child: SizedBox(height: AppTheme.spacingSmall),
+                ),
+                // Categories Section
+                SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMedium,
+                          vertical: AppTheme.spacingSmall,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              localizations.categories,
+                              style: AppTheme.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
                               ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CategoriesScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                localizations.viewAll,
+                                style: AppTheme.poppins(
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 100,
+                        child: FutureBuilder<List<Map<String, dynamic>>>(
+                          future: _categoriesFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: colorScheme.primary,
+                                ),
+                              );
+                            }
+
+                            if (snapshot.hasError ||
+                                !snapshot.hasData ||
+                                snapshot.data!.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  localizations.categoryNotFound,
+                                  style: AppTheme.poppins(
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final categories = snapshot.data!;
+                            // Sort by displayOrder if available, then by name
+                            final sortedCategories =
+                                List<Map<String, dynamic>>.from(categories)
+                                  ..sort((a, b) {
+                                    final orderA =
+                                        a['displayOrder'] as int? ?? 999;
+                                    final orderB =
+                                        b['displayOrder'] as int? ?? 999;
+                                    if (orderA != orderB) {
+                                      return orderA.compareTo(orderB);
+                                    }
+                                    final nameA = (a['name'] as String)
+                                        .toLowerCase();
+                                    final nameB = (b['name'] as String)
+                                        .toLowerCase();
+                                    return nameA.compareTo(nameB);
+                                  });
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                              ),
+                              itemCount: sortedCategories.length,
+                              itemBuilder: (context, index) {
+                                final category = sortedCategories[index];
+                                return _buildCategoryCard(
+                                  category,
+                                  colorScheme: colorScheme,
+                                );
+                              },
                             );
                           },
-                          child: Text(
-                            localizations.viewAll,
-                            style: AppTheme.poppins(
-                              color: AppTheme.primaryOrange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  SizedBox(
-                    height: 100,
-                    child: FutureBuilder<List<Map<String, dynamic>>>(
-                      future: _categoriesFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryOrange,
-                            ),
-                          );
-                        }
-
-                        if (snapshot.hasError ||
-                            !snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return Center(
-                            child: Text(
-                              localizations.categoryNotFound,
-                              style: AppTheme.poppins(
-                                color: AppTheme.textSecondary,
+                ),
+                // Picks For You Section (Popular Products)
+                SliverToBoxAdapter(
+                  child: FutureBuilder<List<Product>>(
+                    future: _popularProductsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Column(
+                          children: [
+                            SizedBox(height: AppTheme.spacingSmall),
+                            SizedBox(
+                              height: 200,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: colorScheme.primary,
+                                ),
                               ),
                             ),
-                          );
-                        }
-
-                        final categories = snapshot.data!;
-                        // Sort by displayOrder if available, then by name
-                        final sortedCategories =
-                            List<Map<String, dynamic>>.from(categories)..sort((
-                              a,
-                              b,
-                            ) {
-                              final orderA = a['displayOrder'] as int? ?? 999;
-                              final orderB = b['displayOrder'] as int? ?? 999;
-                              if (orderA != orderB) {
-                                return orderA.compareTo(orderB);
-                              }
-                              final nameA = (a['name'] as String).toLowerCase();
-                              final nameB = (b['name'] as String).toLowerCase();
-                              return nameA.compareTo(nameB);
-                            });
-                        return ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppTheme.spacingMedium,
-                          ),
-                          itemCount: sortedCategories.length,
-                          itemBuilder: (context, index) {
-                            final category = sortedCategories[index];
-                            return _buildCategoryCard(category);
-                          },
+                          ],
                         );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Picks For You Section (Popular Products)
-            SliverToBoxAdapter(
-              child: FutureBuilder<List<Product>>(
-                future: _popularProductsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Column(
-                      children: [
-                        SizedBox(height: AppTheme.spacingSmall),
-                        SizedBox(
-                          height: 200,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryOrange,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
+                      }
 
-                  if (snapshot.hasError || !snapshot.hasData) {
-                    return const SizedBox.shrink();
-                  }
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return const SizedBox.shrink();
+                      }
 
-                  final products = snapshot.data!;
-                  if (products.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
+                      final products = snapshot.data!;
+                      if (products.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: AppTheme.spacingSmall),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacingMedium,
-                          vertical: AppTheme.spacingSmall,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              localizations.picksForYou,
-                              style: AppTheme.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: AppTheme.spacingSmall),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingMedium,
+                              vertical: AppTheme.spacingSmall,
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PopularProductListScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                localizations.viewAll,
-                                style: AppTheme.poppins(
-                                  color: AppTheme.primaryOrange,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 220,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppTheme.spacingSmall,
-                          ),
-                          itemCount: products.length,
-                          itemBuilder: (context, index) {
-                            final product = products[index];
-                            return _buildPicksForYouCard(context, product);
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            // Promotional Banner Section (Campaigns)
-            SliverToBoxAdapter(
-              child: _banners.isNotEmpty
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppTheme.spacingMedium,
-                            vertical: 0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                localizations.campaigns,
-                                style: AppTheme.poppins(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const CampaignsScreen(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  localizations.viewAll,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  localizations.picksForYou,
                                   style: AppTheme.poppins(
-                                    color: AppTheme.primaryOrange,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: AppTheme.spacingSmall,
-                            right: AppTheme.spacingSmall,
-                            bottom: AppTheme.spacingMedium,
-                          ),
-                          child: _buildPromotionalBanner(),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            // Popular Vendors Section
-            SliverToBoxAdapter(
-              child: FutureBuilder<List<Vendor>>(
-                future: _vendorsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Column(
-                      children: [
-                        SizedBox(height: AppTheme.spacingSmall),
-                        SizedBox(
-                          height: 200,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryOrange,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  if (snapshot.hasError || !snapshot.hasData) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final vendors = snapshot.data!;
-                  if (vendors.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: AppTheme.spacingSmall),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacingMedium,
-                          vertical: AppTheme.spacingSmall,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              localizations.popularVendors,
-                              style: AppTheme.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const VendorListScreen(),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const PopularProductListScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    localizations.viewAll,
+                                    style: AppTheme.poppins(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                );
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 220,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingSmall,
+                              ),
+                              itemCount: products.length,
+                              itemBuilder: (context, index) {
+                                final product = products[index];
+                                return _buildPicksForYouCard(context, product);
                               },
-                              child: Text(
-                                localizations.viewAll,
-                                style: AppTheme.poppins(
-                                  color: AppTheme.primaryOrange,
-                                  fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                // Promotional Banner Section (Campaigns)
+                SliverToBoxAdapter(
+                  child: _banners.isNotEmpty
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMedium,
+                                vertical: 0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    localizations.campaigns,
+                                    style: AppTheme.poppins(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CampaignsScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      localizations.viewAll,
+                                      style: AppTheme.poppins(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: AppTheme.spacingSmall,
+                                right: AppTheme.spacingSmall,
+                                bottom: AppTheme.spacingMedium,
+                              ),
+                              child: _buildPromotionalBanner(
+                                colorScheme: colorScheme,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                // Popular Vendors Section
+                SliverToBoxAdapter(
+                  child: FutureBuilder<List<Vendor>>(
+                    future: _vendorsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Column(
+                          children: [
+                            SizedBox(height: AppTheme.spacingSmall),
+                            SizedBox(
+                              height: 200,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: colorScheme.primary,
                                 ),
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 200,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppTheme.spacingSmall,
+                        );
+                      }
+
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final vendors = snapshot.data!;
+                      if (vendors.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: AppTheme.spacingSmall),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingMedium,
+                              vertical: AppTheme.spacingSmall,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  localizations.popularVendors,
+                                  style: AppTheme.poppins(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const VendorListScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    localizations.viewAll,
+                                    style: AppTheme.poppins(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          itemCount: vendors.length,
-                          itemBuilder: (context, index) {
-                            final vendor = vendors[index];
-                            return _buildVendorCardHorizontal(context, vendor);
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                          SizedBox(
+                            height: 200,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingSmall,
+                              ),
+                              itemCount: vendors.length,
+                              itemBuilder: (context, index) {
+                                final vendor = vendors[index];
+                                return _buildVendorCardHorizontal(
+                                  context,
+                                  vendor,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                // Bottom Spacing
+                SliverToBoxAdapter(
+                  child: SizedBox(height: AppTheme.spacingLarge),
+                ),
+              ],
             ),
-            // Bottom Spacing
-            SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacingLarge)),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -1056,9 +1126,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryCard(Map<String, dynamic> category) {
+  Widget _buildCategoryCard(
+    Map<String, dynamic> category, {
+    required ColorScheme colorScheme,
+  }) {
     final categoryName = category['name'] as String;
-    final style = _getCategoryStyle(category);
+    final style = _getCategoryStyle(
+      category,
+      primaryColor: colorScheme.primary,
+    );
     final icon = style['icon'] as IconData;
     final color = style['color'] as Color;
 
@@ -1316,12 +1392,14 @@ class _HomeScreenState extends State<HomeScreen> {
 class _AddressBottomSheet extends StatefulWidget {
   final List<dynamic> addresses;
   final Map<String, dynamic>? selectedAddress;
+  final ColorScheme colorScheme;
   final Function(Map<String, dynamic>) onAddressSelected;
   final Function(Map<String, dynamic>) onSetDefault;
 
   const _AddressBottomSheet({
     required this.addresses,
     required this.selectedAddress,
+    required this.colorScheme,
     required this.onAddressSelected,
     required this.onSetDefault,
   });
@@ -1433,7 +1511,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryOrange,
+                      backgroundColor: widget.colorScheme.primary,
                       foregroundColor: AppTheme.textOnPrimary,
                       padding: EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingLarge,
@@ -1484,14 +1562,14 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       padding: EdgeInsets.all(AppTheme.spacingMedium),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                            ? widget.colorScheme.primary.withValues(alpha: 0.1)
                             : AppTheme.backgroundColor,
                         borderRadius: BorderRadius.circular(
                           AppTheme.radiusMedium,
                         ),
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.primaryOrange
+                              ? widget.colorScheme.primary
                               : AppTheme.borderColor,
                           width: isSelected ? 2 : 1,
                         ),
@@ -1504,7 +1582,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                             height: 48,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primaryOrange.withValues(
+                                  ? widget.colorScheme.primary.withValues(
                                       alpha: 0.2,
                                     )
                                   : AppTheme.cardColor,
@@ -1515,7 +1593,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                             child: Icon(
                               Icons.location_on,
                               color: isSelected
-                                  ? AppTheme.primaryOrange
+                                  ? widget.colorScheme.primary
                                   : AppTheme.textSecondary,
                               size: 24,
                             ),
@@ -1536,7 +1614,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: isSelected
-                                              ? AppTheme.primaryOrange
+                                              ? widget.colorScheme.primary
                                               : AppTheme.textPrimary,
                                         ),
                                       ),
@@ -1599,7 +1677,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                           if (isSelected)
                             Icon(
                               Icons.check_circle,
-                              color: AppTheme.primaryOrange,
+                              color: widget.colorScheme.primary,
                               size: 24,
                             ),
                         ],
@@ -1621,7 +1699,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                     // Navigator.pop is called inside onSetDefault callback
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryOrange,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: AppTheme.textOnPrimary,
                     padding: EdgeInsets.symmetric(
                       vertical: AppTheme.spacingMedium,
@@ -1704,7 +1782,12 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.primaryOrange, AppTheme.darkOrange],
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.8),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

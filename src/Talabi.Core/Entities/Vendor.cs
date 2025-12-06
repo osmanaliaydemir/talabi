@@ -1,7 +1,10 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.Entities;
 
 public class Vendor : BaseEntity
 {
+    public VendorType Type { get; set; } = VendorType.Restaurant; // Default: Restaurant
     public string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string Address { get; set; } = string.Empty;

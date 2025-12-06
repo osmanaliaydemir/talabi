@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/common/skeleton_loader.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/home_header.dart';
+import 'package:provider/provider.dart';
 
 class PopularProductListScreen extends StatefulWidget {
   const PopularProductListScreen({super.key});
@@ -30,18 +32,36 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
 
   int? _productCount;
 
+  int? _currentVendorType;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
+    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+        ? 1
+        : 2;
+
+    if (_currentVendorType != vendorType) {
+      _currentVendorType = vendorType;
+      _loadProducts();
+    }
+  }
+
   void _loadProducts() {
     // Limitsiz ürün çekmek için limit parametresini çok yüksek bir değer yapıyoruz
     // veya API'den tüm ürünleri çekiyoruz
-    _productsFuture = _apiService.getPopularProducts(limit: 1000).then((
-      products,
-    ) {
-      if (mounted) {
-        setState(() {
-          _productCount = products.length;
-        });
-      }
-      return products;
+    setState(() {
+      _productsFuture = _apiService
+          .getPopularProducts(limit: 1000, vendorType: _currentVendorType)
+          .then((products) {
+            if (mounted) {
+              setState(() {
+                _productCount = products.length;
+              });
+            }
+            return products;
+          });
     });
   }
 
@@ -104,6 +124,9 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
@@ -155,10 +178,12 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                         SizedBox(height: AppTheme.spacingMedium),
                         ElevatedButton(
                           onPressed: () {
-                            setState(() {
-                              _loadProducts();
-                            });
+                            _loadProducts();
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: Colors.white,
+                          ),
                           child: Text(localizations.retry),
                         ),
                       ],
@@ -189,11 +214,9 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
 
                 final products = snapshot.data!;
                 return RefreshIndicator(
-                  color: AppTheme.primaryOrange,
+                  color: colorScheme.primary,
                   onRefresh: () async {
-                    setState(() {
-                      _loadProducts();
-                    });
+                    _loadProducts();
                     await _productsFuture;
                     await _loadFavoriteStatus();
                   },

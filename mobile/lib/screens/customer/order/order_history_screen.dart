@@ -52,6 +52,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -69,7 +71,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             child: _isLoading
                 ? Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.primaryOrange,
+                      color: colorScheme.primary,
                     ),
                   )
                 : _orders.isEmpty
@@ -140,14 +142,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(
                           AppTheme.radiusMedium,
                         ),
                       ),
                       child: Icon(
                         Icons.store_rounded,
-                        color: AppTheme.primaryOrange,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 24,
                       ),
                     ),
@@ -235,7 +239,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           style: AppTheme.poppins(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppTheme.primaryOrange,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         const SizedBox(width: 8),

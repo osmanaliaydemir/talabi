@@ -112,6 +112,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -292,7 +294,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _saveProfile,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.buttonPrimary,
+                              backgroundColor: colorScheme.primary,
                               foregroundColor: AppTheme.textOnPrimary,
                               padding: EdgeInsets.symmetric(
                                 vertical: AppTheme.spacingMedium,

@@ -3,6 +3,7 @@ import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'dart:math' as math;
 
 class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
@@ -26,13 +27,14 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final textDirection = Directionality.of(context);
+    final primaryColor = Theme.of(context).primaryColor;
 
     return SizedBox(
       height: 310,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 1. Red Background & Ellipse (Clipped)
+          // 1. Primary Color Background & Ellipse (Clipped)
           Positioned(
             top: 0,
             left: 0,
@@ -43,23 +45,30 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
               ),
-              child: Stack(
-                children: [Container(color: const Color(0xFFCE181B))],
-              ),
+              child: Stack(children: [Container(color: primaryColor)]),
             ),
           ),
 
           // 3. Banner Image (Food)
-          Positioned.directional(
-            textDirection: textDirection,
-            top: 50,
-            start: 110,
-            width: 310,
-            height: 243,
-            child: Image.asset(
-              'assets/images/banner_image.png',
-              fit: BoxFit.contain,
-            ),
+          // 3. Banner Image (Food)
+          Consumer<BottomNavProvider>(
+            builder: (context, bottomNav, child) {
+              final isMarket =
+                  bottomNav.selectedCategory == MainCategory.market;
+              return Positioned.directional(
+                textDirection: textDirection,
+                top: isMarket ? 30 : 50,
+                start: isMarket ? 90 : 110,
+                width: isMarket ? 360 : 310,
+                height: isMarket ? 280 : 243,
+                child: Image.asset(
+                  isMarket
+                      ? 'assets/images/market_banner.png'
+                      : 'assets/images/banner_image.png',
+                  fit: BoxFit.contain,
+                ),
+              );
+            },
           ),
 
           // 4. Content (Location, Text, Button)
@@ -103,26 +112,32 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.location_on,
-                                        color: Color(0xFFCE181B),
+                                        color: primaryColor,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 8),
                                       currentLocation != null
-                                          ? Text(
-                                              currentLocation!,
-                                              style: const TextStyle(
-                                                color: Color(0xFF121212),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                fontFamily: 'Plus Jakarta Sans',
+                                          ? ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                maxWidth: 200,
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                              child: Text(
+                                                currentLocation!,
+                                                style: const TextStyle(
+                                                  color: Color(0xFF121212),
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontFamily:
+                                                      'Plus Jakarta Sans',
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             )
                                           : isAddressesLoading
-                                          ? const SizedBox(
+                                          ? SizedBox(
                                               width: 16,
                                               height: 16,
                                               child: CircularProgressIndicator(
@@ -130,13 +145,13 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
                                                       Color
-                                                    >(Color(0xFFCE181B)),
+                                                    >(primaryColor),
                                               ),
                                             )
                                           : Text(
                                               l10n.addAddressToOrder,
-                                              style: const TextStyle(
-                                                color: Color(0xFFCE181B),
+                                              style: TextStyle(
+                                                color: primaryColor,
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
                                                 fontFamily: 'Plus Jakarta Sans',
@@ -174,19 +189,28 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
-                            width: 224,
-                            child: Text(
-                              l10n.promotionalBannerTitle,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                height: 1.25,
-                                fontFamily: 'Plus Jakarta Sans',
-                                letterSpacing: -0.02,
-                              ),
-                            ),
+                          Consumer<BottomNavProvider>(
+                            builder: (context, bottomNav, child) {
+                              final isMarket =
+                                  bottomNav.selectedCategory ==
+                                  MainCategory.market;
+                              return SizedBox(
+                                width: 224,
+                                child: Text(
+                                  isMarket
+                                      ? "Market Alışverişin\nKapında"
+                                      : l10n.promotionalBannerTitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.25,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    letterSpacing: -0.02,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           const SizedBox(height: 20),
                           GestureDetector(
@@ -357,9 +381,9 @@ class _AnimatedNotificationIconState extends State<_AnimatedNotificationIcon>
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.notifications,
-                color: Color(0xFFCE181B),
+                color: Theme.of(context).primaryColor,
                 size: 22,
               ),
             ),

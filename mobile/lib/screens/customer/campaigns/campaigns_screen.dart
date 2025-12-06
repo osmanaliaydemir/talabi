@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/promotional_banner.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/widgets/common/bouncing_circle.dart';
 import 'package:mobile/screens/customer/campaigns/campaign_detail_screen.dart';
 import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:provider/provider.dart';
 
 class CampaignsScreen extends StatefulWidget {
   const CampaignsScreen({super.key});
@@ -21,72 +23,120 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
 
   int? _campaignCount;
 
+  MainCategory? _lastCategory;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _loadBanners();
+  }
+
+  void _loadBanners() {
+    final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+        ? 1
+        : 2;
     final locale = AppLocalizations.of(context)?.localeName ?? 'tr';
-    _bannersFuture = _apiService.getBanners(language: locale).then((banners) {
-      if (mounted) {
-        setState(() {
-          _campaignCount = banners.length;
+    _bannersFuture = _apiService
+        .getBanners(language: locale, vendorType: vendorType)
+        .then((banners) {
+          if (mounted) {
+            setState(() {
+              _campaignCount = banners.length;
+            });
+          }
+          return banners;
         });
-      }
-      return banners;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Column(
-        children: [
-          SharedHeader(
-            title: localizations.campaigns,
-            subtitle: _campaignCount != null
-                ? localizations.campaignsCount(_campaignCount!)
-                : null,
-            showBackButton: true,
-            onBack: () => Navigator.of(context).pop(),
-            icon: Icons.local_offer_outlined,
-          ),
-          Expanded(
-            child: FutureBuilder<List<PromotionalBanner>>(
-              future: _bannersFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('${localizations.error}: ${snapshot.error}'),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text(localizations.noResultsFound));
-                }
+    return Consumer<BottomNavProvider>(
+      builder: (context, bottomNav, _) {
+        // Kategori değiştiğinde verileri yeniden yükle
+        final currentCategory = bottomNav.selectedCategory;
+        if (_lastCategory != null && _lastCategory != currentCategory) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _loadBanners();
+              _lastCategory = currentCategory;
+            }
+          });
+        } else if (_lastCategory == null) {
+          _lastCategory = currentCategory;
+        }
 
-                final banners = snapshot.data!;
-                return ListView.separated(
-                  padding: EdgeInsets.all(AppTheme.spacingMedium),
-                  itemCount: banners.length,
-                  separatorBuilder: (context, index) =>
-                      SizedBox(height: AppTheme.spacingMedium),
-                  itemBuilder: (context, index) {
-                    return _buildBannerCard(banners[index], index);
+        return Scaffold(
+          backgroundColor: AppTheme.backgroundColor,
+          body: Column(
+            children: [
+              SharedHeader(
+                title: localizations.campaigns,
+                subtitle: _campaignCount != null
+                    ? localizations.campaignsCount(_campaignCount!)
+                    : null,
+                showBackButton: true,
+                onBack: () => Navigator.of(context).pop(),
+                icon: Icons.local_offer_outlined,
+              ),
+              Expanded(
+                child: FutureBuilder<List<PromotionalBanner>>(
+                  future: _bannersFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: colorScheme.primary,
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          '${localizations.error}: ${snapshot.error}',
+                        ),
+                      );
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text(localizations.noResultsFound));
+                    }
+
+                    final banners = snapshot.data!;
+                    return ListView.separated(
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      itemCount: banners.length,
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: AppTheme.spacingMedium),
+                      itemBuilder: (context, index) {
+                        return _buildBannerCard(
+                          banners[index],
+                          index,
+                          colorScheme: colorScheme,
+                        );
+                      },
+                    );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildBannerCard(PromotionalBanner banner, int index) {
-    // Use header background color for all banners
-    final gradientColors = [const Color(0xFFCE181B), const Color(0xFFCE181B)];
+  Widget _buildBannerCard(
+    PromotionalBanner banner,
+    int index, {
+    required ColorScheme colorScheme,
+  }) {
+    // Use dynamic theme color for banners
+    final gradientColors = [
+      colorScheme.primary,
+      colorScheme.primary.withOpacity(0.8),
+    ];
 
     // Her banner için farklı icon
     final List<IconData> bannerIcons = [
@@ -173,7 +223,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.cardColor,
-                        foregroundColor: AppTheme.primaryOrange,
+                        foregroundColor: colorScheme.primary,
                         padding: EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 10,
@@ -190,7 +240,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                         style: AppTheme.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryOrange,
+                          color: colorScheme.primary,
                         ),
                       ),
                     ),

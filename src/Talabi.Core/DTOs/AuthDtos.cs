@@ -89,4 +89,7 @@ public class VendorRegisterDto
     public string? City { get; set; }
     public string? Description { get; set; }
     public string? Language { get; set; } // "tr", "en", "ar" - optional
+    
+    [Required]
+    public Talabi.Core.Enums.VendorType VendorType { get; set; } = Talabi.Core.Enums.VendorType.Restaurant;
 }

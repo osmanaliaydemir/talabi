@@ -73,10 +73,13 @@ class _HomeHeaderState extends State<HomeHeader> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.primaryOrange, AppTheme.darkOrange],
+          colors: [
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.primaryContainer,
+          ],
         ),
         boxShadow: [
           BoxShadow(
@@ -227,7 +230,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                 child: Text(
                   '${cart.itemCount}',
                   style: TextStyle(
-                    color: Colors.orange[800],
+                    color: Theme.of(context).primaryColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),

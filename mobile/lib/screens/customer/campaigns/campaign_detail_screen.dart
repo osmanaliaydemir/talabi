@@ -11,6 +11,9 @@ class CampaignDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: CustomScrollView(
@@ -19,7 +22,7 @@ class CampaignDetailScreen extends StatelessWidget {
             expandedHeight: 250.0,
             floating: false,
             pinned: true,
-            backgroundColor: const Color(0xFFCE181B),
+            backgroundColor: colorScheme.primary,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 banner.title,
@@ -38,8 +41,8 @@ class CampaignDetailScreen extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFFCE181B),
-                          const Color(0xFFCE181B),
+                          colorScheme.primary,
+                          colorScheme.primary.withOpacity(0.8),
                         ],
                       ),
                     ),
@@ -113,7 +116,7 @@ class CampaignDetailScreen extends StatelessWidget {
                           // Handle button action
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryOrange,
+                          backgroundColor: colorScheme.primary,
                           foregroundColor: AppTheme.textOnPrimary,
                           padding: EdgeInsets.symmetric(
                             vertical: AppTheme.spacingMedium,
