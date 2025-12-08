@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/models/courier_notification.dart';
 import 'package:mobile/services/courier_service.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
 
 class CourierNotificationsScreen extends StatefulWidget {
   const CourierNotificationsScreen({super.key});

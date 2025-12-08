@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
-import 'package:mobile/screens/vendor/vendor_edit_profile_screen.dart';
-import 'package:mobile/screens/vendor/vendor_settings_screen.dart';
-import 'package:mobile/widgets/vendor/vendor_header.dart';
-import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
+import 'package:mobile/screens/vendor/edit_profile_screen.dart';
+import 'package:mobile/screens/vendor/settings_screen.dart';
+import 'package:mobile/screens/vendor/widgets/header.dart';
+import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
 import 'package:provider/provider.dart';
 
 class VendorProfileScreen extends StatefulWidget {
@@ -41,10 +42,12 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.profileLoadFailed(e.toString()))),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.profileLoadFailed(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -74,7 +77,10 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         backgroundColor: Colors.white,
         appBar: VendorHeader(
           title: localizations.vendorProfileTitle,
-          subtitle: authProvider.fullName ?? authProvider.email ?? localizations.vendorFallbackSubtitle,
+          subtitle:
+              authProvider.fullName ??
+              authProvider.email ??
+              localizations.vendorFallbackSubtitle,
           leadingIcon: Icons.person_outline,
           showBackButton: false,
           onRefresh: _loadProfile,
@@ -91,16 +97,15 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         backgroundColor: Colors.white,
         appBar: VendorHeader(
           title: localizations.vendorProfileTitle,
-          subtitle: authProvider.fullName ?? authProvider.email ?? localizations.vendorFallbackSubtitle,
+          subtitle:
+              authProvider.fullName ??
+              authProvider.email ??
+              localizations.vendorFallbackSubtitle,
           leadingIcon: Icons.person_outline,
           showBackButton: false,
           onRefresh: _loadProfile,
         ),
-        body: Center(
-          child: Text(
-            localizations.profileLoadFailed(''),
-          ),
-        ),
+        body: Center(child: Text(localizations.profileLoadFailed(''))),
         bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
       );
     }
@@ -109,7 +114,10 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
       backgroundColor: Colors.white,
       appBar: VendorHeader(
         title: localizations.vendorProfileTitle,
-        subtitle: authProvider.fullName ?? authProvider.email ?? localizations.vendorFallbackSubtitle,
+        subtitle:
+            authProvider.fullName ??
+            authProvider.email ??
+            localizations.vendorFallbackSubtitle,
         leadingIcon: Icons.person_outline,
         showBackButton: false,
         onRefresh: _loadProfile,
@@ -152,7 +160,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                 backgroundColor: Colors.grey[200],
                 backgroundImage: profile['imageUrl'] != null
                     ? NetworkImage(profile['imageUrl'] as String)
-                        as ImageProvider
+                          as ImageProvider
                     : null,
                 child: profile['imageUrl'] == null
                     ? const Icon(Icons.store, size: 50)
@@ -220,9 +228,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         ListTile(
           leading: const Icon(Icons.edit_outlined),
           title: Text(localizations.editProfile),
-          subtitle: Text(
-            localizations.editProfileDescription,
-          ),
+          subtitle: Text(localizations.editProfileDescription),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
             print('VendorProfileScreen: Edit profile tapped');
@@ -239,9 +245,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         ListTile(
           leading: const Icon(Icons.settings),
           title: Text(localizations.businessSettingsTitle),
-          subtitle: Text(
-            localizations.businessSettingsSubtitle,
-          ),
+          subtitle: Text(localizations.businessSettingsSubtitle),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             print('VendorProfileScreen: Settings tapped');
@@ -268,52 +272,13 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.logout, color: Colors.red),
-          title: Text(localizations.logout, style: const TextStyle(color: Colors.red)),
-          onTap: () async {
+          title: Text(
+            localizations.logout,
+            style: const TextStyle(color: Colors.red),
+          ),
+          onTap: () {
             print('VendorProfileScreen: Logout tapped');
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(localizations.logoutConfirmTitle),
-                content: Text(localizations.logoutConfirmMessage),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: Text(localizations.cancel),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text(
-                      localizations.logout,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-            );
-
-            if (confirm == true && mounted) {
-              final authProvider = Provider.of<AuthProvider>(
-                context,
-                listen: false,
-              );
-              final role = await authProvider.logout();
-              if (!mounted) return;
-              // Role'e göre ilgili login sayfasına yönlendir
-              if (role?.toLowerCase() == 'courier') {
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
-              } else if (role?.toLowerCase() == 'vendor') {
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
-              } else {
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/login', (route) => false);
-              }
-            }
+            _showLogoutDialog(context, authProvider, localizations);
           },
         ),
       ],
@@ -344,6 +309,161 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showLogoutDialog(
+    BuildContext context,
+    AuthProvider auth,
+    AppLocalizations localizations,
+  ) {
+    // Parent context'i kaydet (dialog context'i değil)
+    final parentContext = context;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.vendorPrimary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.logout,
+                        color: AppTheme.vendorPrimary,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            localizations.logoutConfirmTitle,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            localizations.logoutConfirmMessage,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: Text(
+                        localizations.cancel,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Dialog'u kapat
+                        Navigator.of(dialogContext).pop();
+
+                        // Navigator'ı logout öncesi kaydet (context dispose edilmeden önce)
+                        NavigatorState? navigator;
+                        try {
+                          navigator = Navigator.of(parentContext);
+                        } catch (e) {
+                          print('Error getting navigator: $e');
+                          return; // Navigator bulunamazsa işlemi durdur
+                        }
+
+                        // Logout öncesi role bilgisini al
+                        final role = auth.role;
+
+                        // ÖNCE login sayfasına yönlendir (keşfet sayfasına gitmesin)
+                        try {
+                          // Role'e göre ilgili login sayfasına yönlendir
+                          if (role?.toLowerCase() == 'courier') {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/courier/login',
+                              (route) => false,
+                            );
+                          } else if (role?.toLowerCase() == 'vendor') {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/vendor/login',
+                              (route) => false,
+                            );
+                          } else {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/login',
+                              (route) => false,
+                            );
+                          }
+                        } catch (e) {
+                          // Navigator artık geçerli değilse hata yok sayılır
+                          print('Error navigating to login: $e');
+                        }
+
+                        // SONRA logout işlemini yap (yönlendirme yapıldıktan sonra)
+                        // Bu sayede auth state değişikliği login sayfasında olur, keşfet sayfasına gitmez
+                        await auth.logout();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.vendorPrimary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        localizations.logout,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

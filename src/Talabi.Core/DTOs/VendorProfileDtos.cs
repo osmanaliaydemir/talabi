@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Talabi.Core.DTOs;
 
 // Existing DTOs remain...
@@ -19,13 +21,21 @@ public class VendorProfileDto
 
 public class UpdateVendorProfileDto
 {
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
+    [JsonPropertyName("imageUrl")]
     public string? ImageUrl { get; set; }
+    [JsonPropertyName("address")]
     public string? Address { get; set; }
+    [JsonPropertyName("city")]
     public string? City { get; set; }
+    [JsonPropertyName("latitude")]
     public double? Latitude { get; set; }
+    [JsonPropertyName("longitude")]
     public double? Longitude { get; set; }
+    [JsonPropertyName("phoneNumber")]
     public string? PhoneNumber { get; set; }
+    [JsonPropertyName("description")]
     public string? Description { get; set; }
 }
 
@@ -45,4 +55,16 @@ public class UpdateVendorSettingsDto
     public int? EstimatedDeliveryTime { get; set; }
     public bool? IsActive { get; set; }
     public string? OpeningHours { get; set; }
+}
+
+public class UpdateVendorImageDto
+{
+    [JsonPropertyName("imageUrl")]
+    public string ImageUrl { get; set; } = string.Empty;
+}
+
+public class UpdateVendorActiveStatusDto
+{
+    [JsonPropertyName("isActive")]
+    public bool IsActive { get; set; }
 }

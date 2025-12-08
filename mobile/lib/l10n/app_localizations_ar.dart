@@ -1214,6 +1214,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vendorOrders => 'طلبات البائع';
 
   @override
+  String pendingOrdersCount(int count) {
+    return '$count طلب في الانتظار';
+  }
+
+  @override
+  String preparingOrdersCount(int count) {
+    return '$count طلب قيد التجهيز';
+  }
+
+  @override
+  String readyOrdersCount(int count) {
+    return '$count طلب جاهز';
+  }
+
+  @override
+  String deliveredOrdersCount(int count) {
+    return 'تم تسليم $count طلب';
+  }
+
+  @override
   String get noOrdersFound => 'لم يتم العثور على طلبات';
 
   @override
@@ -1532,6 +1552,47 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get cancelReasonDescription =>
       'يرجى تحديد سبب الإلغاء (10 أحرف على الأقل):';
+
+  @override
+  String get acceptOrderTitle => 'قبول الطلب';
+
+  @override
+  String get acceptOrderConfirmation => 'هل أنت متأكد أنك تريد قبول هذا الطلب؟';
+
+  @override
+  String get acceptOrder => 'قبول';
+
+  @override
+  String get updateOrderStatusTitle => 'تحديث حالة الطلب';
+
+  @override
+  String get markAsReadyConfirmation =>
+      'هل أنت متأكد أنك تريد وضع علامة \"جاهز\" على هذا الطلب؟';
+
+  @override
+  String get markAsReady => 'وضع علامة جاهز';
+
+  @override
+  String get rejectOrder => 'رفض الطلب';
+
+  @override
+  String get rejectOrderTitle => 'رفض الطلب';
+
+  @override
+  String get rejectReason => 'سبب الرفض';
+
+  @override
+  String get rejectReasonDescription =>
+      'يرجى إدخال سبب الرفض (10 أحرف على الأقل):';
+
+  @override
+  String get rejectReasonHint => 'سبب الرفض...';
+
+  @override
+  String get rejectOrderConfirmation => 'هل أنت متأكد أنك تريد رفض هذا الطلب؟';
+
+  @override
+  String get orderRejected => 'تم رفض الطلب';
 
   @override
   String get pieces => 'قطعة';

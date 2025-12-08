@@ -19,10 +19,41 @@ class VendorListScreen extends StatefulWidget {
 
 class _VendorListScreenState extends State<VendorListScreen> {
   final ApiService _apiService = ApiService();
-  late Future<List<Vendor>> _vendorsFuture;
 
-  int? _vendorCount;
+  // Data
+  List<Vendor> _vendors = [];
+
+  // Pagination State
+  int _currentPage = 1;
+  static const int _pageSize = 6;
+  bool _isFirstLoad = true;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+
   int? _currentVendorType;
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMoreData) {
+      _loadMoreVendors();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -34,23 +65,62 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
     if (_currentVendorType != vendorType) {
       _currentVendorType = vendorType;
-      _loadVendors();
+      _loadVendors(isRefresh: true);
     }
   }
 
-  void _loadVendors() {
+  Future<void> _loadVendors({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _isFirstLoad = true;
+        _currentPage = 1;
+        _hasMoreData = true;
+        _vendors.clear();
+      });
+    }
+
+    try {
+      final vendors = await _apiService.getVendors(
+        vendorType: _currentVendorType,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (isRefresh) {
+            _vendors = vendors;
+          } else {
+            _vendors.addAll(vendors);
+          }
+
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+
+          if (vendors.length < _pageSize) {
+            _hasMoreData = false;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMoreVendors() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
     setState(() {
-      _vendorsFuture = _apiService
-          .getVendors(vendorType: _currentVendorType)
-          .then((vendors) {
-            if (mounted) {
-              setState(() {
-                _vendorCount = vendors.length;
-              });
-            }
-            return vendors;
-          });
+      _isLoadingMore = true;
+      _currentPage++;
     });
+
+    await _loadVendors(isRefresh: false);
   }
 
   @override
@@ -63,38 +133,37 @@ class _VendorListScreenState extends State<VendorListScreen> {
         children: [
           SharedHeader(
             title: localizations.popularVendors,
-            subtitle: _vendorCount != null
-                ? localizations.vendorsCount(_vendorCount!)
+            subtitle: _vendors.isNotEmpty
+                ? localizations.vendorsCount(_vendors.length)
                 : null,
             showBackButton: true,
             onBack: () => Navigator.of(context).pop(),
             icon: Icons.store,
           ),
           Expanded(
-            child: FutureBuilder<List<Vendor>>(
-              future: _vendorsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('${localizations.error}: ${snapshot.error}'),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text(localizations.noResultsFound));
-                }
-
-                final vendors = snapshot.data!;
-                return ListView.separated(
-                  padding: EdgeInsets.all(AppTheme.spacingMedium),
-                  itemCount: vendors.length,
-                  separatorBuilder: (context, index) =>
-                      SizedBox(height: AppTheme.spacingMedium),
-                  itemBuilder: (context, index) {
-                    return _buildVendorCard(vendors[index]);
-                  },
-                );
-              },
+            child: RefreshIndicator(
+              color: Theme.of(context).colorScheme.primary,
+              onRefresh: () => _loadVendors(isRefresh: true),
+              child: _isFirstLoad
+                  ? const Center(child: CircularProgressIndicator())
+                  : _vendors.isEmpty
+                  ? Center(child: Text(localizations.noResultsFound))
+                  : ListView.separated(
+                      controller: _scrollController,
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      itemCount: _vendors.length + (_isLoadingMore ? 1 : 0),
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: AppTheme.spacingMedium),
+                      itemBuilder: (context, index) {
+                        if (index == _vendors.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return _buildVendorCard(_vendors[index]);
+                      },
+                    ),
             ),
           ),
         ],

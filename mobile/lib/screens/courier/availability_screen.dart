@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/courier_service.dart';
-import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
+import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
 
 class CourierAvailabilityScreen extends StatefulWidget {
   const CourierAvailabilityScreen({super.key});

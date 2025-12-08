@@ -35,7 +35,8 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search([FromQuery] ProductSearchRequestDto request)
     {
         IQueryable<Product> query = _unitOfWork.Products.Query()
-            .Include(p => p.Vendor);
+            .Include(p => p.Vendor)
+            .Where(p => p.Vendor == null || p.Vendor.IsActive); // Sadece aktif vendor'ların ürünleri
 
         // Text search - Case-insensitive search helper kullanımı
         if (!string.IsNullOrWhiteSpace(request.Query))
@@ -124,21 +125,23 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
-    /// Kategorileri getirir - Dil desteği ile
-    /// </summary>
-    /// <param name="lang">Dil kodu (tr, en, ar) - Varsayılan: tr</param>
-    /// <returns>Kategori listesi</returns>
-    /// <summary>
     /// Kategorileri getirir - Dil ve VendorType desteği ile
     /// </summary>
     /// <param name="lang">Dil kodu (tr, en, ar) - Varsayılan: tr</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
-    /// <returns>Kategori listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış kategori listesi</returns>
     [HttpGet("categories")]
-    public async Task<ActionResult<ApiResponse<List<CategoryDto>>>> GetCategories(
+    public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories(
         [FromQuery] string? lang = "tr",
-        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
         IQueryable<Category> query = _unitOfWork.Categories.Query()
             .Include(c => c.Translations);
 
@@ -165,7 +168,24 @@ public class ProductsController : ControllerBase
             };
         }).OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
 
-        return Ok(new ApiResponse<List<CategoryDto>>(categoryDtos, "Kategoriler başarıyla getirildi"));
+        // Pagination
+        var totalCount = categoryDtos.Count;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        var pagedItems = categoryDtos
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var result = new PagedResultDto<CategoryDto>
+        {
+            Items = pagedItems,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = totalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result, "Kategoriler başarıyla getirildi"));
     }
 
     /// <summary>
@@ -182,7 +202,8 @@ public class ProductsController : ControllerBase
         }
 
         var results = await _unitOfWork.Products.Query()
-            .Where(p => p.Name.Contains(query))
+            .Include(p => p.Vendor)
+            .Where(p => p.Name.Contains(query) && (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
             .Take(10)
             .Select(p => new AutocompleteResultDto
             {
@@ -198,15 +219,22 @@ public class ProductsController : ControllerBase
     /// <summary>
     /// Popüler ürünleri getirir - Sipariş sayısına göre sıralanır
     /// </summary>
-    /// <param name="limit">Getirilecek ürün sayısı - Varsayılan: 10</param>
-    /// <returns>Popüler ürün listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
+    /// <returns>Sayfalanmış popüler ürün listesi</returns>
     [HttpGet("popular")]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetPopularProducts(
-        [FromQuery] int limit = 10,
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6,
         [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
         var query = _unitOfWork.Products.Query()
             .Include(p => p.Vendor)
+            .Where(p => p.Vendor == null || p.Vendor.IsActive) // Sadece aktif vendor'ların ürünleri
             .AsQueryable();
 
         if (vendorType.HasValue)
@@ -215,7 +243,7 @@ public class ProductsController : ControllerBase
         }
 
         // Get popular products based on order count
-        var popularProducts = await query
+        var orderedQuery = query
             .Select(p => new
             {
                 Product = p,
@@ -223,22 +251,37 @@ public class ProductsController : ControllerBase
             })
             .OrderByDescending(x => x.OrderCount)
             .ThenByDescending(x => x.Product.CreatedAt)
-            .Take(limit)
-            .Select(x => new ProductDto
-            {
-                Id = x.Product.Id,
-                VendorId = x.Product.VendorId,
-                VendorName = x.Product.Vendor != null ? x.Product.Vendor.Name : null,
-                Name = x.Product.Name,
-                Description = x.Product.Description,
-                Category = x.Product.Category,
-                Price = x.Product.Price,
-                ImageUrl = x.Product.ImageUrl,
-                VendorType = x.Product.VendorType ?? (x.Product.Vendor != null ? x.Product.Vendor.Type : null)
-            })
-            .ToListAsync();
+            .Select(x => x.Product);
 
-        return Ok(new ApiResponse<List<ProductDto>>(popularProducts, "Popüler ürünler başarıyla getirildi"));
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            p => new ProductDto
+            {
+                Id = p.Id,
+                VendorId = p.VendorId,
+                VendorName = p.Vendor != null ? p.Vendor.Name : null,
+                Name = p.Name,
+                Description = p.Description,
+                Category = p.Category,
+                Price = p.Price,
+                Currency = p.Currency,
+                ImageUrl = p.ImageUrl,
+                VendorType = p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null)
+            },
+            page,
+            pageSize);
+
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<ProductDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Popüler ürünler başarıyla getirildi"));
     }
 
     /// <summary>
@@ -251,7 +294,7 @@ public class ProductsController : ControllerBase
     {
         var product = await _unitOfWork.Products.Query()
             .Include(p => p.Vendor)
-            .Where(p => p.Id == id)
+            .Where(p => p.Id == id && (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -279,13 +322,18 @@ public class ProductsController : ControllerBase
     /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
     /// </summary>
     /// <param name="id">Mevcut ürün ID'si</param>
-    /// <param name="limit">Getirilecek ürün sayısı - Varsayılan: 5</param>
-    /// <returns>Benzer ürün listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış benzer ürün listesi</returns>
     [HttpGet("{id}/similar")]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetSimilarProducts(
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetSimilarProducts(
         Guid id,
-        [FromQuery] int limit = 5)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
         // Mevcut ürünü getir
         var currentProduct = await _unitOfWork.Products.Query()
             .Where(p => p.Id == id)
@@ -293,13 +341,13 @@ public class ProductsController : ControllerBase
 
         if (currentProduct == null)
         {
-            return NotFound(new ApiResponse<List<ProductDto>>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<PagedResultDto<ProductDto>>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
         }
 
         // Aynı kategorideki diğer ürünleri getir
         IQueryable<Product> query = _unitOfWork.Products.Query()
             .Include(p => p.Vendor)
-            .Where(p => p.Id != id && p.IsAvailable); // Mevcut ürünü hariç tut ve sadece müsait olanları getir
+            .Where(p => p.Id != id && p.IsAvailable && (p.Vendor == null || p.Vendor.IsActive)); // Mevcut ürünü hariç tut, sadece müsait olanları ve aktif vendor'ların ürünlerini getir
 
         // CategoryId varsa ona göre filtrele (öncelikli)
         if (currentProduct.CategoryId.HasValue)
@@ -314,13 +362,22 @@ public class ProductsController : ControllerBase
         else
         {
             // Ne CategoryId ne de Category varsa boş liste döndür
-            return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(), "Benzer ürün bulunamadı"));
+            var emptyResult = new PagedResultDto<ProductDto>
+            {
+                Items = new List<ProductDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(emptyResult, "Benzer ürün bulunamadı"));
         }
 
-        var similarProducts = await query
-            .OrderByDescending(p => p.CreatedAt) // En yeni ürünler önce
-            .Take(limit)
-            .Select(p => new ProductDto
+        IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt); // En yeni ürünler önce
+
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            p => new ProductDto
             {
                 Id = p.Id,
                 VendorId = p.VendorId,
@@ -332,9 +389,20 @@ public class ProductsController : ControllerBase
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<ProductDto>>(similarProducts, "Benzer ürünler başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<ProductDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Benzer ürünler başarıyla getirildi"));
     }
 }

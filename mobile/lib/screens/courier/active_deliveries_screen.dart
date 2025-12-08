@@ -6,8 +6,8 @@ import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
-import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
+import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 
 class CourierActiveDeliveriesScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -437,7 +437,7 @@ class _CourierActiveDeliveriesScreenState
                   ),
                 ),
                 Chip(
-                  backgroundColor: _statusColor(status).withValues(alpha:  0.15),
+                  backgroundColor: _statusColor(status).withValues(alpha: 0.15),
                   label: Text(
                     status,
                     style: TextStyle(

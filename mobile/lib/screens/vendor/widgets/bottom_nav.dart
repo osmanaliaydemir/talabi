@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/screens/vendor/vendor_dashboard_screen.dart';
+import 'package:mobile/screens/vendor/dashboard_screen.dart';
 
 class VendorBottomNav extends StatelessWidget {
   final int currentIndex;

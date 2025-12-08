@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
-import 'package:mobile/services/preferences_service.dart';
+import 'package:mobile/services/secure_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _token;
@@ -30,17 +31,25 @@ class AuthProvider with ChangeNotifier {
     _fullName = response['fullName'];
     _role = response['role'];
 
-    // Save to shared preferences
-    final prefs = await PreferencesService.instance;
+    // Save to secure storage
+    final secureStorage = SecureStorageService.instance;
+    await secureStorage.setToken(_token!);
+    if (_refreshToken != null) {
+      await secureStorage.setRefreshToken(_refreshToken!);
+    }
+    await secureStorage.setUserId(_userId!);
+    await secureStorage.setEmail(_email!);
+    await secureStorage.setFullName(_fullName!);
+    if (_role != null) {
+      await secureStorage.setRole(_role!);
+    }
+
+    // Also save to SharedPreferences for ApiService interceptor
+    // ApiService interceptor reads from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', _token!);
     if (_refreshToken != null) {
       await prefs.setString('refreshToken', _refreshToken!);
-    }
-    await prefs.setString('userId', _userId!);
-    await prefs.setString('email', _email!);
-    await prefs.setString('fullName', _fullName!);
-    if (_role != null) {
-      await prefs.setString('role', _role!);
     }
 
     // Analytics
@@ -80,17 +89,24 @@ class AuthProvider with ChangeNotifier {
         print('🟢 [AUTH_PROVIDER] Email: $_email');
         print('🟢 [AUTH_PROVIDER] FullName: $_fullName');
 
-        // Save to shared preferences
-        final prefs = await PreferencesService.instance;
+        // Save to secure storage
+        final secureStorage = SecureStorageService.instance;
+        await secureStorage.setToken(_token!);
+        if (_refreshToken != null) {
+          await secureStorage.setRefreshToken(_refreshToken!);
+        }
+        await secureStorage.setUserId(_userId!);
+        await secureStorage.setEmail(_email!);
+        await secureStorage.setFullName(_fullName!);
+
+        // Also save to SharedPreferences for ApiService interceptor
+        final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', _token!);
         if (_refreshToken != null) {
           await prefs.setString('refreshToken', _refreshToken!);
         }
-        await prefs.setString('userId', _userId!);
-        await prefs.setString('email', _email!);
-        await prefs.setString('fullName', _fullName!);
 
-        print('🟢 [AUTH_PROVIDER] Data saved to SharedPreferences');
+        print('🟢 [AUTH_PROVIDER] Data saved to Secure Storage');
 
         // Analytics
         await AnalyticsService.setUserId(_userId!);
@@ -116,11 +132,16 @@ class AuthProvider with ChangeNotifier {
     _fullName = null;
     _role = null;
 
-    final prefs = await PreferencesService.instance;
-    await prefs.clear();
+    // Clear secure storage
+    final secureStorage = SecureStorageService.instance;
+    await secureStorage.clearAll();
 
-    // Analytics - clear user id (pass empty string or handle in service, usually null is not allowed in setUserId but we can just not set it or set to empty)
-    // Firebase setUserId accepts nullable String?
+    // Clear SharedPreferences (ApiService interceptor reads from here)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('refreshToken');
+
+    // Analytics - clear user id
     await AnalyticsService.setUserId('');
 
     notifyListeners();
@@ -130,21 +151,28 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    // Use cached instance if available for faster startup
-    final prefs =
-        PreferencesService.cachedInstance ?? await PreferencesService.instance;
+    final secureStorage = SecureStorageService.instance;
+    final storedToken = await secureStorage.getToken();
 
-    if (!prefs.containsKey('token')) {
+    if (storedToken == null) {
       return; // Fast exit if no token
     }
 
-    // Load token and user data from cache (no network request)
-    _token = prefs.getString('token');
-    _refreshToken = prefs.getString('refreshToken');
-    _userId = prefs.getString('userId');
-    _email = prefs.getString('email');
-    _fullName = prefs.getString('fullName');
-    _role = prefs.getString('role');
+    // Load token and user data from secure storage
+    _token = storedToken;
+    _refreshToken = await secureStorage.getRefreshToken();
+    _userId = await secureStorage.getUserId();
+    _email = await secureStorage.getEmail();
+    _fullName = await secureStorage.getFullName();
+    _role = await secureStorage.getRole();
+
+    // Also save to SharedPreferences for ApiService interceptor
+    // ApiService interceptor reads from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', _token!);
+    if (_refreshToken != null) {
+      await prefs.setString('refreshToken', _refreshToken!);
+    }
 
     // Token validation could be added here (JWT decode, expiry check)
     // For now, we trust the cached token and validate on first API call
@@ -168,6 +196,18 @@ class AuthProvider with ChangeNotifier {
     _role = role;
 
     await AnalyticsService.setUserId(userId);
+
+    // Also likely update storage here if this method is used to persist external auth updates
+    final secureStorage = SecureStorageService.instance;
+    await secureStorage.setToken(token);
+    await secureStorage.setRefreshToken(refreshToken);
+    await secureStorage.setUserId(userId);
+    await secureStorage.setRole(role);
+
+    // Also save to SharedPreferences for ApiService interceptor
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    await prefs.setString('refreshToken', refreshToken);
 
     notifyListeners();
   }

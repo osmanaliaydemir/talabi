@@ -78,7 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _vendorsFuture = _apiService.getVendors(vendorType: vendorType);
       _popularProductsFuture = _apiService.getPopularProducts(
-        limit: 8,
+        page: 1,
+        pageSize: 8,
         vendorType: vendorType,
       );
       _categoriesFuture = _apiService.getCategories(

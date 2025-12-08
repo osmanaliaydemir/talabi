@@ -1106,7 +1106,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noComment => 'Yorum yok';
 
   @override
-  String get date => 'Tarih: null';
+  String get date => 'Tarih';
 
   @override
   String get approve => 'Onayla';
@@ -1226,6 +1226,26 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get vendorOrders => 'Satıcı Siparişleri';
+
+  @override
+  String pendingOrdersCount(int count) {
+    return '$count adet bekleyen sipariş';
+  }
+
+  @override
+  String preparingOrdersCount(int count) {
+    return '$count adet hazırlanan sipariş';
+  }
+
+  @override
+  String readyOrdersCount(int count) {
+    return '$count adet hazır sipariş';
+  }
+
+  @override
+  String deliveredOrdersCount(int count) {
+    return '$count adet sipariş teslim edildi';
+  }
 
   @override
   String get noOrdersFound => 'Sipariş bulunamadı';
@@ -1549,6 +1569,49 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get cancelReasonDescription =>
       'İptal nedeninizi belirtin (en az 10 karakter):';
+
+  @override
+  String get acceptOrderTitle => 'Sipariş Kabul';
+
+  @override
+  String get acceptOrderConfirmation =>
+      'Siparişi kabul etmek istediğinizden emin misiniz?';
+
+  @override
+  String get acceptOrder => 'Kabul Et';
+
+  @override
+  String get updateOrderStatusTitle => 'Sipariş Durumu Güncelleme';
+
+  @override
+  String get markAsReadyConfirmation =>
+      'Siparişi \"Hazır\" olarak işaretlemek istediğinizden emin misiniz?';
+
+  @override
+  String get markAsReady => 'Hazır Olarak İşaretle';
+
+  @override
+  String get rejectOrder => 'Siparişi Reddet';
+
+  @override
+  String get rejectOrderTitle => 'Sipariş Reddi';
+
+  @override
+  String get rejectReason => 'Red sebebi';
+
+  @override
+  String get rejectReasonDescription =>
+      'Red sebebinizi girin (en az 10 karakter):';
+
+  @override
+  String get rejectReasonHint => 'Red sebebi...';
+
+  @override
+  String get rejectOrderConfirmation =>
+      'Bu siparişi reddetmek istediğinizden emin misiniz?';
+
+  @override
+  String get orderRejected => 'Sipariş reddedildi';
 
   @override
   String get pieces => 'adet';

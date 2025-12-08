@@ -30,6 +30,7 @@ public class CreateVendorDto
 public class VendorOrderDto
 {
     public Guid Id { get; set; }
+    public string CustomerOrderId { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerEmail { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }

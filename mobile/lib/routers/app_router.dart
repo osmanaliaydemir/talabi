@@ -5,8 +5,8 @@ import 'package:mobile/routers/courier_router.dart';
 import 'package:mobile/routers/customer_router.dart';
 import 'package:mobile/routers/vendor_router.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
-import 'package:mobile/screens/courier/courier_login_screen.dart';
-import 'package:mobile/screens/vendor/vendor_login_screen.dart';
+import 'package:mobile/screens/courier/login_screen.dart';
+import 'package:mobile/screens/vendor/login_screen.dart';
 
 /// Ana uygulama router'ı
 /// Tüm route'ları koordine eder ve role-based routing sağlar

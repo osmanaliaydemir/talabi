@@ -5,8 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:mobile/services/api_service.dart';
 //Todo: remove this import OAA
 import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
-import 'package:mobile/widgets/vendor/vendor_header.dart';
-import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
+import 'package:mobile/screens/vendor/widgets/header.dart';
+import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
 
@@ -81,10 +81,23 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // 404 hatasını yut ve login ekranına yönlendir
+        if (e is DioException && e.response?.statusCode == 404) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profil bulunamadı, lütfen tekrar giriş yapın.'),
+            ),
+          );
+          // Opsiyonel: Giriş sayfasına yönlendir
+          // Navigator.of(context).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
+          return;
+        }
+
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

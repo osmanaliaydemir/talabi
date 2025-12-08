@@ -20,19 +20,43 @@ class PopularProductListScreen extends StatefulWidget {
 
 class _PopularProductListScreenState extends State<PopularProductListScreen> {
   final ApiService _apiService = ApiService();
-  late Future<List<Product>> _productsFuture;
   final Map<String, bool> _favoriteStatus = {};
+  late ScrollController _scrollController;
+
+  // Pagination State
+  List<Product> _products = [];
+  int _currentPage = 1;
+  static const int _pageSize = 10;
+  bool _isFirstLoad = true;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+  int? _currentVendorType;
+  bool _hasError = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _loadProducts(isRefresh: true);
     _loadFavoriteStatus();
   }
 
-  int? _productCount;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-  int? _currentVendorType;
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMoreData) {
+      _loadMoreProducts();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -44,36 +68,89 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
 
     if (_currentVendorType != vendorType) {
       _currentVendorType = vendorType;
-      _loadProducts();
+      // Vendor type değiştiğinde sayfayı yenile
+      // Ancak ilk açılışta initState zaten çalışıyor, tekrar çağırmamak için kontrol.
+      if (!_isFirstLoad) {
+        _loadProducts(isRefresh: true);
+      }
     }
   }
 
-  void _loadProducts() {
-    // Limitsiz ürün çekmek için limit parametresini çok yüksek bir değer yapıyoruz
-    // veya API'den tüm ürünleri çekiyoruz
+  Future<void> _loadProducts({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _isFirstLoad = true;
+        _currentPage = 1;
+        _hasMoreData = true;
+        _products.clear();
+        _hasError = false;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
+      _currentVendorType = vendorType;
+
+      final products = await _apiService.getPopularProducts(
+        page: _currentPage,
+        pageSize: _pageSize,
+        vendorType: vendorType,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (isRefresh) {
+            _products = products;
+          } else {
+            _products.addAll(products);
+          }
+
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+
+          if (products.length < _pageSize) {
+            _hasMoreData = false;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+          _hasError = true;
+          _errorMessage = e.toString();
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMoreProducts() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
     setState(() {
-      _productsFuture = _apiService
-          .getPopularProducts(limit: 1000, vendorType: _currentVendorType)
-          .then((products) {
-            if (mounted) {
-              setState(() {
-                _productCount = products.length;
-              });
-            }
-            return products;
-          });
+      _isLoadingMore = true;
+      _currentPage++;
     });
+
+    await _loadProducts(isRefresh: false);
   }
 
   Future<void> _loadFavoriteStatus() async {
     try {
       final favorites = await _apiService.getFavorites();
-      setState(() {
-        _favoriteStatus.clear();
-        for (var fav in favorites) {
-          _favoriteStatus[fav['id'].toString()] = true;
-        }
-      });
+      if (mounted) {
+        setState(() {
+          _favoriteStatus.clear();
+          for (var fav in favorites) {
+            _favoriteStatus[fav['id'].toString()] = true;
+          }
+        });
+      }
     } catch (e) {
       print('Error loading favorites: $e');
     }
@@ -133,118 +210,134 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
         children: [
           HomeHeader(
             title: localizations.picksForYou,
-            subtitle: _productCount != null
-                ? localizations.productsCount(_productCount!)
+            subtitle: _products.isNotEmpty
+                ? localizations.productsCount(_products.length)
                 : localizations.products,
             leadingIcon: Icons.star,
             showBackButton: true,
             showCart: true,
           ),
           Expanded(
-            child: FutureBuilder<List<Product>>(
-              future: _productsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return GridView.builder(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: AppTheme.spacingSmall,
-                          mainAxisSpacing: AppTheme.spacingSmall,
-                        ),
-                    itemCount: 6,
-                    itemBuilder: (context, index) {
-                      return const ProductSkeletonItem();
-                    },
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppTheme.error,
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        Text(
-                          '${localizations.error}: ${snapshot.error}',
-                          style: AppTheme.poppins(color: AppTheme.error),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        ElevatedButton(
-                          onPressed: () {
-                            _loadProducts();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(localizations.retry),
-                        ),
-                      ],
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.star_outline,
-                          size: 64,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        Text(
-                          localizations.noProductsYet,
-                          style: AppTheme.poppins(
-                            color: AppTheme.textSecondary,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final products = snapshot.data!;
-                return RefreshIndicator(
-                  color: colorScheme.primary,
-                  onRefresh: () async {
-                    _loadProducts();
-                    await _productsFuture;
-                    await _loadFavoriteStatus();
-                  },
-                  child: GridView.builder(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: AppTheme.spacingSmall,
-                          mainAxisSpacing: AppTheme.spacingSmall,
-                        ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      final isFavorite = _favoriteStatus[product.id] ?? false;
-                      return ProductCard(
-                        product: product,
-                        width: null, // Full width in grid
-                        isFavorite: isFavorite,
-                        rating: '4.7', // Placeholder rating
-                        ratingCount: '2.3k', // Placeholder count
-                        onFavoriteTap: () => _toggleFavorite(product),
-                      );
-                    },
-                  ),
-                );
+            child: RefreshIndicator(
+              color: colorScheme.primary,
+              onRefresh: () async {
+                await _loadProducts(isRefresh: true);
+                await _loadFavoriteStatus();
               },
+              child: _isFirstLoad
+                  ? GridView.builder(
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.7,
+                            crossAxisSpacing: AppTheme.spacingSmall,
+                            mainAxisSpacing: AppTheme.spacingSmall,
+                          ),
+                      itemCount: 6,
+                      itemBuilder: (context, index) {
+                        return const ProductSkeletonItem();
+                      },
+                    )
+                  : _hasError
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: AppTheme.error,
+                          ),
+                          SizedBox(height: AppTheme.spacingMedium),
+                          Text(
+                            '${localizations.error}: $_errorMessage',
+                            style: AppTheme.poppins(color: AppTheme.error),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: AppTheme.spacingMedium),
+                          ElevatedButton(
+                            onPressed: () => _loadProducts(isRefresh: true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text(localizations.retry),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _products.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.star_outline,
+                            size: 64,
+                            color: AppTheme.textSecondary.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                          SizedBox(height: AppTheme.spacingMedium),
+                          Text(
+                            localizations.noProductsYet,
+                            style: AppTheme.poppins(
+                              color: AppTheme.textSecondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverPadding(
+                          padding: EdgeInsets.all(AppTheme.spacingMedium),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.7,
+                                  crossAxisSpacing: AppTheme.spacingSmall,
+                                  mainAxisSpacing: 4,
+                                ),
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final product = _products[index];
+                              final isFavorite =
+                                  _favoriteStatus[product.id] ?? false;
+                              return ProductCard(
+                                product: product,
+                                width: null, // Full width in grid
+                                isFavorite: isFavorite,
+                                rating: '4.7', // Placeholder rating
+                                ratingCount: '2.3k', // Placeholder count
+                                onFavoriteTap: () => _toggleFavorite(product),
+                              );
+                            }, childCount: _products.length),
+                          ),
+                        ),
+                        if (_isLoadingMore)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 24.0,
+                              ),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      ],
+                    ),
             ),
           ),
         ],

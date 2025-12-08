@@ -6,7 +6,7 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/customer/auth/email_verification_screen.dart';
 import 'package:mobile/screens/customer/auth/forgot_password_screen.dart';
 import 'package:mobile/screens/customer/auth/register_screen.dart';
-import 'package:mobile/screens/vendor/vendor_login_screen.dart';
+import 'package:mobile/screens/vendor/login_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/widgets/common/toast_message.dart';

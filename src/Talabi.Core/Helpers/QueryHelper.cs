@@ -17,11 +17,7 @@ public static class QueryHelper
     /// <param name="pageSize">Sayfa boyutu</param>
     /// <param name="cancellationToken">İptal token'ı</param>
     /// <returns>Sayfalanmış sonuç</returns>
-    public static async Task<PagedResult<T>> ToPagedResultAsync<T>(
-        this IQueryable<T> query,
-        int page,
-        int pageSize,
-        CancellationToken cancellationToken = default)
+    public static async Task<PagedResult<T>> ToPagedResultAsync<T>(this IQueryable<T> query, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
@@ -46,12 +42,8 @@ public static class QueryHelper
     /// <param name="pageSize">Sayfa boyutu</param>
     /// <param name="cancellationToken">İptal token'ı</param>
     /// <returns>Sayfalanmış sonuç</returns>
-    public static async Task<PagedResult<TDto>> ToPagedResultAsync<TEntity, TDto>(
-        this IQueryable<TEntity> query,
-        Expression<Func<TEntity, TDto>> mapper,
-        int page,
-        int pageSize,
-        CancellationToken cancellationToken = default)
+    public static async Task<PagedResult<TDto>> ToPagedResultAsync<TEntity, TDto>(this IQueryable<TEntity> query,
+        Expression<Func<TEntity, TDto>> mapper, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
@@ -74,10 +66,7 @@ public static class QueryHelper
     /// <param name="propertyName">Sıralama property adı</param>
     /// <param name="ascending">Artandan azalana (true) veya azalandan artana (false)</param>
     /// <returns>Sıralanmış query</returns>
-    public static IOrderedQueryable<T> OrderByDynamic<T>(
-        this IQueryable<T> query,
-        string propertyName,
-        bool ascending = true)
+    public static IOrderedQueryable<T> OrderByDynamic<T>(this IQueryable<T> query, string propertyName, bool ascending = true)
     {
         var parameter = Expression.Parameter(typeof(T), "x");
         var property = Expression.Property(parameter, propertyName);
@@ -102,10 +91,7 @@ public static class QueryHelper
     /// <param name="propertyName">Sıralama property adı</param>
     /// <param name="ascending">Artandan azalana (true) veya azalandan artana (false)</param>
     /// <returns>Sıralanmış query</returns>
-    public static IOrderedQueryable<T> ThenByDynamic<T>(
-        this IOrderedQueryable<T> query,
-        string propertyName,
-        bool ascending = true)
+    public static IOrderedQueryable<T> ThenByDynamic<T>(this IOrderedQueryable<T> query, string propertyName, bool ascending = true)
     {
         var parameter = Expression.Parameter(typeof(T), "x");
         var property = Expression.Property(parameter, propertyName);

@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/screens/courier/courier_login_screen.dart';
-import 'package:mobile/screens/customer/auth/login_screen.dart';
-import 'package:mobile/screens/vendor/vendor_dashboard_screen.dart';
+import 'package:mobile/screens/courier/dashboard_screen.dart';
+import 'package:mobile/screens/vendor/login_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 
-class VendorLoginScreen extends StatefulWidget {
-  const VendorLoginScreen({super.key});
+class CourierLoginScreen extends StatefulWidget {
+  const CourierLoginScreen({super.key});
 
   @override
-  State<VendorLoginScreen> createState() => _VendorLoginScreenState();
+  State<CourierLoginScreen> createState() => _CourierLoginScreenState();
 }
 
-class _VendorLoginScreenState extends State<VendorLoginScreen> {
+class _CourierLoginScreenState extends State<CourierLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -35,7 +34,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
       return;
     }
 
-    TapLogger.logButtonPress('Vendor Login', context: 'VendorLoginScreen');
+    TapLogger.logButtonPress('Courier Login', context: 'CourierLoginScreen');
     setState(() {
       _isLoading = true;
     });
@@ -50,18 +49,15 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const VendorDashboardScreen(),
+            builder: (context) => const CourierDashboardScreen(),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '${localizations?.loginFailed ?? "Giriş başarısız"}: $e',
-            ),
+            content: Text('Giriş başarısız: $e'),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -77,27 +73,25 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context);
 
     return Scaffold(
-      extendBody: false,
-      bottomNavigationBar: null,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.vendorLight,
-              AppTheme.vendorPrimary,
-              AppTheme.vendorDark,
+              AppTheme.courierLight,
+              AppTheme.courierPrimary,
+              AppTheme.courierDark,
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Vendor Header (Purple/Mor)
+              // Courier Header (Teal/Turkuaz)
               SizedBox(
                 height: 180,
                 child: Stack(
@@ -110,7 +104,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.vendorLight.withValues(alpha: 0.7),
+                          color: AppTheme.courierLight.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -123,7 +117,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: AppTheme.vendorPrimary,
+                          color: AppTheme.courierDark.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
                               AppTheme.radiusXLarge * 2,
@@ -145,13 +139,13 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.store,
+                              Icons.delivery_dining,
                               color: AppTheme.textOnPrimary,
                               size: 36,
                             ),
                             AppTheme.horizontalSpace(0.75),
                             Text(
-                              localizations.vendorLogin,
+                              localizations?.courierLogin ?? 'Courier Login',
                               style: AppTheme.poppins(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,
@@ -207,14 +201,15 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                   Row(
                                     children: [
                                       Icon(
-                                        Icons.business_center,
-                                        color: AppTheme.vendorPrimary,
+                                        Icons.two_wheeler,
+                                        color: AppTheme.courierPrimary,
                                         size: 32,
                                       ),
                                       AppTheme.horizontalSpace(0.75),
                                       Expanded(
                                         child: Text(
-                                          localizations.welcomeBackVendor,
+                                          localizations?.courierWelcome ??
+                                              'Welcome Back, Courier!',
                                           style: AppTheme.poppins(
                                             fontSize: 28,
                                             fontWeight: FontWeight.bold,
@@ -226,7 +221,8 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                   ),
                                   AppTheme.verticalSpace(0.5),
                                   Text(
-                                    localizations.vendorLoginDescription,
+                                    localizations?.courierSubtitle ??
+                                        'Sign in to manage your deliveries',
                                     style: AppTheme.poppins(
                                       fontSize: 14,
                                       color: AppTheme.textSecondary,
@@ -245,13 +241,15 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                     child: TextFormField(
                                       controller: _emailController,
                                       decoration: InputDecoration(
-                                        hintText: localizations.emailAddress,
+                                        hintText:
+                                            localizations?.emailAddress ??
+                                            'Email Address',
                                         hintStyle: AppTheme.poppins(
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
                                         prefixIcon: Icon(
-                                          Icons.business_outlined,
+                                          Icons.email_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
@@ -263,10 +261,12 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return localizations.emailRequired;
+                                          return localizations?.emailRequired ??
+                                              'Email is required';
                                         }
                                         if (!value.contains('@')) {
-                                          return localizations.validEmail;
+                                          return localizations?.validEmail ??
+                                              'Please enter a valid email';
                                         }
                                         return null;
                                       },
@@ -285,7 +285,9 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       controller: _passwordController,
                                       obscureText: _obscurePassword,
                                       decoration: InputDecoration(
-                                        hintText: localizations.password,
+                                        hintText:
+                                            localizations?.password ??
+                                            'Password',
                                         hintStyle: AppTheme.poppins(
                                           color: AppTheme.textHint,
                                           fontSize: 14,
@@ -316,11 +318,14 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return localizations.passwordRequired;
+                                          return localizations
+                                                  ?.passwordRequired ??
+                                              'Password is required';
                                         }
                                         if (value.length < 6) {
                                           return localizations
-                                              .passwordMinLength;
+                                                  ?.passwordMinLength ??
+                                              'Password must be at least 6 characters';
                                         }
                                         return null;
                                       },
@@ -341,10 +346,12 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                                 _rememberMe = value ?? false;
                                               });
                                             },
-                                            activeColor: AppTheme.vendorPrimary,
+                                            activeColor:
+                                                AppTheme.courierPrimary,
                                           ),
                                           Text(
-                                            localizations.rememberMe,
+                                            localizations?.rememberMe ??
+                                                'Remember me?',
                                             style: AppTheme.poppins(
                                               color: AppTheme.textSecondary,
                                               fontSize: 14,
@@ -354,12 +361,13 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          // Forgot password for vendors
+                                          // Forgot password for couriers
                                         },
                                         child: Text(
-                                          localizations.recoveryPassword,
+                                          localizations?.recoveryPassword ??
+                                              'Recovery Password',
                                           style: AppTheme.poppins(
-                                            color: AppTheme.vendorPrimary,
+                                            color: AppTheme.courierPrimary,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -373,12 +381,13 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                     child: ElevatedButton.icon(
                                       onPressed: _isLoading ? null : _login,
                                       icon: Icon(
-                                        Icons.store,
+                                        Icons.delivery_dining,
                                         color: AppTheme.textOnPrimary,
                                         size: 20,
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.vendorPrimary,
+                                        backgroundColor:
+                                            AppTheme.courierPrimary,
                                         foregroundColor: AppTheme.textOnPrimary,
                                         padding: EdgeInsets.symmetric(
                                           vertical: AppTheme.spacingMedium,
@@ -400,7 +409,8 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                               ),
                                             )
                                           : Text(
-                                              localizations.vendorLogin,
+                                              localizations?.courierSignIn ??
+                                                  'Courier Sign In',
                                               style: AppTheme.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -409,15 +419,15 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                     ),
                                   ),
                                   AppTheme.verticalSpace(1.5),
-                                  // Customer Login Link - Modern Design
+                                  // Vendor Login Link - Modern Design
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.primaryOrange.withValues(
+                                          AppTheme.vendorPrimary.withValues(
                                             alpha: 0.1,
                                           ),
-                                          AppTheme.lightOrange.withValues(
+                                          AppTheme.vendorLight.withValues(
                                             alpha: 0.05,
                                           ),
                                         ],
@@ -428,7 +438,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                         AppTheme.radiusMedium,
                                       ),
                                       border: Border.all(
-                                        color: AppTheme.primaryOrange
+                                        color: AppTheme.vendorPrimary
                                             .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
@@ -441,108 +451,18 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                         ),
                                         onTap: () {
                                           TapLogger.logButtonPress(
-                                            'Customer Login',
-                                            context: 'VendorLoginScreen',
+                                            'Vendor Login',
+                                            context: 'CourierLoginScreen',
                                           );
                                           TapLogger.logNavigation(
-                                            'VendorLoginScreen',
-                                            'LoginScreen',
-                                          );
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const LoginScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: AppTheme.spacingMedium,
-                                            vertical: AppTheme.spacingSmall + 4,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.shopping_bag_outlined,
-                                                color: AppTheme.primaryOrange,
-                                                size: 20,
-                                              ),
-                                              AppTheme.horizontalSpace(0.5),
-                                              Text(
-                                                '${localizations.areYouCustomer} ',
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.textSecondary,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              Text(
-                                                localizations.signIn,
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.primaryOrange,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              Icon(
-                                                Icons.arrow_forward_rounded,
-                                                color: AppTheme.primaryOrange,
-                                                size: 18,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(1),
-                                  // Courier Login Link - Modern Design
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppTheme.courierPrimary.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          AppTheme.courierLight.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                        ],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                      border: Border.all(
-                                        color: AppTheme.courierPrimary
-                                            .withValues(alpha: 0.3),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
-                                        ),
-                                        onTap: () {
-                                          TapLogger.logButtonPress(
-                                            'Courier Login',
-                                            context: 'VendorLoginScreen',
-                                          );
-                                          TapLogger.logNavigation(
-                                            'VendorLoginScreen',
                                             'CourierLoginScreen',
+                                            'VendorLoginScreen',
                                           );
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  const CourierLoginScreen(),
+                                                  const VendorLoginScreen(),
                                             ),
                                           );
                                         },
@@ -556,23 +476,22 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Icon(
-                                                Icons.delivery_dining_rounded,
-                                                color: AppTheme.courierPrimary,
+                                                Icons.store_outlined,
+                                                color: AppTheme.vendorPrimary,
                                                 size: 20,
                                               ),
                                               AppTheme.horizontalSpace(0.5),
                                               Text(
-                                                '${localizations.areYouCourier} ',
+                                                'Are you a vendor? ',
                                                 style: AppTheme.poppins(
                                                   color: AppTheme.textSecondary,
                                                   fontSize: 14,
                                                 ),
                                               ),
                                               Text(
-                                                localizations.courierLoginLink,
+                                                'Sign In',
                                                 style: AppTheme.poppins(
-                                                  color:
-                                                      AppTheme.courierPrimary,
+                                                  color: AppTheme.vendorPrimary,
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -580,7 +499,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                               AppTheme.horizontalSpace(0.25),
                                               Icon(
                                                 Icons.arrow_forward_rounded,
-                                                color: AppTheme.courierPrimary,
+                                                color: AppTheme.vendorPrimary,
                                                 size: 18,
                                               ),
                                             ],

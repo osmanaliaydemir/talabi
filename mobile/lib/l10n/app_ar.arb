@@ -462,6 +462,38 @@
   "delivered": "تم التوصيل",
   "cancelled": "ملغي",
   "vendorOrders": "طلبات البائع",
+  "pendingOrdersCount": "{count} طلب في الانتظار",
+  "@pendingOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingOrdersCount": "{count} طلب قيد التجهيز",
+  "@preparingOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readyOrdersCount": "{count} طلب جاهز",
+  "@readyOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveredOrdersCount": "تم تسليم {count} طلب",
+  "@deliveredOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noOrdersFound": "لم يتم العثور على طلبات",
   "order": "طلب",
   "customer": "العميل",
@@ -619,6 +651,37 @@
   "orderCancelled": "تم إلغاء الطلب",
   "cancelReason": "سبب الإلغاء",
   "cancelReasonDescription": "يرجى تحديد سبب الإلغاء (10 أحرف على الأقل):",
+  "rejectOrder": "رفض الطلب",
+  "acceptOrderTitle": "قبول الطلب",
+  "@acceptOrderTitle": {
+    "description": "عنوان نافذة قبول الطلب"
+  },
+  "acceptOrderConfirmation": "هل أنت متأكد أنك تريد قبول هذا الطلب؟",
+  "@acceptOrderConfirmation": {
+    "description": "رسالة تأكيد قبول الطلب"
+  },
+  "acceptOrder": "قبول",
+  "@acceptOrder": {
+    "description": "زر قبول الطلب"
+  },
+  "updateOrderStatusTitle": "تحديث حالة الطلب",
+  "@updateOrderStatusTitle": {
+    "description": "عنوان نافذة تحديث حالة الطلب"
+  },
+  "markAsReadyConfirmation": "هل أنت متأكد أنك تريد وضع علامة \"جاهز\" على هذا الطلب؟",
+  "@markAsReadyConfirmation": {
+    "description": "رسالة تأكيد وضع علامة جاهز على الطلب"
+  },
+  "markAsReady": "وضع علامة جاهز",
+  "@markAsReady": {
+    "description": "زر وضع علامة جاهز على الطلب"
+  },
+  "rejectOrderTitle": "رفض الطلب",
+  "rejectReason": "سبب الرفض",
+  "rejectReasonDescription": "يرجى إدخال سبب الرفض (10 أحرف على الأقل):",
+  "rejectReasonHint": "سبب الرفض...",
+  "rejectOrderConfirmation": "هل أنت متأكد أنك تريد رفض هذا الطلب؟",
+  "orderRejected": "تم رفض الطلب",
   "pieces": "قطعة",
   "orderNotFound": "الطلب غير موجود",
   "productsAddedToCart": "تمت إضافة المنتجات إلى السلة، جارٍ التوجيه إلى السلة...",

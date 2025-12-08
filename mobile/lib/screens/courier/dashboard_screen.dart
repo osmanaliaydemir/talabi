@@ -10,8 +10,8 @@ import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/location_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
-import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
+import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:provider/provider.dart';
 
 class CourierDashboardScreen extends StatefulWidget {

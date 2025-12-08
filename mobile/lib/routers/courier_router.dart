@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/models/courier_order.dart';
-import 'package:mobile/screens/courier/courier_active_deliveries_screen.dart';
-import 'package:mobile/screens/courier/courier_availability_screen.dart';
-import 'package:mobile/screens/courier/courier_edit_profile_screen.dart';
-import 'package:mobile/screens/courier/courier_navigation_settings_screen.dart';
-import 'package:mobile/screens/courier/courier_notifications_screen.dart';
-import 'package:mobile/screens/courier/courier_profile_screen.dart';
+import 'package:mobile/screens/courier/active_deliveries_screen.dart';
+import 'package:mobile/screens/courier/availability_screen.dart';
+import 'package:mobile/screens/courier/edit_profile_screen.dart';
+import 'package:mobile/screens/courier/navigation_settings_screen.dart';
+import 'package:mobile/screens/courier/notifications_screen.dart';
+import 'package:mobile/screens/courier/profile_screen.dart';
 import 'package:mobile/screens/courier/delivery_proof_screen.dart';
 import 'package:mobile/screens/courier/earnings_screen.dart';
 import 'package:mobile/screens/courier/order_detail_screen.dart';

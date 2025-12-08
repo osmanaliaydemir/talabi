@@ -37,8 +37,8 @@ class SharedHeader extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).primaryColor,
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.95),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
           ],
         ),
       ),

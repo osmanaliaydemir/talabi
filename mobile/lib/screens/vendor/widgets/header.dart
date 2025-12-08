@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/models/vendor_notification.dart';
-import 'package:provider/provider.dart';
 
 class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
   final String? title;
@@ -14,6 +12,8 @@ class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onRefresh;
   final bool showNotifications;
   final bool showRefresh;
+  final Map<String, int>? orderCounts;
+  final String? selectedStatus;
 
   const VendorHeader({
     super.key,
@@ -25,6 +25,8 @@ class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
     this.onRefresh,
     this.showNotifications = true,
     this.showRefresh = true,
+    this.orderCounts,
+    this.selectedStatus,
   });
 
   @override
@@ -72,11 +74,9 @@ class _VendorHeaderState extends State<VendorHeader> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    final auth = Provider.of<AuthProvider>(context, listen: false);
 
     final title =
         widget.title ?? localizations?.roleVendor ?? 'Vendor Dashboard';
-    final subtitle = widget.subtitle ?? auth.fullName ?? auth.email ?? 'Satıcı';
 
     return Container(
       width: double.infinity,
@@ -133,6 +133,7 @@ class _VendorHeaderState extends State<VendorHeader> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       title,
@@ -142,16 +143,10 @@ class _VendorHeaderState extends State<VendorHeader> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    if (widget.orderCounts != null) ...[
+                      const SizedBox(height: 4),
+                      _buildOrderCountText(localizations),
+                    ],
                   ],
                 ),
               ),
@@ -214,6 +209,80 @@ class _VendorHeaderState extends State<VendorHeader> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildOrderCountText(AppLocalizations? localizations) {
+    if (widget.orderCounts == null || localizations == null) {
+      return const SizedBox.shrink();
+    }
+
+    final counts = widget.orderCounts!;
+    String? countText;
+    int count = 0;
+    String statusText = '';
+
+    if (widget.selectedStatus != null) {
+      count = counts[widget.selectedStatus!] ?? 0;
+      switch (widget.selectedStatus!.toLowerCase()) {
+        case 'pending':
+          statusText = localizations.pending.toLowerCase();
+          countText = '$count adet $statusText sipariş';
+          break;
+        case 'preparing':
+          statusText = localizations.preparing.toLowerCase();
+          countText = '$count adet $statusText sipariş';
+          break;
+        case 'ready':
+          statusText = localizations.ready.toLowerCase();
+          countText = '$count adet $statusText sipariş';
+          break;
+        case 'delivered':
+          statusText = localizations.delivered.toLowerCase();
+          countText = '$count adet sipariş $statusText';
+          break;
+        case 'cancelled':
+          statusText = localizations.cancelled.toLowerCase();
+          countText = '$count adet $statusText sipariş';
+          break;
+      }
+    } else {
+      final pendingCount = counts['Pending'] ?? 0;
+      final preparingCount = counts['Preparing'] ?? 0;
+      final readyCount = counts['Ready'] ?? 0;
+      final deliveredCount = counts['Delivered'] ?? 0;
+      final cancelledCount = counts['Cancelled'] ?? 0;
+
+      if (pendingCount > 0) {
+        countText =
+            '$pendingCount adet ${localizations.pending.toLowerCase()} sipariş';
+      } else if (preparingCount > 0) {
+        countText =
+            '$preparingCount adet ${localizations.preparing.toLowerCase()} sipariş';
+      } else if (readyCount > 0) {
+        countText =
+            '$readyCount adet ${localizations.ready.toLowerCase()} sipariş';
+      } else if (deliveredCount > 0) {
+        countText =
+            '$deliveredCount adet sipariş ${localizations.delivered.toLowerCase()}';
+      } else if (cancelledCount > 0) {
+        countText =
+            '$cancelledCount adet ${localizations.cancelled.toLowerCase()} sipariş';
+      }
+    }
+
+    if (countText == null || (widget.selectedStatus != null && count == 0)) {
+      return const SizedBox.shrink();
+    }
+
+    return Text(
+      countText,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.85),
+        fontSize: 12,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }

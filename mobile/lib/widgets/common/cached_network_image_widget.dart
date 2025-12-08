@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Optimized cached network image widget with placeholder, error handling, and fade-in animation
-/// 
+///
 /// This widget provides:
 /// - Automatic image caching (memory and disk)
 /// - Placeholder while loading
@@ -70,10 +70,7 @@ class CachedNetworkImageWidget extends StatelessWidget {
     );
 
     if (borderRadius != null) {
-      imageWidget = ClipRRect(
-        borderRadius: borderRadius!,
-        child: imageWidget,
-      );
+      imageWidget = ClipRRect(borderRadius: borderRadius!, child: imageWidget);
     }
 
     return imageWidget;
@@ -103,16 +100,28 @@ class CachedNetworkImageWidget extends StatelessWidget {
   }
 
   Widget _buildDefaultErrorWidget() {
+    // Calculate icon size safely
+    double iconSize = 40.0; // Default size
+    if (width != null && height != null && width! > 0 && height! > 0) {
+      final calculatedSize = (width! < height! ? width! * 0.4 : height! * 0.4);
+      // Ensure size is valid (finite, positive, and reasonable)
+      if (calculatedSize.isFinite &&
+          calculatedSize > 0 &&
+          calculatedSize < 1000) {
+        iconSize = calculatedSize;
+      }
+    }
+
     return Container(
       width: width,
       height: height,
       color: errorColor ?? Colors.grey[200],
-      child: Icon(
-        Icons.broken_image,
-        size: (width != null && height != null)
-            ? (width! < height! ? width! * 0.4 : height! * 0.4)
-            : 40,
-        color: Colors.grey[400],
+      child: Center(
+        child: Icon(
+          Icons.broken_image,
+          size: iconSize,
+          color: Colors.grey[400],
+        ),
       ),
     );
   }
@@ -208,4 +217,3 @@ class OptimizedCachedImage {
     );
   }
 }
-

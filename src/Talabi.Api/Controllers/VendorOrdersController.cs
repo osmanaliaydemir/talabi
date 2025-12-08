@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Extensions;
+using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
@@ -46,17 +48,20 @@ public class VendorOrdersController : ControllerBase
     /// <param name="status">Sipariş durumu filtresi (opsiyonel)</param>
     /// <param name="startDate">Başlangıç tarihi filtresi (opsiyonel)</param>
     /// <param name="endDate">Bitiş tarihi filtresi (opsiyonel)</param>
-    /// <returns>Sipariş listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış sipariş listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<VendorOrderDto>>>> GetVendorOrders(
-        [FromQuery] string? status = null,
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorOrderDto>>>> GetVendorOrders([FromQuery] string? status = null,
+        [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<List<VendorOrderDto>>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<PagedResultDto<VendorOrderDto>>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
         }
 
         IQueryable<Order> query = _unitOfWork.Orders.Query()
@@ -70,16 +75,23 @@ public class VendorOrdersController : ControllerBase
         {
             query = query.Where(o => o.Status == statusEnum);
         }
+        else
+        {
+            // Status belirtilmediğinde Cancelled siparişleri hariç tut
+            query = query.Where(o => o.Status != OrderStatus.Cancelled);
+        }
 
         // Filter by date range - Gelişmiş query helper kullanımı
         query = query.WhereDateRange(o => o.CreatedAt, startDate, endDate);
 
         IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.CreatedAt);
 
-        var orders = await orderedQuery
-            .Select(o => new VendorOrderDto
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            o => new VendorOrderDto
             {
                 Id = o.Id,
+                CustomerOrderId = o.CustomerOrderId,
                 CustomerName = o.Customer!.FullName,
                 CustomerEmail = o.Customer.Email!,
                 TotalAmount = o.TotalAmount,
@@ -95,10 +107,21 @@ public class VendorOrdersController : ControllerBase
                     UnitPrice = oi.UnitPrice,
                     TotalPrice = oi.Quantity * oi.UnitPrice
                 }).ToList()
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<VendorOrderDto>>(orders, "Satıcı siparişleri başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<VendorOrderDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<VendorOrderDto>>(result, "Satıcı siparişleri başarıyla getirildi"));
     }
 
     /// <summary>
@@ -129,6 +152,7 @@ public class VendorOrdersController : ControllerBase
         var orderDto = new VendorOrderDto
         {
             Id = order.Id,
+            CustomerOrderId = order.CustomerOrderId,
             CustomerName = order.Customer!.FullName,
             CustomerEmail = order.Customer.Email!,
             TotalAmount = order.TotalAmount,
@@ -157,50 +181,64 @@ public class VendorOrdersController : ControllerBase
     [HttpPost("{id}/accept")]
     public async Task<ActionResult<ApiResponse<object>>> AcceptOrder(Guid id)
     {
-        var vendorId = await GetVendorIdAsync();
-        if (vendorId == null)
+        try
         {
-            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            var vendorId = await GetVendorIdAsync();
+            if (vendorId == null)
+            {
+                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            }
+
+            // Order'ı Include olmadan yüklüyoruz
+            var order = await _unitOfWork.Orders.Query()
+                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+
+            if (order == null)
+            {
+                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            }
+
+            if (order.Status != OrderStatus.Pending)
+            {
+                return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken kabul edilebilir", "INVALID_ORDER_STATUS"));
+            }
+
+            var userId = GetUserId();
+            order.Status = OrderStatus.Preparing;
+
+            _unitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
+
+            // StatusHistory'yi ayrı bir entity olarak ekliyoruz
+            await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+            {
+                OrderId = order.Id,
+                Status = OrderStatus.Preparing,
+                Note = "Order accepted by vendor",
+                CreatedBy = userId ?? "System"
+            });
+
+            // Add customer notification
+            if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+            {
+                await AddCustomerNotificationAsync(
+                    order.CustomerId,
+                    "Sipariş Onaylandı",
+                    $"#{order.Id} numaralı siparişiniz onaylandı ve hazırlanmaya başlandı.",
+                    "OrderAccepted",
+                    order.Id);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla kabul edildi"));
         }
-
-        var order = await _unitOfWork.Orders.Query()
-            .Include(o => o.StatusHistory)
-            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
-
-        if (order == null)
+        catch (Exception ex)
         {
-            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return StatusCode(500, new ApiResponse<object>(
+                $"Sipariş kabul edilirken bir hata oluştu: {ex.Message}",
+                "INTERNAL_SERVER_ERROR"
+            ));
         }
-
-        if (order.Status != OrderStatus.Pending)
-        {
-            return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken kabul edilebilir", "INVALID_ORDER_STATUS"));
-        }
-
-        order.Status = OrderStatus.Preparing;
-        order.StatusHistory.Add(new OrderStatusHistory
-        {
-            OrderId = order.Id,
-            Status = OrderStatus.Preparing,
-            Note = "Order accepted by vendor",
-            CreatedBy = GetUserId()
-        });
-
-        // Add customer notification
-        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-        {
-            await AddCustomerNotificationAsync(
-                order.CustomerId,
-                "Sipariş Onaylandı",
-                $"#{order.Id} numaralı siparişiniz onaylandı ve hazırlanmaya başlandı.",
-                "OrderAccepted",
-                order.Id);
-        }
-
-        _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync();
-
-        return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla kabul edildi"));
     }
 
     /// <summary>
@@ -212,46 +250,59 @@ public class VendorOrdersController : ControllerBase
     [HttpPost("{id}/reject")]
     public async Task<ActionResult<ApiResponse<object>>> RejectOrder(Guid id, [FromBody] RejectOrderDto dto)
     {
-        var vendorId = await GetVendorIdAsync();
-        if (vendorId == null)
+        try
         {
-            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            var vendorId = await GetVendorIdAsync();
+            if (vendorId == null)
+            {
+                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            }
+
+            // Order'ı Include etmeden yükle (concurrency sorununu önlemek için)
+            var order = await _unitOfWork.Orders.Query()
+                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+
+            if (order == null)
+            {
+                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            }
+
+            if (order.Status != OrderStatus.Pending)
+            {
+                return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken reddedilebilir", "INVALID_ORDER_STATUS"));
+            }
+
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
+            {
+                return BadRequest(new ApiResponse<object>("Reddetme nedeni en az 10 karakter olmalıdır", "INVALID_REJECTION_REASON"));
+            }
+
+            var userId = GetUserId();
+            
+            // Order'ı güncelle
+            order.Status = OrderStatus.Cancelled;
+            order.CancelledAt = DateTime.UtcNow;
+            order.CancelReason = $"Rejected by vendor: {dto.Reason}";
+            _unitOfWork.Orders.Update(order);
+
+            // StatusHistory'yi ayrı bir entity olarak ekle (concurrency sorununu önlemek için)
+            var statusHistory = new OrderStatusHistory
+            {
+                OrderId = order.Id,
+                Status = OrderStatus.Cancelled,
+                Note = $"Rejected by vendor: {dto.Reason}",
+                CreatedBy = userId ?? "System"
+            };
+            await _unitOfWork.OrderStatusHistories.AddAsync(statusHistory);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla reddedildi"));
         }
-
-        var order = await _unitOfWork.Orders.Query()
-            .Include(o => o.StatusHistory)
-            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
-
-        if (order == null)
+        catch (Exception ex)
         {
-            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return StatusCode(500, new ApiResponse<object>($"Sipariş reddedilirken bir hata oluştu: {ex.Message}", "INTERNAL_SERVER_ERROR"));
         }
-
-        if (order.Status != OrderStatus.Pending)
-        {
-            return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken reddedilebilir", "INVALID_ORDER_STATUS"));
-        }
-
-        if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
-        {
-            return BadRequest(new ApiResponse<object>("Reddetme nedeni en az 10 karakter olmalıdır", "INVALID_REJECTION_REASON"));
-        }
-
-        order.Status = OrderStatus.Cancelled;
-        order.CancelledAt = DateTime.UtcNow;
-        order.CancelReason = $"Rejected by vendor: {dto.Reason}";
-        order.StatusHistory.Add(new OrderStatusHistory
-        {
-            OrderId = order.Id,
-            Status = OrderStatus.Cancelled,
-            Note = $"Rejected by vendor: {dto.Reason}",
-            CreatedBy = GetUserId()
-        });
-
-        _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync();
-
-        return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla reddedildi"));
     }
 
     /// <summary>
@@ -263,71 +314,85 @@ public class VendorOrdersController : ControllerBase
     [HttpPut("{id}/status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
-        var vendorId = await GetVendorIdAsync();
-        if (vendorId == null)
+        try
         {
-            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
-        }
-
-        var order = await _unitOfWork.Orders.Query()
-            .Include(o => o.StatusHistory)
-            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
-
-        if (order == null)
-        {
-            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
-        }
-
-        if (!Enum.TryParse<OrderStatus>(dto.Status, out var newStatus))
-        {
-            return BadRequest(new ApiResponse<object>("Geçersiz durum", "INVALID_STATUS"));
-        }
-
-        // Validate status transition for vendor
-        if (!IsValidVendorStatusTransition(order.Status, newStatus))
-        {
-            return BadRequest(new ApiResponse<object>($"Durum {order.Status} durumundan {newStatus} durumuna geçirilemez", "INVALID_STATUS_TRANSITION"));
-        }
-
-        order.Status = newStatus;
-        order.StatusHistory.Add(new OrderStatusHistory
-        {
-            OrderId = order.Id,
-            Status = newStatus,
-            Note = dto.Note ?? $"Status updated to {newStatus}",
-            CreatedBy = GetUserId()
-        });
-
-        // Set estimated delivery time if status is Ready
-        if (newStatus == OrderStatus.Ready && !order.EstimatedDeliveryTime.HasValue)
-        {
-            order.EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes(30); // Default 30 minutes
-        }
-
-        // Add customer notification for status change
-        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-        {
-            var statusMessage = newStatus switch
+            var vendorId = await GetVendorIdAsync();
+            if (vendorId == null)
             {
-                OrderStatus.Preparing => "Siparişiniz hazırlanıyor",
-                OrderStatus.Ready => "Siparişiniz hazır, kurye atanıyor",
-                OrderStatus.Delivered => "Siparişiniz teslim edildi",
-                OrderStatus.Cancelled => "Siparişiniz iptal edildi",
-                _ => "Sipariş durumu güncellendi"
-            };
+                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            }
 
-            await AddCustomerNotificationAsync(
-                order.CustomerId,
-                "Sipariş Durumu Güncellendi",
-                $"#{order.Id} numaralı sipariş: {statusMessage}",
-                "OrderStatusChanged",
-                order.Id);
+            // Order'ı Include olmadan yüklüyoruz
+            var order = await _unitOfWork.Orders.Query()
+                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+
+            if (order == null)
+            {
+                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            }
+
+            if (!Enum.TryParse<OrderStatus>(dto.Status, out var newStatus))
+            {
+                return BadRequest(new ApiResponse<object>("Geçersiz durum", "INVALID_STATUS"));
+            }
+
+            // Validate status transition for vendor
+            if (!IsValidVendorStatusTransition(order.Status, newStatus))
+            {
+                return BadRequest(new ApiResponse<object>($"Durum {order.Status} durumundan {newStatus} durumuna geçirilemez", "INVALID_STATUS_TRANSITION"));
+            }
+
+            var userId = GetUserId();
+            order.Status = newStatus;
+
+            // Set estimated delivery time if status is Ready
+            if (newStatus == OrderStatus.Ready && !order.EstimatedDeliveryTime.HasValue)
+            {
+                order.EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes(30); // Default 30 minutes
+            }
+
+            _unitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
+
+            // StatusHistory'yi ayrı bir entity olarak ekliyoruz
+            await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+            {
+                OrderId = order.Id,
+                Status = newStatus,
+                Note = dto.Note ?? $"Status updated to {newStatus}",
+                CreatedBy = userId ?? "System"
+            });
+
+            // Add customer notification for status change
+            if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+            {
+                var statusMessage = newStatus switch
+                {
+                    OrderStatus.Preparing => "Siparişiniz hazırlanıyor",
+                    OrderStatus.Ready => "Siparişiniz hazır, kurye atanıyor",
+                    OrderStatus.Delivered => "Siparişiniz teslim edildi",
+                    OrderStatus.Cancelled => "Siparişiniz iptal edildi",
+                    _ => "Sipariş durumu güncellendi"
+                };
+
+                await AddCustomerNotificationAsync(
+                    order.CustomerId,
+                    "Sipariş Durumu Güncellendi",
+                    $"#{order.Id} numaralı sipariş: {statusMessage}",
+                    "OrderStatusChanged",
+                    order.Id);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(new ApiResponse<object>(new { }, "Sipariş durumu başarıyla güncellendi"));
         }
-
-        _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync();
-
-        return Ok(new ApiResponse<object>(new { }, "Sipariş durumu başarıyla güncellendi"));
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ApiResponse<object>(
+                $"Sipariş durumu güncellenirken bir hata oluştu: {ex.Message}",
+                "INTERNAL_SERVER_ERROR"
+            ));
+        }
     }
 
     private bool IsValidVendorStatusTransition(OrderStatus current, OrderStatus next)
@@ -566,6 +631,7 @@ public class VendorOrdersController : ControllerBase
 
 public class RejectOrderDto
 {
+    [JsonPropertyName("reason")]
     public string Reason { get; set; } = string.Empty;
 }
 

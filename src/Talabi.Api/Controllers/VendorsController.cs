@@ -28,16 +28,23 @@ public class VendorsController : ControllerBase
     /// <summary>
     /// Tüm satıcıları getirir
     /// </summary>
-    /// <returns>Satıcı listesi</returns>
-    /// <summary>
-    /// Tüm satıcıları getirir
-    /// </summary>
     /// <param name="vendorType">Satıcı türü filtresi (opsiyonel)</param>
-    /// <returns>Satıcı listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış satıcı listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<VendorDto>>>> GetVendors([FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> GetVendors(
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
         IQueryable<Vendor> query = _unitOfWork.Vendors.Query();
+
+        // IsActive filtresi - Sadece aktif vendor'ları getir
+        query = query.Where(v => v.IsActive);
 
         // VendorType filtresi
         if (vendorType.HasValue)
@@ -45,8 +52,11 @@ public class VendorsController : ControllerBase
             query = query.Where(v => v.Type == vendorType.Value);
         }
 
-        var vendors = await query
-            .Select(v => new VendorDto
+        IOrderedQueryable<Vendor> orderedQuery = query.OrderBy(v => v.Name);
+
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            v => new VendorDto
             {
                 Id = v.Id,
                 Type = v.Type,
@@ -58,10 +68,21 @@ public class VendorsController : ControllerBase
                 RatingCount = v.RatingCount,
                 Latitude = v.Latitude.HasValue ? (double)v.Latitude.Value : null,
                 Longitude = v.Longitude.HasValue ? (double)v.Longitude.Value : null
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<VendorDto>>(vendors, "Satıcılar başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<VendorDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<VendorDto>>(result, "Satıcılar başarıyla getirildi"));
     }
 
     /// <summary>
@@ -104,13 +125,45 @@ public class VendorsController : ControllerBase
     /// Belirli bir satıcının ürünlerini getirir
     /// </summary>
     /// <param name="id">Satıcı ID'si</param>
-    /// <returns>Ürün listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("{id}/products")]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetProductsByVendor(Guid id)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetProductsByVendor(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
-        var products = await _unitOfWork.Products.Query()
-            .Where(p => p.VendorId == id)
-            .Select(p => new ProductDto
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
+        // Vendor'ın aktif olup olmadığını kontrol et
+        var vendor = await _unitOfWork.Vendors.Query()
+            .Where(v => v.Id == id)
+            .FirstOrDefaultAsync();
+
+        if (vendor == null || !vendor.IsActive)
+        {
+            // Vendor bulunamadı veya pasif ise boş liste döndür
+            var emptyResult = new PagedResultDto<ProductDto>
+            {
+                Items = new List<ProductDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(emptyResult, "Satıcı bulunamadı veya pasif durumda"));
+        }
+
+        IQueryable<Product> query = _unitOfWork.Products.Query()
+            .Where(p => p.VendorId == id);
+
+        IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt);
+
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            p => new ProductDto
             {
                 Id = p.Id,
                 VendorId = p.VendorId,
@@ -119,21 +172,44 @@ public class VendorsController : ControllerBase
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<ProductDto>>(products, "Satıcı ürünleri başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<ProductDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Satıcı ürünleri başarıyla getirildi"));
     }
 
     /// <summary>
     /// Tüm ürünleri getirir (Debug endpoint)
     /// </summary>
-    /// <returns>Ürün listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("debug/products")]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetAllProducts()
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetAllProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
-        var products = await _unitOfWork.Products.Query()
-            .Select(p => new ProductDto
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
+        IQueryable<Product> query = _unitOfWork.Products.Query();
+
+        IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt);
+
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            p => new ProductDto
             {
                 Id = p.Id,
                 VendorId = p.VendorId,
@@ -142,10 +218,21 @@ public class VendorsController : ControllerBase
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<ProductDto>>(products, "Tüm ürünler başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<ProductDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Tüm ürünler başarıyla getirildi"));
     }
 
     /// <summary>
@@ -158,6 +245,9 @@ public class VendorsController : ControllerBase
     {
         IQueryable<Vendor> query = _unitOfWork.Vendors.Query()
             .Include(v => v.Orders);
+
+        // IsActive filtresi - Sadece aktif vendor'ları getir
+        query = query.Where(v => v.IsActive);
 
         // Text search - Case-insensitive search helper kullanımı
         if (!string.IsNullOrWhiteSpace(request.Query))
@@ -286,18 +376,42 @@ public class VendorsController : ControllerBase
     /// <summary>
     /// Satıcıların bulunduğu şehirleri getirir
     /// </summary>
-    /// <returns>Şehir listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış şehir listesi</returns>
     [HttpGet("cities")]
-    public async Task<ActionResult<ApiResponse<List<string>>>> GetCities()
+    public async Task<ActionResult<ApiResponse<PagedResultDto<string>>>> GetCities(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
+
         var cities = await _unitOfWork.Vendors.Query()
-            .Where(v => v.City != null)
+            .Where(v => v.IsActive && v.City != null)
             .Select(v => v.City!)
             .Distinct()
             .OrderBy(c => c)
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<string>>(cities, "Şehirler başarıyla getirildi"));
+        // Pagination
+        var totalCount = cities.Count;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        var pagedItems = cities
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var result = new PagedResultDto<string>
+        {
+            Items = pagedItems,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = totalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<string>>(result, "Şehirler başarıyla getirildi"));
     }
 
     /// <summary>
@@ -314,7 +428,7 @@ public class VendorsController : ControllerBase
         }
 
         var results = await _unitOfWork.Vendors.Query()
-            .Where(v => v.Name.Contains(query))
+            .Where(v => v.IsActive && v.Name.Contains(query))
             .Take(10)
             .Select(v => new AutocompleteResultDto
             {

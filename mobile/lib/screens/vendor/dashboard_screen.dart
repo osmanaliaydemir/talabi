@@ -1,16 +1,16 @@
 ﻿import 'package:flutter/material.dart';
 
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/screens/vendor/vendor_orders_screen.dart';
-import 'package:mobile/screens/vendor/vendor_products_screen.dart';
-import 'package:mobile/screens/vendor/vendor_reports_screen.dart';
-import 'package:mobile/screens/vendor/vendor_reviews_screen.dart';
+import 'package:mobile/screens/vendor/orders_screen.dart';
+import 'package:mobile/screens/vendor/products_screen.dart';
+import 'package:mobile/screens/vendor/reports_screen.dart';
+import 'package:mobile/screens/vendor/reviews_screen.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/widgets/vendor/vendor_header.dart';
-import 'package:mobile/widgets/vendor/vendor_bottom_nav.dart';
+import 'package:mobile/screens/vendor/widgets/header.dart';
+import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:provider/provider.dart';
 

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
-import 'package:mobile/screens/courier/courier_login_screen.dart';
+import 'package:mobile/screens/courier/login_screen.dart';
 // Todo: Email verification screen OAA
 import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
 import 'package:mobile/screens/customer/auth/register_screen.dart';
-import 'package:mobile/screens/vendor/vendor_login_screen.dart';
+import 'package:mobile/screens/vendor/login_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +28,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  int _selectedVendorType = 1; // 1 = Restaurant, 2 = Market (default: Restaurant)
+  int _selectedVendorType =
+      1; // 1 = Restaurant, 2 = Market (default: Restaurant)
 
   @override
   void dispose() {
@@ -565,7 +566,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                         child: GestureDetector(
                                           onTap: () {
                                             setState(() {
-                                              _selectedVendorType = 1; // Restaurant
+                                              _selectedVendorType =
+                                                  1; // Restaurant
                                             });
                                           },
                                           child: Container(
@@ -575,11 +577,12 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                             decoration: BoxDecoration(
                                               color: _selectedVendorType == 1
                                                   ? AppTheme.vendorPrimary
-                                                      .withValues(alpha: 0.1)
+                                                        .withValues(alpha: 0.1)
                                                   : AppTheme.backgroundColor,
-                                              borderRadius: BorderRadius.circular(
-                                                AppTheme.radiusMedium,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppTheme.radiusMedium,
+                                                  ),
                                               border: Border.all(
                                                 color: _selectedVendorType == 1
                                                     ? AppTheme.vendorPrimary
@@ -595,7 +598,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                               children: [
                                                 Icon(
                                                   Icons.restaurant,
-                                                  color: _selectedVendorType == 1
+                                                  color:
+                                                      _selectedVendorType == 1
                                                       ? AppTheme.vendorPrimary
                                                       : AppTheme.textSecondary,
                                                   size: 24,
@@ -606,9 +610,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                                   style: AppTheme.poppins(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w600,
-                                                    color: _selectedVendorType == 1
+                                                    color:
+                                                        _selectedVendorType == 1
                                                         ? AppTheme.vendorPrimary
-                                                        : AppTheme.textSecondary,
+                                                        : AppTheme
+                                                              .textSecondary,
                                                   ),
                                                 ),
                                               ],
@@ -631,11 +637,13 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                             decoration: BoxDecoration(
                                               color: _selectedVendorType == 2
                                                   ? Colors.green.withValues(
-                                                      alpha: 0.1)
+                                                      alpha: 0.1,
+                                                    )
                                                   : AppTheme.backgroundColor,
-                                              borderRadius: BorderRadius.circular(
-                                                AppTheme.radiusMedium,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppTheme.radiusMedium,
+                                                  ),
                                               border: Border.all(
                                                 color: _selectedVendorType == 2
                                                     ? Colors.green
@@ -651,7 +659,8 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                               children: [
                                                 Icon(
                                                   Icons.shopping_basket,
-                                                  color: _selectedVendorType == 2
+                                                  color:
+                                                      _selectedVendorType == 2
                                                       ? Colors.green
                                                       : AppTheme.textSecondary,
                                                   size: 24,
@@ -662,9 +671,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                                   style: AppTheme.poppins(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w600,
-                                                    color: _selectedVendorType == 2
+                                                    color:
+                                                        _selectedVendorType == 2
                                                         ? Colors.green
-                                                        : AppTheme.textSecondary,
+                                                        : AppTheme
+                                                              .textSecondary,
                                                   ),
                                                 ),
                                               ],

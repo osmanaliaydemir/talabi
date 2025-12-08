@@ -2398,6 +2398,30 @@ abstract class AppLocalizations {
   /// **'Vendor Orders'**
   String get vendorOrders;
 
+  /// No description provided for @pendingOrdersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pending orders'**
+  String pendingOrdersCount(int count);
+
+  /// No description provided for @preparingOrdersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} preparing orders'**
+  String preparingOrdersCount(int count);
+
+  /// No description provided for @readyOrdersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ready orders'**
+  String readyOrdersCount(int count);
+
+  /// No description provided for @deliveredOrdersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} orders delivered'**
+  String deliveredOrdersCount(int count);
+
   /// No description provided for @noOrdersFound.
   ///
   /// In en, this message translates to:
@@ -2979,6 +3003,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please specify your cancellation reason (at least 10 characters):'**
   String get cancelReasonDescription;
+
+  /// Order acceptance popup title
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Order'**
+  String get acceptOrderTitle;
+
+  /// Order acceptance confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to accept this order?'**
+  String get acceptOrderConfirmation;
+
+  /// Accept order button
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get acceptOrder;
+
+  /// Order status update popup title
+  ///
+  /// In en, this message translates to:
+  /// **'Update Order Status'**
+  String get updateOrderStatusTitle;
+
+  /// Mark order as ready confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to mark this order as \"Ready\"?'**
+  String get markAsReadyConfirmation;
+
+  /// Mark order as ready button
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Ready'**
+  String get markAsReady;
+
+  /// No description provided for @rejectOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject Order'**
+  String get rejectOrder;
+
+  /// No description provided for @rejectOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Rejection'**
+  String get rejectOrderTitle;
+
+  /// No description provided for @rejectReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason'**
+  String get rejectReason;
+
+  /// No description provided for @rejectReasonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the rejection reason (at least 10 characters):'**
+  String get rejectReasonDescription;
+
+  /// No description provided for @rejectReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason...'**
+  String get rejectReasonHint;
+
+  /// No description provided for @rejectOrderConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reject this order?'**
+  String get rejectOrderConfirmation;
+
+  /// No description provided for @orderRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Order rejected'**
+  String get orderRejected;
 
   /// No description provided for @pieces.
   ///

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
-import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
+import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CourierNavigationSettingsScreen extends StatefulWidget {

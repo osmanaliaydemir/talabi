@@ -424,12 +424,7 @@
   "rating": "Puan",
   "comment": "Yorum",
   "noComment": "Yorum yok",
-  "date": "Tarih: {date}",
-  "@date": {
-    "placeholders": {
-      "date": {}
-    }
-  },
+  "date": "Tarih",
   "approve": "Onayla",
   "verify": "Onayla",
   "placeOrder": "Sipariş Ver",
@@ -469,6 +464,38 @@
   "onWay": "Yolda",
   "cancelled": "İptal Edildi",
   "vendorOrders": "Satıcı Siparişleri",
+  "pendingOrdersCount": "{count} adet bekleyen sipariş",
+  "@pendingOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingOrdersCount": "{count} adet hazırlanan sipariş",
+  "@preparingOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readyOrdersCount": "{count} adet hazır sipariş",
+  "@readyOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveredOrdersCount": "{count} adet sipariş teslim edildi",
+  "@deliveredOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noOrdersFound": "Sipariş bulunamadı",
   "order": "Sipariş",
   "customer": "Müşteri",
@@ -626,6 +653,37 @@
   "orderCancelled": "Sipariş iptal edildi",
   "cancelReason": "İptal nedeni",
   "cancelReasonDescription": "İptal nedeninizi belirtin (en az 10 karakter):",
+  "acceptOrderTitle": "Sipariş Kabul",
+  "@acceptOrderTitle": {
+    "description": "Sipariş kabul etme popup başlığı"
+  },
+  "acceptOrderConfirmation": "Siparişi kabul etmek istediğinizden emin misiniz?",
+  "@acceptOrderConfirmation": {
+    "description": "Sipariş kabul etme onay mesajı"
+  },
+  "acceptOrder": "Kabul Et",
+  "@acceptOrder": {
+    "description": "Sipariş kabul et butonu"
+  },
+  "updateOrderStatusTitle": "Sipariş Durumu Güncelleme",
+  "@updateOrderStatusTitle": {
+    "description": "Sipariş durumu güncelleme popup başlığı"
+  },
+  "markAsReadyConfirmation": "Siparişi \"Hazır\" olarak işaretlemek istediğinizden emin misiniz?",
+  "@markAsReadyConfirmation": {
+    "description": "Siparişi hazır olarak işaretleme onay mesajı"
+  },
+  "markAsReady": "Hazır Olarak İşaretle",
+  "@markAsReady": {
+    "description": "Siparişi hazır olarak işaretle butonu"
+  },
+  "rejectOrder": "Siparişi Reddet",
+  "rejectOrderTitle": "Sipariş Reddi",
+  "rejectReason": "Red sebebi",
+  "rejectReasonDescription": "Red sebebinizi girin (en az 10 karakter):",
+  "rejectReasonHint": "Red sebebi...",
+  "rejectOrderConfirmation": "Bu siparişi reddetmek istediğinizden emin misiniz?",
+  "orderRejected": "Sipariş reddedildi",
   "pieces": "adet",
   "orderNotFound": "Sipariş bulunamadı",
   "productsAddedToCart": "Ürünler sepete eklendi, sepete yönlendiriliyorsunuz...",

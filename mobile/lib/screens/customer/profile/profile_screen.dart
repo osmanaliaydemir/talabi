@@ -407,130 +407,156 @@ class _ProfileScreenState extends State<ProfileScreen> {
     AuthProvider auth,
     AppLocalizations localizations,
   ) {
+    // Parent context'i kaydet (dialog context'i değil)
+    final parentContext = context;
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
           child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.logout, color: Colors.red, size: 32),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  localizations.logoutConfirmTitle,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  localizations.logoutConfirmMessage,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.logout,
+                        color: Colors.red.shade700,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            localizations.logoutConfirmTitle,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            localizations.logoutConfirmMessage,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: Colors.grey[300]!),
-                          ),
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-                        child: Text(
-                          localizations.cancel,
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      ),
+                      child: Text(
+                        localizations.cancel,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Dialog'u kapat
+                        Navigator.of(dialogContext).pop();
 
-                          // Reset bottom navigation index
-                          if (mounted) {
+                        // Navigator'ı logout öncesi kaydet (context dispose edilmeden önce)
+                        NavigatorState? navigator;
+                        try {
+                          navigator = Navigator.of(parentContext);
+                        } catch (e) {
+                          print('Error getting navigator: $e');
+                          return; // Navigator bulunamazsa işlemi durdur
+                        }
+
+                        // Reset bottom navigation index
+                        if (mounted) {
+                          try {
                             Provider.of<BottomNavProvider>(
-                              context,
+                              parentContext,
                               listen: false,
                             ).reset();
+                          } catch (e) {
+                            // Provider context'i artık geçerli değilse hata yok sayılır
+                            print('Error resetting bottom nav: $e');
                           }
+                        }
 
-                          final role = await auth.logout();
+                        // Logout öncesi role bilgisini al
+                        final role = auth.role;
 
-                          // Navigate to login screen and clear navigation stack
-                          if (mounted) {
-                            // Role'e göre ilgili login sayfasına yönlendir
-                            if (role?.toLowerCase() == 'courier') {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/courier/login',
-                                (route) => false,
-                              );
-                            } else if (role?.toLowerCase() == 'vendor') {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/vendor/login',
-                                (route) => false,
-                              );
-                            } else {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/login',
-                                (route) => false,
-                              );
-                            }
+                        // ÖNCE login sayfasına yönlendir (keşfet sayfasına gitmesin)
+                        try {
+                          // Role'e göre ilgili login sayfasına yönlendir
+                          if (role?.toLowerCase() == 'courier') {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/courier/login',
+                              (route) => false,
+                            );
+                          } else if (role?.toLowerCase() == 'vendor') {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/vendor/login',
+                              (route) => false,
+                            );
+                          } else {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/login',
+                              (route) => false,
+                            );
                           }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        } catch (e) {
+                          // Navigator artık geçerli değilse hata yok sayılır
+                          print('Error navigating to login: $e');
+                        }
+
+                        // SONRA logout işlemini yap (yönlendirme yapıldıktan sonra)
+                        // Bu sayede auth state değişikliği login sayfasında olur, keşfet sayfasına gitmez
+                        await auth.logout();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade700,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-                        child: Text(
-                          localizations.logout,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        localizations.logout,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

@@ -20,14 +20,96 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final ApiService _apiService = ApiService();
-  late Future<List<Product>> _productsFuture;
+
+  // Data
+  List<Product> _products = [];
   final Map<String, bool> _favoriteStatus = {};
+
+  // Pagination State
+  int _currentPage = 1;
+  static const int _pageSize = 6;
+  bool _isFirstLoad = true;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _productsFuture = _apiService.getProducts(widget.vendor.id);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _loadProducts(isRefresh: true);
     _loadFavoriteStatus();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMoreData) {
+      _loadMoreProducts();
+    }
+  }
+
+  Future<void> _loadProducts({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _isFirstLoad = true;
+        _currentPage = 1;
+        _hasMoreData = true;
+        _products.clear();
+      });
+    }
+
+    try {
+      final products = await _apiService.getProducts(
+        widget.vendor.id,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (isRefresh) {
+            _products = products;
+          } else {
+            _products.addAll(products);
+          }
+
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+
+          if (products.length < _pageSize) {
+            _hasMoreData = false;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMoreProducts() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      _currentPage++;
+    });
+
+    await _loadProducts(isRefresh: false);
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -104,75 +186,62 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ),
       bottomNavigationBar: const PersistentBottomNavBar(),
-      body: FutureBuilder<List<Product>>(
-        future: _productsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return GridView.builder(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return const ProductSkeletonItem();
-              },
-            );
-          } else if (snapshot.hasError) {
-            final l10n = AppLocalizations.of(context)!;
-            return Center(
-              child: Text(
-                '${l10n.error}: ${snapshot.error}',
-                style: AppTheme.poppins(color: AppTheme.error),
-              ),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            final l10n = AppLocalizations.of(context)!;
-            return Center(
-              child: Text(
-                l10n.noProductsYet,
-                style: AppTheme.poppins(color: AppTheme.textSecondary),
-              ),
-            );
-          }
-
-          final products = snapshot.data!;
-          return RefreshIndicator(
-            color: colorScheme.primary,
-            onRefresh: () async {
-              setState(() {
-                _productsFuture = _apiService.getProducts(widget.vendor.id);
-              });
-              await _productsFuture;
-              await _loadFavoriteStatus();
-            },
-            child: GridView.builder(
-              padding: EdgeInsets.all(AppTheme.spacingSmall),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.8,
-                crossAxisSpacing: 0,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final product = products[index];
-                final isFavorite = _favoriteStatus[product.id] ?? false;
-                return ProductCard(
-                  product: product,
-                  width: null, // Full width in grid
-                  isFavorite: isFavorite,
-                  rating: '4.7',
-                  ratingCount: '2.3k',
-                  onFavoriteTap: () => _toggleFavorite(product),
-                );
-              },
-            ),
-          );
+      body: RefreshIndicator(
+        color: colorScheme.primary,
+        onRefresh: () async {
+          await _loadProducts(isRefresh: true);
+          await _loadFavoriteStatus();
         },
+        child: _isFirstLoad
+            ? GridView.builder(
+                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return const ProductSkeletonItem();
+                },
+              )
+            : _products.isEmpty
+            ? Center(
+                child: Text(
+                  AppLocalizations.of(context)!.noProductsYet,
+                  style: AppTheme.poppins(color: AppTheme.textSecondary),
+                ),
+              )
+            : GridView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.8,
+                  crossAxisSpacing: 0,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: _products.length + (_isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _products.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  final product = _products[index];
+                  final isFavorite = _favoriteStatus[product.id] ?? false;
+                  return ProductCard(
+                    product: product,
+                    width: null, // Full width in grid
+                    isFavorite: isFavorite,
+                    rating: '4.7',
+                    ratingCount: '2.3k',
+                    onFavoriteTap: () => _toggleFavorite(product),
+                  );
+                },
+              ),
       ),
     );
   }

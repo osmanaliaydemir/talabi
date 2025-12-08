@@ -1227,6 +1227,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vendorOrders => 'Vendor Orders';
 
   @override
+  String pendingOrdersCount(int count) {
+    return '$count pending orders';
+  }
+
+  @override
+  String preparingOrdersCount(int count) {
+    return '$count preparing orders';
+  }
+
+  @override
+  String readyOrdersCount(int count) {
+    return '$count ready orders';
+  }
+
+  @override
+  String deliveredOrdersCount(int count) {
+    return '$count orders delivered';
+  }
+
+  @override
   String get noOrdersFound => 'No orders found';
 
   @override
@@ -1550,6 +1570,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cancelReasonDescription =>
       'Please specify your cancellation reason (at least 10 characters):';
+
+  @override
+  String get acceptOrderTitle => 'Accept Order';
+
+  @override
+  String get acceptOrderConfirmation =>
+      'Are you sure you want to accept this order?';
+
+  @override
+  String get acceptOrder => 'Accept';
+
+  @override
+  String get updateOrderStatusTitle => 'Update Order Status';
+
+  @override
+  String get markAsReadyConfirmation =>
+      'Are you sure you want to mark this order as \"Ready\"?';
+
+  @override
+  String get markAsReady => 'Mark as Ready';
+
+  @override
+  String get rejectOrder => 'Reject Order';
+
+  @override
+  String get rejectOrderTitle => 'Order Rejection';
+
+  @override
+  String get rejectReason => 'Rejection reason';
+
+  @override
+  String get rejectReasonDescription =>
+      'Please enter the rejection reason (at least 10 characters):';
+
+  @override
+  String get rejectReasonHint => 'Rejection reason...';
+
+  @override
+  String get rejectOrderConfirmation =>
+      'Are you sure you want to reject this order?';
+
+  @override
+  String get orderRejected => 'Order rejected';
 
   @override
   String get pieces => 'pieces';

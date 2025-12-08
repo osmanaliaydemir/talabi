@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
+using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
@@ -40,17 +41,21 @@ public class VendorProductsController : ControllerBase
     /// </summary>
     /// <param name="category">Kategori filtresi (opsiyonel)</param>
     /// <param name="isAvailable">Müsaitlik filtresi (opsiyonel)</param>
-    /// <returns>Ürün listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<VendorProductDto>>>> GetProducts(
-        [FromQuery] string? category = null,
-        [FromQuery] bool? isAvailable = null)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorProductDto>>>> GetProducts([FromQuery] string? category = null,
+        [FromQuery] bool? isAvailable = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<List<VendorProductDto>>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<PagedResultDto<VendorProductDto>>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
         }
+
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 6;
 
         IQueryable<Product> query = _unitOfWork.Products.Query()
             .Where(p => p.VendorId == vendorId.Value);
@@ -63,8 +68,9 @@ public class VendorProductsController : ControllerBase
 
         IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt);
 
-        var products = await orderedQuery
-            .Select(p => new VendorProductDto
+        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            p => new VendorProductDto
             {
                 Id = p.Id,
                 VendorId = p.VendorId,
@@ -79,10 +85,21 @@ public class VendorProductsController : ControllerBase
                 PreparationTime = p.PreparationTime,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<VendorProductDto>>(products, "Satıcı ürünleri başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<VendorProductDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<VendorProductDto>>(result, "Satıcı ürünleri başarıyla getirildi"));
     }
 
     /// <summary>

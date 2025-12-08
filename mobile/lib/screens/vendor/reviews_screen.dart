@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/review.dart';
-import 'package:mobile/screens/vendor/vendor_review_detail_screen.dart';
+import 'package:mobile/screens/vendor/review_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 

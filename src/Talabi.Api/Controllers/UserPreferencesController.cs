@@ -72,55 +72,101 @@ public class UserPreferencesController : ControllerBase
     /// <param name="dto">Güncellenecek tercih bilgileri</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut]
-    public async Task<ActionResult<ApiResponse<object>>> UpdatePreferences(UpdateUserPreferencesDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdatePreferences([FromBody] UpdateUserPreferencesDto dto)
     {
-        var userId = GetUserId();
-
-        var preferences = await _unitOfWork.UserPreferences.Query()
-            .FirstOrDefaultAsync(up => up.UserId == userId);
-
-        if (preferences == null)
+        try
         {
-            preferences = new Core.Entities.UserPreferences
+            if (dto == null)
             {
-                UserId = userId
-            };
-            await _unitOfWork.UserPreferences.AddAsync(preferences);
-        }
+                return BadRequest(new ApiResponse<object>("Geçersiz istek", "INVALID_REQUEST"));
+            }
 
-        // Validate and update
-        if (!string.IsNullOrEmpty(dto.Language) && 
-            (dto.Language == "tr" || dto.Language == "en" || dto.Language == "ar"))
+            var userId = GetUserId();
+
+            var existingPreferences = await _unitOfWork.UserPreferences.Query()
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            if (existingPreferences == null)
+            {
+                // Yeni preferences oluştur
+                var newPreferences = new Core.Entities.UserPreferences
+                {
+                    UserId = userId,
+                    Language = dto.Language ?? "tr",
+                    Currency = dto.Currency ?? "TRY",
+                    TimeFormat = dto.TimeFormat ?? "24h",
+                    DateFormat = dto.DateFormat ?? "dd/MM/yyyy",
+                    TimeZone = dto.TimeZone
+                };
+
+                // Validate language
+                if (!string.IsNullOrEmpty(newPreferences.Language) && 
+                    !(newPreferences.Language == "tr" || newPreferences.Language == "en" || newPreferences.Language == "ar"))
+                {
+                    newPreferences.Language = "tr";
+                }
+
+                // Validate currency
+                if (!string.IsNullOrEmpty(newPreferences.Currency) && 
+                    !(newPreferences.Currency == "TRY" || newPreferences.Currency == "USDT"))
+                {
+                    newPreferences.Currency = "TRY";
+                }
+
+                // Validate time format
+                if (!string.IsNullOrEmpty(newPreferences.TimeFormat) && 
+                    !(newPreferences.TimeFormat == "12h" || newPreferences.TimeFormat == "24h"))
+                {
+                    newPreferences.TimeFormat = "24h";
+                }
+
+                await _unitOfWork.UserPreferences.AddAsync(newPreferences);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                // Mevcut preferences'ı güncelle - entity zaten tracked
+                // Validate and update
+                if (!string.IsNullOrEmpty(dto.Language) && 
+                    (dto.Language == "tr" || dto.Language == "en" || dto.Language == "ar"))
+                {
+                    existingPreferences.Language = dto.Language;
+                }
+
+                if (!string.IsNullOrEmpty(dto.Currency) && 
+                    (dto.Currency == "TRY" || dto.Currency == "USDT"))
+                {
+                    existingPreferences.Currency = dto.Currency;
+                }
+
+                if (dto.TimeZone != null)
+                {
+                    existingPreferences.TimeZone = dto.TimeZone;
+                }
+
+                if (dto.DateFormat != null)
+                {
+                    existingPreferences.DateFormat = dto.DateFormat;
+                }
+
+                if (dto.TimeFormat != null && (dto.TimeFormat == "12h" || dto.TimeFormat == "24h"))
+                {
+                    existingPreferences.TimeFormat = dto.TimeFormat;
+                }
+
+                existingPreferences.UpdatedAt = DateTime.UtcNow;
+                
+                // Entity zaten tracked olduğu için Update çağrısına gerek yok
+                // Sadece property değişiklikleri yeterli
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            return Ok(new ApiResponse<object>(new { }, "Tercihler başarıyla güncellendi"));
+        }
+        catch (Exception ex)
         {
-            preferences.Language = dto.Language;
+            return StatusCode(500, new ApiResponse<object>($"Tercihler güncellenirken bir hata oluştu: {ex.Message}", "INTERNAL_SERVER_ERROR"));
         }
-
-        if (!string.IsNullOrEmpty(dto.Currency) && 
-            (dto.Currency == "TRY" || dto.Currency == "USDT"))
-        {
-            preferences.Currency = dto.Currency;
-        }
-
-        if (dto.TimeZone != null)
-        {
-            preferences.TimeZone = dto.TimeZone;
-        }
-
-        if (dto.DateFormat != null)
-        {
-            preferences.DateFormat = dto.DateFormat;
-        }
-
-        if (dto.TimeFormat != null && (dto.TimeFormat == "12h" || dto.TimeFormat == "24h"))
-        {
-            preferences.TimeFormat = dto.TimeFormat;
-        }
-
-        preferences.UpdatedAt = DateTime.UtcNow;
-        _unitOfWork.UserPreferences.Update(preferences);
-        await _unitOfWork.SaveChangesAsync();
-
-        return Ok(new ApiResponse<object>(new { }, "Tercihler başarıyla güncellendi"));
     }
 
     /// <summary>

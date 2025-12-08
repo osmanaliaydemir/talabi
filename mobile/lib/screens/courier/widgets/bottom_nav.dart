@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/screens/courier/courier_dashboard_screen.dart';
+import 'package:mobile/screens/courier/dashboard_screen.dart';
 
 class CourierBottomNav extends StatelessWidget {
   final int currentIndex;

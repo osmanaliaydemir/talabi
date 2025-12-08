@@ -7,8 +7,8 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
 import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/services/courier_service.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
-import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
+import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:provider/provider.dart';
 
 class CourierProfileScreen extends StatefulWidget {

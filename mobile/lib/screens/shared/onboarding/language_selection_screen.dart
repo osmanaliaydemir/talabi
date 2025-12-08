@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
@@ -68,6 +69,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
   @override
   void initState() {
     super.initState();
+
+    // Klavyeyi kapat
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
 
     _fadeController = AnimationController(
       vsync: this,
@@ -209,6 +213,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset:
+          false, // Prevents overflow when keyboard is open
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

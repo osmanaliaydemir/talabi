@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/vendor/vendor_edit_profile_screen.dart';
-import 'package:mobile/screens/vendor/vendor_notifications_screen.dart';
-import 'package:mobile/screens/vendor/vendor_orders_screen.dart';
-import 'package:mobile/screens/vendor/vendor_products_screen.dart';
-import 'package:mobile/screens/vendor/vendor_profile_screen.dart';
+import 'package:mobile/screens/vendor/edit_profile_screen.dart';
+import 'package:mobile/screens/vendor/notifications_screen.dart';
+import 'package:mobile/screens/vendor/orders_screen.dart';
+import 'package:mobile/screens/vendor/products_screen.dart';
+import 'package:mobile/screens/vendor/profile_screen.dart';
 
 /// Vendor modülü için route yöneticisi
 class VendorRouter {

@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/screens/courier/courier_dashboard_screen.dart';
-import 'package:mobile/screens/vendor/vendor_login_screen.dart';
+import 'package:mobile/screens/courier/login_screen.dart';
+import 'package:mobile/screens/customer/auth/login_screen.dart';
+import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:dio/dio.dart';
 
-class CourierLoginScreen extends StatefulWidget {
-  const CourierLoginScreen({super.key});
+class VendorLoginScreen extends StatefulWidget {
+  const VendorLoginScreen({super.key});
 
   @override
-  State<CourierLoginScreen> createState() => _CourierLoginScreenState();
+  State<VendorLoginScreen> createState() => _VendorLoginScreenState();
 }
 
-class _CourierLoginScreenState extends State<CourierLoginScreen> {
+class _VendorLoginScreenState extends State<VendorLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -34,7 +36,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
       return;
     }
 
-    TapLogger.logButtonPress('Courier Login', context: 'CourierLoginScreen');
+    TapLogger.logButtonPress('Vendor Login', context: 'VendorLoginScreen');
     setState(() {
       _isLoading = true;
     });
@@ -49,15 +51,24 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const CourierDashboardScreen(),
+            builder: (context) => const VendorDashboardScreen(),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = e.toString();
+
+        // Hata mesajını temizle
+        if (e is DioException) {
+          errorMessage = e.message ?? e.error?.toString() ?? 'Bir hata oluştu';
+        } else if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11);
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Giriş başarısız: $e'),
+            content: Text(errorMessage), // Direkt hatayı göster
             backgroundColor: AppTheme.error,
           ),
         );
@@ -73,25 +84,27 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
+      extendBody: false,
+      bottomNavigationBar: null,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.courierLight,
-              AppTheme.courierPrimary,
-              AppTheme.courierDark,
+              AppTheme.vendorLight,
+              AppTheme.vendorPrimary,
+              AppTheme.vendorDark,
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Courier Header (Teal/Turkuaz)
+              // Vendor Header (Purple/Mor)
               SizedBox(
                 height: 180,
                 child: Stack(
@@ -104,7 +117,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: AppTheme.courierLight.withValues(alpha: 0.7),
+                          color: AppTheme.vendorLight.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -117,7 +130,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: AppTheme.courierDark.withValues(alpha: 0.7),
+                          color: AppTheme.vendorPrimary,
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
                               AppTheme.radiusXLarge * 2,
@@ -139,13 +152,13 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.delivery_dining,
+                              Icons.store,
                               color: AppTheme.textOnPrimary,
                               size: 36,
                             ),
                             AppTheme.horizontalSpace(0.75),
                             Text(
-                              localizations?.courierLogin ?? 'Courier Login',
+                              localizations.vendorLogin,
                               style: AppTheme.poppins(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,
@@ -201,15 +214,14 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                   Row(
                                     children: [
                                       Icon(
-                                        Icons.two_wheeler,
-                                        color: AppTheme.courierPrimary,
+                                        Icons.business_center,
+                                        color: AppTheme.vendorPrimary,
                                         size: 32,
                                       ),
                                       AppTheme.horizontalSpace(0.75),
                                       Expanded(
                                         child: Text(
-                                          localizations?.courierWelcome ??
-                                              'Welcome Back, Courier!',
+                                          localizations.welcomeBackVendor,
                                           style: AppTheme.poppins(
                                             fontSize: 28,
                                             fontWeight: FontWeight.bold,
@@ -221,8 +233,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                   ),
                                   AppTheme.verticalSpace(0.5),
                                   Text(
-                                    localizations?.courierSubtitle ??
-                                        'Sign in to manage your deliveries',
+                                    localizations.vendorLoginDescription,
                                     style: AppTheme.poppins(
                                       fontSize: 14,
                                       color: AppTheme.textSecondary,
@@ -241,15 +252,13 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     child: TextFormField(
                                       controller: _emailController,
                                       decoration: InputDecoration(
-                                        hintText:
-                                            localizations?.emailAddress ??
-                                            'Email Address',
+                                        hintText: localizations.emailAddress,
                                         hintStyle: AppTheme.poppins(
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
                                         prefixIcon: Icon(
-                                          Icons.email_outlined,
+                                          Icons.business_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
@@ -261,12 +270,10 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return localizations?.emailRequired ??
-                                              'Email is required';
+                                          return localizations.emailRequired;
                                         }
                                         if (!value.contains('@')) {
-                                          return localizations?.validEmail ??
-                                              'Please enter a valid email';
+                                          return localizations.validEmail;
                                         }
                                         return null;
                                       },
@@ -285,9 +292,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                       controller: _passwordController,
                                       obscureText: _obscurePassword,
                                       decoration: InputDecoration(
-                                        hintText:
-                                            localizations?.password ??
-                                            'Password',
+                                        hintText: localizations.password,
                                         hintStyle: AppTheme.poppins(
                                           color: AppTheme.textHint,
                                           fontSize: 14,
@@ -318,14 +323,11 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return localizations
-                                                  ?.passwordRequired ??
-                                              'Password is required';
+                                          return localizations.passwordRequired;
                                         }
                                         if (value.length < 6) {
                                           return localizations
-                                                  ?.passwordMinLength ??
-                                              'Password must be at least 6 characters';
+                                              .passwordMinLength;
                                         }
                                         return null;
                                       },
@@ -346,12 +348,10 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                                 _rememberMe = value ?? false;
                                               });
                                             },
-                                            activeColor:
-                                                AppTheme.courierPrimary,
+                                            activeColor: AppTheme.vendorPrimary,
                                           ),
                                           Text(
-                                            localizations?.rememberMe ??
-                                                'Remember me?',
+                                            localizations.rememberMe,
                                             style: AppTheme.poppins(
                                               color: AppTheme.textSecondary,
                                               fontSize: 14,
@@ -361,13 +361,12 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          // Forgot password for couriers
+                                          // Forgot password for vendors
                                         },
                                         child: Text(
-                                          localizations?.recoveryPassword ??
-                                              'Recovery Password',
+                                          localizations.recoveryPassword,
                                           style: AppTheme.poppins(
-                                            color: AppTheme.courierPrimary,
+                                            color: AppTheme.vendorPrimary,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -381,13 +380,12 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     child: ElevatedButton.icon(
                                       onPressed: _isLoading ? null : _login,
                                       icon: Icon(
-                                        Icons.delivery_dining,
+                                        Icons.store,
                                         color: AppTheme.textOnPrimary,
                                         size: 20,
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            AppTheme.courierPrimary,
+                                        backgroundColor: AppTheme.vendorPrimary,
                                         foregroundColor: AppTheme.textOnPrimary,
                                         padding: EdgeInsets.symmetric(
                                           vertical: AppTheme.spacingMedium,
@@ -409,8 +407,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                               ),
                                             )
                                           : Text(
-                                              localizations?.courierSignIn ??
-                                                  'Courier Sign In',
+                                              localizations.vendorLogin,
                                               style: AppTheme.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -419,15 +416,15 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     ),
                                   ),
                                   AppTheme.verticalSpace(1.5),
-                                  // Vendor Login Link - Modern Design
+                                  // Customer Login Link - Modern Design
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.vendorPrimary.withValues(
+                                          AppTheme.primaryOrange.withValues(
                                             alpha: 0.1,
                                           ),
-                                          AppTheme.vendorLight.withValues(
+                                          AppTheme.lightOrange.withValues(
                                             alpha: 0.05,
                                           ),
                                         ],
@@ -438,7 +435,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         AppTheme.radiusMedium,
                                       ),
                                       border: Border.all(
-                                        color: AppTheme.vendorPrimary
+                                        color: AppTheme.primaryOrange
                                             .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
@@ -451,18 +448,18 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         ),
                                         onTap: () {
                                           TapLogger.logButtonPress(
-                                            'Vendor Login',
-                                            context: 'CourierLoginScreen',
+                                            'Customer Login',
+                                            context: 'VendorLoginScreen',
                                           );
                                           TapLogger.logNavigation(
-                                            'CourierLoginScreen',
                                             'VendorLoginScreen',
+                                            'LoginScreen',
                                           );
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  const VendorLoginScreen(),
+                                                  const LoginScreen(),
                                             ),
                                           );
                                         },
@@ -476,22 +473,22 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Icon(
-                                                Icons.store_outlined,
-                                                color: AppTheme.vendorPrimary,
+                                                Icons.shopping_bag_outlined,
+                                                color: AppTheme.primaryOrange,
                                                 size: 20,
                                               ),
                                               AppTheme.horizontalSpace(0.5),
                                               Text(
-                                                'Are you a vendor? ',
+                                                '${localizations.areYouCustomer} ',
                                                 style: AppTheme.poppins(
                                                   color: AppTheme.textSecondary,
                                                   fontSize: 14,
                                                 ),
                                               ),
                                               Text(
-                                                'Sign In',
+                                                localizations.signIn,
                                                 style: AppTheme.poppins(
-                                                  color: AppTheme.vendorPrimary,
+                                                  color: AppTheme.primaryOrange,
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -499,7 +496,98 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                               AppTheme.horizontalSpace(0.25),
                                               Icon(
                                                 Icons.arrow_forward_rounded,
-                                                color: AppTheme.vendorPrimary,
+                                                color: AppTheme.primaryOrange,
+                                                size: 18,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  AppTheme.verticalSpace(1),
+                                  // Courier Login Link - Modern Design
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppTheme.courierPrimary.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          AppTheme.courierLight.withValues(
+                                            alpha: 0.05,
+                                          ),
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      border: Border.all(
+                                        color: AppTheme.courierPrimary
+                                            .withValues(alpha: 0.3),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusMedium,
+                                        ),
+                                        onTap: () {
+                                          TapLogger.logButtonPress(
+                                            'Courier Login',
+                                            context: 'VendorLoginScreen',
+                                          );
+                                          TapLogger.logNavigation(
+                                            'VendorLoginScreen',
+                                            'CourierLoginScreen',
+                                          );
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const CourierLoginScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingSmall + 4,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.delivery_dining_rounded,
+                                                color: AppTheme.courierPrimary,
+                                                size: 20,
+                                              ),
+                                              AppTheme.horizontalSpace(0.5),
+                                              Text(
+                                                '${localizations.areYouCourier} ',
+                                                style: AppTheme.poppins(
+                                                  color: AppTheme.textSecondary,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Text(
+                                                localizations.courierLoginLink,
+                                                style: AppTheme.poppins(
+                                                  color:
+                                                      AppTheme.courierPrimary,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              AppTheme.horizontalSpace(0.25),
+                                              Icon(
+                                                Icons.arrow_forward_rounded,
+                                                color: AppTheme.courierPrimary,
                                                 size: 18,
                                               ),
                                             ],

@@ -467,6 +467,38 @@
   "delivered": "Delivered",
   "cancelled": "Cancelled",
   "vendorOrders": "Vendor Orders",
+  "pendingOrdersCount": "{count} pending orders",
+  "@pendingOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingOrdersCount": "{count} preparing orders",
+  "@preparingOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readyOrdersCount": "{count} ready orders",
+  "@readyOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveredOrdersCount": "{count} orders delivered",
+  "@deliveredOrdersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noOrdersFound": "No orders found",
   "order": "Order",
   "customer": "Customer",
@@ -624,6 +656,37 @@
   "orderCancelled": "Order cancelled",
   "cancelReason": "Cancel reason",
   "cancelReasonDescription": "Please specify your cancellation reason (at least 10 characters):",
+  "acceptOrderTitle": "Accept Order",
+  "@acceptOrderTitle": {
+    "description": "Order acceptance popup title"
+  },
+  "acceptOrderConfirmation": "Are you sure you want to accept this order?",
+  "@acceptOrderConfirmation": {
+    "description": "Order acceptance confirmation message"
+  },
+  "acceptOrder": "Accept",
+  "@acceptOrder": {
+    "description": "Accept order button"
+  },
+  "updateOrderStatusTitle": "Update Order Status",
+  "@updateOrderStatusTitle": {
+    "description": "Order status update popup title"
+  },
+  "markAsReadyConfirmation": "Are you sure you want to mark this order as \"Ready\"?",
+  "@markAsReadyConfirmation": {
+    "description": "Mark order as ready confirmation message"
+  },
+  "markAsReady": "Mark as Ready",
+  "@markAsReady": {
+    "description": "Mark order as ready button"
+  },
+  "rejectOrder": "Reject Order",
+  "rejectOrderTitle": "Order Rejection",
+  "rejectReason": "Rejection reason",
+  "rejectReasonDescription": "Please enter the rejection reason (at least 10 characters):",
+  "rejectReasonHint": "Rejection reason...",
+  "rejectOrderConfirmation": "Are you sure you want to reject this order?",
+  "orderRejected": "Order rejected",
   "pieces": "pieces",
   "orderNotFound": "Order not found",
   "productsAddedToCart": "Products added to cart, redirecting to cart...",

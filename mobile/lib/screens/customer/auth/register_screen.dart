@@ -7,7 +7,7 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
-import 'package:mobile/screens/vendor/vendor_register_screen.dart';
+import 'package:mobile/screens/vendor/register_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/widgets/common/toast_message.dart';
 import 'package:shared_preferences/shared_preferences.dart';

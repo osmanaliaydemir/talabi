@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/services/courier_service.dart';
-import 'package:mobile/widgets/courier/courier_bottom_nav.dart';
-import 'package:mobile/widgets/courier/courier_header.dart';
+import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
+import 'package:mobile/screens/courier/widgets/header.dart';
 
 class CourierEditProfileScreen extends StatefulWidget {
   const CourierEditProfileScreen({super.key});
@@ -67,8 +67,8 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              localizations != null 
-                  ? localizations.failedToLoadProfile(e) 
+              localizations != null
+                  ? localizations.failedToLoadProfile(e)
                   : 'Profil yüklenemedi: $e',
             ),
           ),

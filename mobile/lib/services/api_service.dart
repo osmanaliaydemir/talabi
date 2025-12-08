@@ -195,8 +195,19 @@ class ApiService {
               );
             }
           } else if (error.response?.statusCode == 401) {
-            // If it's a login/refresh request that failed with 401, or no tokens
-            NavigationService.navigateToRemoveUntil('/login', (route) => false);
+            // Sadece '/auth/login' path'inde (veya genel login endpointlerinde) 401 gelirse yönlendirme YAPMA.
+            // Çünkü kullanıcı zaten login olmaya çalışıyordur, şifre yanlıştır vs.
+            bool isLoginRequest = error.requestOptions.path.contains(
+              '/auth/login',
+            );
+
+            if (!isLoginRequest) {
+              // Normal bir istekte 401 geldiyse token geçersizdir, login'e at.
+              NavigationService.navigateToRemoveUntil(
+                '/login',
+                (route) => false,
+              );
+            }
           }
 
           // Handle 409 Conflict (Concurrency)
@@ -275,10 +286,14 @@ class ApiService {
     }
   }
 
-  Future<List<Vendor>> getVendors({int? vendorType}) async {
+  Future<List<Vendor>> getVendors({
+    int? vendorType,
+    int page = 1,
+    int pageSize = 6,
+  }) async {
     try {
       // Try network first
-      final queryParams = <String, dynamic>{};
+      final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
       if (vendorType != null) {
         queryParams['vendorType'] = vendorType;
       }
@@ -286,14 +301,23 @@ class ApiService {
         '/vendors',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      // Backend artık ApiResponse<PagedResultDto<VendorDto>> formatında döndürüyor
       List<Vendor> vendors;
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+          (json) {
+            if (json is Map<String, dynamic> && json.containsKey('items')) {
+              return (json['items'] as List)
+                  .map((e) => e as Map<String, dynamic>)
+                  .toList();
+            }
+            if (json is List) {
+              return (json).map((e) => e as Map<String, dynamic>).toList();
+            }
+            return [];
+          },
         );
 
         if (!apiResponse.success || apiResponse.data == null) {
@@ -304,22 +328,31 @@ class ApiService {
             .map((json) => Vendor.fromJson(json))
             .toList();
       } else {
-        // Eski format (direkt liste)
-        final List<dynamic> data = response.data;
-        vendors = data.map((json) => Vendor.fromJson(json)).toList();
+        // Eski format (direkt liste) veya direkt pageResult
+        if (response.data is Map<String, dynamic> &&
+            response.data.containsKey('items')) {
+          final items = response.data['items'] as List;
+          vendors = items.map((json) => Vendor.fromJson(json)).toList();
+        } else {
+          final List<dynamic> data = response.data;
+          vendors = data.map((json) => Vendor.fromJson(json)).toList();
+        }
       }
 
-      // Cache the result
-      await _cacheService.cacheVendors(vendors);
+      // Cache the result (only first page)
+      if (page == 1) {
+        await _cacheService.cacheVendors(vendors);
+      }
 
       return vendors;
     } on DioException catch (e) {
       print('Error fetching vendors: $e');
 
-      // If offline or network error, try cache
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.connectionError) {
+      // If offline or network error, try cache (only for first page request)
+      if (page == 1 &&
+          (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.connectionError)) {
         final cachedVendors = await _cacheService.getCachedVendors();
         if (cachedVendors != null && cachedVendors.isNotEmpty) {
           print('📦 [CACHE] Returning cached vendors');
@@ -334,18 +367,34 @@ class ApiService {
     }
   }
 
-  Future<List<Product>> getProducts(String vendorId) async {
+  Future<List<Product>> getProducts(
+    String vendorId, {
+    int page = 1,
+    int pageSize = 6,
+  }) async {
     try {
       // Try network first
-      final response = await _dio.get('/vendors/$vendorId/products');
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      final response = await _dio.get(
+        '/vendors/$vendorId/products',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
+      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
       List<Product> products;
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+          (json) {
+            if (json is Map<String, dynamic> && json.containsKey('items')) {
+              return (json['items'] as List)
+                  .map((e) => e as Map<String, dynamic>)
+                  .toList();
+            }
+            if (json is List) {
+              return (json).map((e) => e as Map<String, dynamic>).toList();
+            }
+            return [];
+          },
         );
 
         if (!apiResponse.success || apiResponse.data == null) {
@@ -358,22 +407,31 @@ class ApiService {
             .map((json) => Product.fromJson(json))
             .toList();
       } else {
-        // Eski format (direkt liste)
-        final List<dynamic> data = response.data;
-        products = data.map((json) => Product.fromJson(json)).toList();
+        // Eski format
+        if (response.data is Map<String, dynamic> &&
+            response.data.containsKey('items')) {
+          final items = response.data['items'] as List;
+          products = items.map((json) => Product.fromJson(json)).toList();
+        } else {
+          final List<dynamic> data = response.data;
+          products = data.map((json) => Product.fromJson(json)).toList();
+        }
       }
 
-      // Cache the result
-      await _cacheService.cacheProducts(products);
+      // Cache the result (only first page)
+      if (page == 1) {
+        await _cacheService.cacheProducts(products);
+      }
 
       return products;
     } on DioException catch (e) {
       print('Error fetching products: $e');
 
-      // If offline or network error, try cache
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.connectionError) {
+      // If offline or network error, try cache (only for first page request)
+      if (page == 1 &&
+          (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.connectionError)) {
         final cachedProducts = await _cacheService.getCachedProducts();
         if (cachedProducts != null && cachedProducts.isNotEmpty) {
           print('📦 [CACHE] Returning cached products');
@@ -389,11 +447,12 @@ class ApiService {
   }
 
   Future<List<Product>> getPopularProducts({
-    int limit = 10,
+    int page = 1,
+    int pageSize = 6,
     int? vendorType,
   }) async {
     try {
-      final queryParams = <String, dynamic>{'limit': limit};
+      final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
       if (vendorType != null) {
         queryParams['vendorType'] = vendorType;
       }
@@ -401,17 +460,30 @@ class ApiService {
         '/products/popular',
         queryParameters: queryParams,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => (json as List)
-            .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        (json) {
+          if (json is Map<String, dynamic> && json.containsKey('items')) {
+            return (json['items'] as List)
+                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+          if (json is List) {
+            return json
+                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+          return <ProductDto>[];
+        },
       );
 
-      if (!apiResponse.success || apiResponse.data == null) {
+      if (!apiResponse.success) {
         throw Exception(apiResponse.message ?? 'Popüler ürünler getirilemedi');
       }
+
+      // Return empty list if data is null
+      if (apiResponse.data == null) return [];
 
       // ProductDto'yu Product'a çevir
       return apiResponse.data!.map((dto) => dto.toProduct()).toList();
@@ -480,20 +552,31 @@ class ApiService {
   /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
   Future<List<Product>> getSimilarProducts(
     String productId, {
-    int limit = 5,
+    int page = 1,
+    int pageSize = 6,
   }) async {
     try {
       final response = await _dio.get(
         '/products/$productId/similar',
-        queryParameters: {'limit': limit},
+        queryParameters: {'page': page, 'pageSize': pageSize},
       );
 
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => (json as List<dynamic>)
-            .map((item) => ProductDto.fromJson(item as Map<String, dynamic>))
-            .toList(),
+        (json) {
+          if (json is Map<String, dynamic> && json.containsKey('items')) {
+            return (json['items'] as List)
+                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+          if (json is List) {
+            return json
+                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+          return <ProductDto>[];
+        },
       );
 
       if (!apiResponse.success || apiResponse.data == null) {
@@ -1801,10 +1884,12 @@ class ApiService {
   Future<List<Map<String, dynamic>>> getCategories({
     String? language,
     int? vendorType,
+    int page = 1,
+    int pageSize = 6,
   }) async {
     try {
       // Try network first
-      final queryParams = <String, dynamic>{};
+      final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
       if (language != null) {
         queryParams['lang'] = language;
       }
@@ -1813,12 +1898,24 @@ class ApiService {
       }
       final response = await _dio.get(
         '/products/categories',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+        queryParameters: queryParams,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      // Backend artık ApiResponse<PagedResultDto<CategoryDto>> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        (json) {
+          // Check if pagination wrapper exists (data: { items: [...] })
+          if (json is Map<String, dynamic> && json.containsKey('items')) {
+            return (json['items'] as List)
+                .map((e) => e as Map<String, dynamic>)
+                .toList();
+          }
+          // Fallback for direct list (data: [...])
+          if (json is List) {
+            return (json).map((e) => e as Map<String, dynamic>).toList();
+          }
+          return <Map<String, dynamic>>[];
+        },
       );
 
       if (!apiResponse.success || apiResponse.data == null) {
@@ -1863,15 +1960,28 @@ class ApiService {
     }
   }
 
-  Future<List<String>> getCities() async {
+  Future<List<String>> getCities({int page = 1, int pageSize = 6}) async {
     try {
-      final response = await _dio.get('/vendors/cities');
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      final response = await _dio.get(
+        '/vendors/cities',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
+      // Backend artık ApiResponse<PagedResultDto<string>> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
-          (json) => (json as List).map((e) => e as String).toList(),
+          (json) {
+            // Check if pagination wrapper exists (data: { items: [...] })
+            if (json is Map<String, dynamic> && json.containsKey('items')) {
+              return (json['items'] as List).map((e) => e as String).toList();
+            }
+            // Fallback for direct list (data: [...])
+            if (json is List) {
+              return (json).map((e) => e as String).toList();
+            }
+            return <String>[];
+          },
         );
 
         if (!apiResponse.success || apiResponse.data == null) {
@@ -2368,6 +2478,8 @@ class ApiService {
     String? status,
     DateTime? startDate,
     DateTime? endDate,
+    int? page,
+    int? pageSize,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -2378,18 +2490,19 @@ class ApiService {
       if (endDate != null) {
         queryParams['endDate'] = endDate.toIso8601String();
       }
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['pageSize'] = pageSize;
 
       final response = await _dio.get(
         '/vendor/orders',
         queryParameters: queryParams,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
+      // Backend artık ApiResponse<PagedResultDto> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+          (json) => json as Map<String, dynamic>?,
         );
 
         if (!apiResponse.success || apiResponse.data == null) {
@@ -2398,12 +2511,71 @@ class ApiService {
           );
         }
 
-        return apiResponse.data!;
+        // PagedResultDto'dan items listesini çıkar
+        final pagedResult = apiResponse.data!;
+        final items = pagedResult['items'] as List<dynamic>?;
+        return items ?? [];
       }
       // Eski format (direkt liste)
       return response.data;
     } catch (e) {
       print('Error fetching vendor orders: $e');
+      rethrow;
+    }
+  }
+
+  /// Vendor orders'ı totalCount ile birlikte getirir (count için optimize edilmiş)
+  Future<Map<String, dynamic>> getVendorOrdersWithCount({
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? page,
+    int? pageSize,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (status != null) queryParams['status'] = status;
+      if (startDate != null) {
+        queryParams['startDate'] = startDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate.toIso8601String();
+      }
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['pageSize'] = pageSize;
+
+      final response = await _dio.get(
+        '/vendor/orders',
+        queryParameters: queryParams,
+      );
+      // Backend artık ApiResponse<PagedResultDto> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı siparişleri getirilemedi',
+          );
+        }
+
+        // PagedResultDto'dan hem items hem de totalCount'u döndür
+        final pagedResult = apiResponse.data!;
+        return {
+          'items': pagedResult['items'] as List<dynamic>? ?? [],
+          'totalCount': pagedResult['totalCount'] as int? ?? 0,
+        };
+      }
+      // Eski format (direkt liste)
+      return {
+        'items': response.data ?? [],
+        'totalCount': (response.data as List?)?.length ?? 0,
+      };
+    } catch (e) {
+      print('Error fetching vendor orders with count: $e');
       rethrow;
     }
   }
@@ -2683,11 +2855,15 @@ class ApiService {
   Future<List<Product>> getVendorProducts({
     String? category,
     bool? isAvailable,
+    int? page,
+    int? pageSize,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
       if (category != null) queryParams['category'] = category;
       if (isAvailable != null) queryParams['isAvailable'] = isAvailable;
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['pageSize'] = pageSize;
 
       final response = await _dio.get(
         '/vendor/products',
@@ -2698,8 +2874,19 @@ class ApiService {
           response.data.containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+          (json) {
+            // Check if pagination wrapper exists (data: { items: [...] })
+            if (json is Map<String, dynamic> && json.containsKey('items')) {
+              return (json['items'] as List)
+                  .map((e) => e as Map<String, dynamic>)
+                  .toList();
+            }
+            // Fallback for direct list (data: [...])
+            if (json is List) {
+              return (json).map((e) => e as Map<String, dynamic>).toList();
+            }
+            return [];
+          },
         );
 
         if (!apiResponse.success || apiResponse.data == null) {
@@ -2710,9 +2897,19 @@ class ApiService {
 
         return apiResponse.data!.map((json) => Product.fromJson(json)).toList();
       }
-      // Eski format (direkt liste)
-      final List<dynamic> data = response.data;
-      return data.map((json) => Product.fromJson(json)).toList();
+      // Eski formatlar
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('items')) {
+        // Direct pagination object without standard ApiResponse wrapper
+        final items = response.data['items'] as List;
+        return items.map((json) => Product.fromJson(json)).toList();
+      } else if (response.data is List) {
+        // Direct list
+        final List<dynamic> data = response.data;
+        return data.map((json) => Product.fromJson(json)).toList();
+      }
+
+      return [];
     } catch (e) {
       print('Error fetching vendor products: $e');
       rethrow;
@@ -2920,7 +3117,18 @@ class ApiService {
   // Vendor Profile Management Methods
   Future<Map<String, dynamic>> getVendorProfile() async {
     try {
-      final response = await _dio.get('/vendor/profile');
+      final response = await _dio.get(
+        '/vendor/profile',
+        options: Options(
+          validateStatus: (status) {
+            return status! < 500; // 404 dahil tüm 500 altı kodları kabul et
+          },
+        ),
+      );
+
+      if (response.statusCode == 404) {
+        return {}; // Profil yoksa boş map dön
+      }
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {

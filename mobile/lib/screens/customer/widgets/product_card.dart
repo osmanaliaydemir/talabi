@@ -221,12 +221,15 @@ class _ProductCardState extends State<ProductCard> {
                         top: 4,
                         right: 4,
                         child: Container(
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.9),
                             shape: BoxShape.circle,
                           ),
                           child: PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert, size: 20),
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.more_vert, size: 16),
                             onSelected: (value) {
                               if (value == 'toggle') {
                                 widget.onToggleAvailability?.call();

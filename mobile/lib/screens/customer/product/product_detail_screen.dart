@@ -143,7 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // API'den aynı kategorideki benzer ürünleri getir
       final similar = await _apiService.getSimilarProducts(
         _product!.id,
-        limit: 5,
+        pageSize: 5,
       );
 
       setState(() {

@@ -20,14 +20,96 @@ class VendorDetailScreen extends StatefulWidget {
 
 class _VendorDetailScreenState extends State<VendorDetailScreen> {
   final ApiService _apiService = ApiService();
-  late Future<List<Product>> _productsFuture;
+
+  // Data
+  List<Product> _products = [];
   final Map<String, bool> _favoriteStatus = {};
+
+  // Pagination State
+  int _currentPage = 1;
+  static const int _pageSize = 6;
+  bool _isFirstLoad = true;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _productsFuture = _apiService.getProducts(widget.vendor.id);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _loadProducts(isRefresh: true);
     _loadFavoriteStatus();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMoreData) {
+      _loadMoreProducts();
+    }
+  }
+
+  Future<void> _loadProducts({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _isFirstLoad = true;
+        _currentPage = 1;
+        _hasMoreData = true;
+        _products.clear();
+      });
+    }
+
+    try {
+      final products = await _apiService.getProducts(
+        widget.vendor.id,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (isRefresh) {
+            _products = products;
+          } else {
+            _products.addAll(products);
+          }
+
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+
+          if (products.length < _pageSize) {
+            _hasMoreData = false;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMoreProducts() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      _currentPage++;
+    });
+
+    await _loadProducts(isRefresh: false);
   }
 
   Future<void> _loadFavoriteStatus() async {
@@ -93,6 +175,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverAppBar(
             expandedHeight: 200.0,
@@ -226,77 +309,70 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
               ),
             ),
           ),
-          FutureBuilder<List<Product>>(
-            future: _productsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SliverPadding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingMedium,
-                  ),
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: AppTheme.spacingSmall,
-                      mainAxisSpacing: AppTheme.spacingSmall,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => const ProductSkeletonItem(),
-                      childCount: 6,
-                    ),
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                return SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      '${localizations.error}: ${snapshot.error}',
-                      style: AppTheme.poppins(color: AppTheme.error),
-                    ),
-                  ),
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      localizations.noProductsYet,
-                      style: AppTheme.poppins(color: AppTheme.textSecondary),
-                    ),
-                  ),
-                );
-              }
-
-              final products = snapshot.data!;
-              return SliverPadding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMedium,
-                  vertical: AppTheme.spacingSmall,
+          if (_isFirstLoad)
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMedium),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: AppTheme.spacingSmall,
+                  mainAxisSpacing: AppTheme.spacingSmall,
                 ),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.75,
-                    crossAxisSpacing: AppTheme.spacingSmall,
-                    mainAxisSpacing: AppTheme.spacingSmall,
-                  ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final product = products[index];
-                    final isFavorite = _favoriteStatus[product.id] ?? false;
-                    return ProductCard(
-                      product: product,
-                      width: null,
-                      isFavorite: isFavorite,
-                      rating:
-                          '4.7', // Placeholder as Product doesn't have rating yet
-                      ratingCount: '2.3k', // Placeholder
-                      onFavoriteTap: () => _toggleFavorite(product),
-                    );
-                  }, childCount: products.length),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => const ProductSkeletonItem(),
+                  childCount: 6,
                 ),
-              );
-            },
-          ),
+              ),
+            )
+          else if (_products.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  localizations.noProductsYet,
+                  style: AppTheme.poppins(color: AppTheme.textSecondary),
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingMedium,
+                vertical: AppTheme.spacingSmall,
+              ),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: AppTheme.spacingSmall,
+                  mainAxisSpacing: AppTheme.spacingSmall,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final product = _products[index];
+                  final isFavorite = _favoriteStatus[product.id] ?? false;
+                  return ProductCard(
+                    product: product,
+                    width: null,
+                    isFavorite: isFavorite,
+                    rating:
+                        '4.7', // Placeholder as Product doesn't have rating yet
+                    ratingCount: '2.3k', // Placeholder
+                    onFavoriteTap: () => _toggleFavorite(product),
+                  );
+                }, childCount: _products.length),
+              ),
+            ),
+          if (_isLoadingMore && !_isFirstLoad)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
