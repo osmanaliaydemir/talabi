@@ -966,6 +966,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myAddressesDescription => 'Manage your delivery addresses';
 
   @override
+  String get myFavoriteProducts => 'My Favorite Products';
+
+  @override
+  String get myFavoriteProductsDescription =>
+      'View and manage your favorite products';
+
+  @override
   String get changePasswordSubtitle =>
       'Change your password and enhance security';
 

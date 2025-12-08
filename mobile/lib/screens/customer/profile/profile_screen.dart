@@ -12,6 +12,7 @@ import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
 import 'package:mobile/screens/shared/settings/notification_settings_screen.dart';
 import 'package:mobile/screens/customer/order/order_history_screen.dart';
 import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
+import 'package:mobile/screens/customer/favorites_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
@@ -143,6 +144,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const AddressesScreen(),
+                ),
+              );
+            },
+          ),
+          _buildMenuItem(
+            icon: Icons.favorite,
+            title: localizations.myFavoriteProducts,
+            subtitle: localizations.myFavoriteProductsDescription,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FavoritesScreen(),
                 ),
               );
             },

@@ -1918,6 +1918,18 @@ abstract class AppLocalizations {
   /// **'Manage your delivery addresses'**
   String get myAddressesDescription;
 
+  /// No description provided for @myFavoriteProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'My Favorite Products'**
+  String get myFavoriteProducts;
+
+  /// No description provided for @myFavoriteProductsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'View and manage your favorite products'**
+  String get myFavoriteProductsDescription;
+
   /// No description provided for @changePasswordSubtitle.
   ///
   /// In en, this message translates to:

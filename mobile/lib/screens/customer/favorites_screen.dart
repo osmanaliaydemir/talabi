@@ -5,6 +5,7 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
+import 'package:mobile/screens/customer/profile/profile_screen.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:provider/provider.dart';
 
@@ -154,6 +155,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             title: localizations.myFavorites,
             subtitle: '${_favorites.length} ${localizations.favorites}',
             icon: Icons.favorite,
+            showBackButton: true,
+            onBack: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              }
+            },
           ),
           // Main Content
           Expanded(

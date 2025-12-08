@@ -958,6 +958,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get myAddressesDescription => 'إدارة عناوين التوصيل الخاصة بك';
 
   @override
+  String get myFavoriteProducts => 'منتجاتي المفضلة';
+
+  @override
+  String get myFavoriteProductsDescription => 'عرض وإدارة منتجاتك المفضلة';
+
+  @override
   String get changePasswordSubtitle => 'تغيير كلمة المرور وتعزيز الأمان';
 
   @override

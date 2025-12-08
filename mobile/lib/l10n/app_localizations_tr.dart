@@ -965,6 +965,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get myAddressesDescription => 'Teslimat adreslerinizi yönetin';
 
   @override
+  String get myFavoriteProducts => 'Favori Ürünlerim';
+
+  @override
+  String get myFavoriteProductsDescription =>
+      'Beğendiğiniz ürünleri görüntüleyin ve yönetin';
+
+  @override
   String get changePasswordSubtitle =>
       'Şifrenizi değiştirin ve güvenliği artırın';
 
