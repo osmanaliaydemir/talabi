@@ -30,9 +30,7 @@ public class MapController : ControllerBase
     /// <param name="userLongitude">Kullanıcı boylamı (opsiyonel)</param>
     /// <returns>Satıcı harita bilgileri listesi</returns>
     [HttpGet("vendors")]
-    public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap(
-        [FromQuery] double? userLatitude,
-        [FromQuery] double? userLongitude)
+    public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap([FromQuery] double? userLatitude, [FromQuery] double? userLongitude)
     {
         var vendors = await _unitOfWork.Vendors.Query()
             .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
@@ -79,7 +77,6 @@ public class MapController : ControllerBase
         var order = await _unitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.DeliveryAddress)
-            .Include(o => o.Courier)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
@@ -129,15 +126,20 @@ public class MapController : ControllerBase
             DeliveryAddress = order.DeliveryAddress.FullAddress
         };
 
-        if (order.Courier != null &&
-            order.Courier.CurrentLatitude.HasValue &&
-            order.Courier.CurrentLongitude.HasValue)
+        // Get active courier from OrderCouriers
+        var activeOrderCourier = await _unitOfWork.OrderCouriers.Query()
+            .Include(oc => oc.Courier)
+            .FirstOrDefaultAsync(oc => oc.OrderId == order.Id && oc.IsActive);
+        
+        if (activeOrderCourier?.Courier != null &&
+            activeOrderCourier.Courier.CurrentLatitude.HasValue &&
+            activeOrderCourier.Courier.CurrentLongitude.HasValue)
         {
-            tracking.CourierId = order.Courier.Id;
-            tracking.CourierName = order.Courier.Name;
-            tracking.CourierLatitude = order.Courier.CurrentLatitude.Value;
-            tracking.CourierLongitude = order.Courier.CurrentLongitude.Value;
-            tracking.CourierLastUpdate = order.Courier.LastLocationUpdate;
+            tracking.CourierId = activeOrderCourier.Courier.Id;
+            tracking.CourierName = activeOrderCourier.Courier.Name;
+            tracking.CourierLatitude = activeOrderCourier.Courier.CurrentLatitude.Value;
+            tracking.CourierLongitude = activeOrderCourier.Courier.CurrentLongitude.Value;
+            tracking.CourierLastUpdate = activeOrderCourier.Courier.LastLocationUpdate;
         }
 
         return Ok(new ApiResponse<DeliveryTrackingDto>(tracking, "Teslimat takip bilgileri başarıyla getirildi"));

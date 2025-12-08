@@ -16,6 +16,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<CategoryTranslation> CategoryTranslations { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<OrderCourier> OrderCouriers { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
     public DbSet<UserAddress> UserAddresses { get; set; }
@@ -115,6 +116,20 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<OrderItem>()
             .Property(oi => oi.UnitPrice)
             .HasColumnType("decimal(18,2)");
+
+        // OrderItem - Order relationship
+        builder.Entity<OrderItem>()
+            .HasOne(oi => oi.Order)
+            .WithMany(o => o.OrderItems)
+            .HasForeignKey(oi => oi.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // OrderItem - Product relationship
+        builder.Entity<OrderItem>()
+            .HasOne(oi => oi.Product)
+            .WithMany()
+            .HasForeignKey(oi => oi.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Vendor configuration
         builder.Entity<Vendor>()
@@ -245,12 +260,43 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(o => o.DeliveryAddressId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Order - Courier relationship
+        // Order - Courier relationship removed (now using OrderCouriers table)
+        // ActiveOrderCourier is a computed navigation property, ignore it for EF Core
         builder.Entity<Order>()
-            .HasOne(o => o.Courier)
-            .WithMany(c => c.Orders)
-            .HasForeignKey(o => o.CourierId)
+            .Ignore(o => o.ActiveOrderCourier);
+
+        // OrderCourier Configuration
+        builder.Entity<OrderCourier>()
+            .HasOne(oc => oc.Order)
+            .WithMany(o => o.OrderCouriers)
+            .HasForeignKey(oc => oc.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderCourier>()
+            .HasOne(oc => oc.Courier)
+            .WithMany(c => c.OrderCouriers)
+            .HasForeignKey(oc => oc.CourierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // OrderCourier Indexes
+        builder.Entity<OrderCourier>()
+            .HasIndex(oc => oc.OrderId);
+
+        builder.Entity<OrderCourier>()
+            .HasIndex(oc => oc.CourierId);
+
+        builder.Entity<OrderCourier>()
+            .HasIndex(oc => new { oc.OrderId, oc.IsActive })
+            .HasFilter("[IsActive] = 1");
+
+        // OrderCourier Decimal precision
+        builder.Entity<OrderCourier>()
+            .Property(oc => oc.DeliveryFee)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<OrderCourier>()
+            .Property(oc => oc.CourierTip)
+            .HasColumnType("decimal(18,2)");
 
         // UserPreferences configuration
         builder.Entity<UserPreferences>()
@@ -340,13 +386,9 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .Property(c => c.CurrentDayEarnings)
             .HasColumnType("decimal(18,2)");
 
-        // Order delivery fee
+        // Order delivery fee (customer fee - stays in Order table)
         builder.Entity<Order>()
             .Property(o => o.DeliveryFee)
-            .HasColumnType("decimal(18,2)");
-
-        builder.Entity<Order>()
-            .Property(o => o.CourierTip)
             .HasColumnType("decimal(18,2)");
 
         // LegalDocument configuration

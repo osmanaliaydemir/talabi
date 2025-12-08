@@ -51,7 +51,7 @@ class _CourierNavigationSettingsScreenState
     }
   }
 
-  Future<void> _savePreference(String value) async {
+  Future<void> _savePreference(String value, BuildContext context) async {
     print('CourierNavigationSettingsScreen: Saving navigation app: $value');
     setState(() {
       _selectedApp = value;
@@ -61,8 +61,14 @@ class _CourierNavigationSettingsScreenState
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('courier_navigation_app', value);
       if (!mounted) return;
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Navigasyon uygulaması güncellendi')),
+        SnackBar(
+          content: Text(
+            localizations?.navigationAppUpdated ??
+                'Navigasyon uygulaması güncellendi',
+          ),
+        ),
       );
     } catch (e, stackTrace) {
       print(
@@ -70,8 +76,14 @@ class _CourierNavigationSettingsScreenState
       );
       print(stackTrace);
       if (!mounted) return;
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Navigasyon tercihi kaydedilemedi: $e')),
+        SnackBar(
+          content: Text(
+            localizations?.navigationPreferenceNotSaved(e.toString()) ??
+                'Navigasyon tercihi kaydedilemedi: $e',
+          ),
+        ),
       );
     }
   }
@@ -96,7 +108,7 @@ class _CourierNavigationSettingsScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
-        title: 'Navigasyon Uygulaması',
+        title: localizations?.navigationApp ?? 'Navigasyon Uygulaması',
         leadingIcon: Icons.map_outlined,
         showBackButton: true,
         onBack: () {
@@ -111,7 +123,8 @@ class _CourierNavigationSettingsScreenState
               padding: const EdgeInsets.all(16.0),
               children: [
                 Text(
-                  'Teslimat adresine giderken kullanmak istediğin varsayılan navigasyon uygulamasını seç.',
+                  localizations?.selectDefaultNavigationApp ??
+                      'Teslimat adresine giderken kullanmak istediğin varsayılan navigasyon uygulamasını seç.',
                   style: TextStyle(color: Colors.grey[700], fontSize: 14),
                 ),
                 const SizedBox(height: 16),
@@ -126,7 +139,7 @@ class _CourierNavigationSettingsScreenState
                         groupValue: _selectedApp,
                         onChanged: (value) {
                           if (value == null) return;
-                          _savePreference(value);
+                          _savePreference(value, context);
                         },
                         title: Text(_getAppName(context, 'google_maps')),
                         secondary: const Icon(Icons.map),
@@ -137,7 +150,7 @@ class _CourierNavigationSettingsScreenState
                         groupValue: _selectedApp,
                         onChanged: (value) {
                           if (value == null) return;
-                          _savePreference(value);
+                          _savePreference(value, context);
                         },
                         title: Text(_getAppName(context, 'waze')),
                         secondary: const Icon(Icons.directions_car),
@@ -148,7 +161,7 @@ class _CourierNavigationSettingsScreenState
                         groupValue: _selectedApp,
                         onChanged: (value) {
                           if (value == null) return;
-                          _savePreference(value);
+                          _savePreference(value, context);
                         },
                         title: Text(_getAppName(context, 'yandex_maps')),
                         secondary: const Icon(Icons.navigation),
@@ -159,19 +172,20 @@ class _CourierNavigationSettingsScreenState
                 const SizedBox(height: 24),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
-                  title: const Text('Not'),
+                  title: Text(localizations?.note ?? 'Not'),
                   subtitle: Text(
-                    'Seçtiğin uygulama cihazında yüklü değilse sistem sana uygun bir seçenek sunar.',
+                    localizations
+                            ?.ifAppNotInstalledSystemWillOfferAlternative ??
+                        'Seçtiğin uygulama cihazında yüklü değilse sistem sana uygun bir seçenek sunar.',
                     style: TextStyle(color: Colors.grey[700], fontSize: 13),
                   ),
                 ),
-                if (localizations != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Bu tercih sadece kurye hesabın için geçerlidir.',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
+                const SizedBox(height: 8),
+                Text(
+                  localizations?.preferenceOnlyForCourierAccount ??
+                      'Bu tercih sadece kurye hesabın için geçerlidir.',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
               ],
             ),
       bottomNavigationBar: const CourierBottomNav(currentIndex: 3),

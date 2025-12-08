@@ -22,9 +22,7 @@ public class HangfireHealthCheck : IHealthCheck
     /// <summary>
     /// Hangfire bağlantısını ve durumunu kontrol eder
     /// </summary>
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -32,8 +30,7 @@ public class HangfireHealthCheck : IHealthCheck
             if (JobStorage.Current == null)
             {
                 _logger.LogWarning("Hangfire health check failed: JobStorage.Current is null");
-                return HealthCheckResult.Unhealthy(
-                    "Hangfire JobStorage yapılandırılmamış",
+                return HealthCheckResult.Unhealthy("Hangfire JobStorage yapılandırılmamış",
                     data: new Dictionary<string, object>
                     {
                         { "Service", "Hangfire" },
@@ -43,12 +40,11 @@ public class HangfireHealthCheck : IHealthCheck
 
             // Hangfire bağlantısını test et
             using var connection = JobStorage.Current.GetConnection();
-            
+
             if (connection == null)
             {
                 _logger.LogWarning("Hangfire health check failed: Cannot get connection");
-                return HealthCheckResult.Unhealthy(
-                    "Hangfire bağlantısı alınamadı",
+                return HealthCheckResult.Unhealthy("Hangfire bağlantısı alınamadı",
                     data: new Dictionary<string, object>
                     {
                         { "Service", "Hangfire" },
@@ -59,12 +55,11 @@ public class HangfireHealthCheck : IHealthCheck
             // Hangfire sunucularının durumunu kontrol et - JobStorage üzerinden
             var monitoringApi = JobStorage.Current.GetMonitoringApi();
             var servers = monitoringApi.Servers();
-            var activeServers = servers.Count(s => s.Heartbeat != null && 
+            var activeServers = servers.Count(s => s.Heartbeat != null &&
                 DateTime.UtcNow - s.Heartbeat.Value < TimeSpan.FromMinutes(1));
 
             _logger.LogDebug("Hangfire health check passed. Active servers: {Count}", activeServers);
-            return HealthCheckResult.Healthy(
-                $"Hangfire çalışıyor (Aktif sunucu sayısı: {activeServers})",
+            return HealthCheckResult.Healthy($"Hangfire çalışıyor (Aktif sunucu sayısı: {activeServers})",
                 data: new Dictionary<string, object>
                 {
                     { "Service", "Hangfire" },
@@ -76,8 +71,7 @@ public class HangfireHealthCheck : IHealthCheck
         catch (Exception ex)
         {
             _logger.LogError(ex, "Hangfire health check failed with exception");
-            return HealthCheckResult.Unhealthy(
-                "Hangfire sağlık kontrolü başarısız",
+            return HealthCheckResult.Unhealthy("Hangfire sağlık kontrolü başarısız",
                 ex,
                 data: new Dictionary<string, object>
                 {

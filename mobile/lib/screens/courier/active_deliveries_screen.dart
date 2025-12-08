@@ -227,7 +227,7 @@ class _CourierActiveDeliveriesScreenState
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: _loadActiveOrders,
-                    child: const Text('Tekrar dene'),
+                    child: Text(localizations?.tryAgain ?? 'Tekrar dene'),
                   ),
                 ],
               ),
@@ -280,7 +280,7 @@ class _CourierActiveDeliveriesScreenState
                       const SizedBox(height: 12),
                       ElevatedButton(
                         onPressed: () => _loadHistory(reset: true),
-                        child: const Text('Tekrar dene'),
+                        child: Text(localizations?.tryAgain ?? 'Tekrar dene'),
                       ),
                     ],
                   ),
@@ -296,7 +296,7 @@ class _CourierActiveDeliveriesScreenState
                 const SizedBox(height: 16),
                 Center(
                   child: Text(
-                    localizations?.noActiveDeliveries ??
+                    localizations?.noDeliveryHistoryYet ??
                         'Henüz teslimat geçmişi yok',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
@@ -353,19 +353,40 @@ class _CourierActiveDeliveriesScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Order #${order.id}',
+                    order.customerOrderId.isNotEmpty
+                        ? 'Order #${order.customerOrderId}'
+                        : 'Order #${order.id}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
-                  Text(
-                    CurrencyFormatter.format(order.deliveryFee, Currency.try_),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                      fontSize: 16,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        CurrencyFormatter.format(
+                          order.totalAmount,
+                          Currency.try_,
+                        ),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        CurrencyFormatter.format(
+                          order.deliveryFee,
+                          Currency.try_,
+                        ),
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          color: Colors.green.shade700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -414,7 +435,10 @@ class _CourierActiveDeliveriesScreenState
   Widget _buildHistoryCard(Map<String, dynamic> order) {
     final status = (order['status'] ?? '').toString();
     final createdAt = DateTime.tryParse(order['createdAt']?.toString() ?? '');
-    final total = (order['total'] as num?)?.toDouble() ?? 0;
+    final totalAmount = (order['totalAmount'] as num?)?.toDouble() ?? 0;
+    final total = totalAmount > 0
+        ? totalAmount
+        : ((order['total'] as num?)?.toDouble() ?? 0);
     final deliveryFee = (order['deliveryFee'] as num?)?.toDouble() ?? 0;
 
     return Card(
@@ -430,7 +454,9 @@ class _CourierActiveDeliveriesScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Order #${order['id']}',
+                  (order['customerOrderId']?.toString() ?? '').isNotEmpty
+                      ? 'Order #${order['customerOrderId']}'
+                      : 'Order #${order['id']}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -458,27 +484,26 @@ class _CourierActiveDeliveriesScreenState
                       : '',
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
-                Text(
-                  CurrencyFormatter.format(total, Currency.try_),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.delivery_dining,
-                  size: 18,
-                  color: Colors.teal.shade700,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  CurrencyFormatter.format(deliveryFee, Currency.try_),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      CurrencyFormatter.format(total, Currency.try_),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(deliveryFee, Currency.try_),
+                      style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                        color: Colors.green.shade700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

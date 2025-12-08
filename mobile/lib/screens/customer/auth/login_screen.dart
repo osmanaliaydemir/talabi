@@ -6,10 +6,11 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/customer/auth/email_verification_screen.dart';
 import 'package:mobile/screens/customer/auth/forgot_password_screen.dart';
 import 'package:mobile/screens/customer/auth/register_screen.dart';
+import 'package:mobile/screens/courier/login_screen.dart';
 import 'package:mobile/screens/vendor/login_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,54 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ToastMessage.show(
           context,
           message: localizations.googleLoginFailed(e.toString()),
-          isSuccess: false,
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _signInWithApple() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final socialAuthService = SocialAuthService();
-      final response = await socialAuthService.signInWithApple();
-
-      if (response == null) {
-        return;
-      }
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      await prefs.setString('refreshToken', response['refreshToken']);
-      await prefs.setString('userId', response['userId']);
-      await prefs.setString('userRole', response['role']);
-
-      if (mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.setAuthData(
-          response['token'],
-          response['refreshToken'],
-          response['userId'],
-          response['role'],
-        );
-
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-      }
-    } catch (e) {
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: localizations.appleLoginFailed(e.toString()),
           isSuccess: false,
         );
       }
@@ -622,16 +575,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _buildSocialButton(
-                                          icon: Icons.apple,
-                                          label: localizations.apple,
-                                          onPressed: _isLoading
-                                              ? () {}
-                                              : _signInWithApple,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildSocialButton(
                                           icon: Icons.facebook,
                                           label: localizations.facebook,
                                           onPressed: _isLoading
@@ -659,6 +602,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                             );
                                           },
                                           isVendor: true,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSocialButton(
+                                          icon: Icons.delivery_dining,
+                                          label: localizations.roleCourier,
+                                          onPressed: () {
+                                            TapLogger.logButtonPress(
+                                              'Courier Login',
+                                              context: 'LoginScreen',
+                                            );
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const CourierLoginScreen(),
+                                              ),
+                                            );
+                                          },
+                                          isCourier: true,
                                         ),
                                       ),
                                     ],
@@ -778,6 +742,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required VoidCallback onPressed,
     bool isFacebook = false,
     bool isVendor = false,
+    bool isCourier = false,
   }) {
     return OutlinedButton(
       onPressed: onPressed,
@@ -825,6 +790,26 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.store, color: AppTheme.primaryOrange, size: 20),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
+          : isCourier
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.delivery_dining,
+                  color: AppTheme.courierPrimary,
+                  size: 20,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   label,

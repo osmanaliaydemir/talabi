@@ -60,12 +60,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() {
         _addresses = addresses;
         // Auto-select default address if available
-        final defaultAddress = addresses.firstWhere(
-          (addr) => addr['isDefault'] == true,
-          orElse: () => addresses.isNotEmpty ? addresses.first : null,
-        );
+        Map<String, dynamic>? defaultAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            // Try to find default address (check both lowercase and uppercase)
+            final found = addresses.firstWhere(
+              (addr) =>
+                  addr['isDefault'] == true ||
+                  addr['IsDefault'] == true ||
+                  addr['isDefault'] == 'true' ||
+                  addr['IsDefault'] == 'true',
+            );
+            defaultAddress = found as Map<String, dynamic>;
+          } catch (e) {
+            // No default address found, use first address
+            defaultAddress = addresses.first as Map<String, dynamic>;
+          }
+        }
         _selectedAddress = defaultAddress;
         _isLoadingAddresses = false;
+        print('Selected address: ${_selectedAddress?['title'] ?? 'null'}');
       });
     } catch (e) {
       print('Error loading addresses: $e');
@@ -253,6 +267,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   SizedBox(height: 12),
                   _buildAddressCard(localizations),
+                  SizedBox(height: 12),
+                  _buildEstimatedDeliveryCard(localizations),
                   SizedBox(height: 24),
 
                   // Payment Method Section
@@ -279,10 +295,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     maxLines: 3,
                   ),
-                  SizedBox(height: 24),
-
-                  // Estimated Delivery Time
-                  _buildEstimatedDelivery(localizations),
                   SizedBox(height: 24),
 
                   // Order Summary Section
@@ -392,20 +404,88 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
     }
 
+    // Eğer adres seçilmemişse ve adres listesi varsa, ilk adresi seç
+    if (_selectedAddress == null && _addresses.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _selectedAddress = _addresses.first;
+        });
+      });
+      // Geçici olarak ilk adresi göster
+      final tempAddress = _addresses.first;
+      final fullAddress =
+          tempAddress['fullAddress']?.toString() ??
+          tempAddress['FullAddress']?.toString() ??
+          '';
+      final displayTitle =
+          tempAddress['title']?.toString() ??
+          tempAddress['Title']?.toString() ??
+          'Adres';
+      final city =
+          tempAddress['city']?.toString() ??
+          tempAddress['City']?.toString() ??
+          '';
+      final district =
+          tempAddress['district']?.toString() ??
+          tempAddress['District']?.toString() ??
+          '';
+      return _buildAddressCardContent(
+        localizations,
+        displayTitle,
+        fullAddress,
+        city,
+        district,
+      );
+    }
+
+    if (_selectedAddress == null) {
+      return SizedBox.shrink();
+    }
+
+    final fullAddress =
+        _selectedAddress?['fullAddress']?.toString() ??
+        _selectedAddress?['FullAddress']?.toString() ??
+        '';
+    // Başlık için title kullan
+    final displayTitle =
+        _selectedAddress?['title']?.toString() ??
+        _selectedAddress?['Title']?.toString() ??
+        'Adres';
+    final city =
+        _selectedAddress?['city']?.toString() ??
+        _selectedAddress?['City']?.toString() ??
+        '';
+    final district =
+        _selectedAddress?['district']?.toString() ??
+        _selectedAddress?['District']?.toString() ??
+        '';
+
+    return _buildAddressCardContent(
+      localizations,
+      displayTitle,
+      fullAddress,
+      city,
+      district,
+    );
+  }
+
+  Widget _buildAddressCardContent(
+    AppLocalizations localizations,
+    String displayTitle,
+    String fullAddress,
+    String city,
+    String district,
+  ) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.orange.shade50, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.orange.shade200, width: 1.5),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -414,146 +494,127 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with title and change button
+            // Header with icon, title and change button
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryOrange,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.home, color: Colors.white, size: 20),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      _selectedAddress?['title'] ?? '',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
                 Container(
+                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
+                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.location_on,
                     color: AppTheme.primaryOrange,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: TextButton.icon(
-                    onPressed: () => _showAddressSelector(localizations),
-                    icon: Icon(Icons.edit, size: 16, color: Colors.white),
-                    label: Text(
-                      localizations.changeAddress,
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    ),
+                    size: 20,
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 16),
-            // Divider
-            Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.orange.shade200,
-                    Colors.orange.shade100,
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            // Full Address
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.location_on,
-                  color: AppTheme.primaryOrange,
-                  size: 20,
-                ),
-                SizedBox(width: 8),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Açık Adres',
+                        localizations.deliveryAddress,
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
                           color: Colors.grey[600],
-                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      SizedBox(height: 6),
+                      SizedBox(height: 2),
                       Text(
-                        _selectedAddress?['addressLine1'] ?? '',
+                        displayTitle,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black87,
-                          height: 1.4,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => _showAddressSelector(localizations),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.edit_outlined,
+                        size: 16,
+                        color: AppTheme.primaryOrange,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        localizations.changeAddress,
+                        style: TextStyle(
+                          color: AppTheme.primaryOrange,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (_selectedAddress?['addressLine2'] != null &&
-                          _selectedAddress!['addressLine2']
-                              .toString()
-                              .isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            _selectedAddress!['addressLine2'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 12),
-            // City and District
-            Row(
-              children: [
-                Icon(Icons.map, color: AppTheme.primaryOrange, size: 18),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.shade100),
-                    ),
+            // Full Address
+            if (fullAddress.isNotEmpty) ...[
+              SizedBox(height: 12),
+              Divider(height: 1, color: Colors.grey[200]),
+              SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.home_outlined, size: 18, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Expanded(
                     child: Text(
-                      '${_selectedAddress?['district'] ?? ''} / ${_selectedAddress?['city'] ?? ''}',
+                      fullAddress,
                       style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
                         color: Colors.black87,
+                        height: 1.4,
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
+            // City and District bilgileri (varsa)
+            if ((city.isNotEmpty || district.isNotEmpty) &&
+                fullAddress.isNotEmpty)
+              SizedBox(height: 8),
+            if (city.isNotEmpty || district.isNotEmpty)
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_city_outlined,
+                    size: 18,
+                    color: Colors.grey[600],
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    district.isNotEmpty && city.isNotEmpty
+                        ? '$district / $city'
+                        : district.isNotEmpty
+                        ? district
+                        : city,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -563,38 +624,268 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void _showAddressSelector(AppLocalizations localizations) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              localizations.selectAddress,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-            SizedBox(height: 16),
-            ..._addresses.map((address) {
-              final isSelected = _selectedAddress?['id'] == address['id'];
-              return ListTile(
-                leading: Icon(
-                  isSelected
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_unchecked,
-                  color: AppTheme.primaryOrange,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag Handle
+              Container(
+                margin: EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                title: Text(address['title']),
-                subtitle: Text(address['addressLine1']),
-                onTap: () {
-                  setState(() {
-                    _selectedAddress = address;
-                  });
-                  Navigator.pop(context);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
+              ),
+              // Header
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      localizations.selectAddress,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.black87),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              // Address List
+              if (_addresses.isEmpty)
+                Padding(
+                  padding: EdgeInsets.all(40),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.location_off,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        localizations.noAddressesYet,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // AddressesScreen'e yönlendir (eğer route varsa)
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryOrange,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          localizations.addAddress,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _addresses.length,
+                    itemBuilder: (context, index) {
+                      final address = _addresses[index];
+                      final isSelected =
+                          _selectedAddress?['id'] == address['id'];
+                      final isDefault = address['isDefault'] == true;
+
+                      // Adres bilgilerini çıkar
+                      final addrFullAddress =
+                          address['fullAddress']?.toString() ??
+                          address['FullAddress']?.toString() ??
+                          '';
+                      // Başlık için title kullan
+                      final addrDisplayTitle =
+                          address['title']?.toString() ??
+                          address['Title']?.toString() ??
+                          localizations.address;
+                      final addrCity =
+                          address['city']?.toString() ??
+                          address['City']?.toString() ??
+                          '';
+                      final addrDistrict =
+                          address['district']?.toString() ??
+                          address['District']?.toString() ??
+                          '';
+
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedAddress = address;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                                : Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.primaryOrange
+                                  : Colors.grey[200]!,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              // Address Icon
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppTheme.primaryOrange.withValues(
+                                          alpha: 0.2,
+                                        )
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.location_on,
+                                  color: isSelected
+                                      ? AppTheme.primaryOrange
+                                      : Colors.grey[600],
+                                  size: 24,
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              // Address Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            addrDisplayTitle,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: isSelected
+                                                  ? AppTheme.primaryOrange
+                                                  : Colors.black87,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (isDefault)
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              localizations.defaultLabel,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 4),
+                                    // Full Address
+                                    if (addrFullAddress.isNotEmpty)
+                                      Padding(
+                                        padding: EdgeInsets.only(bottom: 4),
+                                        child: Text(
+                                          addrFullAddress,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    // District / City
+                                    if (addrCity.isNotEmpty ||
+                                        addrDistrict.isNotEmpty)
+                                      Text(
+                                        addrDistrict.isNotEmpty &&
+                                                addrCity.isNotEmpty
+                                            ? '$addrDistrict / $addrCity'
+                                            : addrDistrict.isNotEmpty
+                                            ? addrDistrict
+                                            : addrCity,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              // Check Icon
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: AppTheme.primaryOrange,
+                                  size: 24,
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -623,146 +914,213 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       },
     ];
 
-    return Column(
-      children: [
-        // Horizontal tabs
-        SizedBox(
-          height: 70,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: paymentMethods.length,
-            itemBuilder: (context, index) {
-              final method = paymentMethods[index];
-              final isSelected = _selectedPaymentMethod == method['value'];
-              final isEnabled = method['enabled'] as bool;
+    final selectedMethod = paymentMethods.firstWhere(
+      (m) => m['value'] == _selectedPaymentMethod,
+    );
 
-              return GestureDetector(
-                onTap: isEnabled
-                    ? () {
-                        setState(() {
-                          _selectedPaymentMethod = method['value'] as String;
-                        });
-                      }
-                    : null,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Selected payment method display
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    selectedMethod['icon'] as IconData,
+                    color: AppTheme.primaryOrange,
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localizations.paymentMethod,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        selectedMethod['label'] as String,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            // Payment method options
+            SizedBox(height: 16),
+            ...paymentMethods.where((m) => m['enabled'] == true).map((method) {
+              final isSelected = _selectedPaymentMethod == method['value'];
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedPaymentMethod = method['value'] as String;
+                  });
+                },
                 child: Container(
-                  width: 90,
-                  margin: EdgeInsets.only(right: 8),
+                  margin: EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppTheme.primaryOrange
-                        : (isEnabled ? Colors.white : Colors.grey[100]),
-                    borderRadius: BorderRadius.circular(10),
+                        ? AppTheme.primaryOrange.withValues(alpha: 0.05)
+                        : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
                           ? AppTheme.primaryOrange
-                          : (isEnabled ? Colors.grey[300]! : Colors.grey[200]!),
+                          : Colors.grey[200]!,
                       width: isSelected ? 2 : 1,
                     ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.primaryOrange.withValues(
-                                alpha: 0.3,
-                              ),
-                              blurRadius: 6,
-                              offset: Offset(0, 2),
-                            ),
-                          ]
-                        : [],
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Row(
                     children: [
                       Icon(
                         method['icon'] as IconData,
-                        size: 24,
                         color: isSelected
-                            ? Colors.white
-                            : (isEnabled
-                                  ? AppTheme.primaryOrange
-                                  : Colors.grey[400]),
+                            ? AppTheme.primaryOrange
+                            : Colors.grey[600],
+                        size: 20,
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        method['label'] as String,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? Colors.white
-                              : (isEnabled ? Colors.black87 : Colors.grey[500]),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          method['label'] as String,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? AppTheme.primaryOrange
+                                : Colors.black87,
+                          ),
                         ),
                       ),
-                      if (!isEnabled)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            localizations.comingSoon,
-                            style: TextStyle(
-                              fontSize: 8,
-                              color: Colors.grey[500],
-                            ),
-                          ),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_circle,
+                          color: AppTheme.primaryOrange,
+                          size: 20,
                         ),
                     ],
                   ),
                 ),
               );
-            },
-          ),
-        ),
-        SizedBox(height: 12),
-        // Description card
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.orange.shade50,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.orange.shade100),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.info_outline, color: AppTheme.primaryOrange, size: 16),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  paymentMethods.firstWhere(
-                        (m) => m['value'] == _selectedPaymentMethod,
-                      )['description']
-                      as String,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[800],
-                    height: 1.3,
-                  ),
+            }),
+            // Description (if available and enabled)
+            if (selectedMethod['enabled'] == true &&
+                selectedMethod['description'] != null)
+              Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.grey[500]),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        selectedMethod['description'] as String,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildEstimatedDelivery(AppLocalizations localizations) {
-    return Card(
-      elevation: 2,
-      color: Colors.orange.shade50,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _buildEstimatedDeliveryCard(AppLocalizations localizations) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(Icons.access_time, color: AppTheme.primaryOrange),
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.access_time,
+                color: AppTheme.primaryOrange,
+                size: 20,
+              ),
+            ),
             SizedBox(width: 12),
-            Text(
-              '${localizations.estimatedDelivery}: 30-40 ${localizations.minutes}',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.estimatedDelivery,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    '30-40 ${localizations.minutes}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

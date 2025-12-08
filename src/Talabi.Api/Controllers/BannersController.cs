@@ -30,9 +30,7 @@ public class BannersController : ControllerBase
     /// <param name="vendorType">Satıcı türü (1: Restaurant, 2: Market). Opsiyonel</param>
     /// <returns>Banner listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<PromotionalBannerDto>>>> GetBanners(
-        [FromQuery] string? language = "tr",
-        [FromQuery] int? vendorType = null)
+    public async Task<ActionResult<ApiResponse<List<PromotionalBannerDto>>>> GetBanners([FromQuery] string? language = "tr", [FromQuery] int? vendorType = null)
     {
         var now = DateTime.UtcNow;
         var languageCode = language?.ToLower() ?? "tr";
@@ -95,9 +93,7 @@ public class BannersController : ControllerBase
     /// <param name="language">Dil kodu (tr, en, ar). Varsayılan: tr</param>
     /// <returns>Banner detayı</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<PromotionalBannerDto>>> GetBanner(
-        Guid id,
-        [FromQuery] string? language = "tr")
+    public async Task<ActionResult<ApiResponse<PromotionalBannerDto>>> GetBanner(Guid id, [FromQuery] string? language = "tr")
     {
         var languageCode = language?.ToLower() ?? "tr";
 

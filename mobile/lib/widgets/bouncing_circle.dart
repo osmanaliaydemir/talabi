@@ -55,3 +55,4 @@ class _BouncingCircleState extends State<BouncingCircle>
     );
   }
 }
+

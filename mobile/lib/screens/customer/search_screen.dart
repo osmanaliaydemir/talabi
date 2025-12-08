@@ -6,10 +6,11 @@ import 'package:mobile/screens/customer/product/product_list_screen.dart';
 import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/services/analytics_service.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -32,12 +33,22 @@ class _SearchScreenState extends State<SearchScreen>
   bool _showAutocomplete = false;
 
   // Products search
-  PagedResultDto<ProductDto>? _productResults;
+  List<ProductDto> _productItems = [];
+  int _productCurrentPage = 1;
+  static const int _productPageSize = 20;
   bool _isLoadingProducts = false;
+  bool _isLoadingMoreProducts = false;
+  bool _hasMoreProducts = true;
+  ScrollController? _productScrollController;
 
   // Vendors search
-  PagedResultDto<VendorDto>? _vendorResults;
+  List<VendorDto> _vendorItems = [];
+  int _vendorCurrentPage = 1;
+  static const int _vendorPageSize = 20;
   bool _isLoadingVendors = false;
+  bool _isLoadingMoreVendors = false;
+  bool _hasMoreVendors = true;
+  ScrollController? _vendorScrollController;
 
   // Filters
   String? _selectedCategoryId;
@@ -62,11 +73,35 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _productScrollController = ScrollController();
+    _productScrollController!.addListener(_productScrollListener);
+    _vendorScrollController = ScrollController();
+    _vendorScrollController!.addListener(_vendorScrollListener);
     _loadSearchHistory();
     _searchController.addListener(_onSearchChanged);
     _searchController.addListener(() {
       setState(() {}); // Rebuild to show/hide clear button
     });
+  }
+
+  void _productScrollListener() {
+    if (_productScrollController!.position.pixels >=
+            _productScrollController!.position.maxScrollExtent - 200 &&
+        !_isLoadingMoreProducts &&
+        _hasMoreProducts &&
+        !_isLoadingProducts) {
+      _loadMoreProducts();
+    }
+  }
+
+  void _vendorScrollListener() {
+    if (_vendorScrollController!.position.pixels >=
+            _vendorScrollController!.position.maxScrollExtent - 200 &&
+        !_isLoadingMoreVendors &&
+        _hasMoreVendors &&
+        !_isLoadingVendors) {
+      _loadMoreVendors();
+    }
   }
 
   @override
@@ -84,6 +119,10 @@ class _SearchScreenState extends State<SearchScreen>
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _tabController.dispose();
+    _productScrollController?.removeListener(_productScrollListener);
+    _productScrollController?.dispose();
+    _vendorScrollController?.removeListener(_vendorScrollListener);
+    _vendorScrollController?.dispose();
     super.dispose();
   }
 
@@ -164,20 +203,31 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
-  Future<void> _searchProducts() async {
+  Future<void> _searchProducts({bool isRefresh = true}) async {
     if (_currentQuery.isEmpty &&
         _selectedCategoryId == null &&
         _minPrice == null &&
         _maxPrice == null) {
       setState(() {
-        _productResults = null;
+        _productItems = [];
+        _productCurrentPage = 1;
+        _hasMoreProducts = false;
       });
       return;
     }
 
-    setState(() {
-      _isLoadingProducts = true;
-    });
+    if (isRefresh) {
+      setState(() {
+        _isLoadingProducts = true;
+        _productCurrentPage = 1;
+        _hasMoreProducts = true;
+        _productItems = [];
+      });
+    } else {
+      setState(() {
+        _isLoadingMoreProducts = true;
+      });
+    }
 
     try {
       final request = ProductSearchRequestDto(
@@ -186,18 +236,31 @@ class _SearchScreenState extends State<SearchScreen>
         minPrice: _minPrice,
         maxPrice: _maxPrice,
         sortBy: _sortBy,
+        page: _productCurrentPage,
+        pageSize: _productPageSize,
       );
 
       final results = await _apiService.searchProducts(request);
-      setState(() {
-        _productResults = results;
-        _isLoadingProducts = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoadingProducts = false;
-      });
       if (mounted) {
+        setState(() {
+          if (isRefresh) {
+            _productItems = results.items;
+          } else {
+            _productItems.addAll(results.items);
+          }
+          _isLoadingProducts = false;
+          _isLoadingMoreProducts = false;
+          _hasMoreProducts =
+              results.items.length >= _productPageSize &&
+              _productItems.length < results.totalCount;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingProducts = false;
+          _isLoadingMoreProducts = false;
+        });
         final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
@@ -208,20 +271,37 @@ class _SearchScreenState extends State<SearchScreen>
     }
   }
 
-  Future<void> _searchVendors() async {
+  Future<void> _loadMoreProducts() async {
+    if (_isLoadingMoreProducts || !_hasMoreProducts) return;
+    _productCurrentPage++;
+    await _searchProducts(isRefresh: false);
+  }
+
+  Future<void> _searchVendors({bool isRefresh = true}) async {
     if (_currentQuery.isEmpty &&
         _selectedCity == null &&
         _minRating == null &&
         _maxDistance == null) {
       setState(() {
-        _vendorResults = null;
+        _vendorItems = [];
+        _vendorCurrentPage = 1;
+        _hasMoreVendors = false;
       });
       return;
     }
 
-    setState(() {
-      _isLoadingVendors = true;
-    });
+    if (isRefresh) {
+      setState(() {
+        _isLoadingVendors = true;
+        _vendorCurrentPage = 1;
+        _hasMoreVendors = true;
+        _vendorItems = [];
+      });
+    } else {
+      setState(() {
+        _isLoadingMoreVendors = true;
+      });
+    }
 
     try {
       final request = VendorSearchRequestDto(
@@ -230,18 +310,31 @@ class _SearchScreenState extends State<SearchScreen>
         minRating: _minRating,
         maxDistanceInKm: _maxDistance,
         sortBy: _sortBy,
+        page: _vendorCurrentPage,
+        pageSize: _vendorPageSize,
       );
 
       final results = await _apiService.searchVendors(request);
-      setState(() {
-        _vendorResults = results;
-        _isLoadingVendors = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoadingVendors = false;
-      });
       if (mounted) {
+        setState(() {
+          if (isRefresh) {
+            _vendorItems = results.items;
+          } else {
+            _vendorItems.addAll(results.items);
+          }
+          _isLoadingVendors = false;
+          _isLoadingMoreVendors = false;
+          _hasMoreVendors =
+              results.items.length >= _vendorPageSize &&
+              _vendorItems.length < results.totalCount;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingVendors = false;
+          _isLoadingMoreVendors = false;
+        });
         final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
@@ -250,6 +343,12 @@ class _SearchScreenState extends State<SearchScreen>
         );
       }
     }
+  }
+
+  Future<void> _loadMoreVendors() async {
+    if (_isLoadingMoreVendors || !_hasMoreVendors) return;
+    _vendorCurrentPage++;
+    await _searchVendors(isRefresh: false);
   }
 
   void _onSearchSubmitted(String query) {
@@ -866,8 +965,12 @@ class _SearchScreenState extends State<SearchScreen>
                     setState(() {
                       _currentQuery = '';
                       _showAutocomplete = false;
-                      _productResults = null;
-                      _vendorResults = null;
+                      _productItems = [];
+                      _vendorItems = [];
+                      _productCurrentPage = 1;
+                      _vendorCurrentPage = 1;
+                      _hasMoreProducts = false;
+                      _hasMoreVendors = false;
                     });
                   },
                 )
@@ -1108,15 +1211,22 @@ class _SearchScreenState extends State<SearchScreen>
     final l10n = AppLocalizations.of(context)!;
 
     if (_isLoadingProducts) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.primaryOrange,
-          strokeWidth: 3,
+      return GridView.builder(
+        padding: const EdgeInsets.all(AppTheme.spacingSmall),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.8,
+          crossAxisSpacing: AppTheme.spacingSmall,
+          mainAxisSpacing: AppTheme.spacingSmall,
         ),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return const ProductSkeletonItem();
+        },
       );
     }
 
-    if (_productResults == null) {
+    if (_productItems.isEmpty && !_isLoadingProducts) {
       return Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -1206,7 +1316,7 @@ class _SearchScreenState extends State<SearchScreen>
       );
     }
 
-    if (_productResults!.items.isEmpty) {
+    if (_productItems.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1235,6 +1345,7 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     return GridView.builder(
+      controller: _productScrollController,
       padding: const EdgeInsets.all(AppTheme.spacingSmall),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -1242,26 +1353,37 @@ class _SearchScreenState extends State<SearchScreen>
         crossAxisSpacing: AppTheme.spacingSmall,
         mainAxisSpacing: AppTheme.spacingSmall,
       ),
-      itemCount: _productResults!.items.length,
+      cacheExtent: 500.0, // Optimize cache extent
+      addAutomaticKeepAlives: false, // Improve performance
+      addRepaintBoundaries: true, // Optimize repaints
+      itemCount: _productItems.length + (_isLoadingMoreProducts ? 1 : 0),
       itemBuilder: (context, index) {
-        final productDto = _productResults!.items[index];
+        if (index == _productItems.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final productDto = _productItems[index];
         final product = productDto.toProduct();
 
-        return ProductCard(
-          product: product,
-          width: null,
-          showRating: false,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductDetailScreen(
-                  productId: product.id,
-                  product: product,
+        return RepaintBoundary(
+          child: ProductCard(
+            product: product,
+            width: null,
+            showRating: false,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailScreen(
+                    productId: product.id,
+                    product: product,
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -1315,15 +1437,44 @@ class _SearchScreenState extends State<SearchScreen>
     final l10n = AppLocalizations.of(context)!;
 
     if (_isLoadingVendors) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.primaryOrange,
-          strokeWidth: 3,
-        ),
+      return ListView.builder(
+        padding: const EdgeInsets.all(AppTheme.spacingSmall),
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SkeletonLoader(
+                  width: double.infinity,
+                  height: 150,
+                  borderRadius: 0,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      SkeletonLoader(width: 150, height: 20),
+                      SizedBox(height: 8),
+                      SkeletonLoader(width: 100, height: 16),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       );
     }
 
-    if (_vendorResults == null) {
+    if (_vendorItems.isEmpty && !_isLoadingVendors) {
       return Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -1368,7 +1519,7 @@ class _SearchScreenState extends State<SearchScreen>
       );
     }
 
-    if (_vendorResults!.items.isEmpty) {
+    if (_vendorItems.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1397,13 +1548,23 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     return ListView.builder(
+      controller: _vendorScrollController,
       padding: const EdgeInsets.all(AppTheme.spacingSmall),
-      itemCount: _vendorResults!.items.length,
+      cacheExtent: 500.0, // Optimize cache extent
+      addAutomaticKeepAlives: false, // Improve performance
+      addRepaintBoundaries: true, // Optimize repaints
+      itemCount: _vendorItems.length + (_isLoadingMoreVendors ? 1 : 0),
       itemBuilder: (context, index) {
-        final vendorDto = _vendorResults!.items[index];
+        if (index == _vendorItems.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final vendorDto = _vendorItems[index];
         final vendor = vendorDto.toVendor();
 
-        return _buildVendorCard(vendor, l10n);
+        return RepaintBoundary(child: _buildVendorCard(vendor, l10n));
       },
     );
   }

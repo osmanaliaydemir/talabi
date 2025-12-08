@@ -24,6 +24,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
 
   int _currentPage = 1;
   static const int _pageSize = 6;
+  static const int _tabCount = 6;
   bool _isFirstLoad = true;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
@@ -33,6 +34,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
     'Pending': 0,
     'Preparing': 0,
     'Ready': 0,
+    'OutForDelivery': 0,
     'Delivered': 0,
     'Cancelled': 0,
   };
@@ -40,7 +42,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: _tabCount, vsync: this);
     _tabController.addListener(_handleTabChange);
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
@@ -56,6 +58,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
         'Pending',
         'Preparing',
         'Ready',
+        'OutForDelivery',
         'Delivered',
         'Cancelled',
       ];
@@ -118,6 +121,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
         'Pending',
         'Preparing',
         'Ready',
+        'OutForDelivery',
         'Delivered',
         'Cancelled',
       ];
@@ -129,8 +133,9 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
           _selectedStatus = newStatus;
         });
         // Asenkron işlemleri setState dışında çağır
-        _loadOrders(isRefresh: true);
-        _loadOrderCounts();
+        // Sadece seçili status için siparişleri yükle
+        // Order counts zaten _loadOrders içinde refresh durumunda yüklenecek
+        _loadOrders(isRefresh: true, updateCounts: false);
       }
     }
   }
@@ -138,6 +143,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
   Future<void> _loadOrders({
     bool isRefresh = false,
     bool showLoading = true,
+    bool updateCounts = true,
   }) async {
     if (isRefresh) {
       setState(() {
@@ -177,7 +183,9 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
           }
         });
 
-        if (isRefresh) {
+        // Order counts'u sadece updateCounts=true olduğunda yükle
+        // Tab geçişlerinde false olarak gönderilir (performans için)
+        if (isRefresh && updateCounts) {
           _loadOrderCounts();
         }
       }
@@ -213,6 +221,10 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
         return Colors.blue;
       case 'ready':
         return Colors.green;
+      case 'assigned':
+      case 'accepted':
+      case 'outfordelivery':
+        return Colors.orange;
       case 'delivered':
         return Colors.grey;
       case 'cancelled':
@@ -230,6 +242,12 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
         return localizations.preparing;
       case 'ready':
         return localizations.ready;
+      case 'assigned':
+        return 'Kuryeye Atandı';
+      case 'accepted':
+        return 'Kurye Kabul Etti';
+      case 'outfordelivery':
+        return 'Teslimata Çıktı';
       case 'delivered':
         return localizations.delivered;
       case 'cancelled':
@@ -337,6 +355,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                 Tab(text: localizations.pending),
                 Tab(text: localizations.preparing),
                 Tab(text: localizations.ready),
+                Tab(text: localizations.outForDelivery),
                 Tab(text: localizations.delivered),
                 Tab(text: localizations.cancelledOrders),
               ],

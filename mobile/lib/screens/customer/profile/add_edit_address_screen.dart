@@ -4,7 +4,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/address.dart';
 import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddEditAddressScreen extends StatefulWidget {

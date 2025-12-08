@@ -38,6 +38,22 @@ public class VendorOrderDto
     public DateTime CreatedAt { get; set; }
     public DateTime? EstimatedDeliveryTime { get; set; }
     public List<VendorOrderItemDto> Items { get; set; } = new();
+    
+    // Courier Information
+    public VendorCourierInfoDto? Courier { get; set; }
+}
+
+public class VendorCourierInfoDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string? VehicleType { get; set; }
+    public string? Status { get; set; }
+    public DateTime? AssignedAt { get; set; }
+    public DateTime? AcceptedAt { get; set; }
+    public DateTime? PickedUpAt { get; set; }
+    public DateTime? OutForDeliveryAt { get; set; }
 }
 
 public class VendorOrderItemDto

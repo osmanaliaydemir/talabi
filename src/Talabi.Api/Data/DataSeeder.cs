@@ -17,6 +17,14 @@ public static class DataSeeder
         {
             await roleManager.CreateAsync(new IdentityRole("Customer"));
         }
+        if (!await roleManager.RoleExistsAsync("Courier"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Courier"));
+        }
+        if (!await roleManager.RoleExistsAsync("Admin"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
 
         var user = await userManager.FindByEmailAsync("admin@talabi.com");
         if (user == null)

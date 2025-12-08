@@ -157,6 +157,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Edit business name, address and contact information';
 
   @override
+  String get editCourierProfileDescription =>
+      'Edit name, phone, vehicle information and working hours';
+
+  @override
   String get changePassword => 'Change Password';
 
   @override
@@ -257,25 +261,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyHaveAccount => 'Already have an account? ';
 
   @override
-  String get emailRequired => 'E-posta gerekli';
+  String get emailRequired => 'Email is required';
 
   @override
-  String get validEmail => 'Geçerli bir e-posta girin';
+  String get validEmail => 'Please enter a valid email';
 
   @override
-  String get passwordRequired => 'Şifre gerekli';
+  String get passwordRequired => 'Password is required';
 
   @override
-  String get passwordMinLength => 'Şifre en az 6 karakter olmalı';
+  String get passwordMinLength => 'Password must be at least 6 characters';
 
   @override
-  String get fullNameRequired => 'Ad soyad gerekli';
+  String get fullNameRequired => 'Full name is required';
 
   @override
-  String get loginFailed => 'Giriş başarısız';
+  String get loginFailed => 'Login failed';
 
   @override
-  String get registerFailed => 'Kayıt başarısız';
+  String get registerFailed => 'Registration failed';
 
   @override
   String get passwordReset => 'Password Reset';
@@ -456,6 +460,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get areYouCourier => 'Are you a courier?';
+
+  @override
+  String get areYouVendor => 'Are you a vendor? ';
 
   @override
   String get courierSignIn => 'Courier Sign In';
@@ -647,6 +654,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get addressRequiredMessage =>
       'You need to add a delivery address before placing an order.';
+
+  @override
+  String get addressRequiredDescription =>
+      'You must add at least one address to place orders. Please add your address.';
 
   @override
   String get addAddress => 'Add Address';
@@ -1218,10 +1229,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ready => 'Ready';
 
   @override
+  String get outForDelivery => 'Out for Delivery';
+
+  @override
   String get delivered => 'Delivered';
 
   @override
   String get cancelled => 'Cancelled';
+
+  @override
+  String get assigned => 'Assigned';
+
+  @override
+  String get accepted => 'Accepted';
+
+  @override
+  String get rejected => 'Rejected';
+
+  @override
+  String get pickedUp => 'Picked Up';
+
+  @override
+  String get courierInformation => 'Courier Information';
+
+  @override
+  String get assignedAt => 'Assigned At';
+
+  @override
+  String get acceptedAt => 'Accepted At';
+
+  @override
+  String get pickedUpAt => 'Picked Up At';
+
+  @override
+  String get outForDeliveryAt => 'Out for Delivery At';
 
   @override
   String get vendorOrders => 'Vendor Orders';
@@ -1602,7 +1643,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rejectReasonDescription =>
-      'Please enter the rejection reason (at least 10 characters):';
+      'Please enter the rejection reason (at least 1 character):';
 
   @override
   String get rejectReasonHint => 'Rejection reason...';
@@ -1643,6 +1684,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yourLocation => 'Your Location';
+
+  @override
+  String get locationPermissionTitle => 'Location Permission Required';
+
+  @override
+  String get locationPermissionMessage =>
+      'We need your location permission to show nearby restaurants and track your orders.';
+
+  @override
+  String get allow => 'Allow';
+
+  @override
+  String get locationManagement => 'Location Management';
+
+  @override
+  String get currentLocationInfo => 'Current Location Information';
+
+  @override
+  String get latitude => 'Latitude';
+
+  @override
+  String get longitude => 'Longitude';
+
+  @override
+  String get lastLocationUpdate => 'Last Update';
+
+  @override
+  String get noLocationData => 'No location data available';
+
+  @override
+  String get selectLocationOnMap => 'Select Location on Map';
+
+  @override
+  String get useCurrentLocation => 'Use Current Location';
+
+  @override
+  String get updateLocation => 'Update Location';
+
+  @override
+  String get locationSharingInfo =>
+      'Location sharing is required to receive orders from nearby restaurants. Your location is automatically shared when your status is \"Available\".';
+
+  @override
+  String get locationManagementDescription =>
+      'View and update your current location';
 
   @override
   String get vendorsMap => 'Vendors Map';
@@ -1936,4 +2022,354 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addAddressToOrder => 'Add address to order';
+
+  @override
+  String get createCourierAccount => 'Create Courier Account';
+
+  @override
+  String get startDeliveringToday => 'Start delivering today and earn money';
+
+  @override
+  String get alreadyHaveCourierAccount => 'Already have a courier account? ';
+
+  @override
+  String get courierRegister => 'Courier Register';
+
+  @override
+  String get talabiCourier => 'Talabi Courier';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get allTime => 'All time';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get markAsPickedUp => 'Mark as Picked Up';
+
+  @override
+  String get markAsDelivered => 'Mark as Delivered';
+
+  @override
+  String get orderAccepted => 'Order accepted';
+
+  @override
+  String get orderMarkedAsPickedUp => 'Order marked as picked up';
+
+  @override
+  String get orderDelivered => 'Order delivered';
+
+  @override
+  String get actionCouldNotBeCompleted => 'Action could not be completed';
+
+  @override
+  String get cannotChangeStatusWhileBusy => 'Cannot change status while busy';
+
+  @override
+  String newOrderAssigned(Object orderId) {
+    return 'New order #$orderId assigned!';
+  }
+
+  @override
+  String get currentStatus => 'Current Status';
+
+  @override
+  String get performance => 'Performance';
+
+  @override
+  String get availabilityStatus => 'Availability Status';
+
+  @override
+  String get checkNewOrderConditions =>
+      'Check new order receiving conditions here';
+
+  @override
+  String get navigationApp => 'Navigation App';
+
+  @override
+  String get selectPreferredNavigationApp =>
+      'Select your preferred navigation app';
+
+  @override
+  String get noVehicleInfo => 'No vehicle information';
+
+  @override
+  String get cannotChangeStatusWithActiveOrders =>
+      'Cannot change status with active orders';
+
+  @override
+  String get cannotGoOfflineUntilOrdersCompleted =>
+      'Cannot go offline until active orders are completed';
+
+  @override
+  String get points => 'Points';
+
+  @override
+  String get totalEarnings => 'Total Earnings';
+
+  @override
+  String get logoutConfirm => 'Are you sure you want to logout?';
+
+  @override
+  String get personalInfo => 'Personal Information';
+
+  @override
+  String get courierSettings => 'Courier Settings';
+
+  @override
+  String get vehicleType => 'Vehicle Type';
+
+  @override
+  String get maxActiveOrders => 'Max Active Orders';
+
+  @override
+  String get useWorkingHours => 'Use working hours';
+
+  @override
+  String get onlyAvailableDuringSetHours =>
+      'You can only be \"Available\" during the hours you set';
+
+  @override
+  String get startTime => 'Start Time';
+
+  @override
+  String get endTime => 'End Time';
+
+  @override
+  String get mustSelectStartAndEndTime =>
+      'You must select start and end time for working hours';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get mustSelectVehicleType => 'You must select a vehicle type';
+
+  @override
+  String get selectVehicleType => 'Select Vehicle Type';
+
+  @override
+  String get selectVehicleTypeDescription =>
+      'Please select the vehicle type you will use. This selection is required.';
+
+  @override
+  String get motorcycle => 'Motorcycle';
+
+  @override
+  String get car => 'Car';
+
+  @override
+  String get bicycle => 'Bicycle';
+
+  @override
+  String get vehicleTypeUpdatedSuccessfully =>
+      'Vehicle type updated successfully';
+
+  @override
+  String get failedToUpdateVehicleType => 'Failed to update vehicle type';
+
+  @override
+  String get selectLocationRequired => 'Location Selection Required';
+
+  @override
+  String get selectLocationRequiredDescription =>
+      'Please select your location. This information is required to receive orders.';
+
+  @override
+  String get selectFromMap => 'Select from Map';
+
+  @override
+  String get gettingCurrentLocation => 'Getting your location...';
+
+  @override
+  String get locationServicesDisabledTitle => 'Location Services Disabled';
+
+  @override
+  String get locationServicesDisabledMessage =>
+      'Location services are disabled. Please enable location services in settings.';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
+  String get assignCourierConfirmationTitle => 'Confirm Courier Assignment';
+
+  @override
+  String assignCourierConfirmationMessage(String courierName) {
+    return 'Are you sure you want to assign this order to $courierName?';
+  }
+
+  @override
+  String get assign => 'Assign';
+
+  @override
+  String get courierAssignedSuccessfully => 'Courier assigned successfully';
+
+  @override
+  String get enterValidNumber => 'Enter a valid number';
+
+  @override
+  String profileUpdateFailed(Object error) {
+    return 'Profile update failed: $error';
+  }
+
+  @override
+  String get availabilityConditions => 'Availability Conditions';
+
+  @override
+  String get whenConditionsMetCanReceiveOrders =>
+      'The following conditions must be met to receive new orders:';
+
+  @override
+  String get statusMustBeAvailable => 'Your status must be \"Available\"';
+
+  @override
+  String activeOrdersBelowLimit(Object current, Object max) {
+    return 'Your active orders must be below your maximum limit ($current / $max)';
+  }
+
+  @override
+  String get courierAccountMustBeActive =>
+      'Your courier account must be active';
+
+  @override
+  String get currentlyBlockingReasons => 'Currently blocking reasons';
+
+  @override
+  String get everythingLooksGood =>
+      'Everything looks good, new orders may arrive';
+
+  @override
+  String get available => 'Available';
+
+  @override
+  String get notAvailable => 'Not Available';
+
+  @override
+  String get earningsTitle => 'Earnings';
+
+  @override
+  String get todayEarnings => 'Today';
+
+  @override
+  String get thisWeek => 'This Week';
+
+  @override
+  String get thisMonth => 'This Month';
+
+  @override
+  String get totalEarningsLabel => 'Total Earnings';
+
+  @override
+  String get avgPerDelivery => 'Avg. per Delivery';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get noEarningsForPeriod => 'No earnings found for this period';
+
+  @override
+  String get navigationAppUpdated => 'Navigation app updated';
+
+  @override
+  String navigationPreferenceNotSaved(Object error) {
+    return 'Navigation preference could not be saved: $error';
+  }
+
+  @override
+  String get selectDefaultNavigationApp =>
+      'Select the default navigation app you want to use when going to delivery address';
+
+  @override
+  String get note => 'Note';
+
+  @override
+  String get ifAppNotInstalledSystemWillOfferAlternative =>
+      'If the app you selected is not installed, the system will offer you a suitable alternative';
+
+  @override
+  String get preferenceOnlyForCourierAccount =>
+      'This preference is only valid for your courier account';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get noNotificationsYet =>
+      'You don\'t have any notifications yet.\nOrder movements will appear here';
+
+  @override
+  String get notificationsLoadFailed => 'Notifications could not be loaded';
+
+  @override
+  String notificationProcessingFailed(Object error) {
+    return 'Notification processing failed: $error';
+  }
+
+  @override
+  String get orderDetailTitle => 'Order Detail';
+
+  @override
+  String get pickupLocation => 'Pickup Location';
+
+  @override
+  String get deliveryLocation => 'Delivery Location';
+
+  @override
+  String get orderItems => 'Order Items';
+
+  @override
+  String get viewMap => 'View Map';
+
+  @override
+  String get deliveryProof => 'Delivery Proof';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get signature => 'Signature';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get notesOptional => 'Notes (Optional)';
+
+  @override
+  String get leftAtFrontDoor => 'Left at front door, etc.';
+
+  @override
+  String get submitProofAndCompleteDelivery =>
+      'Submit Proof & Complete Delivery';
+
+  @override
+  String get pleaseTakePhoto => 'Please take a photo of the delivery';
+
+  @override
+  String get pleaseObtainSignature => 'Please obtain a signature';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get noDeliveryHistoryYet => 'No delivery history yet';
+
+  @override
+  String get pickup => 'Pickup';
+
+  @override
+  String get delivery => 'Delivery';
+
+  @override
+  String get navigate => 'Navigate';
+
+  @override
+  String couldNotLaunchMaps(Object error) {
+    return 'Could not launch maps: $error';
+  }
 }

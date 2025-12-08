@@ -158,6 +158,19 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
     );
   }
 
+  String _getLocalizedString(String key, String fallback) {
+    try {
+      final localizations = AppLocalizations.of(context);
+      if (localizations == null) return fallback;
+
+      // Use reflection to get the property dynamically
+      final value = (localizations as dynamic)[key];
+      return value?.toString() ?? fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
   Widget _buildProfileDetails(BuildContext context, AuthProvider authProvider) {
     final courier = _courier!;
     final localizations = AppLocalizations.of(context);
@@ -185,7 +198,8 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                courier.vehicleType ?? 'Araç bilgisi yok',
+                courier.vehicleType ??
+                    (localizations?.noVehicleInfo ?? 'Araç bilgisi yok'),
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(color: Colors.grey),
@@ -194,9 +208,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
         ),
         const SizedBox(height: 32),
-        const Text(
-          'Anlık Durum',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          localizations?.currentStatus ?? 'Anlık Durum',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Card(
@@ -222,10 +236,13 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
                       onChanged: (value) {
                         if (courier.status == 'Busy' ||
                             courier.status == 'Assigned') {
+                          final localizations = AppLocalizations.of(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Aktif sipariş varken durum değiştirilemez.',
+                                localizations
+                                        ?.cannotChangeStatusWithActiveOrders ??
+                                    'Aktif sipariş varken durum değiştirilemez.',
                               ),
                             ),
                           );
@@ -237,11 +254,12 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
                   ],
                 ),
                 if (courier.status == 'Busy' || courier.status == 'Assigned')
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
-                      'Aktif sipariş tamamlanana kadar offline olamazsın.',
-                      style: TextStyle(color: AppTheme.primaryOrange),
+                      localizations?.cannotGoOfflineUntilOrdersCompleted ??
+                          'Aktif sipariş tamamlanana kadar offline olamazsın.',
+                      style: const TextStyle(color: AppTheme.primaryOrange),
                     ),
                   ),
               ],
@@ -249,16 +267,16 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Performans',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          localizations?.performance ?? 'Performans',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
               child: _buildStatCard(
-                'Puan',
+                localizations?.points ?? 'Puan',
                 courier.averageRating.toStringAsFixed(1),
                 Icons.star,
                 Colors.amber,
@@ -267,7 +285,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildStatCard(
-                'Toplam Kazanç',
+                localizations?.totalEarnings ?? 'Toplam Kazanç',
                 '₺${courier.totalEarnings.toStringAsFixed(2)}',
                 Icons.attach_money,
                 Colors.green,
@@ -276,17 +294,17 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Ayarlar',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          localizations?.settings ?? 'Ayarlar',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         ListTile(
           leading: const Icon(Icons.edit_outlined),
           title: Text(localizations?.editProfile ?? 'Profili Düzenle'),
           subtitle: Text(
-            localizations?.editProfileDescription ??
-                'İşletme adı, adres ve iletişim bilgilerini düzenle',
+            localizations?.editCourierProfileDescription ??
+                'Ad, telefon, araç bilgisi ve çalışma saatlerini düzenle',
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
@@ -301,9 +319,10 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.radio_button_checked),
-          title: const Text('Müsaitlik Durumu'),
-          subtitle: const Text(
-            'Yeni sipariş alabilme şartlarını buradan kontrol et',
+          title: Text(localizations?.availabilityStatus ?? 'Müsaitlik Durumu'),
+          subtitle: Text(
+            localizations?.checkNewOrderConditions ??
+                'Yeni sipariş alabilme şartlarını buradan kontrol et',
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
@@ -326,9 +345,29 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           },
         ),
         ListTile(
+          leading: const Icon(Icons.location_on),
+          title: Text(
+            _getLocalizedString('locationManagement', 'Konum Yönetimi'),
+          ),
+          subtitle: Text(
+            _getLocalizedString(
+              'locationManagementDescription',
+              'Mevcut konumunu görüntüle ve güncelle',
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            print('CourierProfileScreen: Location management tapped');
+            Navigator.of(context).pushNamed('/courier/location-management');
+          },
+        ),
+        ListTile(
           leading: const Icon(Icons.map_outlined),
-          title: const Text('Navigasyon Uygulaması'),
-          subtitle: const Text('Tercih ettiğin navigasyon uygulamasını seç'),
+          title: Text(localizations?.navigationApp ?? 'Navigasyon Uygulaması'),
+          subtitle: Text(
+            localizations?.selectPreferredNavigationApp ??
+                'Tercih ettiğin navigasyon uygulamasını seç',
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             print('CourierProfileScreen: Navigation app tile tapped');
@@ -348,24 +387,30 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.logout, color: Colors.red),
-          title: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+          title: Text(
+            localizations?.logout ?? 'Çıkış Yap',
+            style: const TextStyle(color: Colors.red),
+          ),
           onTap: () async {
             print('CourierProfileScreen: Logout tapped');
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('Çıkış Yap'),
-                content: const Text('Çıkış yapmak istediğine emin misin?'),
+                title: Text(localizations?.logout ?? 'Çıkış Yap'),
+                content: Text(
+                  localizations?.logoutConfirm ??
+                      'Çıkış yapmak istediğine emin misin?',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('İptal'),
+                    child: Text(localizations?.cancel ?? 'İptal'),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text(
-                      'Çıkış Yap',
-                      style: TextStyle(color: Colors.red),
+                    child: Text(
+                      localizations?.logout ?? 'Çıkış Yap',
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 ],

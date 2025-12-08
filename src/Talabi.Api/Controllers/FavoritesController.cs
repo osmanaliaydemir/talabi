@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
+using Talabi.Core.Extensions;
+using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
@@ -28,18 +30,30 @@ public class FavoritesController : ControllerBase
     private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
     /// <summary>
-    /// Kullanıcının favori ürünlerini getirir
+    /// Kullanıcının favori ürünlerini getirir (pagination desteği ile)
     /// </summary>
-    /// <returns>Favori ürün listesi</returns>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 20)</param>
+    /// <returns>Sayfalanmış favori ürün listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetFavorites()
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetFavorites([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 20;
+        if (pageSize > 100) pageSize = 100; // Max page size limit
+
         var userId = GetUserId();
 
-        var favorites = await _unitOfWork.FavoriteProducts.Query()
+        IQueryable<FavoriteProduct> query = _unitOfWork.FavoriteProducts.Query()
             .Where(f => f.UserId == userId)
-            .Include(f => f.Product)
-            .Select(f => new ProductDto
+            .Include(f => f.Product);
+
+        // Order by most recently added first
+        IOrderedQueryable<FavoriteProduct> orderedQuery = query.OrderByDescending(f => f.Id);
+
+        // Pagination ve DTO mapping
+        var pagedResult = await orderedQuery.ToPagedResultAsync(
+            f => new ProductDto
             {
                 Id = f.Product!.Id,
                 VendorId = f.Product.VendorId,
@@ -48,10 +62,21 @@ public class FavoritesController : ControllerBase
                 Price = f.Product.Price,
                 Currency = f.Product.Currency,
                 ImageUrl = f.Product.ImageUrl
-            })
-            .ToListAsync();
+            },
+            page,
+            pageSize);
 
-        return Ok(new ApiResponse<List<ProductDto>>(favorites, "Favori ürünler başarıyla getirildi"));
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<ProductDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
+
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Favori ürünler başarıyla getirildi"));
     }
 
     /// <summary>

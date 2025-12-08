@@ -5,9 +5,9 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
-import 'package:mobile/widgets/common/skeleton_loader.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
+import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class VendorDetailScreen extends StatefulWidget {
   final Vendor vendor;
@@ -114,11 +114,11 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
 
   Future<void> _loadFavoriteStatus() async {
     try {
-      final favorites = await _apiService.getFavorites();
+      final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favorites) {
-          _favoriteStatus[fav['id'].toString()] = true;
+        for (var fav in favoritesResult.items) {
+          _favoriteStatus[fav.id] = true;
         }
       });
     } catch (e) {

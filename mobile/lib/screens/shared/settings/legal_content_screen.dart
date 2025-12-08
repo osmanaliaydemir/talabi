@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/widgets/common/connectivity_banner.dart';
+import 'package:mobile/widgets/connectivity_banner.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class LegalContentScreen extends StatefulWidget {

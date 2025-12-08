@@ -25,10 +25,7 @@ public class VendorNotificationsController : ControllerBase
     /// <summary>
     /// VendorNotificationsController constructor
     /// </summary>
-    public VendorNotificationsController(
-        IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager,
-        ILogger<VendorNotificationsController> logger)
+    public VendorNotificationsController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager, ILogger<VendorNotificationsController> logger)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;

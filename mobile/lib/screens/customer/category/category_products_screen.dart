@@ -6,9 +6,9 @@ import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
-import 'package:mobile/widgets/common/skeleton_loader.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
+import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
@@ -67,11 +67,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
   Future<void> _loadFavoriteStatus() async {
     try {
-      final favorites = await _apiService.getFavorites();
+      final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favorites) {
-          _favoriteStatus[fav['id'].toString()] = true;
+        for (var fav in favoritesResult.items) {
+          _favoriteStatus[fav.id] = true;
         }
       });
     } catch (e) {

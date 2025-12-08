@@ -1,12 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/screens/customer/product/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/widgets/toast_message.dart';
 
 class VendorsMapScreen extends StatefulWidget {
   const VendorsMapScreen({super.key});
@@ -66,67 +66,26 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
     });
 
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ToastMessage.show(
-            context,
-            message: l10n.locationServicesDisabled,
-            isSuccess: false,
+      final position = await LocationPermissionService.getCurrentLocation(
+        context,
+      );
+
+      if (position != null && mounted) {
+        setState(() {
+          _userLocation = LatLng(position.latitude, position.longitude);
+          _isLoadingLocation = false;
+        });
+
+        // Move camera to user location
+        if (_mapController != null) {
+          _mapController!.animateCamera(
+            CameraUpdate.newLatLngZoom(_userLocation!, 13),
           );
         }
+      } else {
         setState(() {
           _isLoadingLocation = false;
         });
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            final l10n = AppLocalizations.of(context)!;
-            ToastMessage.show(
-              context,
-              message: l10n.locationPermissionDenied,
-              isSuccess: false,
-            );
-          }
-          setState(() {
-            _isLoadingLocation = false;
-          });
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ToastMessage.show(
-            context,
-            message: l10n.locationPermissionDeniedForever,
-            isSuccess: false,
-          );
-        }
-        setState(() {
-          _isLoadingLocation = false;
-        });
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition();
-      setState(() {
-        _userLocation = LatLng(position.latitude, position.longitude);
-        _isLoadingLocation = false;
-      });
-
-      // Move camera to user location
-      if (_mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(_userLocation!, 13),
-        );
       }
     } catch (e) {
       setState(() {

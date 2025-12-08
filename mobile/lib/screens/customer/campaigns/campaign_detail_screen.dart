@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/promotional_banner.dart';
-import 'package:mobile/widgets/common/bouncing_circle.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/bouncing_circle.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class CampaignDetailScreen extends StatelessWidget {
   final PromotionalBanner banner;

@@ -157,6 +157,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعديل اسم العمل والعنوان ومعلومات الاتصال';
 
   @override
+  String get editCourierProfileDescription =>
+      'تعديل الاسم والهاتف ومعلومات المركبة وساعات العمل';
+
+  @override
   String get changePassword => 'تغيير كلمة المرور';
 
   @override
@@ -455,6 +459,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get areYouCourier => 'هل أنت سائق؟';
 
   @override
+  String get areYouVendor => 'هل أنت بائع؟ ';
+
+  @override
   String get courierSignIn => 'تسجيل دخول السائق';
 
   @override
@@ -645,6 +652,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تحتاج إلى إضافة عنوان توصيل قبل تقديم الطلب.';
 
   @override
+  String get addressRequiredDescription =>
+      'يجب عليك إضافة عنوان واحد على الأقل لتقديم الطلبات. يرجى إضافة عنوانك.';
+
+  @override
   String get addAddress => 'إضافة عنوان';
 
   @override
@@ -828,7 +839,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get locationServicesDisabled => 'خدمات الموقع معطلة';
 
   @override
-  String get pleaseSelectLocation => 'الرجاء اختيار موقع';
+  String get pleaseSelectLocation => 'يرجى تحديد موقع';
 
   @override
   String get selectedLocation => 'الموقع المحدد';
@@ -1205,10 +1216,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ready => 'جاهز';
 
   @override
+  String get outForDelivery => 'في الطريق للتسليم';
+
+  @override
   String get delivered => 'تم التوصيل';
 
   @override
   String get cancelled => 'ملغي';
+
+  @override
+  String get assigned => 'مُعين';
+
+  @override
+  String get accepted => 'مقبول';
+
+  @override
+  String get rejected => 'مرفوض';
+
+  @override
+  String get pickedUp => 'تم الاستلام';
+
+  @override
+  String get courierInformation => 'معلومات السائق';
+
+  @override
+  String get assignedAt => 'تاريخ التعيين';
+
+  @override
+  String get acceptedAt => 'تاريخ القبول';
+
+  @override
+  String get pickedUpAt => 'تاريخ الاستلام';
+
+  @override
+  String get outForDeliveryAt => 'تاريخ الخروج للتسليم';
 
   @override
   String get vendorOrders => 'طلبات البائع';
@@ -1583,7 +1624,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rejectReasonDescription =>
-      'يرجى إدخال سبب الرفض (10 أحرف على الأقل):';
+      'يرجى إدخال سبب الرفض (حرف واحد على الأقل):';
 
   @override
   String get rejectReasonHint => 'سبب الرفض...';
@@ -1622,6 +1663,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get yourLocation => 'موقعك';
+
+  @override
+  String get locationPermissionTitle => 'إذن الموقع مطلوب';
+
+  @override
+  String get locationPermissionMessage =>
+      'نحتاج إلى إذن الموقع لإظهار المطاعم القريبة وتتبع طلباتك.';
+
+  @override
+  String get allow => 'السماح';
+
+  @override
+  String get locationManagement => 'إدارة الموقع';
+
+  @override
+  String get currentLocationInfo => 'معلومات الموقع الحالي';
+
+  @override
+  String get latitude => 'خط العرض';
+
+  @override
+  String get longitude => 'خط الطول';
+
+  @override
+  String get lastLocationUpdate => 'آخر تحديث';
+
+  @override
+  String get noLocationData => 'لا توجد بيانات موقع';
+
+  @override
+  String get selectLocationOnMap => 'حدد الموقع على الخريطة';
+
+  @override
+  String get useCurrentLocation => 'استخدام الموقع الحالي';
+
+  @override
+  String get updateLocation => 'تحديث الموقع';
+
+  @override
+  String get locationSharingInfo =>
+      'مشاركة الموقع مطلوبة لتلقي الطلبات من المطاعم القريبة. يتم مشاركة موقعك تلقائياً عندما تكون حالتك \"متاح\".';
+
+  @override
+  String get locationManagementDescription => 'عرض وتحديث موقعك الحالي';
 
   @override
   String get vendorsMap => 'خريطة المتاجر';
@@ -1914,4 +1999,351 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addAddressToOrder => 'أضف عنوانًا للطلب';
+
+  @override
+  String get createCourierAccount => 'إنشاء حساب السائق';
+
+  @override
+  String get startDeliveringToday => 'ابدأ التسليم اليوم وكسب المال';
+
+  @override
+  String get alreadyHaveCourierAccount => 'هل لديك بالفعل حساب سائق؟ ';
+
+  @override
+  String get courierRegister => 'تسجيل السائق';
+
+  @override
+  String get talabiCourier => 'طلبي السائق';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get allTime => 'كل الأوقات';
+
+  @override
+  String get accept => 'قبول';
+
+  @override
+  String get markAsPickedUp => 'تم الاستلام';
+
+  @override
+  String get markAsDelivered => 'تم التسليم';
+
+  @override
+  String get orderAccepted => 'تم قبول الطلب';
+
+  @override
+  String get orderMarkedAsPickedUp => 'تم تحديد الطلب كمستلم';
+
+  @override
+  String get orderDelivered => 'تم تسليم الطلب';
+
+  @override
+  String get actionCouldNotBeCompleted => 'لم يتم إكمال الإجراء';
+
+  @override
+  String get cannotChangeStatusWhileBusy =>
+      'لا يمكن تغيير الحالة أثناء الانشغال';
+
+  @override
+  String newOrderAssigned(Object orderId) {
+    return 'تم تعيين طلب جديد #$orderId!';
+  }
+
+  @override
+  String get currentStatus => 'الحالة الحالية';
+
+  @override
+  String get performance => 'الأداء';
+
+  @override
+  String get availabilityStatus => 'حالة التوفر';
+
+  @override
+  String get checkNewOrderConditions =>
+      'تحقق من شروط استلام الطلبات الجديدة هنا';
+
+  @override
+  String get navigationApp => 'تطبيق الملاحة';
+
+  @override
+  String get selectPreferredNavigationApp => 'اختر تطبيق الملاحة المفضل لديك';
+
+  @override
+  String get noVehicleInfo => 'لا توجد معلومات عن المركبة';
+
+  @override
+  String get cannotChangeStatusWithActiveOrders =>
+      'لا يمكن تغيير الحالة مع وجود طلبات نشطة';
+
+  @override
+  String get cannotGoOfflineUntilOrdersCompleted =>
+      'لا يمكنك الانتقال إلى وضع عدم الاتصال حتى اكتمال الطلبات النشطة';
+
+  @override
+  String get points => 'النقاط';
+
+  @override
+  String get totalEarnings => 'إجمالي الأرباح';
+
+  @override
+  String get logoutConfirm => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get personalInfo => 'المعلومات الشخصية';
+
+  @override
+  String get courierSettings => 'إعدادات السائق';
+
+  @override
+  String get vehicleType => 'نوع المركبة';
+
+  @override
+  String get maxActiveOrders => 'الحد الأقصى للطلبات النشطة';
+
+  @override
+  String get useWorkingHours => 'استخدام ساعات العمل';
+
+  @override
+  String get onlyAvailableDuringSetHours =>
+      'يمكنك أن تكون \"متاح\" فقط خلال الساعات التي تحددها';
+
+  @override
+  String get startTime => 'وقت البداية';
+
+  @override
+  String get endTime => 'وقت النهاية';
+
+  @override
+  String get mustSelectStartAndEndTime =>
+      'يجب تحديد وقت البداية والنهاية لساعات العمل';
+
+  @override
+  String get saving => 'جاري الحفظ...';
+
+  @override
+  String get mustSelectVehicleType => 'يجب تحديد نوع المركبة';
+
+  @override
+  String get selectVehicleType => 'اختر نوع المركبة';
+
+  @override
+  String get selectVehicleTypeDescription =>
+      'يرجى تحديد نوع المركبة التي ستستخدمها. هذا الاختيار إلزامي.';
+
+  @override
+  String get motorcycle => 'دراجة نارية';
+
+  @override
+  String get car => 'سيارة';
+
+  @override
+  String get bicycle => 'دراجة';
+
+  @override
+  String get vehicleTypeUpdatedSuccessfully => 'تم تحديث نوع المركبة بنجاح';
+
+  @override
+  String get failedToUpdateVehicleType => 'فشل تحديث نوع المركبة';
+
+  @override
+  String get selectLocationRequired => 'اختيار الموقع إلزامي';
+
+  @override
+  String get selectLocationRequiredDescription =>
+      'يرجى تحديد موقعك. هذه المعلومات مطلوبة لتلقي الطلبات.';
+
+  @override
+  String get selectFromMap => 'اختيار من الخريطة';
+
+  @override
+  String get gettingCurrentLocation => 'جارٍ الحصول على موقعك...';
+
+  @override
+  String get locationServicesDisabledTitle => 'خدمات الموقع معطلة';
+
+  @override
+  String get locationServicesDisabledMessage =>
+      'خدمات الموقع معطلة. يرجى تفعيل خدمات الموقع من الإعدادات.';
+
+  @override
+  String get openSettings => 'فتح الإعدادات';
+
+  @override
+  String get assignCourierConfirmationTitle => 'تأكيد تعيين الكوريير';
+
+  @override
+  String assignCourierConfirmationMessage(String courierName) {
+    return 'هل أنت متأكد من أنك تريد تعيين هذا الطلب إلى $courierName؟';
+  }
+
+  @override
+  String get assign => 'تعيين';
+
+  @override
+  String get courierAssignedSuccessfully => 'تم تعيين الكوريير بنجاح';
+
+  @override
+  String get enterValidNumber => 'أدخل رقمًا صالحًا';
+
+  @override
+  String profileUpdateFailed(Object error) {
+    return 'فشل تحديث الملف الشخصي: $error';
+  }
+
+  @override
+  String get availabilityConditions => 'شروط التوفر';
+
+  @override
+  String get whenConditionsMetCanReceiveOrders =>
+      'يجب استيفاء الشروط التالية لاستلام طلبات جديدة:';
+
+  @override
+  String get statusMustBeAvailable => 'يجب أن تكون حالتك \"متاح\"';
+
+  @override
+  String activeOrdersBelowLimit(Object current, Object max) {
+    return 'يجب أن تكون طلباتك النشطة أقل من الحد الأقصى ($current / $max)';
+  }
+
+  @override
+  String get courierAccountMustBeActive => 'يجب أن يكون حساب السائق نشطًا';
+
+  @override
+  String get currentlyBlockingReasons => 'الأسباب التي تمنع حاليًا';
+
+  @override
+  String get everythingLooksGood =>
+      'يبدو كل شيء على ما يرام، قد تصل طلبات جديدة';
+
+  @override
+  String get available => 'متاح';
+
+  @override
+  String get notAvailable => 'غير متاح';
+
+  @override
+  String get earningsTitle => 'الأرباح';
+
+  @override
+  String get todayEarnings => 'اليوم';
+
+  @override
+  String get thisWeek => 'هذا الأسبوع';
+
+  @override
+  String get thisMonth => 'هذا الشهر';
+
+  @override
+  String get totalEarningsLabel => 'إجمالي الأرباح';
+
+  @override
+  String get avgPerDelivery => 'متوسط لكل تسليم';
+
+  @override
+  String get history => 'السجل';
+
+  @override
+  String get noEarningsForPeriod => 'لم يتم العثور على أرباح لهذه الفترة';
+
+  @override
+  String get navigationAppUpdated => 'تم تحديث تطبيق الملاحة';
+
+  @override
+  String navigationPreferenceNotSaved(Object error) {
+    return 'لم يتم حفظ تفضيل الملاحة: $error';
+  }
+
+  @override
+  String get selectDefaultNavigationApp =>
+      'اختر تطبيق الملاحة الافتراضي الذي تريد استخدامه عند الذهاب إلى عنوان التسليم';
+
+  @override
+  String get note => 'ملاحظة';
+
+  @override
+  String get ifAppNotInstalledSystemWillOfferAlternative =>
+      'إذا لم يكن التطبيق الذي اخترته مثبتًا، فسيقدم لك النظام بديلاً مناسبًا';
+
+  @override
+  String get preferenceOnlyForCourierAccount =>
+      'هذا التفضيل صالح فقط لحساب السائق الخاص بك';
+
+  @override
+  String get notificationsTitle => 'الإشعارات';
+
+  @override
+  String get noNotificationsYet =>
+      'ليس لديك أي إشعارات حتى الآن.\nستظهر حركات الطلب هنا';
+
+  @override
+  String get notificationsLoadFailed => 'فشل تحميل الإشعارات';
+
+  @override
+  String notificationProcessingFailed(Object error) {
+    return 'فشل معالجة الإشعار: $error';
+  }
+
+  @override
+  String get orderDetailTitle => 'تفاصيل الطلب';
+
+  @override
+  String get pickupLocation => 'موقع الاستلام';
+
+  @override
+  String get deliveryLocation => 'موقع التسليم';
+
+  @override
+  String get orderItems => 'عناصر الطلب';
+
+  @override
+  String get viewMap => 'عرض الخريطة';
+
+  @override
+  String get deliveryProof => 'إثبات التسليم';
+
+  @override
+  String get takePhoto => 'التقاط صورة';
+
+  @override
+  String get signature => 'التوقيع';
+
+  @override
+  String get notes => 'ملاحظات';
+
+  @override
+  String get notesOptional => 'ملاحظات (اختياري)';
+
+  @override
+  String get leftAtFrontDoor => 'ترك عند الباب الأمامي، إلخ';
+
+  @override
+  String get submitProofAndCompleteDelivery => 'إرسال الإثبات وإكمال التسليم';
+
+  @override
+  String get pleaseTakePhoto => 'يرجى التقاط صورة للتسليم';
+
+  @override
+  String get pleaseObtainSignature => 'يرجى الحصول على توقيع';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get noDeliveryHistoryYet => 'لا يوجد سجل تسليم حتى الآن';
+
+  @override
+  String get pickup => 'الاستلام';
+
+  @override
+  String get delivery => 'التسليم';
+
+  @override
+  String get navigate => 'التنقل';
+
+  @override
+  String couldNotLaunchMaps(Object error) {
+    return 'تعذر فتح الخرائط: $error';
+  }
 }

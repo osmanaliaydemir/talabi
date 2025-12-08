@@ -132,7 +132,7 @@ public class OrdersController : ControllerBase
             await AddVendorNotificationAsync(
                 order.VendorId,
                 "Yeni Sipariş",
-                $"#{order.Id} numaralı yeni sipariş alındı. Toplam: {totalAmount:C}",
+                $"#Order.{order.CustomerOrderId} numaralı yeni sipariş alındı. Toplam: ₺{totalAmount:N2}",
                 "NewOrder",
                 order.Id);
 
@@ -182,10 +182,24 @@ public class OrdersController : ControllerBase
         catch (Exception ex)
         {
             await _unitOfWork.RollbackTransactionAsync();
+            
+            // Get inner exception message if available
+            var errorMessage = ex.Message;
+            var innerException = ex.InnerException;
+            while (innerException != null)
+            {
+                errorMessage += " | Inner: " + innerException.Message;
+                innerException = innerException.InnerException;
+            }
+            
+            // Log full exception details
+            Console.WriteLine($"Error creating order: {ex}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            
             return StatusCode(500, new ApiResponse<OrderDto>(
                 "Sipariş oluşturulurken bir hata oluştu",
                 "ORDER_CREATION_FAILED",
-                new List<string> { ex.Message }
+                new List<string> { errorMessage }
             ));
         }
     }

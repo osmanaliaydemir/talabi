@@ -157,6 +157,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'İşletme adı, adres ve iletişim bilgilerini düzenle';
 
   @override
+  String get editCourierProfileDescription =>
+      'Ad, telefon, araç bilgisi ve çalışma saatlerini düzenle';
+
+  @override
   String get changePassword => 'Şifre Değiştir';
 
   @override
@@ -460,6 +464,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get areYouCourier => 'Kurye misiniz?';
 
   @override
+  String get areYouVendor => 'Satıcı mısınız? ';
+
+  @override
   String get courierSignIn => 'Kurye Girişi';
 
   @override
@@ -649,6 +656,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get addressRequiredMessage =>
       'Sipariş vermek için önce bir teslimat adresi eklemeniz gerekiyor.';
+
+  @override
+  String get addressRequiredDescription =>
+      'Sipariş verebilmek için en az bir adres eklemeniz gerekmektedir. Lütfen adresinizi ekleyin.';
 
   @override
   String get addAddress => 'Adres Ekle';
@@ -1219,10 +1230,40 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ready => 'Hazır';
 
   @override
+  String get outForDelivery => 'Teslimata Çıktı';
+
+  @override
   String get delivered => 'Teslim Edildi';
 
   @override
   String get cancelled => 'İptal Edildi';
+
+  @override
+  String get assigned => 'Atandı';
+
+  @override
+  String get accepted => 'Kabul Edildi';
+
+  @override
+  String get rejected => 'Reddedildi';
+
+  @override
+  String get pickedUp => 'Teslim Alındı';
+
+  @override
+  String get courierInformation => 'Kurye Bilgileri';
+
+  @override
+  String get assignedAt => 'Atanma Tarihi';
+
+  @override
+  String get acceptedAt => 'Kabul Tarihi';
+
+  @override
+  String get pickedUpAt => 'Teslim Alındı';
+
+  @override
+  String get outForDeliveryAt => 'Teslimata Çıktı';
 
   @override
   String get vendorOrders => 'Satıcı Siparişleri';
@@ -1601,7 +1642,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get rejectReasonDescription =>
-      'Red sebebinizi girin (en az 10 karakter):';
+      'Red sebebinizi girin (en az 1 karakter):';
 
   @override
   String get rejectReasonHint => 'Red sebebi...';
@@ -1642,6 +1683,51 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get yourLocation => 'Konumunuz';
+
+  @override
+  String get locationPermissionTitle => 'Konum İzni Gerekli';
+
+  @override
+  String get locationPermissionMessage =>
+      'Uygulamanın size yakın restoranları gösterebilmesi ve siparişlerinizi takip edebilmesi için konum iznine ihtiyacımız var.';
+
+  @override
+  String get allow => 'İzin Ver';
+
+  @override
+  String get locationManagement => 'Konum Yönetimi';
+
+  @override
+  String get currentLocationInfo => 'Mevcut Konum Bilgisi';
+
+  @override
+  String get latitude => 'Enlem';
+
+  @override
+  String get longitude => 'Boylam';
+
+  @override
+  String get lastLocationUpdate => 'Son Güncelleme';
+
+  @override
+  String get noLocationData => 'Henüz konum bilgisi yok';
+
+  @override
+  String get selectLocationOnMap => 'Haritada Konum Seç';
+
+  @override
+  String get useCurrentLocation => 'Mevcut Konumu Kullan';
+
+  @override
+  String get updateLocation => 'Konumu Güncelle';
+
+  @override
+  String get locationSharingInfo =>
+      'Konum paylaşımı, yakınındaki restoranlardan sipariş alabilmen için gereklidir. Durumun \"Available\" olduğunda konumun otomatik olarak paylaşılır.';
+
+  @override
+  String get locationManagementDescription =>
+      'Mevcut konumunu görüntüle ve güncelle';
 
   @override
   String get vendorsMap => 'Marketler Haritası';
@@ -1934,4 +2020,353 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get addAddressToOrder => 'Sipariş vermek için adres ekleyin';
+
+  @override
+  String get createCourierAccount => 'Kurye Hesabı Oluştur';
+
+  @override
+  String get startDeliveringToday => 'Bugün teslimata başla ve para kazan';
+
+  @override
+  String get alreadyHaveCourierAccount => 'Zaten kurye hesabınız var mı? ';
+
+  @override
+  String get courierRegister => 'Kurye Kaydı';
+
+  @override
+  String get talabiCourier => 'Talabi Kurye';
+
+  @override
+  String get today => 'Bugün';
+
+  @override
+  String get allTime => 'Tüm zamanlar';
+
+  @override
+  String get accept => 'Kabul Et';
+
+  @override
+  String get markAsPickedUp => 'Alındı Olarak İşaretle';
+
+  @override
+  String get markAsDelivered => 'Teslim Edildi Olarak İşaretle';
+
+  @override
+  String get orderAccepted => 'Sipariş kabul edildi';
+
+  @override
+  String get orderMarkedAsPickedUp => 'Sipariş alındı olarak işaretlendi';
+
+  @override
+  String get orderDelivered => 'Sipariş teslim edildi';
+
+  @override
+  String get actionCouldNotBeCompleted => 'İşlem tamamlanamadı';
+
+  @override
+  String get cannotChangeStatusWhileBusy => 'Meşgulken durum değiştirilemez';
+
+  @override
+  String newOrderAssigned(Object orderId) {
+    return 'Yeni sipariş #$orderId atandı!';
+  }
+
+  @override
+  String get currentStatus => 'Anlık Durum';
+
+  @override
+  String get performance => 'Performans';
+
+  @override
+  String get availabilityStatus => 'Müsaitlik Durumu';
+
+  @override
+  String get checkNewOrderConditions =>
+      'Yeni sipariş alabilme şartlarını buradan kontrol et';
+
+  @override
+  String get navigationApp => 'Navigasyon Uygulaması';
+
+  @override
+  String get selectPreferredNavigationApp =>
+      'Tercih ettiğin navigasyon uygulamasını seç';
+
+  @override
+  String get noVehicleInfo => 'Araç bilgisi yok';
+
+  @override
+  String get cannotChangeStatusWithActiveOrders =>
+      'Aktif sipariş varken durum değiştirilemez';
+
+  @override
+  String get cannotGoOfflineUntilOrdersCompleted =>
+      'Aktif sipariş tamamlanana kadar offline olamazsın';
+
+  @override
+  String get points => 'Puan';
+
+  @override
+  String get totalEarnings => 'Toplam Kazanç';
+
+  @override
+  String get logoutConfirm => 'Çıkış yapmak istediğine emin misin?';
+
+  @override
+  String get personalInfo => 'Kişisel Bilgiler';
+
+  @override
+  String get courierSettings => 'Kurye Ayarları';
+
+  @override
+  String get vehicleType => 'Araç Türü';
+
+  @override
+  String get maxActiveOrders => 'Maksimum Aktif Sipariş';
+
+  @override
+  String get useWorkingHours => 'Çalışma saatlerini kullan';
+
+  @override
+  String get onlyAvailableDuringSetHours =>
+      'Sadece belirlediğin saatlerde \"Müsait\" olabilirsin';
+
+  @override
+  String get startTime => 'Başlangıç Saati';
+
+  @override
+  String get endTime => 'Bitiş Saati';
+
+  @override
+  String get mustSelectStartAndEndTime =>
+      'Çalışma saatleri için başlangıç ve bitiş seçmelisin';
+
+  @override
+  String get saving => 'Kaydediliyor...';
+
+  @override
+  String get mustSelectVehicleType => 'Araç türü seçmelisin';
+
+  @override
+  String get selectVehicleType => 'Araç Türü Seçin';
+
+  @override
+  String get selectVehicleTypeDescription =>
+      'Lütfen kullanacağınız araç türünü seçin. Bu seçim zorunludur.';
+
+  @override
+  String get motorcycle => 'Motor';
+
+  @override
+  String get car => 'Araba';
+
+  @override
+  String get bicycle => 'Bisiklet';
+
+  @override
+  String get vehicleTypeUpdatedSuccessfully =>
+      'Araç türü başarıyla güncellendi';
+
+  @override
+  String get failedToUpdateVehicleType => 'Araç türü güncellenemedi';
+
+  @override
+  String get selectLocationRequired => 'Konum Seçimi Zorunlu';
+
+  @override
+  String get selectLocationRequiredDescription =>
+      'Lütfen konumunuzu seçin. Bu bilgi sipariş almak için gereklidir.';
+
+  @override
+  String get selectFromMap => 'Haritadan Seç';
+
+  @override
+  String get gettingCurrentLocation => 'Konumunuz alınıyor...';
+
+  @override
+  String get locationServicesDisabledTitle => 'Konum Servisleri Kapalı';
+
+  @override
+  String get locationServicesDisabledMessage =>
+      'Konum servisleri kapalı. Lütfen ayarlardan konum servislerini açın.';
+
+  @override
+  String get openSettings => 'Ayarları Aç';
+
+  @override
+  String get assignCourierConfirmationTitle => 'Kurye Atamasını Onayla';
+
+  @override
+  String assignCourierConfirmationMessage(String courierName) {
+    return '$courierName adlı kuryeye bu siparişi atamak istediğinize emin misiniz?';
+  }
+
+  @override
+  String get assign => 'Ata';
+
+  @override
+  String get courierAssignedSuccessfully => 'Kurye başarıyla atandı';
+
+  @override
+  String get enterValidNumber => 'Geçerli bir sayı gir';
+
+  @override
+  String profileUpdateFailed(Object error) {
+    return 'Profil güncellenemedi: $error';
+  }
+
+  @override
+  String get availabilityConditions => 'Müsaitlik Koşulları';
+
+  @override
+  String get whenConditionsMetCanReceiveOrders =>
+      'Aşağıdaki şartlar sağlandığında yeni sipariş atanabilir:';
+
+  @override
+  String get statusMustBeAvailable => 'Durumun \"Available / Müsait\" olmalı';
+
+  @override
+  String activeOrdersBelowLimit(Object current, Object max) {
+    return 'Aktif sipariş sayın, maksimum limitin altında olmalı ($current / $max)';
+  }
+
+  @override
+  String get courierAccountMustBeActive => 'Kurye hesabın aktif olmalı';
+
+  @override
+  String get currentlyBlockingReasons => 'Şu anda engelleyen nedenler';
+
+  @override
+  String get everythingLooksGood =>
+      'Her şey yolunda görünüyor, yeni siparişler gelebilir';
+
+  @override
+  String get available => 'Müsait';
+
+  @override
+  String get notAvailable => 'Müsait Değil';
+
+  @override
+  String get earningsTitle => 'Kazançlar';
+
+  @override
+  String get todayEarnings => 'Bugün';
+
+  @override
+  String get thisWeek => 'Bu Hafta';
+
+  @override
+  String get thisMonth => 'Bu Ay';
+
+  @override
+  String get totalEarningsLabel => 'Toplam Kazanç';
+
+  @override
+  String get avgPerDelivery => 'Teslimat Başına Ortalama';
+
+  @override
+  String get history => 'Geçmiş';
+
+  @override
+  String get noEarningsForPeriod => 'Bu dönem için kazanç bulunamadı';
+
+  @override
+  String get navigationAppUpdated => 'Navigasyon uygulaması güncellendi';
+
+  @override
+  String navigationPreferenceNotSaved(Object error) {
+    return 'Navigasyon tercihi kaydedilemedi: $error';
+  }
+
+  @override
+  String get selectDefaultNavigationApp =>
+      'Teslimat adresine giderken kullanmak istediğin varsayılan navigasyon uygulamasını seç';
+
+  @override
+  String get note => 'Not';
+
+  @override
+  String get ifAppNotInstalledSystemWillOfferAlternative =>
+      'Seçtiğin uygulama cihazında yüklü değilse sistem sana uygun bir seçenek sunar';
+
+  @override
+  String get preferenceOnlyForCourierAccount =>
+      'Bu tercih sadece kurye hesabın için geçerlidir';
+
+  @override
+  String get notificationsTitle => 'Bildirimler';
+
+  @override
+  String get noNotificationsYet =>
+      'Henüz bir bildirimin yok.\nSipariş hareketlerin burada görünecek';
+
+  @override
+  String get notificationsLoadFailed => 'Bildirimler yüklenemedi';
+
+  @override
+  String notificationProcessingFailed(Object error) {
+    return 'Bildirim işlenemedi: $error';
+  }
+
+  @override
+  String get orderDetailTitle => 'Sipariş Detayı';
+
+  @override
+  String get pickupLocation => 'Alış Konumu';
+
+  @override
+  String get deliveryLocation => 'Teslimat Konumu';
+
+  @override
+  String get orderItems => 'Sipariş Ürünleri';
+
+  @override
+  String get viewMap => 'Haritayı Görüntüle';
+
+  @override
+  String get deliveryProof => 'Teslimat Kanıtı';
+
+  @override
+  String get takePhoto => 'Fotoğraf Çek';
+
+  @override
+  String get signature => 'İmza';
+
+  @override
+  String get notes => 'Notlar';
+
+  @override
+  String get notesOptional => 'Notlar (Opsiyonel)';
+
+  @override
+  String get leftAtFrontDoor => 'Kapı önüne bırakıldı, vb.';
+
+  @override
+  String get submitProofAndCompleteDelivery =>
+      'Kanıt Gönder ve Teslimatı Tamamla';
+
+  @override
+  String get pleaseTakePhoto => 'Lütfen teslimatın fotoğrafını çekin';
+
+  @override
+  String get pleaseObtainSignature => 'Lütfen imza alın';
+
+  @override
+  String get tryAgain => 'Tekrar dene';
+
+  @override
+  String get noDeliveryHistoryYet => 'Henüz teslimat geçmişi yok';
+
+  @override
+  String get pickup => 'Alış';
+
+  @override
+  String get delivery => 'Teslimat';
+
+  @override
+  String get navigate => 'Yönlendir';
+
+  @override
+  String couldNotLaunchMaps(Object error) {
+    return 'Haritalar açılamadı: $error';
+  }
 }

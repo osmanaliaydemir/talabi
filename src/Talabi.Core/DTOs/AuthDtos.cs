@@ -93,3 +93,21 @@ public class VendorRegisterDto
     [Required]
     public Talabi.Core.Enums.VendorType VendorType { get; set; } = Talabi.Core.Enums.VendorType.Restaurant;
 }
+
+public class CourierRegisterDto
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+    
+    [Required]
+    public string Password { get; set; } = string.Empty;
+    
+    [Required]
+    public string FullName { get; set; } = string.Empty;
+    
+    [Phone]
+    public string? Phone { get; set; }
+    
+    public string? Language { get; set; } // "tr", "en", "ar" - optional
+}

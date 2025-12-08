@@ -1,11 +1,11 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:provider/provider.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -18,38 +18,96 @@ class FavoritesScreen extends StatefulWidget {
 class _FavoritesScreenState extends State<FavoritesScreen> {
   final ApiService _apiService = ApiService();
   List<Product> _favorites = [];
-  bool _isLoading = true;
+
+  // Pagination State
+  int _currentPage = 1;
+  static const int _pageSize = 20;
+  bool _isFirstLoad = true;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+
   int? _lastBottomNavIndex;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _loadFavorites();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _loadFavorites(isRefresh: true);
   }
 
-  Future<void> _loadFavorites() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMoreData &&
+        !_isFirstLoad) {
+      _loadMoreFavorites();
+    }
+  }
+
+  Future<void> _loadFavorites({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _isFirstLoad = true;
+        _currentPage = 1;
+        _hasMoreData = true;
+        _favorites.clear();
+      });
+    } else {
+      setState(() {
+        _isLoadingMore = true;
+      });
+    }
+
     try {
-      final favoritesData = await _apiService.getFavorites();
+      final result = await _apiService.getFavorites(
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
       if (mounted) {
         setState(() {
-          _favorites = favoritesData
-              .map((data) => Product.fromJson(data))
-              .toList();
-          _isLoading = false;
+          if (isRefresh) {
+            _favorites = result.items.map((dto) => dto.toProduct()).toList();
+          } else {
+            _favorites.addAll(
+              result.items.map((dto) => dto.toProduct()).toList(),
+            );
+          }
+
+          _isFirstLoad = false;
+          _isLoadingMore = false;
+
+          _hasMoreData =
+              result.items.length >= _pageSize &&
+              _favorites.length < result.totalCount;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isFirstLoad = false;
+          _isLoadingMore = false;
         });
-      }
-      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Favoriler yüklenemedi: $e')));
       }
     }
+  }
+
+  Future<void> _loadMoreFavorites() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+    _currentPage++;
+    await _loadFavorites(isRefresh: false);
   }
 
   Future<void> _removeFromFavorites(String productId) async {
@@ -80,7 +138,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     if (bottomNav.currentIndex == 1 && _lastBottomNavIndex != 1) {
       // Screen just became visible, reload favorites
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _loadFavorites();
+        _loadFavorites(isRefresh: true);
       });
     }
     _lastBottomNavIndex = bottomNav.currentIndex;
@@ -99,11 +157,23 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           // Main Content
           Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.primaryOrange,
+            child: _isFirstLoad
+                ? GridView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
                     ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.8,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 12,
+                        ),
+                    itemCount: 6,
+                    itemBuilder: (context, index) {
+                      return const ProductSkeletonItem();
+                    },
                   )
                 : _favorites.isEmpty
                 ? Center(
@@ -127,6 +197,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
                   )
                 : GridView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 16,
@@ -138,16 +209,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 12,
                         ),
-                    itemCount: _favorites.length,
+                    cacheExtent: 500.0, // Optimize cache extent
+                    addAutomaticKeepAlives: false, // Improve performance
+                    addRepaintBoundaries: true, // Optimize repaints
+                    itemCount: _favorites.length + (_isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index == _favorites.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
                       final product = _favorites[index];
-                      return ProductCard(
-                        product: product,
-                        width: null,
-                        isFavorite: true,
-                        rating: '4.7',
-                        ratingCount: '2.3k',
-                        onFavoriteTap: () => _removeFromFavorites(product.id),
+                      return RepaintBoundary(
+                        child: ProductCard(
+                          product: product,
+                          width: null,
+                          isFavorite: true,
+                          rating: '4.7',
+                          ratingCount: '2.3k',
+                          onFavoriteTap: () => _removeFromFavorites(product.id),
+                        ),
                       );
                     },
                   ),

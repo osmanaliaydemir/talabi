@@ -24,9 +24,7 @@ public class MemoryHealthCheck : IHealthCheck
     /// <summary>
     /// Sistem bellek kullanımını kontrol eder
     /// </summary>
-    public Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -61,8 +59,7 @@ public class MemoryHealthCheck : IHealthCheck
         catch (Exception ex)
         {
             _logger.LogError(ex, "Memory health check failed with exception");
-            return Task.FromResult(HealthCheckResult.Unhealthy(
-                "Bellek sağlık kontrolü başarısız",
+            return Task.FromResult(HealthCheckResult.Unhealthy("Bellek sağlık kontrolü başarısız",
                 ex,
                 data: new Dictionary<string, object>
                 {

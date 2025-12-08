@@ -27,10 +27,7 @@ public class CourierNotificationsController : ControllerBase
     /// <summary>
     /// CourierNotificationsController constructor
     /// </summary>
-    public CourierNotificationsController(
-        IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager,
-        ILogger<CourierNotificationsController> logger)
+    public CourierNotificationsController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager, ILogger<CourierNotificationsController> logger)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
@@ -81,9 +78,7 @@ public class CourierNotificationsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 20, maksimum: 100)</param>
     /// <returns>Bildirim listesi ve okunmamış sayısı</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<CourierNotificationResponseDto>>> GetNotifications(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<ApiResponse<CourierNotificationResponseDto>>> GetNotifications([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;

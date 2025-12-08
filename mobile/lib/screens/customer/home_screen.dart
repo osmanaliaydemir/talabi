@@ -7,15 +7,15 @@ import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/promotional_banner.dart';
 
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/screens/customer/widgets/special_home_header.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/screens/customer/category/categories_screen.dart';
 import 'package:mobile/screens/customer/product/popular_product_list_screen.dart';
 import 'package:mobile/screens/customer/notifications_screen.dart';
-import 'package:mobile/widgets/common/bouncing_circle.dart';
+import 'package:mobile/widgets/bouncing_circle.dart';
 import 'package:mobile/screens/customer/campaigns/campaigns_screen.dart';
 import 'package:mobile/screens/customer/vendor/vendor_list_screen.dart';
 import 'package:mobile/screens/customer/vendor/vendor_detail_screen.dart';
@@ -29,10 +29,10 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Vendor>> _vendorsFuture;
   late Future<List<Product>> _popularProductsFuture;
@@ -193,11 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadFavoriteStatus() async {
     try {
-      final favorites = await _apiService.getFavorites();
+      final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favorites) {
-          _favoriteStatus[fav['id'].toString()] = true;
+        for (var fav in favoritesResult.items) {
+          _favoriteStatus[fav.id] = true;
         }
       });
     } catch (e) {
@@ -234,6 +234,11 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     }
+  }
+
+  /// Public method to refresh addresses from external callers
+  void refreshAddresses() {
+    _loadAddresses();
   }
 
   void _showAddressBottomSheet() {
@@ -835,6 +840,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                               ),
+                              cacheExtent:
+                                  200.0, // Optimize cache extent for horizontal list
+                              addRepaintBoundaries: true, // Optimize repaints
                               itemCount: sortedCategories.length,
                               itemBuilder: (context, index) {
                                 final category = sortedCategories[index];
@@ -928,10 +936,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingSmall,
                               ),
+                              cacheExtent:
+                                  200.0, // Optimize cache extent for horizontal list
+                              addRepaintBoundaries: true, // Optimize repaints
                               itemCount: products.length,
                               itemBuilder: (context, index) {
                                 final product = products[index];
-                                return _buildPicksForYouCard(context, product);
+                                return RepaintBoundary(
+                                  child: _buildPicksForYouCard(
+                                    context,
+                                    product,
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -1076,12 +1092,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingSmall,
                               ),
+                              cacheExtent:
+                                  200.0, // Optimize cache extent for horizontal list
+                              addRepaintBoundaries: true, // Optimize repaints
                               itemCount: vendors.length,
                               itemBuilder: (context, index) {
                                 final vendor = vendors[index];
-                                return _buildVendorCardHorizontal(
-                                  context,
-                                  vendor,
+                                return RepaintBoundary(
+                                  child: _buildVendorCardHorizontal(
+                                    context,
+                                    vendor,
+                                  ),
                                 );
                               },
                             ),

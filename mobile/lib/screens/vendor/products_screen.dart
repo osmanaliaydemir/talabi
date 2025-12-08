@@ -340,8 +340,9 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                                       const VendorProductFormScreen(),
                                 ),
                               );
-                              if (result == true)
+                              if (result == true) {
                                 _loadProducts(isRefresh: true);
+                              }
                             },
                             icon: const Icon(Icons.add),
                             label: Text(localizations.vendorProductsAddFirst),
@@ -384,8 +385,9 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                                           ),
                                     ),
                                   );
-                                  if (result == true)
+                                  if (result == true) {
                                     _loadProducts(isRefresh: true);
+                                  }
                                 },
                                 onToggleAvailability: () =>
                                     _toggleAvailability(product),

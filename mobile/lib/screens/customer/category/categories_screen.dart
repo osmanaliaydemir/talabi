@@ -5,7 +5,7 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/screens/customer/category/category_products_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/home_header.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CategoriesScreen extends StatefulWidget {

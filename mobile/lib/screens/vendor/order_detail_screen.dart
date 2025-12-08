@@ -5,7 +5,7 @@ import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -588,7 +588,13 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       );
 
       if (selectedCourier != null) {
-        await _assignCourier(selectedCourier['id'].toString());
+        // Show confirmation dialog before assigning
+        final confirmed = await _showAssignCourierConfirmation(
+          selectedCourier['fullName'],
+        );
+        if (confirmed == true && mounted) {
+          await _assignCourier(selectedCourier['id'].toString());
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -732,13 +738,121 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     );
   }
 
+  String _getLocalizedString(String key, String fallback) {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return fallback;
+
+    try {
+      final dynamic loc = localizations;
+      switch (key) {
+        case 'assignCourierConfirmationTitle':
+          try {
+            return loc.assignCourierConfirmationTitle as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'assignCourierConfirmationMessage':
+          try {
+            return loc.assignCourierConfirmationMessage as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'assign':
+          try {
+            return loc.assign as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'courierAssignedSuccessfully':
+          try {
+            return loc.courierAssignedSuccessfully as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        default:
+          return fallback;
+      }
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  Future<bool?> _showAssignCourierConfirmation(String courierName) async {
+    final localizations = AppLocalizations.of(context);
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              color: AppTheme.primaryOrange,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _getLocalizedString(
+                  'assignCourierConfirmationTitle',
+                  'Kurye Atamasını Onayla',
+                ),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          _getLocalizedString(
+            'assignCourierConfirmationMessage',
+            '$courierName adlı kuryeye bu siparişi atamak istediğinize emin misiniz?',
+          ).replaceAll('{courierName}', courierName),
+          style: const TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              localizations?.cancel ?? 'İptal',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              _getLocalizedString('assign', 'Ata'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _assignCourier(String courierId) async {
     try {
       await _apiService.assignCourierToOrder(widget.orderId, courierId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kurye başarıyla atandı'),
+          SnackBar(
+            content: Text(
+              _getLocalizedString(
+                'courierAssignedSuccessfully',
+                'Kurye başarıyla atandı',
+              ),
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -942,6 +1056,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                 ),
               ),
             ),
+            // Courier info - only show if courier is assigned
+            if (_order!['courier'] != null) ...[
+              const SizedBox(height: 16),
+              _buildCourierInfoCard(),
+            ],
             const SizedBox(height: 16),
             // Order items
             Card(
@@ -1300,5 +1419,109 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildCourierInfoCard() {
+    final localizations = AppLocalizations.of(context)!;
+    final courier = _order!['courier'] as Map<String, dynamic>?;
+
+    if (courier == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.delivery_dining,
+                  color: Colors.orange.shade700,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  localizations.courierInformation,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildInfoRow(localizations.fullName, courier['name'] ?? ''),
+            if (courier['phoneNumber'] != null)
+              _buildInfoRow(localizations.phoneNumber, courier['phoneNumber']),
+            if (courier['vehicleType'] != null)
+              _buildInfoRow(localizations.vehicleType, courier['vehicleType']),
+            if (courier['status'] != null)
+              _buildInfoRow(
+                'Durum',
+                _getCourierStatusText(courier['status'], localizations),
+              ),
+            if (courier['assignedAt'] != null)
+              _buildInfoRow(
+                localizations.assignedAt,
+                _formatDateTime(courier['assignedAt']),
+              ),
+            if (courier['acceptedAt'] != null)
+              _buildInfoRow(
+                localizations.acceptedAt,
+                _formatDateTime(courier['acceptedAt']),
+              ),
+            if (courier['pickedUpAt'] != null)
+              _buildInfoRow(
+                localizations.pickedUpAt,
+                _formatDateTime(courier['pickedUpAt']),
+              ),
+            if (courier['outForDeliveryAt'] != null)
+              _buildInfoRow(
+                localizations.outForDeliveryAt,
+                _formatDateTime(courier['outForDeliveryAt']),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDateTime(dynamic dateTime) {
+    if (dateTime == null) return '-';
+    try {
+      DateTime date;
+      if (dateTime is String) {
+        date = DateTime.parse(dateTime);
+      } else {
+        return dateTime.toString();
+      }
+      return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateTime.toString();
+    }
+  }
+
+  String _getCourierStatusText(String status, AppLocalizations localizations) {
+    switch (status.toLowerCase()) {
+      case 'assigned':
+        return localizations.assigned;
+      case 'accepted':
+        return localizations.accepted;
+      case 'rejected':
+        return localizations.rejected;
+      case 'pickedup':
+      case 'picked_up':
+        return localizations.pickedUp;
+      case 'outfordelivery':
+      case 'out_for_delivery':
+        return localizations.outForDelivery;
+      case 'delivered':
+        return localizations.delivered;
+      default:
+        return status;
+    }
   }
 }

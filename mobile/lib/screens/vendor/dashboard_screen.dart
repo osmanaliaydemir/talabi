@@ -11,7 +11,7 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';

@@ -1,5 +1,5 @@
 class CourierNotification {
-  final int id;
+  final String id;
   final String title;
   final String message;
   final String type;
@@ -21,7 +21,7 @@ class CourierNotification {
 
   factory CourierNotification.fromJson(Map<String, dynamic> json) {
     return CourierNotification(
-      id: json['id'],
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
       type: json['type'] ?? 'general',

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -7,8 +8,90 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/screens/customer/widgets/category_selection_bottom_sheet.dart';
 
-class PersistentBottomNavBar extends StatelessWidget {
+class PersistentBottomNavBar extends StatefulWidget {
   const PersistentBottomNavBar({super.key});
+
+  @override
+  State<PersistentBottomNavBar> createState() => _PersistentBottomNavBarState();
+}
+
+class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
+    with SingleTickerProviderStateMixin {
+  bool _hasPlayedAnimation = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    // Scale animation: 1.0 -> 1.5 -> 1.0 -> 1.2 -> 1.0
+    _scaleAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.0, end: 1.5),
+            weight: 1,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.5, end: 1.0),
+            weight: 1,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.0, end: 1.2),
+            weight: 1,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.2, end: 1.0),
+            weight: 1,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+
+    // Rotation animation: 0 -> 360 degrees
+    _rotationAnimation =
+        Tween<double>(
+          begin: 0.0,
+          end: 1.0, // 1.0 = 360 degrees in radians (2 * pi)
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+
+    _checkAndPlayAnimation();
+  }
+
+  Future<void> _checkAndPlayAnimation() async {
+    if (_hasPlayedAnimation) return;
+
+    // Delay to ensure UI is ready
+    Future.delayed(const Duration(milliseconds: 800), () async {
+      if (mounted) {
+        await _animationController.forward();
+        if (mounted) {
+          setState(() {
+            _hasPlayedAnimation = true;
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,19 +135,10 @@ class PersistentBottomNavBar extends StatelessWidget {
                 isSelected: bottomNav.currentIndex == 0,
                 onTap: () => _onItemTapped(context, 0, bottomNav, screenNames),
               ),
-              _buildNavItem(
+              _buildAnimatedCategoryNavItem(
                 context,
-                index: 1,
-                icon: bottomNav.selectedCategory == MainCategory.restaurant
-                    ? Icons.restaurant_outlined
-                    : Icons.shopping_basket_outlined,
-                selectedIcon:
-                    bottomNav.selectedCategory == MainCategory.restaurant
-                    ? Icons.restaurant
-                    : Icons.shopping_basket,
-                label: localizations.category,
-                isSelected: bottomNav.currentIndex == 1,
-                onTap: () => _showCategoryBottomSheet(context, bottomNav),
+                bottomNav: bottomNav,
+                localizations: localizations,
               ),
               _buildNavItem(
                 context,
@@ -218,6 +292,87 @@ class PersistentBottomNavBar extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedCategoryNavItem(
+    BuildContext context, {
+    required BottomNavProvider bottomNav,
+    required AppLocalizations localizations,
+  }) {
+    final icon = bottomNav.selectedCategory == MainCategory.restaurant
+        ? Icons.restaurant_outlined
+        : Icons.shopping_basket_outlined;
+    final selectedIcon = bottomNav.selectedCategory == MainCategory.restaurant
+        ? Icons.restaurant
+        : Icons.shopping_basket;
+    final isSelected = bottomNav.currentIndex == 1;
+
+    return GestureDetector(
+      onTap: () => _showCategoryBottomSheet(context, bottomNav),
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          // Only apply animation if it hasn't been played or is currently playing
+          final shouldAnimate =
+              !_hasPlayedAnimation || _animationController.isAnimating;
+
+          return Transform.scale(
+            scale: shouldAnimate ? _scaleAnimation.value : 1.0,
+            child: Transform.rotate(
+              angle: shouldAnimate
+                  ? _rotationAnimation.value * 2 * 3.14159
+                  : 0.0,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSelected ? 16 : 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          isSelected ? selectedIcon : icon,
+                          size: 24,
+                          color: isSelected
+                              ? Colors.white
+                              : AppTheme.textSecondary,
+                        ),
+                      ],
+                    ),
+                    if (isSelected) ...[
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          localizations.category,
+                          style: AppTheme.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

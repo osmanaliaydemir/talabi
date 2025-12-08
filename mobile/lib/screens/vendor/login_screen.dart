@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/screens/courier/login_screen.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
@@ -109,6 +108,22 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                 height: 180,
                 child: Stack(
                   children: [
+                    // Back Button - Sol üst köşe
+                    Positioned(
+                      top: AppTheme.spacingMedium,
+                      left: AppTheme.spacingMedium,
+                      child: _buildCircleButton(
+                        icon: Icons.arrow_back,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     // Decorative shape in top right
                     Positioned(
                       top: -50,
@@ -505,98 +520,6 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       ),
                                     ),
                                   ),
-                                  AppTheme.verticalSpace(1),
-                                  // Courier Login Link - Modern Design
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppTheme.courierPrimary.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          AppTheme.courierLight.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                        ],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                      border: Border.all(
-                                        color: AppTheme.courierPrimary
-                                            .withValues(alpha: 0.3),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
-                                        ),
-                                        onTap: () {
-                                          TapLogger.logButtonPress(
-                                            'Courier Login',
-                                            context: 'VendorLoginScreen',
-                                          );
-                                          TapLogger.logNavigation(
-                                            'VendorLoginScreen',
-                                            'CourierLoginScreen',
-                                          );
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const CourierLoginScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: AppTheme.spacingMedium,
-                                            vertical: AppTheme.spacingSmall + 4,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.delivery_dining_rounded,
-                                                color: AppTheme.courierPrimary,
-                                                size: 20,
-                                              ),
-                                              AppTheme.horizontalSpace(0.5),
-                                              Text(
-                                                '${localizations.areYouCourier} ',
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.textSecondary,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              Text(
-                                                localizations.courierLoginLink,
-                                                style: AppTheme.poppins(
-                                                  color:
-                                                      AppTheme.courierPrimary,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              Icon(
-                                                Icons.arrow_forward_rounded,
-                                                color: AppTheme.courierPrimary,
-                                                size: 18,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(1),
                                 ],
                               ),
                             ),
@@ -610,6 +533,25 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = Colors.black,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

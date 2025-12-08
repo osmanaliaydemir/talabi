@@ -3,7 +3,8 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/courier/dashboard_screen.dart';
-import 'package:mobile/screens/vendor/login_screen.dart';
+import 'package:mobile/screens/courier/register_screen.dart';
+import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 
@@ -55,9 +56,12 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Giriş başarısız: $e'),
+            content: Text(
+              '${localizations?.loginFailed ?? "Giriş başarısız"}: $e',
+            ),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -96,6 +100,22 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                 height: 180,
                 child: Stack(
                   children: [
+                    // Back Button - Sol üst köşe
+                    Positioned(
+                      top: AppTheme.spacingMedium,
+                      left: AppTheme.spacingMedium,
+                      child: _buildCircleButton(
+                        icon: Icons.arrow_back,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     // Decorative shape in top right
                     Positioned(
                       top: -50,
@@ -419,15 +439,15 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     ),
                                   ),
                                   AppTheme.verticalSpace(1.5),
-                                  // Vendor Login Link - Modern Design
+                                  // Register Link - Modern Design
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppTheme.vendorPrimary.withValues(
+                                          AppTheme.courierPrimary.withValues(
                                             alpha: 0.1,
                                           ),
-                                          AppTheme.vendorLight.withValues(
+                                          AppTheme.courierLight.withValues(
                                             alpha: 0.05,
                                           ),
                                         ],
@@ -438,7 +458,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         AppTheme.radiusMedium,
                                       ),
                                       border: Border.all(
-                                        color: AppTheme.vendorPrimary
+                                        color: AppTheme.courierPrimary
                                             .withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
@@ -451,18 +471,18 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         ),
                                         onTap: () {
                                           TapLogger.logButtonPress(
-                                            'Vendor Login',
+                                            'Courier Register',
                                             context: 'CourierLoginScreen',
                                           );
                                           TapLogger.logNavigation(
                                             'CourierLoginScreen',
-                                            'VendorLoginScreen',
+                                            'CourierRegisterScreen',
                                           );
-                                          Navigator.pushReplacement(
+                                          Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  const VendorLoginScreen(),
+                                                  const CourierRegisterScreen(),
                                             ),
                                           );
                                         },
@@ -476,22 +496,26 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Icon(
-                                                Icons.store_outlined,
-                                                color: AppTheme.vendorPrimary,
+                                                Icons.person_add_outlined,
+                                                color: AppTheme.courierPrimary,
                                                 size: 20,
                                               ),
                                               AppTheme.horizontalSpace(0.5),
                                               Text(
-                                                'Are you a vendor? ',
+                                                localizations
+                                                        ?.dontHaveAccount ??
+                                                    "Don't have an account? ",
                                                 style: AppTheme.poppins(
                                                   color: AppTheme.textSecondary,
                                                   fontSize: 14,
                                                 ),
                                               ),
                                               Text(
-                                                'Sign In',
+                                                localizations?.register ??
+                                                    'Register',
                                                 style: AppTheme.poppins(
-                                                  color: AppTheme.vendorPrimary,
+                                                  color:
+                                                      AppTheme.courierPrimary,
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -499,7 +523,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                               AppTheme.horizontalSpace(0.25),
                                               Icon(
                                                 Icons.arrow_forward_rounded,
-                                                color: AppTheme.vendorPrimary,
+                                                color: AppTheme.courierPrimary,
                                                 size: 18,
                                               ),
                                             ],
@@ -508,7 +532,6 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                       ),
                                     ),
                                   ),
-                                  AppTheme.verticalSpace(1),
                                 ],
                               ),
                             ),
@@ -522,6 +545,25 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = Colors.black,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

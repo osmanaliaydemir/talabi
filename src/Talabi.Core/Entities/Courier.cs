@@ -38,7 +38,8 @@ public class Courier : BaseEntity
     public TimeSpan? WorkingHoursEnd { get; set; }
     public bool IsWithinWorkingHours { get; set; } = true; // Çalışma saati kontrolü aktif mi?
     
-    public ICollection<Order> Orders { get; set; } = new List<Order>();
+    // Navigation - OrderCouriers (Order ile ilişki artık OrderCouriers üzerinden)
+    public ICollection<OrderCourier> OrderCouriers { get; set; } = new List<OrderCourier>();
     public ICollection<CourierNotification> Notifications { get; set; } = new List<CourierNotification>();
 }
 

@@ -20,6 +20,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Category>? _categories;
     private IRepository<CategoryTranslation>? _categoryTranslations;
     private IRepository<OrderItem>? _orderItems;
+    private IRepository<OrderCourier>? _orderCouriers;
     private IRepository<Cart>? _carts;
     private IRepository<CartItem>? _cartItems;
     private IRepository<UserAddress>? _userAddresses;
@@ -79,6 +80,11 @@ public class UnitOfWork : IUnitOfWork
     /// OrderItem entity'leri için repository
     /// </summary>
     public IRepository<OrderItem> OrderItems => _orderItems ??= new Repository<OrderItem>(_context);
+
+    /// <summary>
+    /// OrderCourier entity'leri için repository
+    /// </summary>
+    public IRepository<OrderCourier> OrderCouriers => _orderCouriers ??= new Repository<OrderCourier>(_context);
 
     /// <summary>
     /// Cart entity'leri için repository

@@ -33,10 +33,8 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış satıcı listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> GetVendors(
-        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> GetVendors([FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -129,10 +127,7 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("{id}/products")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetProductsByVendor(
-        Guid id,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetProductsByVendor(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -196,9 +191,7 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("debug/products")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetAllProducts(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetAllProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -380,9 +373,7 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış şehir listesi</returns>
     [HttpGet("cities")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<string>>>> GetCities(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<string>>>> GetCities([FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;

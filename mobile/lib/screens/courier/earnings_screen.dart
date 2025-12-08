@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_earning.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
@@ -80,10 +81,11 @@ class _EarningsScreenState extends State<EarningsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
-        title: 'Kazançlar',
+        title: localizations?.earningsTitle ?? 'Kazançlar',
         leadingIcon: Icons.ssid_chart_outlined,
         showBackButton: false,
         onRefresh: _loadEarnings,
@@ -97,10 +99,10 @@ class _EarningsScreenState extends State<EarningsScreen>
               indicatorColor: Colors.teal,
               labelColor: Colors.teal,
               unselectedLabelColor: Colors.grey,
-              tabs: const [
-                Tab(text: 'Today'),
-                Tab(text: 'This Week'),
-                Tab(text: 'This Month'),
+              tabs: [
+                Tab(text: localizations?.todayEarnings ?? 'Today'),
+                Tab(text: localizations?.thisWeek ?? 'This Week'),
+                Tab(text: localizations?.thisMonth ?? 'This Month'),
               ],
             ),
           ),
@@ -119,7 +121,7 @@ class _EarningsScreenState extends State<EarningsScreen>
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _loadEarnings,
-                          child: const Text('Retry'),
+                          child: Text(localizations?.retry ?? 'Retry'),
                         ),
                       ],
                     ),
@@ -140,6 +142,7 @@ class _EarningsScreenState extends State<EarningsScreen>
   }
 
   Widget _buildEarningsTab(EarningsSummary summary) {
+    final localizations = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _loadEarnings,
       child: SingleChildScrollView(
@@ -159,9 +162,9 @@ class _EarningsScreenState extends State<EarningsScreen>
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    const Text(
-                      'Total Earnings',
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    Text(
+                      localizations?.totalEarningsLabel ?? 'Total Earnings',
+                      style: const TextStyle(color: Colors.white70, fontSize: 16),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -180,11 +183,11 @@ class _EarningsScreenState extends State<EarningsScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStatItem(
-                          'Deliveries',
+                          localizations?.deliveries ?? 'Deliveries',
                           '${summary.totalDeliveries}',
                         ),
                         _buildStatItem(
-                          'Avg. per Delivery',
+                          localizations?.avgPerDelivery ?? 'Avg. per Delivery',
                           CurrencyFormatter.format(
                             summary.averageEarningPerDelivery,
                             Currency.try_,
@@ -199,16 +202,19 @@ class _EarningsScreenState extends State<EarningsScreen>
             const SizedBox(height: 24),
 
             // Earnings List
-            const Text(
-              'History',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              localizations?.history ?? 'History',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             if (summary.earnings.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Text('No earnings found for this period.'),
+                  padding: const EdgeInsets.all(32.0),
+                  child: Text(
+                    localizations?.noEarningsForPeriod ??
+                        'No earnings found for this period.',
+                  ),
                 ),
               )
             else

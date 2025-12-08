@@ -394,6 +394,12 @@ abstract class AppLocalizations {
   /// **'Edit business name, address and contact information'**
   String get editProfileDescription;
 
+  /// No description provided for @editCourierProfileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit name, phone, vehicle information and working hours'**
+  String get editCourierProfileDescription;
+
   /// No description provided for @changePassword.
   ///
   /// In en, this message translates to:
@@ -595,43 +601,43 @@ abstract class AppLocalizations {
   /// No description provided for @emailRequired.
   ///
   /// In en, this message translates to:
-  /// **'E-posta gerekli'**
+  /// **'Email is required'**
   String get emailRequired;
 
   /// No description provided for @validEmail.
   ///
   /// In en, this message translates to:
-  /// **'Geçerli bir e-posta girin'**
+  /// **'Please enter a valid email'**
   String get validEmail;
 
   /// No description provided for @passwordRequired.
   ///
   /// In en, this message translates to:
-  /// **'Şifre gerekli'**
+  /// **'Password is required'**
   String get passwordRequired;
 
   /// No description provided for @passwordMinLength.
   ///
   /// In en, this message translates to:
-  /// **'Şifre en az 6 karakter olmalı'**
+  /// **'Password must be at least 6 characters'**
   String get passwordMinLength;
 
   /// No description provided for @fullNameRequired.
   ///
   /// In en, this message translates to:
-  /// **'Ad soyad gerekli'**
+  /// **'Full name is required'**
   String get fullNameRequired;
 
   /// No description provided for @loginFailed.
   ///
   /// In en, this message translates to:
-  /// **'Giriş başarısız'**
+  /// **'Login failed'**
   String get loginFailed;
 
   /// No description provided for @registerFailed.
   ///
   /// In en, this message translates to:
-  /// **'Kayıt başarısız'**
+  /// **'Registration failed'**
   String get registerFailed;
 
   /// No description provided for @passwordReset.
@@ -951,6 +957,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you a courier?'**
   String get areYouCourier;
+
+  /// No description provided for @areYouVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you a vendor? '**
+  String get areYouVendor;
 
   /// No description provided for @courierSignIn.
   ///
@@ -1311,6 +1323,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You need to add a delivery address before placing an order.'**
   String get addressRequiredMessage;
+
+  /// No description provided for @addressRequiredDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You must add at least one address to place orders. Please add your address.'**
+  String get addressRequiredDescription;
 
   /// No description provided for @addAddress.
   ///
@@ -2380,6 +2398,12 @@ abstract class AppLocalizations {
   /// **'Ready'**
   String get ready;
 
+  /// No description provided for @outForDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Out for Delivery'**
+  String get outForDelivery;
+
   /// No description provided for @delivered.
   ///
   /// In en, this message translates to:
@@ -2391,6 +2415,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancelled'**
   String get cancelled;
+
+  /// No description provided for @assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get assigned;
+
+  /// No description provided for @accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get accepted;
+
+  /// No description provided for @rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get rejected;
+
+  /// No description provided for @pickedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked Up'**
+  String get pickedUp;
+
+  /// No description provided for @courierInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Information'**
+  String get courierInformation;
+
+  /// No description provided for @assignedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned At'**
+  String get assignedAt;
+
+  /// No description provided for @acceptedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted At'**
+  String get acceptedAt;
+
+  /// No description provided for @pickedUpAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked Up At'**
+  String get pickedUpAt;
+
+  /// No description provided for @outForDeliveryAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Out for Delivery At'**
+  String get outForDeliveryAt;
 
   /// No description provided for @vendorOrders.
   ///
@@ -3061,7 +3139,7 @@ abstract class AppLocalizations {
   /// No description provided for @rejectReasonDescription.
   ///
   /// In en, this message translates to:
-  /// **'Please enter the rejection reason (at least 10 characters):'**
+  /// **'Please enter the rejection reason (at least 1 character):'**
   String get rejectReasonDescription;
 
   /// No description provided for @rejectReasonHint.
@@ -3129,6 +3207,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Location'**
   String get yourLocation;
+
+  /// No description provided for @locationPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Permission Required'**
+  String get locationPermissionTitle;
+
+  /// No description provided for @locationPermissionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'We need your location permission to show nearby restaurants and track your orders.'**
+  String get locationPermissionMessage;
+
+  /// No description provided for @allow.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get allow;
+
+  /// No description provided for @locationManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Management'**
+  String get locationManagement;
+
+  /// No description provided for @currentLocationInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location Information'**
+  String get currentLocationInfo;
+
+  /// No description provided for @latitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Latitude'**
+  String get latitude;
+
+  /// No description provided for @longitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Longitude'**
+  String get longitude;
+
+  /// No description provided for @lastLocationUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Update'**
+  String get lastLocationUpdate;
+
+  /// No description provided for @noLocationData.
+  ///
+  /// In en, this message translates to:
+  /// **'No location data available'**
+  String get noLocationData;
+
+  /// No description provided for @selectLocationOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Location on Map'**
+  String get selectLocationOnMap;
+
+  /// No description provided for @useCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Current Location'**
+  String get useCurrentLocation;
+
+  /// No description provided for @updateLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Location'**
+  String get updateLocation;
+
+  /// No description provided for @locationSharingInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Location sharing is required to receive orders from nearby restaurants. Your location is automatically shared when your status is \"Available\".'**
+  String get locationSharingInfo;
+
+  /// No description provided for @locationManagementDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'View and update your current location'**
+  String get locationManagementDescription;
 
   /// No description provided for @vendorsMap.
   ///
@@ -3639,6 +3801,642 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add address to order'**
   String get addAddressToOrder;
+
+  /// No description provided for @createCourierAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Courier Account'**
+  String get createCourierAccount;
+
+  /// No description provided for @startDeliveringToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Start delivering today and earn money'**
+  String get startDeliveringToday;
+
+  /// No description provided for @alreadyHaveCourierAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have a courier account? '**
+  String get alreadyHaveCourierAccount;
+
+  /// No description provided for @courierRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Register'**
+  String get courierRegister;
+
+  /// No description provided for @talabiCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Talabi Courier'**
+  String get talabiCourier;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get allTime;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @markAsPickedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Picked Up'**
+  String get markAsPickedUp;
+
+  /// No description provided for @markAsDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Delivered'**
+  String get markAsDelivered;
+
+  /// No description provided for @orderAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Order accepted'**
+  String get orderAccepted;
+
+  /// No description provided for @orderMarkedAsPickedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Order marked as picked up'**
+  String get orderMarkedAsPickedUp;
+
+  /// No description provided for @orderDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Order delivered'**
+  String get orderDelivered;
+
+  /// No description provided for @actionCouldNotBeCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Action could not be completed'**
+  String get actionCouldNotBeCompleted;
+
+  /// No description provided for @cannotChangeStatusWhileBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot change status while busy'**
+  String get cannotChangeStatusWhileBusy;
+
+  /// No description provided for @newOrderAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'New order #{orderId} assigned!'**
+  String newOrderAssigned(Object orderId);
+
+  /// No description provided for @currentStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Status'**
+  String get currentStatus;
+
+  /// No description provided for @performance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get performance;
+
+  /// No description provided for @availabilityStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability Status'**
+  String get availabilityStatus;
+
+  /// No description provided for @checkNewOrderConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Check new order receiving conditions here'**
+  String get checkNewOrderConditions;
+
+  /// No description provided for @navigationApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation App'**
+  String get navigationApp;
+
+  /// No description provided for @selectPreferredNavigationApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your preferred navigation app'**
+  String get selectPreferredNavigationApp;
+
+  /// No description provided for @noVehicleInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'No vehicle information'**
+  String get noVehicleInfo;
+
+  /// No description provided for @cannotChangeStatusWithActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot change status with active orders'**
+  String get cannotChangeStatusWithActiveOrders;
+
+  /// No description provided for @cannotGoOfflineUntilOrdersCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot go offline until active orders are completed'**
+  String get cannotGoOfflineUntilOrdersCompleted;
+
+  /// No description provided for @points.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get points;
+
+  /// No description provided for @totalEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Earnings'**
+  String get totalEarnings;
+
+  /// No description provided for @logoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get logoutConfirm;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInfo;
+
+  /// No description provided for @courierSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Settings'**
+  String get courierSettings;
+
+  /// No description provided for @vehicleType.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Type'**
+  String get vehicleType;
+
+  /// No description provided for @maxActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Active Orders'**
+  String get maxActiveOrders;
+
+  /// No description provided for @useWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Use working hours'**
+  String get useWorkingHours;
+
+  /// No description provided for @onlyAvailableDuringSetHours.
+  ///
+  /// In en, this message translates to:
+  /// **'You can only be \"Available\" during the hours you set'**
+  String get onlyAvailableDuringSetHours;
+
+  /// No description provided for @startTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Time'**
+  String get startTime;
+
+  /// No description provided for @endTime.
+  ///
+  /// In en, this message translates to:
+  /// **'End Time'**
+  String get endTime;
+
+  /// No description provided for @mustSelectStartAndEndTime.
+  ///
+  /// In en, this message translates to:
+  /// **'You must select start and end time for working hours'**
+  String get mustSelectStartAndEndTime;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @mustSelectVehicleType.
+  ///
+  /// In en, this message translates to:
+  /// **'You must select a vehicle type'**
+  String get mustSelectVehicleType;
+
+  /// No description provided for @selectVehicleType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Vehicle Type'**
+  String get selectVehicleType;
+
+  /// No description provided for @selectVehicleTypeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select the vehicle type you will use. This selection is required.'**
+  String get selectVehicleTypeDescription;
+
+  /// No description provided for @motorcycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Motorcycle'**
+  String get motorcycle;
+
+  /// No description provided for @car.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get car;
+
+  /// No description provided for @bicycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bicycle'**
+  String get bicycle;
+
+  /// No description provided for @vehicleTypeUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle type updated successfully'**
+  String get vehicleTypeUpdatedSuccessfully;
+
+  /// No description provided for @failedToUpdateVehicleType.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update vehicle type'**
+  String get failedToUpdateVehicleType;
+
+  /// No description provided for @selectLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Selection Required'**
+  String get selectLocationRequired;
+
+  /// No description provided for @selectLocationRequiredDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your location. This information is required to receive orders.'**
+  String get selectLocationRequiredDescription;
+
+  /// No description provided for @selectFromMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select from Map'**
+  String get selectFromMap;
+
+  /// No description provided for @gettingCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting your location...'**
+  String get gettingCurrentLocation;
+
+  /// No description provided for @locationServicesDisabledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Services Disabled'**
+  String get locationServicesDisabledTitle;
+
+  /// No description provided for @locationServicesDisabledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are disabled. Please enable location services in settings.'**
+  String get locationServicesDisabledMessage;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
+  /// No description provided for @assignCourierConfirmationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Courier Assignment'**
+  String get assignCourierConfirmationTitle;
+
+  /// No description provided for @assignCourierConfirmationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to assign this order to {courierName}?'**
+  String assignCourierConfirmationMessage(String courierName);
+
+  /// No description provided for @assign.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get assign;
+
+  /// No description provided for @courierAssignedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier assigned successfully'**
+  String get courierAssignedSuccessfully;
+
+  /// No description provided for @enterValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get enterValidNumber;
+
+  /// No description provided for @profileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile update failed: {error}'**
+  String profileUpdateFailed(Object error);
+
+  /// No description provided for @availabilityConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability Conditions'**
+  String get availabilityConditions;
+
+  /// No description provided for @whenConditionsMetCanReceiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'The following conditions must be met to receive new orders:'**
+  String get whenConditionsMetCanReceiveOrders;
+
+  /// No description provided for @statusMustBeAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your status must be \"Available\"'**
+  String get statusMustBeAvailable;
+
+  /// No description provided for @activeOrdersBelowLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Your active orders must be below your maximum limit ({current} / {max})'**
+  String activeOrdersBelowLimit(Object current, Object max);
+
+  /// No description provided for @courierAccountMustBeActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your courier account must be active'**
+  String get courierAccountMustBeActive;
+
+  /// No description provided for @currentlyBlockingReasons.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently blocking reasons'**
+  String get currentlyBlockingReasons;
+
+  /// No description provided for @everythingLooksGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything looks good, new orders may arrive'**
+  String get everythingLooksGood;
+
+  /// No description provided for @available.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get available;
+
+  /// No description provided for @notAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Available'**
+  String get notAvailable;
+
+  /// No description provided for @earningsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get earningsTitle;
+
+  /// No description provided for @todayEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayEarnings;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get thisMonth;
+
+  /// No description provided for @totalEarningsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Earnings'**
+  String get totalEarningsLabel;
+
+  /// No description provided for @avgPerDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg. per Delivery'**
+  String get avgPerDelivery;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @noEarningsForPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No earnings found for this period'**
+  String get noEarningsForPeriod;
+
+  /// No description provided for @navigationAppUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation app updated'**
+  String get navigationAppUpdated;
+
+  /// No description provided for @navigationPreferenceNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation preference could not be saved: {error}'**
+  String navigationPreferenceNotSaved(Object error);
+
+  /// No description provided for @selectDefaultNavigationApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the default navigation app you want to use when going to delivery address'**
+  String get selectDefaultNavigationApp;
+
+  /// No description provided for @note.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get note;
+
+  /// No description provided for @ifAppNotInstalledSystemWillOfferAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'If the app you selected is not installed, the system will offer you a suitable alternative'**
+  String get ifAppNotInstalledSystemWillOfferAlternative;
+
+  /// No description provided for @preferenceOnlyForCourierAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This preference is only valid for your courier account'**
+  String get preferenceOnlyForCourierAccount;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any notifications yet.\nOrder movements will appear here'**
+  String get noNotificationsYet;
+
+  /// No description provided for @notificationsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications could not be loaded'**
+  String get notificationsLoadFailed;
+
+  /// No description provided for @notificationProcessingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification processing failed: {error}'**
+  String notificationProcessingFailed(Object error);
+
+  /// No description provided for @orderDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Detail'**
+  String get orderDetailTitle;
+
+  /// No description provided for @pickupLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup Location'**
+  String get pickupLocation;
+
+  /// No description provided for @deliveryLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Location'**
+  String get deliveryLocation;
+
+  /// No description provided for @orderItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Items'**
+  String get orderItems;
+
+  /// No description provided for @viewMap.
+  ///
+  /// In en, this message translates to:
+  /// **'View Map'**
+  String get viewMap;
+
+  /// No description provided for @deliveryProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Proof'**
+  String get deliveryProof;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @signature.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature'**
+  String get signature;
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// No description provided for @notesOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (Optional)'**
+  String get notesOptional;
+
+  /// No description provided for @leftAtFrontDoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Left at front door, etc.'**
+  String get leftAtFrontDoor;
+
+  /// No description provided for @submitProofAndCompleteDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Proof & Complete Delivery'**
+  String get submitProofAndCompleteDelivery;
+
+  /// No description provided for @pleaseTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Please take a photo of the delivery'**
+  String get pleaseTakePhoto;
+
+  /// No description provided for @pleaseObtainSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Please obtain a signature'**
+  String get pleaseObtainSignature;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @noDeliveryHistoryYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No delivery history yet'**
+  String get noDeliveryHistoryYet;
+
+  /// No description provided for @pickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get pickup;
+
+  /// No description provided for @delivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery'**
+  String get delivery;
+
+  /// No description provided for @navigate.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate'**
+  String get navigate;
+
+  /// No description provided for @couldNotLaunchMaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not launch maps: {error}'**
+  String couldNotLaunchMaps(Object error);
 }
 
 class _AppLocalizationsDelegate

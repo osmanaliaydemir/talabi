@@ -87,3 +87,4 @@ class ConnectivityBanner extends StatelessWidget {
     );
   }
 }
+

@@ -8,7 +8,7 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/services/analytics_service.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatefulWidget {
@@ -122,6 +122,8 @@ class _CartScreenState extends State<CartScreen> {
                             right: 16,
                             bottom: 16,
                           ),
+                          cacheExtent: 500.0, // Optimize cache extent
+                          addRepaintBoundaries: true, // Optimize repaints
                           itemCount: cart.items.length,
                           itemBuilder: (context, index) {
                             final cartItem = cart.items.values.toList()[index];

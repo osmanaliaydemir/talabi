@@ -65,8 +65,8 @@ class CachedNetworkImageWidget extends StatelessWidget {
       placeholder: (context, url) => placeholder ?? _buildDefaultPlaceholder(),
       errorWidget: (context, url, error) =>
           errorWidget ?? _buildDefaultErrorWidget(),
-      memCacheWidth: maxWidth != null ? maxWidth : null,
-      memCacheHeight: maxHeight != null ? maxHeight : null,
+      memCacheWidth: maxWidth,
+      memCacheHeight: maxHeight,
     );
 
     if (borderRadius != null) {
@@ -217,3 +217,4 @@ class OptimizedCachedImage {
     );
   }
 }
+

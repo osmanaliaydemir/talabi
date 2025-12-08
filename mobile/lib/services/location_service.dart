@@ -1,54 +1,77 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/location_permission_service.dart';
 
 class LocationService {
-  final CourierService _courierService;
+  final CourierService? _courierService;
   StreamSubscription<Position>? _positionStreamSubscription;
   Timer? _updateTimer;
+  BuildContext? _context;
 
   LocationService(this._courierService);
 
-  // Check and request location permissions
-  Future<bool> checkAndRequestPermissions() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  /// Set context for permission dialogs (should be called before using location)
+  void setContext(BuildContext context) {
+    _context = context;
+  }
 
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return false;
+  // Check and request location permissions with explanation dialog
+  Future<bool> checkAndRequestPermissions() async {
+    if (_context == null) {
+      print(
+        'Warning: Context not set for LocationService. Permission dialog cannot be shown.',
+      );
+      // Fallback to direct permission check
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return false;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        return permission != LocationPermission.denied;
+      }
+
+      return permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse;
     }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return false;
+    return await LocationPermissionService.checkAndRequestPermissions(
+      _context!,
+    );
+  }
+
+  // Get current location with permission check
+  Future<Position?> getCurrentLocation() async {
+    if (_context == null) {
+      print(
+        'Warning: Context not set for LocationService. Using direct permission check.',
+      );
+      // Fallback
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) return null;
+
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+          if (permission == LocationPermission.denied) return null;
+        }
+
+        if (permission == LocationPermission.deniedForever) return null;
+
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+      } catch (e) {
+        print('Error getting location: $e');
+        return null;
       }
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      return false;
-    }
-
-    return true;
-  }
-
-  // Get current location
-  Future<Position?> getCurrentLocation() async {
-    try {
-      final hasPermission = await checkAndRequestPermissions();
-      if (!hasPermission) return null;
-
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-    } catch (e) {
-      print('Error getting location: $e');
-      return null;
-    }
+    return await LocationPermissionService.getCurrentLocation(_context!);
   }
 
   // Start background location tracking
@@ -89,30 +112,34 @@ class LocationService {
     _positionStreamSubscription =
         Geolocator.getPositionStream(locationSettings: locationSettings).listen(
           (Position position) async {
-            // Update location to backend
-            try {
-              await _courierService.updateLocation(
-                position.latitude,
-                position.longitude,
-              );
-            } catch (e) {
-              print('Error updating location: $e');
+            // Update location to backend (only if courier service is available)
+            if (_courierService != null) {
+              try {
+                await _courierService.updateLocation(
+                  position.latitude,
+                  position.longitude,
+                );
+              } catch (e) {
+                print('Error updating location: $e');
+              }
             }
           },
         );
 
     // Also set up periodic updates (every 30 seconds) even if position hasn't changed much
     _updateTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
-      try {
-        final position = await getCurrentLocation();
-        if (position != null) {
-          await _courierService.updateLocation(
-            position.latitude,
-            position.longitude,
-          );
+      if (_courierService != null) {
+        try {
+          final position = await getCurrentLocation();
+          if (position != null) {
+            await _courierService.updateLocation(
+              position.latitude,
+              position.longitude,
+            );
+          }
+        } catch (e) {
+          print('Error in periodic update: $e');
         }
-      } catch (e) {
-        print('Error in periodic update: $e');
       }
     });
   }

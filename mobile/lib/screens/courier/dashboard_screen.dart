@@ -8,6 +8,7 @@ import 'package:mobile/models/currency.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/location_service.dart';
+import 'package:mobile/services/location_permission_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
@@ -37,6 +38,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     super.initState();
     print('CourierDashboardScreen: initState called');
     _locationService = LocationService(_courierService);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _locationService.setContext(context);
+      }
+    });
     _loadData();
     _initializeNotifications();
   }
@@ -48,9 +54,13 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       _loadData();
       // Show snackbar
       if (mounted) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('New order #$orderId assigned!'),
+            content: Text(
+              localizations?.newOrderAssigned(orderId) ??
+                  'New order #$orderId assigned!',
+            ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ),
@@ -112,6 +122,26 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           _isLoading = false;
         });
         print('CourierDashboardScreen: Data loaded successfully');
+
+        // Check if vehicle type is not selected
+        if (courier.vehicleType == null || courier.vehicleType!.isEmpty) {
+          print(
+            'CourierDashboardScreen: Vehicle type not selected, showing selection bottom sheet',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showVehicleTypeBottomSheet();
+          });
+        }
+        // Check if location is not set (only if vehicle type is already selected)
+        else if (courier.currentLatitude == null ||
+            courier.currentLongitude == null) {
+          print(
+            'CourierDashboardScreen: Location not set, showing location selection bottom sheet',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showLocationSelectionBottomSheet();
+          });
+        }
       }
     } catch (e, stackTrace) {
       print('CourierDashboardScreen: ERROR loading data - $e');
@@ -185,6 +215,752 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           _isStatusUpdating = false;
         });
       }
+    }
+  }
+
+  Future<void> _showVehicleTypeBottomSheet() async {
+    final vehicleTypes = [
+      {
+        'key': 'Motorcycle',
+        'name': _getLocalizedString(context, 'motorcycle', 'Motor'),
+        'icon': Icons.motorcycle,
+      },
+      {
+        'key': 'Car',
+        'name': _getLocalizedString(context, 'car', 'Araba'),
+        'icon': Icons.directions_car,
+      },
+      {
+        'key': 'Bicycle',
+        'name': _getLocalizedString(context, 'bicycle', 'Bisiklet'),
+        'icon': Icons.pedal_bike,
+      },
+    ];
+
+    String? selectedVehicleType;
+
+    await showModalBottomSheet(
+      context: context,
+      isDismissible: false, // Zorunlu - kapatılamaz
+      enableDrag: false, // Zorunlu - sürüklenemez
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+
+                  // Title
+                  Text(
+                    _getLocalizedString(
+                      context,
+                      'selectVehicleType',
+                      'Araç Türü Seçin',
+                    ),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Description
+                  Text(
+                    _getLocalizedString(
+                      context,
+                      'selectVehicleTypeDescription',
+                      'Lütfen kullanacağınız araç türünü seçin. Bu seçim zorunludur.',
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Vehicle type options
+                  ...vehicleTypes.map((vehicle) {
+                    final isSelected = selectedVehicleType == vehicle['key'];
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          selectedVehicleType = vehicle['key'] as String;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.courierPrimary.withOpacity(0.1)
+                              : Colors.grey[100],
+                          border: Border.all(
+                            color: isSelected
+                                ? AppTheme.courierPrimary
+                                : Colors.grey[300]!,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              vehicle['icon'] as IconData,
+                              size: 32,
+                              color: isSelected
+                                  ? AppTheme.courierPrimary
+                                  : AppTheme.textSecondary,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                vehicle['name'] as String,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppTheme.courierPrimary
+                                      : AppTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                color: AppTheme.courierPrimary,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+
+                  const SizedBox(height: 24),
+
+                  // Confirm button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: selectedVehicleType != null
+                          ? () async {
+                              Navigator.of(context).pop();
+                              await _updateVehicleType(selectedVehicleType!);
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.courierPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        _getLocalizedString(context, 'save', 'Kaydet'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _updateVehicleType(String vehicleType) async {
+    try {
+      await _courierService.updateProfile({'vehicleType': vehicleType});
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _getLocalizedString(
+                context,
+                'vehicleTypeUpdatedSuccessfully',
+                'Araç türü başarıyla güncellendi',
+              ),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Reload data to get updated profile
+        await _loadData();
+
+        // Show location selection bottom sheet
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showLocationSelectionBottomSheet();
+        });
+      }
+    } catch (e) {
+      print('CourierDashboardScreen: ERROR updating vehicle type - $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _getLocalizedString(
+                context,
+                'failedToUpdateVehicleType',
+                'Araç türü güncellenemedi: $e',
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showLocationSelectionBottomSheet() async {
+    double? selectedLatitude;
+    double? selectedLongitude;
+    bool isGettingLocation = false;
+    String? errorMessage;
+
+    await showModalBottomSheet(
+      context: context,
+      isDismissible: false, // Zorunlu - kapatılamaz
+      enableDrag: false, // Zorunlu - sürüklenemez
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            Future<void> getCurrentLocation() async {
+              setState(() {
+                isGettingLocation = true;
+                errorMessage = null;
+              });
+
+              try {
+                // First check if location services are enabled
+                final serviceEnabled =
+                    await LocationPermissionService.checkLocationServices(
+                      context,
+                    );
+                if (!serviceEnabled) {
+                  setState(() {
+                    isGettingLocation = false;
+                    errorMessage = _getLocalizedString(
+                      context,
+                      'locationServicesDisabledMessage',
+                      'Konum servisleri kapalı. Lütfen ayarlardan açın.',
+                    );
+                  });
+                  return;
+                }
+
+                final position =
+                    await LocationPermissionService.getCurrentLocation(context);
+                if (position != null) {
+                  setState(() {
+                    selectedLatitude = position.latitude;
+                    selectedLongitude = position.longitude;
+                    isGettingLocation = false;
+                  });
+                } else {
+                  setState(() {
+                    isGettingLocation = false;
+                    errorMessage = _getLocalizedString(
+                      context,
+                      'failedToUpdateLocation',
+                      'Konum alınamadı',
+                    );
+                  });
+                }
+              } catch (e) {
+                setState(() {
+                  isGettingLocation = false;
+                  errorMessage = e.toString();
+                });
+              }
+            }
+
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+
+                  // Title
+                  Text(
+                    _getLocalizedString(
+                      context,
+                      'selectLocationRequired',
+                      'Konum Seçimi Zorunlu',
+                    ),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Description
+                  Text(
+                    _getLocalizedString(
+                      context,
+                      'selectLocationRequiredDescription',
+                      'Lütfen konumunuzu seçin. Bu bilgi sipariş almak için gereklidir.',
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Error message
+                  if (errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // Location info
+                  if (selectedLatitude != null && selectedLongitude != null)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.courierPrimary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.courierPrimary,
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                color: AppTheme.courierPrimary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _getLocalizedString(
+                                  context,
+                                  'selectedLocation',
+                                  'Seçilen Konum',
+                                ),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.courierPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Lat: ${selectedLatitude!.toStringAsFixed(6)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            'Lng: ${selectedLongitude!.toStringAsFixed(6)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // Use current location button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: isGettingLocation ? null : getCurrentLocation,
+                      icon: isGettingLocation
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.my_location),
+                      label: Text(
+                        isGettingLocation
+                            ? _getLocalizedString(
+                                context,
+                                'gettingCurrentLocation',
+                                'Konumunuz alınıyor...',
+                              )
+                            : _getLocalizedString(
+                                context,
+                                'useCurrentLocation',
+                                'Mevcut Konumu Kullan',
+                              ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.courierPrimary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Select from map button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(
+                          context,
+                        ).pushNamed('/courier/location-management').then((_) {
+                          // After returning from location management, reload data
+                          _loadData();
+                        });
+                      },
+                      icon: const Icon(Icons.map),
+                      label: Text(
+                        _getLocalizedString(
+                          context,
+                          'selectFromMap',
+                          'Haritadan Seç',
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.courierPrimary,
+                        side: BorderSide(
+                          color: AppTheme.courierPrimary,
+                          width: 2,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Confirm button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed:
+                          selectedLatitude != null && selectedLongitude != null
+                          ? () async {
+                              Navigator.of(context).pop();
+                              await _updateLocation(
+                                selectedLatitude!,
+                                selectedLongitude!,
+                              );
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.courierPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        _getLocalizedString(context, 'save', 'Kaydet'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  if (selectedLatitude == null || selectedLongitude == null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        _getLocalizedString(
+                          context,
+                          'pleaseSelectLocation',
+                          'Lütfen bir konum seçin',
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _updateLocation(double latitude, double longitude) async {
+    try {
+      await _courierService.updateLocation(latitude, longitude);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _getLocalizedString(
+                context,
+                'locationUpdatedSuccessfully',
+                'Konum başarıyla güncellendi',
+              ),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Reload data to get updated profile
+        await _loadData();
+      }
+    } catch (e) {
+      print('CourierDashboardScreen: ERROR updating location - $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _getLocalizedString(
+                context,
+                'failedToUpdateLocation',
+                'Konum güncellenemedi: $e',
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String _getLocalizedString(
+    BuildContext context,
+    String key,
+    String fallback,
+  ) {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return fallback;
+
+    // Dynamic localization access - will work after flutter gen-l10n
+    // For now, return fallback if property doesn't exist
+    try {
+      // Try to access properties using noSuchMethod or direct access
+      // Since we can't use reflection, we'll use a try-catch with dynamic access
+      final dynamic loc = localizations;
+      switch (key) {
+        case 'motorcycle':
+          try {
+            return loc.motorcycle as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'car':
+          try {
+            return loc.car as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'bicycle':
+          try {
+            return loc.bicycle as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'selectVehicleType':
+          try {
+            return loc.selectVehicleType as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'selectVehicleTypeDescription':
+          try {
+            return loc.selectVehicleTypeDescription as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'save':
+          return localizations.save;
+        case 'vehicleTypeUpdatedSuccessfully':
+          try {
+            return loc.vehicleTypeUpdatedSuccessfully as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'failedToUpdateVehicleType':
+          try {
+            return loc.failedToUpdateVehicleType as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'selectLocationRequired':
+          try {
+            return loc.selectLocationRequired as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'selectLocationRequiredDescription':
+          try {
+            return loc.selectLocationRequiredDescription as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'useCurrentLocation':
+          try {
+            return loc.useCurrentLocation as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'selectFromMap':
+          try {
+            return loc.selectFromMap as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'locationUpdatedSuccessfully':
+          try {
+            return loc.locationUpdatedSuccessfully as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'failedToUpdateLocation':
+          try {
+            return loc.failedToUpdateLocation as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'gettingCurrentLocation':
+          try {
+            return loc.gettingCurrentLocation as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'pleaseSelectLocation':
+          try {
+            return loc.pleaseSelectLocation as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'selectedLocation':
+          try {
+            return loc.selectedLocation as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        case 'locationServicesDisabledMessage':
+          try {
+            return loc.locationServicesDisabledMessage as String? ?? fallback;
+          } catch (_) {
+            return fallback;
+          }
+        default:
+          return fallback;
+      }
+    } catch (e) {
+      return fallback;
     }
   }
 
@@ -311,10 +1087,15 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                               onChanged: (value) {
                                 if (_courier?.status == 'Busy' ||
                                     _courier?.status == 'Assigned') {
+                                  final localizations = AppLocalizations.of(
+                                    context,
+                                  );
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
-                                        'Cannot change status while busy',
+                                        localizations
+                                                ?.cannotChangeStatusWhileBusy ??
+                                            'Cannot change status while busy',
                                       ),
                                     ),
                                   );
@@ -338,7 +1119,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       title:
                           localizations?.deliveryHistory ?? 'Delivery History',
                       value: _statistics?.todayDeliveries.toString() ?? '0',
-                      subtitle: 'Today',
+                      subtitle: localizations?.today ?? 'Today',
                       color: Colors.blue,
                     ),
                   ),
@@ -352,7 +1133,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                         _statistics?.todayEarnings ?? 0,
                         Currency.try_,
                       ),
-                      subtitle: 'Today',
+                      subtitle: localizations?.today ?? 'Today',
                       color: Colors.green,
                     ),
                   ),
@@ -365,11 +1146,12 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     child: _buildStatCard(
                       context,
                       icon: Icons.star,
-                      title: 'Rating',
+                      title: localizations?.rating ?? 'Rating',
                       value:
                           _statistics?.averageRating.toStringAsFixed(1) ??
                           '0.0',
-                      subtitle: '(${_statistics?.totalRatings ?? 0} reviews)',
+                      subtitle:
+                          '(${_statistics?.totalRatings ?? 0} ${(localizations?.reviews(_statistics?.totalRatings ?? 0) ?? '').replaceAll(RegExp(r'[\(\)]'), '').replaceAll('${_statistics?.totalRatings ?? 0}', '').trim().isNotEmpty ? (localizations?.reviews(_statistics?.totalRatings ?? 0) ?? '').replaceAll(RegExp(r'[\(\)]'), '').replaceAll('${_statistics?.totalRatings ?? 0}', '').trim() : "reviews"})',
                       color: AppTheme.primaryOrange,
                     ),
                   ),
@@ -378,9 +1160,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     child: _buildStatCard(
                       context,
                       icon: Icons.local_shipping,
-                      title: 'Total',
+                      title: localizations?.total ?? 'Total',
                       value: _statistics?.totalDeliveries.toString() ?? '0',
-                      subtitle: 'All time',
+                      subtitle: localizations?.allTime ?? 'All time',
                       color: Colors.purple,
                     ),
                   ),
@@ -389,7 +1171,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
               const SizedBox(height: 24),
               // Quick Actions (like vendor)
               Text(
-                'Hızlı İşlemler',
+                localizations?.quickActions ?? 'Quick Actions',
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -533,22 +1315,30 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Order #${order.id}',
+                                        order.customerOrderId.isNotEmpty
+                                            ? 'Order #${order.customerOrderId}'
+                                            : 'Order #${order.id}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
                                       ),
-                                      Text(
-                                        CurrencyFormatter.format(
-                                          order.deliveryFee,
-                                          Currency.try_,
-                                        ),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green,
-                                          fontSize: 16,
-                                        ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            CurrencyFormatter.format(
+                                              order.deliveryFee,
+                                              Currency.try_,
+                                            ),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.teal,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -580,6 +1370,22 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                           ),
                                         ),
                                       ),
+                                      if (order.courierStatus != null) ...[
+                                        const SizedBox(width: 8),
+                                        Chip(
+                                          backgroundColor: _courierStatusColor(
+                                            order.courierStatus!,
+                                          ).withValues(alpha: 0.15),
+                                          label: Text(
+                                            _courierStatusLabel(order.courierStatus!),
+                                            style: TextStyle(
+                                              color: _courierStatusColor(order.courierStatus!),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                       const Spacer(),
                                       Text(
                                         DateFormat(
@@ -593,7 +1399,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 12),
-                                  _buildOrderActions(order),
+                                  _buildOrderActions(context, order),
                                 ],
                               ),
                             ),
@@ -754,7 +1560,128 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     );
   }
 
-  Widget _buildOrderActions(CourierOrder order) {
+  Future<void> _showRejectOrderDialog(
+    String orderId,
+    AppLocalizations? localizations,
+  ) async {
+    final reasonController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          localizations?.rejectOrderTitle ??
+              localizations?.rejectOrder ??
+              'Reject Order',
+        ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                localizations?.rejectReasonDescription ??
+                    'Please enter the reason for rejecting this order (minimum 1 character):',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: reasonController,
+                decoration: InputDecoration(
+                  hintText: localizations?.rejectReasonHint ?? 'Reason...',
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                maxLines: 4,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return localizations?.rejectReasonDescription ??
+                        'Reason is required (minimum 1 character)';
+                  }
+                  return null;
+                },
+                autofocus: true,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(localizations?.cancel ?? 'Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.of(context).pop(true);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final reason = reasonController.text.trim();
+      await _performOrderAction(
+        orderId: orderId,
+        action: () => _courierService.rejectOrder(orderId, reason),
+        successMessage: localizations?.orderRejected ?? 'Order rejected',
+      );
+    }
+  }
+
+  Future<void> _showAcceptOrderConfirmation(
+    String orderId,
+    AppLocalizations? localizations,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localizations?.acceptOrderTitle ?? 'Accept Order'),
+        content: Text(
+          localizations?.acceptOrderConfirmation ??
+              'Are you sure you want to accept this order?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(localizations?.cancel ?? 'Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _performOrderAction(
+        orderId: orderId,
+        action: () => _courierService.acceptOrder(orderId),
+        successMessage: localizations?.orderAccepted ?? 'Order accepted',
+      );
+    }
+  }
+
+  Widget _buildOrderActions(BuildContext context, CourierOrder order) {
+    final localizations = AppLocalizations.of(context);
     final status = order.status.toLowerCase();
     final isProcessing = _processingOrders.contains(order.id);
 
@@ -766,11 +1693,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
               child: OutlinedButton(
                 onPressed: isProcessing
                     ? null
-                    : () => _performOrderAction(
-                        orderId: order.id,
-                        action: () => _courierService.rejectOrder(order.id),
-                        successMessage: 'Order rejected',
-                      ),
+                    : () => _showRejectOrderDialog(order.id, localizations),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red,
                   side: const BorderSide(color: Colors.red),
@@ -784,7 +1707,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                           color: Colors.teal,
                         ),
                       )
-                    : const Text('Reject'),
+                    : Text(localizations?.reject ?? 'Reject'),
               ),
             ),
             const SizedBox(width: 12),
@@ -792,11 +1715,8 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
               child: ElevatedButton(
                 onPressed: isProcessing
                     ? null
-                    : () => _performOrderAction(
-                        orderId: order.id,
-                        action: () => _courierService.acceptOrder(order.id),
-                        successMessage: 'Order accepted',
-                      ),
+                    : () =>
+                          _showAcceptOrderConfirmation(order.id, localizations),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
@@ -810,7 +1730,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Accept'),
+                    : Text(localizations?.accept ?? 'Accept'),
               ),
             ),
           ],
@@ -824,7 +1744,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                 : () => _performOrderAction(
                     orderId: order.id,
                     action: () => _courierService.pickupOrder(order.id),
-                    successMessage: 'Order marked as picked up',
+                    successMessage:
+                        localizations?.orderMarkedAsPickedUp ??
+                        'Order marked as picked up',
                   ),
             icon: isProcessing
                 ? const SizedBox(
@@ -836,7 +1758,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     ),
                   )
                 : const Icon(Icons.inventory_2_outlined),
-            label: const Text('Mark as Picked Up'),
+            label: Text(localizations?.markAsPickedUp ?? 'Mark as Picked Up'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
               foregroundColor: Colors.white,
@@ -853,7 +1775,8 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                 : () => _performOrderAction(
                     orderId: order.id,
                     action: () => _courierService.deliverOrder(order.id),
-                    successMessage: 'Order delivered',
+                    successMessage:
+                        localizations?.orderDelivered ?? 'Order delivered',
                   ),
             icon: isProcessing
                 ? const SizedBox(
@@ -865,7 +1788,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     ),
                   )
                 : const Icon(Icons.done_all),
-            label: const Text('Mark as Delivered'),
+            label: Text(localizations?.markAsDelivered ?? 'Mark as Delivered'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
@@ -896,9 +1819,13 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       }
 
       if (!success) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Action could not be completed'),
+          SnackBar(
+            content: Text(
+              localizations?.actionCouldNotBeCompleted ??
+                  'Action could not be completed',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -943,6 +1870,40 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         return Colors.green;
       default:
         return Colors.grey;
+    }
+  }
+
+  Color _courierStatusColor(OrderCourierStatus status) {
+    switch (status) {
+      case OrderCourierStatus.assigned:
+        return Colors.blue;
+      case OrderCourierStatus.accepted:
+        return Colors.green;
+      case OrderCourierStatus.rejected:
+        return Colors.red;
+      case OrderCourierStatus.pickedUp:
+        return Colors.orange;
+      case OrderCourierStatus.outForDelivery:
+        return Colors.purple;
+      case OrderCourierStatus.delivered:
+        return Colors.green.shade700;
+    }
+  }
+
+  String _courierStatusLabel(OrderCourierStatus status) {
+    switch (status) {
+      case OrderCourierStatus.assigned:
+        return 'Assigned';
+      case OrderCourierStatus.accepted:
+        return 'Accepted';
+      case OrderCourierStatus.rejected:
+        return 'Rejected';
+      case OrderCourierStatus.pickedUp:
+        return 'Picked Up';
+      case OrderCourierStatus.outForDelivery:
+        return 'On the Way';
+      case OrderCourierStatus.delivered:
+        return 'Delivered';
     }
   }
 }

@@ -17,9 +17,6 @@ public class Order : BaseEntity
     public Guid? DeliveryAddressId { get; set; }
     public UserAddress? DeliveryAddress { get; set; }
 
-    public Guid? CourierId { get; set; }
-    public Courier? Courier { get; set; }
-
     public decimal TotalAmount { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public DateTime? CancelledAt { get; set; }
@@ -27,15 +24,13 @@ public class Order : BaseEntity
 
     // Delivery tracking
     public DateTime? EstimatedDeliveryTime { get; set; }
-    public DateTime? CourierAssignedAt { get; set; }
-    public DateTime? CourierAcceptedAt { get; set; }
-    public DateTime? PickedUpAt { get; set; }
-    public DateTime? OutForDeliveryAt { get; set; }
-    public DateTime? DeliveredAt { get; set; }
 
-    // Financials
+    // Financials - Müşteriden alınan delivery fee (Order'da kalıyor)
     public decimal DeliveryFee { get; set; } = 0;
-    public decimal? CourierTip { get; set; }
+
+    // Navigation - OrderCouriers
+    public OrderCourier? ActiveOrderCourier { get; set; }
+    public ICollection<OrderCourier> OrderCouriers { get; set; } = new List<OrderCourier>();
 
     // Navigation
     public DeliveryProof? DeliveryProof { get; set; }

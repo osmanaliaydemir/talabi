@@ -155,9 +155,13 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     }
 
     if (_useWorkingHours && (_startTime == null || _endTime == null)) {
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Çalışma saatleri için başlangıç ve bitiş seçmelisin.'),
+        SnackBar(
+          content: Text(
+            localizations?.mustSelectStartAndEndTime ??
+                'Çalışma saatleri için başlangıç ve bitiş seçmelisin.',
+          ),
         ),
       );
       return;
@@ -194,7 +198,8 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            localizations?.profile ?? 'Profil başarıyla güncellendi',
+            localizations?.profileUpdatedSuccessfully ??
+                'Profil başarıyla güncellendi',
           ),
         ),
       );
@@ -204,9 +209,15 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
       print('CourierEditProfileScreen: ERROR saving profile - $e');
       print(stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Profil güncellenemedi: $e')));
+        final localizations = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations?.profileUpdateFailed(e.toString()) ??
+                  'Profil güncellenemedi: $e',
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -224,7 +235,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
-        title: localizations?.profile ?? 'Profil Düzenle',
+        title: localizations?.editProfile ?? 'Profil Düzenle',
         leadingIcon: Icons.person_outline,
         showBackButton: true,
         onBack: () => Navigator.of(context).pop(),
@@ -241,7 +252,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Kişisel Bilgiler',
+                        localizations?.personalInfo ?? 'Kişisel Bilgiler',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
@@ -253,13 +264,15 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                             children: [
                               TextFormField(
                                 controller: _nameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Ad Soyad',
+                                decoration: InputDecoration(
+                                  labelText:
+                                      localizations?.fullName ?? 'Ad Soyad',
                                   prefixIcon: Icon(Icons.person_outline),
                                 ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Ad soyad zorunludur';
+                                    return localizations?.fullNameRequired ??
+                                        'Ad soyad zorunludur';
                                   }
                                   return null;
                                 },
@@ -268,8 +281,9 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                               TextFormField(
                                 controller: _phoneController,
                                 keyboardType: TextInputType.phone,
-                                decoration: const InputDecoration(
-                                  labelText: 'Telefon',
+                                decoration: InputDecoration(
+                                  labelText:
+                                      localizations?.phoneNumber ?? 'Telefon',
                                   prefixIcon: Icon(Icons.phone_outlined),
                                 ),
                               ),
@@ -279,7 +293,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Kurye Ayarları',
+                        localizations?.courierSettings ?? 'Kurye Ayarları',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
@@ -306,8 +320,10 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                           _selectedVehicleKey!.isNotEmpty
                                       ? _selectedVehicleKey
                                       : null,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Araç Türü',
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        localizations?.vehicleType ??
+                                        'Araç Türü',
                                     prefixIcon: Icon(Icons.delivery_dining),
                                   ),
                                   items: _vehicleTypes
@@ -325,7 +341,9 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                   },
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Araç türü seçmelisin';
+                                      return localizations
+                                              ?.mustSelectVehicleType ??
+                                          'Araç türü seçmelisin';
                                     }
                                     return null;
                                   },
@@ -334,14 +352,17 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                               TextFormField(
                                 controller: _maxOrdersController,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Maksimum Aktif Sipariş',
+                                decoration: InputDecoration(
+                                  labelText:
+                                      localizations?.maxActiveOrders ??
+                                      'Maksimum Aktif Sipariş',
                                   prefixIcon: Icon(Icons.countertops_outlined),
                                 ),
                                 validator: (value) {
                                   final parsed = int.tryParse(value ?? '');
                                   if (parsed == null || parsed <= 0) {
-                                    return 'Geçerli bir sayı gir';
+                                    return localizations?.enterValidNumber ??
+                                        'Geçerli bir sayı gir';
                                   }
                                   return null;
                                 },
@@ -349,9 +370,13 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                               const SizedBox(height: 16),
                               SwitchListTile(
                                 contentPadding: EdgeInsets.zero,
-                                title: const Text('Çalışma saatlerini kullan'),
-                                subtitle: const Text(
-                                  'Sadece belirlediğin saatlerde "Müsait" olabilirsin',
+                                title: Text(
+                                  localizations?.useWorkingHours ??
+                                      'Çalışma saatlerini kullan',
+                                ),
+                                subtitle: Text(
+                                  localizations?.onlyAvailableDuringSetHours ??
+                                      'Sadece belirlediğin saatlerde "Müsait" olabilirsin',
                                 ),
                                 value: _useWorkingHours,
                                 onChanged: (value) {
@@ -368,8 +393,10 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                       child: InkWell(
                                         onTap: () => _pickTime(isStart: true),
                                         child: InputDecorator(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Başlangıç Saati',
+                                          decoration: InputDecoration(
+                                            labelText:
+                                                localizations?.startTime ??
+                                                'Başlangıç Saati',
                                             prefixIcon: Icon(
                                               Icons.schedule_outlined,
                                             ),
@@ -387,8 +414,10 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                       child: InkWell(
                                         onTap: () => _pickTime(isStart: false),
                                         child: InputDecorator(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Bitiş Saati',
+                                          decoration: InputDecoration(
+                                            labelText:
+                                                localizations?.endTime ??
+                                                'Bitiş Saati',
                                             prefixIcon: Icon(
                                               Icons.schedule_outlined,
                                             ),
@@ -432,7 +461,11 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                     ),
                   )
                 : const Icon(Icons.save_outlined),
-            label: Text(_isSaving ? 'Kaydediliyor...' : 'Kaydet'),
+            label: Text(
+              _isSaving
+                  ? (localizations?.saving ?? 'Kaydediliyor...')
+                  : (localizations?.save ?? 'Kaydet'),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
               foregroundColor: Colors.white,

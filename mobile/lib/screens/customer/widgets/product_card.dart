@@ -5,8 +5,8 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class ProductCard extends StatefulWidget {

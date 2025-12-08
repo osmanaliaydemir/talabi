@@ -25,10 +25,7 @@ public class CustomerNotificationsController : ControllerBase
     /// <summary>
     /// CustomerNotificationsController constructor
     /// </summary>
-    public CustomerNotificationsController(
-        IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager,
-        ILogger<CustomerNotificationsController> logger)
+    public CustomerNotificationsController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager, ILogger<CustomerNotificationsController> logger)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
@@ -75,9 +72,7 @@ public class CustomerNotificationsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 20, maksimum: 100)</param>
     /// <returns>Bildirim listesi ve okunmamış sayısı</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<CustomerNotificationResponseDto>>> GetNotifications(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<ApiResponse<CustomerNotificationResponseDto>>> GetNotifications([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;

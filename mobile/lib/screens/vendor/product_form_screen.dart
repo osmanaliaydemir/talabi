@@ -7,7 +7,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class VendorProductFormScreen extends StatefulWidget {
   final Product? product;

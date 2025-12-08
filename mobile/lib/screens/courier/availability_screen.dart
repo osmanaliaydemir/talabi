@@ -80,7 +80,7 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
-        title: 'Müsaitlik Durumu',
+        title: localizations?.availabilityStatus ?? 'Müsaitlik Durumu',
         leadingIcon: Icons.radio_button_checked,
         showBackButton: true,
         onBack: () => Navigator.of(context).pop(),
@@ -115,7 +115,7 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: _loadAvailability,
-                  child: const Text('Tekrar dene'),
+                  child: Text(localizations?.tryAgain ?? 'Tekrar dene'),
                 ),
               ],
             ),
@@ -124,7 +124,9 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
       );
     }
 
-    final statusText = _isAvailable ? 'Müsait' : 'Müsait Değil';
+    final statusText = _isAvailable
+        ? (localizations?.available ?? 'Müsait')
+        : (localizations?.notAvailable ?? 'Müsait Değil');
     final statusColor = _isAvailable ? Colors.green : Colors.red;
 
     return ListView(
@@ -172,7 +174,8 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Sistem, yeni sipariş alabilme durumunu buradan kontrol eder.',
+                            localizations?.checkNewOrderConditions ??
+                                'Sistem, yeni sipariş alabilme durumunu buradan kontrol eder.',
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 12,
@@ -202,23 +205,30 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Müsaitlik Koşulları',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          localizations?.availabilityConditions ?? 'Müsaitlik Koşulları',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
-          'Aşağıdaki şartlar sağlandığında yeni sipariş atanabilir:',
+          localizations?.whenConditionsMetCanReceiveOrders ??
+              'Aşağıdaki şartlar sağlandığında yeni sipariş atanabilir:',
           style: TextStyle(color: Colors.grey[700], fontSize: 13),
         ),
         const SizedBox(height: 12),
         _buildConditionRow(
           satisfied: _status == 'Available',
-          text: 'Durumun "Available / Müsait" olmalı.',
+          text:
+              localizations?.statusMustBeAvailable ??
+              'Durumun "Available / Müsait" olmalı.',
         ),
         _buildConditionRow(
           satisfied: _currentActiveOrders < _maxActiveOrders,
           text:
+              localizations?.activeOrdersBelowLimit(
+                _currentActiveOrders.toString(),
+                _maxActiveOrders.toString(),
+              ) ??
               'Aktif sipariş sayın, maksimum limitin altında olmalı ($_currentActiveOrders / $_maxActiveOrders).',
         ),
         _buildConditionRow(
@@ -227,13 +237,16 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
                 r.toLowerCase().contains('not active') ||
                 r.toLowerCase().contains('aktif değil'),
           ),
-          text: 'Kurye hesabın aktif olmalı.',
+          text:
+              localizations?.courierAccountMustBeActive ??
+              'Kurye hesabın aktif olmalı.',
         ),
         const SizedBox(height: 24),
         if (_reasons.isNotEmpty) ...[
-          const Text(
-            'Şu anda engelleyen nedenler',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            localizations?.currentlyBlockingReasons ??
+                'Şu anda engelleyen nedenler',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           ..._reasons.map(
@@ -251,9 +264,10 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
             ),
           ),
         ] else
-          const Text(
-            'Her şey yolunda görünüyor, yeni siparişler gelebilir.',
-            style: TextStyle(color: Colors.green, fontSize: 14),
+          Text(
+            localizations?.everythingLooksGood ??
+                'Her şey yolunda görünüyor, yeni siparişler gelebilir.',
+            style: const TextStyle(color: Colors.green, fontSize: 14),
           ),
       ],
     );

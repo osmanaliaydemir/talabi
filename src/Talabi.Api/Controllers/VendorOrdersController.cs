@@ -71,9 +71,19 @@ public class VendorOrdersController : ControllerBase
             .Where(o => o.VendorId == vendorId);
 
         // Filter by status
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<OrderStatus>(status, out var statusEnum))
+        if (!string.IsNullOrEmpty(status))
         {
-            query = query.Where(o => o.Status == statusEnum);
+            // "OutForDelivery" status'ü Assigned, Accepted ve OutForDelivery status'lerini içerir
+            if (status.Equals("OutForDelivery", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(o => o.Status == OrderStatus.Assigned 
+                    || o.Status == OrderStatus.Accepted 
+                    || o.Status == OrderStatus.OutForDelivery);
+            }
+            else if (Enum.TryParse<OrderStatus>(status, out var statusEnum))
+            {
+                query = query.Where(o => o.Status == statusEnum);
+            }
         }
         else
         {
@@ -142,11 +152,33 @@ public class VendorOrdersController : ControllerBase
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
+            .Include(o => o.OrderCouriers)
+            .ThenInclude(oc => oc.Courier)
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
             return NotFound(new ApiResponse<VendorOrderDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+        }
+
+        // Get active courier assignment
+        var activeOrderCourier = order.OrderCouriers.FirstOrDefault(oc => oc.IsActive);
+        VendorCourierInfoDto? courierDto = null;
+        
+        if (activeOrderCourier != null && activeOrderCourier.Courier != null)
+        {
+            courierDto = new VendorCourierInfoDto
+            {
+                Id = activeOrderCourier.Courier.Id,
+                Name = activeOrderCourier.Courier.Name,
+                PhoneNumber = activeOrderCourier.Courier.PhoneNumber,
+                VehicleType = activeOrderCourier.Courier.VehicleType,
+                Status = activeOrderCourier.Status.ToString(),
+                AssignedAt = activeOrderCourier.CourierAssignedAt,
+                AcceptedAt = activeOrderCourier.CourierAcceptedAt,
+                PickedUpAt = activeOrderCourier.PickedUpAt,
+                OutForDeliveryAt = activeOrderCourier.OutForDeliveryAt
+            };
         }
 
         var orderDto = new VendorOrderDto
@@ -167,7 +199,8 @@ public class VendorOrdersController : ControllerBase
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 TotalPrice = oi.Quantity * oi.UnitPrice
-            }).ToList()
+            }).ToList(),
+            Courier = courierDto
         };
 
         return Ok(new ApiResponse<VendorOrderDto>(orderDto, "Sipariş başarıyla getirildi"));
@@ -512,7 +545,11 @@ public class VendorOrdersController : ControllerBase
             return BadRequest(new ApiResponse<object>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
         }
 
-        if (order.CourierId.HasValue)
+        // Check if order already has an active courier assignment
+        var hasActiveCourier = await _unitOfWork.OrderCouriers.Query()
+            .AnyAsync(oc => oc.OrderId == id && oc.IsActive);
+        
+        if (hasActiveCourier)
         {
             return BadRequest(new ApiResponse<object>("Siparişe zaten bir kurye atanmış", "COURIER_ALREADY_ASSIGNED"));
         }
@@ -555,7 +592,11 @@ public class VendorOrdersController : ControllerBase
             return BadRequest(new ApiResponse<object>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
         }
 
-        if (order.CourierId.HasValue)
+        // Check if order already has an active courier assignment
+        var hasActiveCourier = await _unitOfWork.OrderCouriers.Query()
+            .AnyAsync(oc => oc.OrderId == id && oc.IsActive);
+        
+        if (hasActiveCourier)
         {
             return BadRequest(new ApiResponse<object>("Siparişe zaten bir kurye atanmış", "COURIER_ALREADY_ASSIGNED"));
         }

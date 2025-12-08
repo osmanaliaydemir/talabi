@@ -1,5 +1,5 @@
 class Courier {
-  final int id;
+  final String id;
   final String userId;
   final String name;
   final String? phoneNumber;
@@ -43,26 +43,56 @@ class Courier {
 
   factory Courier.fromJson(Map<String, dynamic> json) {
     return Courier(
-      id: json['id'],
-      userId: json['userId'],
-      name: json['name'],
+      id: json['id']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      name: json['name'] ?? '',
       phoneNumber: json['phoneNumber'],
       vehicleType: json['vehicleType'],
-      isActive: json['isActive'],
-      status: json['status'],
-      maxActiveOrders: json['maxActiveOrders'],
-      currentActiveOrders: json['currentActiveOrders'],
+      isActive: json['isActive'] ?? false,
+      status: json['status'] ?? '',
+      maxActiveOrders: json['maxActiveOrders'] is int
+          ? json['maxActiveOrders']
+          : (json['maxActiveOrders'] is String
+                ? int.tryParse(json['maxActiveOrders']) ?? 0
+                : 0),
+      currentActiveOrders: json['currentActiveOrders'] is int
+          ? json['currentActiveOrders']
+          : (json['currentActiveOrders'] is String
+                ? int.tryParse(json['currentActiveOrders']) ?? 0
+                : 0),
       currentLatitude: json['currentLatitude']?.toDouble(),
       currentLongitude: json['currentLongitude']?.toDouble(),
       lastLocationUpdate: json['lastLocationUpdate'] != null
           ? DateTime.parse(json['lastLocationUpdate'])
           : null,
-      totalEarnings: (json['totalEarnings'] ?? 0).toDouble(),
-      currentDayEarnings: (json['currentDayEarnings'] ?? 0).toDouble(),
-      totalDeliveries: json['totalDeliveries'],
-      averageRating: (json['averageRating'] ?? 0).toDouble(),
-      workingHoursStart: json['workingHoursStart'],
-      workingHoursEnd: json['workingHoursEnd'],
+      totalEarnings: json['totalEarnings'] is double
+          ? json['totalEarnings']
+          : (json['totalEarnings'] is int
+                ? json['totalEarnings'].toDouble()
+                : (json['totalEarnings'] is String
+                      ? double.tryParse(json['totalEarnings']) ?? 0.0
+                      : 0.0)),
+      currentDayEarnings: json['currentDayEarnings'] is double
+          ? json['currentDayEarnings']
+          : (json['currentDayEarnings'] is int
+                ? json['currentDayEarnings'].toDouble()
+                : (json['currentDayEarnings'] is String
+                      ? double.tryParse(json['currentDayEarnings']) ?? 0.0
+                      : 0.0)),
+      totalDeliveries: json['totalDeliveries'] is int
+          ? json['totalDeliveries']
+          : (json['totalDeliveries'] is String
+                ? int.tryParse(json['totalDeliveries']) ?? 0
+                : 0),
+      averageRating: json['averageRating'] is double
+          ? json['averageRating']
+          : (json['averageRating'] is int
+                ? json['averageRating'].toDouble()
+                : (json['averageRating'] is String
+                      ? double.tryParse(json['averageRating']) ?? 0.0
+                      : 0.0)),
+      workingHoursStart: json['workingHoursStart']?.toString(),
+      workingHoursEnd: json['workingHoursEnd']?.toString(),
       isWithinWorkingHours: json['isWithinWorkingHours'] ?? true,
     );
   }

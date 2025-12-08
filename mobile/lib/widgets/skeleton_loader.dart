@@ -71,3 +71,4 @@ class ProductSkeletonItem extends StatelessWidget {
     );
   }
 }
+

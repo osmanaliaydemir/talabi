@@ -11,8 +11,8 @@ import 'package:mobile/utils/currency_formatter.dart';
 
 import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -82,9 +82,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _checkFavorite() async {
     try {
-      final favorites = await _apiService.getFavorites();
+      final favoritesResult = await _apiService.getFavorites();
       setState(() {
-        _isFavorite = favorites.any((f) => f['id'].toString() == _product?.id);
+        _isFavorite = favoritesResult.items.any((f) => f.id == _product?.id);
       });
     } catch (e) {
       // Ignore error

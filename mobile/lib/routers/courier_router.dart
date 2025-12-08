@@ -3,6 +3,7 @@ import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/screens/courier/active_deliveries_screen.dart';
 import 'package:mobile/screens/courier/availability_screen.dart';
 import 'package:mobile/screens/courier/edit_profile_screen.dart';
+import 'package:mobile/screens/courier/location_management_screen.dart';
 import 'package:mobile/screens/courier/navigation_settings_screen.dart';
 import 'package:mobile/screens/courier/notifications_screen.dart';
 import 'package:mobile/screens/courier/profile_screen.dart';
@@ -17,7 +18,16 @@ class CourierRouter {
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/courier/order-detail':
-        final orderId = settings.arguments as String;
+        final orderId = settings.arguments as String?;
+        if (orderId == null || orderId.isEmpty) {
+          print(
+            'CourierRouter: order-detail route called but orderId is null or empty',
+          );
+          return null;
+        }
+        print(
+          'CourierRouter: Creating OrderDetailScreen with orderId: $orderId',
+        );
         return MaterialPageRoute(
           builder: (context) => OrderDetailScreen(orderId: orderId),
         );
@@ -54,6 +64,11 @@ class CourierRouter {
       case '/courier/navigation-settings':
         return MaterialPageRoute(
           builder: (context) => const CourierNavigationSettingsScreen(),
+        );
+
+      case '/courier/location-management':
+        return MaterialPageRoute(
+          builder: (context) => const CourierLocationManagementScreen(),
         );
 
       case '/courier/active-deliveries':

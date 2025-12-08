@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/shared/settings/legal_content_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/widgets/common/connectivity_banner.dart';
+import 'package:mobile/widgets/connectivity_banner.dart';
 
 class LegalMenuScreen extends StatelessWidget {
   const LegalMenuScreen({super.key});

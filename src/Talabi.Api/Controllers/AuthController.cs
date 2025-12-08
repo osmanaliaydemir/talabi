@@ -12,6 +12,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Email;
 using Talabi.Core.Email;
 using Talabi.Core.Entities;
+using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
 
@@ -390,6 +391,142 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "VendorRegister işlemi sırasında beklenmeyen hata. Email: {Email}", dto.Email);
+
+            var cacheKey = $"verification_code_{dto.Email}";
+            _memoryCache.Remove(cacheKey);
+
+            return StatusCode(500, new ApiResponse<object>(
+                "Kayıt sırasında bir hata oluştu",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Yeni kurye kaydı oluşturur
+    /// </summary>
+    /// <param name="dto">Kurye kayıt bilgileri</param>
+    /// <returns>Kayıt sonucu</returns>
+    [HttpPost("courier-register")]
+    public async Task<ActionResult<ApiResponse<object>>> CourierRegister(CourierRegisterDto dto)
+    {
+        try
+        {
+            // ÖNCE KULLANICI VAR MI KONTROL ET
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                if (await _userManager.IsEmailConfirmedAsync(existingUser))
+                {
+                    return BadRequest(new ApiResponse<object>(
+                        "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+                        "DuplicateEmail"
+                    ));
+                }
+                else
+                {
+                    // Email doğrulanmamış, yeni kod gönder
+                    try
+                    {
+                        await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
+                        return Ok(new ApiResponse<object>(
+                            new { Email = dto.Email },
+                            "Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin."
+                        ));
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
+                        return BadRequest(new ApiResponse<object>(
+                            "Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+                            "Email gönderimi başarısız"
+                        ));
+                    }
+                }
+            }
+
+            // Kullanıcı yok, email göndermeyi dene
+            try
+            {
+                await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
+                return BadRequest(new ApiResponse<object>(
+                    "Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin.",
+                    "Email gönderimi başarısız",
+                    new List<string> { emailEx.Message }
+                ));
+            }
+
+            // Email başarıyla gönderildi, kullanıcıyı oluştur
+            var user = new AppUser
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
+                FullName = dto.FullName,
+                PhoneNumber = dto.Phone,
+                Role = Talabi.Core.Enums.UserRole.Courier
+            };
+            var result = await _userManager.CreateAsync(user, dto.Password);
+
+            if (result.Succeeded)
+            {
+                try
+                {
+                    // Assign Courier role
+                    await _userManager.AddToRoleAsync(user, "Courier");
+
+                    // Create Courier entity
+                    var courier = new Courier
+                    {
+                        UserId = user.Id,
+                        Name = dto.FullName,
+                        PhoneNumber = dto.Phone,
+                        IsActive = true,
+                        Status = CourierStatus.Offline
+                    };
+                    await _unitOfWork.Couriers.AddAsync(courier);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return Ok(new ApiResponse<object>(
+                        new { Email = user.Email },
+                        "Kurye hesabı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz."
+                    ));
+                }
+                catch (Exception dbEx)
+                {
+                    var innerExceptionMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                    _logger.LogError(dbEx, "Courier oluşturulurken hata. UserId: {UserId}, InnerException: {InnerException}",
+                        user.Id, innerExceptionMessage);
+
+                    // Kullanıcıyı sil (rollback)
+                    await _userManager.DeleteAsync(user);
+
+                    return StatusCode(500, new ApiResponse<object>(
+                        "Kurye hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+                        "DATABASE_ERROR",
+                        new List<string> { innerExceptionMessage }
+                    ));
+                }
+            }
+
+            // Kullanıcı oluşturulamadı - cache'den kodu temizle
+            var cacheKey = $"verification_code_{dto.Email}";
+            _memoryCache.Remove(cacheKey);
+
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new ApiResponse<object>(
+                "Kurye hesabı oluşturulamadı",
+                "COURIER_CREATION_FAILED",
+                errorMessages
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CourierRegister işlemi sırasında beklenmeyen hata. Email: {Email}", dto.Email);
 
             var cacheKey = $"verification_code_{dto.Email}";
             _memoryCache.Remove(cacheKey);

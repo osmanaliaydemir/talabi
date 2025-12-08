@@ -904,6 +904,117 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> courierRegister({
+    required String email,
+    required String password,
+    required String fullName,
+    String? phone,
+    String? language,
+  }) async {
+    try {
+      print('🔵 [COURIER_REGISTER] Starting courier registration...');
+      print('🔵 [COURIER_REGISTER] URL: $baseUrl/auth/courier-register');
+      print('🔵 [COURIER_REGISTER] Email: $email');
+      print('🔵 [COURIER_REGISTER] FullName: $fullName');
+      print('🔵 [COURIER_REGISTER] Phone: ${phone ?? "not specified"}');
+      print('🔵 [COURIER_REGISTER] Language: ${language ?? "not specified"}');
+
+      final requestData = {
+        'email': email,
+        'password': password,
+        'fullName': fullName,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (language != null) 'language': language,
+      };
+      print('🔵 [COURIER_REGISTER] Request data: $requestData');
+
+      final response = await _dio.post(
+        '/auth/courier-register',
+        data: requestData,
+      );
+
+      print('🟢 [COURIER_REGISTER] Success! Status: ${response.statusCode}');
+      print('🟢 [COURIER_REGISTER] Response data: ${response.data}');
+
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        final errorMessage =
+            apiResponse.message ??
+            (apiResponse.errors?.isNotEmpty == true
+                ? apiResponse.errors!.join(', ')
+                : 'Kurye kaydı başarısız');
+        throw Exception(errorMessage);
+      }
+
+      return Map<String, dynamic>.from(apiResponse.data ?? {});
+    } on DioException catch (e) {
+      print('🔴 [COURIER_REGISTER] DioException occurred!');
+      print('🔴 [COURIER_REGISTER] Error type: ${e.type}');
+      print('🔴 [COURIER_REGISTER] Error message: ${e.message}');
+      print('🔴 [COURIER_REGISTER] Request path: ${e.requestOptions.path}');
+      print('🔴 [COURIER_REGISTER] Request data: ${e.requestOptions.data}');
+      print('🔴 [COURIER_REGISTER] Response status: ${e.response?.statusCode}');
+      print('🔴 [COURIER_REGISTER] Response data: ${e.response?.data}');
+
+      if (e.response != null) {
+        final responseData = e.response?.data;
+        String errorMessage = 'Unknown error';
+
+        // Handle array response (ASP.NET Identity format)
+        if (responseData is List && responseData.isNotEmpty) {
+          final firstError = responseData[0];
+          if (firstError is Map) {
+            errorMessage =
+                firstError['description'] ??
+                firstError['message'] ??
+                firstError['error'] ??
+                firstError.toString();
+          } else {
+            errorMessage = firstError.toString();
+          }
+        }
+        // Handle ApiResponse format
+        else if (responseData is Map && responseData.containsKey('success')) {
+          final apiResponse = ApiResponse.fromJson(
+            Map<String, dynamic>.from(responseData),
+            (json) => json as Map<String, dynamic>?,
+          );
+          errorMessage =
+              apiResponse.message ??
+              (apiResponse.errors?.isNotEmpty == true
+                  ? apiResponse.errors!.join(', ')
+                  : 'Unknown error');
+        }
+        // Handle object response
+        else if (responseData is Map) {
+          errorMessage =
+              responseData['message'] ??
+              responseData['error'] ??
+              responseData.toString();
+        }
+        // Handle string response
+        else {
+          errorMessage =
+              responseData?.toString() ?? e.message ?? 'Unknown error';
+        }
+
+        print('🔴 [COURIER_REGISTER] Parsed error message: $errorMessage');
+        throw Exception(errorMessage);
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e, stackTrace) {
+      print('🔴 [COURIER_REGISTER] Unexpected error: $e');
+      print('🔴 [COURIER_REGISTER] Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
   void setAuthToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }
@@ -1524,35 +1635,31 @@ class ApiService {
   }
 
   // Favorites methods
-  Future<List<dynamic>> getFavorites() async {
+  /// Get favorites with pagination support
+  Future<PagedResultDto<ProductDto>> getFavorites({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
-      final response = await _dio.get('/favorites');
+      final response = await _dio.get(
+        '/favorites',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
 
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      // Eğer response.data bir Map ise (ApiResponse formatı), parse et
-      if (response.data is Map<String, dynamic>) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
-        );
+      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => PagedResultDto.fromJson(
+          json as Map<String, dynamic>,
+          (itemJson) => ProductDto.fromJson(itemJson),
+        ),
+      );
 
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Favori ürünler getirilemedi');
-        }
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Favori ürünler getirilemedi');
+      }
 
-        return apiResponse.data!;
-      }
-      // Eğer response.data direkt bir List ise (eski format veya boş liste), direkt döndür
-      else if (response.data is List) {
-        return response.data as List<dynamic>;
-      }
-      // Beklenmeyen format
-      else {
-        throw Exception(
-          'Beklenmeyen response formatı: ${response.data.runtimeType}',
-        );
-      }
+      return apiResponse.data!;
     } catch (e) {
       print('Error fetching favorites: $e');
       rethrow;

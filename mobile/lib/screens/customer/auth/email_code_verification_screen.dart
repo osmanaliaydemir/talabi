@@ -8,7 +8,7 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 
@@ -421,20 +421,24 @@ class _EmailCodeVerificationScreenState
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: List.generate(4, (index) {
                               return SizedBox(
-                                width: 45,
-                                height: 55,
+                                width: 55,
+                                height: 65,
                                 child: TextField(
                                   controller: _controllers[index],
                                   focusNode: _focusNodes[index],
                                   textAlign: TextAlign.center,
+                                  textAlignVertical: TextAlignVertical.center,
                                   keyboardType: TextInputType.number,
                                   maxLength: 1,
                                   style: AppTheme.poppins(
-                                    fontSize: 24,
+                                    fontSize: 28,
                                     fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
                                   ),
                                   decoration: InputDecoration(
                                     counterText: '',
+                                    contentPadding: EdgeInsets.zero, // Remove default padding
+                                    isDense: true,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium,

@@ -3,7 +3,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/widgets/toast_message.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String? email;

@@ -38,6 +38,11 @@ public interface IUnitOfWork : IDisposable
     IRepository<OrderItem> OrderItems { get; }
 
     /// <summary>
+    /// OrderCourier entity'leri için repository
+    /// </summary>
+    IRepository<OrderCourier> OrderCouriers { get; }
+
+    /// <summary>
     /// Cart entity'leri için repository
     /// </summary>
     IRepository<Cart> Carts { get; }

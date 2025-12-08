@@ -6,6 +6,7 @@ import 'package:mobile/routers/customer_router.dart';
 import 'package:mobile/routers/vendor_router.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/courier/login_screen.dart';
+import 'package:mobile/screens/courier/register_screen.dart';
 import 'package:mobile/screens/vendor/login_screen.dart';
 
 /// Ana uygulama router'ı
@@ -37,6 +38,13 @@ class AppRouter {
     if (routeName == _courierLoginRoute) {
       return MaterialPageRoute(
         builder: (context) => const CourierLoginScreen(),
+      );
+    }
+
+    // Courier register route
+    if (routeName == '/courier/register') {
+      return MaterialPageRoute(
+        builder: (context) => const CourierRegisterScreen(),
       );
     }
 

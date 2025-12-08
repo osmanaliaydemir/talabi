@@ -234,7 +234,7 @@ class CourierService {
     }
   }
 
-  Future<bool> rejectOrder(String orderId) async {
+  Future<bool> rejectOrder(String orderId, String reason) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/reject'),
@@ -242,6 +242,7 @@ class CourierService {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
+      body: json.encode({'reason': reason}),
     );
 
     if (response.statusCode == 200) {
@@ -419,7 +420,7 @@ class CourierService {
     throw Exception(error);
   }
 
-  Future<void> markNotificationRead(int id) async {
+  Future<void> markNotificationRead(String id) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('${Constants.apiBaseUrl}/courier/notifications/$id/read'),

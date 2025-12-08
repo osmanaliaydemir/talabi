@@ -24,9 +24,7 @@ public class DatabaseHealthCheck : IHealthCheck
     /// <summary>
     /// Veritabanı bağlantısını kontrol eder
     /// </summary>
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -49,8 +47,7 @@ public class DatabaseHealthCheck : IHealthCheck
             await _context.Database.ExecuteSqlRawAsync("SELECT 1", cancellationToken);
 
             _logger.LogDebug("Database health check passed");
-            return HealthCheckResult.Healthy(
-                "Veritabanı bağlantısı başarılı",
+            return HealthCheckResult.Healthy("Veritabanı bağlantısı başarılı",
                 data: new Dictionary<string, object>
                 {
                     { "Database", "TalabiDbContext" },
@@ -60,8 +57,7 @@ public class DatabaseHealthCheck : IHealthCheck
         catch (Exception ex)
         {
             _logger.LogError(ex, "Database health check failed with exception");
-            return HealthCheckResult.Unhealthy(
-                "Veritabanı sağlık kontrolü başarısız",
+            return HealthCheckResult.Unhealthy("Veritabanı sağlık kontrolü başarısız",
                 ex,
                 data: new Dictionary<string, object>
                 {

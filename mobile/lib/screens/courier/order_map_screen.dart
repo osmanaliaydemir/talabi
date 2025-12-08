@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
-import 'package:mobile/services/location_service.dart';
-import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/location_permission_service.dart';
 import 'package:mobile/services/navigation_service.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -31,9 +31,10 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   Future<void> _initializeMap() async {
     print('OrderMapScreen: Initializing map - OrderId: ${widget.order.id}');
     // Get current location
-    final locationService = LocationService(CourierService());
     try {
-      _currentPosition = await locationService.getCurrentLocation();
+      _currentPosition = await LocationPermissionService.getCurrentLocation(
+        context,
+      );
       print(
         'OrderMapScreen: Current location obtained - Lat: ${_currentPosition?.latitude}, Lng: ${_currentPosition?.longitude}',
       );
@@ -63,7 +64,7 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         infoWindow: InfoWindow(
-          title: 'Pickup',
+          title: AppLocalizations.of(context)?.pickup ?? 'Pickup',
           snippet: widget.order.vendorName,
         ),
       ),
@@ -79,7 +80,7 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         infoWindow: InfoWindow(
-          title: 'Delivery',
+          title: AppLocalizations.of(context)?.delivery ?? 'Delivery',
           snippet: widget.order.customerName,
         ),
       ),
@@ -97,7 +98,10 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
           icon: BitmapDescriptor.defaultMarkerWithHue(
             BitmapDescriptor.hueOrange,
           ),
-          infoWindow: const InfoWindow(title: 'Your Location'),
+          infoWindow: InfoWindow(
+            title:
+                AppLocalizations.of(context)?.yourLocation ?? 'Your Location',
+          ),
         ),
       );
     }
@@ -164,9 +168,13 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
       await _navigationService.launchMap(targetLat, targetLng);
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not launch maps: $e'),
+            content: Text(
+              localizations?.couldNotLaunchMaps(e.toString()) ??
+                  'Could not launch maps: $e',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -227,7 +235,7 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
             heroTag: 'navigate',
             onPressed: _launchNavigation,
             icon: const Icon(Icons.navigation),
-            label: const Text('Navigate'),
+            label: Text(AppLocalizations.of(context)?.navigate ?? 'Navigate'),
           ),
         ],
       ),

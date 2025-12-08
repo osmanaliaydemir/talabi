@@ -30,11 +30,7 @@ public class CourierController : ControllerBase
     /// <summary>
     /// CourierController constructor
     /// </summary>
-    public CourierController(
-        IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager,
-        ILogger<CourierController> logger,
-        IStringLocalizer<CourierController> localizer)
+    public CourierController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager, ILogger<CourierController> logger, IStringLocalizer<CourierController> localizer)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
@@ -281,13 +277,17 @@ public class CourierController : ControllerBase
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTime(today.Year, today.Month, 1);
 
-        var orders = await _unitOfWork.Orders.Query()
-            .Where(o => o.CourierId == courier.Id && o.Status == OrderStatus.Delivered)
+        // Get orders through OrderCouriers
+        var orderCouriers = await _unitOfWork.OrderCouriers.Query()
+            .Include(oc => oc.Order)
+            .Where(oc => oc.CourierId == courier.Id 
+                && oc.Order != null 
+                && oc.Order.Status == OrderStatus.Delivered)
             .ToListAsync();
 
-        var todayOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date == today);
-        var weekOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date >= weekStart);
-        var monthOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date >= monthStart);
+        var todayOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date == today);
+        var weekOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date >= weekStart);
+        var monthOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date >= monthStart);
 
         var stats = new CourierStatisticsDto
         {
@@ -443,25 +443,44 @@ public class CourierController : ControllerBase
 
         var orders = await assignmentService.GetActiveOrdersForCourierAsync(courier.Id);
 
-        var orderDtos = orders.Select(o => new Talabi.Core.DTOs.Courier.CourierOrderDto
+        var orderDtos = orders.Select(o =>
         {
-            Id = o.Id,
-            VendorName = o.Vendor?.Name ?? "Unknown Vendor",
-            VendorAddress = o.Vendor?.Address ?? "",
-            VendorLatitude = o.Vendor?.Latitude ?? 0,
-            VendorLongitude = o.Vendor?.Longitude ?? 0,
-            CustomerName = o.Customer?.FullName ?? "Unknown Customer",
-            DeliveryAddress = o.DeliveryAddress?.FullAddress ?? "",
-            DeliveryLatitude = o.DeliveryAddress?.Latitude ?? 0,
-            DeliveryLongitude = o.DeliveryAddress?.Longitude ?? 0,
-            DeliveryFee = o.DeliveryFee,
-            Status = o.Status.ToString(),
-            CreatedAt = o.CreatedAt,
-            Items = o.OrderItems.Select(i => new Talabi.Core.DTOs.Courier.CourierOrderItemDto
+            var orderCourier = o.OrderCouriers
+                .Where(oc => oc.CourierId == courier.Id && oc.IsActive)
+                .FirstOrDefault();
+
+            return new Talabi.Core.DTOs.Courier.CourierOrderDto
             {
-                ProductName = i.Product?.Name ?? "Unknown Product",
-                Quantity = i.Quantity
-            }).ToList()
+                Id = o.Id,
+                CustomerOrderId = o.CustomerOrderId,
+                VendorName = o.Vendor?.Name ?? "Unknown Vendor",
+                VendorAddress = o.Vendor?.Address ?? "",
+                VendorLatitude = o.Vendor?.Latitude ?? 0,
+                VendorLongitude = o.Vendor?.Longitude ?? 0,
+                CustomerName = o.Customer?.FullName ?? "Unknown Customer",
+                DeliveryAddress = o.DeliveryAddress?.FullAddress ?? "",
+                DeliveryLatitude = o.DeliveryAddress?.Latitude ?? 0,
+                DeliveryLongitude = o.DeliveryAddress?.Longitude ?? 0,
+                TotalAmount = o.TotalAmount,
+                DeliveryFee = orderCourier?.DeliveryFee ?? o.DeliveryFee,
+                Status = o.Status.ToString(),
+                CreatedAt = o.CreatedAt,
+                Items = o.OrderItems.Select(i => new Talabi.Core.DTOs.Courier.CourierOrderItemDto
+                {
+                    ProductName = i.Product?.Name ?? "Unknown Product",
+                    Quantity = i.Quantity
+                }).ToList(),
+                // OrderCourier bilgileri
+                CourierStatus = orderCourier?.Status,
+                CourierAssignedAt = orderCourier?.CourierAssignedAt,
+                CourierAcceptedAt = orderCourier?.CourierAcceptedAt,
+                CourierRejectedAt = orderCourier?.CourierRejectedAt,
+                RejectReason = orderCourier?.RejectReason,
+                PickedUpAt = orderCourier?.PickedUpAt,
+                OutForDeliveryAt = orderCourier?.OutForDeliveryAt,
+                DeliveredAt = orderCourier?.DeliveredAt,
+                CourierTip = orderCourier?.CourierTip
+            };
         }).ToList();
 
         return Ok(new ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>(orderDtos, "Aktif siparişler başarıyla getirildi"));
@@ -495,10 +514,14 @@ public class CourierController : ControllerBase
     /// Siparişi reddeder
     /// </summary>
     /// <param name="id">Sipariş ID'si</param>
+    /// <param name="dto">Reddetme bilgileri</param>
     /// <param name="assignmentService">Sipariş atama servisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("orders/{id}/reject")]
-    public async Task<ActionResult<ApiResponse<object>>> RejectOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<ActionResult<ApiResponse<object>>> RejectOrder(
+        Guid id,
+        [FromBody] Talabi.Core.DTOs.Courier.RejectOrderDto dto,
+        [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
         var courier = await GetCurrentCourier();
         if (courier == null)
@@ -506,7 +529,15 @@ public class CourierController : ControllerBase
             return NotFound(new ApiResponse<object>("Kurye profili bulunamadı", "COURIER_PROFILE_NOT_FOUND"));
         }
 
-        var success = await assignmentService.RejectOrderAsync(id, courier.Id);
+        // Validate reject reason
+        if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Trim().Length < 10)
+        {
+            return BadRequest(new ApiResponse<object>("Reddetme sebebi en az 10 karakter olmalıdır",
+                "INVALID_REJECT_REASON"
+            ));
+        }
+
+        var success = await assignmentService.RejectOrderAsync(id, courier.Id, dto.Reason.Trim());
         if (!success)
         {
             return BadRequest(new ApiResponse<object>(_localizer["FailedToRejectOrder"], "ORDER_REJECT_FAILED"));
@@ -580,7 +611,8 @@ public class CourierController : ControllerBase
 
         var order = await _unitOfWork.Orders.Query()
             .Include(o => o.DeliveryProof)
-            .FirstOrDefaultAsync(o => o.Id == id && o.CourierId == courier.Id);
+            .Include(o => o.OrderCouriers)
+            .FirstOrDefaultAsync(o => o.Id == id && o.OrderCouriers.Any(oc => oc.CourierId == courier.Id && oc.IsActive));
 
         if (order == null)
         {
@@ -634,50 +666,75 @@ public class CourierController : ControllerBase
             return NotFound(new ApiResponse<object>("Kurye profili bulunamadı", "COURIER_PROFILE_NOT_FOUND"));
         }
 
-        IQueryable<Order> query = _unitOfWork.Orders.Query()
-            .Include(o => o.Vendor)
-            .Include(o => o.Customer)
-            .Include(o => o.DeliveryAddress)
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-            .Where(o => o.CourierId == courier.Id && o.Status == OrderStatus.Delivered);
+        // Get orders through OrderCouriers
+        var orderCouriers = await _unitOfWork.OrderCouriers.Query()
+            .Include(oc => oc.Order)
+                .ThenInclude(o => o.Vendor)
+            .Include(oc => oc.Order)
+                .ThenInclude(o => o.Customer)
+            .Include(oc => oc.Order)
+                .ThenInclude(o => o.DeliveryAddress)
+            .Include(oc => oc.Order)
+                .ThenInclude(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+            .Where(oc => oc.CourierId == courier.Id 
+                && oc.Order != null 
+                && oc.Order.Status == OrderStatus.Delivered
+                && oc.DeliveredAt.HasValue)
+            .OrderByDescending(oc => oc.DeliveredAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-        IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.DeliveredAt);
+        var totalCount = await _unitOfWork.OrderCouriers.Query()
+            .CountAsync(oc => oc.CourierId == courier.Id 
+                && oc.Order != null 
+                && oc.Order.Status == OrderStatus.Delivered
+                && oc.DeliveredAt.HasValue);
 
-        // Gelişmiş query helper kullanımı - Pagination ve DTO mapping tek satırda
-        var pagedResult = await orderedQuery.ToPagedResultAsync(
-            o => new CourierOrderDto
+        var orderDtos = orderCouriers.Select(oc => new CourierOrderDto
+        {
+            Id = oc.Order!.Id,
+            CustomerOrderId = oc.Order.CustomerOrderId,
+            VendorName = oc.Order.Vendor != null ? oc.Order.Vendor.Name : "Unknown Vendor",
+            VendorAddress = oc.Order.Vendor != null ? oc.Order.Vendor.Address : "",
+            VendorLatitude = oc.Order.Vendor != null && oc.Order.Vendor.Latitude.HasValue ? (double)oc.Order.Vendor.Latitude.Value : 0,
+            VendorLongitude = oc.Order.Vendor != null && oc.Order.Vendor.Longitude.HasValue ? (double)oc.Order.Vendor.Longitude.Value : 0,
+            CustomerName = oc.Order.Customer != null ? oc.Order.Customer.FullName : "Unknown Customer",
+            DeliveryAddress = oc.Order.DeliveryAddress != null ? oc.Order.DeliveryAddress.FullAddress : "",
+            DeliveryLatitude = oc.Order.DeliveryAddress != null && oc.Order.DeliveryAddress.Latitude.HasValue ? (double)oc.Order.DeliveryAddress.Latitude.Value : 0,
+            DeliveryLongitude = oc.Order.DeliveryAddress != null && oc.Order.DeliveryAddress.Longitude.HasValue ? (double)oc.Order.DeliveryAddress.Longitude.Value : 0,
+            TotalAmount = oc.Order.TotalAmount,
+            DeliveryFee = oc.DeliveryFee, // Use OrderCourier's delivery fee
+            Status = oc.Order.Status.ToString(),
+            CreatedAt = oc.Order.CreatedAt,
+            Items = oc.Order.OrderItems.Select(i => new CourierOrderItemDto
             {
-                Id = o.Id,
-                VendorName = o.Vendor != null ? o.Vendor.Name : "Unknown Vendor",
-                VendorAddress = o.Vendor != null ? o.Vendor.Address : "",
-                VendorLatitude = o.Vendor != null && o.Vendor.Latitude.HasValue ? (double)o.Vendor.Latitude.Value : 0,
-                VendorLongitude = o.Vendor != null && o.Vendor.Longitude.HasValue ? (double)o.Vendor.Longitude.Value : 0,
-                CustomerName = o.Customer != null ? o.Customer.FullName : "Unknown Customer",
-                DeliveryAddress = o.DeliveryAddress != null ? o.DeliveryAddress.FullAddress : "",
-                DeliveryLatitude = o.DeliveryAddress != null && o.DeliveryAddress.Latitude.HasValue ? (double)o.DeliveryAddress.Latitude.Value : 0,
-                DeliveryLongitude = o.DeliveryAddress != null && o.DeliveryAddress.Longitude.HasValue ? (double)o.DeliveryAddress.Longitude.Value : 0,
-                DeliveryFee = o.DeliveryFee,
-                Status = o.Status.ToString(),
-                CreatedAt = o.CreatedAt,
-                Items = o.OrderItems.Select(i => new CourierOrderItemDto
-                {
-                    ProductName = i.Product != null ? i.Product.Name : "Unknown Product",
-                    Quantity = i.Quantity
-                }).ToList()
-            },
-            page,
-            pageSize);
+                ProductName = i.Product != null ? i.Product.Name : "Unknown Product",
+                Quantity = i.Quantity
+            }).ToList(),
+            // OrderCourier bilgileri
+            CourierStatus = oc.Status,
+            CourierAssignedAt = oc.CourierAssignedAt,
+            CourierAcceptedAt = oc.CourierAcceptedAt,
+            CourierRejectedAt = oc.CourierRejectedAt,
+            RejectReason = oc.RejectReason,
+            PickedUpAt = oc.PickedUpAt,
+            OutForDeliveryAt = oc.OutForDeliveryAt,
+            DeliveredAt = oc.DeliveredAt,
+            CourierTip = oc.CourierTip
+        }).ToList();
 
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
         var result = new
         {
-            TotalCount = pagedResult.TotalCount,
-            Page = pagedResult.Page,
-            PageSize = pagedResult.PageSize,
-            TotalPages = pagedResult.TotalPages,
-            HasNextPage = pagedResult.HasNextPage,
-            HasPreviousPage = pagedResult.HasPreviousPage,
-            Orders = pagedResult.Items
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            HasNextPage = page < totalPages,
+            HasPreviousPage = page > 1,
+            items = orderDtos
         };
 
         return Ok(new ApiResponse<object>(result, "Sipariş geçmişi başarıyla getirildi"));
@@ -697,6 +754,7 @@ public class CourierController : ControllerBase
             return NotFound(new ApiResponse<CourierOrderDto>(_localizer["CourierProfileNotFound"], "COURIER_PROFILE_NOT_FOUND"));
         }
 
+        // First try to get order if it's currently assigned to this courier
         var order = await _unitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.Customer)
@@ -704,16 +762,44 @@ public class CourierController : ControllerBase
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
             .Include(o => o.DeliveryProof)
-            .FirstOrDefaultAsync(o => o.Id == id && o.CourierId == courier.Id);
+            .Include(o => o.OrderCouriers)
+            .FirstOrDefaultAsync(o => o.Id == id && o.OrderCouriers.Any(oc => oc.CourierId == courier.Id && oc.IsActive));
+
+        // If not found, check if this courier has a notification for this order
+        // This allows viewing orders from notifications even if they were rejected or reassigned
+        if (order == null)
+        {
+            var hasNotification = await _unitOfWork.CourierNotifications.Query()
+                .AnyAsync(n => n.CourierId == courier.Id && n.OrderId == id);
+
+            if (hasNotification)
+            {
+                // Get the order even if not currently assigned to this courier
+                order = await _unitOfWork.Orders.Query()
+                    .Include(o => o.Vendor)
+                    .Include(o => o.Customer)
+                    .Include(o => o.DeliveryAddress)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                    .Include(o => o.DeliveryProof)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+            }
+        }
 
         if (order == null)
         {
             return NotFound(new ApiResponse<CourierOrderDto>("Sipariş bulunamadı veya size atanmamış", "ORDER_NOT_FOUND"));
         }
 
+        var orderCourier = order.OrderCouriers
+            .Where(oc => oc.CourierId == courier.Id)
+            .OrderByDescending(oc => oc.CreatedAt)
+            .FirstOrDefault();
+
         var orderDto = new CourierOrderDto
         {
             Id = order.Id,
+            CustomerOrderId = order.CustomerOrderId,
             VendorName = order.Vendor?.Name ?? "Unknown Vendor",
             VendorAddress = order.Vendor?.Address ?? "",
             VendorLatitude = order.Vendor?.Latitude ?? 0,
@@ -722,14 +808,25 @@ public class CourierController : ControllerBase
             DeliveryAddress = order.DeliveryAddress?.FullAddress ?? "",
             DeliveryLatitude = order.DeliveryAddress?.Latitude ?? 0,
             DeliveryLongitude = order.DeliveryAddress?.Longitude ?? 0,
-            DeliveryFee = order.DeliveryFee,
+            TotalAmount = order.TotalAmount,
+            DeliveryFee = orderCourier?.DeliveryFee ?? order.DeliveryFee,
             Status = order.Status.ToString(),
             CreatedAt = order.CreatedAt,
             Items = order.OrderItems.Select(i => new CourierOrderItemDto
             {
                 ProductName = i.Product?.Name ?? "Unknown Product",
                 Quantity = i.Quantity
-            }).ToList()
+            }).ToList(),
+            // OrderCourier bilgileri
+            CourierStatus = orderCourier?.Status,
+            CourierAssignedAt = orderCourier?.CourierAssignedAt,
+            CourierAcceptedAt = orderCourier?.CourierAcceptedAt,
+            CourierRejectedAt = orderCourier?.CourierRejectedAt,
+            RejectReason = orderCourier?.RejectReason,
+            PickedUpAt = orderCourier?.PickedUpAt,
+            OutForDeliveryAt = orderCourier?.OutForDeliveryAt,
+            DeliveredAt = orderCourier?.DeliveredAt,
+            CourierTip = orderCourier?.CourierTip
         };
 
         return Ok(new ApiResponse<CourierOrderDto>(orderDto, "Sipariş detayları başarıyla getirildi"));

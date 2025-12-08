@@ -56,16 +56,26 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
     }
     if (_image == null) {
       print('DeliveryProofScreen: No image provided');
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please take a photo of the delivery')),
+        SnackBar(
+          content: Text(
+            localizations?.pleaseTakePhoto ?? 'Please take a photo of the delivery',
+          ),
+        ),
       );
       return;
     }
 
     if (_signatureController.isEmpty) {
       print('DeliveryProofScreen: No signature provided');
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please obtain a signature')),
+        SnackBar(
+          content: Text(
+            localizations?.pleaseObtainSignature ?? 'Please obtain a signature',
+          ),
+        ),
       );
       return;
     }
@@ -108,9 +118,13 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
         'DeliveryProofScreen: Proof submitted successfully - OrderId: ${widget.orderId}',
       );
       if (mounted) {
+        final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Delivery proof submitted successfully'),
+          SnackBar(
+            content: Text(
+              localizations?.deliveryProofSubmittedSuccessfully ??
+                  'Delivery proof submitted successfully',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -140,6 +154,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -150,7 +165,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text('Delivery Proof'),
+        title: Text(localizations?.deliveryProof ?? 'Delivery Proof'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -159,9 +174,9 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                '1. Take Photo',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                '1. ${localizations?.takePhoto ?? 'Take Photo'}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               GestureDetector(
@@ -177,23 +192,23 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                       ? Image.file(_image!, fit: BoxFit.cover)
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               Icons.camera_alt,
                               size: 50,
                               color: Colors.grey,
                             ),
-                            SizedBox(height: 8),
-                            Text('Tap to take photo'),
+                            const SizedBox(height: 8),
+                            Text(localizations?.takePhoto ?? 'Tap to take photo'),
                           ],
                         ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              const Text(
-                '2. Signature',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                '2. ${localizations?.signature ?? 'Signature'}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Container(
@@ -216,7 +231,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                           TextButton.icon(
                             onPressed: () => _signatureController.clear(),
                             icon: const Icon(Icons.clear),
-                            label: const Text('Clear'),
+                            label: Text(localizations?.clear ?? 'Clear'),
                           ),
                         ],
                       ),
@@ -226,17 +241,17 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
               ),
 
               const SizedBox(height: 24),
-              const Text(
-                '3. Notes',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                '3. ${localizations?.notes ?? 'Notes'}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (Optional)',
-                  border: OutlineInputBorder(),
-                  hintText: 'Left at front door, etc.',
+                decoration: InputDecoration(
+                  labelText: localizations?.notesOptional ?? 'Notes (Optional)',
+                  border: const OutlineInputBorder(),
+                  hintText: localizations?.leftAtFrontDoor ?? 'Left at front door, etc.',
                 ),
                 maxLines: 3,
               ),
@@ -248,7 +263,10 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                 ),
                 child: _isLoading
                     ? CircularProgressIndicator(color: Colors.teal)
-                    : const Text('Submit Proof & Complete Delivery'),
+                    : Text(
+                        localizations?.submitProofAndCompleteDelivery ??
+                            'Submit Proof & Complete Delivery',
+                      ),
               ),
             ],
           ),

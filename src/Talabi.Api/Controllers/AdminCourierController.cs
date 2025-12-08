@@ -114,13 +114,17 @@ public class AdminCourierController : ControllerBase
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTime(today.Year, today.Month, 1);
 
-        var orders = await _unitOfWork.Orders.Query()
-            .Where(o => o.CourierId == id && o.Status == OrderStatus.Delivered)
+        // Get orders through OrderCouriers
+        var orderCouriers = await _unitOfWork.OrderCouriers.Query()
+            .Include(oc => oc.Order)
+            .Where(oc => oc.CourierId == id 
+                && oc.Order != null 
+                && oc.Order.Status == OrderStatus.Delivered)
             .ToListAsync();
 
-        var todayOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date == today);
-        var weekOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date >= weekStart);
-        var monthOrders = orders.Count(o => o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date >= monthStart);
+        var todayOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date == today);
+        var weekOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date >= weekStart);
+        var monthOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date >= monthStart);
 
         // Calculate earnings (this could be optimized by querying CourierEarnings table directly)
         var earnings = await _unitOfWork.CourierEarnings.Query()
@@ -240,8 +244,11 @@ public class AdminCourierController : ControllerBase
         var busyCouriers = await _unitOfWork.Couriers.CountAsync(c => c.Status == CourierStatus.Busy);
 
         var today = DateTime.Today;
-        var todayDeliveries = await _unitOfWork.Orders.Query()
-            .Where(o => o.Status == OrderStatus.Delivered && o.DeliveredAt.HasValue && o.DeliveredAt.Value.Date == today)
+        var todayDeliveries = await _unitOfWork.OrderCouriers.Query()
+            .Where(oc => oc.Order != null 
+                && oc.Order.Status == OrderStatus.Delivered 
+                && oc.DeliveredAt.HasValue 
+                && oc.DeliveredAt.Value.Date == today)
             .CountAsync();
 
         var todayEarnings = await _unitOfWork.CourierEarnings.Query()

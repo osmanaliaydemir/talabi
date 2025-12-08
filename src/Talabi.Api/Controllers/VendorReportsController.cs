@@ -48,9 +48,7 @@ public class VendorReportsController : ControllerBase
     /// <param name="period">Periyot (day, week, month) - varsayılan: week</param>
     /// <returns>Satış raporu</returns>
     [HttpGet("sales")]
-    public async Task<ActionResult<ApiResponse<SalesReportDto>>> GetSalesReport(
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null,
+    public async Task<ActionResult<ApiResponse<SalesReportDto>>> GetSalesReport([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null,
         [FromQuery] string period = "week") // day, week, month
     {
         var vendorId = await GetVendorIdAsync();

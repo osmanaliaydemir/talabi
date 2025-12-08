@@ -25,17 +25,40 @@ public class OrderAssignmentService : IOrderAssignmentService
     public async Task<bool> AssignOrderToCourierAsync(Guid orderId, Guid courierId)
     {
         var order = await _context.Orders
+            .Include(o => o.OrderCouriers)
             .FirstOrDefaultAsync(o => o.Id == orderId);
         var courier = await _context.Couriers.FindAsync(courierId);
 
         if (order == null || courier == null) return false;
-        if (order.Status != OrderStatus.Ready || order.CourierId.HasValue) return false;
+        if (order.Status != OrderStatus.Ready) return false;
+        
+        // Check if order already has an active assignment
+        var activeAssignment = await GetActiveOrderCourierAsync(orderId);
+        if (activeAssignment != null) return false;
+        
         if (!courier.IsActive || courier.Status != CourierStatus.Available) return false;
         if (courier.CurrentActiveOrders >= courier.MaxActiveOrders) return false;
 
-        // Update order
-        order.CourierId = courierId;
-        order.CourierAssignedAt = DateTime.UtcNow;
+        // Deactivate any previous assignments (if any)
+        await DeactivatePreviousAssignmentsAsync(orderId);
+
+        // Calculate delivery fee
+        decimal deliveryFee = await CalculateDeliveryFee(order, courier);
+
+        // Create new OrderCourier assignment
+        var orderCourier = new OrderCourier
+        {
+            OrderId = orderId,
+            CourierId = courierId,
+            CourierAssignedAt = DateTime.UtcNow,
+            Status = OrderCourierStatus.Assigned,
+            IsActive = true,
+            DeliveryFee = deliveryFee
+        };
+
+        _context.OrderCouriers.Add(orderCourier);
+
+        // Update order status
         order.Status = OrderStatus.Assigned;
 
         // Update courier
@@ -44,7 +67,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         AddCourierNotification(
             courier.Id,
             "Yeni sipariş atandı",
-            $"#{order.Id} numaralı sipariş sana atandı. İnceleyip hızlıca aksiyon al.",
+            $"#{order.CustomerOrderId} numaralı sipariş sana atandı. İnceleyip hızlıca aksiyon al.",
             "order_assigned",
             order.Id);
 
@@ -114,12 +137,19 @@ public class OrderAssignmentService : IOrderAssignmentService
         var courier = await _context.Couriers.FindAsync(courierId);
 
         if (order == null || courier == null) return false;
-        if (order.CourierId != courierId) return false;
+        
+        var orderCourier = await GetActiveOrderCourierAsync(orderId);
+        if (orderCourier == null || orderCourier.CourierId != courierId) return false;
         if (order.Status != OrderStatus.Assigned) return false;
+        if (orderCourier.Status != OrderCourierStatus.Assigned) return false;
         if (courier.CurrentActiveOrders >= courier.MaxActiveOrders) return false;
 
-        // Update order
-        order.CourierAcceptedAt = DateTime.UtcNow;
+        // Update OrderCourier
+        orderCourier.CourierAcceptedAt = DateTime.UtcNow;
+        orderCourier.Status = OrderCourierStatus.Accepted;
+        orderCourier.UpdatedAt = DateTime.UtcNow;
+
+        // Update order status
         order.Status = OrderStatus.Accepted;
 
         // Update courier
@@ -132,31 +162,53 @@ public class OrderAssignmentService : IOrderAssignmentService
         return true;
     }
 
-    public async Task<bool> RejectOrderAsync(Guid orderId, Guid courierId)
+    public async Task<bool> RejectOrderAsync(Guid orderId, Guid courierId, string reason)
     {
-        var order = await _context.Orders.FindAsync(orderId);
+        var order = await _context.Orders
+            .Include(o => o.Vendor)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
         var courier = await _context.Couriers.FindAsync(courierId);
 
         if (order == null || courier == null) return false;
-        if (order.CourierId != courierId) return false;
-        if (order.Status != OrderStatus.Assigned) return false;
 
-        // Reset order assignment
-        order.CourierId = null;
-        order.CourierAssignedAt = null;
-        order.CourierAcceptedAt = null;
-        order.PickedUpAt = null;
-        order.OutForDeliveryAt = null;
+        var orderCourier = await GetActiveOrderCourierAsync(orderId);
+        if (orderCourier == null || orderCourier.CourierId != courierId) return false;
+        if (order.Status != OrderStatus.Assigned) return false;
+        if (orderCourier.Status != OrderCourierStatus.Assigned) return false;
+
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return false;
+        }
+
+        // Update OrderCourier - mark as rejected
+        orderCourier.CourierRejectedAt = DateTime.UtcNow;
+        orderCourier.RejectReason = reason.Trim();
+        orderCourier.Status = OrderCourierStatus.Rejected;
+        orderCourier.IsActive = false;
+        orderCourier.UpdatedAt = DateTime.UtcNow;
+
+        // Reset order status to Ready
         order.Status = OrderStatus.Ready;
+        order.CancelReason = null; // Clear cancel reason since order is still active
 
         // Update courier
         courier.Status = courier.CurrentActiveOrders > 0 ? CourierStatus.Busy : CourierStatus.Available;
 
+        // Add vendor notification
+        if (order.VendorId != Guid.Empty)
+        {
+            await AddVendorNotificationAsync(
+                order.VendorId,
+                order.CustomerOrderId,
+                courier.Name,
+                reason.Trim()
+            );
+        }
+
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Order {OrderId} rejected by courier {CourierId}", orderId, courierId);
-
-        // Trigger re-assignment logic here if needed (e.g. background job)
+        _logger.LogInformation("Order {OrderId} rejected by courier {CourierId}. Reason: {Reason}", orderId, courierId, reason);
 
         return true;
     }
@@ -167,13 +219,20 @@ public class OrderAssignmentService : IOrderAssignmentService
         var courier = await _context.Couriers.FindAsync(courierId);
 
         if (order == null || courier == null) return false;
-        if (order.CourierId != courierId) return false;
-        if (order.Status != OrderStatus.Accepted) return false;
 
-        // Update order - mark as picked up and ready for delivery
+        var orderCourier = await GetActiveOrderCourierAsync(orderId);
+        if (orderCourier == null || orderCourier.CourierId != courierId) return false;
+        if (order.Status != OrderStatus.Accepted) return false;
+        if (orderCourier.Status != OrderCourierStatus.Accepted) return false;
+
+        // Update OrderCourier - mark as picked up and out for delivery
+        orderCourier.PickedUpAt = DateTime.UtcNow;
+        orderCourier.OutForDeliveryAt = DateTime.UtcNow;
+        orderCourier.Status = OrderCourierStatus.OutForDelivery;
+        orderCourier.UpdatedAt = DateTime.UtcNow;
+
+        // Update order status
         order.Status = OrderStatus.OutForDelivery;
-        order.PickedUpAt = DateTime.UtcNow;
-        order.OutForDeliveryAt = DateTime.UtcNow;
 
         // Update courier
         courier.Status = CourierStatus.Busy;
@@ -181,7 +240,7 @@ public class OrderAssignmentService : IOrderAssignmentService
         AddCourierNotification(
             courier.Id,
             "Sipariş teslimata çıktı",
-            $"#{order.Id} numaralı sipariş müşteriye teslim edilmek üzere yola çıktı.",
+            $"#{order.CustomerOrderId} numaralı sipariş müşteriye teslim edilmek üzere yola çıktı.",
             "order_progress",
             order.Id);
 
@@ -212,25 +271,32 @@ public class OrderAssignmentService : IOrderAssignmentService
         var courier = await _context.Couriers.FindAsync(courierId);
 
         if (order == null || courier == null) return false;
-        if (order.CourierId != courierId) return false;
-        if (order.Status != OrderStatus.OutForDelivery) return false;
 
-        // Update order
+        var orderCourier = await GetActiveOrderCourierAsync(orderId);
+        if (orderCourier == null || orderCourier.CourierId != courierId) return false;
+        if (order.Status != OrderStatus.OutForDelivery) return false;
+        if (orderCourier.Status != OrderCourierStatus.OutForDelivery) return false;
+
+        // Update OrderCourier
+        orderCourier.DeliveredAt = DateTime.UtcNow;
+        orderCourier.Status = OrderCourierStatus.Delivered;
+        orderCourier.UpdatedAt = DateTime.UtcNow;
+
+        // Update order status
         order.Status = OrderStatus.Delivered;
-        order.DeliveredAt = DateTime.UtcNow;
 
         // Update courier
         courier.CurrentActiveOrders = Math.Max(0, courier.CurrentActiveOrders - 1);
         courier.Status = courier.CurrentActiveOrders == 0 ? CourierStatus.Available : CourierStatus.Busy;
         courier.TotalDeliveries++;
 
-        // Create detailed earning record
-        await CreateCourierEarningAsync(order, courier);
+        // Create detailed earning record (use OrderCourier data)
+        await CreateCourierEarningAsync(order, courier, orderCourier);
 
         AddCourierNotification(
             courier.Id,
             "Teslimat tamamlandı",
-            $"Tebrikler! #{order.Id} numaralı siparişi başarıyla teslim ettin.",
+            $"Tebrikler! #{order.CustomerOrderId} numaralı siparişi başarıyla teslim ettin.",
             "order_delivered",
             order.Id);
 
@@ -261,10 +327,25 @@ public class OrderAssignmentService : IOrderAssignmentService
             .Include(o => o.DeliveryAddress)
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
-            .Where(o => o.CourierId == courierId
+            .Include(o => o.OrderCouriers)
+            .Where(o => o.OrderCouriers.Any(oc => oc.CourierId == courierId && oc.IsActive)
                 && o.Status != OrderStatus.Delivered
                 && o.Status != OrderStatus.Cancelled)
             .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Belirli bir siparişe atanan tüm kuryelerin geçmişini getirir
+    /// </summary>
+    /// <param name="orderId">Sipariş ID'si</param>
+    /// <returns>Siparişe atanan tüm OrderCourier kayıtları (tarihe göre sıralanmış)</returns>
+    public async Task<List<OrderCourier>> GetOrderCourierHistoryAsync(Guid orderId)
+    {
+        return await _context.OrderCouriers
+            .Include(oc => oc.Courier)
+            .Where(oc => oc.OrderId == orderId)
+            .OrderByDescending(oc => oc.CreatedAt)
             .ToListAsync();
     }
 
@@ -282,6 +363,18 @@ public class OrderAssignmentService : IOrderAssignmentService
             Message = message,
             Type = type,
             OrderId = orderId
+        });
+    }
+
+    private async Task AddVendorNotificationAsync(Guid vendorId, string customerOrderId, string courierName, string rejectReason)
+    {
+        _context.VendorNotifications.Add(new VendorNotification
+        {
+            VendorId = vendorId,
+            Title = "Kurye Siparişi Reddetti",
+            Message = $"#Order.{customerOrderId} numaralı sipariş {courierName} tarafından reddedildi. Sebep: {rejectReason}. Sipariş yeniden Hazır durumuna alındı.",
+            Type = "CourierRejected",
+            RelatedEntityId = null
         });
     }
 
@@ -371,16 +464,32 @@ public class OrderAssignmentService : IOrderAssignmentService
 
         decimal totalFee = baseFee + distanceBonus + timeBonus + vehicleBonus;
 
-        // Add tip if provided
-        if (order.CourierTip.HasValue)
-        {
-            totalFee += order.CourierTip.Value;
-        }
-
         return totalFee;
     }
 
-    private async Task CreateCourierEarningAsync(Order order, Courier courier)
+    // Helper method to get active OrderCourier for an order
+    private async Task<OrderCourier?> GetActiveOrderCourierAsync(Guid orderId)
+    {
+        return await _context.OrderCouriers
+            .Include(oc => oc.Courier)
+            .FirstOrDefaultAsync(oc => oc.OrderId == orderId && oc.IsActive);
+    }
+
+    // Helper method to deactivate previous assignments
+    private async Task DeactivatePreviousAssignmentsAsync(Guid orderId)
+    {
+        var previousAssignments = await _context.OrderCouriers
+            .Where(oc => oc.OrderId == orderId && oc.IsActive)
+            .ToListAsync();
+
+        foreach (var assignment in previousAssignments)
+        {
+            assignment.IsActive = false;
+            assignment.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    private async Task CreateCourierEarningAsync(Order order, Courier courier, OrderCourier orderCourier)
     {
         var vendor = await _context.Vendors.FindAsync(order.VendorId);
         var deliveryAddress = order.DeliveryAddress;
@@ -418,7 +527,7 @@ public class OrderAssignmentService : IOrderAssignmentService
             _ => 0
         };
 
-        decimal totalEarning = baseFee + distanceBonus + timeBonus + vehicleBonus + (order.CourierTip ?? 0);
+        decimal totalEarning = baseFee + distanceBonus + timeBonus + vehicleBonus + (orderCourier.CourierTip ?? 0);
 
         var earning = new CourierEarning
         {
@@ -426,7 +535,7 @@ public class OrderAssignmentService : IOrderAssignmentService
             OrderId = order.Id,
             BaseDeliveryFee = baseFee + timeBonus + vehicleBonus,
             DistanceBonus = distanceBonus,
-            TipAmount = order.CourierTip ?? 0,
+            TipAmount = orderCourier.CourierTip ?? 0,
             TotalEarning = totalEarning,
             EarnedAt = DateTime.UtcNow,
             IsPaid = false

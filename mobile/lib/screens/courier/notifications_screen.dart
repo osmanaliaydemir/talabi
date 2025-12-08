@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_notification.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
@@ -67,7 +68,7 @@ class _CourierNotificationsScreenState
     await _loadNotifications();
   }
 
-  Future<void> _markAsRead(int id) async {
+  Future<void> _markAsRead(String id) async {
     try {
       print('CourierNotificationsScreen: Marking notification $id as read');
       await _courierService.markNotificationRead(id);
@@ -76,10 +77,24 @@ class _CourierNotificationsScreenState
       print('CourierNotificationsScreen: ERROR mark as read - $e');
       print(stackTrace);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Bildirim işlenemedi: $e')));
+      final localizations = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations?.notificationProcessingFailed(e.toString()) ??
+                'Bildirim işlenemedi: $e',
+          ),
+        ),
+      );
     }
+  }
+
+  String? _extractOrderNumber(String message) {
+    // Extract order number from message like "#123456 numaralı sipariş..."
+    // or "#123456 numaralı siparişiniz..."
+    final regex = RegExp(r'#(\d{6})');
+    final match = regex.firstMatch(message);
+    return match != null ? 'Sipariş #${match.group(1)}' : null;
   }
 
   void _handleNotificationTap(CourierNotification notification) async {
@@ -92,10 +107,14 @@ class _CourierNotificationsScreenState
 
     if (!mounted) return;
 
-    if (notification.orderId != null) {
+    if (notification.orderId != null && notification.orderId!.isNotEmpty) {
+      final orderId = notification.orderId.toString();
+      print(
+        'CourierNotificationsScreen: Navigating to order detail with orderId: $orderId',
+      );
       Navigator.of(
         context,
-      ).pushNamed('/courier/order-detail', arguments: notification.orderId);
+      ).pushNamed('/courier/order-detail', arguments: orderId);
     }
   }
 
@@ -105,8 +124,9 @@ class _CourierNotificationsScreenState
       backgroundColor: Colors.white,
       appBar: CourierHeader(
         title: _unreadCount > 0
-            ? 'Bildirimler ($_unreadCount okunmamış)'
-            : 'Bildirimler',
+            ? '${AppLocalizations.of(context)?.notificationsTitle ?? 'Bildirimler'} (${AppLocalizations.of(context)?.unreadNotificationsCount(_unreadCount) ?? '$_unreadCount okunmamış'})'
+            : (AppLocalizations.of(context)?.notificationsTitle ??
+                  'Bildirimler'),
         leadingIcon: Icons.notifications_active_outlined,
         showBackButton: true,
         showNotifications: false,
@@ -115,11 +135,14 @@ class _CourierNotificationsScreenState
         },
         onRefresh: _handleRefresh,
       ),
-      body: RefreshIndicator(onRefresh: _handleRefresh, child: _buildBody()),
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: _buildBody(context),
+      ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     if (_isLoading) {
       return Center(child: CircularProgressIndicator(color: Colors.teal));
     }
@@ -129,11 +152,17 @@ class _CourierNotificationsScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_errorMessage ?? 'Bildirimler yüklenemedi'),
+            Text(
+              _errorMessage ??
+                  (AppLocalizations.of(context)?.notificationsLoadFailed ??
+                      'Bildirimler yüklenemedi'),
+            ),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _loadNotifications,
-              child: const Text('Tekrar Dene'),
+              child: Text(
+                AppLocalizations.of(context)?.tryAgain ?? 'Tekrar Dene',
+              ),
             ),
           ],
         ),
@@ -141,9 +170,11 @@ class _CourierNotificationsScreenState
     }
 
     if (_notifications.isEmpty) {
-      return const Center(
+      final localizations = AppLocalizations.of(context);
+      return Center(
         child: Text(
-          'Henüz bir bildirimin yok.\nSipariş hareketlerin burada görünecek.',
+          localizations?.noNotificationsYet ??
+              'Henüz bir bildirimin yok.\nSipariş hareketlerin burada görünecek.',
           textAlign: TextAlign.center,
         ),
       );
@@ -231,7 +262,10 @@ class _CourierNotificationsScreenState
                     child: TextButton.icon(
                       onPressed: () => _handleNotificationTap(notification),
                       icon: const Icon(Icons.open_in_new, size: 18),
-                      label: Text('Sipariş #${notification.orderId}'),
+                      label: Text(
+                        _extractOrderNumber(notification.message) ??
+                            'Sipariş #${notification.orderId}',
+                      ),
                     ),
                   ),
               ],

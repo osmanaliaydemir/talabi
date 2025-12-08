@@ -133,11 +133,8 @@ public class ProductsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış kategori listesi</returns>
     [HttpGet("categories")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories(
-        [FromQuery] string? lang = "tr",
-        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories([FromQuery] string? lang = "tr", [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -224,9 +221,7 @@ public class ProductsController : ControllerBase
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
     /// <returns>Sayfalanmış popüler ürün listesi</returns>
     [HttpGet("popular")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6,
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 6,
         [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
         if (page < 1) page = 1;
@@ -326,10 +321,7 @@ public class ProductsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış benzer ürün listesi</returns>
     [HttpGet("{id}/similar")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetSimilarProducts(
-        Guid id,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetSimilarProducts(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;

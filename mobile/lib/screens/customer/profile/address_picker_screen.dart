@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/widgets/common/toast_message.dart';
+import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddressPickerScreen extends StatefulWidget {
@@ -70,16 +70,27 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
 
   Future<void> _getUserLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ToastMessage.show(
-            context,
-            message: l10n.locationServicesDisabled,
-            isSuccess: false,
+      final position = await LocationPermissionService.getCurrentLocation(
+        context,
+      );
+
+      if (position != null) {
+        setState(() {
+          _selectedLocation = LatLng(position.latitude, position.longitude);
+          _isLoading = false;
+        });
+
+        // Move camera to user location
+        if (_mapController != null) {
+          _mapController!.animateCamera(
+            CameraUpdate.newLatLngZoom(_selectedLocation!, 15),
           );
         }
+
+        // Get address for selected location
+        await _getAddressFromLocation(_selectedLocation!);
+      } else {
+        // Use default location if permission denied
         setState(() {
           _isLoading = false;
           _selectedLocation = const LatLng(
@@ -87,33 +98,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
             28.9784,
           ); // Istanbul default
         });
-        return;
       }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        setState(() {
-          _isLoading = false;
-          _selectedLocation = const LatLng(
-            41.0082,
-            28.9784,
-          ); // Istanbul default
-        });
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition();
-      setState(() {
-        _selectedLocation = LatLng(position.latitude, position.longitude);
-        _isLoading = false;
-      });
-
-      await _getAddressFromLocation(_selectedLocation!);
     } catch (e) {
       setState(() {
         _isLoading = false;

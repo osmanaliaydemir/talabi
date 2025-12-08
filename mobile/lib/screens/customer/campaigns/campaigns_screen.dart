@@ -5,9 +5,9 @@ import 'package:mobile/models/promotional_banner.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
-import 'package:mobile/widgets/common/bouncing_circle.dart';
+import 'package:mobile/widgets/bouncing_circle.dart';
 import 'package:mobile/screens/customer/campaigns/campaign_detail_screen.dart';
-import 'package:mobile/widgets/common/cached_network_image_widget.dart';
+import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CampaignsScreen extends StatefulWidget {
@@ -66,8 +66,8 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
               _lastCategory = currentCategory;
             }
           });
-        } else if (_lastCategory == null) {
-          _lastCategory = currentCategory;
+        } else {
+          _lastCategory ??= currentCategory;
         }
 
         return Scaffold(
