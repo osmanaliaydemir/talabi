@@ -470,7 +470,7 @@ public class VendorOrdersController : ControllerBase
             {
                 Id = x.Courier.Id,
                 FullName = x.Courier.Name,
-                PhoneNumber = x.Courier.PhoneNumber,
+                PhoneNumber = x.Courier.PhoneNumber ?? string.Empty,
                 VehicleType = x.Courier.VehicleType ?? "Unknown",
                 AverageRating = x.Courier.AverageRating,
                 TotalDeliveries = x.Courier.TotalDeliveries,
