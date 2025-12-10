@@ -8,11 +8,13 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _firebaseMessaging;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
+  
+  bool get isFirebaseAvailable => _firebaseMessaging != null;
 
   // Callback for order assignment notifications
   void Function(int orderId)? onOrderAssigned;
@@ -31,44 +33,62 @@ class NotificationService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
+    // Try to initialize Firebase Messaging
+    try {
+      _firebaseMessaging = FirebaseMessaging.instance;
+    } catch (e) {
+      print('Firebase Messaging not available: $e');
+      _firebaseMessaging = null;
+    }
+
     // 1. Request Permissions
     await _requestPermission();
 
     // 2. Initialize Local Notifications
     await _initLocalNotifications();
 
-    // 3. Get FCM Token
-    final token = await _firebaseMessaging.getToken();
-    print('🔥 FCM Token: $token');
-
-    if (token != null) {
+    // 3. Get FCM Token (only if Firebase is available)
+    if (_firebaseMessaging != null) {
       try {
-        final deviceType = Platform.isIOS ? 'iOS' : 'Android';
-        await ApiService().registerDeviceToken(token, deviceType);
-        print('✅ Device token registered with API');
+        final token = await _firebaseMessaging!.getToken();
+        print('🔥 FCM Token: $token');
+
+        if (token != null) {
+          try {
+            final deviceType = Platform.isIOS ? 'iOS' : 'Android';
+            await ApiService().registerDeviceToken(token, deviceType);
+            print('✅ Device token registered with API');
+          } catch (e) {
+            print('❌ Failed to register device token: $e');
+          }
+        }
+
+        // 4. Handle Foreground Messages
+        FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+        // 5. Handle Background Message Tap
+        FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageTap);
+
+        // 6. Check if app was opened from a terminated state
+        final initialMessage = await _firebaseMessaging!.getInitialMessage();
+        if (initialMessage != null) {
+          _handleBackgroundMessageTap(initialMessage);
+        }
       } catch (e) {
-        print('❌ Failed to register device token: $e');
+        print('Error initializing Firebase Messaging: $e');
       }
-    }
-
-    // 4. Handle Foreground Messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // 5. Handle Background Message Tap
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageTap);
-
-    // 6. Check if app was opened from a terminated state
-    final initialMessage = await _firebaseMessaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleBackgroundMessageTap(initialMessage);
+    } else {
+      print('⚠️ Firebase Messaging not available - notifications disabled');
     }
 
     _isInitialized = true;
   }
 
   Future<void> _requestPermission() async {
+    if (_firebaseMessaging == null) return;
+    
     if (Platform.isIOS) {
-      await _firebaseMessaging.requestPermission(
+      await _firebaseMessaging!.requestPermission(
         alert: true,
         badge: true,
         sound: true,

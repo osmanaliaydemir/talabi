@@ -31,16 +31,40 @@ Future<void> main() async {
   // Initialize SharedPreferences first (singleton pattern)
   await PreferencesService.init();
 
-  await Firebase.initializeApp();
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp();
+    
+    // Initialize Firebase Analytics
+    MyApp._initializeFirebaseAnalytics();
+    
+    // Pass all uncaught "fatal" errors from the framework to Crashlytics
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-  // Pass all uncaught "fatal" errors from the framework to Crashlytics
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-
-  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+    // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  } catch (e) {
+    // Firebase initialization failed - log but continue app execution
+    if (kDebugMode) {
+      print('Firebase initialization failed: $e');
+      print('App will continue without Firebase services');
+    }
+    // Set basic error handlers even if Firebase is not available
+    FlutterError.onError = (FlutterErrorDetails details) {
+      if (kDebugMode) {
+        FlutterError.presentError(details);
+      }
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (kDebugMode) {
+        print('Unhandled error: $error');
+      }
+      return true;
+    };
+  }
 
   // Initialize connectivity and sync services
   final connectivityService = ConnectivityService();
@@ -86,10 +110,21 @@ class MyApp extends StatelessWidget {
   /// Creates the root widget.
   const MyApp({super.key});
 
-  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  static FirebaseAnalyticsObserver observer = FirebaseAnalyticsObserver(
-    analytics: analytics,
-  );
+  static FirebaseAnalytics? analytics;
+  static FirebaseAnalyticsObserver? observer;
+
+  static void _initializeFirebaseAnalytics() {
+    try {
+      analytics = FirebaseAnalytics.instance;
+      observer = FirebaseAnalyticsObserver(analytics: analytics!);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Firebase Analytics not available: $e');
+      }
+      analytics = null;
+      observer = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +145,7 @@ class MyApp extends StatelessWidget {
           scaffoldMessengerKey: NavigationService.scaffoldMessengerKey,
           navigatorObservers: [
             if (kDebugMode) NavigationLogger(), // Only in debug mode
-            observer,
+            if (observer != null) observer!,
           ],
           localizationsDelegates: const [
             AppLocalizations.delegate,
