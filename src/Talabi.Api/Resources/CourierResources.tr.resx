@@ -61,23 +61,38 @@
   <data name="CourierProfileNotFound" xml:space="preserve">
     <value>Kurye profili bulunamadı</value>
   </data>
+  <data name="CourierProfileRetrievedSuccessfully" xml:space="preserve">
+    <value>Kurye profili başarıyla getirildi</value>
+  </data>
+  <data name="InvalidVehicleType" xml:space="preserve">
+    <value>Geçersiz araç tipi</value>
+  </data>
   <data name="ProfileUpdatedSuccessfully" xml:space="preserve">
     <value>Profil başarıyla güncellendi</value>
   </data>
+  <data name="VehicleTypeMotorcycle" xml:space="preserve">
+    <value>Motosiklet</value>
+  </data>
+  <data name="VehicleTypeCar" xml:space="preserve">
+    <value>Araba</value>
+  </data>
+  <data name="VehicleTypeBicycle" xml:space="preserve">
+    <value>Bisiklet</value>
+  </data>
+  <data name="VehicleTypesRetrievedSuccessfully" xml:space="preserve">
+    <value>Araç tipleri başarıyla getirildi</value>
+  </data>
   <data name="InvalidStatus" xml:space="preserve">
-    <value>Geçersiz durum. Geçerli değerler: Offline, Available, Busy, Break, Assigned</value>
+    <value>Geçersiz durum</value>
   </data>
   <data name="CannotGoAvailableOutsideWorkingHours" xml:space="preserve">
-    <value>Çalışma saatleri dışında müsait olamazsınız</value>
+    <value>Çalışma saatleri dışında uygun duruma geçilemez</value>
   </data>
   <data name="CannotGoOfflineWithActiveOrders" xml:space="preserve">
-    <value>Aktif siparişleriniz varken çevrimdışı olamazsınız</value>
+    <value>Aktif siparişler varken çevrimdışı olunamaz</value>
   </data>
   <data name="StatusUpdated" xml:space="preserve">
     <value>Durum {0} olarak güncellendi</value>
-  </data>
-  <data name="LocationUpdatedSuccessfully" xml:space="preserve">
-    <value>Konum başarıyla güncellendi</value>
   </data>
   <data name="InvalidLatitude" xml:space="preserve">
     <value>Geçersiz enlem</value>
@@ -85,44 +100,85 @@
   <data name="InvalidLongitude" xml:space="preserve">
     <value>Geçersiz boylam</value>
   </data>
+  <data name="LocationUpdatedSuccessfully" xml:space="preserve">
+    <value>Konum başarıyla güncellendi</value>
+  </data>
+  <data name="CourierStatisticsRetrievedSuccessfully" xml:space="preserve">
+    <value>Kurye istatistikleri başarıyla getirildi</value>
+  </data>
+  <data name="AvailabilityCheckedSuccessfully" xml:space="preserve">
+    <value>Müsaitlik durumu başarıyla kontrol edildi</value>
+  </data>
+  <data name="CourierNotFound" xml:space="preserve">
+    <value>Kurye bulunamadı</value>
+  </data>
+  <data name="NotAuthorizedForThisCourier" xml:space="preserve">
+    <value>Bu kurye için yetkiniz yok</value>
+  </data>
+  <data name="CourierLocationNotFound" xml:space="preserve">
+    <value>Kurye konumu bulunamadı</value>
+  </data>
+  <data name="CourierLocationRetrievedSuccessfully" xml:space="preserve">
+    <value>Kurye konumu başarıyla getirildi</value>
+  </data>
+  <data name="ActiveCouriersRetrievedSuccessfully" xml:space="preserve">
+    <value>Aktif kuryeler başarıyla getirildi</value>
+  </data>
+  <data name="ActiveOrdersRetrievedSuccessfully" xml:space="preserve">
+    <value>Aktif siparişler başarıyla getirildi</value>
+  </data>
+  <data name="FailedToAcceptOrder" xml:space="preserve">
+    <value>Sipariş kabul edilemedi</value>
+  </data>
   <data name="OrderAcceptedSuccessfully" xml:space="preserve">
     <value>Sipariş başarıyla kabul edildi</value>
+  </data>
+  <data name="RejectReasonMustBeAtLeast10Characters" xml:space="preserve">
+    <value>Reddetme sebebi en az 10 karakter olmalıdır</value>
+  </data>
+  <data name="FailedToRejectOrder" xml:space="preserve">
+    <value>Sipariş reddedilemedi</value>
   </data>
   <data name="OrderRejectedSuccessfully" xml:space="preserve">
     <value>Sipariş başarıyla reddedildi</value>
   </data>
+  <data name="FailedToPickUpOrder" xml:space="preserve">
+    <value>Sipariş teslim alınamadı</value>
+  </data>
   <data name="OrderPickedUpSuccessfully" xml:space="preserve">
-    <value>Sipariş başarıyla alındı</value>
+    <value>Sipariş başarıyla teslim alındı</value>
+  </data>
+  <data name="FailedToDeliverOrder" xml:space="preserve">
+    <value>Sipariş teslim edilemedi</value>
   </data>
   <data name="OrderDeliveredSuccessfully" xml:space="preserve">
     <value>Sipariş başarıyla teslim edildi</value>
-  </data>
-  <data name="DeliveryProofSubmittedSuccessfully" xml:space="preserve">
-    <value>Teslimat kanıtı başarıyla gönderildi</value>
   </data>
   <data name="OrderNotFoundOrNotAssigned" xml:space="preserve">
     <value>Sipariş bulunamadı veya size atanmamış</value>
   </data>
   <data name="OrderMustBeDeliveredBeforeSubmittingProof" xml:space="preserve">
-    <value>Teslimat kanıtı göndermeden önce sipariş teslim edilmiş olmalı</value>
+    <value>Kanıt göndermeden önce sipariş teslim edilmelidir</value>
   </data>
-  <data name="FailedToAcceptOrder" xml:space="preserve">
-    <value>Sipariş kabul edilemedi. Zaten alınmış veya iptal edilmiş olabilir.</value>
+  <data name="DeliveryProofSubmittedSuccessfully" xml:space="preserve">
+    <value>Teslimat kanıtı başarıyla gönderildi</value>
   </data>
-  <data name="FailedToRejectOrder" xml:space="preserve">
-    <value>Sipariş reddedilemedi.</value>
+  <data name="OrderHistoryRetrievedSuccessfully" xml:space="preserve">
+    <value>Sipariş geçmişi başarıyla getirildi</value>
   </data>
-  <data name="FailedToPickUpOrder" xml:space="preserve">
-    <value>Sipariş alınamadı.</value>
+  <data name="OrderDetailsRetrievedSuccessfully" xml:space="preserve">
+    <value>Sipariş detayları başarıyla getirildi</value>
   </data>
-  <data name="FailedToDeliverOrder" xml:space="preserve">
-    <value>Sipariş teslim edilemedi.</value>
+  <data name="TodayEarningsRetrievedSuccessfully" xml:space="preserve">
+    <value>Bugünkü kazançlar başarıyla getirildi</value>
   </data>
-  <data name="NoFileUploaded" xml:space="preserve">
-    <value>Dosya yüklenmedi</value>
+  <data name="WeekEarningsRetrievedSuccessfully" xml:space="preserve">
+    <value>Haftalık kazançlar başarıyla getirildi</value>
   </data>
-  <data name="InternalServerErrorDuringUpload" xml:space="preserve">
-    <value>Yükleme sırasında sunucu hatası oluştu</value>
+  <data name="MonthEarningsRetrievedSuccessfully" xml:space="preserve">
+    <value>Aylık kazançlar başarıyla getirildi</value>
+  </data>
+  <data name="EarningsHistoryRetrievedSuccessfully" xml:space="preserve">
+    <value>Kazanç geçmişi başarıyla getirildi</value>
   </data>
 </root>
-

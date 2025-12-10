@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Extensions;
@@ -15,19 +16,21 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class FavoritesController : ControllerBase
+public class FavoritesController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "FavoriteResources";
 
     /// <summary>
     /// FavoritesController constructor
     /// </summary>
-    public FavoritesController(IUnitOfWork unitOfWork)
+    public FavoritesController(
+        IUnitOfWork unitOfWork,
+        ILogger<FavoritesController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
-
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
     /// <summary>
     /// Kullanıcının favori ürünlerini getirir (pagination desteği ile)
@@ -36,15 +39,21 @@ public class FavoritesController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 20)</param>
     /// <returns>Sayfalanmış favori ürün listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetFavorites([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetFavorites(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 20;
         if (pageSize > 100) pageSize = 100; // Max page size limit
 
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        IQueryable<FavoriteProduct> query = _unitOfWork.FavoriteProducts.Query()
+        IQueryable<FavoriteProduct> query = UnitOfWork.FavoriteProducts.Query()
             .Where(f => f.UserId == userId)
             .Include(f => f.Product);
 
@@ -76,7 +85,9 @@ public class FavoritesController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Favori ürünler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+            result, 
+            LocalizationService.GetLocalizedString(ResourceName, "FavoritesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -87,22 +98,30 @@ public class FavoritesController : ControllerBase
     [HttpPost("{productId}")]
     public async Task<ActionResult<ApiResponse<object>>> AddToFavorites(Guid productId)
     {
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
         // Check if product exists
-        var product = await _unitOfWork.Products.GetByIdAsync(productId);
+        var product = await UnitOfWork.Products.GetByIdAsync(productId);
         if (product == null)
         {
-            return NotFound(new ApiResponse<object>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture), 
+                "PRODUCT_NOT_FOUND"));
         }
 
         // Check if already favorited
-        var exists = await _unitOfWork.FavoriteProducts.Query()
+        var exists = await UnitOfWork.FavoriteProducts.Query()
             .AnyAsync(f => f.UserId == userId && f.ProductId == productId);
 
         if (exists)
         {
-            return BadRequest(new ApiResponse<object>("Ürün zaten favorilerde", "ALREADY_IN_FAVORITES"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "AlreadyInFavorites", CurrentCulture), 
+                "ALREADY_IN_FAVORITES"));
         }
 
         var favorite = new FavoriteProduct
@@ -111,10 +130,12 @@ public class FavoritesController : ControllerBase
             ProductId = productId
         };
 
-        await _unitOfWork.FavoriteProducts.AddAsync(favorite);
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.FavoriteProducts.AddAsync(favorite);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Favorilere eklendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "AddedToFavorites", CurrentCulture)));
     }
 
     /// <summary>
@@ -125,20 +146,28 @@ public class FavoritesController : ControllerBase
     [HttpDelete("{productId}")]
     public async Task<ActionResult<ApiResponse<object>>> RemoveFromFavorites(Guid productId)
     {
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        var favorite = await _unitOfWork.FavoriteProducts.Query()
+        var favorite = await UnitOfWork.FavoriteProducts.Query()
             .FirstOrDefaultAsync(f => f.UserId == userId && f.ProductId == productId);
 
         if (favorite == null)
         {
-            return NotFound(new ApiResponse<object>("Favori bulunamadı", "FAVORITE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "FavoriteNotFound", CurrentCulture), 
+                "FAVORITE_NOT_FOUND"));
         }
 
-        _unitOfWork.FavoriteProducts.Remove(favorite);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.FavoriteProducts.Remove(favorite);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Favorilerden çıkarıldı"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "RemovedFromFavorites", CurrentCulture)));
     }
 
     /// <summary>
@@ -149,11 +178,17 @@ public class FavoritesController : ControllerBase
     [HttpGet("check/{productId}")]
     public async Task<ActionResult<ApiResponse<object>>> IsFavorite(Guid productId)
     {
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        var isFavorite = await _unitOfWork.FavoriteProducts.Query()
+        var isFavorite = await UnitOfWork.FavoriteProducts.Query()
             .AnyAsync(f => f.UserId == userId && f.ProductId == productId);
 
-        return Ok(new ApiResponse<object>(new { IsFavorite = isFavorite }, "Favori durumu kontrol edildi"));
+        return Ok(new ApiResponse<object>(
+            new { IsFavorite = isFavorite }, 
+            LocalizationService.GetLocalizedString(ResourceName, "FavoriteStatusChecked", CurrentCulture)));
     }
 }

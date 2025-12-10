@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Entities;
 using Talabi.Infrastructure.Data;
 
@@ -29,7 +30,6 @@ namespace Talabi.Api.Middleware
             context.Response.Body = responseBody;
 
             Exception? exception = null;
-
             try
             {
                 await _next(context);
@@ -37,7 +37,9 @@ namespace Talabi.Api.Middleware
             catch (Exception ex)
             {
                 exception = ex;
-                throw; // Re-throw to let global exception handler handle it, but we log it here too
+                // Exception'ı context'e ekle ki ExceptionHandlingMiddleware görebilsin
+                context.Items["Exception"] = ex;
+                throw; // ExceptionHandlingMiddleware'in handle edebilmesi için tekrar throw et
             }
             finally
             {
@@ -74,26 +76,44 @@ namespace Talabi.Api.Middleware
         {
             try
             {
+                // Health check endpoint'lerini loglama
+                if (context.Request.Path.StartsWithSegments("/health")) 
+                {
+                    return;
+                }
+
                 using var scope = _serviceScopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
+                
+                // Test database connection
+                if (!await dbContext.Database.CanConnectAsync())
+                {
+                    _logger.LogError("Cannot connect to database! Skipping log save.");
+                    return;
+                }
 
                 var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var userEmail = context.User?.FindFirst(ClaimTypes.Email)?.Value;
                 var phoneNumber = context.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
 
-                // Optional: Filter out sensitive data or specific paths (e.g., health checks)
-                if (context.Request.Path.StartsWithSegments("/health")) return;
+                const int maxBodySize = 50 * 1024; // 50KB
+                var truncatedRequestBody = requestBody?.Length > maxBodySize 
+                    ? requestBody.Substring(0, maxBodySize) + "... [TRUNCATED]" 
+                    : requestBody;
+                var truncatedResponseBody = responseBody?.Length > maxBodySize 
+                    ? responseBody.Substring(0, maxBodySize) + "... [TRUNCATED]" 
+                    : responseBody;
 
                 var log = new UserActivityLog
                 {
                     UserId = userId,
                     UserEmail = userEmail,
                     PhoneNumber = phoneNumber,
-                    Path = context.Request.Path,
+                    Path = context.Request.Path.ToString(),
                     Method = context.Request.Method,
                     QueryString = context.Request.QueryString.ToString(),
-                    RequestBody = requestBody,
-                    ResponseBody = responseBody,
+                    RequestBody = truncatedRequestBody,
+                    ResponseBody = truncatedResponseBody,
                     StatusCode = context.Response.StatusCode,
                     DurationMs = durationMs,
                     IpAddress = context.Connection.RemoteIpAddress?.ToString(),
@@ -104,10 +124,17 @@ namespace Talabi.Api.Middleware
 
                 dbContext.UserActivityLogs.Add(log);
                 await dbContext.SaveChangesAsync();
+                
+                _logger.LogDebug("User activity logged: {Path} {Method} {StatusCode} {DurationMs}ms", 
+                    log.Path, log.Method, log.StatusCode, log.DurationMs);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error logging user activity");
+                _logger.LogError(ex, 
+                    "Error logging user activity for path: {Path}, method: {Method}, statusCode: {StatusCode}", 
+                    context.Request.Path, 
+                    context.Request.Method, 
+                    context.Response.StatusCode);
             }
         }
     }

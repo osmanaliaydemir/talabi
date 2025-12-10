@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -14,54 +16,29 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class OrdersController : ControllerBase
+public class OrdersController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderAssignmentService _assignmentService;
+    private readonly IOrderService _orderService;
+    private readonly IMapper _mapper;
+    private const string ResourceName = "OrderResources";
 
     /// <summary>
     /// OrdersController constructor
     /// </summary>
-    public OrdersController(IUnitOfWork unitOfWork, IOrderAssignmentService assignmentService)
+    public OrdersController(
+        IUnitOfWork unitOfWork,
+        ILogger<OrdersController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        IOrderAssignmentService assignmentService,
+        IOrderService orderService,
+        IMapper mapper)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
         _assignmentService = assignmentService;
-    }
-
-    /// <summary>
-    /// Benzersiz müşteri sipariş ID'si oluşturur
-    /// </summary>
-    private async Task<string> GenerateUniqueCustomerOrderIdAsync()
-    {
-        var random = new Random();
-        string customerOrderId;
-        bool isUnique;
-
-        do
-        {
-            customerOrderId = random.Next(100000, 999999).ToString();
-            isUnique = !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerOrderId == customerOrderId);
-        } while (!isUnique);
-
-        return customerOrderId;
-    }
-
-    /// <summary>
-    /// Benzersiz müşteri sipariş ürün ID'si oluşturur
-    /// </summary>
-    private async Task<string> GenerateUniqueCustomerOrderItemIdAsync()
-    {
-        var random = new Random();
-        string customerOrderItemId;
-        bool isUnique;
-
-        do
-        {
-            customerOrderItemId = random.Next(100000, 999999).ToString();
-            isUnique = !await _unitOfWork.OrderItems.Query().AnyAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
-        } while (!isUnique);
-
-        return customerOrderItemId;
+        _orderService = orderService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -75,82 +52,13 @@ public class OrdersController : ControllerBase
         try
         {
             // Transaction başlat
-            await _unitOfWork.BeginTransactionAsync();
+            await UnitOfWork.BeginTransactionAsync();
 
-            // Validate vendor exists
-            var vendor = await _unitOfWork.Vendors.GetByIdAsync(dto.VendorId);
-            if (vendor == null)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                return BadRequest(new ApiResponse<OrderDto>("Satıcı bulunamadı", "VENDOR_NOT_FOUND"));
-            }
-
-            // Calculate total and create order items
-            decimal totalAmount = 0;
-            var orderItems = new List<OrderItem>();
-
-            foreach (var item in dto.Items)
-            {
-                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-                if (product == null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return BadRequest(new ApiResponse<OrderDto>($"Ürün {item.ProductId} bulunamadı", "PRODUCT_NOT_FOUND"));
-                }
-
-                totalAmount += product.Price * item.Quantity;
-                var customerOrderItemId = await GenerateUniqueCustomerOrderItemIdAsync();
-                orderItems.Add(new OrderItem
-                {
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = product.Price,
-                    CustomerOrderItemId = customerOrderItemId
-                });
-            }
-
-            // Create order
-            var customerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
-            var customerOrderId = await GenerateUniqueCustomerOrderIdAsync();
-
-            var order = new Order
-            {
-                VendorId = dto.VendorId,
-                CustomerId = customerId,
-                CustomerOrderId = customerOrderId,
-                TotalAmount = totalAmount,
-                Status = OrderStatus.Pending,
-                OrderItems = orderItems,
-                CreatedAt = DateTime.UtcNow,
-                DeliveryAddressId = dto.DeliveryAddressId,
-            };
-
-            await _unitOfWork.Orders.AddAsync(order);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Add vendor notification
-            await AddVendorNotificationAsync(
-                order.VendorId,
-                "Yeni Sipariş",
-                $"#Order.{order.CustomerOrderId} numaralı yeni sipariş alındı. Toplam: ₺{totalAmount:N2}",
-                "NewOrder",
-                order.Id);
-
-            // Add customer notification
-            if (customerId != "anonymous")
-            {
-                await AddCustomerNotificationAsync(
-                    customerId,
-                    "Sipariş Oluşturuldu",
-                    $"#{order.CustomerOrderId} numaralı siparişiniz başarıyla oluşturuldu. Toplam: ₺{totalAmount:N2}",
-                    "OrderCreated",
-                    order.Id);
-            }
-
-            await _unitOfWork.SaveChangesAsync();
+            var customerId = UserContext.GetUserId() ?? "anonymous";
+            var order = await _orderService.CreateOrderAsync(dto, customerId, CurrentCulture);
 
             // Transaction commit
-            await _unitOfWork.CommitTransactionAsync();
+            await UnitOfWork.CommitTransactionAsync();
 
             // Automatic Courier Assignment (outside transaction)
             try
@@ -166,41 +74,18 @@ public class OrdersController : ControllerBase
                 // Log error but continue
             }
 
-            var orderDto = new OrderDto
-            {
-                Id = order.Id,
-                CustomerOrderId = order.CustomerOrderId,
-                VendorId = order.VendorId,
-                VendorName = vendor.Name,
-                TotalAmount = order.TotalAmount,
-                Status = order.Status.ToString(),
-                CreatedAt = order.CreatedAt
-            };
+            // Load vendor for mapping
+            await UnitOfWork.Vendors.GetByIdAsync(order.VendorId);
+            var orderDto = _mapper.Map<OrderDto>(order);
 
-            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new ApiResponse<OrderDto>(orderDto, "Sipariş başarıyla oluşturuldu"));
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new ApiResponse<OrderDto>(
+                orderDto,
+                LocalizationService.GetLocalizedString(ResourceName, "OrderCreatedSuccessfully", CurrentCulture)));
         }
-        catch (Exception ex)
+        catch
         {
-            await _unitOfWork.RollbackTransactionAsync();
-            
-            // Get inner exception message if available
-            var errorMessage = ex.Message;
-            var innerException = ex.InnerException;
-            while (innerException != null)
-            {
-                errorMessage += " | Inner: " + innerException.Message;
-                innerException = innerException.InnerException;
-            }
-            
-            // Log full exception details
-            Console.WriteLine($"Error creating order: {ex}");
-            Console.WriteLine($"StackTrace: {ex.StackTrace}");
-            
-            return StatusCode(500, new ApiResponse<OrderDto>(
-                "Sipariş oluşturulurken bir hata oluştu",
-                "ORDER_CREATION_FAILED",
-                new List<string> { errorMessage }
-            ));
+            await UnitOfWork.RollbackTransactionAsync();
+            throw; // Let ExceptionHandlingMiddleware handle it
         }
     }
 
@@ -212,9 +97,10 @@ public class OrdersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<OrderDto>>> GetOrder(Guid id)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        IQueryable<Order> query = _unitOfWork.Orders.Query()
+        var userId = UserContext.GetUserId();
+
+        IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product);
@@ -223,21 +109,16 @@ public class OrdersController : ControllerBase
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<OrderDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<OrderDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                "ORDER_NOT_FOUND"));
         }
 
-        var orderDto = new OrderDto
-        {
-            Id = order.Id,
-            CustomerOrderId = order.CustomerOrderId,
-            VendorId = order.VendorId,
-            VendorName = order.Vendor?.Name ?? "",
-            TotalAmount = order.TotalAmount,
-            Status = order.Status.ToString(),
-            CreatedAt = order.CreatedAt
-        };
+        var orderDto = _mapper.Map<OrderDto>(order);
 
-        return Ok(new ApiResponse<OrderDto>(orderDto, "Sipariş başarıyla getirildi"));
+        return Ok(new ApiResponse<OrderDto>(
+            orderDto,
+            LocalizationService.GetLocalizedString(ResourceName, "OrderRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -247,14 +128,17 @@ public class OrdersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<OrderDto>>>> GetOrders()
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        if (string.IsNullOrEmpty(userId))
+        var userId = UserContext.GetUserId();
+
+        if (userId == null)
         {
-            return Unauthorized(new ApiResponse<List<OrderDto>>("Yetkilendirme gerekli", "UNAUTHORIZED"));
+            return Unauthorized(new ApiResponse<List<OrderDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
         }
 
-        IQueryable<Order> query = _unitOfWork.Orders.Query()
+        IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Where(o => o.CustomerId == userId);
 
@@ -264,19 +148,13 @@ public class OrdersController : ControllerBase
         // Not: GetOrders() şu anda pagination parametresi almıyor, bu yüzden tüm sonuçları döndürüyor
         // Eğer pagination eklenirse ToPagedResultAsync kullanılabilir
         var orders = await orderedQuery
-            .Select(o => new OrderDto
-            {
-                Id = o.Id,
-                CustomerOrderId = o.CustomerOrderId,
-                VendorId = o.VendorId,
-                VendorName = o.Vendor != null ? o.Vendor.Name : "",
-                TotalAmount = o.TotalAmount,
-                Status = o.Status.ToString(),
-                CreatedAt = o.CreatedAt
-            })
             .ToListAsync();
+        
+        var orderDtos = _mapper.Map<List<OrderDto>>(orders);
 
-        return Ok(new ApiResponse<List<OrderDto>>(orders, "Siparişler başarıyla getirildi"));
+        return Ok(new ApiResponse<List<OrderDto>>(
+            orderDtos,
+            LocalizationService.GetLocalizedString(ResourceName, "OrdersRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -287,9 +165,10 @@ public class OrdersController : ControllerBase
     [HttpGet("{id}/detail")]
     public async Task<ActionResult<ApiResponse<OrderDetailDto>>> GetOrderDetail(Guid id)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        IQueryable<Order> query = _unitOfWork.Orders.Query()
+        var userId = UserContext.GetUserId();
+
+        IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
@@ -300,45 +179,16 @@ public class OrdersController : ControllerBase
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<OrderDetailDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<OrderDetailDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                "ORDER_NOT_FOUND"));
         }
 
-        var orderDetailDto = new OrderDetailDto
-        {
-            Id = order.Id,
-            CustomerOrderId = order.CustomerOrderId,
-            VendorId = order.VendorId,
-            VendorName = order.Vendor?.Name ?? "",
-            CustomerId = order.CustomerId,
-            CustomerName = order.Customer?.FullName ?? "",
-            TotalAmount = order.TotalAmount,
-            Status = order.Status.ToString(),
-            CreatedAt = order.CreatedAt,
-            CancelledAt = order.CancelledAt,
-            CancelReason = order.CancelReason,
-            Items = order.OrderItems.Select(oi => new OrderItemDetailDto
-            {
-                ProductId = oi.ProductId,
-                CustomerOrderItemId = oi.CustomerOrderItemId,
-                ProductName = oi.Product?.Name ?? "",
-                ProductImageUrl = oi.Product?.ImageUrl,
-                Quantity = oi.Quantity,
-                UnitPrice = oi.UnitPrice,
-                TotalPrice = oi.Quantity * oi.UnitPrice,
-                IsCancelled = oi.IsCancelled,
-                CancelledAt = oi.CancelledAt,
-                CancelReason = oi.CancelReason
-            }).ToList(),
-            StatusHistory = order.StatusHistory.Select(sh => new OrderStatusHistoryDto
-            {
-                Status = sh.Status.ToString(),
-                Note = sh.Note,
-                CreatedAt = sh.CreatedAt,
-                CreatedBy = sh.CreatedBy
-            }).ToList()
-        };
+        var orderDetailDto = _mapper.Map<OrderDetailDto>(order);
 
-        return Ok(new ApiResponse<OrderDetailDto>(orderDetailDto, "Sipariş detayı başarıyla getirildi"));
+        return Ok(new ApiResponse<OrderDetailDto>(
+            orderDetailDto,
+            LocalizationService.GetLocalizedString(ResourceName, "OrderDetailRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -350,69 +200,12 @@ public class OrdersController : ControllerBase
     [HttpPut("{id}/status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(Guid id, UpdateOrderStatusDto dto)
     {
-        var order = await _unitOfWork.Orders.Query()
-            .Include(o => o.StatusHistory)
-            .FirstOrDefaultAsync(o => o.Id == id);
+        var userId = UserContext.GetUserId();
+        await _orderService.UpdateOrderStatusAsync(id, dto, userId, CurrentCulture);
 
-        if (order == null)
-        {
-            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
-        }
-
-        // Parse status
-        if (!Enum.TryParse<OrderStatus>(dto.Status, out var newStatus))
-        {
-            return BadRequest(new ApiResponse<object>("Geçersiz durum", "INVALID_STATUS"));
-        }
-
-        // Validate status transition
-        if (!IsValidStatusTransition(order.Status, newStatus))
-        {
-            return BadRequest(new ApiResponse<object>(
-                $"{order.Status} durumundan {newStatus} durumuna geçiş yapılamaz",
-                "INVALID_STATUS_TRANSITION"
-            ));
-        }
-
-        // Update order status
-        order.Status = newStatus;
-
-        // Add to status history
-        order.StatusHistory.Add(new OrderStatusHistory
-        {
-            OrderId = order.Id,
-            Status = newStatus,
-            Note = dto.Note,
-            CreatedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "System"
-        });
-
-        _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync();
-
-        // Add customer notification for status change
-        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-        {
-            var statusMessage = newStatus switch
-            {
-                OrderStatus.Preparing => "Siparişiniz hazırlanıyor",
-                OrderStatus.Ready => "Siparişiniz hazır, kurye atanıyor",
-                OrderStatus.Assigned => "Siparişinize kurye atandı",
-                OrderStatus.Accepted => "Kurye siparişi kabul etti",
-                OrderStatus.OutForDelivery => "Siparişiniz yola çıktı",
-                OrderStatus.Delivered => "Siparişiniz teslim edildi",
-                OrderStatus.Cancelled => "Siparişiniz iptal edildi",
-                _ => "Sipariş durumu güncellendi"
-            };
-
-            await AddCustomerNotificationAsync(
-                order.CustomerId,
-                "Sipariş Durumu Güncellendi",
-                $"#{order.Id} numaralı sipariş: {statusMessage}",
-                "OrderStatusChanged",
-                order.Id);
-        }
-
-        return Ok(new ApiResponse<object>(new { }, "Sipariş durumu başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { },
+            LocalizationService.GetLocalizedString(ResourceName, "OrderStatusUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -424,99 +217,30 @@ public class OrdersController : ControllerBase
     [HttpPost("{id}/cancel")]
     public async Task<ActionResult<ApiResponse<object>>> CancelOrder(Guid id, CancelOrderDto dto)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = UserContext.GetUserId();
 
         try
         {
-            await _unitOfWork.BeginTransactionAsync();
+            await UnitOfWork.BeginTransactionAsync();
+            await _orderService.CancelOrderAsync(id, userId, dto, CurrentCulture);
+            await UnitOfWork.CommitTransactionAsync();
 
-            var order = await _unitOfWork.Orders.Query()
-                .Include(o => o.StatusHistory)
-                .FirstOrDefaultAsync(o => o.Id == id && (userId == null || o.CustomerId == userId));
-
-            if (order == null)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
-            }
-
-            // Check if order can be cancelled
-            if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                return BadRequest(new ApiResponse<object>("Sipariş iptal edilemez", "ORDER_CANNOT_BE_CANCELLED"));
-            }
-
-            // Customers can only cancel Pending or Preparing orders
-            var isCustomer = order.CustomerId == userId;
-            if (isCustomer && order.Status != OrderStatus.Pending && order.Status != OrderStatus.Preparing)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                return BadRequest(new ApiResponse<object>(
-                    "Sipariş sadece Beklemede veya Hazırlanıyor durumundayken iptal edilebilir",
-                    "INVALID_CANCELLATION_STATUS"
-                ));
-            }
-
-            // Validate reason
-            if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                return BadRequest(new ApiResponse<object>(
-                    "İptal sebebi en az 10 karakter olmalıdır",
-                    "INVALID_CANCELLATION_REASON"
-                ));
-            }
-
-            // Update order
-            order.Status = OrderStatus.Cancelled;
-            order.CancelledAt = DateTime.UtcNow;
-            order.CancelReason = dto.Reason;
-
-            // Add to status history
-            order.StatusHistory.Add(new OrderStatusHistory
-            {
-                OrderId = order.Id,
-                Status = OrderStatus.Cancelled,
-                Note = $"Cancelled: {dto.Reason}",
-                CreatedBy = userId ?? "System"
-            });
-
-            _unitOfWork.Orders.Update(order);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Add customer notification for cancellation
-            if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-            {
-                await AddCustomerNotificationAsync(
-                    order.CustomerId,
-                    "Sipariş İptal Edildi",
-                    $"#{order.Id} numaralı siparişiniz iptal edildi. Sebep: {dto.Reason}",
-                    "OrderCancelled",
-                    order.Id);
-            }
-
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitTransactionAsync();
-
-            return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla iptal edildi"));
+            return Ok(new ApiResponse<object>(
+                new { },
+                LocalizationService.GetLocalizedString(ResourceName, "OrderCancelledSuccessfully", CurrentCulture)));
         }
         catch (DbUpdateConcurrencyException)
         {
-            await _unitOfWork.RollbackTransactionAsync();
+            await UnitOfWork.RollbackTransactionAsync();
             return Conflict(new ApiResponse<object>(
-                "Sipariş başka bir kullanıcı tarafından değiştirildi. Lütfen yenileyin ve tekrar deneyin.",
+                LocalizationService.GetLocalizedString(ResourceName, "ConcurrencyConflict", CurrentCulture),
                 "CONCURRENCY_CONFLICT"
             ));
         }
-        catch (Exception ex)
+        catch
         {
-            await _unitOfWork.RollbackTransactionAsync();
-            return StatusCode(500, new ApiResponse<object>(
-                "Sipariş iptal edilirken bir hata oluştu",
-                "INTERNAL_ERROR",
-                new List<string> { ex.Message }
-            ));
+            await UnitOfWork.RollbackTransactionAsync();
+            throw; // Let ExceptionHandlingMiddleware handle it
         }
     }
 
@@ -529,55 +253,66 @@ public class OrdersController : ControllerBase
     [HttpPost("items/{customerOrderItemId}/cancel")]
     public async Task<ActionResult<ApiResponse<object>>> CancelOrderItem(string customerOrderItemId, CancelOrderDto dto)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        if (string.IsNullOrEmpty(userId))
+        var userId = UserContext.GetUserId();
+
+        if (userId == null)
         {
-            return Unauthorized(new ApiResponse<object>("Yetkilendirme gerekli", "UNAUTHORIZED"));
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
         }
 
         try
         {
-            await _unitOfWork.BeginTransactionAsync();
+            await UnitOfWork.BeginTransactionAsync();
 
             // Find the order item by CustomerOrderItemId
-            var orderItem = await _unitOfWork.OrderItems.Query()
+            var orderItem = await UnitOfWork.OrderItems.Query()
                 .Include(oi => oi.Order!)
                     .ThenInclude(o => o.StatusHistory)
                 .FirstOrDefaultAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
 
             if (orderItem == null)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                return NotFound(new ApiResponse<object>("Sipariş ürünü bulunamadı", "ORDER_ITEM_NOT_FOUND"));
+                await UnitOfWork.RollbackTransactionAsync();
+                return NotFound(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "OrderItemNotFound", CurrentCulture),
+                    "ORDER_ITEM_NOT_FOUND"));
             }
 
             // Check if order exists and belongs to user
             if (orderItem.Order == null)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+                await UnitOfWork.RollbackTransactionAsync();
+                return NotFound(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                    "ORDER_NOT_FOUND"));
             }
 
             if (orderItem.Order.CustomerId != userId)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                return Forbid(new ApiResponse<object>("Bu sipariş ürününü iptal etme yetkiniz yok", "FORBIDDEN").ToString() ?? "");
+                await UnitOfWork.RollbackTransactionAsync();
+                return Forbid(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "Forbidden", CurrentCulture),
+                    "FORBIDDEN").ToString() ?? "");
             }
 
             // Check if already cancelled
             if (orderItem.IsCancelled)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                return BadRequest(new ApiResponse<object>("Sipariş ürünü zaten iptal edilmiş", "ALREADY_CANCELLED"));
+                await UnitOfWork.RollbackTransactionAsync();
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "AlreadyCancelled", CurrentCulture),
+                    "ALREADY_CANCELLED"));
             }
 
             // Check if order can have items cancelled (only Pending or Preparing)
             if (orderItem.Order.Status != OrderStatus.Pending && orderItem.Order.Status != OrderStatus.Preparing)
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                await UnitOfWork.RollbackTransactionAsync();
                 return BadRequest(new ApiResponse<object>(
-                    "Sipariş ürünleri sadece Beklemede veya Hazırlanıyor durumundayken iptal edilebilir",
+                    LocalizationService.GetLocalizedString(ResourceName, "OrderItemInvalidCancellationStatus", CurrentCulture),
                     "INVALID_CANCELLATION_STATUS"
                 ));
             }
@@ -585,9 +320,9 @@ public class OrdersController : ControllerBase
             // Validate reason
             if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                await UnitOfWork.RollbackTransactionAsync();
                 return BadRequest(new ApiResponse<object>(
-                    "İptal sebebi en az 10 karakter olmalıdır",
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidCancellationReason", CurrentCulture),
                     "INVALID_CANCELLATION_REASON"
                 ));
             }
@@ -603,7 +338,7 @@ public class OrdersController : ControllerBase
 
             // Check if all items are cancelled, then cancel the whole order
             // Note: We need to check after updating IsCancelled, so we check if count of non-cancelled items is 0
-            var remainingItemsCount = await _unitOfWork.OrderItems.Query()
+            var remainingItemsCount = await UnitOfWork.OrderItems.Query()
                 .Where(oi => oi.OrderId == orderItem.OrderId && oi.Id != orderItem.Id && !oi.IsCancelled)
                 .CountAsync();
 
@@ -642,94 +377,24 @@ public class OrdersController : ControllerBase
                 });
             }
 
-            _unitOfWork.OrderItems.Update(orderItem);
-            _unitOfWork.Orders.Update(orderItem.Order);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.OrderItems.Update(orderItem);
+            UnitOfWork.Orders.Update(orderItem.Order);
+            await UnitOfWork.SaveChangesAsync();
 
-            // Add customer notification
-            if (!string.IsNullOrEmpty(orderItem.Order.CustomerId) && orderItem.Order.CustomerId != "anonymous")
-            {
-                await AddCustomerNotificationAsync(
-                    orderItem.Order.CustomerId,
-                    "Sipariş Ürünü İptal Edildi",
-                    $"#{customerOrderItemId} numaralı ürün siparişinizden iptal edildi. Sebep: {dto.Reason}",
-                    "OrderItemCancelled",
-                    orderItem.Order.Id);
-            }
+            // Note: Customer notification for order item cancellation can be added via service if needed
 
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitTransactionAsync();
+            await UnitOfWork.SaveChangesAsync();
+            await UnitOfWork.CommitTransactionAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Sipariş ürünü başarıyla iptal edildi"));
+            return Ok(new ApiResponse<object>(
+                new { },
+                LocalizationService.GetLocalizedString(ResourceName, "OrderItemCancelledSuccessfully", CurrentCulture)));
         }
-        catch (Exception ex)
+        catch
         {
-            await _unitOfWork.RollbackTransactionAsync();
-            return StatusCode(500, new ApiResponse<object>(
-                "Sipariş ürünü iptal edilirken bir hata oluştu",
-                "INTERNAL_ERROR",
-                new List<string> { ex.Message }
-            ));
+            await UnitOfWork.RollbackTransactionAsync();
+            throw; // Let ExceptionHandlingMiddleware handle it
         }
     }
 
-    /// <summary>
-    /// Satıcı bildirimi ekler
-    /// </summary>
-    private async Task AddVendorNotificationAsync(Guid vendorId, string title, string message, string type, Guid? relatedEntityId = null)
-    {
-        await _unitOfWork.VendorNotifications.AddAsync(new VendorNotification
-        {
-            VendorId = vendorId,
-            Title = title,
-            Message = message,
-            Type = type,
-            RelatedEntityId = relatedEntityId
-        });
-    }
-
-    /// <summary>
-    /// Müşteri bildirimi ekler
-    /// </summary>
-    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
-    {
-        var customer = await _unitOfWork.Customers.Query()
-            .FirstOrDefaultAsync(c => c.UserId == userId);
-        if (customer == null)
-        {
-            // Create customer if doesn't exist
-            customer = new Customer
-            {
-                UserId = userId,
-                CreatedAt = DateTime.UtcNow
-            };
-            await _unitOfWork.Customers.AddAsync(customer);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        await _unitOfWork.CustomerNotifications.AddAsync(new CustomerNotification
-        {
-            CustomerId = customer.Id,
-            Title = title,
-            Message = message,
-            Type = type,
-            OrderId = orderId
-        });
-    }
-
-    private bool IsValidStatusTransition(OrderStatus current, OrderStatus next)
-    {
-        return current switch
-        {
-            OrderStatus.Pending => next is OrderStatus.Preparing or OrderStatus.Cancelled,
-            OrderStatus.Preparing => next is OrderStatus.Ready or OrderStatus.Cancelled,
-            OrderStatus.Ready => next is OrderStatus.Assigned or OrderStatus.Cancelled,
-            OrderStatus.Assigned => next is OrderStatus.Accepted or OrderStatus.Cancelled,
-            OrderStatus.Accepted => next is OrderStatus.OutForDelivery or OrderStatus.Cancelled,
-            OrderStatus.OutForDelivery => next is OrderStatus.Delivered,
-            OrderStatus.Delivered => false,
-            OrderStatus.Cancelled => false,
-            _ => false
-        };
-    }
 }

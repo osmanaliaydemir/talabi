@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="UserIdentityNotFound" xml:space="preserve">
+    <value>تعذر تحديد هوية المستخدم</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود</value>
+  </data>
+  <data name="ProductNotFound" xml:space="preserve">
+    <value>المنتج غير موجود</value>
+  </data>
+  <data name="VendorNotFound" xml:space="preserve">
+    <value>البائع غير موجود</value>
+  </data>
+  <data name="VendorNotFoundForUser" xml:space="preserve">
+    <value>البائع غير موجود لهذا المستخدم</value>
+  </data>
+  <data name="ReviewNotFound" xml:space="preserve">
+    <value>التقييم غير موجود</value>
+  </data>
+  <data name="ReviewAlreadyExists" xml:space="preserve">
+    <value>لقد قمت بتقييم هذا المنتج بالفعل. لا يمكنك إنشاء تقييم آخر.</value>
+  </data>
+  <data name="VendorReviewAlreadyExists" xml:space="preserve">
+    <value>لقد قمت بتقييم منتج من هذا البائع بالفعل. لا يمكنك إنشاء تقييم آخر.</value>
+  </data>
+  <data name="VendorHasNoProducts" xml:space="preserve">
+    <value>البائع ليس لديه منتجات. لا يمكن إنشاء تقييم للبائع بدون منتجات.</value>
+  </data>
+  <data name="InvalidTargetType" xml:space="preserve">
+    <value>نوع الهدف غير صالح. يجب أن يكون 'Product' أو 'Vendor'.</value>
+  </data>
+  <data name="ForbiddenApprove" xml:space="preserve">
+    <value>يمكن لمالك البائع فقط الموافقة على التقييمات لمنتجاتهم أو بائعهم.</value>
+  </data>
+  <data name="ForbiddenReject" xml:space="preserve">
+    <value>يمكن لمالك البائع فقط رفض التقييمات لمنتجاتهم أو بائعهم.</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="ReviewCreatedSuccessfully" xml:space="preserve">
+    <value>تم إنشاء التقييم بنجاح</value>
+  </data>
+  <data name="ProductReviewsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم جلب تقييمات المنتج بنجاح</value>
+  </data>
+  <data name="VendorReviewsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم جلب تقييمات البائع بنجاح</value>
+  </data>
+  <data name="ReviewApprovedSuccessfully" xml:space="preserve">
+    <value>تم الموافقة على التقييم بنجاح</value>
+  </data>
+  <data name="ReviewRejectedSuccessfully" xml:space="preserve">
+    <value>تم رفض التقييم وحذفه بنجاح</value>
+  </data>
+  <data name="PendingReviewsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم جلب التقييمات المعلقة بنجاح</value>
+  </data>
+</root>
+

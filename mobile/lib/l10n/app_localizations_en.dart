@@ -2373,6 +2373,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delivery => 'Delivery';
 
   @override
+  String get talabi => 'Talabi';
+
+  @override
   String get navigate => 'Navigate';
 
   @override

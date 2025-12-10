@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -12,20 +13,30 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CartController : ControllerBase
+public class CartController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private const string ResourceName = "CartResources";
 
     /// <summary>
     /// CartController constructor
     /// </summary>
-    public CartController(IUnitOfWork unitOfWork)
+    public CartController(
+        IUnitOfWork unitOfWork,
+        ILogger<CartController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        IMapper mapper)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
-
+    /// <summary>
+    /// Kullanıcının sepetini getirir
+    /// </summary>
+    /// <returns>Sepet bilgileri</returns>
+    [HttpGet]
     /// <summary>
     /// Kullanıcının sepetini getirir
     /// </summary>
@@ -33,9 +44,17 @@ public class CartController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<CartDto>>> GetCart()
     {
-        var userId = GetUserId();
 
-        var cart = await _unitOfWork.Carts.Query()
+
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<CartDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        var cart = await UnitOfWork.Carts.Query()
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
             .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -47,23 +66,10 @@ public class CartController : ControllerBase
         }
         else
         {
-            cartDto = new CartDto
-            {
-                Id = cart.Id,
-                UserId = cart.UserId,
-                Items = cart.CartItems.Select(ci => new CartItemDto
-                {
-                    Id = ci.Id,
-                    ProductId = ci.ProductId,
-                    ProductName = ci.Product?.Name ?? "",
-                    ProductPrice = ci.Product?.Price ?? 0,
-                    ProductImageUrl = ci.Product?.ImageUrl,
-                    Quantity = ci.Quantity
-                }).ToList()
-            };
+            cartDto = _mapper.Map<CartDto>(cart);
         }
 
-        return Ok(new ApiResponse<CartDto>(cartDto, "Sepet başarıyla getirildi"));
+        return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -74,20 +80,28 @@ public class CartController : ControllerBase
     [HttpPost("items")]
     public async Task<ActionResult<ApiResponse<object>>> AddToCart(AddToCartDto dto)
     {
+
+
         var maxRetries = 3;
         for (int i = 0; i < maxRetries; i++)
         {
             try
             {
-                var userId = GetUserId();
+                var userId = UserContext.GetUserId();
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new ApiResponse<object>(
+                        LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                        "UNAUTHORIZED"));
+                }
 
                 // Check if user has an address (Customer)
-                var hasAddress = await _unitOfWork.UserAddresses.Query()
+                var hasAddress = await UnitOfWork.UserAddresses.Query()
                     .AnyAsync(a => a.UserId == userId);
                 if (!hasAddress)
                 {
                     return BadRequest(new ApiResponse<object>(
-                        "Sepete ürün eklemek için önce bir adres eklemeniz gerekmektedir.",
+                        LocalizationService.GetLocalizedString(ResourceName, "AddressRequiredToAddItem", CurrentCulture),
                         "ADDRESS_REQUIRED",
                         new List<string>())
                     {
@@ -96,31 +110,31 @@ public class CartController : ControllerBase
                 }
 
                 // Verify product exists
-                var product = await _unitOfWork.Products.GetByIdAsync(dto.ProductId);
+                var product = await UnitOfWork.Products.GetByIdAsync(dto.ProductId);
                 if (product == null)
                 {
-                    return NotFound(new ApiResponse<object>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+                    return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture), "PRODUCT_NOT_FOUND"));
                 }
 
                 // 1. Get or Create Cart
-                var cart = await _unitOfWork.Carts.Query()
+                var cart = await UnitOfWork.Carts.Query()
                     .FirstOrDefaultAsync(c => c.UserId == userId);
                 if (cart == null)
                 {
                     cart = new Core.Entities.Cart { UserId = userId };
-                    await _unitOfWork.Carts.AddAsync(cart);
+                    await UnitOfWork.Carts.AddAsync(cart);
                     // Save immediately to establish the Cart
-                    await _unitOfWork.SaveChangesAsync();
+                    await UnitOfWork.SaveChangesAsync();
                 }
 
                 // 2. Manage CartItem directly
-                var cartItem = await _unitOfWork.CartItems.Query()
+                var cartItem = await UnitOfWork.CartItems.Query()
                     .FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.ProductId == dto.ProductId);
 
                 if (cartItem != null)
                 {
                     cartItem.Quantity += dto.Quantity;
-                    _unitOfWork.CartItems.Update(cartItem);
+                    UnitOfWork.CartItems.Update(cartItem);
                 }
                 else
                 {
@@ -130,11 +144,11 @@ public class CartController : ControllerBase
                         ProductId = dto.ProductId,
                         Quantity = dto.Quantity
                     };
-                    await _unitOfWork.CartItems.AddAsync(cartItem);
+                    await UnitOfWork.CartItems.AddAsync(cartItem);
                 }
 
-                await _unitOfWork.SaveChangesAsync();
-                return Ok(new ApiResponse<object>(new { }, "Ürün sepete eklendi"));
+                await UnitOfWork.SaveChangesAsync();
+                return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ItemAddedToCartSuccessfully", CurrentCulture)));
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -157,7 +171,7 @@ public class CartController : ControllerBase
             }
         }
 
-        return BadRequest(new ApiResponse<object>("Beklenmeyen hata", "UNEXPECTED_ERROR"));
+        return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "UnexpectedError", CurrentCulture), "UNEXPECTED_ERROR"));
     }
 
     /// <summary>
@@ -169,35 +183,43 @@ public class CartController : ControllerBase
     [HttpPut("items/{itemId}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateCartItem(Guid itemId, UpdateCartItemDto dto)
     {
-        var userId = GetUserId();
 
-        var cartItem = await _unitOfWork.CartItems.Query()
+
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        var cartItem = await UnitOfWork.CartItems.Query()
             .Include(ci => ci.Cart)
             .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.Cart!.UserId == userId);
 
         if (cartItem == null)
         {
-            return NotFound(new ApiResponse<object>("Sepet öğesi bulunamadı", "CART_ITEM_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CartItemNotFound", CurrentCulture), "CART_ITEM_NOT_FOUND"));
         }
 
         if (dto.Quantity <= 0)
         {
-            _unitOfWork.CartItems.Remove(cartItem);
+            UnitOfWork.CartItems.Remove(cartItem);
         }
         else
         {
             cartItem.Quantity = dto.Quantity;
-            _unitOfWork.CartItems.Update(cartItem);
+            UnitOfWork.CartItems.Update(cartItem);
         }
 
         // Mark cart as modified to trigger UpdatedAt
         if (cartItem.Cart != null)
         {
-            _unitOfWork.Carts.Update(cartItem.Cart);
+            UnitOfWork.Carts.Update(cartItem.Cart);
         }
 
-        await _unitOfWork.SaveChangesAsync();
-        return Ok(new ApiResponse<object>(new { }, "Sepet öğesi güncellendi"));
+        await UnitOfWork.SaveChangesAsync();
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartItemUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -208,28 +230,36 @@ public class CartController : ControllerBase
     [HttpDelete("items/{itemId}")]
     public async Task<ActionResult<ApiResponse<object>>> RemoveFromCart(Guid itemId)
     {
-        var userId = GetUserId();
 
-        var cartItem = await _unitOfWork.CartItems.Query()
+
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        var cartItem = await UnitOfWork.CartItems.Query()
             .Include(ci => ci.Cart)
             .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.Cart!.UserId == userId);
 
         if (cartItem == null)
         {
-            return NotFound(new ApiResponse<object>("Sepet öğesi bulunamadı", "CART_ITEM_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CartItemNotFound", CurrentCulture), "CART_ITEM_NOT_FOUND"));
         }
 
-        _unitOfWork.CartItems.Remove(cartItem);
+        UnitOfWork.CartItems.Remove(cartItem);
 
         // Mark cart as modified to trigger UpdatedAt
         if (cartItem.Cart != null)
         {
-            _unitOfWork.Carts.Update(cartItem.Cart);
+            UnitOfWork.Carts.Update(cartItem.Cart);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Ürün sepetten çıkarıldı"));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ItemRemovedFromCartSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -237,11 +267,24 @@ public class CartController : ControllerBase
     /// </summary>
     /// <returns>İşlem sonucu</returns>
     [HttpDelete]
+    /// <summary>
+    /// Sepeti temizler
+    /// </summary>
+    /// <returns>İşlem sonucu</returns>
+    [HttpDelete]
     public async Task<ActionResult<ApiResponse<object>>> ClearCart()
     {
-        var userId = GetUserId();
 
-        var cart = await _unitOfWork.Carts.Query()
+
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        var cart = await UnitOfWork.Carts.Query()
             .Include(c => c.CartItems)
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
@@ -249,15 +292,15 @@ public class CartController : ControllerBase
         {
             foreach (var item in cart.CartItems)
             {
-                _unitOfWork.CartItems.Remove(item);
+                UnitOfWork.CartItems.Remove(item);
             }
 
             // Mark cart as modified to trigger UpdatedAt
-            _unitOfWork.Carts.Update(cart);
+            UnitOfWork.Carts.Update(cart);
 
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new ApiResponse<object>(new { }, "Sepet temizlendi"));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartClearedSuccessfully", CurrentCulture)));
     }
 }

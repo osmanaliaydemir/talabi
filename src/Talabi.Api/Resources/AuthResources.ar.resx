@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>يوجد بالفعل حساب بهذا العنوان الإلكتروني.</value>
+  </data>
+  <data name="EmailSendFailed" xml:space="preserve">
+    <value>فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقًا.</value>
+  </data>
+  <data name="EmailSendFailedWithDetails" xml:space="preserve">
+    <value>فشل إرسال رمز التحقق. يرجى التحقق من عنوان بريدك الإلكتروني أو المحاولة مرة أخرى لاحقًا.</value>
+  </data>
+  <data name="UserCreationFailed" xml:space="preserve">
+    <value>فشل إنشاء المستخدم</value>
+  </data>
+  <data name="UserCreationError" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء المستخدم. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="RegistrationError" xml:space="preserve">
+    <value>حدث خطأ أثناء التسجيل</value>
+  </data>
+  <data name="VendorCreationFailed" xml:space="preserve">
+    <value>فشل إنشاء حساب البائع</value>
+  </data>
+  <data name="VendorCreationError" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء حساب البائع. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="CourierCreationFailed" xml:space="preserve">
+    <value>فشل إنشاء حساب السائق</value>
+  </data>
+  <data name="CourierCreationError" xml:space="preserve">
+    <value>حدث خطأ أثناء إنشاء حساب السائق. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود.</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>تم تأكيد عنوان البريد الإلكتروني بالفعل.</value>
+  </data>
+  <data name="CodeExpired" xml:space="preserve">
+    <value>انتهت صلاحية رمز التحقق أو أنه غير صالح.</value>
+  </data>
+  <data name="InvalidCode" xml:space="preserve">
+    <value>رمز التحقق غير صحيح.</value>
+  </data>
+  <data name="EmailVerificationFailed" xml:space="preserve">
+    <value>فشل التحقق من البريد الإلكتروني.</value>
+  </data>
+  <data name="VerificationError" xml:space="preserve">
+    <value>حدث خطأ أثناء التحقق</value>
+  </data>
+  <data name="CodeResendError" xml:space="preserve">
+    <value>حدث خطأ أثناء إعادة إرسال الرمز</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>البريد الإلكتروني أو كلمة المرور غير صحيحة</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>لم يتم تأكيد البريد الإلكتروني. يرجى التحقق من بريدك الإلكتروني.</value>
+  </data>
+  <data name="PasswordNotSet" xml:space="preserve">
+    <value>لم يتم تعيين كلمة مرور الحساب. يرجى إعادة تعيين كلمة المرور.</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>تم تسجيل الدخول بنجاح</value>
+  </data>
+  <data name="LoginError" xml:space="preserve">
+    <value>حدث خطأ أثناء تسجيل الدخول</value>
+  </data>
+  <data name="PasswordCorrupted" xml:space="preserve">
+    <value>كلمة مرور الحساب تالفة. يرجى الاتصال بالدعم أو إنشاء حساب جديد.</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>طلب غير صالح</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>رمز الوصول أو رمز التحديث غير صالح</value>
+  </data>
+  <data name="TokenRefreshSuccess" xml:space="preserve">
+    <value>تم تحديث الرمز بنجاح</value>
+  </data>
+  <data name="InvalidProvider" xml:space="preserve">
+    <value>مزود غير صالح</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>البريد الإلكتروني مطلوب</value>
+  </data>
+  <data name="ExternalLoginError" xml:space="preserve">
+    <value>فشل تسجيل الدخول عبر وسائل التواصل الاجتماعي</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="VerificationCodeSent" xml:space="preserve">
+    <value>تم إرسال رمز تحقق جديد إلى عنوان بريدك الإلكتروني. يرجى التحقق من بريدك الإلكتروني.</value>
+  </data>
+  <data name="UserCreatedSuccessfully" xml:space="preserve">
+    <value>تم إنشاء المستخدم بنجاح. يرجى إدخال الرمز المكون من 4 أرقام المرسل إلى عنوان بريدك الإلكتروني.</value>
+  </data>
+  <data name="VendorCreatedSuccessfully" xml:space="preserve">
+    <value>تم إنشاء حساب البائع بنجاح. يرجى إدخال الرمز المكون من 4 أرقام المرسل إلى عنوان بريدك الإلكتروني.</value>
+  </data>
+  <data name="CourierCreatedSuccessfully" xml:space="preserve">
+    <value>تم إنشاء حساب السائق بنجاح. يرجى إدخال الرمز المكون من 4 أرقام المرسل إلى عنوان بريدك الإلكتروني.</value>
+  </data>
+  <data name="EmailVerifiedSuccessfully" xml:space="preserve">
+    <value>تم التحقق من عنوان البريد الإلكتروني بنجاح.</value>
+  </data>
+  <data name="CodeResentSuccessfully" xml:space="preserve">
+    <value>تم إعادة إرسال رمز التحقق بنجاح.</value>
+  </data>
+  <data name="CodeResentMessage" xml:space="preserve">
+    <value>إذا كان هذا العنوان الإلكتروني مسجلاً، تم إرسال رمز التحقق.</value>
+  </data>
+  <data name="PasswordResetSent" xml:space="preserve">
+    <value>إذا كان البريد الإلكتروني موجودًا، تم إرسال رابط إعادة تعيين كلمة المرور.</value>
+  </data>
+  
+  <!-- Email Subjects -->
+  <data name="EmailVerificationSubject" xml:space="preserve">
+    <value>Talabi - رمز التحقق من البريد الإلكتروني</value>
+  </data>
+</root>
+

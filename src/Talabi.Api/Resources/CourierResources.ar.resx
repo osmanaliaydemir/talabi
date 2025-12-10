@@ -59,25 +59,40 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CourierProfileNotFound" xml:space="preserve">
-    <value>لم يتم العثور على ملف السائق الشخصي</value>
+    <value>ملف الساعي غير موجود</value>
+  </data>
+  <data name="CourierProfileRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع ملف الساعي بنجاح</value>
+  </data>
+  <data name="InvalidVehicleType" xml:space="preserve">
+    <value>نوع المركبة غير صالح</value>
   </data>
   <data name="ProfileUpdatedSuccessfully" xml:space="preserve">
     <value>تم تحديث الملف الشخصي بنجاح</value>
   </data>
+  <data name="VehicleTypeMotorcycle" xml:space="preserve">
+    <value>دراجة نارية</value>
+  </data>
+  <data name="VehicleTypeCar" xml:space="preserve">
+    <value>سيارة</value>
+  </data>
+  <data name="VehicleTypeBicycle" xml:space="preserve">
+    <value>دراجة هوائية</value>
+  </data>
+  <data name="VehicleTypesRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع أنواع المركبات بنجاح</value>
+  </data>
   <data name="InvalidStatus" xml:space="preserve">
-    <value>حالة غير صالحة. القيم الصالحة: Offline, Available, Busy, Break, Assigned</value>
+    <value>حالة غير صالحة</value>
   </data>
   <data name="CannotGoAvailableOutsideWorkingHours" xml:space="preserve">
-    <value>لا يمكن أن تكون متاحاً خارج ساعات العمل</value>
+    <value>لا يمكن أن تكون متاحًا خارج ساعات العمل</value>
   </data>
   <data name="CannotGoOfflineWithActiveOrders" xml:space="preserve">
-    <value>لا يمكن أن تكون غير متصل مع وجود طلبات نشطة</value>
+    <value>لا يمكن الخروج مع وجود طلبات نشطة</value>
   </data>
   <data name="StatusUpdated" xml:space="preserve">
     <value>تم تحديث الحالة إلى {0}</value>
-  </data>
-  <data name="LocationUpdatedSuccessfully" xml:space="preserve">
-    <value>تم تحديث الموقع بنجاح</value>
   </data>
   <data name="InvalidLatitude" xml:space="preserve">
     <value>خط عرض غير صالح</value>
@@ -85,44 +100,85 @@
   <data name="InvalidLongitude" xml:space="preserve">
     <value>خط طول غير صالح</value>
   </data>
+  <data name="LocationUpdatedSuccessfully" xml:space="preserve">
+    <value>تم تحديث الموقع بنجاح</value>
+  </data>
+  <data name="CourierStatisticsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع إحصائيات الساعي بنجاح</value>
+  </data>
+  <data name="AvailabilityCheckedSuccessfully" xml:space="preserve">
+    <value>تم التحقق من التوفر بنجاح</value>
+  </data>
+  <data name="CourierNotFound" xml:space="preserve">
+    <value>الساعي غير موجود</value>
+  </data>
+  <data name="NotAuthorizedForThisCourier" xml:space="preserve">
+    <value>ليس لديك صلاحية لهذا الساعي</value>
+  </data>
+  <data name="CourierLocationNotFound" xml:space="preserve">
+    <value>موقع الساعي غير موجود</value>
+  </data>
+  <data name="CourierLocationRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع موقع الساعي بنجاح</value>
+  </data>
+  <data name="ActiveCouriersRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع السعاة النشطين بنجاح</value>
+  </data>
+  <data name="ActiveOrdersRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع الطلبات النشطة بنجاح</value>
+  </data>
+  <data name="FailedToAcceptOrder" xml:space="preserve">
+    <value>فشل قبول الطلب</value>
+  </data>
   <data name="OrderAcceptedSuccessfully" xml:space="preserve">
     <value>تم قبول الطلب بنجاح</value>
+  </data>
+  <data name="RejectReasonMustBeAtLeast10Characters" xml:space="preserve">
+    <value>يجب أن يكون سبب الرفض 10 أحرف على الأقل</value>
+  </data>
+  <data name="FailedToRejectOrder" xml:space="preserve">
+    <value>فشل رفض الطلب</value>
   </data>
   <data name="OrderRejectedSuccessfully" xml:space="preserve">
     <value>تم رفض الطلب بنجاح</value>
   </data>
+  <data name="FailedToPickUpOrder" xml:space="preserve">
+    <value>فشل استلام الطلب</value>
+  </data>
   <data name="OrderPickedUpSuccessfully" xml:space="preserve">
     <value>تم استلام الطلب بنجاح</value>
   </data>
-  <data name="OrderDeliveredSuccessfully" xml:space="preserve">
-    <value>تم تسليم الطلب بنجاح</value>
+  <data name="FailedToDeliverOrder" xml:space="preserve">
+    <value>فشل توصيل الطلب</value>
   </data>
-  <data name="DeliveryProofSubmittedSuccessfully" xml:space="preserve">
-    <value>تم إرسال إثبات التسليم بنجاح</value>
+  <data name="OrderDeliveredSuccessfully" xml:space="preserve">
+    <value>تم توصيل الطلب بنجاح</value>
   </data>
   <data name="OrderNotFoundOrNotAssigned" xml:space="preserve">
-    <value>الطلب غير موجود أو لم يتم تعيينه لك</value>
+    <value>الطلب غير موجود أو غير مخصص لك</value>
   </data>
   <data name="OrderMustBeDeliveredBeforeSubmittingProof" xml:space="preserve">
-    <value>يجب تسليم الطلب قبل إرسال إثبات التسليم</value>
+    <value>يجب توصيل الطلب قبل تقديم الإثبات</value>
   </data>
-  <data name="FailedToAcceptOrder" xml:space="preserve">
-    <value>فشل قبول الطلب. قد يكون قد تم أخذه بالفعل أو تم إلغاؤه.</value>
+  <data name="DeliveryProofSubmittedSuccessfully" xml:space="preserve">
+    <value>تم تقديم إثبات التسليم بنجاح</value>
   </data>
-  <data name="FailedToRejectOrder" xml:space="preserve">
-    <value>فشل رفض الطلب.</value>
+  <data name="OrderHistoryRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع سجل الطلبات بنجاح</value>
   </data>
-  <data name="FailedToPickUpOrder" xml:space="preserve">
-    <value>فشل استلام الطلب.</value>
+  <data name="OrderDetailsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع تفاصيل الطلب بنجاح</value>
   </data>
-  <data name="FailedToDeliverOrder" xml:space="preserve">
-    <value>فشل تسليم الطلب.</value>
+  <data name="TodayEarningsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع أرباح اليوم بنجاح</value>
   </data>
-  <data name="NoFileUploaded" xml:space="preserve">
-    <value>لم يتم تحميل ملف</value>
+  <data name="WeekEarningsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع الأرباح الأسبوعية بنجاح</value>
   </data>
-  <data name="InternalServerErrorDuringUpload" xml:space="preserve">
-    <value>خطأ في الخادم أثناء التحميل</value>
+  <data name="MonthEarningsRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع الأرباح الشهرية بنجاح</value>
+  </data>
+  <data name="EarningsHistoryRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع سجل الأرباح بنجاح</value>
   </data>
 </root>
-

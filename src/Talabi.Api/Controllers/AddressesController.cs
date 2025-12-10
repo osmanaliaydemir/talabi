@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
@@ -13,19 +14,21 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class AddressesController : ControllerBase
+public class AddressesController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "AddressResources";
 
     /// <summary>
     /// AddressesController constructor
     /// </summary>
-    public AddressesController(IUnitOfWork unitOfWork)
+    public AddressesController(
+        IUnitOfWork unitOfWork,
+        ILogger<AddressesController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
-
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
     /// <summary>
     /// Kullanıcının tüm adreslerini getirir
@@ -34,9 +37,15 @@ public class AddressesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<AddressDto>>>> GetAddresses()
     {
-        var userId = GetUserId();
 
-        IQueryable<UserAddress> query = _unitOfWork.UserAddresses.Query()
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        IQueryable<UserAddress> query = UnitOfWork.UserAddresses.Query()
             .Where(a => a.UserId == userId);
 
         IOrderedQueryable<UserAddress> orderedQuery = query
@@ -58,7 +67,9 @@ public class AddressesController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<AddressDto>>(addresses, "Adresler başarıyla getirildi"));
+        return Ok(new ApiResponse<List<AddressDto>>(
+            addresses,
+            LocalizationService.GetLocalizedString(ResourceName, "AddressesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -69,7 +80,13 @@ public class AddressesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<AddressDto>>> CreateAddress(CreateAddressDto dto)
     {
-        var userId = GetUserId();
+
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
         var address = new UserAddress
         {
@@ -85,15 +102,15 @@ public class AddressesController : ControllerBase
         };
 
         // If this is the first address, make it default
-        var hasAddresses = await _unitOfWork.UserAddresses.Query()
+        var hasAddresses = await UnitOfWork.UserAddresses.Query()
             .AnyAsync(a => a.UserId == userId);
         if (!hasAddresses)
         {
             address.IsDefault = true;
         }
 
-        await _unitOfWork.UserAddresses.AddAsync(address);
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.UserAddresses.AddAsync(address);
+        await UnitOfWork.SaveChangesAsync();
 
         var addressDto = new AddressDto
         {
@@ -110,9 +127,16 @@ public class AddressesController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetAddresses),
-            new ApiResponse<AddressDto>(addressDto, "Adres başarıyla oluşturuldu"));
+            new ApiResponse<AddressDto>(
+                addressDto,
+                LocalizationService.GetLocalizedString(ResourceName, "AddressCreatedSuccessfully", CurrentCulture)));
     }
 
+    /// <summary>
+    /// Adres bilgilerini günceller
+    /// </summary>
+    /// <param name="id">Adres ID'si</param>
+    /// <param name="dto">Güncellenecek adres bilgileri</param>
     /// <summary>
     /// Adres bilgilerini günceller
     /// </summary>
@@ -122,14 +146,22 @@ public class AddressesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateAddress(Guid id, UpdateAddressDto dto)
     {
-        var userId = GetUserId();
 
-        var address = await _unitOfWork.UserAddresses.Query()
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var address = await UnitOfWork.UserAddresses.Query()
             .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
 
         if (address == null)
         {
-            return NotFound(new ApiResponse<object>("Adres bulunamadı", "ADDRESS_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "AddressNotFound", CurrentCulture),
+                "ADDRESS_NOT_FOUND"));
         }
 
         address.Title = dto.Title;
@@ -140,12 +172,18 @@ public class AddressesController : ControllerBase
         address.Latitude = dto.Latitude;
         address.Longitude = dto.Longitude;
 
-        _unitOfWork.UserAddresses.Update(address);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.UserAddresses.Update(address);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Adres başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { },
+            LocalizationService.GetLocalizedString(ResourceName, "AddressUpdatedSuccessfully", CurrentCulture)));
     }
 
+    /// <summary>
+    /// Varsayılan adresi ayarlar
+    /// </summary>
+    /// <param name="id">Adres ID'si</param>
     /// <summary>
     /// Varsayılan adresi ayarlar
     /// </summary>
@@ -154,32 +192,46 @@ public class AddressesController : ControllerBase
     [HttpPut("{id}/set-default")]
     public async Task<ActionResult<ApiResponse<object>>> SetDefaultAddress(Guid id)
     {
-        var userId = GetUserId();
 
-        var address = await _unitOfWork.UserAddresses.Query()
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var address = await UnitOfWork.UserAddresses.Query()
             .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
 
         if (address == null)
         {
-            return NotFound(new ApiResponse<object>("Adres bulunamadı", "ADDRESS_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "AddressNotFound", CurrentCulture),
+                "ADDRESS_NOT_FOUND"));
         }
 
         // Remove default from all other addresses
-        var userAddresses = await _unitOfWork.UserAddresses.Query()
+        var userAddresses = await UnitOfWork.UserAddresses.Query()
             .Where(a => a.UserId == userId)
             .ToListAsync();
 
         foreach (var addr in userAddresses)
         {
             addr.IsDefault = addr.Id == id;
-            _unitOfWork.UserAddresses.Update(addr);
+            UnitOfWork.UserAddresses.Update(addr);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Varsayılan adres başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { },
+            LocalizationService.GetLocalizedString(ResourceName, "DefaultAddressUpdatedSuccessfully", CurrentCulture)));
     }
 
+    /// <summary>
+    /// Adresi siler
+    /// </summary>
+    /// <param name="id">Adres ID'si</param>
     /// <summary>
     /// Adresi siler
     /// </summary>
@@ -188,35 +240,45 @@ public class AddressesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteAddress(Guid id)
     {
-        var userId = GetUserId();
 
-        var address = await _unitOfWork.UserAddresses.Query()
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var address = await UnitOfWork.UserAddresses.Query()
             .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
 
         if (address == null)
         {
-            return NotFound(new ApiResponse<object>("Adres bulunamadı", "ADDRESS_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "AddressNotFound", CurrentCulture),
+                "ADDRESS_NOT_FOUND"));
         }
 
         var wasDefault = address.IsDefault;
-        _unitOfWork.UserAddresses.Remove(address);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.UserAddresses.Remove(address);
+        await UnitOfWork.SaveChangesAsync();
 
         // If deleted address was default, set another as default
         if (wasDefault)
         {
-            var newDefault = await _unitOfWork.UserAddresses.Query()
+            var newDefault = await UnitOfWork.UserAddresses.Query()
                 .Where(a => a.UserId == userId)
                 .FirstOrDefaultAsync();
 
             if (newDefault != null)
             {
                 newDefault.IsDefault = true;
-                _unitOfWork.UserAddresses.Update(newDefault);
-                await _unitOfWork.SaveChangesAsync();
+                UnitOfWork.UserAddresses.Update(newDefault);
+                await UnitOfWork.SaveChangesAsync();
             }
         }
 
-        return Ok(new ApiResponse<object>(new { }, "Adres başarıyla silindi"));
+        return Ok(new ApiResponse<object>(
+            new { },
+            LocalizationService.GetLocalizedString(ResourceName, "AddressDeletedSuccessfully", CurrentCulture)));
     }
 }

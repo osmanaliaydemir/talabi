@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
 
@@ -10,34 +11,40 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/content")]
 [ApiController]
-public class ContentController : ControllerBase
+public class ContentController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "ContentResources";
 
     /// <summary>
     /// ContentController constructor
     /// </summary>
-    public ContentController(IUnitOfWork unitOfWork)
+    public ContentController(
+        IUnitOfWork unitOfWork,
+        ILogger<ContentController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
     /// Dil ve tip bazında yasal belge içeriğini getirir
     /// </summary>
     /// <param name="type">Belge tipi: terms-of-use, privacy-policy, refund-policy, distance-sales-agreement</param>
-    /// <param name="lang">Dil kodu (tr, en). Varsayılan: tr</param>
     /// <returns>Yasal belge içeriği</returns>
     [HttpGet("legal/{type}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetLegalDocument(string type, [FromQuery] string lang = "tr")
+    public async Task<ActionResult<ApiResponse<object>>> GetLegalDocument(string type)
     {
-        var document = await _unitOfWork.LegalDocuments.Query()
-            .FirstOrDefaultAsync(d => d.Type == type && d.LanguageCode == lang);
+        var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+
+
+        var document = await UnitOfWork.LegalDocuments.Query()
+            .FirstOrDefaultAsync(d => d.Type == type && d.LanguageCode == languageCode);
 
         if (document == null)
         {
             return NotFound(new ApiResponse<object>(
-                $"Yasal belge '{type}' '{lang}' dili için bulunamadı",
+                LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentNotFound", CurrentCulture, type, languageCode),
                 "LEGAL_DOCUMENT_NOT_FOUND"
             ));
         }
@@ -51,7 +58,9 @@ public class ContentController : ControllerBase
             document.LastUpdated
         };
 
-        return Ok(new ApiResponse<object>(documentDto, "Yasal belge başarıyla getirildi"));
+        return Ok(new ApiResponse<object>(
+            documentDto,
+            LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -61,11 +70,15 @@ public class ContentController : ControllerBase
     [HttpGet("legal/types")]
     public async Task<ActionResult<ApiResponse<List<string>>>> GetLegalDocumentTypes()
     {
-        var types = await _unitOfWork.LegalDocuments.Query()
+
+
+        var types = await UnitOfWork.LegalDocuments.Query()
             .Select(d => d.Type)
             .Distinct()
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<string>>(types, "Yasal belge tipleri başarıyla getirildi"));
+        return Ok(new ApiResponse<List<string>>(
+            types,
+            LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentTypesRetrievedSuccessfully", CurrentCulture)));
     }
 }

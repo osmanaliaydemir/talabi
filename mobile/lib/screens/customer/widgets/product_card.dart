@@ -411,12 +411,13 @@ class _ProductCardState extends State<ProductCard> {
                                 try {
                                   await cart.addItem(widget.product, context);
                                   if (mounted) {
-                                    ToastMessage.show(
-                                      context,
-                                      message:
-                                          '${widget.product.name} ${localizations.addToCart}',
-                                      isSuccess: true,
-                                    );
+                                    // Toast removed as per request
+                                    // ToastMessage.show(
+                                    //   context,
+                                    //   message:
+                                    //       '${widget.product.name} ${localizations.addToCart}',
+                                    //   isSuccess: true,
+                                    // );
                                   }
                                 } catch (e) {
                                   // Error is handled by CartProvider

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
@@ -13,30 +14,37 @@ namespace Talabi.Api.Controllers;
 [Route("api/notifications")]
 [ApiController]
 [Authorize]
-public class NotificationsController : ControllerBase
+public class NotificationsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "NotificationResources";
 
     /// <summary>
     /// NotificationsController constructor
     /// </summary>
-    public NotificationsController(IUnitOfWork unitOfWork)
+    public NotificationsController(
+        IUnitOfWork unitOfWork,
+        ILogger<NotificationsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
-
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
     /// <summary>
     /// Kullanıcının bildirim ayarlarını getirir
     /// </summary>
+    /// <param name="language">Dil kodu (tr, en, ar)</param>
     /// <returns>Bildirim ayarları</returns>
     [HttpGet("settings")]
     public async Task<ActionResult<ApiResponse<NotificationSettingsDto>>> GetSettings()
     {
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        var settings = await _unitOfWork.NotificationSettings.Query()
+        var settings = await UnitOfWork.NotificationSettings.Query()
             .FirstOrDefaultAsync(ns => ns.UserId == userId);
 
         if (settings == null)
@@ -50,8 +58,8 @@ public class NotificationsController : ControllerBase
                 NewProducts = true
             };
 
-            await _unitOfWork.NotificationSettings.AddAsync(settings);
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.NotificationSettings.AddAsync(settings);
+            await UnitOfWork.SaveChangesAsync();
         }
 
         var dto = new NotificationSettingsDto
@@ -61,20 +69,27 @@ public class NotificationsController : ControllerBase
             NewProducts = settings.NewProducts
         };
 
-        return Ok(new ApiResponse<NotificationSettingsDto>(dto, "Bildirim ayarları başarıyla getirildi"));
+        return Ok(new ApiResponse<NotificationSettingsDto>(
+            dto, 
+            LocalizationService.GetLocalizedString(ResourceName, "SettingsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
     /// Kullanıcının bildirim ayarlarını günceller
     /// </summary>
     /// <param name="dto">Güncellenecek bildirim ayarları</param>
+    /// <param name="language">Dil kodu (tr, en, ar)</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("settings")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(NotificationSettingsDto dto)
     {
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        var settings = await _unitOfWork.NotificationSettings.Query()
+        var settings = await UnitOfWork.NotificationSettings.Query()
             .FirstOrDefaultAsync(ns => ns.UserId == userId);
 
         if (settings == null)
@@ -83,16 +98,18 @@ public class NotificationsController : ControllerBase
             {
                 UserId = userId
             };
-            await _unitOfWork.NotificationSettings.AddAsync(settings);
+            await UnitOfWork.NotificationSettings.AddAsync(settings);
         }
 
         settings.OrderUpdates = dto.OrderUpdates;
         settings.Promotions = dto.Promotions;
         settings.NewProducts = dto.NewProducts;
 
-        _unitOfWork.NotificationSettings.Update(settings);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.NotificationSettings.Update(settings);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Bildirim ayarları başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "SettingsUpdatedSuccessfully", CurrentCulture)));
     }
 }

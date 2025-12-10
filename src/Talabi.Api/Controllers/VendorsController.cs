@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -13,16 +15,20 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class VendorsController : ControllerBase
+public class VendorsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "VendorResources";
 
     /// <summary>
     /// VendorsController constructor
     /// </summary>
-    public VendorsController(IUnitOfWork unitOfWork)
+    public VendorsController(
+        IUnitOfWork unitOfWork,
+        ILogger<VendorsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -33,13 +39,17 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış satıcı listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> GetVendors([FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> GetVendors(
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        IQueryable<Vendor> query = _unitOfWork.Vendors.Query();
+        IQueryable<Vendor> query = UnitOfWork.Vendors.Query();
 
         // IsActive filtresi - Sadece aktif vendor'ları getir
         query = query.Where(v => v.IsActive);
@@ -80,7 +90,9 @@ public class VendorsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<VendorDto>>(result, "Satıcılar başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<VendorDto>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "VendorsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -89,18 +101,27 @@ public class VendorsController : ControllerBase
     /// <param name="dto">Satıcı bilgileri</param>
     /// <returns>Oluşturulan satıcı</returns>
     [HttpPost]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<ActionResult<ApiResponse<VendorDto>>> CreateVendor(CreateVendorDto dto)
     {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new ApiResponse<VendorDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
         var vendor = new Vendor
         {
             Name = dto.Name,
             ImageUrl = dto.ImageUrl,
             Address = dto.Address,
-            OwnerId = "temp-user-id" // TODO: Get from User.Identity
+            OwnerId = userId
         };
 
-        await _unitOfWork.Vendors.AddAsync(vendor);
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.Vendors.AddAsync(vendor);
+        await UnitOfWork.SaveChangesAsync();
 
         var vendorDto = new VendorDto
         {
@@ -116,7 +137,9 @@ public class VendorsController : ControllerBase
         return CreatedAtAction(
             nameof(GetVendors),
             new { id = vendor.Id },
-            new ApiResponse<VendorDto>(vendorDto, "Satıcı başarıyla oluşturuldu"));
+            new ApiResponse<VendorDto>(
+                vendorDto,
+                LocalizationService.GetLocalizedString(ResourceName, "VendorCreatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -127,13 +150,18 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("{id}/products")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetProductsByVendor(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetProductsByVendor(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
         // Vendor'ın aktif olup olmadığını kontrol et
-        var vendor = await _unitOfWork.Vendors.Query()
+        var vendor = await UnitOfWork.Vendors.Query()
             .Where(v => v.Id == id)
             .FirstOrDefaultAsync();
 
@@ -148,10 +176,12 @@ public class VendorsController : ControllerBase
                 PageSize = pageSize,
                 TotalPages = 0
             };
-            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(emptyResult, "Satıcı bulunamadı veya pasif durumda"));
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundOrInactive", CurrentCulture)));
         }
 
-        IQueryable<Product> query = _unitOfWork.Products.Query()
+        IQueryable<Product> query = UnitOfWork.Products.Query()
             .Where(p => p.VendorId == id);
 
         IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt);
@@ -181,7 +211,9 @@ public class VendorsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Satıcı ürünleri başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -191,12 +223,16 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("debug/products")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetAllProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetAllProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        IQueryable<Product> query = _unitOfWork.Products.Query();
+        IQueryable<Product> query = UnitOfWork.Products.Query();
 
         IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt);
 
@@ -225,7 +261,9 @@ public class VendorsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Tüm ürünler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "AllProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -234,9 +272,12 @@ public class VendorsController : ControllerBase
     /// <param name="request">Arama ve filtreleme parametreleri</param>
     /// <returns>Sayfalanmış satıcı listesi</returns>
     [HttpGet("search")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> Search([FromQuery] VendorSearchRequestDto request)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> Search(
+        [FromQuery] VendorSearchRequestDto request)
     {
-        IQueryable<Vendor> query = _unitOfWork.Vendors.Query()
+
+
+        IQueryable<Vendor> query = UnitOfWork.Vendors.Query()
             .Include(v => v.Orders);
 
         // IsActive filtresi - Sadece aktif vendor'ları getir
@@ -275,7 +316,7 @@ public class VendorsController : ControllerBase
             var maxDistance = request.MaxDistanceInKm.Value;
 
             query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= maxDistance);
+                GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= maxDistance);
         }
 
         // Sorting
@@ -287,7 +328,7 @@ public class VendorsController : ControllerBase
             "popularity" => query.OrderByDescending(v => v.Orders.Count),
             "distance" when request.UserLatitude.HasValue && request.UserLongitude.HasValue =>
                 query.OrderBy(v => v.Latitude.HasValue && v.Longitude.HasValue
-                    ? CalculateDistance(request.UserLatitude!.Value, request.UserLongitude!.Value,
+                    ? GeoHelper.CalculateDistance(request.UserLatitude!.Value, request.UserLongitude!.Value,
                         v.Latitude!.Value, v.Longitude!.Value)
                     : double.MaxValue),
             _ => query.OrderBy(v => v.Name)
@@ -319,7 +360,7 @@ public class VendorsController : ControllerBase
             if (request.UserLatitude.HasValue && request.UserLongitude.HasValue &&
                 v.Latitude.HasValue && v.Longitude.HasValue)
             {
-                dto.DistanceInKm = CalculateDistance(
+                dto.DistanceInKm = GeoHelper.CalculateDistance(
                     request.UserLatitude.Value,
                     request.UserLongitude.Value,
                     v.Latitude.Value,
@@ -341,30 +382,11 @@ public class VendorsController : ControllerBase
             TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
         };
 
-        return Ok(new ApiResponse<PagedResultDto<VendorDto>>(result, "Satıcı arama sonuçları başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<VendorDto>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "VendorSearchResultsRetrievedSuccessfully", CurrentCulture)));
     }
 
-    // Haversine formula to calculate distance between two coordinates in kilometers
-    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-    {
-        const double earthRadiusKm = 6371.0;
-
-        var dLat = ToRadians(lat2 - lat1);
-        var dLon = ToRadians(lon2 - lon1);
-
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-        return earthRadiusKm * c;
-    }
-
-    private static double ToRadians(double degrees)
-    {
-        return degrees * Math.PI / 180.0;
-    }
 
     /// <summary>
     /// Satıcıların bulunduğu şehirleri getirir
@@ -373,12 +395,16 @@ public class VendorsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış şehir listesi</returns>
     [HttpGet("cities")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<string>>>> GetCities([FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<string>>>> GetCities(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        var cities = await _unitOfWork.Vendors.Query()
+        var cities = await UnitOfWork.Vendors.Query()
             .Where(v => v.IsActive && v.City != null)
             .Select(v => v.City!)
             .Distinct()
@@ -402,7 +428,9 @@ public class VendorsController : ControllerBase
             TotalPages = totalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<string>>(result, "Şehirler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<string>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "CitiesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -411,14 +439,19 @@ public class VendorsController : ControllerBase
     /// <param name="query">Arama sorgusu</param>
     /// <returns>Otomatik tamamlama sonuçları</returns>
     [HttpGet("autocomplete")]
-    public async Task<ActionResult<ApiResponse<List<AutocompleteResultDto>>>> Autocomplete([FromQuery] string query)
+    public async Task<ActionResult<ApiResponse<List<AutocompleteResultDto>>>> Autocomplete(
+        [FromQuery] string query)
     {
+
+
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(), "Arama sorgusu boş"));
+            return Ok(new ApiResponse<List<AutocompleteResultDto>>(
+                new List<AutocompleteResultDto>(),
+                LocalizationService.GetLocalizedString(ResourceName, "EmptyQuery", CurrentCulture)));
         }
 
-        var results = await _unitOfWork.Vendors.Query()
+        var results = await UnitOfWork.Vendors.Query()
             .Where(v => v.IsActive && v.Name.Contains(query))
             .Take(10)
             .Select(v => new AutocompleteResultDto
@@ -429,6 +462,8 @@ public class VendorsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<AutocompleteResultDto>>(results, "Otomatik tamamlama sonuçları başarıyla getirildi"));
+        return Ok(new ApiResponse<List<AutocompleteResultDto>>(
+            results,
+            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
     }
 }

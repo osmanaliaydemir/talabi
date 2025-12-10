@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Helpers;
@@ -14,24 +15,31 @@ namespace Talabi.Api.Controllers;
 [Route("api/vendor/products")]
 [ApiController]
 [Authorize]
-public class VendorProductsController : ControllerBase
+public class VendorProductsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "VendorProductResources";
 
     /// <summary>
     /// VendorProductsController constructor
     /// </summary>
-    public VendorProductsController(IUnitOfWork unitOfWork)
+    public VendorProductsController(
+        IUnitOfWork unitOfWork,
+        ILogger<VendorProductsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
-
-    private string? GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
     private async Task<Guid?> GetVendorIdAsync()
     {
-        var userId = GetUserId();
-        var vendor = await _unitOfWork.Vendors.Query()
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return null;
+        }
+        
+        var vendor = await UnitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor?.Id;
     }
@@ -45,19 +53,25 @@ public class VendorProductsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorProductDto>>>> GetProducts([FromQuery] string? category = null,
-        [FromQuery] bool? isAvailable = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<VendorProductDto>>>> GetProducts(
+        [FromQuery] string? category = null,
+        [FromQuery] bool? isAvailable = null, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 6)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<PagedResultDto<VendorProductDto>>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<PagedResultDto<VendorProductDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        IQueryable<Product> query = _unitOfWork.Products.Query()
+        IQueryable<Product> query = UnitOfWork.Products.Query()
             .Where(p => p.VendorId == vendorId.Value);
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -99,7 +113,9 @@ public class VendorProductsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<VendorProductDto>>(result, "Satıcı ürünleri başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<VendorProductDto>>(
+            result, 
+            LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -110,13 +126,16 @@ public class VendorProductsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<VendorProductDto>>> GetProduct(Guid id)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<VendorProductDto>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<VendorProductDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
-        var product = await _unitOfWork.Products.Query()
+        var product = await UnitOfWork.Products.Query()
             .Where(p => p.Id == id && p.VendorId == vendorId.Value)
             .Select(p => new VendorProductDto
             {
@@ -138,10 +157,14 @@ public class VendorProductsController : ControllerBase
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<VendorProductDto>("Ürün bulunamadı veya bu ürüne erişim yetkiniz yok", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<VendorProductDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoAccess", CurrentCulture), 
+                "PRODUCT_NOT_FOUND"));
         }
 
-        return Ok(new ApiResponse<VendorProductDto>(product, "Ürün başarıyla getirildi"));
+        return Ok(new ApiResponse<VendorProductDto>(
+            product, 
+            LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -152,10 +175,13 @@ public class VendorProductsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<VendorProductDto>>> CreateProduct(CreateProductDto dto)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<VendorProductDto>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<VendorProductDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
         var product = new Product
@@ -173,8 +199,8 @@ public class VendorProductsController : ControllerBase
             PreparationTime = dto.PreparationTime
         };
 
-        await _unitOfWork.Products.AddAsync(product);
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.Products.AddAsync(product);
+        await UnitOfWork.SaveChangesAsync();
 
         var result = new VendorProductDto
         {
@@ -196,7 +222,9 @@ public class VendorProductsController : ControllerBase
         return CreatedAtAction(
             nameof(GetProduct),
             new { id = product.Id },
-            new ApiResponse<VendorProductDto>(result, "Ürün başarıyla oluşturuldu"));
+            new ApiResponse<VendorProductDto>(
+                result, 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductCreatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -208,18 +236,23 @@ public class VendorProductsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProduct(Guid id, UpdateProductDto dto)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
-        var product = await _unitOfWork.Products.Query()
+        var product = await UnitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü güncelleme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture), 
+                "PRODUCT_NOT_FOUND"));
         }
 
         // Update only provided fields
@@ -246,10 +279,12 @@ public class VendorProductsController : ControllerBase
 
         product.UpdatedAt = DateTime.UtcNow;
 
-        _unitOfWork.Products.Update(product);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.Products.Update(product);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Ürün başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "ProductUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -260,24 +295,31 @@ public class VendorProductsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(Guid id)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
-        var product = await _unitOfWork.Products.Query()
+        var product = await UnitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü silme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoDeleteAccess", CurrentCulture), 
+                "PRODUCT_NOT_FOUND"));
         }
 
-        _unitOfWork.Products.Remove(product);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.Products.Remove(product);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Ürün başarıyla silindi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "ProductDeletedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -289,27 +331,34 @@ public class VendorProductsController : ControllerBase
     [HttpPut("{id}/availability")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductAvailability(Guid id, UpdateProductAvailabilityDto dto)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
-        var product = await _unitOfWork.Products.Query()
+        var product = await UnitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü güncelleme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture), 
+                "PRODUCT_NOT_FOUND"));
         }
 
         product.IsAvailable = dto.IsAvailable;
         product.UpdatedAt = DateTime.UtcNow;
 
-        _unitOfWork.Products.Update(product);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.Products.Update(product);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Ürün müsaitlik durumu başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "ProductAvailabilityUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -321,27 +370,34 @@ public class VendorProductsController : ControllerBase
     [HttpPut("{id}/price")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<object>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
-        var product = await _unitOfWork.Products.Query()
+        var product = await UnitOfWork.Products.Query()
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<object>("Ürün bulunamadı veya bu ürünü güncelleme yetkiniz yok", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture), 
+                "PRODUCT_NOT_FOUND"));
         }
 
         product.Price = dto.Price;
         product.UpdatedAt = DateTime.UtcNow;
 
-        _unitOfWork.Products.Update(product);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.Products.Update(product);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Ürün fiyatı başarıyla güncellendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "ProductPriceUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -351,19 +407,24 @@ public class VendorProductsController : ControllerBase
     [HttpGet("categories")]
     public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
     {
+        
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<List<string>>("Mevcut kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<List<string>>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                "VENDOR_NOT_FOUND"));
         }
 
-        var categories = await _unitOfWork.Products.Query()
+        var categories = await UnitOfWork.Products.Query()
             .Where(p => p.VendorId == vendorId.Value && p.Category != null)
             .Select(p => p.Category!)
             .Distinct()
             .OrderBy(c => c)
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<string>>(categories, "Kategoriler başarıyla getirildi"));
+        return Ok(new ApiResponse<List<string>>(
+            categories, 
+            LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
     }
 }

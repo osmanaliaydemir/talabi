@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>Bu email adresi ile zaten bir hesap bulunmaktadır.</value>
+  </data>
+  <data name="EmailSendFailed" xml:space="preserve">
+    <value>Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.</value>
+  </data>
+  <data name="EmailSendFailedWithDetails" xml:space="preserve">
+    <value>Doğrulama kodu gönderilemedi. Lütfen email adresinizi kontrol edin veya daha sonra tekrar deneyin.</value>
+  </data>
+  <data name="UserCreationFailed" xml:space="preserve">
+    <value>Kullanıcı oluşturulamadı</value>
+  </data>
+  <data name="UserCreationError" xml:space="preserve">
+    <value>Kullanıcı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="RegistrationError" xml:space="preserve">
+    <value>Kayıt sırasında bir hata oluştu</value>
+  </data>
+  <data name="VendorCreationFailed" xml:space="preserve">
+    <value>Satıcı hesabı oluşturulamadı</value>
+  </data>
+  <data name="VendorCreationError" xml:space="preserve">
+    <value>Satıcı hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="CourierCreationFailed" xml:space="preserve">
+    <value>Kurye hesabı oluşturulamadı</value>
+  </data>
+  <data name="CourierCreationError" xml:space="preserve">
+    <value>Kurye hesabı oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>Email adresi zaten doğrulanmış.</value>
+  </data>
+  <data name="CodeExpired" xml:space="preserve">
+    <value>Doğrulama kodu süresi dolmuş veya geçersiz.</value>
+  </data>
+  <data name="InvalidCode" xml:space="preserve">
+    <value>Doğrulama kodu hatalı.</value>
+  </data>
+  <data name="EmailVerificationFailed" xml:space="preserve">
+    <value>Email doğrulama başarısız.</value>
+  </data>
+  <data name="VerificationError" xml:space="preserve">
+    <value>Doğrulama sırasında bir hata oluştu</value>
+  </data>
+  <data name="CodeResendError" xml:space="preserve">
+    <value>Kod gönderme sırasında bir hata oluştu</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Geçersiz email veya şifre</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>Email doğrulanmadı. Lütfen email'inizi kontrol edin.</value>
+  </data>
+  <data name="PasswordNotSet" xml:space="preserve">
+    <value>Hesap şifresi ayarlanmamış. Lütfen şifrenizi sıfırlayın.</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>Giriş başarılı</value>
+  </data>
+  <data name="LoginError" xml:space="preserve">
+    <value>Giriş sırasında bir hata oluştu</value>
+  </data>
+  <data name="PasswordCorrupted" xml:space="preserve">
+    <value>Hesap şifresi bozuk. Lütfen destek ile iletişime geçin veya yeni bir hesap oluşturun.</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>Geçersiz istek</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Geçersiz erişim token'ı veya yenileme token'ı</value>
+  </data>
+  <data name="TokenRefreshSuccess" xml:space="preserve">
+    <value>Token başarıyla yenilendi</value>
+  </data>
+  <data name="InvalidProvider" xml:space="preserve">
+    <value>Geçersiz sağlayıcı</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Email gereklidir</value>
+  </data>
+  <data name="ExternalLoginError" xml:space="preserve">
+    <value>Sosyal medya girişi başarısız</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="VerificationCodeSent" xml:space="preserve">
+    <value>Email adresinize yeni doğrulama kodu gönderildi. Lütfen email'inizi kontrol edin.</value>
+  </data>
+  <data name="UserCreatedSuccessfully" xml:space="preserve">
+    <value>Kullanıcı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.</value>
+  </data>
+  <data name="VendorCreatedSuccessfully" xml:space="preserve">
+    <value>Satıcı hesabı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.</value>
+  </data>
+  <data name="CourierCreatedSuccessfully" xml:space="preserve">
+    <value>Kurye hesabı başarıyla oluşturuldu. Email adresinize gönderilen 4 haneli kodu giriniz.</value>
+  </data>
+  <data name="EmailVerifiedSuccessfully" xml:space="preserve">
+    <value>Email adresi başarıyla doğrulandı.</value>
+  </data>
+  <data name="CodeResentSuccessfully" xml:space="preserve">
+    <value>Doğrulama kodu yeniden gönderildi.</value>
+  </data>
+  <data name="CodeResentMessage" xml:space="preserve">
+    <value>Eğer bu email adresi kayıtlıysa, doğrulama kodu gönderildi.</value>
+  </data>
+  <data name="PasswordResetSent" xml:space="preserve">
+    <value>Eğer email kayıtlıysa, şifre sıfırlama linki gönderildi.</value>
+  </data>
+  
+  <!-- Email Subjects -->
+  <data name="EmailVerificationSubject" xml:space="preserve">
+    <value>Talabi - Email Doğrulama Kodu</value>
+  </data>
+</root>
+

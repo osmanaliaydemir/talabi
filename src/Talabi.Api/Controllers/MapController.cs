@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Talabi.Core.DTOs;
+using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -11,16 +14,20 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class MapController : ControllerBase
+public class MapController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
+    private const string ResourceName = "MapResources";
 
     /// <summary>
     /// MapController constructor
     /// </summary>
-    public MapController(IUnitOfWork unitOfWork)
+    public MapController(IUnitOfWork unitOfWork, ILogger<MapController> logger, ILocalizationService localizationService,
+        IUserContextService userContext, IMapper mapper, IConfiguration configuration) : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -32,37 +39,33 @@ public class MapController : ControllerBase
     [HttpGet("vendors")]
     public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap([FromQuery] double? userLatitude, [FromQuery] double? userLongitude)
     {
-        var vendors = await _unitOfWork.Vendors.Query()
+        var vendors = await UnitOfWork.Vendors.Query()
             .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
-            .Select(v => new VendorMapDto
-            {
-                Id = v.Id,
-                Name = v.Name,
-                Address = v.Address,
-                Latitude = v.Latitude!.Value,
-                Longitude = v.Longitude!.Value,
-                ImageUrl = v.ImageUrl,
-                Rating = v.Rating
-            })
             .ToListAsync();
-
-        // Calculate distance if user location provided
-        if (userLatitude.HasValue && userLongitude.HasValue)
+        
+        var vendorMapDtos = vendors.Select(v =>
         {
-            foreach (var vendor in vendors)
+            var dto = _mapper.Map<VendorMapDto>(v);
+            // Calculate distance if user location provided
+            if (userLatitude.HasValue && userLongitude.HasValue && v.Latitude.HasValue && v.Longitude.HasValue)
             {
-                vendor.DistanceInKm = CalculateDistance(
+                dto.DistanceInKm = GeoHelper.CalculateDistance(
                     userLatitude.Value,
                     userLongitude.Value,
-                    vendor.Latitude,
-                    vendor.Longitude);
+                    v.Latitude.Value,
+                    v.Longitude.Value
+                );
             }
+            return dto;
+        }).ToList();
 
-            // Sort by distance
-            vendors = vendors.OrderBy(v => v.DistanceInKm).ToList();
+        // Sort by distance if user location provided
+        if (userLatitude.HasValue && userLongitude.HasValue)
+        {
+            vendorMapDtos = vendorMapDtos.OrderBy(v => v.DistanceInKm).ToList();
         }
 
-        return Ok(new ApiResponse<List<VendorMapDto>>(vendors, "Satıcı harita bilgileri başarıyla getirildi"));
+        return Ok(new ApiResponse<List<VendorMapDto>>(vendorMapDtos, LocalizationService.GetLocalizedString(ResourceName, "VendorMapInfoRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -74,21 +77,21 @@ public class MapController : ControllerBase
     [Authorize]
     public async Task<ActionResult<ApiResponse<DeliveryTrackingDto>>> GetDeliveryTracking(Guid orderId)
     {
-        var order = await _unitOfWork.Orders.Query()
+        var order = await UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.DeliveryAddress)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<DeliveryTrackingDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<DeliveryTrackingDto>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
         }
 
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = UserContext.GetUserId();
         if (order.CustomerId != userId)
         {
             return StatusCode(403, new ApiResponse<DeliveryTrackingDto>(
-                "Bu siparişe erişim yetkiniz yok",
+                LocalizationService.GetLocalizedString(ResourceName, "NotAuthorizedForOrder", CurrentCulture),
                 "FORBIDDEN"
             ));
         }
@@ -98,7 +101,7 @@ public class MapController : ControllerBase
             !order.DeliveryAddress.Longitude.HasValue)
         {
             return BadRequest(new ApiResponse<DeliveryTrackingDto>(
-                "Teslimat adresi konumu mevcut değil",
+                LocalizationService.GetLocalizedString(ResourceName, "DeliveryAddressLocationNotAvailable", CurrentCulture),
                 "DELIVERY_ADDRESS_LOCATION_NOT_AVAILABLE"
             ));
         }
@@ -108,7 +111,7 @@ public class MapController : ControllerBase
             !order.Vendor.Longitude.HasValue)
         {
             return BadRequest(new ApiResponse<DeliveryTrackingDto>(
-                "Satıcı konumu mevcut değil",
+                LocalizationService.GetLocalizedString(ResourceName, "VendorLocationNotAvailable", CurrentCulture),
                 "VENDOR_LOCATION_NOT_AVAILABLE"
             ));
         }
@@ -127,10 +130,10 @@ public class MapController : ControllerBase
         };
 
         // Get active courier from OrderCouriers
-        var activeOrderCourier = await _unitOfWork.OrderCouriers.Query()
+        var activeOrderCourier = await UnitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Courier)
             .FirstOrDefaultAsync(oc => oc.OrderId == order.Id && oc.IsActive);
-        
+
         if (activeOrderCourier?.Courier != null &&
             activeOrderCourier.Courier.CurrentLatitude.HasValue &&
             activeOrderCourier.Courier.CurrentLongitude.HasValue)
@@ -142,46 +145,38 @@ public class MapController : ControllerBase
             tracking.CourierLastUpdate = activeOrderCourier.Courier.LastLocationUpdate;
         }
 
-        return Ok(new ApiResponse<DeliveryTrackingDto>(tracking, "Teslimat takip bilgileri başarıyla getirildi"));
+        return Ok(new ApiResponse<DeliveryTrackingDto>(tracking, LocalizationService.GetLocalizedString(ResourceName, "DeliveryTrackingRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
     /// Google Maps API anahtarını getirir (frontend için)
     /// </summary>
-    /// <param name="configuration">Configuration servisi</param>
     /// <returns>Google Maps API anahtarı</returns>
     [HttpGet("api-key")]
-    public ActionResult<ApiResponse<object>> GetApiKey([FromServices] IConfiguration configuration)
+    public ActionResult<ApiResponse<object>> GetApiKey()
     {
-        var apiKey = configuration["GoogleMaps:ApiKey"];
-        if (string.IsNullOrEmpty(apiKey))
+        try
         {
-            return NotFound(new ApiResponse<object>("Google Maps API anahtarı yapılandırılmamış", "API_KEY_NOT_CONFIGURED"));
+            if (_configuration == null)
+            {
+                Logger?.LogError("Configuration service is null");
+                return StatusCode(500, new ApiResponse<object>("Configuration service is not available", "INTERNAL_SERVER_ERROR"));
+            }
+
+            var apiKey = _configuration["GoogleMaps:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                return NotFound(new ApiResponse<object>("API key is not configured", "API_KEY_NOT_CONFIGURED"));
+            }
+
+            return Ok(new ApiResponse<object>(new { ApiKey = apiKey }, "API key retrieved successfully"));
         }
-
-        return Ok(new ApiResponse<object>(new { ApiKey = apiKey }, "Google Maps API anahtarı başarıyla getirildi"));
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error retrieving Google Maps API key: {Error}", ex.Message);
+            return StatusCode(500, new ApiResponse<object>("An error occurred while retrieving the API key", "INTERNAL_SERVER_ERROR"));
+        }
     }
 
-    // Haversine formula to calculate distance between two coordinates in kilometers
-    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-    {
-        const double earthRadiusKm = 6371.0;
-
-        var dLat = ToRadians(lat2 - lat1);
-        var dLon = ToRadians(lon2 - lon1);
-
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-        return earthRadiusKm * c;
-    }
-
-    private static double ToRadians(double degrees)
-    {
-        return degrees * Math.PI / 180.0;
-    }
 }
 

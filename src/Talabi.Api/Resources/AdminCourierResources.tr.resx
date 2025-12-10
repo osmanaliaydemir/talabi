@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="CourierNotFound" xml:space="preserve">
+    <value>Kurye bulunamadı</value>
+  </data>
+  <data name="OrderAssignmentFailed" xml:space="preserve">
+    <value>Sipariş atanamadı. Siparişin hazır durumda olduğundan ve kuryenin müsait olduğundan emin olun</value>
+  </data>
+  <data name="CannotDeactivateWithActiveOrders" xml:space="preserve">
+    <value>Aktif siparişi olan kurye pasifleştirilemez</value>
+  </data>
+  <data name="InvalidStatus" xml:space="preserve">
+    <value>Geçersiz durum</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="CouriersRetrievedSuccessfully" xml:space="preserve">
+    <value>Kuryeler başarıyla getirildi</value>
+  </data>
+  <data name="OrderAssignedSuccessfully" xml:space="preserve">
+    <value>Sipariş başarıyla atandı</value>
+  </data>
+  <data name="PerformanceStatisticsRetrievedSuccessfully" xml:space="preserve">
+    <value>Kurye performans istatistikleri başarıyla getirildi</value>
+  </data>
+  <data name="CourierActivatedSuccessfully" xml:space="preserve">
+    <value>Kurye başarıyla aktifleştirildi</value>
+  </data>
+  <data name="CourierDeactivatedSuccessfully" xml:space="preserve">
+    <value>Kurye başarıyla pasifleştirildi</value>
+  </data>
+  <data name="CourierStatusUpdated" xml:space="preserve">
+    <value>Kurye durumu {0} olarak güncellendi</value>
+  </data>
+  <data name="OverallStatisticsRetrievedSuccessfully" xml:space="preserve">
+    <value>Genel kurye istatistikleri başarıyla getirildi</value>
+  </data>
+</root>
+

@@ -27,6 +27,9 @@ class ApiService {
     ),
   );
 
+  // Expose Dio instance for other services
+  Dio get dio => _dio;
+
   final CacheService _cacheService = CacheService();
   final ApiRequestScheduler _requestScheduler = ApiRequestScheduler();
   ConnectivityService? _connectivityService;
@@ -64,13 +67,16 @@ class ApiService {
             }
           }
 
+          // Add Accept-Language header
+          final prefs = await SharedPreferences.getInstance();
+          final languageCode = prefs.getString('language') ?? 'tr';
+          options.headers['Accept-Language'] = languageCode;
+
           final permit = await _requestScheduler.acquire(
             highPriority: _isHighPriorityRequest(options),
           );
           options.extra[_requestPermitKey] = permit;
 
-          // Automatically add token from SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('token');
           if (token != null && !options.headers.containsKey('Authorization')) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -2316,29 +2322,76 @@ class ApiService {
     }
   }
 
-  Future<List<Review>> getProductReviews(String productId) async {
+  Future<ProductReviewsSummary> getProductReviews(String productId) async {
     try {
       final response = await _dio.get('/reviews/products/$productId');
+
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+          (json) {
+            // Eğer data bir Map ise (yeni format - ProductReviewsSummaryDto)
+            if (json is Map<String, dynamic>) {
+              return json;
+            }
+            // Eğer data bir List ise (eski format)
+            return null;
+          },
         );
 
-        if (!apiResponse.success || apiResponse.data == null) {
+        if (!apiResponse.success) {
           throw Exception(
             apiResponse.message ?? 'Ürün değerlendirmeleri getirilemedi',
           );
         }
 
-        return apiResponse.data!.map((json) => Review.fromJson(json)).toList();
+        // Yeni format: ProductReviewsSummaryDto (Map)
+        if (apiResponse.data is Map<String, dynamic>) {
+          return ProductReviewsSummary.fromJson(
+            apiResponse.data as Map<String, dynamic>,
+          );
+        }
+
+        // Eski format: Direkt List<ReviewDto>
+        if (apiResponse.data is List) {
+          final List<dynamic> data = apiResponse.data as List;
+          final reviews = data
+              .map((json) => Review.fromJson(json as Map<String, dynamic>))
+              .toList();
+          final avgRating = reviews.isNotEmpty
+              ? reviews.map((r) => r.rating).reduce((a, b) => a + b) /
+                    reviews.length
+              : 0.0;
+          return ProductReviewsSummary(
+            averageRating: avgRating,
+            totalRatings: reviews.length,
+            totalComments: reviews.where((r) => r.comment.isNotEmpty).length,
+            reviews: reviews,
+          );
+        }
       }
-      // Eski format (direkt liste)
-      final List<dynamic> data = response.data;
-      return data.map((json) => Review.fromJson(json)).toList();
+
+      // Eski format (direkt liste) - geriye dönük uyumluluk
+      if (response.data is List) {
+        final List<dynamic> data = response.data as List;
+        final reviews = data
+            .map((json) => Review.fromJson(json as Map<String, dynamic>))
+            .toList();
+        final avgRating = reviews.isNotEmpty
+            ? reviews.map((r) => r.rating).reduce((a, b) => a + b) /
+                  reviews.length
+            : 0.0;
+        return ProductReviewsSummary(
+          averageRating: avgRating,
+          totalRatings: reviews.length,
+          totalComments: reviews.where((r) => r.comment.isNotEmpty).length,
+          reviews: reviews,
+        );
+      }
+
+      throw Exception('Beklenmeyen response formatı');
     } catch (e) {
       print('Error fetching product reviews: $e');
       rethrow;

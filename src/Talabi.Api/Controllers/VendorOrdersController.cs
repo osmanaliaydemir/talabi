@@ -8,6 +8,8 @@ using Talabi.Core.Enums;
 using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using System.Globalization;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -17,29 +19,29 @@ namespace Talabi.Api.Controllers;
 [Route("api/vendor/orders")]
 [ApiController]
 [Authorize]
-public class VendorOrdersController : ControllerBase
+public class VendorOrdersController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderAssignmentService _assignmentService;
+    private readonly IMapper _mapper;
+    private readonly INotificationService _notificationService;
+    private const string ResourceName = "VendorOrderResources";
 
     /// <summary>
     /// VendorOrdersController constructor
     /// </summary>
-    public VendorOrdersController(IUnitOfWork unitOfWork, IOrderAssignmentService assignmentService)
+    public VendorOrdersController(
+        IUnitOfWork unitOfWork,
+        ILogger<VendorOrdersController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        IOrderAssignmentService assignmentService,
+        IMapper mapper,
+        INotificationService notificationService)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
         _assignmentService = assignmentService;
-    }
-
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-        ?? throw new UnauthorizedAccessException();
-
-    private async Task<Guid?> GetVendorIdAsync()
-    {
-        var userId = GetUserId();
-        var vendor = await _unitOfWork.Vendors.Query()
-            .FirstOrDefaultAsync(v => v.OwnerId == userId);
-        return vendor?.Id;
+        _mapper = mapper;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -58,13 +60,13 @@ public class VendorOrdersController : ControllerBase
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        var vendorId = await GetVendorIdAsync();
+        var vendorId = await UserContext.GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<PagedResultDto<VendorOrderDto>>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<PagedResultDto<VendorOrderDto>>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
         }
 
-        IQueryable<Order> query = _unitOfWork.Orders.Query()
+        IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -108,15 +110,7 @@ public class VendorOrdersController : ControllerBase
                 Status = o.Status.ToString(),
                 CreatedAt = o.CreatedAt,
                 EstimatedDeliveryTime = o.EstimatedDeliveryTime,
-                Items = o.OrderItems.Select(oi => new VendorOrderItemDto
-                {
-                    ProductId = oi.ProductId,
-                    ProductName = oi.Product!.Name,
-                    ProductImageUrl = oi.Product.ImageUrl,
-                    Quantity = oi.Quantity,
-                    UnitPrice = oi.UnitPrice,
-                    TotalPrice = oi.Quantity * oi.UnitPrice
-                }).ToList()
+                Items = _mapper.Map<List<VendorOrderItemDto>>(o.OrderItems)
             },
             page,
             pageSize);
@@ -131,7 +125,7 @@ public class VendorOrdersController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<VendorOrderDto>>(result, "Satıcı siparişleri başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<VendorOrderDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "VendorOrdersRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -142,13 +136,13 @@ public class VendorOrdersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<VendorOrderDto>>> GetVendorOrder(Guid id)
     {
-        var vendorId = await GetVendorIdAsync();
+        var vendorId = await UserContext.GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<VendorOrderDto>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<VendorOrderDto>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
         }
 
-        var order = await _unitOfWork.Orders.Query()
+        var order = await UnitOfWork.Orders.Query()
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -158,7 +152,7 @@ public class VendorOrdersController : ControllerBase
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<VendorOrderDto>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<VendorOrderDto>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
         }
 
         // Get active courier assignment
@@ -203,7 +197,7 @@ public class VendorOrdersController : ControllerBase
             Courier = courierDto
         };
 
-        return Ok(new ApiResponse<VendorOrderDto>(orderDto, "Sipariş başarıyla getirildi"));
+        return Ok(new ApiResponse<VendorOrderDto>(orderDto, LocalizationService.GetLocalizedString(ResourceName, "OrderRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -214,35 +208,33 @@ public class VendorOrdersController : ControllerBase
     [HttpPost("{id}/accept")]
     public async Task<ActionResult<ApiResponse<object>>> AcceptOrder(Guid id)
     {
-        try
-        {
-            var vendorId = await GetVendorIdAsync();
+            var vendorId = await UserContext.GetVendorIdAsync();
             if (vendorId == null)
             {
-                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+                return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
             }
 
             // Order'ı Include olmadan yüklüyoruz
-            var order = await _unitOfWork.Orders.Query()
+            var order = await UnitOfWork.Orders.Query()
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
             if (order == null)
             {
-                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
             }
 
             if (order.Status != OrderStatus.Pending)
             {
-                return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken kabul edilebilir", "INVALID_ORDER_STATUS"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderCanOnlyBeAcceptedWhenPending", CurrentCulture), "INVALID_ORDER_STATUS"));
             }
 
-            var userId = GetUserId();
+            var userId = UserContext.GetUserId();
             order.Status = OrderStatus.Preparing;
 
-            _unitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
+            UnitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
 
             // StatusHistory'yi ayrı bir entity olarak ekliyoruz
-            await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+            await UnitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
             {
                 OrderId = order.Id,
                 Status = OrderStatus.Preparing,
@@ -253,25 +245,24 @@ public class VendorOrdersController : ControllerBase
             // Add customer notification
             if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
             {
+                var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedTitle", CurrentCulture);
+                var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedMessage", CurrentCulture, order.CustomerOrderId);
+                
                 await AddCustomerNotificationAsync(
                     order.CustomerId,
-                    "Sipariş Onaylandı",
-                    $"#{order.Id} numaralı siparişiniz onaylandı ve hazırlanmaya başlandı.",
+                    notificationTitle,
+                    notificationMessage,
                     "OrderAccepted",
                     order.Id);
+
+                // Send Firebase push notification to customer
+                var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+                await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, "Preparing", languageCode);
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla kabul edildi"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new ApiResponse<object>(
-                $"Sipariş kabul edilirken bir hata oluştu: {ex.Message}",
-                "INTERNAL_SERVER_ERROR"
-            ));
-        }
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -283,40 +274,38 @@ public class VendorOrdersController : ControllerBase
     [HttpPost("{id}/reject")]
     public async Task<ActionResult<ApiResponse<object>>> RejectOrder(Guid id, [FromBody] RejectOrderDto dto)
     {
-        try
-        {
-            var vendorId = await GetVendorIdAsync();
+            var vendorId = await UserContext.GetVendorIdAsync();
             if (vendorId == null)
             {
-                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+                return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
             }
 
             // Order'ı Include etmeden yükle (concurrency sorununu önlemek için)
-            var order = await _unitOfWork.Orders.Query()
+            var order = await UnitOfWork.Orders.Query()
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
             if (order == null)
             {
-                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
             }
 
             if (order.Status != OrderStatus.Pending)
             {
-                return BadRequest(new ApiResponse<object>("Sipariş yalnızca Beklemede durumundayken reddedilebilir", "INVALID_ORDER_STATUS"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderCanOnlyBeRejectedWhenPending", CurrentCulture), "INVALID_ORDER_STATUS"));
             }
 
             if (dto == null || string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
             {
-                return BadRequest(new ApiResponse<object>("Reddetme nedeni en az 10 karakter olmalıdır", "INVALID_REJECTION_REASON"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRejectionReason", CurrentCulture), "INVALID_REJECTION_REASON"));
             }
 
-            var userId = GetUserId();
+            var userId = UserContext.GetUserId();
             
             // Order'ı güncelle
             order.Status = OrderStatus.Cancelled;
             order.CancelledAt = DateTime.UtcNow;
             order.CancelReason = $"Rejected by vendor: {dto.Reason}";
-            _unitOfWork.Orders.Update(order);
+            UnitOfWork.Orders.Update(order);
 
             // StatusHistory'yi ayrı bir entity olarak ekle (concurrency sorununu önlemek için)
             var statusHistory = new OrderStatusHistory
@@ -326,16 +315,29 @@ public class VendorOrdersController : ControllerBase
                 Note = $"Rejected by vendor: {dto.Reason}",
                 CreatedBy = userId ?? "System"
             };
-            await _unitOfWork.OrderStatusHistories.AddAsync(statusHistory);
+            await UnitOfWork.OrderStatusHistories.AddAsync(statusHistory);
 
-            await _unitOfWork.SaveChangesAsync();
+            // Add customer notification
+            if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+            {
+                var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedTitle", CurrentCulture);
+                var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedMessage", CurrentCulture, order.CustomerOrderId, dto.Reason);
+                
+                await AddCustomerNotificationAsync(
+                    order.CustomerId,
+                    notificationTitle,
+                    notificationMessage,
+                    "OrderRejected",
+                    order.Id);
 
-            return Ok(new ApiResponse<object>(new { }, "Sipariş başarıyla reddedildi"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new ApiResponse<object>($"Sipariş reddedilirken bir hata oluştu: {ex.Message}", "INTERNAL_SERVER_ERROR"));
-        }
+                // Send Firebase push notification to customer
+                var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+                await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, "Cancelled", languageCode);
+            }
+
+            await UnitOfWork.SaveChangesAsync();
+
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -349,33 +351,33 @@ public class VendorOrdersController : ControllerBase
     {
         try
         {
-            var vendorId = await GetVendorIdAsync();
+            var vendorId = await UserContext.GetVendorIdAsync();
             if (vendorId == null)
             {
-                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+                return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
             }
 
             // Order'ı Include olmadan yüklüyoruz
-            var order = await _unitOfWork.Orders.Query()
+            var order = await UnitOfWork.Orders.Query()
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
             if (order == null)
             {
-                return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
             }
 
             if (!Enum.TryParse<OrderStatus>(dto.Status, out var newStatus))
             {
-                return BadRequest(new ApiResponse<object>("Geçersiz durum", "INVALID_STATUS"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidOrderStatus", CurrentCulture), "INVALID_STATUS"));
             }
 
             // Validate status transition for vendor
             if (!IsValidVendorStatusTransition(order.Status, newStatus))
             {
-                return BadRequest(new ApiResponse<object>($"Durum {order.Status} durumundan {newStatus} durumuna geçirilemez", "INVALID_STATUS_TRANSITION"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidStatusTransition", CurrentCulture, order.Status, newStatus), "INVALID_STATUS_TRANSITION"));
             }
 
-            var userId = GetUserId();
+            var userId = UserContext.GetUserId();
             order.Status = newStatus;
 
             // Set estimated delivery time if status is Ready
@@ -384,10 +386,10 @@ public class VendorOrdersController : ControllerBase
                 order.EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes(30); // Default 30 minutes
             }
 
-            _unitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
+            UnitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
 
             // StatusHistory'yi ayrı bir entity olarak ekliyoruz
-            await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+            await UnitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
             {
                 OrderId = order.Id,
                 Status = newStatus,
@@ -400,31 +402,36 @@ public class VendorOrdersController : ControllerBase
             {
                 var statusMessage = newStatus switch
                 {
-                    OrderStatus.Preparing => "Siparişiniz hazırlanıyor",
-                    OrderStatus.Ready => "Siparişiniz hazır, kurye atanıyor",
-                    OrderStatus.Delivered => "Siparişiniz teslim edildi",
-                    OrderStatus.Cancelled => "Siparişiniz iptal edildi",
-                    _ => "Sipariş durumu güncellendi"
+                    OrderStatus.Preparing => LocalizationService.GetLocalizedString(ResourceName, "OrderStatusPreparing", CurrentCulture),
+                    OrderStatus.Ready => LocalizationService.GetLocalizedString(ResourceName, "OrderStatusReady", CurrentCulture),
+                    OrderStatus.Delivered => LocalizationService.GetLocalizedString(ResourceName, "OrderStatusDelivered", CurrentCulture),
+                    OrderStatus.Cancelled => LocalizationService.GetLocalizedString(ResourceName, "OrderStatusCancelled", CurrentCulture),
+                    _ => LocalizationService.GetLocalizedString(ResourceName, "OrderStatusUpdated", CurrentCulture)
                 };
+
+                var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderStatusChangedTitle", CurrentCulture);
+                var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderStatusMessage", CurrentCulture, order.CustomerOrderId, statusMessage);
 
                 await AddCustomerNotificationAsync(
                     order.CustomerId,
-                    "Sipariş Durumu Güncellendi",
-                    $"#{order.Id} numaralı sipariş: {statusMessage}",
+                    notificationTitle,
+                    notificationMessage,
                     "OrderStatusChanged",
                     order.Id);
+
+                // Send Firebase push notification to customer
+                var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+                await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, newStatus.ToString(), languageCode);
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Sipariş durumu başarıyla güncellendi"));
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderStatusUpdatedSuccessfully", CurrentCulture)));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new ApiResponse<object>(
-                $"Sipariş durumu güncellenirken bir hata oluştu: {ex.Message}",
-                "INTERNAL_SERVER_ERROR"
-            ));
+            Logger.LogError(ex, "Error updating order status for order {OrderId}", id);
+            return StatusCode(500, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "ErrorUpdatingOrderStatus", CurrentCulture), "INTERNAL_ERROR"));
         }
     }
 
@@ -449,35 +456,35 @@ public class VendorOrdersController : ControllerBase
     [HttpGet("{id}/available-couriers")]
     public async Task<ActionResult<ApiResponse<List<AvailableCourierDto>>>> GetAvailableCouriers(Guid id)
     {
-        var vendorId = await GetVendorIdAsync();
+        var vendorId = await UserContext.GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<List<AvailableCourierDto>>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<List<AvailableCourierDto>>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
         }
 
-        var order = await _unitOfWork.Orders.Query()
+        var order = await UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<List<AvailableCourierDto>>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<List<AvailableCourierDto>>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Ready)
         {
-            return BadRequest(new ApiResponse<List<AvailableCourierDto>>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
+            return BadRequest(new ApiResponse<List<AvailableCourierDto>>(LocalizationService.GetLocalizedString(ResourceName, "OrderMustBeReadyForCourierAssignment", CurrentCulture), "INVALID_ORDER_STATUS"));
         }
 
         // Get vendor location
         var vendor = order.Vendor;
         if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue)
         {
-            return BadRequest(new ApiResponse<List<AvailableCourierDto>>("Satıcı konumu ayarlanmamış", "VENDOR_LOCATION_NOT_SET"));
+            return BadRequest(new ApiResponse<List<AvailableCourierDto>>(LocalizationService.GetLocalizedString(ResourceName, "VendorLocationNotSet", CurrentCulture), "VENDOR_LOCATION_NOT_SET"));
         }
 
         // Get available couriers (first get all, then calculate distance in memory)
-        var availableCouriersQuery = await _unitOfWork.Couriers.Query()
+        var availableCouriersQuery = await UnitOfWork.Couriers.Query()
             .Where(c => c.IsActive
                 && c.Status == CourierStatus.Available
                 && c.CurrentActiveOrders < c.MaxActiveOrders
@@ -490,7 +497,7 @@ public class VendorOrdersController : ControllerBase
             .Select(c => new
             {
                 Courier = c,
-                Distance = CalculateDistance(
+                Distance = Talabi.Core.Helpers.GeoHelper.CalculateDistance(
                     vendor.Latitude.Value,
                     vendor.Longitude.Value,
                     c.CurrentLatitude!.Value,
@@ -499,22 +506,26 @@ public class VendorOrdersController : ControllerBase
             })
             .Where(x => x.Distance <= 10) // Max 10km
             .OrderBy(x => x.Distance)
-            .Select(x => new AvailableCourierDto
+            .Select(x =>
             {
-                Id = x.Courier.Id,
-                FullName = x.Courier.Name,
-                PhoneNumber = x.Courier.PhoneNumber ?? string.Empty,
-                VehicleType = x.Courier.VehicleType ?? "Unknown",
-                AverageRating = x.Courier.AverageRating,
-                TotalDeliveries = x.Courier.TotalDeliveries,
-                CurrentActiveOrders = x.Courier.CurrentActiveOrders,
-                MaxActiveOrders = x.Courier.MaxActiveOrders,
-                Distance = Math.Round(x.Distance, 2),
-                EstimatedArrivalMinutes = (int)Math.Ceiling(x.Distance * 3) // Rough estimate: 3 min per km
+                var dto = new AvailableCourierDto
+                {
+                    Id = x.Courier.Id,
+                    FullName = x.Courier.Name,
+                    PhoneNumber = x.Courier.PhoneNumber ?? string.Empty,
+                    VehicleType = x.Courier.VehicleType ?? "Unknown",
+                    AverageRating = x.Courier.AverageRating,
+                    TotalDeliveries = x.Courier.TotalDeliveries,
+                    CurrentActiveOrders = x.Courier.CurrentActiveOrders,
+                    MaxActiveOrders = x.Courier.MaxActiveOrders,
+                    Distance = Math.Round(x.Distance, 2),
+                    EstimatedArrivalMinutes = (int)Math.Ceiling(x.Distance * 3) // Rough estimate: 3 min per km
+                };
+                return dto;
             })
             .ToList();
 
-        return Ok(new ApiResponse<List<AvailableCourierDto>>(availableCouriers, "Müsait kuryeler başarıyla getirildi"));
+        return Ok(new ApiResponse<List<AvailableCourierDto>>(availableCouriers, LocalizationService.GetLocalizedString(ResourceName, "AvailableCouriersRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -526,32 +537,32 @@ public class VendorOrdersController : ControllerBase
     [HttpPost("{id}/assign-courier")]
     public async Task<ActionResult<ApiResponse<object>>> AssignCourier(Guid id, [FromBody] AssignCourierDto dto)
     {
-        var vendorId = await GetVendorIdAsync();
+        var vendorId = await UserContext.GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
         }
 
-        var order = await _unitOfWork.Orders.Query()
+        var order = await UnitOfWork.Orders.Query()
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Ready)
         {
-            return BadRequest(new ApiResponse<object>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderMustBeReadyForCourierAssignment", CurrentCulture), "INVALID_ORDER_STATUS"));
         }
 
         // Check if order already has an active courier assignment
-        var hasActiveCourier = await _unitOfWork.OrderCouriers.Query()
+        var hasActiveCourier = await UnitOfWork.OrderCouriers.Query()
             .AnyAsync(oc => oc.OrderId == id && oc.IsActive);
         
         if (hasActiveCourier)
         {
-            return BadRequest(new ApiResponse<object>("Siparişe zaten bir kurye atanmış", "COURIER_ALREADY_ASSIGNED"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAlreadyAssigned", CurrentCulture), "COURIER_ALREADY_ASSIGNED"));
         }
 
         // Assign courier using the service
@@ -559,10 +570,10 @@ public class VendorOrdersController : ControllerBase
 
         if (!success)
         {
-            return BadRequest(new ApiResponse<object>("Kurye atanamadı. Kurye müsait olmayabilir veya sipariş durumu geçersiz olabilir", "COURIER_ASSIGNMENT_FAILED"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAssignmentFailed", CurrentCulture), "COURIER_ASSIGNMENT_FAILED"));
         }
 
-        return Ok(new ApiResponse<object>(new { }, "Kurye başarıyla atandı"));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CourierAssignedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -573,32 +584,32 @@ public class VendorOrdersController : ControllerBase
     [HttpPost("{id}/auto-assign-courier")]
     public async Task<ActionResult<ApiResponse<object>>> AutoAssignCourier(Guid id)
     {
-        var vendorId = await GetVendorIdAsync();
+        var vendorId = await UserContext.GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
         }
 
-        var order = await _unitOfWork.Orders.Query()
+        var order = await UnitOfWork.Orders.Query()
             .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<object>("Sipariş bulunamadı", "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Ready)
         {
-            return BadRequest(new ApiResponse<object>("Kurye atamak için sipariş Hazır durumunda olmalıdır", "INVALID_ORDER_STATUS"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderMustBeReadyForCourierAssignment", CurrentCulture), "INVALID_ORDER_STATUS"));
         }
 
         // Check if order already has an active courier assignment
-        var hasActiveCourier = await _unitOfWork.OrderCouriers.Query()
+        var hasActiveCourier = await UnitOfWork.OrderCouriers.Query()
             .AnyAsync(oc => oc.OrderId == id && oc.IsActive);
         
         if (hasActiveCourier)
         {
-            return BadRequest(new ApiResponse<object>("Siparişe zaten bir kurye atanmış", "COURIER_ALREADY_ASSIGNED"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAlreadyAssigned", CurrentCulture), "COURIER_ALREADY_ASSIGNED"));
         }
 
         // Find best courier
@@ -606,7 +617,7 @@ public class VendorOrdersController : ControllerBase
 
         if (bestCourier == null)
         {
-            return BadRequest(new ApiResponse<object>("Yakınlarda müsait kurye bulunamadı", "NO_AVAILABLE_COURIERS"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NoAvailableCouriers", CurrentCulture), "NO_AVAILABLE_COURIERS"));
         }
 
         // Assign courier
@@ -614,38 +625,20 @@ public class VendorOrdersController : ControllerBase
 
         if (!success)
         {
-            return BadRequest(new ApiResponse<object>("Kurye atanamadı", "COURIER_ASSIGNMENT_FAILED"));
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAssignmentFailed", CurrentCulture), "COURIER_ASSIGNMENT_FAILED"));
         }
 
         return Ok(new ApiResponse<object>(new
         {
             CourierId = bestCourier.Id,
             CourierName = bestCourier.Name
-        }, "Kurye otomatik olarak başarıyla atandı"));
+        }, LocalizationService.GetLocalizedString(ResourceName, "CourierAutoAssignedSuccessfully", CurrentCulture)));
     }
 
-    private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-    {
-        var R = 6371; // Radius of the earth in km
-        var dLat = Deg2Rad(lat2 - lat1);
-        var dLon = Deg2Rad(lon2 - lon1);
-        var a =
-            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-            Math.Cos(Deg2Rad(lat1)) * Math.Cos(Deg2Rad(lat2)) *
-            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        var d = R * c; // Distance in km
-        return d;
-    }
-
-    private double Deg2Rad(double deg)
-    {
-        return deg * (Math.PI / 180);
-    }
 
     private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
     {
-        var customer = await _unitOfWork.Customers.Query()
+        var customer = await UnitOfWork.Customers.Query()
             .FirstOrDefaultAsync(c => c.UserId == userId);
         if (customer == null)
         {
@@ -655,11 +648,11 @@ public class VendorOrdersController : ControllerBase
                 UserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
-            await _unitOfWork.Customers.AddAsync(customer);
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.Customers.AddAsync(customer);
+            await UnitOfWork.SaveChangesAsync();
         }
 
-        await _unitOfWork.CustomerNotifications.AddAsync(new CustomerNotification
+        await UnitOfWork.CustomerNotifications.AddAsync(new CustomerNotification
         {
             CustomerId = customer.Id,
             Title = title,

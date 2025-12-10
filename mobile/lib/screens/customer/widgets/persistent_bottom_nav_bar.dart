@@ -108,7 +108,6 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
     ];
 
     return Container(
-      height: 70,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

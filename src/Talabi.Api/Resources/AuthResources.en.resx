@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>An account with this email address already exists.</value>
+  </data>
+  <data name="EmailSendFailed" xml:space="preserve">
+    <value>Failed to send verification code. Please try again later.</value>
+  </data>
+  <data name="EmailSendFailedWithDetails" xml:space="preserve">
+    <value>Failed to send verification code. Please check your email address or try again later.</value>
+  </data>
+  <data name="UserCreationFailed" xml:space="preserve">
+    <value>User creation failed</value>
+  </data>
+  <data name="UserCreationError" xml:space="preserve">
+    <value>An error occurred while creating the user. Please try again.</value>
+  </data>
+  <data name="RegistrationError" xml:space="preserve">
+    <value>An error occurred during registration</value>
+  </data>
+  <data name="VendorCreationFailed" xml:space="preserve">
+    <value>Vendor account creation failed</value>
+  </data>
+  <data name="VendorCreationError" xml:space="preserve">
+    <value>An error occurred while creating the vendor account. Please try again.</value>
+  </data>
+  <data name="CourierCreationFailed" xml:space="preserve">
+    <value>Courier account creation failed</value>
+  </data>
+  <data name="CourierCreationError" xml:space="preserve">
+    <value>An error occurred while creating the courier account. Please try again.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>Email address is already confirmed.</value>
+  </data>
+  <data name="CodeExpired" xml:space="preserve">
+    <value>Verification code has expired or is invalid.</value>
+  </data>
+  <data name="InvalidCode" xml:space="preserve">
+    <value>Invalid verification code.</value>
+  </data>
+  <data name="EmailVerificationFailed" xml:space="preserve">
+    <value>Email verification failed.</value>
+  </data>
+  <data name="VerificationError" xml:space="preserve">
+    <value>An error occurred during verification</value>
+  </data>
+  <data name="CodeResendError" xml:space="preserve">
+    <value>An error occurred while resending the code</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid email or password</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>Email not confirmed. Please check your email.</value>
+  </data>
+  <data name="PasswordNotSet" xml:space="preserve">
+    <value>Account password not set. Please reset your password.</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>Login successful</value>
+  </data>
+  <data name="LoginError" xml:space="preserve">
+    <value>An error occurred during login</value>
+  </data>
+  <data name="PasswordCorrupted" xml:space="preserve">
+    <value>Account password is corrupted. Please contact support or register a new account.</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>Invalid client request</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Invalid access token or refresh token</value>
+  </data>
+  <data name="TokenRefreshSuccess" xml:space="preserve">
+    <value>Token successfully refreshed</value>
+  </data>
+  <data name="InvalidProvider" xml:space="preserve">
+    <value>Invalid provider</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Email is required</value>
+  </data>
+  <data name="ExternalLoginError" xml:space="preserve">
+    <value>External login failed</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="VerificationCodeSent" xml:space="preserve">
+    <value>A new verification code has been sent to your email address. Please check your email.</value>
+  </data>
+  <data name="UserCreatedSuccessfully" xml:space="preserve">
+    <value>User created successfully. Please enter the 4-digit code sent to your email address.</value>
+  </data>
+  <data name="VendorCreatedSuccessfully" xml:space="preserve">
+    <value>Vendor account created successfully. Please enter the 4-digit code sent to your email address.</value>
+  </data>
+  <data name="CourierCreatedSuccessfully" xml:space="preserve">
+    <value>Courier account created successfully. Please enter the 4-digit code sent to your email address.</value>
+  </data>
+  <data name="EmailVerifiedSuccessfully" xml:space="preserve">
+    <value>Email address successfully verified.</value>
+  </data>
+  <data name="CodeResentSuccessfully" xml:space="preserve">
+    <value>Verification code resent successfully.</value>
+  </data>
+  <data name="CodeResentMessage" xml:space="preserve">
+    <value>If this email address is registered, a verification code has been sent.</value>
+  </data>
+  <data name="PasswordResetSent" xml:space="preserve">
+    <value>If the email exists, a password reset link has been sent.</value>
+  </data>
+  
+  <!-- Email Subjects -->
+  <data name="EmailVerificationSubject" xml:space="preserve">
+    <value>Talabi - Email Verification Code</value>
+  </data>
+</root>
+

@@ -1043,6 +1043,7 @@
   "noDeliveryHistoryYet": "لا يوجد سجل تسليم حتى الآن",
   "pickup": "الاستلام",
   "delivery": "التسليم",
+  "talabi": "Talabi",
   "navigate": "التنقل",
   "couldNotLaunchMaps": "تعذر فتح الخرائط: {error}",
   "@couldNotLaunchMaps": {

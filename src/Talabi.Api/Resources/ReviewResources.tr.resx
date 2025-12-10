@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="UserIdentityNotFound" xml:space="preserve">
+    <value>Kullanıcı kimliği belirlenemedi</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı</value>
+  </data>
+  <data name="ProductNotFound" xml:space="preserve">
+    <value>Ürün bulunamadı</value>
+  </data>
+  <data name="VendorNotFound" xml:space="preserve">
+    <value>Satıcı bulunamadı</value>
+  </data>
+  <data name="VendorNotFoundForUser" xml:space="preserve">
+    <value>Bu kullanıcı için satıcı bulunamadı</value>
+  </data>
+  <data name="ReviewNotFound" xml:space="preserve">
+    <value>Değerlendirme bulunamadı</value>
+  </data>
+  <data name="ReviewAlreadyExists" xml:space="preserve">
+    <value>Bu ürüne zaten değerlendirme yaptınız. Başka bir değerlendirme oluşturamazsınız.</value>
+  </data>
+  <data name="VendorReviewAlreadyExists" xml:space="preserve">
+    <value>Bu satıcının bir ürününe zaten değerlendirme yaptınız. Başka bir değerlendirme oluşturamazsınız.</value>
+  </data>
+  <data name="VendorHasNoProducts" xml:space="preserve">
+    <value>Satıcının ürünü yok. Ürün olmadan satıcı değerlendirmesi oluşturulamaz.</value>
+  </data>
+  <data name="InvalidTargetType" xml:space="preserve">
+    <value>Geçersiz hedef tipi. 'Product' veya 'Vendor' olmalıdır.</value>
+  </data>
+  <data name="ForbiddenApprove" xml:space="preserve">
+    <value>Sadece satıcı sahibi kendi ürünlerinin veya satıcısının değerlendirmelerini onaylayabilir.</value>
+  </data>
+  <data name="ForbiddenReject" xml:space="preserve">
+    <value>Sadece satıcı sahibi kendi ürünlerinin veya satıcısının değerlendirmelerini reddedebilir.</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="ReviewCreatedSuccessfully" xml:space="preserve">
+    <value>Değerlendirme başarıyla oluşturuldu</value>
+  </data>
+  <data name="ProductReviewsRetrievedSuccessfully" xml:space="preserve">
+    <value>Ürün değerlendirmeleri başarıyla getirildi</value>
+  </data>
+  <data name="VendorReviewsRetrievedSuccessfully" xml:space="preserve">
+    <value>Satıcı değerlendirmeleri başarıyla getirildi</value>
+  </data>
+  <data name="ReviewApprovedSuccessfully" xml:space="preserve">
+    <value>Değerlendirme başarıyla onaylandı</value>
+  </data>
+  <data name="ReviewRejectedSuccessfully" xml:space="preserve">
+    <value>Değerlendirme başarıyla reddedildi ve silindi</value>
+  </data>
+  <data name="PendingReviewsRetrievedSuccessfully" xml:space="preserve">
+    <value>Bekleyen değerlendirmeler başarıyla getirildi</value>
+  </data>
+</root>
+

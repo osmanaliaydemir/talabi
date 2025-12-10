@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Sipariş bulunamadı</value>
+  </data>
+  <data name="NotAVendor" xml:space="preserve">
+    <value>Kullanıcı bir satıcı değil</value>
+  </data>
+  <data name="InvalidOrderStatus" xml:space="preserve">
+    <value>Geçersiz sipariş durumu</value>
+  </data>
+  <data name="OrderCanOnlyBeAcceptedWhenPending" xml:space="preserve">
+    <value>Sipariş yalnızca Beklemede durumundayken kabul edilebilir</value>
+  </data>
+  <data name="OrderCanOnlyBeRejectedWhenPending" xml:space="preserve">
+    <value>Sipariş yalnızca Beklemede durumundayken reddedilebilir</value>
+  </data>
+  <data name="InvalidRejectionReason" xml:space="preserve">
+    <value>Reddetme nedeni en az 10 karakter olmalıdır</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>Durum {0} durumundan {1} durumuna geçirilemez</value>
+  </data>
+  <data name="OrderMustBeReadyForCourierAssignment" xml:space="preserve">
+    <value>Kurye atamak için sipariş Hazır durumunda olmalıdır</value>
+  </data>
+  <data name="CourierAlreadyAssigned" xml:space="preserve">
+    <value>Siparişe zaten bir kurye atanmış</value>
+  </data>
+  <data name="CourierAssignmentFailed" xml:space="preserve">
+    <value>Kurye atanamadı. Kurye müsait olmayabilir veya sipariş durumu geçersiz olabilir</value>
+  </data>
+  <data name="NoAvailableCouriers" xml:space="preserve">
+    <value>Yakınlarda müsait kurye bulunamadı</value>
+  </data>
+  <data name="VendorLocationNotSet" xml:space="preserve">
+    <value>Satıcı konumu ayarlanmamış</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="OrderRetrievedSuccessfully" xml:space="preserve">
+    <value>Sipariş başarıyla getirildi</value>
+  </data>
+  <data name="OrderAcceptedSuccessfully" xml:space="preserve">
+    <value>Sipariş başarıyla kabul edildi</value>
+  </data>
+  <data name="OrderRejectedSuccessfully" xml:space="preserve">
+    <value>Sipariş başarıyla reddedildi</value>
+  </data>
+  <data name="OrderStatusUpdatedSuccessfully" xml:space="preserve">
+    <value>Sipariş durumu başarıyla güncellendi</value>
+  </data>
+  <data name="CourierAssignedSuccessfully" xml:space="preserve">
+    <value>Kurye başarıyla atandı</value>
+  </data>
+  <data name="CourierAutoAssignedSuccessfully" xml:space="preserve">
+    <value>Kurye otomatik olarak başarıyla atandı</value>
+  </data>
+  <data name="VendorOrdersRetrievedSuccessfully" xml:space="preserve">
+    <value>Satıcı siparişleri başarıyla getirildi</value>
+  </data>
+  <data name="AvailableCouriersRetrievedSuccessfully" xml:space="preserve">
+    <value>Müsait kuryeler başarıyla getirildi</value>
+  </data>
+  
+  <!-- Notification Messages -->
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>Sipariş Onaylandı</value>
+  </data>
+  <data name="OrderAcceptedMessage" xml:space="preserve">
+    <value>#Order.{0} numaralı siparişiniz onaylandı ve hazırlanmaya başlandı.</value>
+  </data>
+  <data name="OrderStatusChangedTitle" xml:space="preserve">
+    <value>Sipariş Durumu Güncellendi</value>
+  </data>
+  <data name="OrderStatusPreparing" xml:space="preserve">
+    <value>Siparişiniz hazırlanıyor</value>
+  </data>
+  <data name="OrderStatusReady" xml:space="preserve">
+    <value>Siparişiniz hazır, kurye atanıyor</value>
+  </data>
+  <data name="OrderStatusDelivered" xml:space="preserve">
+    <value>Siparişiniz teslim edildi</value>
+  </data>
+  <data name="OrderStatusCancelled" xml:space="preserve">
+    <value>Siparişiniz iptal edildi</value>
+  </data>
+  <data name="OrderStatusUpdated" xml:space="preserve">
+    <value>Sipariş durumu güncellendi</value>
+  </data>
+  <data name="OrderStatusMessage" xml:space="preserve">
+    <value>#Order.{0} numaralı sipariş: {1}</value>
+  </data>
+  
+  <!-- Error Messages with Parameters -->
+  <data name="ErrorAcceptingOrder" xml:space="preserve">
+    <value>Sipariş kabul edilirken bir hata oluştu: {0}</value>
+  </data>
+  <data name="ErrorRejectingOrder" xml:space="preserve">
+    <value>Sipariş reddedilirken bir hata oluştu: {0}</value>
+  </data>
+  <data name="ErrorUpdatingOrderStatus" xml:space="preserve">
+    <value>Sipariş durumu güncellenirken bir hata oluştu: {0}</value>
+  </data>
+</root>
+

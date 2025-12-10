@@ -59,77 +59,17 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   
-  <!-- Order Assignment Notifications -->
-  <data name="NewOrderAssignedTitle" xml:space="preserve">
-    <value>New Order Assigned! 🚀</value>
+  <!-- Success Messages -->
+  <data name="DeviceRegisteredSuccessfully" xml:space="preserve">
+    <value>Device registered successfully</value>
   </data>
-  <data name="NewOrderAssignedBody" xml:space="preserve">
-    <value>Order #{0} has been assigned to you. Check it out now!</value>
+  <data name="NotificationSent" xml:space="preserve">
+    <value>Notification sent</value>
   </data>
-  
-  <!-- Order Status Update Notifications -->
-  <data name="OrderReadyTitle" xml:space="preserve">
-    <value>Order Being Prepared 👨‍🍳</value>
+  <data name="SettingsRetrievedSuccessfully" xml:space="preserve">
+    <value>Notification settings retrieved successfully</value>
   </data>
-  <data name="OrderReadyBody" xml:space="preserve">
-    <value>Your order #{0} is being prepared for pickup by the courier.</value>
-  </data>
-  
-  <data name="OrderDeliveredTitle" xml:space="preserve">
-    <value>Order Delivered ✅</value>
-  </data>
-  <data name="OrderDeliveredBody" xml:space="preserve">
-    <value>Your order #{0} has been successfully delivered. Enjoy!</value>
-  </data>
-  
-  <data name="OrderAssignedTitle" xml:space="preserve">
-    <value>Courier Assigned 🚴</value>
-  </data>
-  <data name="OrderAssignedBody" xml:space="preserve">
-    <value>A courier has been assigned to your order #{0}.</value>
-  </data>
-  
-  <data name="OrderAcceptedTitle" xml:space="preserve">
-    <value>Courier On The Way 🛵</value>
-  </data>
-  <data name="OrderAcceptedBody" xml:space="preserve">
-    <value>The courier is on the way to pick up your order #{0}.</value>
-  </data>
-  
-  <data name="OrderOutForDeliveryTitle" xml:space="preserve">
-    <value>Order On The Way 📦</value>
-  </data>
-  <data name="OrderOutForDeliveryBody" xml:space="preserve">
-    <value>Your order #{0} is on its way to you.</value>
-  </data>
-  
-  <data name="OrderUpdateTitle" xml:space="preserve">
-    <value>Order Update</value>
-  </data>
-  <data name="OrderUpdateBody" xml:space="preserve">
-    <value>There's an update on your order #{0}.</value>
-  </data>
-  
-  <!-- Abandoned Cart Notifications -->
-  <data name="AbandonedCartTitle" xml:space="preserve">
-    <value>Items in Your Cart! 🛒</value>
-  </data>
-  <data name="AbandonedCartBody" xml:space="preserve">
-    <value>Complete your cart items before they run out.</value>
-  </data>
-  
-  <!-- New Product/Vendor Notifications -->
-  <data name="NewProductTitle" xml:space="preserve">
-    <value>New Product Added! 🎉</value>
-  </data>
-  <data name="NewProductBody" xml:space="preserve">
-    <value>{0} added a new product: {1}</value>
-  </data>
-  
-  <data name="NewVendorTitle" xml:space="preserve">
-    <value>New Vendor! 🏪</value>
-  </data>
-  <data name="NewVendorBody" xml:space="preserve">
-    <value>{0} has joined us. Discover now!</value>
+  <data name="SettingsUpdatedSuccessfully" xml:space="preserve">
+    <value>Notification settings updated successfully</value>
   </data>
 </root>

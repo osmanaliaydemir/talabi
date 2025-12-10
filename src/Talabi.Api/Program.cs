@@ -9,12 +9,15 @@ using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
 using System.Text;
 using Talabi.Api.Middleware;
+using Talabi.Api.Filters;
 using Talabi.Api.Validators;
 using Talabi.Api.HealthChecks;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
+using Talabi.Core.Mappings;
 using Talabi.Infrastructure.Data;
+using AutoMapper;
 using Talabi.Infrastructure.Repositories;
 using Talabi.Infrastructure.Services;
 using Hangfire;
@@ -32,9 +35,16 @@ builder.Logging.AddDebug();
 // Logging seviyeleri appsettings.json'da yapılandırılmıştır
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Add input sanitization filter globally
+    options.Filters.Add<InputSanitizationActionFilter>();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+// AutoMapper configuration
+builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly);
 
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -76,8 +86,14 @@ builder.Services.AddHealthChecks()
 builder.Services.AddScoped<INotificationService, FirebaseNotificationService>();
 builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
 builder.Services.AddScoped<IOrderAssignmentService, OrderAssignmentService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IInputSanitizationService, InputSanitizationService>();
+builder.Services.AddHttpContextAccessor();
 
 // Hangfire
 builder.Services.AddHangfire(config =>
@@ -240,8 +256,9 @@ app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
 app.MapHub<Talabi.Api.Hubs.NotificationHub>("/hubs/notifications");

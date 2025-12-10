@@ -3,7 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/review.dart';
-import 'package:mobile/providers/auth_provider.dart';
+
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
@@ -28,11 +28,13 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final ApiService _apiService = ApiService();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _reviewsSectionKey = GlobalKey();
   Product? _product;
   bool _isLoading = true;
   bool _isFavorite = false;
   bool _isDescriptionExpanded = false;
-  List<Review> _reviews = [];
+  ProductReviewsSummary? _reviewsSummary;
   bool _isLoadingReviews = false;
   List<Product> _similarProducts = [];
   bool _isLoadingSimilarProducts = false;
@@ -50,6 +52,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       AnalyticsService.logViewItem(product: widget.product!);
     } else {
       _loadProduct();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToReviews() {
+    if (_reviewsSectionKey.currentContext != null) {
+      Scrollable.ensureVisible(
+        _reviewsSectionKey.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -121,9 +139,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _isLoadingReviews = true;
     });
     try {
-      final reviews = await _apiService.getProductReviews(_product!.id);
+      final summary = await _apiService.getProductReviews(_product!.id);
       setState(() {
-        _reviews = reviews;
+        _reviewsSummary = summary;
         _isLoadingReviews = false;
       });
     } catch (e) {
@@ -156,405 +174,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         _similarProducts = [];
         _isLoadingSimilarProducts = false;
       });
-    }
-  }
-
-  bool _hasUserReviewed() {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userId = authProvider.userId;
-    if (userId == null) return false;
-    return _reviews.any((review) => review.userId == userId);
-  }
-
-  void _showReviewDialog({bool isVendor = false}) {
-    // Kullanıcı daha önce review vermişse, bilgilendirme mesajı göster
-    if (!isVendor && _hasUserReviewed()) {
-      final localizations = AppLocalizations.of(context);
-      if (localizations != null) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final backgroundColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-        final secondaryTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
-
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Builder(
-                    builder: (context) {
-                      final dialogColorScheme = Theme.of(context).colorScheme;
-                      return Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: dialogColorScheme.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.info_outline,
-                          color: dialogColorScheme.primary,
-                          size: 32,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    localizations.alreadyReviewedTitle,
-                    style: AppTheme.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    localizations.alreadyReviewedMessage,
-                    style: AppTheme.poppins(
-                      fontSize: 14,
-                      color: secondaryTextColor,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  Builder(
-                    builder: (context) {
-                      final dialogColorScheme = Theme.of(context).colorScheme;
-                      return SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: dialogColorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            localizations.ok,
-                            style: AppTheme.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-      return;
-    }
-
-    int rating = 5;
-    final commentController = TextEditingController();
-    final l10n = AppLocalizations.of(context)!;
-    final title = isVendor ? l10n.rateVendor : l10n.writeReview;
-    // Store parent context before showing dialog
-    final rootContext = context;
-
-    showDialog(
-      context: rootContext,
-      barrierColor: Colors.black.withOpacity(0.5),
-      builder: (dialogContext) {
-        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
-        final backgroundColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-        final secondaryTextColor = isDark ? Colors.grey[400] : Colors.grey[700];
-        final borderColor = isDark ? Colors.grey[700] : Colors.grey[300];
-        final inputFillColor = isDark ? Colors.grey[900] : Colors.grey[50];
-        final closeButtonColor = isDark ? Colors.grey[800] : Colors.grey[100];
-
-        final dialogColorScheme = Theme.of(dialogContext).colorScheme;
-        return StatefulBuilder(
-          builder: (dialogContext, setState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 400),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: backgroundColor,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with close button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: AppTheme.poppins(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.of(dialogContext).pop(),
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: closeButtonColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Rating Section
-                    Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            'Deneyiminiz nasıldı?',
-                            style: AppTheme.poppins(
-                              fontSize: 16,
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Modern star rating with animation
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: List.generate(5, (index) {
-                              final isSelected = index < rating;
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    rating = index + 1;
-                                  });
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  curve: Curves.easeOut,
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                  ),
-                                  child: Icon(
-                                    isSelected ? Icons.star : Icons.star_border,
-                                    color: isSelected
-                                        ? dialogColorScheme.primary
-                                        : (isDark
-                                              ? Colors.grey[600]
-                                              : Colors.grey[300]),
-                                    size: isSelected ? 42 : 40,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                          const SizedBox(height: 8),
-                          // Rating text
-                          Text(
-                            _getRatingText(rating, l10n),
-                            style: AppTheme.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: dialogColorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Comment Section
-                    Text(
-                      l10n.shareYourThoughts,
-                      style: AppTheme.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: commentController,
-                      maxLines: 4,
-                      style: AppTheme.poppins(fontSize: 14, color: textColor),
-                      decoration: InputDecoration(
-                        hintText: l10n.shareYourThoughts,
-                        filled: true,
-                        fillColor: inputFillColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: borderColor!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: borderColor),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: dialogColorScheme.primary,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.all(16),
-                        hintStyle: AppTheme.poppins(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Action Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: borderColor),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              l10n.cancel,
-                              style: AppTheme.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: secondaryTextColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 2,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              // Close dialog first
-                              Navigator.of(
-                                dialogContext,
-                                rootNavigator: true,
-                              ).pop();
-
-                              try {
-                                final product = _product;
-                                if (product == null) return;
-                                await _apiService.createReview(
-                                  isVendor ? product.vendorId : product.id,
-                                  isVendor ? 'Vendor' : 'Product',
-                                  rating,
-                                  commentController.text,
-                                );
-                                if (!isVendor) {
-                                  _loadReviews();
-                                }
-                                // Use root context for toast message
-                                if (mounted) {
-                                  final rootL10n = AppLocalizations.of(
-                                    rootContext,
-                                  )!;
-                                  ToastMessage.show(
-                                    rootContext,
-                                    message: isVendor
-                                        ? rootL10n.vendorReviewSubmitted
-                                        : rootL10n.productReviewSubmitted,
-                                    isSuccess: true,
-                                  );
-                                }
-                              } catch (e) {
-                                // Use root context for toast message
-                                if (mounted) {
-                                  final rootL10n = AppLocalizations.of(
-                                    rootContext,
-                                  )!;
-                                  ToastMessage.show(
-                                    rootContext,
-                                    message: '${rootL10n.error}: $e',
-                                    isSuccess: false,
-                                  );
-                                }
-                              } finally {
-                                commentController.dispose();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: dialogColorScheme.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              l10n.submit,
-                              style: AppTheme.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  String _getRatingText(int rating, AppLocalizations l10n) {
-    switch (rating) {
-      case 1:
-        return 'Çok Kötü';
-      case 2:
-        return 'Kötü';
-      case 3:
-        return 'Orta';
-      case 4:
-        return 'İyi';
-      case 5:
-        return 'Mükemmel';
-      default:
-        return '';
     }
   }
 
@@ -592,6 +211,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           // 1. Scrollable Area (Image + Content)
           Positioned.fill(
             child: SingleChildScrollView(
+              controller: _scrollController,
               child: Stack(
                 children: [
                   // Header Image
@@ -708,11 +328,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  _buildInfoItem(
-                                    icon: Icons.star,
-                                    iconColor: Colors.orange,
-                                    text: '4.9',
-                                    subText: '(200+)',
+                                  GestureDetector(
+                                    onTap: _scrollToReviews,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: _buildInfoItem(
+                                        icon: Icons.star,
+                                        iconColor: Colors.orange,
+                                        text: _reviewsSummary != null
+                                            ? _reviewsSummary!.averageRating
+                                                  .toStringAsFixed(1)
+                                            : '0.0',
+                                        subText: _reviewsSummary != null
+                                            ? '(${_reviewsSummary!.totalRatings}+)'
+                                            : '(0+)',
+                                      ),
+                                    ),
                                   ),
                                   _buildInfoItem(
                                     icon: Icons.access_time_filled,
@@ -723,8 +361,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   _buildInfoItem(
                                     icon: Icons.delivery_dining,
                                     iconColor: Colors.green,
-                                    text: 'Free',
-                                    subText: l10n.deliveryFee,
+                                    text: l10n.talabi,
+                                    subText: l10n.delivery,
                                   ),
                                 ],
                               ),
@@ -786,112 +424,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         const SizedBox(height: 24),
 
-                        // Reviews Section
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.reviews(_reviews.length),
-                                style: AppTheme.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF1A1A1A),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: _hasUserReviewed()
-                                    ? null
-                                    : _showReviewDialog,
-                                child: Text(
-                                  l10n.writeReview,
-                                  style: AppTheme.poppins(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        if (_isLoadingReviews)
-                          Center(
-                            child: CircularProgressIndicator(
-                              color: colorScheme.primary,
-                            ),
-                          )
-                        else if (_reviews.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              l10n.noReviewsYet,
-                              style: AppTheme.poppins(color: Colors.grey),
-                            ),
-                          )
-                        else
-                          ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _reviews.length > 3
-                                ? 3
-                                : _reviews.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final review = _reviews[index];
-                              return Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey[200]!),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          review.userFullName,
-                                          style: AppTheme.poppins(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        Row(
-                                          children: List.generate(5, (
-                                            starIndex,
-                                          ) {
-                                            return Icon(
-                                              starIndex < review.rating
-                                                  ? Icons.star
-                                                  : Icons.star_border,
-                                              color: Colors.orange,
-                                              size: 14,
-                                            );
-                                          }),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      review.comment,
-                                      style: AppTheme.poppins(
-                                        fontSize: 13,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-
                         // Similar Products Section
                         if (_isLoadingSimilarProducts)
                           Padding(
@@ -930,7 +462,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 // SizedBox ile sarmalayarak width ve height belirt (hit test hatası önlemek için)
                                 return SizedBox(
                                   width: 180,
-                                  height: 270,
+                                  height: 230,
                                   child: ProductCard(
                                     product: _similarProducts[index],
                                     width: 180,
@@ -954,6 +486,175 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         ],
+
+                        // Reviews Section
+                        Padding(
+                          key: _reviewsSectionKey,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Başlık ve Tümü Butonu
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Değerlendirmeler',
+                                    style: AppTheme.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                  if (_reviewsSummary != null &&
+                                      _reviewsSummary!.reviews.isNotEmpty)
+                                    TextButton(
+                                      onPressed: () {
+                                        _showAllReviewsBottomSheet();
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Tümü (${_reviewsSummary!.totalComments})',
+                                            style: AppTheme.poppins(
+                                              color: colorScheme.primary,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            size: 18,
+                                            color: colorScheme.primary,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              if (_isLoadingReviews)
+                                Center(
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.primary,
+                                  ),
+                                )
+                              else if (_reviewsSummary == null ||
+                                  _reviewsSummary!.reviews.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 0,
+                                  ),
+                                  child: Text(
+                                    l10n.noReviewsYet,
+                                    style: AppTheme.poppins(color: Colors.grey),
+                                  ),
+                                )
+                              else ...[
+                                // Genel Puan ve İstatistikler
+                                Row(
+                                  children: [
+                                    // Ortalama Puan
+                                    Text(
+                                      _reviewsSummary!.averageRating
+                                          .toStringAsFixed(1),
+                                      style: AppTheme.poppins(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF1A1A1A),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // Yıldızlar
+                                    Row(
+                                      children: List.generate(5, (index) {
+                                        final rating =
+                                            _reviewsSummary!.averageRating;
+                                        final fullStars = rating.floor();
+                                        final hasHalfStar =
+                                            (rating - fullStars) >= 0.5;
+                                        if (index < fullStars) {
+                                          return const Icon(
+                                            Icons.star,
+                                            color: Colors.amber,
+                                            size: 24,
+                                          );
+                                        } else if (index == fullStars &&
+                                            hasHalfStar) {
+                                          return const Icon(
+                                            Icons.star_half,
+                                            color: Colors.amber,
+                                            size: 24,
+                                          );
+                                        } else {
+                                          return const Icon(
+                                            Icons.star_border,
+                                            color: Colors.grey,
+                                            size: 24,
+                                          );
+                                        }
+                                      }),
+                                    ),
+                                    const Spacer(),
+                                    // Puan ve Yorum Sayısı
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '${_reviewsSummary!.totalRatings} puan | ${_reviewsSummary!.totalComments} yorum',
+                                          style: AppTheme.poppins(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.camera_alt_outlined,
+                                          size: 16,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Yorum Listesi (Yatay Slider)
+                                SizedBox(
+                                  height: 140,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 0,
+                                    ),
+                                    itemCount:
+                                        _reviewsSummary!.reviews.length > 5
+                                        ? 5
+                                        : _reviewsSummary!.reviews.length,
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(width: 12),
+                                    itemBuilder: (context, index) {
+                                      final review =
+                                          _reviewsSummary!.reviews[index];
+                                      return SizedBox(
+                                        width: 300,
+                                        child: _buildReviewCard(review, false),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1221,11 +922,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           try {
             await cart.addItem(_product!, context);
             if (context.mounted) {
-              ToastMessage.show(
-                context,
-                message: l10n.productAddedToCart(_product!.name),
-                isSuccess: true,
-              );
+              // Toast removed as per request
+              // ToastMessage.show(
+              //   context,
+              //   message: l10n.productAddedToCart(_product!.name),
+              //   isSuccess: true,
+              // );
             }
           } catch (e) {
             // Error is handled globally by ApiService interceptor
@@ -1293,5 +995,212 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         );
       }
     }
+  }
+
+  String _formatReviewDate(DateTime date) {
+    final months = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  String _maskUserName(String fullName) {
+    if (fullName.isEmpty) return fullName;
+
+    // İsim ve soyisim ayrı ayrı işle
+    final parts = fullName.trim().split(' ');
+    final maskedParts = parts.map((part) {
+      if (part.length <= 4) {
+        // 4 veya daha az harf varsa, sadece ilk harfi göster
+        return '${part[0]}***';
+      } else {
+        // İlk 2 ve son 2 harfi göster, ortayı *** ile değiştir
+        final firstTwo = part.substring(0, 2);
+        final lastTwo = part.substring(part.length - 2);
+        return '$firstTwo***$lastTwo';
+      }
+    }).toList();
+
+    return maskedParts.join(' ');
+  }
+
+  void _showAllReviewsBottomSheet() {
+    if (_reviewsSummary == null || _reviewsSummary!.reviews.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tüm Değerlendirmeler',
+                      style: AppTheme.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // Reviews List
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  itemCount: _reviewsSummary!.reviews.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final review = _reviewsSummary!.reviews[index];
+                    return _buildReviewCard(review, false);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReviewCard(Review review, bool isExpanded) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final maxLines = isExpanded ? null : 2;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Kullanıcı adı, yıldızlar ve tarih
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _maskUserName(review.userFullName),
+                      style: AppTheme.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: const Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: List.generate(5, (starIndex) {
+                        return Icon(
+                          starIndex < review.rating
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.amber,
+                          size: 14,
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                _formatReviewDate(review.createdAt),
+                style: AppTheme.poppins(fontSize: 11, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Yorum metni
+          Text(
+            review.comment,
+            style: AppTheme.poppins(
+              fontSize: 12,
+              color: Colors.grey[700],
+              height: 1.4,
+            ),
+            maxLines: maxLines,
+            overflow: maxLines != null ? TextOverflow.ellipsis : null,
+          ),
+          // Devamını Oku butonu (eğer yorum uzunsa)
+          if (review.comment.length > 100 && !isExpanded)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Devamını Oku',
+                style: AppTheme.poppins(
+                  fontSize: 11,
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          // Beden ve Satıcı bilgisi (eğer varsa)
+          if (review.vendorName != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Satıcı ${review.vendorName}',
+              style: AppTheme.poppins(fontSize: 11, color: Colors.grey[600]),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

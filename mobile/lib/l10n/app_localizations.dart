@@ -4438,6 +4438,12 @@ abstract class AppLocalizations {
   /// **'Delivery'**
   String get delivery;
 
+  /// No description provided for @talabi.
+  ///
+  /// In en, this message translates to:
+  /// **'Talabi'**
+  String get talabi;
+
   /// No description provided for @navigate.
   ///
   /// In en, this message translates to:

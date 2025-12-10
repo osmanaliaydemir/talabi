@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
 
@@ -12,19 +13,21 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class UserPreferencesController : ControllerBase
+public class UserPreferencesController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "UserPreferenceResources";
 
     /// <summary>
     /// UserPreferencesController constructor
     /// </summary>
-    public UserPreferencesController(IUnitOfWork unitOfWork)
+    public UserPreferencesController(
+        IUnitOfWork unitOfWork,
+        ILogger<UserPreferencesController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
-
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException();
 
     /// <summary>
     /// Kullanıcı tercihlerini getirir (yoksa varsayılan tercihleri oluşturur)
@@ -33,9 +36,13 @@ public class UserPreferencesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<UserPreferencesDto>>> GetPreferences()
     {
-        var userId = GetUserId();
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        var preferences = await _unitOfWork.UserPreferences.Query()
+        var preferences = await UnitOfWork.UserPreferences.Query()
             .FirstOrDefaultAsync(up => up.UserId == userId);
 
         if (preferences == null)
@@ -50,8 +57,8 @@ public class UserPreferencesController : ControllerBase
                 DateFormat = "dd/MM/yyyy"
             };
 
-            await _unitOfWork.UserPreferences.AddAsync(preferences);
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.UserPreferences.AddAsync(preferences);
+            await UnitOfWork.SaveChangesAsync();
         }
 
         var preferencesDto = new UserPreferencesDto
@@ -63,7 +70,9 @@ public class UserPreferencesController : ControllerBase
             TimeFormat = preferences.TimeFormat
         };
 
-        return Ok(new ApiResponse<UserPreferencesDto>(preferencesDto, "Kullanıcı tercihleri başarıyla getirildi"));
+        return Ok(new ApiResponse<UserPreferencesDto>(
+            preferencesDto,
+            LocalizationService.GetLocalizedString(ResourceName, "PreferencesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -74,99 +83,100 @@ public class UserPreferencesController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<ApiResponse<object>>> UpdatePreferences([FromBody] UpdateUserPreferencesDto dto)
     {
-        try
+        if (dto == null)
         {
-            if (dto == null)
-            {
-                return BadRequest(new ApiResponse<object>("Geçersiz istek", "INVALID_REQUEST"));
-            }
-
-            var userId = GetUserId();
-
-            var existingPreferences = await _unitOfWork.UserPreferences.Query()
-                .FirstOrDefaultAsync(up => up.UserId == userId);
-
-            if (existingPreferences == null)
-            {
-                // Yeni preferences oluştur
-                var newPreferences = new Core.Entities.UserPreferences
-                {
-                    UserId = userId,
-                    Language = dto.Language ?? "tr",
-                    Currency = dto.Currency ?? "TRY",
-                    TimeFormat = dto.TimeFormat ?? "24h",
-                    DateFormat = dto.DateFormat ?? "dd/MM/yyyy",
-                    TimeZone = dto.TimeZone
-                };
-
-                // Validate language
-                if (!string.IsNullOrEmpty(newPreferences.Language) && 
-                    !(newPreferences.Language == "tr" || newPreferences.Language == "en" || newPreferences.Language == "ar"))
-                {
-                    newPreferences.Language = "tr";
-                }
-
-                // Validate currency
-                if (!string.IsNullOrEmpty(newPreferences.Currency) && 
-                    !(newPreferences.Currency == "TRY" || newPreferences.Currency == "USDT"))
-                {
-                    newPreferences.Currency = "TRY";
-                }
-
-                // Validate time format
-                if (!string.IsNullOrEmpty(newPreferences.TimeFormat) && 
-                    !(newPreferences.TimeFormat == "12h" || newPreferences.TimeFormat == "24h"))
-                {
-                    newPreferences.TimeFormat = "24h";
-                }
-
-                await _unitOfWork.UserPreferences.AddAsync(newPreferences);
-                await _unitOfWork.SaveChangesAsync();
-            }
-            else
-            {
-                // Mevcut preferences'ı güncelle - entity zaten tracked
-                // Validate and update
-                if (!string.IsNullOrEmpty(dto.Language) && 
-                    (dto.Language == "tr" || dto.Language == "en" || dto.Language == "ar"))
-                {
-                    existingPreferences.Language = dto.Language;
-                }
-
-                if (!string.IsNullOrEmpty(dto.Currency) && 
-                    (dto.Currency == "TRY" || dto.Currency == "USDT"))
-                {
-                    existingPreferences.Currency = dto.Currency;
-                }
-
-                if (dto.TimeZone != null)
-                {
-                    existingPreferences.TimeZone = dto.TimeZone;
-                }
-
-                if (dto.DateFormat != null)
-                {
-                    existingPreferences.DateFormat = dto.DateFormat;
-                }
-
-                if (dto.TimeFormat != null && (dto.TimeFormat == "12h" || dto.TimeFormat == "24h"))
-                {
-                    existingPreferences.TimeFormat = dto.TimeFormat;
-                }
-
-                existingPreferences.UpdatedAt = DateTime.UtcNow;
-                
-                // Entity zaten tracked olduğu için Update çağrısına gerek yok
-                // Sadece property değişiklikleri yeterli
-                await _unitOfWork.SaveChangesAsync();
-            }
-
-            return Ok(new ApiResponse<object>(new { }, "Tercihler başarıyla güncellendi"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture),
+                "INVALID_REQUEST"));
         }
-        catch (Exception ex)
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
         {
-            return StatusCode(500, new ApiResponse<object>($"Tercihler güncellenirken bir hata oluştu: {ex.Message}", "INTERNAL_SERVER_ERROR"));
+            return Unauthorized();
         }
+
+        var existingPreferences = await UnitOfWork.UserPreferences.Query()
+            .FirstOrDefaultAsync(up => up.UserId == userId);
+
+        if (existingPreferences == null)
+        {
+            // Yeni preferences oluştur
+            var newPreferences = new Core.Entities.UserPreferences
+            {
+                UserId = userId,
+                Language = dto.Language ?? "tr",
+                Currency = dto.Currency ?? "TRY",
+                TimeFormat = dto.TimeFormat ?? "24h",
+                DateFormat = dto.DateFormat ?? "dd/MM/yyyy",
+                TimeZone = dto.TimeZone
+            };
+
+            // Validate language
+            if (!string.IsNullOrEmpty(newPreferences.Language) &&
+                !(newPreferences.Language == "tr" || newPreferences.Language == "en" || newPreferences.Language == "ar"))
+            {
+                newPreferences.Language = "tr";
+            }
+
+            // Validate currency
+            if (!string.IsNullOrEmpty(newPreferences.Currency) &&
+                !(newPreferences.Currency == "TRY" || newPreferences.Currency == "USDT"))
+            {
+                newPreferences.Currency = "TRY";
+            }
+
+            // Validate time format
+            if (!string.IsNullOrEmpty(newPreferences.TimeFormat) &&
+                !(newPreferences.TimeFormat == "12h" || newPreferences.TimeFormat == "24h"))
+            {
+                newPreferences.TimeFormat = "24h";
+            }
+
+            await UnitOfWork.UserPreferences.AddAsync(newPreferences);
+            await UnitOfWork.SaveChangesAsync();
+        }
+        else
+        {
+            // Mevcut preferences'ı güncelle - entity zaten tracked
+            // Validate and update
+            if (!string.IsNullOrEmpty(dto.Language) &&
+                (dto.Language == "tr" || dto.Language == "en" || dto.Language == "ar"))
+            {
+                existingPreferences.Language = dto.Language;
+            }
+
+            if (!string.IsNullOrEmpty(dto.Currency) &&
+                (dto.Currency == "TRY" || dto.Currency == "USDT"))
+            {
+                existingPreferences.Currency = dto.Currency;
+            }
+
+            if (dto.TimeZone != null)
+            {
+                existingPreferences.TimeZone = dto.TimeZone;
+            }
+
+            if (dto.DateFormat != null)
+            {
+                existingPreferences.DateFormat = dto.DateFormat;
+            }
+
+            if (dto.TimeFormat != null && (dto.TimeFormat == "12h" || dto.TimeFormat == "24h"))
+            {
+                existingPreferences.TimeFormat = dto.TimeFormat;
+            }
+
+            existingPreferences.UpdatedAt = DateTime.UtcNow;
+
+            // Entity zaten tracked olduğu için Update çağrısına gerek yok
+            // Sadece property değişiklikleri yeterli
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        return Ok(new ApiResponse<object>(
+            new { },
+            LocalizationService.GetLocalizedString(ResourceName, "PreferencesUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -184,7 +194,9 @@ public class UserPreferencesController : ControllerBase
             new() { Code = "ar", Name = "Arabic", NativeName = "العربية" }
         };
 
-        return Ok(new ApiResponse<List<SupportedLanguageDto>>(languages, "Desteklenen diller başarıyla getirildi"));
+        return Ok(new ApiResponse<List<SupportedLanguageDto>>(
+            languages,
+            LocalizationService.GetLocalizedString(ResourceName, "SupportedLanguagesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -202,7 +214,9 @@ public class UserPreferencesController : ControllerBase
             new() { Code = "USD", Name = "Dolar", Symbol = "USD", ExchangeRate = 0.034m } // Example rate
         };
 
-        return Ok(new ApiResponse<List<SupportedCurrencyDto>>(currencies, "Desteklenen para birimleri başarıyla getirildi"));
+        return Ok(new ApiResponse<List<SupportedCurrencyDto>>(
+            currencies,
+            LocalizationService.GetLocalizedString(ResourceName, "SupportedCurrenciesRetrievedSuccessfully", CurrentCulture)));
     }
 }
 

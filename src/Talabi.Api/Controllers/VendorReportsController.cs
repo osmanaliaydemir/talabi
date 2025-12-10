@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
@@ -15,27 +16,31 @@ namespace Talabi.Api.Controllers;
 [Route("api/vendor/reports")]
 [ApiController]
 [Authorize]
-public class VendorReportsController : ControllerBase
+public class VendorReportsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<VendorReportsController> _logger;
+    private const string ResourceName = "VendorReportResources";
 
     /// <summary>
     /// VendorReportsController constructor
     /// </summary>
-    public VendorReportsController(IUnitOfWork unitOfWork, ILogger<VendorReportsController> logger)
+    public VendorReportsController(
+        IUnitOfWork unitOfWork,
+        ILogger<VendorReportsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
-        _logger = logger;
     }
-
-    private string GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-        ?? throw new UnauthorizedAccessException();
 
     private async Task<Guid?> GetVendorIdAsync()
     {
-        var userId = GetUserId();
-        var vendor = await _unitOfWork.Vendors.Query()
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return null;
+        }
+        
+        var vendor = await UnitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor?.Id;
     }
@@ -48,13 +53,17 @@ public class VendorReportsController : ControllerBase
     /// <param name="period">Periyot (day, week, month) - varsayılan: week</param>
     /// <returns>Satış raporu</returns>
     [HttpGet("sales")]
-    public async Task<ActionResult<ApiResponse<SalesReportDto>>> GetSalesReport([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null,
-        [FromQuery] string period = "week") // day, week, month
+    public async Task<ActionResult<ApiResponse<SalesReportDto>>> GetSalesReport(
+        [FromQuery] DateTime? startDate = null, 
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] string period = "week")
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return StatusCode(403, new ApiResponse<SalesReportDto>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
+            return StatusCode(403, new ApiResponse<SalesReportDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), 
+                "NOT_A_VENDOR"));
         }
 
         // Set default date range based on period
@@ -72,7 +81,7 @@ public class VendorReportsController : ControllerBase
         }
 
         // Tarih aralığı filtresi - Gelişmiş query helper kullanımı
-        var ordersQuery = _unitOfWork.Orders.Query()
+        var ordersQuery = UnitOfWork.Orders.Query()
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
             .Where(o => o.VendorId == vendorId);
@@ -124,7 +133,9 @@ public class VendorReportsController : ControllerBase
             TopProducts = topProducts
         };
 
-        return Ok(new ApiResponse<SalesReportDto>(report, "Satış raporu başarıyla getirildi"));
+        return Ok(new ApiResponse<SalesReportDto>(
+            report, 
+            LocalizationService.GetLocalizedString(ResourceName, "SalesReportRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -134,132 +145,107 @@ public class VendorReportsController : ControllerBase
     [HttpGet("summary")]
     public async Task<ActionResult<ApiResponse<object>>> GetSummary()
     {
-        try
+        Logger.LogInformation("GetSummary endpoint called");
+
+        var userId = UserContext.GetUserId();
+        if (userId == null)
         {
-            _logger.LogInformation("GetSummary endpoint called");
-
-            string? userId;
-            try
-            {
-                userId = GetUserId();
-                _logger.LogInformation("User ID retrieved: {UserId}", userId);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning(ex, "User is not authenticated");
-                return Unauthorized(new ApiResponse<object>("Kullanıcı kimlik doğrulaması yapılmamış", "UNAUTHORIZED"));
-            }
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                _logger.LogWarning("User ID is null or empty");
-                return Unauthorized(new ApiResponse<object>("Kullanıcı kimlik doğrulaması yapılmamış", "UNAUTHORIZED"));
-            }
-
-            var vendor = await _unitOfWork.Vendors.Query()
-                .FirstOrDefaultAsync(v => v.OwnerId == userId);
-
-            if (vendor == null)
-            {
-                _logger.LogWarning("Vendor not found for user ID: {UserId}", userId);
-                return StatusCode(403, new ApiResponse<object>("Kullanıcı bir satıcı değil", "NOT_A_VENDOR"));
-            }
-
-            _logger.LogInformation("Vendor found: {VendorId}", vendor.Id);
-
-            var vendorId = vendor.Id;
-            var today = DateTime.UtcNow.Date;
-            var thisWeek = today.AddDays(-7);
-            var thisMonth = today.AddMonths(-1);
-
-            _logger.LogInformation("Calculating summary for vendor {VendorId}. Today: {Today}, Week: {Week}, Month: {Month}",
-                vendorId, today, thisWeek, thisMonth);
-
-            try
-            {
-                // Calculate date ranges with proper UTC handling
-                var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
-                var todayEnd = todayStart.AddDays(1).AddTicks(-1);
-                var weekStart = DateTime.SpecifyKind(thisWeek, DateTimeKind.Utc);
-                var monthStart = DateTime.SpecifyKind(thisMonth, DateTimeKind.Utc);
-
-                _logger.LogInformation("Date ranges - Today: {TodayStart} to {TodayEnd}, Week: {Week}, Month: {Month}",
-                    todayStart, todayEnd, weekStart, monthStart);
-
-                // Today's orders (from start of today to end of today) - Tarih aralığı helper kullanımı
-                var todayOrdersQuery = _unitOfWork.Orders.Query()
-                    .Where(o => o.VendorId == vendorId);
-                todayOrdersQuery = todayOrdersQuery.WhereDateRange(o => o.CreatedAt, todayStart, todayEnd);
-                var todayOrders = await todayOrdersQuery.CountAsync();
-
-                _logger.LogInformation("Today orders count: {Count}", todayOrders);
-
-                // Today's revenue (only delivered orders) - Tarih aralığı helper kullanımı
-                var todayRevenueQuery = _unitOfWork.Orders.Query()
-                    .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
-                todayRevenueQuery = todayRevenueQuery.WhereDateRange(o => o.CreatedAt, todayStart, todayEnd);
-                var todayRevenue = await todayRevenueQuery
-                    .Select(o => (decimal?)o.TotalAmount)
-                    .SumAsync() ?? 0;
-
-                _logger.LogInformation("Today revenue: {Revenue}", todayRevenue);
-
-                // Pending orders (all time, not filtered by date)
-                var pendingOrders = await _unitOfWork.Orders.Query()
-                    .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Pending)
-                    .CountAsync();
-
-                _logger.LogInformation("Pending orders count: {Count}", pendingOrders);
-
-                // Week revenue (last 7 days, only delivered orders) - Tarih aralığı helper kullanımı
-                var weekRevenueQuery = _unitOfWork.Orders.Query()
-                    .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
-                weekRevenueQuery = weekRevenueQuery.WhereDateRange(o => o.CreatedAt, weekStart, null);
-                var weekRevenue = await weekRevenueQuery
-                    .Select(o => (decimal?)o.TotalAmount)
-                    .SumAsync() ?? 0;
-
-                _logger.LogInformation("Week revenue: {Revenue}", weekRevenue);
-
-                // Month revenue (last 30 days, only delivered orders) - Tarih aralığı helper kullanımı
-                var monthRevenueQuery = _unitOfWork.Orders.Query()
-                    .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
-                monthRevenueQuery = monthRevenueQuery.WhereDateRange(o => o.CreatedAt, monthStart, null);
-                var monthRevenue = await monthRevenueQuery
-                    .Select(o => (decimal?)o.TotalAmount)
-                    .SumAsync() ?? 0;
-
-                _logger.LogInformation("Month revenue: {Revenue}", monthRevenue);
-
-                var result = new
-                {
-                    todayOrders = todayOrders,
-                    todayRevenue = todayRevenue,
-                    pendingOrders = pendingOrders,
-                    weekRevenue = weekRevenue,
-                    monthRevenue = monthRevenue
-                };
-
-                _logger.LogInformation("Summary calculated successfully");
-                return Ok(new ApiResponse<object>(result, "Satıcı özet istatistikleri başarıyla getirildi"));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error calculating summary for vendor {VendorId}", vendorId);
-                return StatusCode(500, new ApiResponse<object>(
-                    "Satıcı özet istatistikleri hesaplanırken bir hata oluştu",
-                    "CALCULATION_ERROR",
-                    new List<string> { ex.Message, ex.InnerException?.Message ?? string.Empty }));
-            }
+            Logger.LogWarning("User ID is null or empty");
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture), 
+                "UNAUTHORIZED"));
         }
-        catch (Exception ex)
+
+        Logger.LogInformation("User ID retrieved: {UserId}", userId);
+
+        var vendor = await UnitOfWork.Vendors.Query()
+            .FirstOrDefaultAsync(v => v.OwnerId == userId);
+
+        if (vendor == null)
         {
-            _logger.LogError(ex, "Unexpected error in GetSummary endpoint");
-            return StatusCode(500, new ApiResponse<object>(
-                "Satıcı özet istatistikleri getirilirken bir hata oluştu",
-                "UNEXPECTED_ERROR",
-                new List<string> { ex.Message, ex.InnerException?.Message ?? string.Empty }));
+            Logger.LogWarning("Vendor not found for user ID: {UserId}", userId);
+            return StatusCode(403, new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), 
+                "NOT_A_VENDOR"));
         }
+
+        Logger.LogInformation("Vendor found: {VendorId}", vendor.Id);
+
+        var vendorId = vendor.Id;
+        var today = DateTime.UtcNow.Date;
+        var thisWeek = today.AddDays(-7);
+        var thisMonth = today.AddMonths(-1);
+
+        Logger.LogInformation("Calculating summary for vendor {VendorId}. Today: {Today}, Week: {Week}, Month: {Month}",
+            vendorId, today, thisWeek, thisMonth);
+
+        // Calculate date ranges with proper UTC handling
+        var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+        var todayEnd = todayStart.AddDays(1).AddTicks(-1);
+        var weekStart = DateTime.SpecifyKind(thisWeek, DateTimeKind.Utc);
+        var monthStart = DateTime.SpecifyKind(thisMonth, DateTimeKind.Utc);
+
+        Logger.LogInformation("Date ranges - Today: {TodayStart} to {TodayEnd}, Week: {Week}, Month: {Month}",
+            todayStart, todayEnd, weekStart, monthStart);
+
+        // Today's orders (from start of today to end of today) - Tarih aralığı helper kullanımı
+        var todayOrdersQuery = UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId);
+        todayOrdersQuery = todayOrdersQuery.WhereDateRange(o => o.CreatedAt, todayStart, todayEnd);
+        var todayOrders = await todayOrdersQuery.CountAsync();
+
+        Logger.LogInformation("Today orders count: {Count}", todayOrders);
+
+        // Today's revenue (only delivered orders) - Tarih aralığı helper kullanımı
+        var todayRevenueQuery = UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
+        todayRevenueQuery = todayRevenueQuery.WhereDateRange(o => o.CreatedAt, todayStart, todayEnd);
+        var todayRevenue = await todayRevenueQuery
+            .Select(o => (decimal?)o.TotalAmount)
+            .SumAsync() ?? 0;
+
+        Logger.LogInformation("Today revenue: {Revenue}", todayRevenue);
+
+        // Pending orders (all time, not filtered by date)
+        var pendingOrders = await UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Pending)
+            .CountAsync();
+
+        Logger.LogInformation("Pending orders count: {Count}", pendingOrders);
+
+        // Week revenue (last 7 days, only delivered orders) - Tarih aralığı helper kullanımı
+        var weekRevenueQuery = UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
+        weekRevenueQuery = weekRevenueQuery.WhereDateRange(o => o.CreatedAt, weekStart, null);
+        var weekRevenue = await weekRevenueQuery
+            .Select(o => (decimal?)o.TotalAmount)
+            .SumAsync() ?? 0;
+
+        Logger.LogInformation("Week revenue: {Revenue}", weekRevenue);
+
+        // Month revenue (last 30 days, only delivered orders) - Tarih aralığı helper kullanımı
+        var monthRevenueQuery = UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
+        monthRevenueQuery = monthRevenueQuery.WhereDateRange(o => o.CreatedAt, monthStart, null);
+        var monthRevenue = await monthRevenueQuery
+            .Select(o => (decimal?)o.TotalAmount)
+            .SumAsync() ?? 0;
+
+        Logger.LogInformation("Month revenue: {Revenue}", monthRevenue);
+
+        var result = new
+        {
+            todayOrders = todayOrders,
+            todayRevenue = todayRevenue,
+            pendingOrders = pendingOrders,
+            weekRevenue = weekRevenue,
+            monthRevenue = monthRevenue
+        };
+
+        Logger.LogInformation("Summary calculated successfully");
+        return Ok(new ApiResponse<object>(
+            result, 
+            LocalizationService.GetLocalizedString(ResourceName, "SummaryRetrievedSuccessfully", CurrentCulture)));
     }
 }
 

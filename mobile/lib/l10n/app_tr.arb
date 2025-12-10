@@ -1044,6 +1044,7 @@
   "noDeliveryHistoryYet": "Henüz teslimat geçmişi yok",
   "pickup": "Alış",
   "delivery": "Teslimat",
+  "talabi": "Talabi",
   "navigate": "Yönlendir",
   "couldNotLaunchMaps": "Haritalar açılamadı: {error}",
   "@couldNotLaunchMaps": {

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Order not found</value>
+  </data>
+  <data name="NotAVendor" xml:space="preserve">
+    <value>User is not a vendor</value>
+  </data>
+  <data name="InvalidOrderStatus" xml:space="preserve">
+    <value>Invalid order status</value>
+  </data>
+  <data name="OrderCanOnlyBeAcceptedWhenPending" xml:space="preserve">
+    <value>Order can only be accepted when in Pending status</value>
+  </data>
+  <data name="OrderCanOnlyBeRejectedWhenPending" xml:space="preserve">
+    <value>Order can only be rejected when in Pending status</value>
+  </data>
+  <data name="InvalidRejectionReason" xml:space="preserve">
+    <value>Rejection reason must be at least 10 characters</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>Status cannot be changed from {0} to {1}</value>
+  </data>
+  <data name="OrderMustBeReadyForCourierAssignment" xml:space="preserve">
+    <value>Order must be in Ready status to assign a courier</value>
+  </data>
+  <data name="CourierAlreadyAssigned" xml:space="preserve">
+    <value>A courier has already been assigned to this order</value>
+  </data>
+  <data name="CourierAssignmentFailed" xml:space="preserve">
+    <value>Failed to assign courier. Courier may not be available or order status may be invalid</value>
+  </data>
+  <data name="NoAvailableCouriers" xml:space="preserve">
+    <value>No available couriers found nearby</value>
+  </data>
+  <data name="VendorLocationNotSet" xml:space="preserve">
+    <value>Vendor location is not set</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="OrderRetrievedSuccessfully" xml:space="preserve">
+    <value>Order retrieved successfully</value>
+  </data>
+  <data name="OrderAcceptedSuccessfully" xml:space="preserve">
+    <value>Order accepted successfully</value>
+  </data>
+  <data name="OrderRejectedSuccessfully" xml:space="preserve">
+    <value>Order rejected successfully</value>
+  </data>
+  <data name="OrderStatusUpdatedSuccessfully" xml:space="preserve">
+    <value>Order status updated successfully</value>
+  </data>
+  <data name="CourierAssignedSuccessfully" xml:space="preserve">
+    <value>Courier assigned successfully</value>
+  </data>
+  <data name="CourierAutoAssignedSuccessfully" xml:space="preserve">
+    <value>Courier automatically assigned successfully</value>
+  </data>
+  <data name="VendorOrdersRetrievedSuccessfully" xml:space="preserve">
+    <value>Vendor orders retrieved successfully</value>
+  </data>
+  <data name="AvailableCouriersRetrievedSuccessfully" xml:space="preserve">
+    <value>Available couriers retrieved successfully</value>
+  </data>
+  
+  <!-- Notification Messages -->
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>Order Accepted</value>
+  </data>
+  <data name="OrderAcceptedMessage" xml:space="preserve">
+    <value>Order #Order.{0} has been accepted and preparation has started.</value>
+  </data>
+  <data name="OrderStatusChangedTitle" xml:space="preserve">
+    <value>Order Status Updated</value>
+  </data>
+  <data name="OrderStatusPreparing" xml:space="preserve">
+    <value>Your order is being prepared</value>
+  </data>
+  <data name="OrderStatusReady" xml:space="preserve">
+    <value>Your order is ready, courier is being assigned</value>
+  </data>
+  <data name="OrderStatusDelivered" xml:space="preserve">
+    <value>Your order has been delivered</value>
+  </data>
+  <data name="OrderStatusCancelled" xml:space="preserve">
+    <value>Your order has been cancelled</value>
+  </data>
+  <data name="OrderStatusUpdated" xml:space="preserve">
+    <value>Order status has been updated</value>
+  </data>
+  <data name="OrderStatusMessage" xml:space="preserve">
+    <value>Order #Order.{0}: {1}</value>
+  </data>
+  
+  <!-- Error Messages with Parameters -->
+  <data name="ErrorAcceptingOrder" xml:space="preserve">
+    <value>An error occurred while accepting the order: {0}</value>
+  </data>
+  <data name="ErrorRejectingOrder" xml:space="preserve">
+    <value>An error occurred while rejecting the order: {0}</value>
+  </data>
+  <data name="ErrorUpdatingOrderStatus" xml:space="preserve">
+    <value>An error occurred while updating order status: {0}</value>
+  </data>
+</root>
+

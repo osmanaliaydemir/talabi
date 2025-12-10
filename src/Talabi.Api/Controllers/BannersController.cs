@@ -11,37 +11,37 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class BannersController : ControllerBase
+public class BannersController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "BannerResources";
 
     /// <summary>
     /// BannersController constructor
     /// </summary>
-    public BannersController(IUnitOfWork unitOfWork)
+    public BannersController(
+        IUnitOfWork unitOfWork,
+        ILogger<BannersController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
     /// Aktif promosyonel banner'ları getirir
     /// </summary>
-    /// <param name="language">Dil kodu (tr, en, ar). Varsayılan: tr</param>
+    /// <summary>
+    /// Aktif promosyonel banner'ları getirir
+    /// </summary>
     /// <param name="vendorType">Satıcı türü (1: Restaurant, 2: Market). Opsiyonel</param>
     /// <returns>Banner listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<PromotionalBannerDto>>>> GetBanners([FromQuery] string? language = "tr", [FromQuery] int? vendorType = null)
+    public async Task<ActionResult<ApiResponse<List<PromotionalBannerDto>>>> GetBanners([FromQuery] int? vendorType = null)
     {
         var now = DateTime.UtcNow;
-        var languageCode = language?.ToLower() ?? "tr";
 
-        // Validate language code
-        if (languageCode != "tr" && languageCode != "en" && languageCode != "ar")
-        {
-            languageCode = "tr"; // Default to Turkish
-        }
 
-        IQueryable<PromotionalBanner> query = _unitOfWork.PromotionalBanners.Query()
+        IQueryable<PromotionalBanner> query = UnitOfWork.PromotionalBanners.Query()
             .Include(b => b.Translations)
             .Where(b => b.IsActive &&
                        (b.StartDate == null || b.StartDate <= now) &&
@@ -64,7 +64,7 @@ public class BannersController : ControllerBase
         {
             // Try to get translation for the requested language
             var translation = b.Translations
-                .FirstOrDefault(t => t.LanguageCode == languageCode);
+                .FirstOrDefault(t => t.LanguageCode == CurrentCulture.TwoLetterISOLanguageName);
 
             return new PromotionalBannerDto
             {
@@ -78,46 +78,41 @@ public class BannersController : ControllerBase
                 IsActive = b.IsActive,
                 StartDate = b.StartDate,
                 EndDate = b.EndDate,
-                LanguageCode = languageCode,
+                LanguageCode = CurrentCulture.TwoLetterISOLanguageName,
                 VendorType = b.VendorType
             };
         }).ToList();
 
-        return Ok(new ApiResponse<List<PromotionalBannerDto>>(result, "Banner'lar başarıyla getirildi"));
+        return Ok(new ApiResponse<List<PromotionalBannerDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "BannersRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
     /// ID'ye göre banner getirir
     /// </summary>
+    /// <summary>
+    /// ID'ye göre banner getirir
+    /// </summary>
     /// <param name="id">Banner ID'si</param>
-    /// <param name="language">Dil kodu (tr, en, ar). Varsayılan: tr</param>
     /// <returns>Banner detayı</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<PromotionalBannerDto>>> GetBanner(Guid id, [FromQuery] string? language = "tr")
+    public async Task<ActionResult<ApiResponse<PromotionalBannerDto>>> GetBanner(Guid id)
     {
-        var languageCode = language?.ToLower() ?? "tr";
 
-        // Validate language code
-        if (languageCode != "tr" && languageCode != "en" && languageCode != "ar")
-        {
-            languageCode = "tr"; // Default to Turkish
-        }
-
-        var banner = await _unitOfWork.PromotionalBanners.Query()
+        var banner = await UnitOfWork.PromotionalBanners.Query()
             .Include(b => b.Translations)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (banner == null)
         {
             return NotFound(new ApiResponse<PromotionalBannerDto>(
-                "Banner bulunamadı",
+                LocalizationService.GetLocalizedString(ResourceName, "BannerNotFound", CurrentCulture),
                 "BANNER_NOT_FOUND"
             ));
         }
 
         // Try to get translation for the requested language
         var translation = banner.Translations
-            .FirstOrDefault(t => t.LanguageCode == languageCode);
+            .FirstOrDefault(t => t.LanguageCode == CurrentCulture.TwoLetterISOLanguageName);
 
         var result = new PromotionalBannerDto
         {
@@ -131,11 +126,11 @@ public class BannersController : ControllerBase
             IsActive = banner.IsActive,
             StartDate = banner.StartDate,
             EndDate = banner.EndDate,
-            LanguageCode = languageCode,
+            LanguageCode = CurrentCulture.TwoLetterISOLanguageName,
             VendorType = banner.VendorType
         };
 
-        return Ok(new ApiResponse<PromotionalBannerDto>(result, "Banner başarıyla getirildi"));
+        return Ok(new ApiResponse<PromotionalBannerDto>(result, LocalizationService.GetLocalizedString(ResourceName, "BannerRetrievedSuccessfully", CurrentCulture)));
     }
 }
 

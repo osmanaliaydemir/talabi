@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Error Messages -->
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>الطلب غير موجود</value>
+  </data>
+  <data name="NotAVendor" xml:space="preserve">
+    <value>المستخدم ليس بائعًا</value>
+  </data>
+  <data name="InvalidOrderStatus" xml:space="preserve">
+    <value>حالة الطلب غير صالحة</value>
+  </data>
+  <data name="OrderCanOnlyBeAcceptedWhenPending" xml:space="preserve">
+    <value>يمكن قبول الطلب فقط عندما يكون في حالة الانتظار</value>
+  </data>
+  <data name="OrderCanOnlyBeRejectedWhenPending" xml:space="preserve">
+    <value>يمكن رفض الطلب فقط عندما يكون في حالة الانتظار</value>
+  </data>
+  <data name="InvalidRejectionReason" xml:space="preserve">
+    <value>يجب أن يكون سبب الرفض 10 أحرف على الأقل</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>لا يمكن تغيير الحالة من {0} إلى {1}</value>
+  </data>
+  <data name="OrderMustBeReadyForCourierAssignment" xml:space="preserve">
+    <value>يجب أن يكون الطلب في حالة جاهز لتعيين سائق</value>
+  </data>
+  <data name="CourierAlreadyAssigned" xml:space="preserve">
+    <value>تم تعيين سائق بالفعل لهذا الطلب</value>
+  </data>
+  <data name="CourierAssignmentFailed" xml:space="preserve">
+    <value>فشل في تعيين السائق. قد لا يكون السائق متاحًا أو قد تكون حالة الطلب غير صالحة</value>
+  </data>
+  <data name="NoAvailableCouriers" xml:space="preserve">
+    <value>لم يتم العثور على سائقين متاحين بالقرب</value>
+  </data>
+  <data name="VendorLocationNotSet" xml:space="preserve">
+    <value>لم يتم تعيين موقع البائع</value>
+  </data>
+  
+  <!-- Success Messages -->
+  <data name="OrderRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع الطلب بنجاح</value>
+  </data>
+  <data name="OrderAcceptedSuccessfully" xml:space="preserve">
+    <value>تم قبول الطلب بنجاح</value>
+  </data>
+  <data name="OrderRejectedSuccessfully" xml:space="preserve">
+    <value>تم رفض الطلب بنجاح</value>
+  </data>
+  <data name="OrderStatusUpdatedSuccessfully" xml:space="preserve">
+    <value>تم تحديث حالة الطلب بنجاح</value>
+  </data>
+  <data name="CourierAssignedSuccessfully" xml:space="preserve">
+    <value>تم تعيين السائق بنجاح</value>
+  </data>
+  <data name="CourierAutoAssignedSuccessfully" xml:space="preserve">
+    <value>تم تعيين السائق تلقائيًا بنجاح</value>
+  </data>
+  <data name="VendorOrdersRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع طلبات البائع بنجاح</value>
+  </data>
+  <data name="AvailableCouriersRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع السائقين المتاحين بنجاح</value>
+  </data>
+  
+  <!-- Notification Messages -->
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>تم قبول الطلب</value>
+  </data>
+  <data name="OrderAcceptedMessage" xml:space="preserve">
+    <value>تم قبول طلبك #Order.{0} وبدأ التحضير.</value>
+  </data>
+  <data name="OrderStatusChangedTitle" xml:space="preserve">
+    <value>تم تحديث حالة الطلب</value>
+  </data>
+  <data name="OrderStatusPreparing" xml:space="preserve">
+    <value>يتم تحضير طلبك</value>
+  </data>
+  <data name="OrderStatusReady" xml:space="preserve">
+    <value>طلبك جاهز، يتم تعيين سائق</value>
+  </data>
+  <data name="OrderStatusDelivered" xml:space="preserve">
+    <value>تم تسليم طلبك</value>
+  </data>
+  <data name="OrderStatusCancelled" xml:space="preserve">
+    <value>تم إلغاء طلبك</value>
+  </data>
+  <data name="OrderStatusUpdated" xml:space="preserve">
+    <value>تم تحديث حالة الطلب</value>
+  </data>
+  <data name="OrderStatusMessage" xml:space="preserve">
+    <value>طلب #Order.{0}: {1}</value>
+  </data>
+  
+  <!-- Error Messages with Parameters -->
+  <data name="ErrorAcceptingOrder" xml:space="preserve">
+    <value>حدث خطأ أثناء قبول الطلب: {0}</value>
+  </data>
+  <data name="ErrorRejectingOrder" xml:space="preserve">
+    <value>حدث خطأ أثناء رفض الطلب: {0}</value>
+  </data>
+  <data name="ErrorUpdatingOrderStatus" xml:space="preserve">
+    <value>حدث خطأ أثناء تحديث حالة الطلب: {0}</value>
+  </data>
+</root>
+

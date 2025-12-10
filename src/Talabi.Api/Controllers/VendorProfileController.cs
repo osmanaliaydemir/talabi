@@ -14,24 +14,28 @@ namespace Talabi.Api.Controllers;
 [Route("api/vendor/profile")]
 [ApiController]
 [Authorize]
-public class VendorProfileController : ControllerBase
+public class VendorProfileController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "VendorProfileResources";
 
     /// <summary>
     /// VendorProfileController constructor
     /// </summary>
-    public VendorProfileController(IUnitOfWork unitOfWork)
+    public VendorProfileController(
+        IUnitOfWork unitOfWork,
+        ILogger<VendorProfileController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
-
-    private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException();
 
     private async Task<Vendor?> GetCurrentVendorAsync()
     {
-        var userId = GetUserId();
-        var vendor = await _unitOfWork.Vendors.Query()
+        var userId = UserContext.GetUserId();
+        if (userId == null) return null;
+
+        var vendor = await UnitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor;
     }
@@ -46,7 +50,7 @@ public class VendorProfileController : ControllerBase
         var vendor = await GetCurrentVendorAsync();
         if (vendor == null)
         {
-            return NotFound(new ApiResponse<VendorProfileDto>("Satıcı profili bulunamadı", "VENDOR_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<VendorProfileDto>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
         }
 
         var profile = new VendorProfileDto
@@ -64,7 +68,7 @@ public class VendorProfileController : ControllerBase
             RatingCount = vendor.RatingCount
         };
 
-        return Ok(new ApiResponse<VendorProfileDto>(profile, "Satıcı profili başarıyla getirildi"));
+        return Ok(new ApiResponse<VendorProfileDto>(profile, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -75,17 +79,15 @@ public class VendorProfileController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateVendorProfileDto dto)
     {
-        try
-        {
             if (dto == null)
             {
-                return BadRequest(new ApiResponse<object>("Geçersiz istek", "INVALID_REQUEST"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
             }
 
             var vendor = await GetCurrentVendorAsync();
             if (vendor == null)
             {
-                return NotFound(new ApiResponse<object>("Satıcı profili bulunamadı", "VENDOR_PROFILE_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
             }
 
             // Update fields if provided
@@ -131,56 +133,38 @@ public class VendorProfileController : ControllerBase
 
             vendor.UpdatedAt = DateTime.UtcNow;
 
-            _unitOfWork.Vendors.Update(vendor);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.Vendors.Update(vendor);
+            await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Satıcı profili başarıyla güncellendi"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new ApiResponse<object>(
-                $"Satıcı profili güncellenirken bir hata oluştu: {ex.Message}",
-                "INTERNAL_SERVER_ERROR"
-            ));
-        }
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
     /// Satıcı profil resmini günceller
     /// </summary>
-    /// <param name="imageUrl">Yeni resim URL'i</param>
+    /// <param name="dto">Yeni resim bilgisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("image")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateImage([FromBody] UpdateVendorImageDto dto)
     {
-        try
-        {
             if (dto == null || string.IsNullOrEmpty(dto.ImageUrl))
             {
-                return BadRequest(new ApiResponse<object>("Geçersiz istek", "INVALID_REQUEST"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
             }
 
             var vendor = await GetCurrentVendorAsync();
             if (vendor == null)
             {
-                return NotFound(new ApiResponse<object>("Satıcı profili bulunamadı", "VENDOR_PROFILE_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
             }
 
             vendor.ImageUrl = dto.ImageUrl;
             vendor.UpdatedAt = DateTime.UtcNow;
 
-            _unitOfWork.Vendors.Update(vendor);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.Vendors.Update(vendor);
+            await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Satıcı profil resmi başarıyla güncellendi"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new ApiResponse<object>(
-                $"Satıcı profil resmi güncellenirken bir hata oluştu: {ex.Message}",
-                "INTERNAL_SERVER_ERROR"
-            ));
-        }
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorImageUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -193,7 +177,7 @@ public class VendorProfileController : ControllerBase
         var vendor = await GetCurrentVendorAsync();
         if (vendor == null)
         {
-            return NotFound(new ApiResponse<VendorSettingsDto>("Satıcı profili bulunamadı", "VENDOR_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<VendorSettingsDto>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
         }
 
         var settings = new VendorSettingsDto
@@ -205,7 +189,7 @@ public class VendorProfileController : ControllerBase
             OpeningHours = vendor.OpeningHours
         };
 
-        return Ok(new ApiResponse<VendorSettingsDto>(settings, "Satıcı ayarları başarıyla getirildi"));
+        return Ok(new ApiResponse<VendorSettingsDto>(settings, LocalizationService.GetLocalizedString(ResourceName, "VendorSettingsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -216,17 +200,15 @@ public class VendorProfileController : ControllerBase
     [HttpPut("settings")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateSettings([FromBody] UpdateVendorSettingsDto dto)
     {
-        try
-        {
             if (dto == null)
             {
-                return BadRequest(new ApiResponse<object>("Geçersiz istek", "INVALID_REQUEST"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
             }
 
             var vendor = await GetCurrentVendorAsync();
             if (vendor == null)
             {
-                return NotFound(new ApiResponse<object>("Satıcı profili bulunamadı", "VENDOR_PROFILE_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
             }
 
             // Update fields if provided
@@ -257,56 +239,38 @@ public class VendorProfileController : ControllerBase
 
             vendor.UpdatedAt = DateTime.UtcNow;
 
-            _unitOfWork.Vendors.Update(vendor);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.Vendors.Update(vendor);
+            await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Satıcı ayarları başarıyla güncellendi"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new ApiResponse<object>(
-                $"Satıcı ayarları güncellenirken bir hata oluştu: {ex.Message}",
-                "INTERNAL_SERVER_ERROR"
-            ));
-        }
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorSettingsUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
     /// Satıcı aktif/pasif durumunu günceller
     /// </summary>
-    /// <param name="isActive">Aktif durumu</param>
+    /// <param name="dto">Aktif durumu</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("settings/active")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateActiveStatus([FromBody] UpdateVendorActiveStatusDto dto)
     {
-        try
-        {
             if (dto == null)
             {
-                return BadRequest(new ApiResponse<object>("Geçersiz istek", "INVALID_REQUEST"));
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
             }
 
             var vendor = await GetCurrentVendorAsync();
             if (vendor == null)
             {
-                return NotFound(new ApiResponse<object>("Satıcı profili bulunamadı", "VENDOR_PROFILE_NOT_FOUND"));
+                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
             }
 
             vendor.IsActive = dto.IsActive;
             vendor.UpdatedAt = DateTime.UtcNow;
 
-            _unitOfWork.Vendors.Update(vendor);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.Vendors.Update(vendor);
+            await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, "Satıcı aktif durumu başarıyla güncellendi"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new ApiResponse<object>(
-                $"Satıcı aktif durumu güncellenirken bir hata oluştu: {ex.Message}",
-                "INTERNAL_SERVER_ERROR"
-            ));
-        }
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorActiveStatusUpdatedSuccessfully", CurrentCulture)));
     }
 }
 

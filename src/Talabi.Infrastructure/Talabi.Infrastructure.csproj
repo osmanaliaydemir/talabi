@@ -4,8 +4,11 @@
     <ProjectReference Include="..\Talabi.Core\Talabi.Core.csproj" />
   </ItemGroup>
 
+
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="FirebaseAdmin" Version="3.4.0" />
+    <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
     <PackageReference Include="MailKit" Version="4.8.0" />

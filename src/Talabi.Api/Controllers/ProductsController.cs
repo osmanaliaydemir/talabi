@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -13,19 +15,28 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController : ControllerBase
+public class ProductsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private const string ResourceName = "ProductResources";
 
     /// <summary>
     /// ProductsController constructor
     /// </summary>
     /// <param name="unitOfWork">Unit of Work instance</param>
-    public ProductsController(IUnitOfWork unitOfWork)
+    /// <param name="logger">Logger instance</param>
+    /// <param name="localizationService">Localization service</param>
+    /// <param name="userContext">User context service</param>
+    /// <param name="mapper">AutoMapper instance</param>
+    public ProductsController(IUnitOfWork unitOfWork, ILogger<ProductsController> logger, ILocalizationService localizationService, IUserContextService userContext, IMapper mapper)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
+    /// <summary>
+    /// Ürün arama endpoint'i - Filtreleme, sıralama ve sayfalama desteği ile
+    /// </summary>
     /// <summary>
     /// Ürün arama endpoint'i - Filtreleme, sıralama ve sayfalama desteği ile
     /// </summary>
@@ -34,7 +45,8 @@ public class ProductsController : ControllerBase
     [HttpGet("search")]
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search([FromQuery] ProductSearchRequestDto request)
     {
-        IQueryable<Product> query = _unitOfWork.Products.Query()
+
+        IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Vendor == null || p.Vendor.IsActive); // Sadece aktif vendor'ların ürünleri
 
@@ -121,25 +133,35 @@ public class ProductsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Ürünler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "ProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
     /// Kategorileri getirir - Dil ve VendorType desteği ile
     /// </summary>
-    /// <param name="lang">Dil kodu (tr, en, ar) - Varsayılan: tr</param>
+    /// <summary>
+    /// Kategorileri getirir - Dil ve VendorType desteği ile
+    /// </summary>
+    /// <param name="lang">Dil kodu (tr, en, ar) - Opsiyonel, header yoksa kullanılır</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış kategori listesi</returns>
     [HttpGet("categories")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories([FromQuery] string? lang = "tr", [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories(
+        [FromQuery] string? lang = null,
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+        // lang parametresi varsa onu kullan, yoksa header'dan gelen CurrentCulture'ı kullan
+        var languageCode = !string.IsNullOrEmpty(lang) ? NormalizeLanguageCode(lang) : CurrentCulture.TwoLetterISOLanguageName;
+
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        IQueryable<Category> query = _unitOfWork.Categories.Query()
+        IQueryable<Category> query = UnitOfWork.Categories.Query()
             .Include(c => c.Translations);
 
         // VendorType filtresi
@@ -152,7 +174,7 @@ public class ProductsController : ControllerBase
 
         var categoryDtos = categories.Select(c =>
         {
-            var translation = c.Translations.FirstOrDefault(t => t.LanguageCode == lang);
+            var translation = c.Translations.FirstOrDefault(t => t.LanguageCode == languageCode);
             return new CategoryDto
             {
                 Id = c.Id,
@@ -182,9 +204,12 @@ public class ProductsController : ControllerBase
             TotalPages = totalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result, "Kategoriler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
     }
 
+    /// <summary>
+    /// Ürün arama için autocomplete endpoint'i
+    /// </summary>
     /// <summary>
     /// Ürün arama için autocomplete endpoint'i
     /// </summary>
@@ -193,12 +218,13 @@ public class ProductsController : ControllerBase
     [HttpGet("autocomplete")]
     public async Task<ActionResult<ApiResponse<List<AutocompleteResultDto>>>> Autocomplete([FromQuery] string query)
     {
+
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(), "Sonuç bulunamadı"));
+            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(), LocalizationService.GetLocalizedString(ResourceName, "NoResultsFound", CurrentCulture)));
         }
 
-        var results = await _unitOfWork.Products.Query()
+        var results = await UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Name.Contains(query) && (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
             .Take(10)
@@ -210,7 +236,7 @@ public class ProductsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<AutocompleteResultDto>>(results, "Autocomplete sonuçları getirildi"));
+        return Ok(new ApiResponse<List<AutocompleteResultDto>>(results, LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -219,15 +245,24 @@ public class ProductsController : ControllerBase
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
+    /// <summary>
+    /// Popüler ürünleri getirir - Sipariş sayısına göre sıralanır
+    /// </summary>
+    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
+    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
     /// <returns>Sayfalanmış popüler ürün listesi</returns>
     [HttpGet("popular")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 6,
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6,
         [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        var query = _unitOfWork.Products.Query()
+        var query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Vendor == null || p.Vendor.IsActive) // Sadece aktif vendor'ların ürünleri
             .AsQueryable();
@@ -242,7 +277,7 @@ public class ProductsController : ControllerBase
             .Select(p => new
             {
                 Product = p,
-                OrderCount = _unitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id)
+                OrderCount = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id)
             })
             .OrderByDescending(x => x.OrderCount)
             .ThenByDescending(x => x.Product.CreatedAt)
@@ -276,7 +311,9 @@ public class ProductsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Popüler ürünler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "PopularProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -287,30 +324,28 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<ProductDto>>> GetProduct(Guid id)
     {
-        var product = await _unitOfWork.Products.Query()
+        var product = await UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
+            .Include(p => p.ProductCategory)
             .Where(p => p.Id == id && (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
-            .Select(p => new ProductDto
-            {
-                Id = p.Id,
-                VendorId = p.VendorId,
-                VendorName = p.Vendor != null ? p.Vendor.Name : null,
-                Name = p.Name,
-                Description = p.Description,
-                Category = p.Category,
-                CategoryId = p.CategoryId,
-                Price = p.Price,
-                Currency = p.Currency,
-                ImageUrl = p.ImageUrl
-            })
             .FirstOrDefaultAsync();
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<ProductDto>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<ProductDto>(LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+                "PRODUCT_NOT_FOUND"));
         }
 
-        return Ok(new ApiResponse<ProductDto>(product, "Ürün başarıyla getirildi"));
+        var productDto = _mapper.Map<ProductDto>(product);
+
+        if (product == null)
+        {
+            return NotFound(new ApiResponse<ProductDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+                "PRODUCT_NOT_FOUND"));
+        }
+
+        return Ok(new ApiResponse<ProductDto>(productDto, LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -321,23 +356,28 @@ public class ProductsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış benzer ürün listesi</returns>
     [HttpGet("{id}/similar")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetSimilarProducts(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetSimilarProducts(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6)
     {
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
         // Mevcut ürünü getir
-        var currentProduct = await _unitOfWork.Products.Query()
+        var currentProduct = await UnitOfWork.Products.Query()
             .Where(p => p.Id == id)
             .FirstOrDefaultAsync();
 
         if (currentProduct == null)
         {
-            return NotFound(new ApiResponse<PagedResultDto<ProductDto>>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+            return NotFound(new ApiResponse<PagedResultDto<ProductDto>>(LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+                "PRODUCT_NOT_FOUND"));
         }
 
         // Aynı kategorideki diğer ürünleri getir
-        IQueryable<Product> query = _unitOfWork.Products.Query()
+        IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Id != id && p.IsAvailable && (p.Vendor == null || p.Vendor.IsActive)); // Mevcut ürünü hariç tut, sadece müsait olanları ve aktif vendor'ların ürünlerini getir
 
@@ -362,7 +402,9 @@ public class ProductsController : ControllerBase
                 PageSize = pageSize,
                 TotalPages = 0
             };
-            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(emptyResult, "Benzer ürün bulunamadı"));
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "SimilarProductsNotFound", CurrentCulture)));
         }
 
         IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt); // En yeni ürünler önce
@@ -395,6 +437,8 @@ public class ProductsController : ControllerBase
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, "Benzer ürünler başarıyla getirildi"));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "SimilarProductsRetrievedSuccessfully", CurrentCulture)));
     }
 }

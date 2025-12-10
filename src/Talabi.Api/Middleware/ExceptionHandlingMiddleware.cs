@@ -27,6 +27,8 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
+            // Exception bilgisini context'e ekle ki RequestResponseLoggingMiddleware okuyabilsin
+            context.Items["Exception"] = ex;
             await HandleExceptionAsync(context, ex);
         }
     }

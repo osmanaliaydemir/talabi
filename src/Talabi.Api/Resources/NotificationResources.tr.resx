@@ -59,77 +59,17 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   
-  <!-- Order Assignment Notifications -->
-  <data name="NewOrderAssignedTitle" xml:space="preserve">
-    <value>Yeni Sipariş Atandı! 🚀</value>
+  <!-- Success Messages -->
+  <data name="DeviceRegisteredSuccessfully" xml:space="preserve">
+    <value>Cihaz başarıyla kaydedildi</value>
   </data>
-  <data name="NewOrderAssignedBody" xml:space="preserve">
-    <value>#{0} numaralı sipariş sana atandı. Hemen incele!</value>
+  <data name="NotificationSent" xml:space="preserve">
+    <value>Bildirim gönderildi</value>
   </data>
-  
-  <!-- Order Status Update Notifications -->
-  <data name="OrderReadyTitle" xml:space="preserve">
-    <value>Sipariş Hazırlanıyor 👨‍🍳</value>
+  <data name="SettingsRetrievedSuccessfully" xml:space="preserve">
+    <value>Bildirim ayarları başarıyla getirildi</value>
   </data>
-  <data name="OrderReadyBody" xml:space="preserve">
-    <value>#{0} numaralı siparişiniz kurye tarafından alınmak üzere hazırlanıyor.</value>
-  </data>
-  
-  <data name="OrderDeliveredTitle" xml:space="preserve">
-    <value>Sipariş Teslim Edildi ✅</value>
-  </data>
-  <data name="OrderDeliveredBody" xml:space="preserve">
-    <value>#{0} numaralı siparişiniz başarıyla teslim edildi. Afiyet olsun!</value>
-  </data>
-  
-  <data name="OrderAssignedTitle" xml:space="preserve">
-    <value>Kurye Atandı 🚴</value>
-  </data>
-  <data name="OrderAssignedBody" xml:space="preserve">
-    <value>#{0} numaralı siparişinize kurye atandı.</value>
-  </data>
-  
-  <data name="OrderAcceptedTitle" xml:space="preserve">
-    <value>Kurye Yola Çıktı 🛵</value>
-  </data>
-  <data name="OrderAcceptedBody" xml:space="preserve">
-    <value>Kurye #{0} numaralı siparişinizi almak için yola çıktı.</value>
-  </data>
-  
-  <data name="OrderOutForDeliveryTitle" xml:space="preserve">
-    <value>Sipariş Yolda 📦</value>
-  </data>
-  <data name="OrderOutForDeliveryBody" xml:space="preserve">
-    <value>#{0} numaralı siparişiniz size doğru yola çıktı.</value>
-  </data>
-  
-  <data name="OrderUpdateTitle" xml:space="preserve">
-    <value>Sipariş Güncellemesi</value>
-  </data>
-  <data name="OrderUpdateBody" xml:space="preserve">
-    <value>#{0} numaralı siparişinizde güncelleme var.</value>
-  </data>
-  
-  <!-- Abandoned Cart Notifications -->
-  <data name="AbandonedCartTitle" xml:space="preserve">
-    <value>Sepetinizde Ürünler Var! 🛒</value>
-  </data>
-  <data name="AbandonedCartBody" xml:space="preserve">
-    <value>Sepetinizdeki ürünleri tükenmeden tamamlayın.</value>
-  </data>
-  
-  <!-- New Product/Vendor Notifications -->
-  <data name="NewProductTitle" xml:space="preserve">
-    <value>Yeni Ürün Eklendi! 🎉</value>
-  </data>
-  <data name="NewProductBody" xml:space="preserve">
-    <value>{0} yeni bir ürün ekledi: {1}</value>
-  </data>
-  
-  <data name="NewVendorTitle" xml:space="preserve">
-    <value>Yeni Satıcı! 🏪</value>
-  </data>
-  <data name="NewVendorBody" xml:space="preserve">
-    <value>{0} aramıza katıldı. Hemen keşfet!</value>
+  <data name="SettingsUpdatedSuccessfully" xml:space="preserve">
+    <value>Bildirim ayarları başarıyla güncellendi</value>
   </data>
 </root>

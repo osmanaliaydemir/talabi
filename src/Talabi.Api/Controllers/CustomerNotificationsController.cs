@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Extensions;
@@ -16,30 +16,34 @@ namespace Talabi.Api.Controllers;
 [Route("api/customer/notifications")]
 [ApiController]
 [Authorize]
-public class CustomerNotificationsController : ControllerBase
+public class CustomerNotificationsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<AppUser> _userManager;
-    private readonly ILogger<CustomerNotificationsController> _logger;
+    private const string ResourceName = "CustomerNotificationResources";
 
     /// <summary>
     /// CustomerNotificationsController constructor
     /// </summary>
-    public CustomerNotificationsController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager, ILogger<CustomerNotificationsController> logger)
+    public CustomerNotificationsController(
+        IUnitOfWork unitOfWork,
+        ILogger<CustomerNotificationsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        UserManager<AppUser> userManager)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
         _userManager = userManager;
-        _logger = logger;
     }
-
-    private string GetUserId() =>
-        User.FindFirstValue(ClaimTypes.NameIdentifier) ??
-        throw new UnauthorizedAccessException();
 
     private async Task<Customer?> GetCurrentCustomerAsync(bool createIfMissing = false)
     {
-        var userId = GetUserId();
-        var customer = await _unitOfWork.Customers.Query()
+        var userId = UserContext.GetUserId();
+        if (userId == null)
+        {
+            return null;
+        }
+
+        var customer = await UnitOfWork.Customers.Query()
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         if (customer == null && createIfMissing)
@@ -56,10 +60,10 @@ public class CustomerNotificationsController : ControllerBase
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.Customers.AddAsync(customer);
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.Customers.AddAsync(customer);
+            await UnitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Customer profile auto-created for notifications. UserId: {UserId}", userId);
+            Logger.LogInformation("Customer profile auto-created for notifications. UserId: {UserId}", userId);
         }
 
         return customer;
@@ -72,26 +76,32 @@ public class CustomerNotificationsController : ControllerBase
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 20, maksimum: 100)</param>
     /// <returns>Bildirim listesi ve okunmamış sayısı</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<CustomerNotificationResponseDto>>> GetNotifications([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<ApiResponse<CustomerNotificationResponseDto>>> GetNotifications(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 20)
     {
+        
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;
 
         var customer = await GetCurrentCustomerAsync(createIfMissing: true);
         if (customer == null)
         {
-            _logger.LogWarning("Customer not found for notifications (UserId: {UserId})", GetUserId());
+            var userId = UserContext.GetUserId();
+            Logger.LogWarning("Customer not found for notifications (UserId: {UserId})", userId);
             var emptyResponse = new CustomerNotificationResponseDto
             {
                 Items = Array.Empty<CustomerNotificationDto>(),
                 UnreadCount = 0
             };
-            return Ok(new ApiResponse<CustomerNotificationResponseDto>(emptyResponse, "Müşteri profili bulunamadı, boş bildirim listesi döndürülüyor"));
+            return Ok(new ApiResponse<CustomerNotificationResponseDto>(
+                emptyResponse, 
+                LocalizationService.GetLocalizedString(ResourceName, "CustomerProfileNotFoundEmptyList", CurrentCulture)));
         }
 
         await EnsureWelcomeNotificationAsync(customer.Id);
 
-        IQueryable<CustomerNotification> query = _unitOfWork.CustomerNotifications.Query()
+        IQueryable<CustomerNotification> query = UnitOfWork.CustomerNotifications.Query()
             .Where(n => n.CustomerId == customer.Id);
 
         var unreadCount = await query.CountAsync(n => !n.IsRead);
@@ -120,7 +130,9 @@ public class CustomerNotificationsController : ControllerBase
             UnreadCount = unreadCount
         };
 
-        return Ok(new ApiResponse<CustomerNotificationResponseDto>(response, "Bildirimler başarıyla getirildi"));
+        return Ok(new ApiResponse<CustomerNotificationResponseDto>(
+            response, 
+            LocalizationService.GetLocalizedString(ResourceName, "NotificationsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -131,18 +143,23 @@ public class CustomerNotificationsController : ControllerBase
     [HttpPost("{id}/read")]
     public async Task<ActionResult<ApiResponse<object>>> MarkAsRead(Guid id)
     {
+        
         var customer = await GetCurrentCustomerAsync(createIfMissing: true);
         if (customer == null)
         {
-            return NotFound(new ApiResponse<object>("Müşteri profili bulunamadı", "CUSTOMER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CustomerProfileNotFound", CurrentCulture), 
+                "CUSTOMER_PROFILE_NOT_FOUND"));
         }
 
-        var notification = await _unitOfWork.CustomerNotifications.Query()
+        var notification = await UnitOfWork.CustomerNotifications.Query()
             .FirstOrDefaultAsync(n => n.Id == id && n.CustomerId == customer.Id);
 
         if (notification == null)
         {
-            return NotFound(new ApiResponse<object>("Bildirim bulunamadı", "NOTIFICATION_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "NotificationNotFound", CurrentCulture), 
+                "NOTIFICATION_NOT_FOUND"));
         }
 
         if (!notification.IsRead)
@@ -150,11 +167,13 @@ public class CustomerNotificationsController : ControllerBase
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             notification.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.CustomerNotifications.Update(notification);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.CustomerNotifications.Update(notification);
+            await UnitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new ApiResponse<object>(new { }, "Bildirim okundu olarak işaretlendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "NotificationMarkedAsRead", CurrentCulture)));
     }
 
     /// <summary>
@@ -164,19 +183,24 @@ public class CustomerNotificationsController : ControllerBase
     [HttpPost("read-all")]
     public async Task<ActionResult<ApiResponse<object>>> MarkAllAsRead()
     {
+        
         var customer = await GetCurrentCustomerAsync(createIfMissing: true);
         if (customer == null)
         {
-            return NotFound(new ApiResponse<object>("Müşteri profili bulunamadı", "CUSTOMER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CustomerProfileNotFound", CurrentCulture), 
+                "CUSTOMER_PROFILE_NOT_FOUND"));
         }
 
-        var unreadNotifications = await _unitOfWork.CustomerNotifications.Query()
+        var unreadNotifications = await UnitOfWork.CustomerNotifications.Query()
             .Where(n => n.CustomerId == customer.Id && !n.IsRead)
             .ToListAsync();
 
         if (unreadNotifications.Count == 0)
         {
-            return Ok(new ApiResponse<object>(new { }, "Tüm bildirimler zaten okunmuş"));
+            return Ok(new ApiResponse<object>(
+                new { }, 
+                LocalizationService.GetLocalizedString(ResourceName, "AllNotificationsAlreadyRead", CurrentCulture)));
         }
 
         foreach (var notification in unreadNotifications)
@@ -184,30 +208,32 @@ public class CustomerNotificationsController : ControllerBase
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             notification.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.CustomerNotifications.Update(notification);
+            UnitOfWork.CustomerNotifications.Update(notification);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Tüm bildirimler okundu olarak işaretlendi"));
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "AllNotificationsMarkedAsRead", CurrentCulture)));
     }
 
     private async Task EnsureWelcomeNotificationAsync(Guid customerId)
     {
-        var hasNotification = await _unitOfWork.CustomerNotifications.Query()
+        var hasNotification = await UnitOfWork.CustomerNotifications.Query()
             .AnyAsync(n => n.CustomerId == customerId);
 
         if (!hasNotification)
         {
-            await _unitOfWork.CustomerNotifications.AddAsync(new CustomerNotification
+            await UnitOfWork.CustomerNotifications.AddAsync(new CustomerNotification
             {
                 CustomerId = customerId,
-                Title = "Talabi'ye Hoş Geldin!",
-                Message = "Sipariş durumları ve özel teklifler hakkında buradan bildirim alacaksın.",
+                Title = LocalizationService.GetLocalizedString(ResourceName, "WelcomeTitle", CurrentCulture),
+                Message = LocalizationService.GetLocalizedString(ResourceName, "WelcomeMessage", CurrentCulture),
                 Type = "info"
             });
 
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.SaveChangesAsync();
         }
     }
 }

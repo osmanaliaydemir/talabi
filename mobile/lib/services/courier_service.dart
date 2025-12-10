@@ -1,37 +1,23 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:mobile/models/api_response.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/models/courier_earning.dart';
 import 'package:mobile/models/courier_notification.dart';
-import 'package:mobile/utils/constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/services/api_service.dart';
 
 class CourierService {
-  Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
-  }
+  final Dio _dio = ApiService().dio;
 
   Future<Courier> getProfile() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/profile'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/profile');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => Courier.fromJson(json as Map<String, dynamic>),
         );
 
@@ -41,35 +27,24 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt Courier)
-      return Courier.fromJson(responseData);
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load courier profile',
-      );
-      throw Exception(error);
+      return Courier.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching courier profile: $e');
+      rethrow;
     }
   }
 
   Future<void> updateStatus(String status) async {
-    final token = await _getToken();
-    final response = await http.put(
-      Uri.parse('${Constants.apiBaseUrl}/courier/status'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({'status': status}),
-    );
+    try {
+      final response = await _dio.put(
+        '/courier/status',
+        data: {'status': status},
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -77,33 +52,23 @@ class CourierService {
           throw Exception(apiResponse.message ?? 'Durum güncellenemedi');
         }
       }
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to update status',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error updating status: $e');
+      rethrow;
     }
   }
 
   Future<void> updateLocation(double latitude, double longitude) async {
-    final token = await _getToken();
-    final response = await http.put(
-      Uri.parse('${Constants.apiBaseUrl}/courier/location'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({'latitude': latitude, 'longitude': longitude}),
-    );
+    try {
+      final response = await _dio.put(
+        '/courier/location',
+        data: {'latitude': latitude, 'longitude': longitude},
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -111,32 +76,20 @@ class CourierService {
           throw Exception(apiResponse.message ?? 'Konum güncellenemedi');
         }
       }
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to update location',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error updating location: $e');
+      rethrow;
     }
   }
 
   Future<CourierStatistics> getStatistics() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/statistics'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/statistics');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => CourierStatistics.fromJson(json as Map<String, dynamic>),
         );
 
@@ -146,34 +99,21 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt CourierStatistics)
-      return CourierStatistics.fromJson(responseData);
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load statistics',
-      );
-      throw Exception(error);
+      return CourierStatistics.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching statistics: $e');
+      rethrow;
     }
   }
 
   Future<List<CourierOrder>> getActiveOrders() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/active'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/orders/active');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => (json as List<dynamic>)
               .map((e) => e as Map<String, dynamic>)
               .toList(),
@@ -189,34 +129,23 @@ class CourierService {
             .map((json) => CourierOrder.fromJson(json))
             .toList();
       }
-      // Eski format (direkt liste)
-      final List<dynamic> data = responseData as List;
-      return data.map((json) => CourierOrder.fromJson(json)).toList();
+      return (response.data as List)
+          .map((json) => CourierOrder.fromJson(json))
+          .toList();
+    } catch (e) {
+      print('Error fetching active orders: $e');
+      rethrow;
     }
-    final errorMessage = _extractErrorMessage(
-      response.body,
-      'Failed to load active orders',
-    );
-    throw Exception(errorMessage);
   }
 
   Future<bool> acceptOrder(String orderId) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/accept'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.post('/courier/orders/$orderId/accept');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -225,33 +154,23 @@ class CourierService {
         }
       }
       return true;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to accept order',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error accepting order: $e');
+      rethrow;
     }
   }
 
   Future<bool> rejectOrder(String orderId, String reason) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/reject'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({'reason': reason}),
-    );
+    try {
+      final response = await _dio.post(
+        '/courier/orders/$orderId/reject',
+        data: {'reason': reason},
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -260,32 +179,20 @@ class CourierService {
         }
       }
       return true;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to reject order',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error rejecting order: $e');
+      rethrow;
     }
   }
 
   Future<CourierOrder> getOrderDetail(String orderId) async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/orders/$orderId');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => CourierOrder.fromJson(json as Map<String, dynamic>),
         );
 
@@ -295,34 +202,21 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt CourierOrder)
-      return CourierOrder.fromJson(responseData);
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load order detail',
-      );
-      throw Exception(error);
+      return CourierOrder.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching order detail: $e');
+      rethrow;
     }
   }
 
   Future<bool> pickupOrder(String orderId) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/pickup'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.post('/courier/orders/$orderId/pickup');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -331,32 +225,20 @@ class CourierService {
         }
       }
       return true;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to pickup order',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error picking up order: $e');
+      rethrow;
     }
   }
 
   Future<bool> deliverOrder(String orderId) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/deliver'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.post('/courier/orders/$orderId/deliver');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -365,12 +247,9 @@ class CourierService {
         }
       }
       return true;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to deliver order',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error delivering order: $e');
+      rethrow;
     }
   }
 
@@ -378,26 +257,16 @@ class CourierService {
     int page = 1,
     int pageSize = 20,
   }) async {
-    final token = await _getToken();
-    final uri = Uri.parse(
-      '${Constants.apiBaseUrl}/courier/notifications?page=$page&pageSize=$pageSize',
-    );
+    try {
+      final response = await _dio.get(
+        '/courier/notifications',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
 
-    final response = await http.get(
-      uri,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => CourierNotificationResponse.fromJson(
             json as Map<String, dynamic>,
           ),
@@ -409,34 +278,21 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt CourierNotificationResponse)
-      return CourierNotificationResponse.fromJson(responseData);
+      return CourierNotificationResponse.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching notifications: $e');
+      rethrow;
     }
-
-    final error = _extractErrorMessage(
-      response.body,
-      'Failed to load notifications',
-    );
-    throw Exception(error);
   }
 
   Future<void> markNotificationRead(String id) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/notifications/$id/read'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.post('/courier/notifications/$id/read');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -446,32 +302,20 @@ class CourierService {
           );
         }
       }
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to mark notification as read',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error marking notification read: $e');
+      rethrow;
     }
   }
 
   Future<void> markAllNotificationsRead() async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/notifications/read-all'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.post('/courier/notifications/read-all');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -482,32 +326,20 @@ class CourierService {
           );
         }
       }
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to mark all notifications as read',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error marking all notifications read: $e');
+      rethrow;
     }
   }
 
   Future<EarningsSummary> getTodayEarnings() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/earnings/today'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/earnings/today');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => EarningsSummary.fromJson(json as Map<String, dynamic>),
         );
 
@@ -519,34 +351,21 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt EarningsSummary)
-      return EarningsSummary.fromJson(responseData);
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load today earnings',
-      );
-      throw Exception(error);
+      return EarningsSummary.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching today earnings: $e');
+      rethrow;
     }
   }
 
   Future<EarningsSummary> getWeeklyEarnings() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/earnings/week'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/earnings/week');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => EarningsSummary.fromJson(json as Map<String, dynamic>),
         );
 
@@ -558,34 +377,21 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt EarningsSummary)
-      return EarningsSummary.fromJson(responseData);
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load weekly earnings',
-      );
-      throw Exception(error);
+      return EarningsSummary.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching weekly earnings: $e');
+      rethrow;
     }
   }
 
   Future<EarningsSummary> getMonthlyEarnings() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/earnings/month'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/earnings/month');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => EarningsSummary.fromJson(json as Map<String, dynamic>),
         );
 
@@ -597,14 +403,10 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt EarningsSummary)
-      return EarningsSummary.fromJson(responseData);
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load monthly earnings',
-      );
-      throw Exception(error);
+      return EarningsSummary.fromJson(response.data);
+    } catch (e) {
+      print('Error fetching monthly earnings: $e');
+      rethrow;
     }
   }
 
@@ -612,24 +414,16 @@ class CourierService {
     int page = 1,
     int pageSize = 50,
   }) async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse(
-        '${Constants.apiBaseUrl}/courier/earnings/history?page=$page&pageSize=$pageSize',
-      ),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get(
+        '/courier/earnings/history',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -639,34 +433,21 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt Map)
-      return responseData;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load earnings history',
-      );
-      throw Exception(error);
+      return response.data;
+    } catch (e) {
+      print('Error fetching earnings history: $e');
+      rethrow;
     }
   }
 
   Future<Map<String, dynamic>> checkAvailability() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/check-availability'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/check-availability');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -678,14 +459,10 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt Map)
-      return responseData;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to check availability',
-      );
-      throw Exception(error);
+      return response.data;
+    } catch (e) {
+      print('Error checking availability: $e');
+      rethrow;
     }
   }
 
@@ -693,24 +470,16 @@ class CourierService {
     int page = 1,
     int pageSize = 20,
   }) async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse(
-        '${Constants.apiBaseUrl}/courier/orders/history?page=$page&pageSize=$pageSize',
-      ),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get(
+        '/courier/orders/history',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -722,31 +491,11 @@ class CourierService {
 
         return apiResponse.data!;
       }
-      // Eski format (direkt Map)
-      return responseData;
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load order history',
-      );
-      throw Exception(error);
+      return response.data;
+    } catch (e) {
+      print('Error fetching order history: $e');
+      rethrow;
     }
-  }
-
-  String _extractErrorMessage(String body, String fallback) {
-    if (body.isEmpty) return fallback;
-    try {
-      final decoded = json.decode(body);
-      if (decoded is Map<String, dynamic>) {
-        final message = decoded['message']?.toString();
-        if (message != null && message.isNotEmpty) {
-          return message;
-        }
-      }
-    } catch (_) {
-      // Ignore parse errors and use fallback
-    }
-    return fallback;
   }
 
   Future<void> submitProof(
@@ -755,27 +504,20 @@ class CourierService {
     String? signatureUrl,
     String? notes,
   ) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/courier/orders/$orderId/proof'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'photoUrl': photoUrl,
-        'signatureUrl': signatureUrl,
-        'notes': notes,
-      }),
-    );
+    try {
+      final response = await _dio.post(
+        '/courier/orders/$orderId/proof',
+        data: {
+          'photoUrl': photoUrl,
+          'signatureUrl': signatureUrl,
+          'notes': notes,
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -785,33 +527,20 @@ class CourierService {
           );
         }
       }
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to submit proof',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error submitting proof: $e');
+      rethrow;
     }
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
-    final token = await _getToken();
-    final response = await http.put(
-      Uri.parse('${Constants.apiBaseUrl}/courier/profile'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(data),
-    );
+    try {
+      final response = await _dio.put('/courier/profile', data: data);
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => json as Map<String, dynamic>?,
         );
 
@@ -819,52 +548,54 @@ class CourierService {
           throw Exception(apiResponse.message ?? 'Profil güncellenemedi');
         }
       }
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to update profile',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error updating profile: $e');
+      rethrow;
     }
   }
 
   Future<String> uploadImage(File file) async {
-    final token = await _getToken();
-    final uri = Uri.parse('${Constants.apiBaseUrl}/upload');
+    try {
+      String fileName = file.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(file.path, filename: fileName),
+      });
 
-    var request = http.MultipartRequest('POST', uri);
-    request.headers['Authorization'] = 'Bearer $token';
+      final response = await _dio.post('/upload', data: formData);
 
-    request.files.add(await http.MultipartFile.fromPath('file', file.path));
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('url')) {
+        return response.data['url'];
+      }
 
-    final response = await request.send();
-    final responseBody = await response.stream.bytesToString();
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>,
+        );
+        if (apiResponse.success &&
+            apiResponse.data != null &&
+            apiResponse.data!['url'] != null) {
+          return apiResponse.data!['url'];
+        }
+      }
 
-    if (response.statusCode == 200) {
-      final data = json.decode(responseBody);
-      return data['url'];
-    } else {
       throw Exception('Failed to upload image');
+    } catch (e) {
+      print('Error uploading image: $e');
+      rethrow;
     }
   }
 
   Future<List<VehicleTypeOption>> getVehicleTypes() async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('${Constants.apiBaseUrl}/courier/vehicle-types'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await _dio.get('/courier/vehicle-types');
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
+      if (response.data is Map<String, dynamic> &&
+          (response.data as Map<String, dynamic>).containsKey('success')) {
         final apiResponse = ApiResponse.fromJson(
-          responseData,
+          response.data as Map<String, dynamic>,
           (json) => (json as List<dynamic>)
               .map((e) => e as Map<String, dynamic>)
               .toList(),
@@ -878,24 +609,21 @@ class CourierService {
             .map((e) => VehicleTypeOption.fromJson(e))
             .toList();
       }
-      // Eski format (direkt liste)
-      final List<dynamic> data = responseData;
+
+      final List<dynamic> data = response.data;
       return data
           .map((e) => VehicleTypeOption.fromJson(e as Map<String, dynamic>))
           .toList();
-    } else {
-      final error = _extractErrorMessage(
-        response.body,
-        'Failed to load vehicle types',
-      );
-      throw Exception(error);
+    } catch (e) {
+      print('Error fetching vehicle types: $e');
+      rethrow;
     }
   }
 }
 
 class VehicleTypeOption {
-  final String key; // "Motorcycle", "Car", "Bicycle"
-  final String name; // "Motor", "Araba", "Bisiklet"
+  final String key;
+  final String name;
 
   VehicleTypeOption({required this.key, required this.name});
 

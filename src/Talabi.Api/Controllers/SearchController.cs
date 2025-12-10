@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
 
@@ -10,16 +11,20 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class SearchController : ControllerBase
+public class SearchController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private const string ResourceName = "SearchResources";
 
     /// <summary>
     /// SearchController constructor
     /// </summary>
-    public SearchController(IUnitOfWork unitOfWork)
+    public SearchController(
+        IUnitOfWork unitOfWork,
+        ILogger<SearchController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -32,10 +37,12 @@ public class SearchController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(), "Arama sorgusu boş"));
+            return Ok(new ApiResponse<List<AutocompleteResultDto>>(
+                new List<AutocompleteResultDto>(), 
+                LocalizationService.GetLocalizedString(ResourceName, "EmptyQuery", CurrentCulture)));
         }
 
-        var productResults = await _unitOfWork.Products.Query()
+        var productResults = await UnitOfWork.Products.Query()
             .Where(p => p.Name.Contains(query))
             .Take(5)
             .Select(p => new AutocompleteResultDto
@@ -46,7 +53,7 @@ public class SearchController : ControllerBase
             })
             .ToListAsync();
 
-        var vendorResults = await _unitOfWork.Vendors.Query()
+        var vendorResults = await UnitOfWork.Vendors.Query()
             .Where(v => v.Name.Contains(query))
             .Take(5)
             .Select(v => new AutocompleteResultDto
@@ -58,6 +65,8 @@ public class SearchController : ControllerBase
             .ToListAsync();
 
         var combined = productResults.Concat(vendorResults).ToList();
-        return Ok(new ApiResponse<List<AutocompleteResultDto>>(combined, "Otomatik tamamlama sonuçları başarıyla getirildi"));
+        return Ok(new ApiResponse<List<AutocompleteResultDto>>(
+            combined, 
+            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
     }
 }

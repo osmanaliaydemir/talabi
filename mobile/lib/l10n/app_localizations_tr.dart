@@ -2370,6 +2370,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get delivery => 'Teslimat';
 
   @override
+  String get talabi => 'Talabi';
+
+  @override
   String get navigate => 'Yönlendir';
 
   @override

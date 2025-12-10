@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Courier;
 using Talabi.Core.Entities;
@@ -18,30 +17,33 @@ namespace Talabi.Api.Controllers;
 [Route("api/courier/notifications")]
 [ApiController]
 [Authorize(Roles = "Courier")]
-public class CourierNotificationsController : ControllerBase
+public class CourierNotificationsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<AppUser> _userManager;
-    private readonly ILogger<CourierNotificationsController> _logger;
+    private const string ResourceName = "CourierNotificationResources";
 
     /// <summary>
     /// CourierNotificationsController constructor
     /// </summary>
-    public CourierNotificationsController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager, ILogger<CourierNotificationsController> logger)
+    public CourierNotificationsController(
+        IUnitOfWork unitOfWork,
+        UserManager<AppUser> userManager,
+        ILogger<CourierNotificationsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
         _userManager = userManager;
-        _logger = logger;
     }
-
-    private string GetUserId() =>
-        User.FindFirstValue(ClaimTypes.NameIdentifier) ??
-        throw new UnauthorizedAccessException();
 
     private async Task<Courier?> GetCurrentCourierAsync(bool createIfMissing = false)
     {
-        var userId = GetUserId();
-        var courier = await _unitOfWork.Couriers.Query()
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return null;
+        }
+        var courier = await UnitOfWork.Couriers.Query()
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         if (courier == null && createIfMissing)
@@ -62,10 +64,10 @@ public class CourierNotificationsController : ControllerBase
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.Couriers.AddAsync(courier);
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.Couriers.AddAsync(courier);
+            await UnitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Courier profile auto-created for notifications. UserId: {UserId}", userId);
+            Logger.LogInformation("Courier profile auto-created for notifications. UserId: {UserId}", userId);
         }
 
         return courier;
@@ -86,18 +88,19 @@ public class CourierNotificationsController : ControllerBase
         var courier = await GetCurrentCourierAsync(createIfMissing: true);
         if (courier == null)
         {
-            _logger.LogWarning("Courier not found for notifications (UserId: {UserId})", GetUserId());
+            var userId = UserContext.GetUserId();
+            Logger.LogWarning("Courier not found for notifications (UserId: {UserId})", userId);
             var emptyResponse = new CourierNotificationResponseDto
             {
                 Items = Array.Empty<CourierNotificationDto>(),
                 UnreadCount = 0
             };
-            return Ok(new ApiResponse<CourierNotificationResponseDto>(emptyResponse, "Kurye profili bulunamadı, boş bildirim listesi döndürülüyor"));
+            return Ok(new ApiResponse<CourierNotificationResponseDto>(emptyResponse, LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFoundReturningEmpty", CurrentCulture)));
         }
 
         await EnsureWelcomeNotificationAsync(courier.Id);
 
-        IQueryable<CourierNotification> query = _unitOfWork.CourierNotifications.Query()
+        IQueryable<CourierNotification> query = UnitOfWork.CourierNotifications.Query()
             .Where(n => n.CourierId == courier.Id);
 
         var unreadCount = await query.CountAsync(n => !n.IsRead);
@@ -126,7 +129,7 @@ public class CourierNotificationsController : ControllerBase
             UnreadCount = unreadCount
         };
 
-        return Ok(new ApiResponse<CourierNotificationResponseDto>(response, "Bildirimler başarıyla getirildi"));
+        return Ok(new ApiResponse<CourierNotificationResponseDto>(response, LocalizationService.GetLocalizedString(ResourceName, "NotificationsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -140,15 +143,15 @@ public class CourierNotificationsController : ControllerBase
         var courier = await GetCurrentCourierAsync(createIfMissing: true);
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>("Kurye profili bulunamadı", "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
         }
 
-        var notification = await _unitOfWork.CourierNotifications.Query()
+        var notification = await UnitOfWork.CourierNotifications.Query()
             .FirstOrDefaultAsync(n => n.Id == id && n.CourierId == courier.Id);
 
         if (notification == null)
         {
-            return NotFound(new ApiResponse<object>("Bildirim bulunamadı", "NOTIFICATION_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotificationNotFound", CurrentCulture), "NOTIFICATION_NOT_FOUND"));
         }
 
         if (!notification.IsRead)
@@ -156,11 +159,11 @@ public class CourierNotificationsController : ControllerBase
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             notification.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.CourierNotifications.Update(notification);
-            await _unitOfWork.SaveChangesAsync();
+            UnitOfWork.CourierNotifications.Update(notification);
+            await UnitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new ApiResponse<object>(new { }, "Bildirim okundu olarak işaretlendi"));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "NotificationMarkedAsRead", CurrentCulture)));
     }
 
     /// <summary>
@@ -173,16 +176,16 @@ public class CourierNotificationsController : ControllerBase
         var courier = await GetCurrentCourierAsync(createIfMissing: true);
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>("Kurye profili bulunamadı", "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
         }
 
-        var unreadNotifications = await _unitOfWork.CourierNotifications.Query()
+        var unreadNotifications = await UnitOfWork.CourierNotifications.Query()
             .Where(n => n.CourierId == courier.Id && !n.IsRead)
             .ToListAsync();
 
         if (unreadNotifications.Count == 0)
         {
-            return Ok(new ApiResponse<object>(new { }, "Tüm bildirimler zaten okunmuş"));
+            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "AllNotificationsAreAlreadyRead", CurrentCulture)));
         }
 
         foreach (var notification in unreadNotifications)
@@ -190,30 +193,30 @@ public class CourierNotificationsController : ControllerBase
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             notification.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.CourierNotifications.Update(notification);
+            UnitOfWork.CourierNotifications.Update(notification);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Tüm bildirimler okundu olarak işaretlendi"));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "AllNotificationsMarkedAsRead", CurrentCulture)));
     }
 
     private async Task EnsureWelcomeNotificationAsync(Guid courierId)
     {
-        var hasNotification = await _unitOfWork.CourierNotifications.Query()
+        var hasNotification = await UnitOfWork.CourierNotifications.Query()
             .AnyAsync(n => n.CourierId == courierId);
 
         if (!hasNotification)
         {
-            await _unitOfWork.CourierNotifications.AddAsync(new CourierNotification
+            await UnitOfWork.CourierNotifications.AddAsync(new CourierNotification
             {
                 CourierId = courierId,
-                Title = "Talabi'ye Hoş Geldin!",
-                Message = "Yeni siparişler aldıkça buradan bildirim alacaksın.",
+                Title = LocalizationService.GetLocalizedString(ResourceName, "WelcomeTitle", CurrentCulture),
+                Message = LocalizationService.GetLocalizedString(ResourceName, "WelcomeMessage", CurrentCulture),
                 Type = "info"
             });
 
-            await _unitOfWork.SaveChangesAsync();
+            await UnitOfWork.SaveChangesAsync();
         }
     }
 }

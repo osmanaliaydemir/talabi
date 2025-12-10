@@ -2346,6 +2346,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get delivery => 'التسليم';
 
   @override
+  String get talabi => 'Talabi';
+
+  @override
   String get navigate => 'التنقل';
 
   @override

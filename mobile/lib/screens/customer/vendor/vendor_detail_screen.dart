@@ -8,6 +8,9 @@ import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/providers/cart_provider.dart';
+import 'package:mobile/screens/customer/cart_screen.dart';
+import 'package:provider/provider.dart';
 
 class VendorDetailScreen extends StatefulWidget {
   final Vendor vendor;
@@ -171,6 +174,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final cart = Provider.of<CartProvider>(context, listen: true);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -197,6 +201,65 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                 ),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const CartScreen(showBackButton: true),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: Colors.black,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    if (cart.itemCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            '${cart.itemCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.vendor.name,

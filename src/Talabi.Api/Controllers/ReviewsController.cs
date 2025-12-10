@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
+using AutoMapper;
 
 namespace Talabi.Api.Controllers;
 
@@ -13,23 +15,27 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class ReviewsController : ControllerBase
+public class ReviewsController : BaseController
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<AppUser> _userManager;
+    private readonly IMapper _mapper;
+    private const string ResourceName = "ReviewResources";
 
     /// <summary>
     /// ReviewsController constructor
     /// </summary>
-    public ReviewsController(IUnitOfWork unitOfWork, UserManager<AppUser> userManager)
+    public ReviewsController(
+        IUnitOfWork unitOfWork,
+        ILogger<ReviewsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        UserManager<AppUser> userManager,
+        IMapper mapper)
+        : base(unitOfWork, logger, localizationService, userContext)
     {
-        _unitOfWork = unitOfWork;
         _userManager = userManager;
+        _mapper = mapper;
     }
-
-    private string? TryGetUserId() =>
-        User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-        ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
 
     /// <summary>
     /// Yeni değerlendirme oluşturur
@@ -40,15 +46,20 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview(CreateReviewDto dto)
     {
-        var userId = TryGetUserId();
+
+        var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new ApiResponse<ReviewDto>("Kullanıcı kimliği belirlenemedi", "USER_IDENTITY_NOT_FOUND"));
+            return Unauthorized(new ApiResponse<ReviewDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
+                "USER_IDENTITY_NOT_FOUND"));
         }
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return Unauthorized(new ApiResponse<ReviewDto>("Kullanıcı bulunamadı", "USER_NOT_FOUND"));
+            return Unauthorized(new ApiResponse<ReviewDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserNotFound", CurrentCulture),
+                "USER_NOT_FOUND"));
         }
 
         var review = new Review
@@ -61,36 +72,40 @@ public class ReviewsController : ControllerBase
 
         if (dto.TargetType.Equals("Product", StringComparison.OrdinalIgnoreCase))
         {
-            var product = await _unitOfWork.Products.GetByIdAsync(dto.TargetId);
+            var product = await UnitOfWork.Products.GetByIdAsync(dto.TargetId);
             if (product == null)
             {
-                return NotFound(new ApiResponse<ReviewDto>("Ürün bulunamadı", "PRODUCT_NOT_FOUND"));
+                return NotFound(new ApiResponse<ReviewDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+                    "PRODUCT_NOT_FOUND"));
             }
 
             // Kullanıcının bu ürüne daha önce review verip vermediğini kontrol et
-            var existingReview = await _unitOfWork.Reviews.Query()
+            var existingReview = await UnitOfWork.Reviews.Query()
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.ProductId == dto.TargetId);
 
             if (existingReview != null)
             {
                 return BadRequest(new ApiResponse<ReviewDto>(
-                    "Bu ürüne zaten değerlendirme yaptınız. Başka bir değerlendirme oluşturamazsınız.",
+                    LocalizationService.GetLocalizedString(ResourceName, "ReviewAlreadyExists", CurrentCulture),
                     "REVIEW_ALREADY_EXISTS"
                 ));
             }
 
             review.ProductId = dto.TargetId;
-            // Product review'ları otomatik onaylanır
-            review.IsApproved = true;
+            // Product review'ları vendor onayı bekler
+            review.IsApproved = false;
         }
         else if (dto.TargetType.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
         {
-            var vendor = await _unitOfWork.Vendors.Query()
+            var vendor = await UnitOfWork.Vendors.Query()
                 .Include(v => v.Products)
                 .FirstOrDefaultAsync(v => v.Id == dto.TargetId);
             if (vendor == null)
             {
-                return NotFound(new ApiResponse<ReviewDto>("Satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+                return NotFound(new ApiResponse<ReviewDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "VendorNotFound", CurrentCulture),
+                    "VENDOR_NOT_FOUND"));
             }
 
             // Vendor review'ı için o vendor'ın bir ürününe de review atanmalı
@@ -98,19 +113,19 @@ public class ReviewsController : ControllerBase
             if (firstProduct == null)
             {
                 return BadRequest(new ApiResponse<ReviewDto>(
-                    "Satıcının ürünü yok. Ürün olmadan satıcı değerlendirmesi oluşturulamaz.",
+                    LocalizationService.GetLocalizedString(ResourceName, "VendorHasNoProducts", CurrentCulture),
                     "VENDOR_HAS_NO_PRODUCTS"
                 ));
             }
 
             // Kullanıcının bu vendor'a ait ürüne daha önce review verip vermediğini kontrol et
-            var existingReview = await _unitOfWork.Reviews.Query()
+            var existingReview = await UnitOfWork.Reviews.Query()
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.ProductId == firstProduct.Id);
 
             if (existingReview != null)
             {
                 return BadRequest(new ApiResponse<ReviewDto>(
-                    "Bu satıcının bir ürününe zaten değerlendirme yaptınız. Başka bir değerlendirme oluşturamazsınız.",
+                    LocalizationService.GetLocalizedString(ResourceName, "VendorReviewAlreadyExists", CurrentCulture),
                     "REVIEW_ALREADY_EXISTS"
                 ));
             }
@@ -123,32 +138,28 @@ public class ReviewsController : ControllerBase
         }
         else
         {
-            return BadRequest(new ApiResponse<ReviewDto>(
-                "Geçersiz hedef tipi. 'Product' veya 'Vendor' olmalıdır.",
+            return BadRequest(new ApiResponse<ReviewDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidTargetType", CurrentCulture),
                 "INVALID_TARGET_TYPE"
             ));
         }
 
-        await _unitOfWork.Reviews.AddAsync(review);
-        await _unitOfWork.SaveChangesAsync();
+        await UnitOfWork.Reviews.AddAsync(review);
+        await UnitOfWork.SaveChangesAsync();
 
-        var reviewDto = new ReviewDto
-        {
-            Id = review.Id,
-            UserId = review.UserId,
-            UserFullName = user.FullName,
-            Rating = review.Rating,
-            Comment = review.Comment,
-            CreatedAt = review.CreatedAt,
-            IsApproved = review.IsApproved
-        };
+        // Reload review with related entities for mapping
+        var reviewWithRelations = await UnitOfWork.Reviews.Query()
+            .Include(r => r.User)
+            .Include(r => r.Product)
+                .ThenInclude(p => p.Vendor)
+            .Include(r => r.Vendor)
+            .FirstOrDefaultAsync(r => r.Id == review.Id);
+
+        var reviewDto = _mapper.Map<ReviewDto>(reviewWithRelations ?? review);
 
         if (review.ProductId.HasValue)
         {
-            return CreatedAtAction(
-                nameof(GetProductReviews),
-                new { productId = review.ProductId.Value },
-                new ApiResponse<ReviewDto>(reviewDto, "Değerlendirme başarıyla oluşturuldu"));
+            return CreatedAtAction(nameof(GetProductReviews), new { productId = review.ProductId.Value },
+                new ApiResponse<ReviewDto>(reviewDto, LocalizationService.GetLocalizedString(ResourceName, "ReviewCreatedSuccessfully", CurrentCulture)));
         }
 
         if (review.VendorId.HasValue)
@@ -156,11 +167,14 @@ public class ReviewsController : ControllerBase
             return CreatedAtAction(
                 nameof(GetVendorReviews),
                 new { vendorId = review.VendorId.Value },
-                new ApiResponse<ReviewDto>(reviewDto, "Değerlendirme başarıyla oluşturuldu"));
+                new ApiResponse<ReviewDto>(
+                    reviewDto,
+                    LocalizationService.GetLocalizedString(ResourceName, "ReviewCreatedSuccessfully", CurrentCulture)));
         }
 
         // Fallback - should not happen because product or vendor is required
-        return Ok(new ApiResponse<ReviewDto>(reviewDto, "Değerlendirme başarıyla oluşturuldu"));
+        return Ok(new ApiResponse<ReviewDto>(reviewDto,
+            LocalizationService.GetLocalizedString(ResourceName, "ReviewCreatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -169,28 +183,43 @@ public class ReviewsController : ControllerBase
     /// <param name="productId">Ürün ID'si</param>
     /// <returns>Değerlendirme listesi</returns>
     [HttpGet("products/{productId}")]
-    public async Task<ActionResult<ApiResponse<List<ReviewDto>>>> GetProductReviews(Guid productId)
+    public async Task<ActionResult<ApiResponse<ProductReviewsSummaryDto>>> GetProductReviews(Guid productId)
     {
-        IQueryable<Review> query = _unitOfWork.Reviews.Query()
+
+        IQueryable<Review> query = UnitOfWork.Reviews.Query()
             .Include(r => r.User)
+            .Include(r => r.Product)
+                .ThenInclude(p => p!.Vendor)
             .Where(r => r.ProductId == productId && r.IsApproved);
+
+        // Ortalama rating ve toplam sayıları hesapla
+        var totalRatings = await query.CountAsync();
+        var averageRating = totalRatings > 0
+            ? await query.AverageAsync(r => (double)r.Rating)
+            : 0.0;
+        var totalComments = await query.CountAsync(r => !string.IsNullOrWhiteSpace(r.Comment));
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);
 
         var reviews = await orderedQuery
-            .Select(r => new ReviewDto
-            {
-                Id = r.Id,
-                UserId = r.UserId,
-                UserFullName = r.User != null ? r.User.FullName : "Anonymous",
-                Rating = r.Rating,
-                Comment = r.Comment,
-                CreatedAt = r.CreatedAt,
-                IsApproved = r.IsApproved
-            })
+            .Include(r => r.User)
+            .Include(r => r.Product)
+                .ThenInclude(p => p.Vendor)
+            .Include(r => r.Vendor)
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<ReviewDto>>(reviews, "Ürün değerlendirmeleri başarıyla getirildi"));
+        var reviewDtos = _mapper.Map<List<ReviewDto>>(reviews);
+
+        var summary = new ProductReviewsSummaryDto
+        {
+            AverageRating = Math.Round(averageRating, 1),
+            TotalRatings = totalRatings,
+            TotalComments = totalComments,
+            Reviews = reviewDtos
+        };
+
+        return Ok(new ApiResponse<ProductReviewsSummaryDto>(summary,
+            LocalizationService.GetLocalizedString(ResourceName, "ProductReviewsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -201,26 +230,22 @@ public class ReviewsController : ControllerBase
     [HttpGet("vendors/{vendorId}")]
     public async Task<ActionResult<ApiResponse<List<ReviewDto>>>> GetVendorReviews(Guid vendorId)
     {
-        IQueryable<Review> query = _unitOfWork.Reviews.Query()
+
+        IQueryable<Review> query = UnitOfWork.Reviews.Query()
             .Include(r => r.User)
+            .Include(r => r.Vendor)
+            .Include(r => r.Product)
+                .ThenInclude(p => p.Vendor)
             .Where(r => r.VendorId == vendorId);
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);
 
-        var reviews = await orderedQuery
-            .Select(r => new ReviewDto
-            {
-                Id = r.Id,
-                UserId = r.UserId,
-                UserFullName = r.User != null ? r.User.FullName : "Anonymous",
-                Rating = r.Rating,
-                Comment = r.Comment,
-                CreatedAt = r.CreatedAt,
-                IsApproved = r.IsApproved
-            })
-            .ToListAsync();
+        var reviews = await orderedQuery.ToListAsync();
+        var reviewDtos = _mapper.Map<List<ReviewDto>>(reviews);
 
-        return Ok(new ApiResponse<List<ReviewDto>>(reviews, "Satıcı değerlendirmeleri başarıyla getirildi"));
+        return Ok(new ApiResponse<List<ReviewDto>>(
+            reviewDtos,
+            LocalizationService.GetLocalizedString(ResourceName, "VendorReviewsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -232,46 +257,63 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<ApiResponse<object>>> ApproveReview(Guid reviewId)
     {
-        var userId = TryGetUserId();
+
+        var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new ApiResponse<object>("Kullanıcı kimliği belirlenemedi", "USER_IDENTITY_NOT_FOUND"));
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
+                "USER_IDENTITY_NOT_FOUND"));
         }
 
-        var review = await _unitOfWork.Reviews.Query()
+        var review = await UnitOfWork.Reviews.Query()
             .Include(r => r.Vendor)
+            .Include(r => r.Product)
+                .ThenInclude(p => p!.Vendor)
             .FirstOrDefaultAsync(r => r.Id == reviewId);
 
         if (review == null)
         {
-            return NotFound(new ApiResponse<object>("Değerlendirme bulunamadı", "REVIEW_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ReviewNotFound", CurrentCulture),
+                "REVIEW_NOT_FOUND"));
         }
 
-        // Sadece vendor owner'ı kendi vendor'ının review'larını onaylayabilir
+        bool isAuthorized = false;
+
+        // Vendor review'ı kontrolü
         if (review.VendorId.HasValue && review.Vendor != null)
         {
-            if (review.Vendor.OwnerId != userId)
+            if (review.Vendor.OwnerId == userId)
             {
-                return StatusCode(403, new ApiResponse<object>(
-                    "Sadece satıcı sahibi kendi satıcısının değerlendirmelerini onaylayabilir.",
-                    "FORBIDDEN"
-                ));
+                isAuthorized = true;
             }
         }
-        else
+        // Product review'ı kontrolü - product'ın vendor'ı kontrol et
+        else if (review.ProductId.HasValue && review.Product != null && review.Product.Vendor != null)
         {
-            return BadRequest(new ApiResponse<object>(
-                "Bu değerlendirme bir satıcıyla ilişkili değil.",
-                "REVIEW_NOT_ASSOCIATED_WITH_VENDOR"
+            if (review.Product.Vendor.OwnerId == userId)
+            {
+                isAuthorized = true;
+            }
+        }
+
+        if (!isAuthorized)
+        {
+            return StatusCode(403, new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ForbiddenApprove", CurrentCulture),
+                "FORBIDDEN"
             ));
         }
 
         review.IsApproved = true;
         review.UpdatedAt = DateTime.UtcNow;
-        _unitOfWork.Reviews.Update(review);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.Reviews.Update(review);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Değerlendirme başarıyla onaylandı"));
+        return Ok(new ApiResponse<object>(
+            new { },
+            LocalizationService.GetLocalizedString(ResourceName, "ReviewApprovedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -283,45 +325,60 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<ApiResponse<object>>> RejectReview(Guid reviewId)
     {
-        var userId = TryGetUserId();
+
+        var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new ApiResponse<object>("Kullanıcı kimliği belirlenemedi", "USER_IDENTITY_NOT_FOUND"));
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
+                "USER_IDENTITY_NOT_FOUND"));
         }
 
-        var review = await _unitOfWork.Reviews.Query()
+        var review = await UnitOfWork.Reviews.Query()
             .Include(r => r.Vendor)
+            .Include(r => r.Product)
+                .ThenInclude(p => p!.Vendor)
             .FirstOrDefaultAsync(r => r.Id == reviewId);
 
         if (review == null)
         {
-            return NotFound(new ApiResponse<object>("Değerlendirme bulunamadı", "REVIEW_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ReviewNotFound", CurrentCulture),
+                "REVIEW_NOT_FOUND"));
         }
 
-        // Sadece vendor owner'ı kendi vendor'ının review'larını reddedebilir
+        bool isAuthorized = false;
+
+        // Vendor review'ı kontrolü
         if (review.VendorId.HasValue && review.Vendor != null)
         {
-            if (review.Vendor.OwnerId != userId)
+            if (review.Vendor.OwnerId == userId)
             {
-                return StatusCode(403, new ApiResponse<object>(
-                    "Sadece satıcı sahibi kendi satıcısının değerlendirmelerini reddedebilir.",
-                    "FORBIDDEN"
-                ));
+                isAuthorized = true;
             }
         }
-        else
+        // Product review'ı kontrolü - product'ın vendor'ı kontrol et
+        else if (review.ProductId.HasValue && review.Product != null && review.Product.Vendor != null)
         {
-            return BadRequest(new ApiResponse<object>(
-                "Bu değerlendirme bir satıcıyla ilişkili değil.",
-                "REVIEW_NOT_ASSOCIATED_WITH_VENDOR"
+            if (review.Product.Vendor.OwnerId == userId)
+            {
+                isAuthorized = true;
+            }
+        }
+
+        if (!isAuthorized)
+        {
+            return StatusCode(403, new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ForbiddenReject", CurrentCulture),
+                "FORBIDDEN"
             ));
         }
 
         // Review'ı sil veya reddedildi olarak işaretle
-        _unitOfWork.Reviews.Remove(review);
-        await _unitOfWork.SaveChangesAsync();
+        UnitOfWork.Reviews.Remove(review);
+        await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, "Değerlendirme başarıyla reddedildi ve silindi"));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ReviewRejectedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -332,24 +389,36 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<ApiResponse<List<ReviewDto>>>> GetPendingReviews()
     {
-        var userId = TryGetUserId();
+        var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new ApiResponse<List<ReviewDto>>("Kullanıcı kimliği belirlenemedi", "USER_IDENTITY_NOT_FOUND"));
+            return Unauthorized(new ApiResponse<List<ReviewDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
+                "USER_IDENTITY_NOT_FOUND"));
         }
 
         // Vendor owner'ının bekleyen review'larını getir
-        var vendor = await _unitOfWork.Vendors.Query()
+        var vendor = await UnitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
 
         if (vendor == null)
         {
-            return NotFound(new ApiResponse<List<ReviewDto>>("Bu kullanıcı için satıcı bulunamadı", "VENDOR_NOT_FOUND"));
+            return NotFound(new ApiResponse<List<ReviewDto>>(LocalizationService.GetLocalizedString(ResourceName,
+                "VendorNotFoundForUser", CurrentCulture), "VENDOR_NOT_FOUND"));
         }
 
-        IQueryable<Review> query = _unitOfWork.Reviews.Query()
-            .Include(r => r.User)
-            .Where(r => r.VendorId == vendor.Id && !r.IsApproved);
+        // Vendor'ın ürün ID'lerini al
+        var vendorProductIds = await UnitOfWork.Products.Query()
+            .Where(p => p.VendorId == vendor.Id)
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        // Bekleyen review'ları getir: hem vendor review'ları hem de vendor'ın ürünlerinin review'ları
+        IQueryable<Review> query = UnitOfWork.Reviews.Query().Include(r => r.User).Where(r => !r.IsApproved &&
+            (
+                (r.VendorId == vendor.Id) ||
+                (r.ProductId.HasValue && vendorProductIds.Contains(r.ProductId.Value))
+            ));
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);
 
@@ -366,6 +435,6 @@ public class ReviewsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<ReviewDto>>(reviews, "Bekleyen değerlendirmeler başarıyla getirildi"));
+        return Ok(new ApiResponse<List<ReviewDto>>(reviews, LocalizationService.GetLocalizedString(ResourceName, "PendingReviewsRetrievedSuccessfully", CurrentCulture)));
     }
 }
