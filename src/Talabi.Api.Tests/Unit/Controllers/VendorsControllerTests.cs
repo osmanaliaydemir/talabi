@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using MockQueryable.Moq;
 using MockQueryable;
@@ -10,6 +11,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Options;
 using Xunit;
 using System.Linq;
 
@@ -24,6 +26,8 @@ public class VendorsControllerTests
     private readonly ILogger<VendorsController> _logger;
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
+    private readonly Mock<ICacheService> _mockCacheService;
+    private readonly Mock<IOptions<CacheOptions>> _mockCacheOptions;
     private readonly VendorsController _controller;
 
     public VendorsControllerTests()
@@ -32,12 +36,19 @@ public class VendorsControllerTests
         _logger = ControllerTestHelpers.CreateMockLogger<VendorsController>();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
+        _mockCacheService = new Mock<ICacheService>();
+        _mockCacheOptions = new Mock<IOptions<CacheOptions>>();
+        
+        // Setup default cache options
+        _mockCacheOptions.Setup(x => x.Value).Returns(new CacheOptions());
 
         _controller = new VendorsController(
             _mockUnitOfWork.Object,
             _logger,
             _mockLocalizationService.Object,
-            _mockUserContextService.Object
+            _mockUserContextService.Object,
+            _mockCacheService.Object,
+            _mockCacheOptions.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()

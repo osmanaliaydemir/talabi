@@ -56,7 +56,7 @@ namespace Talabi.Infrastructure.Services
                 {
                     string? credentialPath = null;
 
-                    // 1. Öncelik: Environment Variable
+                    // 1. Öncelik: Environment Variable (JSON dosyası path'i)
                     credentialPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
 
                     if (!string.IsNullOrEmpty(credentialPath) && File.Exists(credentialPath))
@@ -69,7 +69,26 @@ namespace Talabi.Infrastructure.Services
                         return;
                     }
 
-                    // 2. İkinci öncelik: appsettings.json
+                    // 2. İkinci öncelik: appsettings.json'dan JSON içeriği (string olarak)
+                    var credentialJson = _configuration["Firebase:CredentialJson"];
+                    if (!string.IsNullOrEmpty(credentialJson))
+                    {
+                        try
+                        {
+                            FirebaseApp.Create(new AppOptions()
+                            {
+                                Credential = GoogleCredential.FromJson(credentialJson)
+                            });
+                            _logger.LogInformation("✅ Firebase initialized from APPSETTINGS.JSON (JSON content)");
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("⚠️ Failed to parse Firebase:CredentialJson: {Message}", ex.Message);
+                        }
+                    }
+
+                    // 3. Üçüncü öncelik: appsettings.json'dan JSON dosyası path'i
                     credentialPath = _configuration["Firebase:CredentialPath"];
 
                     if (!string.IsNullOrEmpty(credentialPath))
@@ -86,7 +105,7 @@ namespace Talabi.Infrastructure.Services
                             {
                                 Credential = GoogleCredential.FromFile(credentialPath)
                             });
-                            _logger.LogInformation("✅ Firebase initialized from APPSETTINGS.JSON: {Path}", credentialPath);
+                            _logger.LogInformation("✅ Firebase initialized from APPSETTINGS.JSON (file path): {Path}", credentialPath);
                             return;
                         }
                         else
@@ -95,7 +114,7 @@ namespace Talabi.Infrastructure.Services
                         }
                     }
 
-                    // 3. Üçüncü öncelik: Default konumlar
+                    // 4. Dördüncü öncelik: Default konumlar
                     var defaultPaths = new[]
                     {
                         Path.Combine(AppContext.BaseDirectory, "firebase-adminsdk.json"),
@@ -116,7 +135,7 @@ namespace Talabi.Infrastructure.Services
                         }
                     }
 
-                    // 4. Son çare: Google Cloud Default Credentials
+                    // 5. Son çare: Google Cloud Default Credentials
                     FirebaseApp.Create(new AppOptions()
                     {
                         Credential = GoogleCredential.GetApplicationDefault()
@@ -127,9 +146,10 @@ namespace Talabi.Infrastructure.Services
                 {
                     _logger.LogError("❌ Firebase initialization failed: {Message}. Push notifications will NOT work!", ex.Message);
                     _logger.LogError("💡 Please configure Firebase credentials in one of these ways:");
-                    _logger.LogError("   1. Set GOOGLE_APPLICATION_CREDENTIALS environment variable");
-                    _logger.LogError("   2. Configure Firebase:CredentialPath in appsettings.json");
-                    _logger.LogError("   3. Place firebase-adminsdk.json in application directory");
+                    _logger.LogError("   1. Set GOOGLE_APPLICATION_CREDENTIALS environment variable (JSON file path)");
+                    _logger.LogError("   2. Configure Firebase:CredentialJson in appsettings.json (JSON content as string)");
+                    _logger.LogError("   3. Configure Firebase:CredentialPath in appsettings.json (JSON file path)");
+                    _logger.LogError("   4. Place firebase-adminsdk.json in application directory");
                 }
             }
         }
@@ -159,7 +179,7 @@ namespace Talabi.Infrastructure.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SendNotificationAsync(string token, string title, string body, object data = null)
+        public async Task SendNotificationAsync(string token, string title, string body, object? data = null)
         {
             var message = new Message()
             {
@@ -172,20 +192,57 @@ namespace Talabi.Infrastructure.Services
                 Data = data != null ? ConvertData(data) : null
             };
 
+            // Firebase'in initialize edilip edilmediğini kontrol et
+            if (FirebaseMessaging.DefaultInstance == null)
+            {
+                _logger.LogError("Firebase is not initialized. Cannot send notification.");
+                return;
+            }
+
             try
             {
                 string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
                 _logger.LogInformation($"Successfully sent message: {response}");
             }
+            catch (FirebaseMessagingException ex)
+            {
+                _logger.LogError(ex, $"Firebase error sending notification: {ex.Message}");
+                
+                // Handle invalid token - remove from database
+                if (ex.MessagingErrorCode == MessagingErrorCode.InvalidArgument ||
+                    ex.MessagingErrorCode == MessagingErrorCode.Unregistered)
+                {
+                    _logger.LogWarning($"Removing invalid token from database: {token}");
+                    var invalidToken = await _context.UserDeviceTokens
+                        .FirstOrDefaultAsync(t => t.FcmToken == token);
+                    if (invalidToken != null)
+                    {
+                        _context.UserDeviceTokens.Remove(invalidToken);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             catch (Exception ex)
             {
-                _logger.LogError($"Error sending notification: {ex.Message}");
-                // TODO: Handle invalid token (remove from DB)
+                _logger.LogError(ex, $"Error sending notification: {ex.Message}");
             }
         }
 
-        public async Task SendMulticastNotificationAsync(List<string> tokens, string title, string body, object data = null)
+        public async Task SendMulticastNotificationAsync(List<string> tokens, string title, string body, object? data = null)
         {
+            // Firebase'in initialize edilip edilmediğini kontrol et
+            if (FirebaseMessaging.DefaultInstance == null)
+            {
+                _logger.LogError("Firebase is not initialized. Cannot send multicast notification.");
+                return;
+            }
+
+            if (tokens == null || tokens.Count == 0)
+            {
+                _logger.LogWarning("No tokens provided for multicast notification");
+                return;
+            }
+
             var message = new MulticastMessage()
             {
                 Tokens = tokens,
@@ -199,12 +256,50 @@ namespace Talabi.Infrastructure.Services
 
             try
             {
-                var response = await FirebaseMessaging.DefaultInstance.SendMulticastAsync(message);
-                _logger.LogInformation($"{response.SuccessCount} messages were sent successfully");
+                // Use SendEachForMulticastAsync instead of obsolete SendMulticastAsync
+                var response = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+                _logger.LogInformation($"{response.SuccessCount} messages were sent successfully out of {tokens.Count}");
+                
+                // Handle failed tokens - remove invalid tokens from database
+                if (response.FailureCount > 0)
+                {
+                    _logger.LogWarning($"{response.FailureCount} messages failed to send");
+                    
+                    var invalidTokens = new List<string>();
+                    for (int i = 0; i < response.Responses.Count; i++)
+                    {
+                        var sendResponse = response.Responses[i];
+                        if (!sendResponse.IsSuccess && sendResponse.Exception is FirebaseMessagingException ex)
+                        {
+                            // Handle invalid token errors
+                            if (ex.MessagingErrorCode == MessagingErrorCode.InvalidArgument ||
+                                ex.MessagingErrorCode == MessagingErrorCode.Unregistered)
+                            {
+                                invalidTokens.Add(tokens[i]);
+                                _logger.LogWarning($"Invalid token detected: {tokens[i]} - {ex.Message}");
+                            }
+                        }
+                    }
+                    
+                    // Remove invalid tokens from database
+                    if (invalidTokens.Any())
+                    {
+                        var tokensToRemove = await _context.UserDeviceTokens
+                            .Where(t => invalidTokens.Contains(t.FcmToken))
+                            .ToListAsync();
+                        
+                        if (tokensToRemove.Any())
+                        {
+                            _context.UserDeviceTokens.RemoveRange(tokensToRemove);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation($"Removed {tokensToRemove.Count} invalid tokens from database");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error sending multicast notification: {ex.Message}");
+                _logger.LogError(ex, $"Error sending multicast notification: {ex.Message}");
             }
         }
 
@@ -228,8 +323,8 @@ namespace Talabi.Infrastructure.Services
             }
 
             var culture = GetCultureInfo(languageCode);
-            var title = _resourceManager.GetString("NewOrderAssignedTitle", culture) ?? "New Order Assigned! 🚀";
-            var bodyTemplate = _resourceManager.GetString("NewOrderAssignedBody", culture) ?? "Order #{0} has been assigned to you. Check it out now!";
+            var title = _resourceManager?.GetString("NewOrderAssignedTitle", culture) ?? "New Order Assigned! 🚀";
+            var bodyTemplate = _resourceManager?.GetString("NewOrderAssignedBody", culture) ?? "Order #{0} has been assigned to you. Check it out now!";
             var body = string.Format(bodyTemplate, orderId);
 
             await SendMulticastNotificationAsync(
@@ -314,8 +409,8 @@ namespace Talabi.Infrastructure.Services
                 _ => "OrderUpdateBody"
             };
 
-            var title = _resourceManager.GetString(titleKey, culture) ?? "Order Update";
-            var bodyTemplate = _resourceManager.GetString(bodyKey, culture) ?? "There's an update on your order #{0}.";
+            var title = _resourceManager?.GetString(titleKey, culture) ?? "Order Update";
+            var bodyTemplate = _resourceManager?.GetString(bodyKey, culture) ?? "There's an update on your order #{0}.";
             var body = string.Format(bodyTemplate, orderId);
 
             return (title, body);

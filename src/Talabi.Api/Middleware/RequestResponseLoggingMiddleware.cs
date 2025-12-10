@@ -1,22 +1,23 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
+using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Middleware
 {
     public class RequestResponseLoggingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IActivityLoggingService _activityLoggingService;
         private readonly ILogger<RequestResponseLoggingMiddleware> _logger;
 
-        public RequestResponseLoggingMiddleware(RequestDelegate next, IServiceScopeFactory serviceScopeFactory, ILogger<RequestResponseLoggingMiddleware> logger)
+        public RequestResponseLoggingMiddleware(
+            RequestDelegate next,
+            IActivityLoggingService activityLoggingService,
+            ILogger<RequestResponseLoggingMiddleware> logger)
         {
             _next = next;
-            _serviceScopeFactory = serviceScopeFactory;
+            _activityLoggingService = activityLoggingService;
             _logger = logger;
         }
 
@@ -48,7 +49,8 @@ namespace Talabi.Api.Middleware
                 var responseBodyContent = await ReadResponseBody(responseBody);
                 await responseBody.CopyToAsync(originalBodyStream);
 
-                await LogActivity(context, requestBodyContent, responseBodyContent, stopwatch.ElapsedMilliseconds, exception);
+                // Asenkron logging - fire-and-forget (Hangfire background job)
+                LogActivity(context, requestBodyContent, responseBodyContent, stopwatch.ElapsedMilliseconds, exception);
             }
         }
 
@@ -72,23 +74,13 @@ namespace Talabi.Api.Middleware
             return text;
         }
 
-        private async Task LogActivity(HttpContext context, string requestBody, string responseBody, long durationMs, Exception? exception)
+        private void LogActivity(HttpContext context, string requestBody, string responseBody, long durationMs, Exception? exception)
         {
             try
             {
                 // Health check endpoint'lerini loglama
                 if (context.Request.Path.StartsWithSegments("/health")) 
                 {
-                    return;
-                }
-
-                using var scope = _serviceScopeFactory.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
-                
-                // Test database connection
-                if (!await dbContext.Database.CanConnectAsync())
-                {
-                    _logger.LogError("Cannot connect to database! Skipping log save.");
                     return;
                 }
 
@@ -104,34 +96,27 @@ namespace Talabi.Api.Middleware
                     ? responseBody.Substring(0, maxBodySize) + "... [TRUNCATED]" 
                     : responseBody;
 
-                var log = new UserActivityLog
-                {
-                    UserId = userId,
-                    UserEmail = userEmail,
-                    PhoneNumber = phoneNumber,
-                    Path = context.Request.Path.ToString(),
-                    Method = context.Request.Method,
-                    QueryString = context.Request.QueryString.ToString(),
-                    RequestBody = truncatedRequestBody,
-                    ResponseBody = truncatedResponseBody,
-                    StatusCode = context.Response.StatusCode,
-                    DurationMs = durationMs,
-                    IpAddress = context.Connection.RemoteIpAddress?.ToString(),
-                    UserAgent = context.Request.Headers["User-Agent"].ToString(),
-                    CreatedAt = DateTime.UtcNow,
-                    Exception = exception?.ToString()
-                };
-
-                dbContext.UserActivityLogs.Add(log);
-                await dbContext.SaveChangesAsync();
-                
-                _logger.LogDebug("User activity logged: {Path} {Method} {StatusCode} {DurationMs}ms", 
-                    log.Path, log.Method, log.StatusCode, log.DurationMs);
+                // Asenkron logging - Hangfire background job olarak çalışır
+                // Bu sayede request hemen tamamlanır, log kaydı arka planda yazılır
+                _activityLoggingService.LogActivityAsync(
+                    userId,
+                    userEmail,
+                    phoneNumber,
+                    context.Request.Path.ToString(),
+                    context.Request.Method,
+                    context.Request.QueryString.ToString(),
+                    truncatedRequestBody,
+                    truncatedResponseBody,
+                    context.Response.StatusCode,
+                    durationMs,
+                    context.Connection.RemoteIpAddress?.ToString(),
+                    context.Request.Headers["User-Agent"].ToString(),
+                    exception?.ToString());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, 
-                    "Error logging user activity for path: {Path}, method: {Method}, statusCode: {StatusCode}", 
+                    "Error queueing user activity log for path: {Path}, method: {Method}, statusCode: {StatusCode}", 
                     context.Request.Path, 
                     context.Request.Method, 
                     context.Response.StatusCode);

@@ -173,6 +173,24 @@
   <data name="PasswordResetSent" xml:space="preserve">
     <value>Eğer email kayıtlıysa, şifre sıfırlama linki gönderildi.</value>
   </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Şifre en az {0} karakter uzunluğunda olmalıdır.</value>
+  </data>
+  <data name="PasswordRequiresDigit" xml:space="preserve">
+    <value>Şifre en az bir rakam (0-9) içermelidir.</value>
+  </data>
+  <data name="PasswordRequiresLowercase" xml:space="preserve">
+    <value>Şifre en az bir küçük harf (a-z) içermelidir.</value>
+  </data>
+  <data name="PasswordRequiresUppercase" xml:space="preserve">
+    <value>Şifre en az bir büyük harf (A-Z) içermelidir.</value>
+  </data>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>Şifre en az bir özel karakter (!@#$%^&amp;* vb.) içermelidir.</value>
+  </data>
+  <data name="PasswordSameAsCurrent" xml:space="preserve">
+    <value>Yeni şifre mevcut şifreden farklı olmalıdır.</value>
+  </data>
   
   <!-- Email Subjects -->
   <data name="EmailVerificationSubject" xml:space="preserve">

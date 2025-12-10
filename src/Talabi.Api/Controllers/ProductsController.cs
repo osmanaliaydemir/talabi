@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Options;
 using AutoMapper;
 
 namespace Talabi.Api.Controllers;
@@ -18,6 +20,8 @@ namespace Talabi.Api.Controllers;
 public class ProductsController : BaseController
 {
     private readonly IMapper _mapper;
+    private readonly ICacheService _cacheService;
+    private readonly CacheOptions _cacheOptions;
     private const string ResourceName = "ProductResources";
 
     /// <summary>
@@ -28,10 +32,21 @@ public class ProductsController : BaseController
     /// <param name="localizationService">Localization service</param>
     /// <param name="userContext">User context service</param>
     /// <param name="mapper">AutoMapper instance</param>
-    public ProductsController(IUnitOfWork unitOfWork, ILogger<ProductsController> logger, ILocalizationService localizationService, IUserContextService userContext, IMapper mapper)
+    /// <param name="cacheService">Cache service instance</param>
+    /// <param name="cacheOptions">Cache options</param>
+    public ProductsController(
+        IUnitOfWork unitOfWork, 
+        ILogger<ProductsController> logger, 
+        ILocalizationService localizationService, 
+        IUserContextService userContext, 
+        IMapper mapper,
+        ICacheService cacheService,
+        IOptions<CacheOptions> cacheOptions)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _mapper = mapper;
+        _cacheService = cacheService;
+        _cacheOptions = cacheOptions.Value;
     }
 
     /// <summary>
@@ -139,9 +154,6 @@ public class ProductsController : BaseController
     /// <summary>
     /// Kategorileri getirir - Dil ve VendorType desteği ile
     /// </summary>
-    /// <summary>
-    /// Kategorileri getirir - Dil ve VendorType desteği ile
-    /// </summary>
     /// <param name="lang">Dil kodu (tr, en, ar) - Opsiyonel, header yoksa kullanılır</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
@@ -157,52 +169,62 @@ public class ProductsController : BaseController
         // lang parametresi varsa onu kullan, yoksa header'dan gelen CurrentCulture'ı kullan
         var languageCode = !string.IsNullOrEmpty(lang) ? NormalizeLanguageCode(lang) : CurrentCulture.TwoLetterISOLanguageName;
 
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        IQueryable<Category> query = UnitOfWork.Categories.Query()
-            .Include(c => c.Translations);
+        // Cache key oluştur: categories_{vendorType}_{lang}_{page}_{pageSize}
+        var vendorTypeStr = vendorType?.ToString() ?? "all";
+        var cacheKey = $"{_cacheOptions.CategoriesKeyPrefix}_{vendorTypeStr}_{languageCode}_{page}_{pageSize}";
 
-        // VendorType filtresi
-        if (vendorType.HasValue)
-        {
-            query = query.Where(c => c.VendorType == vendorType.Value);
-        }
-
-        var categories = await query.ToListAsync();
-
-        var categoryDtos = categories.Select(c =>
-        {
-            var translation = c.Translations.FirstOrDefault(t => t.LanguageCode == languageCode);
-            return new CategoryDto
+        // Cache-aside pattern: Önce cache'den kontrol et
+        var result = await _cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
             {
-                Id = c.Id,
-                VendorType = c.VendorType,
-                Name = translation?.Name ?? c.Name,
-                Icon = c.Icon,
-                Color = c.Color,
-                ImageUrl = c.ImageUrl,
-                DisplayOrder = c.DisplayOrder
-            };
-        }).OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                // Base query - Include kullanmadan direkt Select ile projection yapıyoruz (daha performanslı)
+                IQueryable<Category> baseQuery = UnitOfWork.Categories.Query();
 
-        // Pagination
-        var totalCount = categoryDtos.Count;
-        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-        var pagedItems = categoryDtos
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
+                // VendorType filtresi
+                if (vendorType.HasValue)
+                {
+                    baseQuery = baseQuery.Where(c => c.VendorType == vendorType.Value);
+                }
 
-        var result = new PagedResultDto<CategoryDto>
-        {
-            Items = pagedItems,
-            TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize,
-            TotalPages = totalPages
-        };
+                // Database seviyesinde pagination ve projection
+                // Translation'ı subquery ile alıyoruz (left join benzeri)
+                var query = baseQuery
+                    .OrderBy(c => c.DisplayOrder)
+                    .ThenBy(c => c.Name)
+                    .Select(c => new CategoryDto
+                    {
+                        Id = c.Id,
+                        VendorType = c.VendorType,
+                        // Translation varsa onu kullan, yoksa default name'i kullan
+                        Name = c.Translations
+                            .Where(t => t.LanguageCode == languageCode)
+                            .Select(t => t.Name)
+                            .FirstOrDefault() ?? c.Name,
+                        Icon = c.Icon,
+                        Color = c.Color,
+                        ImageUrl = c.ImageUrl,
+                        DisplayOrder = c.DisplayOrder
+                    });
+
+                // Database seviyesinde pagination - ToPagedResultAsync kullanıyoruz
+                var pagedResult = await query.ToPagedResultAsync(page, pageSize);
+
+                // PagedResult'ı PagedResultDto'ya çevir
+                return new PagedResultDto<CategoryDto>
+                {
+                    Items = pagedResult.Items,
+                    TotalCount = pagedResult.TotalCount,
+                    Page = pagedResult.Page,
+                    PageSize = pagedResult.PageSize,
+                    TotalPages = pagedResult.TotalPages
+                };
+            },
+            _cacheOptions.CategoriesCacheTTLMinutes
+        );
 
         return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
     }
@@ -258,58 +280,69 @@ public class ProductsController : BaseController
         [FromQuery] int pageSize = 6,
         [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        var query = UnitOfWork.Products.Query()
-            .Include(p => p.Vendor)
-            .Where(p => p.Vendor == null || p.Vendor.IsActive) // Sadece aktif vendor'ların ürünleri
-            .AsQueryable();
+        // Cache key: popular_products_{vendorType}_{page}_{pageSize}
+        var vendorTypeStr = vendorType?.ToString() ?? "all";
+        var cacheKey = $"{_cacheOptions.PopularProductsKeyPrefix}_{vendorTypeStr}_{page}_{pageSize}";
 
-        if (vendorType.HasValue)
-        {
-            query = query.Where(p => (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)) == vendorType.Value);
-        }
-
-        // Get popular products based on order count
-        var orderedQuery = query
-            .Select(p => new
+        // Cache-aside pattern: Önce cache'den kontrol et
+        var result = await _cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
             {
-                Product = p,
-                OrderCount = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id)
-            })
-            .OrderByDescending(x => x.OrderCount)
-            .ThenByDescending(x => x.Product.CreatedAt)
-            .Select(x => x.Product);
+                var query = UnitOfWork.Products.Query()
+                    .Include(p => p.Vendor)
+                    .Where(p => p.Vendor == null || p.Vendor.IsActive) // Sadece aktif vendor'ların ürünleri
+                    .AsQueryable();
 
-        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
-        var pagedResult = await orderedQuery.ToPagedResultAsync(
-            p => new ProductDto
-            {
-                Id = p.Id,
-                VendorId = p.VendorId,
-                VendorName = p.Vendor != null ? p.Vendor.Name : null,
-                Name = p.Name,
-                Description = p.Description,
-                Category = p.Category,
-                Price = p.Price,
-                Currency = p.Currency,
-                ImageUrl = p.ImageUrl,
-                VendorType = p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null)
+                if (vendorType.HasValue)
+                {
+                    query = query.Where(p => (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)) == vendorType.Value);
+                }
+
+                // Get popular products based on order count
+                var orderedQuery = query
+                    .Select(p => new
+                    {
+                        Product = p,
+                        OrderCount = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id)
+                    })
+                    .OrderByDescending(x => x.OrderCount)
+                    .ThenByDescending(x => x.Product.CreatedAt)
+                    .Select(x => x.Product);
+
+                // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+                var pagedResult = await orderedQuery.ToPagedResultAsync(
+                    p => new ProductDto
+                    {
+                        Id = p.Id,
+                        VendorId = p.VendorId,
+                        VendorName = p.Vendor != null ? p.Vendor.Name : null,
+                        Name = p.Name,
+                        Description = p.Description,
+                        Category = p.Category,
+                        Price = p.Price,
+                        Currency = p.Currency,
+                        ImageUrl = p.ImageUrl,
+                        VendorType = p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null)
+                    },
+                    page,
+                    pageSize);
+
+                // PagedResult'ı PagedResultDto'ya çevir
+                return new PagedResultDto<ProductDto>
+                {
+                    Items = pagedResult.Items,
+                    TotalCount = pagedResult.TotalCount,
+                    Page = pagedResult.Page,
+                    PageSize = pagedResult.PageSize,
+                    TotalPages = pagedResult.TotalPages
+                };
             },
-            page,
-            pageSize);
-
-        // PagedResult'ı PagedResultDto'ya çevir
-        var result = new PagedResultDto<ProductDto>
-        {
-            Items = pagedResult.Items,
-            TotalCount = pagedResult.TotalCount,
-            Page = pagedResult.Page,
-            PageSize = pagedResult.PageSize,
-            TotalPages = pagedResult.TotalPages
-        };
+            _cacheOptions.PopularProductsCacheTTLMinutes
+        );
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
             result,

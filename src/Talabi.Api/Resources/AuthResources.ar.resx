@@ -173,6 +173,24 @@
   <data name="PasswordResetSent" xml:space="preserve">
     <value>إذا كان البريد الإلكتروني موجودًا، تم إرسال رابط إعادة تعيين كلمة المرور.</value>
   </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>يجب أن تكون كلمة المرور على الأقل {0} أحرف.</value>
+  </data>
+  <data name="PasswordRequiresDigit" xml:space="preserve">
+    <value>يجب أن تحتوي كلمة المرور على رقم واحد على الأقل (0-9).</value>
+  </data>
+  <data name="PasswordRequiresLowercase" xml:space="preserve">
+    <value>يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل (a-z).</value>
+  </data>
+  <data name="PasswordRequiresUppercase" xml:space="preserve">
+    <value>يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل (A-Z).</value>
+  </data>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>يجب أن تحتوي كلمة المرور على حرف خاص واحد على الأقل (!@#$%^&amp;* إلخ).</value>
+  </data>
+  <data name="PasswordSameAsCurrent" xml:space="preserve">
+    <value>يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور الحالية.</value>
+  </data>
   
   <!-- Email Subjects -->
   <data name="EmailVerificationSubject" xml:space="preserve">

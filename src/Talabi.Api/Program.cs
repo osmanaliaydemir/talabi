@@ -25,6 +25,17 @@ using Talabi.Core.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuration - User Secrets ve Environment Variables desteği
+// Development ortamında User Secrets kullanılır
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+// Environment Variables her zaman yüklenir (production'da öncelikli)
+// Format: ConnectionStrings__DefaultConnection, JwtSettings__Secret, etc.
+builder.Configuration.AddEnvironmentVariables();
+
 // Logging yapılandırması - Structured logging
 // Not: File logging için Serilog veya benzeri bir package eklenebilir
 // Şimdilik console ve debug logging kullanılıyor
@@ -73,6 +84,12 @@ builder.Services.AddDbContext<TalabiDbContext>(options =>
 // Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 
+// Password Policy Settings
+builder.Services.Configure<PasswordPolicyOptions>(builder.Configuration.GetSection("PasswordPolicy"));
+
+// Cache Settings
+builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection("Cache"));
+
 // Repository Pattern - Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -93,6 +110,10 @@ builder.Services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IInputSanitizationService, InputSanitizationService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
+// ActivityLoggingService Singleton olmalı çünkü middleware'lerde kullanılıyor
+// Middleware'ler singleton olarak çalışır ve scoped service'leri inject edemez
+builder.Services.AddSingleton<IActivityLoggingService, ActivityLoggingService>();
 builder.Services.AddHttpContextAccessor();
 
 // Hangfire
@@ -166,10 +187,24 @@ builder.Services.AddCors(options =>
 });
 
 // Identity
+var passwordPolicy = builder.Configuration.GetSection("PasswordPolicy").Get<PasswordPolicyOptions>() ?? new PasswordPolicyOptions();
+
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedEmail = true;
     options.User.RequireUniqueEmail = true;
+    
+    // Password Policy
+    options.Password.RequireDigit = passwordPolicy.RequireDigit;
+    options.Password.RequireLowercase = passwordPolicy.RequireLowercase;
+    options.Password.RequireUppercase = passwordPolicy.RequireUppercase;
+    options.Password.RequireNonAlphanumeric = passwordPolicy.RequireNonAlphanumeric;
+    options.Password.RequiredLength = passwordPolicy.MinimumLength;
+    
+    // Account Lockout Policy
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = passwordPolicy.MaxFailedAttempts;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(passwordPolicy.LockoutDurationMinutes);
 })
 .AddEntityFrameworkStores<TalabiDbContext>()
 .AddDefaultTokenProviders();
@@ -198,6 +233,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+// ActivityLoggingService için service provider'ı set et (Hangfire job'ları için gerekli)
+Talabi.Infrastructure.Services.ActivityLoggingService.SetServiceProvider(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

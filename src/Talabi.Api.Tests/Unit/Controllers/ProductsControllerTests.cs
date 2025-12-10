@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using MockQueryable.Moq;
 using MockQueryable;
@@ -11,6 +12,7 @@ using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Options;
 using Xunit;
 using System.Threading;
 using System.Linq;
@@ -27,6 +29,8 @@ public class ProductsControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<ICacheService> _mockCacheService;
+    private readonly Mock<IOptions<CacheOptions>> _mockCacheOptions;
     private readonly ProductsController _controller;
 
     public ProductsControllerTests()
@@ -36,13 +40,20 @@ public class ProductsControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockMapper = new Mock<IMapper>();
+        _mockCacheService = new Mock<ICacheService>();
+        _mockCacheOptions = new Mock<IOptions<CacheOptions>>();
+        
+        // Setup default cache options
+        _mockCacheOptions.Setup(x => x.Value).Returns(new CacheOptions());
 
         _controller = new ProductsController(
             _mockUnitOfWork.Object,
             _logger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
-            _mockMapper.Object
+            _mockMapper.Object,
+            _mockCacheService.Object,
+            _mockCacheOptions.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()

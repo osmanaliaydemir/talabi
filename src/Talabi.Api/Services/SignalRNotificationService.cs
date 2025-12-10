@@ -13,7 +13,7 @@ public class SignalRNotificationService : INotificationService
         _hubContext = hubContext;
     }
 
-    public async Task SendNotificationAsync(string token, string title, string body, object data = null)
+    public async Task SendNotificationAsync(string token, string title, string body, object? data = null)
     {
         // SignalR uses userId instead of token, so we'll treat token as userId
         await _hubContext.Clients.User(token).SendAsync("ReceiveNotification", new
@@ -24,7 +24,7 @@ public class SignalRNotificationService : INotificationService
         });
     }
 
-    public async Task SendMulticastNotificationAsync(List<string> tokens, string title, string body, object data = null)
+    public async Task SendMulticastNotificationAsync(List<string> tokens, string title, string body, object? data = null)
     {
         // Send to multiple users
         foreach (var token in tokens)

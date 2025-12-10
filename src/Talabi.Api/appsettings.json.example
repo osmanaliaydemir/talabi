@@ -2,31 +2,84 @@
   "Logging": {
     "LogLevel": {
       "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information",
+      "Hangfire": "Information",
+      "Talabi": "Information",
+      "Talabi.Core": "Information",
+      "Talabi.Infrastructure": "Information",
+      "Talabi.Api": "Information"
+    },
+    "Console": {
+      "FormatterName": "json",
+      "FormatterOptions": {
+        "SingleLine": false,
+        "IncludeScopes": true,
+        "TimestampFormat": "yyyy-MM-dd HH:mm:ss.fff ",
+        "UseUtcTimestamp": true,
+        "JsonWriterOptions": {
+          "Indented": true
+        }
+      }
     }
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=db29009.public.databaseasp.net; Database=db29009; User Id=db29009; Password=Ap6-=2PtcE!7; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;"
+    "DefaultConnection": "Server=YOUR_SERVER; Database=YOUR_DATABASE; User Id=YOUR_USER_ID; Password=YOUR_PASSWORD; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;"
   },
   "JwtSettings": {
-    "Secret": "your-super-secret-jwt-key-here-minimum-32-characters",
+    "Secret": "YOUR_SUPER_SECRET_JWT_KEY_HERE_MINIMUM_32_CHARACTERS",
     "Issuer": "TalabiApi",
     "Audience": "TalabiApp",
     "ExpirationInMinutes": 1440
   },
   "GoogleMaps": {
-    "ApiKey": "your-google-maps-api-key-here"
+    "ApiKey": "YOUR_GOOGLE_MAPS_API_KEY_HERE"
+  },
+  "Firebase": {
+    "CredentialPath": "firebase-adminsdk.json",
+    "CredentialJson": null
   },
   "Email": {
-    "SmtpServer": "smtp.gmail.com",
+    "SmtpServer": "smtp.example.com",
     "SmtpPort": 587,
     "UseSsl": true,
     "UseTls": true,
-    "SenderEmail": "noreply@talabi.com",
-    "SenderPassword": "your-email-password-or-app-password",
+    "SenderEmail": "noreply@example.com",
+    "SenderPassword": "YOUR_EMAIL_PASSWORD_OR_APP_PASSWORD",
     "SenderName": "Talabi",
     "Timeout": 30000
+  },
+  "PasswordPolicy": {
+    "MinimumLength": 8,
+    "RequireDigit": true,
+    "RequireLowercase": true,
+    "RequireUppercase": true,
+    "RequireNonAlphanumeric": true,
+    "MaxFailedAttempts": 5,
+    "LockoutDurationMinutes": 15
+  },
+  "Cache": {
+    "CategoriesKeyPrefix": "categories",
+    "CategoriesCacheTTLMinutes": 60,
+    "BannersKeyPrefix": "banners",
+    "BannersCacheTTLMinutes": 30,
+    "LegalDocumentsKeyPrefix": "legal_documents",
+    "LegalDocumentsCacheTTLMinutes": 1440,
+    "CitiesKeyPrefix": "cities",
+    "CitiesCacheTTLMinutes": 120,
+    "PopularProductsKeyPrefix": "popular_products",
+    "PopularProductsCacheTTLMinutes": 30,
+    "DefaultCacheTTLMinutes": 15
+  },
+  "Cors": {
+    "AllowedOrigins": [],
+    "AllowCredentials": true,
+    "AllowedMethods": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+    "AllowedHeaders": [ "*" ],
+    "ExposedHeaders": [ "*" ],
+    "MaxAge": 3600
   }
 }
 

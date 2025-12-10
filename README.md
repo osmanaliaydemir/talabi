@@ -100,6 +100,35 @@ dotnet run
 - Google Maps API key'i için kendi API anahtarınızı kullanmanız gerekmektedir.
 - JWT secret key'i güvenli bir şekilde oluşturulmalı ve saklanmalıdır.
 
+## 🔒 Güvenlik Yapılandırması
+
+**ÖNEMLİ:** Hassas bilgilerin güvenli yönetimi için lütfen [SECURITY_SETUP.md](src/Talabi.Api/SECURITY_SETUP.md) dosyasını okuyun.
+
+### Hızlı Başlangıç
+
+1. `appsettings.json.example` dosyasını kopyalayın:
+   ```bash
+   cp src/Talabi.Api/appsettings.json.example src/Talabi.Api/appsettings.json
+   ```
+
+2. Development ortamında User Secrets kullanın:
+   ```bash
+   cd src/Talabi.Api
+   dotnet user-secrets init
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "your-connection-string"
+   dotnet user-secrets set "JwtSettings:Secret" "your-jwt-secret-key"
+   dotnet user-secrets set "GoogleMaps:ApiKey" "your-google-maps-api-key"
+   dotnet user-secrets set "Email:SenderPassword" "your-email-password"
+   ```
+
+3. Eğer `appsettings.json` daha önce git'e commit edildiyse, git tracking'den kaldırın:
+   ```bash
+   git rm --cached src/Talabi.Api/appsettings.json
+   git commit -m "Remove appsettings.json from git tracking"
+   ```
+
+Detaylı bilgi için [SECURITY_SETUP.md](src/Talabi.Api/SECURITY_SETUP.md) dosyasına bakın.
+
 ## 🤝 Katkıda Bulunma
 
 1. Bu repository'yi fork edin

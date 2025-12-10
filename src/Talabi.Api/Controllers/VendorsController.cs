@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Options;
 using AutoMapper;
 
 namespace Talabi.Api.Controllers;
@@ -17,6 +19,8 @@ namespace Talabi.Api.Controllers;
 [ApiController]
 public class VendorsController : BaseController
 {
+    private readonly ICacheService _cacheService;
+    private readonly CacheOptions _cacheOptions;
     private const string ResourceName = "VendorResources";
 
     /// <summary>
@@ -26,9 +30,13 @@ public class VendorsController : BaseController
         IUnitOfWork unitOfWork,
         ILogger<VendorsController> logger,
         ILocalizationService localizationService,
-        IUserContextService userContext)
+        IUserContextService userContext,
+        ICacheService cacheService,
+        IOptions<CacheOptions> cacheOptions)
         : base(unitOfWork, logger, localizationService, userContext)
     {
+        _cacheService = cacheService;
+        _cacheOptions = cacheOptions.Value;
     }
 
     /// <summary>
@@ -399,22 +407,31 @@ public class VendorsController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        var cities = await UnitOfWork.Vendors.Query()
-            .Where(v => v.IsActive && v.City != null)
-            .Select(v => v.City!)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToListAsync();
+        // Cache key: cities_all (tüm şehirler cache'lenir, pagination memory'de yapılır)
+        var cacheKey = $"{_cacheOptions.CitiesKeyPrefix}_all";
 
-        // Pagination
-        var totalCount = cities.Count;
+        // Cache-aside pattern: Önce cache'den kontrol et
+        var allCities = await _cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
+            {
+                return await UnitOfWork.Vendors.Query()
+                    .Where(v => v.IsActive && v.City != null)
+                    .Select(v => v.City!)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToListAsync();
+            },
+            _cacheOptions.CitiesCacheTTLMinutes
+        );
+
+        // Pagination (memory'de - tüm şehirler zaten cache'de)
+        var totalCount = allCities.Count;
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-        var pagedItems = cities
+        var pagedItems = allCities
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();

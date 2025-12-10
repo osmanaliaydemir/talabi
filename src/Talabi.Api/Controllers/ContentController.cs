@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Options;
 
 namespace Talabi.Api.Controllers;
 
@@ -13,6 +15,8 @@ namespace Talabi.Api.Controllers;
 [ApiController]
 public class ContentController : BaseController
 {
+    private readonly ICacheService _cacheService;
+    private readonly CacheOptions _cacheOptions;
     private const string ResourceName = "ContentResources";
 
     /// <summary>
@@ -22,9 +26,13 @@ public class ContentController : BaseController
         IUnitOfWork unitOfWork,
         ILogger<ContentController> logger,
         ILocalizationService localizationService,
-        IUserContextService userContext)
+        IUserContextService userContext,
+        ICacheService cacheService,
+        IOptions<CacheOptions> cacheOptions)
         : base(unitOfWork, logger, localizationService, userContext)
     {
+        _cacheService = cacheService;
+        _cacheOptions = cacheOptions.Value;
     }
 
     /// <summary>
@@ -37,26 +45,41 @@ public class ContentController : BaseController
     {
         var languageCode = CurrentCulture.TwoLetterISOLanguageName;
 
+        // Cache key oluştur: legal_documents_{type}_{lang}
+        var cacheKey = $"{_cacheOptions.LegalDocumentsKeyPrefix}_{type}_{languageCode}";
 
-        var document = await UnitOfWork.LegalDocuments.Query()
-            .FirstOrDefaultAsync(d => d.Type == type && d.LanguageCode == languageCode);
+        // Cache-aside pattern: Önce cache'den kontrol et
+        var documentDto = await _cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
+            {
+                var document = await UnitOfWork.LegalDocuments.Query()
+                    .FirstOrDefaultAsync(d => d.Type == type && d.LanguageCode == languageCode);
 
-        if (document == null)
+                if (document == null)
+                {
+                    return null; // Return null to indicate not found
+                }
+
+                return new
+                {
+                    document.Type,
+                    document.LanguageCode,
+                    document.Title,
+                    document.Content,
+                    document.LastUpdated
+                };
+            },
+            _cacheOptions.LegalDocumentsCacheTTLMinutes
+        );
+
+        if (documentDto == null)
         {
             return NotFound(new ApiResponse<object>(
                 LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentNotFound", CurrentCulture, type, languageCode),
                 "LEGAL_DOCUMENT_NOT_FOUND"
             ));
         }
-
-        var documentDto = new
-        {
-            document.Type,
-            document.LanguageCode,
-            document.Title,
-            document.Content,
-            document.LastUpdated
-        };
 
         return Ok(new ApiResponse<object>(
             documentDto,
@@ -70,12 +93,21 @@ public class ContentController : BaseController
     [HttpGet("legal/types")]
     public async Task<ActionResult<ApiResponse<List<string>>>> GetLegalDocumentTypes()
     {
+        // Cache key: legal_documents_types
+        var cacheKey = $"{_cacheOptions.LegalDocumentsKeyPrefix}_types";
 
-
-        var types = await UnitOfWork.LegalDocuments.Query()
-            .Select(d => d.Type)
-            .Distinct()
-            .ToListAsync();
+        // Cache-aside pattern: Önce cache'den kontrol et
+        var types = await _cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
+            {
+                return await UnitOfWork.LegalDocuments.Query()
+                    .Select(d => d.Type)
+                    .Distinct()
+                    .ToListAsync();
+            },
+            _cacheOptions.LegalDocumentsCacheTTLMinutes
+        );
 
         return Ok(new ApiResponse<List<string>>(
             types,
