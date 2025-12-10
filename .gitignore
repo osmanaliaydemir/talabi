@@ -112,17 +112,20 @@ artifacts/
 *.nuget.targets
 
 ## Sensitive files - DO NOT COMMIT
-**/appsettings.json
-**/appsettings.*.json
+# Note: appsettings.json files are now tracked in git (user requested)
+# **/appsettings.json
+# **/appsettings.*.json
 !**/appsettings.Development.json.example
 *.secrets.json
 *.user
 *.csproj.user
 
 ## Firebase Credentials - CRITICAL: Never commit these!
-**/firebase-adminsdk.json
-**/firebase-adminsdk*.json
+# Note: Firebase files are now tracked in git (user requested)
+# **/firebase-adminsdk.json
+# **/firebase-adminsdk*.json
 **/google-services.json
+!mobile/android/app/google-services.json
 **/GoogleService-Info.plist
 credentials/
 secrets/
@@ -194,7 +197,10 @@ Temporary Items
 # Project Specific
 # ===========================================
 # Android
-mobile/android/local.properties
+# Note: key.properties, .jks, and local.properties are now tracked in git
+# mobile/android/local.properties
+# mobile/android/key.properties
+# mobile/android/*.jks
 mobile/android/.gradle/
 mobile/android/app/debug/
 mobile/android/app/release/
@@ -225,3 +231,7 @@ src/**/obj/
 src/Talabi.Api/wwwroot/images/*
 !src/Talabi.Api/wwwroot/images/.gitkeep
 
+# Mobile assets - Keep icon files
+!mobile/assets/icon/icon.png
+
+/PROJECT_SETUP_GUIDE.md
