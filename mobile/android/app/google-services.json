@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "493893474454",
+    "project_id": "talabi-9fc59",
+    "storage_bucket": "talabi-9fc59.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:493893474454:android:648dc4d891eb6213a68ab7",
+        "android_client_info": {
+          "package_name": "com.talabi.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "493893474454-atfe7r50crafj24i0oif0t90pt0oi9po.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.talabi.mobile",
+            "certificate_hash": "b497b83b9e1dae812e5b7f9daf9d18b6426c8801"
+          }
+        },
+        {
+          "client_id": "493893474454-b3lcfp4mopafgqtocmmcep0grl527cc1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdpZK0PK7y8W2f_JAoglmhy-or3XvRuyU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "493893474454-b3lcfp4mopafgqtocmmcep0grl527cc1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "493893474454-mq1q8gionn1kai9e2q2moakt89td3r73.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.talabi.mobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

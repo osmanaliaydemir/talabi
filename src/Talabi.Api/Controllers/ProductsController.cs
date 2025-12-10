@@ -35,10 +35,10 @@ public class ProductsController : BaseController
     /// <param name="cacheService">Cache service instance</param>
     /// <param name="cacheOptions">Cache options</param>
     public ProductsController(
-        IUnitOfWork unitOfWork, 
-        ILogger<ProductsController> logger, 
-        ILocalizationService localizationService, 
-        IUserContextService userContext, 
+        IUnitOfWork unitOfWork,
+        ILogger<ProductsController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
         IMapper mapper,
         ICacheService cacheService,
         IOptions<CacheOptions> cacheOptions)
@@ -65,16 +65,12 @@ public class ProductsController : BaseController
             .Include(p => p.Vendor)
             .Where(p => p.Vendor == null || p.Vendor.IsActive); // Sadece aktif vendor'ların ürünleri
 
-        // Text search - Case-insensitive search helper kullanımı
+        // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
         {
-            query = query.WhereContainsIgnoreCase(p => p.Name, request.Query);
-            // Description için de case-insensitive search
-            if (!string.IsNullOrWhiteSpace(request.Query))
-            {
-                query = query.Where(p => p.Description != null &&
-                    p.Description.ToLower().Contains(request.Query.ToLower()));
-            }
+            var q = request.Query.ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(q) ||
+                                   (p.Description != null && p.Description.ToLower().Contains(q)));
         }
 
         // VendorType filter (Vendor üzerinden - performans için)

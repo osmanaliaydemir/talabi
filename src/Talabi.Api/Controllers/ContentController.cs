@@ -61,7 +61,7 @@ public class ContentController : BaseController
                     return null; // Return null to indicate not found
                 }
 
-                return new
+                return (object)new
                 {
                     document.Type,
                     document.LanguageCode,

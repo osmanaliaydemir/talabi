@@ -42,7 +42,7 @@ public class ProductsControllerTests
         _mockMapper = new Mock<IMapper>();
         _mockCacheService = new Mock<ICacheService>();
         _mockCacheOptions = new Mock<IOptions<CacheOptions>>();
-        
+
         // Setup default cache options
         _mockCacheOptions.Setup(x => x.Value).Returns(new CacheOptions());
 
@@ -176,6 +176,156 @@ public class ProductsControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<ProductDto>>().Subject;
         apiResponse.Success.Should().BeTrue();
         apiResponse.Data.Should().NotBeNull();
+    }
+    [Fact]
+    public async Task Search_WhenCalled_ReturnsPagedProducts()
+    {
+        // Arrange
+        var request = new ProductSearchRequestDto
+        {
+            Query = "Test",
+            Page = 1,
+            PageSize = 10
+        };
+
+        var products = new List<Product>
+        {
+            new Product { Id = Guid.NewGuid(), Name = "Test Product 1", Price = 10, Vendor = new Vendor { IsActive = true } },
+            new Product { Id = Guid.NewGuid(), Name = "Other Product", Price = 20, Vendor = new Vendor { IsActive = true } }
+        };
+
+        var mockRepo = new Mock<IRepository<Product>>();
+        mockRepo.Setup(x => x.Query()).Returns(products.BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockRepo.Object);
+
+        // Act
+        var result = await _controller.Search(request);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
+
+        apiResponse.Data.Items.Should().Contain(p => p.Name == "Test Product 1");
+        apiResponse.Data.Items.Should().NotContain(p => p.Name == "Other Product");
+    }
+
+    [Fact]
+    public async Task GetCategories_WhenCalled_ReturnsCategoriesFromCacheOrDb()
+    {
+        // Arrange
+        var categories = new List<Category>
+        {
+            new Category { Id = Guid.NewGuid(), Name = "Electronics", DisplayOrder = 1 }
+        };
+
+        var mockRepo = new Mock<IRepository<Category>>();
+        mockRepo.Setup(x => x.Query()).Returns(categories.BuildMock());
+        _mockUnitOfWork.Setup(x => x.Categories).Returns(mockRepo.Object);
+
+        // Mock Cache to execute callback
+        _mockCacheService.Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<CategoryDto>>>>(), It.IsAny<int>()))
+            .Returns<string, Func<Task<PagedResultDto<CategoryDto>>>, int>((key, func, ttl) => func());
+
+        // Act
+        var result = await _controller.GetCategories();
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<CategoryDto>>>().Subject;
+
+        apiResponse.Data.Items.Should().Contain(c => c.Name == "Electronics");
+    }
+
+    [Fact]
+    public async Task Autocomplete_WhenQueryProvided_ReturnsMatchingProducts()
+    {
+        // Arrange
+        var query = "Phone";
+        var products = new List<Product>
+        {
+            new Product { Id = Guid.NewGuid(), Name = "Smart Phone", Vendor = new Vendor { IsActive = true } },
+            new Product { Id = Guid.NewGuid(), Name = "Laptop", Vendor = new Vendor { IsActive = true } }
+        };
+
+        var mockRepo = new Mock<IRepository<Product>>();
+        mockRepo.Setup(x => x.Query()).Returns(products.BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockRepo.Object);
+
+        // Act
+        var result = await _controller.Autocomplete(query);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<AutocompleteResultDto>>>().Subject;
+
+        apiResponse.Data.Should().HaveCount(1);
+        apiResponse.Data.First().Name.Should().Be("Smart Phone");
+    }
+
+    [Fact]
+    public async Task GetPopularProducts_WhenCalled_ReturnsProductsOrderedBySales()
+    {
+        // Arrange
+        var prod1 = new Product { Id = Guid.NewGuid(), Name = "Popular", Vendor = new Vendor { IsActive = true } };
+        var prod2 = new Product { Id = Guid.NewGuid(), Name = "Unpopular", Vendor = new Vendor { IsActive = true } };
+        var products = new List<Product> { prod1, prod2 };
+
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(products.BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        // Mock OrderItems to simulate sales
+        var orderItems = new List<OrderItem>
+        {
+            new OrderItem { ProductId = prod1.Id },
+            new OrderItem { ProductId = prod1.Id }, // 2 sales
+            new OrderItem { ProductId = prod2.Id }  // 1 sale
+        };
+        var mockOrderItemRepo = new Mock<IRepository<OrderItem>>();
+        mockOrderItemRepo.Setup(x => x.Query()).Returns(orderItems.BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemRepo.Object);
+
+        // Mock Cache to execute callback
+        _mockCacheService.Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<ProductDto>>>>(), It.IsAny<int>()))
+            .Returns<string, Func<Task<PagedResultDto<ProductDto>>>, int>((key, func, ttl) => func());
+
+        // Act
+        var result = await _controller.GetPopularProducts();
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
+
+        // Should be ordered by sales count descending
+        apiResponse.Data.Items.First().Name.Should().Be("Popular");
+    }
+
+    [Fact]
+    public async Task GetSimilarProducts_WhenCategoryMatches_ReturnsSameCategoryProducts()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var currentProdId = Guid.NewGuid();
+        var otherProdId = Guid.NewGuid();
+
+        var currentProd = new Product { Id = currentProdId, CategoryId = categoryId, IsAvailable = true, Vendor = new Vendor { IsActive = true } };
+        var otherProd = new Product { Id = otherProdId, CategoryId = categoryId, IsAvailable = true, Vendor = new Vendor { IsActive = true }, Name = "Similar One" };
+
+        var products = new List<Product> { currentProd, otherProd };
+
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(products.BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        // Act
+        var result = await _controller.GetSimilarProducts(currentProdId);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
+
+        apiResponse.Data.Items.Should().Contain(p => p.Name == "Similar One");
+        apiResponse.Data.Items.Should().NotContain(p => p.Id == currentProdId); // Should exclude current
     }
 }
 

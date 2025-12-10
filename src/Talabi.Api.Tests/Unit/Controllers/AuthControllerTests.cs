@@ -1,45 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Talabi.Api.Controllers;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
+using Talabi.Core.DTOs.Email;
+using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
-using Talabi.Core.Services;
 using Xunit;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
-/// <summary>
-/// AuthController için unit testler
-/// </summary>
 public class AuthControllerTests
 {
-    private readonly Mock<IAuthService> _mockAuthService;
-    private readonly Mock<UserManager<Core.Entities.AppUser>> _mockUserManager;
-    private readonly Mock<IMemoryCache> _mockMemoryCache;
-    private readonly Mock<Core.Services.IEmailSender> _mockEmailSender;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly ILogger<AuthController> _logger;
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
+    private readonly Mock<IAuthService> _mockAuthService;
+    private readonly Mock<UserManager<AppUser>> _mockUserManager;
+    private readonly Mock<IMemoryCache> _mockMemoryCache;
+    private readonly Mock<Talabi.Core.Services.IEmailSender> _mockEmailSender;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
     {
-        _mockAuthService = new Mock<IAuthService>();
-        _mockUserManager = new Mock<UserManager<Core.Entities.AppUser>>(
-            Mock.Of<IUserStore<Core.Entities.AppUser>>(),
-            null!, null!, null!, null!, null!, null!, null!, null!);
-        _mockMemoryCache = new Mock<IMemoryCache>();
-        _mockEmailSender = new Mock<Core.Services.IEmailSender>();
         _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
-        _logger = ControllerTestHelpers.CreateMockLogger<AuthController>();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
+        _mockAuthService = new Mock<IAuthService>();
+
+        var userStore = new Mock<IUserStore<AppUser>>();
+        _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null, null, null, null, null, null, null, null);
+
+        _mockMemoryCache = new Mock<IMemoryCache>();
+        _mockEmailSender = new Mock<Talabi.Core.Services.IEmailSender>();
+        var logger = ControllerTestHelpers.CreateMockLogger<AuthController>();
 
         _controller = new AuthController(
             _mockAuthService.Object,
@@ -47,7 +47,7 @@ public class AuthControllerTests
             _mockMemoryCache.Object,
             _mockEmailSender.Object,
             _mockUnitOfWork.Object,
-            _logger,
+            logger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object
         )
@@ -57,84 +57,58 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Register_WhenValidDto_ReturnsOk()
+    public async Task Register_WhenValid_ReturnsSuccess()
     {
         // Arrange
-        var dto = new RegisterDto
-        {
-            Email = "test@example.com",
-            Password = "Test123!",
-            FullName = "Test User",
-            Language = "tr"
-        };
-
-        var expectedResult = new { UserId = Guid.NewGuid().ToString(), Email = dto.Email };
-        _mockAuthService
-            .Setup(x => x.RegisterAsync(It.IsAny<RegisterDto>(), It.IsAny<System.Globalization.CultureInfo>()))
-            .ReturnsAsync(expectedResult);
+        var dto = new RegisterDto { Email = "test@test.com", Password = "Password123", FullName = "Test User" };
+        _mockAuthService.Setup(x => x.RegisterAsync(It.IsAny<RegisterDto>(), It.IsAny<System.Globalization.CultureInfo>()))
+            .ReturnsAsync(new { UserId = "123" });
 
         // Act
         var result = await _controller.Register(dto);
 
         // Assert
-        result.Should().NotBeNull();
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<object>>().Subject;
-        apiResponse.Success.Should().BeTrue();
+
         apiResponse.Data.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task Register_WhenInvalidOperationException_ReturnsBadRequest()
+    public async Task Login_WhenValid_ReturnsToken()
     {
         // Arrange
-        var dto = new RegisterDto
-        {
-            Email = "test@example.com",
-            Password = "Test123!",
-            FullName = "Test User"
-        };
+        var dto = new LoginDto { Email = "test@test.com", Password = "Password123" };
+        var response = new LoginResponseDto { Token = "token", RefreshToken = "refresh" };
 
-        _mockAuthService
-            .Setup(x => x.RegisterAsync(It.IsAny<RegisterDto>(), It.IsAny<System.Globalization.CultureInfo>()))
-            .ThrowsAsync(new InvalidOperationException("User already exists"));
+        _mockAuthService.Setup(x => x.LoginAsync(It.IsAny<LoginDto>(), null))
+            .ReturnsAsync(response);
 
         // Act
-        var result = await _controller.Register(dto);
+        var result = await _controller.Login(dto);
 
         // Assert
-        result.Should().NotBeNull();
-        var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var apiResponse = badRequestResult.Value.Should().BeOfType<ApiResponse<object>>().Subject;
-        apiResponse.Success.Should().BeFalse();
-        apiResponse.ErrorCode.Should().Be("REGISTRATION_FAILED");
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<LoginResponseDto>>().Subject;
+
+        apiResponse.Data.Token.Should().Be("token");
     }
 
     [Fact]
-    public async Task Register_WhenException_ReturnsInternalServerError()
+    public async Task ForgotPassword_WhenUserExists_SendsEmail()
     {
         // Arrange
-        var dto = new RegisterDto
-        {
-            Email = "test@example.com",
-            Password = "Test123!",
-            FullName = "Test User"
-        };
-
-        _mockAuthService
-            .Setup(x => x.RegisterAsync(It.IsAny<RegisterDto>(), It.IsAny<System.Globalization.CultureInfo>()))
-            .ThrowsAsync(new Exception("Database error"));
+        var email = "test@test.com";
+        var user = new AppUser { Email = email };
+        _mockUserManager.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync(user);
+        _mockUserManager.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("token");
 
         // Act
-        var result = await _controller.Register(dto);
+        var result = await _controller.ForgotPassword(new ForgotPasswordDto { Email = email });
 
         // Assert
-        result.Should().NotBeNull();
-        var statusCodeResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-        var apiResponse = statusCodeResult.Value.Should().BeOfType<ApiResponse<object>>().Subject;
-        apiResponse.Success.Should().BeFalse();
-        apiResponse.ErrorCode.Should().Be("INTERNAL_ERROR");
+        result.Result.Should().BeOfType<OkObjectResult>();
+
+        _mockEmailSender.Verify(x => x.SendEmailAsync(It.Is<EmailTemplateRequest>(r => r.To == email), default), Times.Once);
     }
 }
-

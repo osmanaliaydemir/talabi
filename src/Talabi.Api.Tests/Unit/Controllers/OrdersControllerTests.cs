@@ -64,18 +64,18 @@ public class OrdersControllerTests
         var userId = "user-1";
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
-        var createDto = new CreateOrderDto { VendorId = Guid.NewGuid(), AddressId = Guid.NewGuid() };
+        var createDto = new CreateOrderDto { VendorId = Guid.NewGuid(), DeliveryAddressId = Guid.NewGuid() };
         var createdOrder = new Order { Id = Guid.NewGuid(), VendorId = createDto.VendorId, CustomerId = userId };
         var orderDto = new OrderDto { Id = createdOrder.Id };
 
-        _mockOrderService.Setup(x => x.CreateOrderAsync(createDto, userId, It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>()))
+        _mockOrderService.Setup(x => x.CreateOrderAsync(createDto, userId, It.IsAny<CultureInfo>()))
             .ReturnsAsync(createdOrder);
 
         _mockMapper.Setup(x => x.Map<OrderDto>(createdOrder)).Returns(orderDto);
 
         // Vendor loading setup
         var vendorRepo = new Mock<IRepository<Vendor>>();
-        vendorRepo.Setup(x => x.GetByIdAsync(createdOrder.VendorId)).ReturnsAsync(new Vendor());
+        vendorRepo.Setup(x => x.GetByIdAsync(createdOrder.VendorId, It.IsAny<CancellationToken>())).ReturnsAsync(new Vendor());
         _mockUnitOfWork.Setup(x => x.Vendors).Returns(vendorRepo.Object);
 
         // Act
@@ -99,7 +99,7 @@ public class OrdersControllerTests
         var userId = "user-1";
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
-        _mockOrderService.Setup(x => x.CreateOrderAsync(It.IsAny<CreateOrderDto>(), It.IsAny<string>(), It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>()))
+        _mockOrderService.Setup(x => x.CreateOrderAsync(It.IsAny<CreateOrderDto>(), It.IsAny<string>(), It.IsAny<CultureInfo>()))
             .ThrowsAsync(new Exception("Order creation failed"));
 
         // Act
@@ -177,7 +177,7 @@ public class OrdersControllerTests
         result.Result.Should().BeOfType<OkObjectResult>();
 
         _mockUnitOfWork.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockOrderService.Verify(x => x.CancelOrderAsync(orderId, userId, cancelDto, It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>()), Times.Once);
+        _mockOrderService.Verify(x => x.CancelOrderAsync(orderId, userId, cancelDto, It.IsAny<CultureInfo>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -190,7 +190,7 @@ public class OrdersControllerTests
         var orderId = Guid.NewGuid();
         var cancelDto = new CancelOrderDto();
 
-        _mockOrderService.Setup(x => x.CancelOrderAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancelOrderDto>(), It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>()))
+        _mockOrderService.Setup(x => x.CancelOrderAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancelOrderDto>(), It.IsAny<CultureInfo>()))
             .ThrowsAsync(new DbUpdateConcurrencyException());
 
         // Act
