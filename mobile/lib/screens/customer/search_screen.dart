@@ -176,10 +176,8 @@ class _SearchScreenState extends State<SearchScreen>
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final history = prefs.getStringList('search_history') ?? [];
-
-      // Remove if exists and add to beginning, keep only last 10
-      history
+      final history = prefs.getStringList('search_history') ?? []
+        // Remove if exists and add to beginning, keep only last 10
         ..remove(query)
         ..insert(0, query);
       if (history.length > 10) {
@@ -1464,7 +1462,7 @@ class _SearchScreenState extends State<SearchScreen>
               borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
               border: Border.all(color: Colors.grey[200]!),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonLoader(
@@ -1473,12 +1471,12 @@ class _SearchScreenState extends State<SearchScreen>
                   borderRadius: 0,
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SkeletonLoader(width: 150, height: 20),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       SkeletonLoader(width: 100, height: 16),
                     ],
                   ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SkeletonLoader extends StatelessWidget {
-  SkeletonLoader({
+  const SkeletonLoader({
     super.key,
     required this.width,
     required this.height,
@@ -43,19 +43,19 @@ class ProductSkeletonItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SkeletonLoader(width: double.infinity, height: 120, borderRadius: 16),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonLoader(width: 100, height: 16),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 SkeletonLoader(width: 60, height: 14),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

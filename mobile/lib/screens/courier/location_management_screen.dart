@@ -118,6 +118,7 @@ class _CourierLocationManagementScreenState
 
       // Reload profile to get updated timestamp
       await _loadProfile();
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -309,7 +310,7 @@ class _CourierLocationManagementScreenState
                           initialCameraPosition: CameraPosition(
                             target:
                                 _selectedLocation ??
-                                LatLng(
+                                const LatLng(
                                   41.0082, // Istanbul default
                                   28.9784,
                                 ),

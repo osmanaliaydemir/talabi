@@ -6,9 +6,8 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
-  final String? email;
-
   const EmailVerificationScreen({super.key, this.email});
+  final String? email;
 
   @override
   State<EmailVerificationScreen> createState() =>
@@ -75,7 +74,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -114,7 +113,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       child: Container(
                         width: 100,
                         height: 100,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppTheme.primaryOrange,
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
@@ -130,7 +129,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     // Title - Centered
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Text(
@@ -150,10 +149,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Container(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                     ),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppTheme.cardColor,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(
@@ -167,25 +166,27 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         BoxShadow(
                           color: AppTheme.shadowColor,
                           blurRadius: 10,
-                          offset: const Offset(0, -4),
+                          offset: Offset(0, -4),
                         ),
                       ],
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(AppTheme.spacingLarge),
+                      padding: const EdgeInsets.all(AppTheme.spacingLarge),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           AppTheme.verticalSpace(1.25),
                           Container(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.primaryOrange.withValues(
                                 alpha: 0.1,
                               ),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.mark_email_unread_outlined,
                               size: 80,
                               color: AppTheme.darkOrange,
@@ -226,7 +227,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryOrange,
                                 foregroundColor: AppTheme.textOnPrimary,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   vertical: AppTheme.spacingMedium,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -249,7 +250,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                           TextButton(
                             onPressed: _isResending ? null : _resendEmail,
                             child: _isResending
-                                ? SizedBox(
+                                ? const SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(

@@ -305,6 +305,7 @@ class HomeScreenState extends State<HomeScreen> {
           },
           onSetDefault: (address) async {
             await _setDefaultAddress(address);
+            if (!context.mounted) return;
             Navigator.pop(context);
           },
         );
@@ -1298,6 +1299,7 @@ class HomeScreenState extends State<HomeScreen> {
             setState(() {
               _favoriteStatus[product.id] = false;
             });
+            if (!context.mounted) return;
             ToastMessage.show(
               context,
               message: localizations.removedFromFavorites(product.name),
@@ -1308,6 +1310,7 @@ class HomeScreenState extends State<HomeScreen> {
             setState(() {
               _favoriteStatus[product.id] = true;
             });
+            if (!context.mounted) return;
             ToastMessage.show(
               context,
               message: localizations.addedToFavorites(product.name),
@@ -1315,6 +1318,7 @@ class HomeScreenState extends State<HomeScreen> {
             );
           }
         } catch (e) {
+          if (!context.mounted) return;
           ToastMessage.show(
             context,
             message: localizations.favoriteOperationFailed(e.toString()),

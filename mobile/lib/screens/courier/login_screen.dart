@@ -81,7 +81,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -138,7 +138,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                         height: 100,
                         decoration: BoxDecoration(
                           color: AppTheme.courierDark.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(
                               AppTheme.radiusXLarge * 2,
                             ),
@@ -152,13 +152,13 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                     // Title - Centered
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.delivery_dining,
                               color: AppTheme.textOnPrimary,
                               size: 36,
@@ -189,10 +189,10 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                           ),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(
@@ -206,12 +206,14 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                               BoxShadow(
                                 color: AppTheme.shadowColor,
                                 blurRadius: 10,
-                                offset: const Offset(0, -4),
+                                offset: Offset(0, -4),
                               ),
                             ],
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -220,7 +222,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                   // Welcome Message
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.two_wheeler,
                                         color: AppTheme.courierPrimary,
                                         size: 32,
@@ -268,15 +270,17 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.email_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
@@ -312,7 +316,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock_outline,
                                           color: AppTheme.textSecondary,
                                         ),
@@ -331,10 +335,12 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                           },
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -400,7 +406,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     width: double.infinity,
                                     child: ElevatedButton.icon(
                                       onPressed: _isLoading ? null : _login,
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.delivery_dining,
                                         color: AppTheme.textOnPrimary,
                                         size: 20,
@@ -409,7 +415,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         backgroundColor:
                                             AppTheme.courierPrimary,
                                         foregroundColor: AppTheme.textOnPrimary,
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           vertical: AppTheme.spacingMedium,
                                         ),
                                         shape: RoundedRectangleBorder(
@@ -420,7 +426,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         elevation: AppTheme.elevationNone,
                                       ),
                                       label: _isLoading
-                                          ? SizedBox(
+                                          ? const SizedBox(
                                               height: 20,
                                               width: 20,
                                               child: CircularProgressIndicator(
@@ -487,7 +493,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                           );
                                         },
                                         child: Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: AppTheme.spacingMedium,
                                             vertical: AppTheme.spacingSmall + 4,
                                           ),
@@ -495,7 +501,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.person_add_outlined,
                                                 color: AppTheme.courierPrimary,
                                                 size: 20,
@@ -521,7 +527,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                                 ),
                                               ),
                                               AppTheme.horizontalSpace(0.25),
-                                              Icon(
+                                              const Icon(
                                                 Icons.arrow_forward_rounded,
                                                 color: AppTheme.courierPrimary,
                                                 size: 18,

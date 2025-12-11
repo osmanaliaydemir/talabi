@@ -123,7 +123,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           showBackButton: false,
           onRefresh: _loadProfile,
         ),
-        body: Center(child: CircularProgressIndicator(color: Colors.teal)),
+        body: const Center(
+          child: CircularProgressIndicator(color: Colors.teal),
+        ),
         bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
       );
     }
@@ -440,7 +442,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
 
             if (confirm == true && mounted) {
               final role = await authProvider.logout();
-              if (!mounted) return;
+              if (!context.mounted) return;
               // Role'e göre ilgili login sayfasına yönlendir
               if (role?.toLowerCase() == 'courier') {
                 Navigator.of(

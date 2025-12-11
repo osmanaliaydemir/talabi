@@ -8,9 +8,8 @@ import 'package:mobile/services/navigation_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class OrderMapScreen extends StatefulWidget {
-  final CourierOrder order;
-
   const OrderMapScreen({super.key, required this.order});
+  final CourierOrder order;
 
   @override
   State<OrderMapScreen> createState() => _OrderMapScreenState();
@@ -30,7 +29,9 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   }
 
   Future<void> _initializeMap() async {
-    LoggerService().debug('OrderMapScreen: Initializing map - OrderId: ${widget.order.id}');
+    LoggerService().debug(
+      'OrderMapScreen: Initializing map - OrderId: ${widget.order.id}',
+    );
     // Get current location
     try {
       _currentPosition = await LocationPermissionService.getCurrentLocation(
@@ -40,7 +41,11 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
         'OrderMapScreen: Current location obtained - Lat: ${_currentPosition?.latitude}, Lng: ${_currentPosition?.longitude}',
       );
     } catch (e, stackTrace) {
-      LoggerService().error('OrderMapScreen: ERROR getting current location', e, stackTrace);
+      LoggerService().error(
+        'OrderMapScreen: ERROR getting current location',
+        e,
+        stackTrace,
+      );
     }
 
     if (mounted) {
@@ -52,39 +57,40 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   }
 
   void _setupMarkers() {
-    _markers.clear();
-
-    // Vendor marker (pickup)
-    _markers.add(
-      Marker(
-        markerId: const MarkerId('vendor'),
-        position: LatLng(
-          widget.order.vendorLatitude,
-          widget.order.vendorLongitude,
+    _markers
+      ..clear()
+      // Vendor marker (pickup)
+      ..add(
+        Marker(
+          markerId: const MarkerId('vendor'),
+          position: LatLng(
+            widget.order.vendorLatitude,
+            widget.order.vendorLongitude,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: InfoWindow(
+            title: AppLocalizations.of(context)?.pickup ?? 'Pickup',
+            snippet: widget.order.vendorName,
+          ),
         ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: InfoWindow(
-          title: AppLocalizations.of(context)?.pickup ?? 'Pickup',
-          snippet: widget.order.vendorName,
+      )
+      // Customer marker (delivery)
+      ..add(
+        Marker(
+          markerId: const MarkerId('customer'),
+          position: LatLng(
+            widget.order.deliveryLatitude,
+            widget.order.deliveryLongitude,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+          infoWindow: InfoWindow(
+            title: AppLocalizations.of(context)?.delivery ?? 'Delivery',
+            snippet: widget.order.customerName,
+          ),
         ),
-      ),
-    );
-
-    // Customer marker (delivery)
-    _markers.add(
-      Marker(
-        markerId: const MarkerId('customer'),
-        position: LatLng(
-          widget.order.deliveryLatitude,
-          widget.order.deliveryLongitude,
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: InfoWindow(
-          title: AppLocalizations.of(context)?.delivery ?? 'Delivery',
-          snippet: widget.order.customerName,
-        ),
-      ),
-    );
+      );
 
     // Current position marker
     if (_currentPosition != null) {

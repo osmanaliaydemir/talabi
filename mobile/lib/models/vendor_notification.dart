@@ -1,12 +1,4 @@
 class VendorNotification {
-  final String id;
-  final String type;
-  final String title;
-  final String message;
-  final bool isRead;
-  final String? relatedEntityId;
-  final DateTime createdAt;
-
   VendorNotification({
     required this.id,
     required this.type,
@@ -28,4 +20,11 @@ class VendorNotification {
       createdAt: DateTime.parse(json['createdAt']),
     );
   }
+  final String id;
+  final String type;
+  final String title;
+  final String message;
+  final bool isRead;
+  final String? relatedEntityId;
+  final DateTime createdAt;
 }

@@ -298,6 +298,8 @@ class _CartScreenState extends State<CartScreen> {
                                           cartItems: cart.items.values.toList(),
                                         );
 
+                                        if (!context.mounted) return;
+
                                         // Navigate to checkout screen
                                         Navigator.push(
                                           context,

@@ -6,15 +6,6 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:provider/provider.dart';
 
 class CourierHeader extends StatefulWidget implements PreferredSizeWidget {
-  final String? title;
-  final String? subtitle;
-  final IconData leadingIcon;
-  final bool showBackButton;
-  final VoidCallback? onBack;
-  final VoidCallback? onRefresh;
-  final bool showNotifications;
-  final bool showRefresh;
-
   const CourierHeader({
     super.key,
     this.title,
@@ -26,7 +17,14 @@ class CourierHeader extends StatefulWidget implements PreferredSizeWidget {
     this.showNotifications = true,
     this.showRefresh = true,
   });
-
+  final String? title;
+  final String? subtitle;
+  final IconData leadingIcon;
+  final bool showBackButton;
+  final VoidCallback? onBack;
+  final VoidCallback? onRefresh;
+  final bool showNotifications;
+  final bool showRefresh;
   @override
   Size get preferredSize => const Size.fromHeight(70);
 
@@ -52,7 +50,11 @@ class _CourierHeaderState extends State<CourierHeader> {
         _unreadNotifications = summary.unreadCount;
       });
     } catch (e, stackTrace) {
-      LoggerService().error('CourierHeader: ERROR refreshing notification count', e, stackTrace);
+      LoggerService().error(
+        'CourierHeader: ERROR refreshing notification count',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -163,7 +165,9 @@ class _CourierHeaderState extends State<CourierHeader> {
                     size: 24,
                   ),
                   onPressed: () {
-                    LoggerService().debug('CourierHeader: Refresh icon pressed');
+                    LoggerService().debug(
+                      'CourierHeader: Refresh icon pressed',
+                    );
                     widget.onRefresh?.call();
                   },
                 ),

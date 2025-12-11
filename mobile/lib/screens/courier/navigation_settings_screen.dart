@@ -53,7 +53,7 @@ class _CourierNavigationSettingsScreenState
     }
   }
 
-  Future<void> _savePreference(String value, BuildContext context) async {
+  Future<void> _savePreference(String value) async {
     LoggerService().debug(
       'CourierNavigationSettingsScreen: Saving navigation app: $value',
     );
@@ -123,7 +123,7 @@ class _CourierNavigationSettingsScreenState
         showRefresh: false,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
@@ -141,7 +141,7 @@ class _CourierNavigationSettingsScreenState
                     groupValue: _selectedApp,
                     onChanged: (value) {
                       if (value == null) return;
-                      _savePreference(value, context);
+                      _savePreference(value);
                     },
                     child: Column(
                       children: [

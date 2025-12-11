@@ -64,7 +64,11 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
         'CourierAvailabilityScreen: isAvailable=$_isAvailable, status=$_status, current=$_currentActiveOrders, max=$_maxActiveOrders',
       );
     } catch (e, stackTrace) {
-      LoggerService().error('CourierAvailabilityScreen: ERROR loading availability', e, stackTrace);
+      LoggerService().error(
+        'CourierAvailabilityScreen: ERROR loading availability',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       setState(() {
         _error = e.toString();
@@ -96,7 +100,7 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
 
   Widget _buildBody(AppLocalizations? localizations) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: Colors.teal));
+      return const Center(child: CircularProgressIndicator(color: Colors.teal));
     }
 
     if (_error != null) {

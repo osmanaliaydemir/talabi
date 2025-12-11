@@ -187,6 +187,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           response['role'],
         );
 
+        if (!mounted) return;
+
         // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
@@ -240,6 +242,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           response['role'],
         );
 
+        if (!mounted) return;
+
         // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
@@ -292,6 +296,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           response['userId'],
           response['role'],
         );
+
+        if (!mounted) return;
 
         // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);

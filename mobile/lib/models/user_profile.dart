@@ -1,11 +1,4 @@
 class UserProfile {
-  final String id;
-  final String email;
-  final String fullName;
-  final String? phoneNumber;
-  final String? profileImageUrl;
-  final DateTime? dateOfBirth;
-
   UserProfile({
     required this.id,
     required this.email,
@@ -27,6 +20,13 @@ class UserProfile {
           : null,
     );
   }
+
+  final String id;
+  final String email;
+  final String fullName;
+  final String? phoneNumber;
+  final String? profileImageUrl;
+  final DateTime? dateOfBirth;
 
   Map<String, dynamic> toJson() {
     return {

@@ -172,7 +172,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       BoxShadow(
                         color: AppTheme.shadowColor,
                         blurRadius: 10,
-                        offset: const Offset(0, -4),
+                        offset: Offset(0, -4),
                       ),
                     ],
                   ),
@@ -388,12 +388,14 @@ class _EmailIllustrationPainter extends CustomPainter {
       const Radius.circular(4),
     );
 
-    paint.color = Colors.orange;
-    paint.style = PaintingStyle.fill;
+    paint
+      ..color = Colors.orange
+      ..style = PaintingStyle.fill;
     canvas.drawRRect(envelopeRect, paint);
 
-    paint.color = Colors.orange[800]!;
-    paint.style = PaintingStyle.stroke;
+    paint
+      ..color = Colors.orange[800]!
+      ..style = PaintingStyle.stroke;
     canvas.drawRRect(envelopeRect, paint);
 
     // Envelope flap
@@ -402,13 +404,15 @@ class _EmailIllustrationPainter extends CustomPainter {
       ..lineTo(size.width * 0.5, size.height * 0.55)
       ..lineTo(size.width * 0.65, size.height * 0.5);
 
-    paint.color = Colors.orange[800]!;
-    paint.style = PaintingStyle.stroke;
+    paint
+      ..color = Colors.orange[800]!
+      ..style = PaintingStyle.stroke;
     canvas.drawPath(flapPath, paint);
 
     // Notification badge
-    paint.color = Colors.red;
-    paint.style = PaintingStyle.fill;
+    paint
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
     canvas.drawCircle(
       Offset(size.width * 0.65, size.height * 0.5),
       size.width * 0.04,
@@ -427,14 +431,15 @@ class _EmailIllustrationPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        size.width * 0.65 - textPainter.width / 2,
-        size.height * 0.5 - textPainter.height / 2,
-      ),
-    );
+    textPainter
+      ..layout()
+      ..paint(
+        canvas,
+        Offset(
+          size.width * 0.65 - textPainter.width / 2,
+          size.height * 0.5 - textPainter.height / 2,
+        ),
+      );
 
     // Paper airplane
     final airplanePath = Path()
@@ -444,8 +449,9 @@ class _EmailIllustrationPainter extends CustomPainter {
       ..lineTo(size.width * 0.25, size.height * 0.4)
       ..close();
 
-    paint.color = Colors.blue[400]!;
-    paint.style = PaintingStyle.fill;
+    paint
+      ..color = Colors.blue[400]!
+      ..style = PaintingStyle.fill;
     canvas.drawPath(airplanePath, paint);
   }
 

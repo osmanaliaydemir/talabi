@@ -32,7 +32,9 @@ class _CourierNotificationsScreenState
   }
 
   Future<void> _loadNotifications() async {
-    LoggerService().debug('CourierNotificationsScreen: Loading notifications...');
+    LoggerService().debug(
+      'CourierNotificationsScreen: Loading notifications...',
+    );
     setState(() {
       _isLoading = true;
       _isError = false;
@@ -53,7 +55,11 @@ class _CourierNotificationsScreenState
         'CourierNotificationsScreen: Loaded ${response.items.length} notifications. Unread: ${response.unreadCount}',
       );
     } catch (e, stackTrace) {
-      LoggerService().error('CourierNotificationsScreen: ERROR loading notifications', e, stackTrace);
+      LoggerService().error(
+        'CourierNotificationsScreen: ERROR loading notifications',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -70,11 +76,17 @@ class _CourierNotificationsScreenState
 
   Future<void> _markAsRead(String id) async {
     try {
-      LoggerService().debug('CourierNotificationsScreen: Marking notification $id as read');
+      LoggerService().debug(
+        'CourierNotificationsScreen: Marking notification $id as read',
+      );
       await _courierService.markNotificationRead(id);
       await _loadNotifications();
     } catch (e, stackTrace) {
-      LoggerService().error('CourierNotificationsScreen: ERROR mark as read', e, stackTrace);
+      LoggerService().error(
+        'CourierNotificationsScreen: ERROR mark as read',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -143,7 +155,7 @@ class _CourierNotificationsScreenState
 
   Widget _buildBody(BuildContext context) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: Colors.teal));
+      return const Center(child: CircularProgressIndicator(color: Colors.teal));
     }
 
     if (_isError) {

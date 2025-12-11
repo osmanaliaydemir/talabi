@@ -3,17 +3,6 @@ import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/currency.dart';
 
 class ProductSearchRequestDto {
-  final String? query;
-  final String? category;
-  final String? categoryId;
-  final double? minPrice;
-  final double? maxPrice;
-  final String? vendorId;
-  final int? vendorType; // 1 = Restaurant, 2 = Market
-  final String? sortBy; // "price_asc", "price_desc", "name", "newest"
-  final int page;
-  final int pageSize;
-
   ProductSearchRequestDto({
     this.query,
     this.category,
@@ -26,7 +15,16 @@ class ProductSearchRequestDto {
     this.page = 1,
     this.pageSize = 20,
   });
-
+  final String? query;
+  final String? category;
+  final String? categoryId;
+  final double? minPrice;
+  final double? maxPrice;
+  final String? vendorId;
+  final int? vendorType; // 1 = Restaurant, 2 = Market
+  final String? sortBy; // "price_asc", "price_desc", "name", "newest"
+  final int page;
+  final int pageSize;
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{'page': page, 'pageSize': pageSize};
 
@@ -60,18 +58,6 @@ class ProductSearchRequestDto {
 }
 
 class VendorSearchRequestDto {
-  final String? query;
-  final String? city;
-  final double? minRating;
-  final double? userLatitude;
-  final double? userLongitude;
-  final double? maxDistanceInKm;
-  final int? vendorType; // 1 = Restaurant, 2 = Market
-  final String?
-  sortBy; // "name", "newest", "rating_desc", "popularity", "distance"
-  final int page;
-  final int pageSize;
-
   VendorSearchRequestDto({
     this.query,
     this.city,
@@ -84,6 +70,18 @@ class VendorSearchRequestDto {
     this.page = 1,
     this.pageSize = 20,
   });
+
+  final String? query;
+  final String? city;
+  final double? minRating;
+  final double? userLatitude;
+  final double? userLongitude;
+  final double? maxDistanceInKm;
+  final int? vendorType; // 1 = Restaurant, 2 = Market
+  final String?
+  sortBy; // "name", "newest", "rating_desc", "popularity", "distance"
+  final int page;
+  final int pageSize;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{'page': page, 'pageSize': pageSize};
@@ -118,12 +116,6 @@ class VendorSearchRequestDto {
 }
 
 class PagedResultDto<T> {
-  final List<T> items;
-  final int totalCount;
-  final int page;
-  final int pageSize;
-  final int totalPages;
-
   PagedResultDto({
     required this.items,
     required this.totalCount,
@@ -146,13 +138,14 @@ class PagedResultDto<T> {
       totalPages: json['totalPages'],
     );
   }
+  final List<T> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+  final int totalPages;
 }
 
 class AutocompleteResultDto {
-  final String id;
-  final String name;
-  final String type; // "product" or "vendor"
-
   AutocompleteResultDto({
     required this.id,
     required this.name,
@@ -166,21 +159,13 @@ class AutocompleteResultDto {
       type: json['type'],
     );
   }
+  final String id;
+  final String name;
+  final String type; // "product" or "vendor"
 }
 
 // Helper classes for typed PagedResultDto
 class ProductDto {
-  final String id;
-  final String vendorId;
-  final String? vendorName;
-  final String name;
-  final String? description;
-  final String? category;
-  final String? categoryId;
-  final double price;
-  final Currency currency;
-  final String? imageUrl;
-
   ProductDto({
     required this.id,
     required this.vendorId,
@@ -210,6 +195,16 @@ class ProductDto {
       imageUrl: json['imageUrl'],
     );
   }
+  final String id;
+  final String vendorId;
+  final String? vendorName;
+  final String name;
+  final String? description;
+  final String? category;
+  final String? categoryId;
+  final double price;
+  final Currency currency;
+  final String? imageUrl;
 
   Product toProduct() {
     return Product(
@@ -228,17 +223,6 @@ class ProductDto {
 }
 
 class VendorDto {
-  final String id;
-  final String name;
-  final String? imageUrl;
-  final String address;
-  final String? city;
-  final double? rating;
-  final int ratingCount;
-  final double? latitude;
-  final double? longitude;
-  final double? distanceInKm;
-
   VendorDto({
     required this.id,
     required this.name,
@@ -274,6 +258,16 @@ class VendorDto {
           : null,
     );
   }
+  final String id;
+  final String name;
+  final String? imageUrl;
+  final String address;
+  final String? city;
+  final double? rating;
+  final int ratingCount;
+  final double? latitude;
+  final double? longitude;
+  final double? distanceInKm;
 
   Vendor toVendor() {
     return Vendor(

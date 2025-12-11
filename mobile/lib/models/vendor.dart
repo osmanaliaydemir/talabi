@@ -1,15 +1,4 @@
 class Vendor {
-  final String id;
-  final String name;
-  final String? imageUrl;
-  final String address;
-  final String? city;
-  final double? rating;
-  final int ratingCount;
-  final double? latitude;
-  final double? longitude;
-  final double? distanceInKm;
-
   Vendor({
     required this.id,
     required this.name,
@@ -45,4 +34,15 @@ class Vendor {
           : null,
     );
   }
+
+  final String id;
+  final String name;
+  final String? imageUrl;
+  final String address;
+  final String? city;
+  final double? rating;
+  final int ratingCount;
+  final double? latitude;
+  final double? longitude;
+  final double? distanceInKm;
 }

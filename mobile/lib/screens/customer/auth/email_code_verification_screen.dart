@@ -13,14 +13,13 @@ import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 
 class EmailCodeVerificationScreen extends StatefulWidget {
-  final String email;
-  final String? password; // Optional: for auto-login after verification
-
   const EmailCodeVerificationScreen({
     super.key,
     required this.email,
     this.password,
   });
+  final String email;
+  final String? password; // Optional: for auto-login after verification
 
   @override
   State<EmailCodeVerificationScreen> createState() =>
@@ -54,10 +53,10 @@ class _EmailCodeVerificationScreenState
   @override
   void dispose() {
     _timer?.cancel();
-    for (var controller in _controllers) {
+    for (final controller in _controllers) {
       controller.dispose();
     }
-    for (var focusNode in _focusNodes) {
+    for (final focusNode in _focusNodes) {
       focusNode.dispose();
     }
     super.dispose();
@@ -186,7 +185,7 @@ class _EmailCodeVerificationScreenState
         ToastMessage.show(context, message: errorMessage, isSuccess: false);
 
         // Hatalı kodları temizle
-        for (var controller in _controllers) {
+        for (final controller in _controllers) {
           controller.clear();
         }
         _focusNodes[0].requestFocus();
@@ -238,7 +237,7 @@ class _EmailCodeVerificationScreenState
         _startTimer();
 
         // Kod inputlarını temizle
-        for (var controller in _controllers) {
+        for (final controller in _controllers) {
           controller.clear();
         }
         _focusNodes[0].requestFocus();
@@ -278,7 +277,7 @@ class _EmailCodeVerificationScreenState
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -316,7 +315,7 @@ class _EmailCodeVerificationScreenState
                       child: Container(
                         width: 100,
                         height: 100,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppTheme.primaryOrange,
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
@@ -332,7 +331,7 @@ class _EmailCodeVerificationScreenState
                     // Title
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Text(
@@ -352,10 +351,10 @@ class _EmailCodeVerificationScreenState
               Expanded(
                 child: SingleChildScrollView(
                   child: Container(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                     ),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppTheme.cardColor,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(
@@ -369,25 +368,27 @@ class _EmailCodeVerificationScreenState
                         BoxShadow(
                           color: AppTheme.shadowColor,
                           blurRadius: 10,
-                          offset: const Offset(0, -4),
+                          offset: Offset(0, -4),
                         ),
                       ],
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(AppTheme.spacingLarge),
+                      padding: const EdgeInsets.all(AppTheme.spacingLarge),
                       child: Column(
                         children: [
                           AppTheme.verticalSpace(1.25),
                           // Icon
                           Container(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.primaryOrange.withValues(
                                 alpha: 0.1,
                               ),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.mark_email_unread_outlined,
                               size: 80,
                               color: AppTheme.darkOrange,
@@ -437,13 +438,14 @@ class _EmailCodeVerificationScreenState
                                   ),
                                   decoration: InputDecoration(
                                     counterText: '',
-                                    contentPadding: EdgeInsets.zero, // Remove default padding
+                                    contentPadding: EdgeInsets
+                                        .zero, // Remove default padding
                                     isDense: true,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium,
                                       ),
-                                      borderSide: BorderSide(
+                                      borderSide: const BorderSide(
                                         color: AppTheme.dividerColor,
                                         width: 2,
                                       ),
@@ -452,7 +454,7 @@ class _EmailCodeVerificationScreenState
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium,
                                       ),
-                                      borderSide: BorderSide(
+                                      borderSide: const BorderSide(
                                         color: AppTheme.dividerColor,
                                         width: 2,
                                       ),
@@ -461,7 +463,7 @@ class _EmailCodeVerificationScreenState
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium,
                                       ),
-                                      borderSide: BorderSide(
+                                      borderSide: const BorderSide(
                                         color: AppTheme.primaryOrange,
                                         width: 2,
                                       ),
@@ -519,7 +521,7 @@ class _EmailCodeVerificationScreenState
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryOrange,
                                 foregroundColor: AppTheme.textOnPrimary,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   vertical: AppTheme.spacingMedium,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -530,7 +532,7 @@ class _EmailCodeVerificationScreenState
                                 elevation: AppTheme.elevationNone,
                               ),
                               child: _isLoading
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(

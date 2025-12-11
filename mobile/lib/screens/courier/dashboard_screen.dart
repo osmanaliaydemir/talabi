@@ -492,7 +492,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     await LocationPermissionService.checkLocationServices(
                       context,
                     );
-                if (!mounted) return;
+                if (!context.mounted) return;
                 if (!serviceEnabled) {
                   setState(() {
                     isGettingLocation = false;
@@ -507,7 +507,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
                 final position =
                     await LocationPermissionService.getCurrentLocation(context);
-                if (!mounted) return;
+                if (!context.mounted) return;
                 if (position != null) {
                   setState(() {
                     selectedLatitude = position.latitude;

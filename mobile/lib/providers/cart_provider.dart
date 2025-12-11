@@ -48,11 +48,11 @@ class CartProvider with ChangeNotifier {
 
       if (cartData['items'] != null) {
         for (final item in cartData['items']) {
-          String vendorId = item['vendorId']?.toString() ?? "0";
+          String vendorId = item['vendorId']?.toString() ?? '0';
           String? vendorName = item['vendorName'];
 
           // If backend doesn't provide vendorId, fetch it from product endpoint
-          if (vendorId == "0") {
+          if (vendorId == '0') {
             try {
               LoggerService().debug(
                 '🛒 [CART] Backend missing vendorId for product ${item['productId']}, fetching...',
@@ -123,7 +123,8 @@ class CartProvider with ChangeNotifier {
           if (responseData is Map &&
               (responseData['code'] == 'ADDRESS_REQUIRED' ||
                   responseData['requiresAddress'] == true) &&
-              context != null) {
+              context != null &&
+              context.mounted) {
             // Show popup dialog - don't update state
             await _showAddressRequiredDialog(context, product);
             return; // Don't queue the action if address is required

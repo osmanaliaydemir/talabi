@@ -1,13 +1,4 @@
 class Review {
-  final String id;
-  final String userId;
-  final String userFullName;
-  final int rating;
-  final String comment;
-  final DateTime createdAt;
-  final String? productId;
-  final String? vendorName;
-
   Review({
     required this.id,
     required this.userId,
@@ -31,14 +22,17 @@ class Review {
       vendorName: json['vendorName'],
     );
   }
+  final String id;
+  final String userId;
+  final String userFullName;
+  final int rating;
+  final String comment;
+  final DateTime createdAt;
+  final String? productId;
+  final String? vendorName;
 }
 
 class ProductReviewsSummary {
-  final double averageRating;
-  final int totalRatings;
-  final int totalComments;
-  final List<Review> reviews;
-
   ProductReviewsSummary({
     required this.averageRating,
     required this.totalRatings,
@@ -56,4 +50,8 @@ class ProductReviewsSummary {
           .toList(),
     );
   }
+  final double averageRating;
+  final int totalRatings;
+  final int totalComments;
+  final List<Review> reviews;
 }

@@ -44,7 +44,9 @@ class _EarningsScreenState extends State<EarningsScreen>
     });
 
     try {
-      LoggerService().debug('EarningsScreen: Fetching today, weekly, and monthly earnings...');
+      LoggerService().debug(
+        'EarningsScreen: Fetching today, weekly, and monthly earnings...',
+      );
       final results = await Future.wait([
         _courierService.getTodayEarnings(),
         _courierService.getWeeklyEarnings(),
@@ -63,7 +65,11 @@ class _EarningsScreenState extends State<EarningsScreen>
         });
       }
     } catch (e, stackTrace) {
-      LoggerService().error('EarningsScreen: ERROR loading earnings', e, stackTrace);
+      LoggerService().error(
+        'EarningsScreen: ERROR loading earnings',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -108,7 +114,9 @@ class _EarningsScreenState extends State<EarningsScreen>
           ),
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.teal))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.teal),
+                  )
                 : _error != null
                 ? Center(
                     child: Column(
@@ -164,7 +172,10 @@ class _EarningsScreenState extends State<EarningsScreen>
                   children: [
                     Text(
                       localizations?.totalEarningsLabel ?? 'Total Earnings',
-                      style: const TextStyle(color: Colors.white70, fontSize: 16),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(

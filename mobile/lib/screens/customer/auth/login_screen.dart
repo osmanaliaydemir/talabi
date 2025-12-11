@@ -64,6 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
           response['role'],
         );
 
+        if (!mounted) return;
+
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
@@ -111,6 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
           response['userId'],
           response['role'],
         );
+
+        if (!mounted) return;
 
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }

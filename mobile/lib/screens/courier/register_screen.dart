@@ -59,7 +59,9 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
       final fullName = _fullNameController.text.trim();
       final phone = _phoneController.text.trim();
 
-      LoggerService().debug('🟡 [COURIER_REGISTER] Calling courierRegister API');
+      LoggerService().debug(
+        '🟡 [COURIER_REGISTER] Calling courierRegister API',
+      );
       LoggerService().debug('🟡 [COURIER_REGISTER] Email: $email');
       LoggerService().debug('🟡 [COURIER_REGISTER] FullName: $fullName');
       LoggerService().debug(
@@ -95,7 +97,11 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
         );
       }
     } catch (e, stackTrace) {
-      LoggerService().error('🔴 [COURIER_REGISTER] Register error', e, stackTrace);
+      LoggerService().error(
+        '🔴 [COURIER_REGISTER] Register error',
+        e,
+        stackTrace,
+      );
 
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
@@ -161,7 +167,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -218,7 +224,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                     ),
                     // Content - Row layout
                     Padding(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingLarge,
                       ),
                       child: Center(
@@ -238,7 +244,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                   AppTheme.radiusMedium + 2,
                                 ),
                               ),
-                              child: Center(
+                              child: const Center(
                                 child: Icon(
                                   Icons.person_add_rounded,
                                   size: 24,
@@ -283,14 +289,14 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                   AppTheme.radiusMedium + 2,
                                 ),
                                 boxShadow: [
-                                  BoxShadow(
+                                  const BoxShadow(
                                     color: AppTheme.shadowColor,
                                     blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                                    offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Center(
+                              child: const Center(
                                 child: Icon(
                                   Icons.delivery_dining_rounded,
                                   size: 24,
@@ -315,10 +321,10 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                           ),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(
@@ -332,12 +338,14 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                               BoxShadow(
                                 color: AppTheme.shadowColor,
                                 blurRadius: 10,
-                                offset: const Offset(0, -4),
+                                offset: Offset(0, -4),
                               ),
                             ],
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -346,7 +354,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                   // Welcome Message
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.two_wheeler,
                                         color: AppTheme.courierPrimary,
                                         size: 32,
@@ -390,15 +398,17 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.person_outline,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -425,15 +435,17 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.email_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
@@ -467,7 +479,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock_outline,
                                           color: AppTheme.textSecondary,
                                         ),
@@ -486,10 +498,12 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                           },
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -521,15 +535,17 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.phone_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.phone,
                                     ),
@@ -544,7 +560,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                                         backgroundColor:
                                             AppTheme.courierPrimary,
                                         foregroundColor: AppTheme.textOnPrimary,
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           vertical: AppTheme.spacingMedium,
                                         ),
                                         shape: RoundedRectangleBorder(

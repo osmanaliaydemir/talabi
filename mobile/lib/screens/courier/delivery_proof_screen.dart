@@ -10,9 +10,8 @@ import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DeliveryProofScreen extends StatefulWidget {
-  final String orderId;
-
   const DeliveryProofScreen({super.key, required this.orderId});
+  final String orderId;
 
   @override
   State<DeliveryProofScreen> createState() => _DeliveryProofScreenState();
@@ -44,7 +43,9 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
     );
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
     if (photo != null) {
-      LoggerService().debug('DeliveryProofScreen: Photo taken - Path: ${photo.path}');
+      LoggerService().debug(
+        'DeliveryProofScreen: Photo taken - Path: ${photo.path}',
+      );
       setState(() {
         _image = File(photo.path);
       });
@@ -52,7 +53,9 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
   }
 
   Future<void> _submitProof() async {
-    LoggerService().debug('DeliveryProofScreen: Submitting proof - OrderId: ${widget.orderId}');
+    LoggerService().debug(
+      'DeliveryProofScreen: Submitting proof - OrderId: ${widget.orderId}',
+    );
     if (!_formKey.currentState!.validate()) {
       LoggerService().warning('DeliveryProofScreen: Form validation failed');
       return;
@@ -91,8 +94,10 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
 
       // Upload image
       LoggerService().debug('DeliveryProofScreen: Uploading image...');
-      String photoUrl = await courierService.uploadImage(_image!);
-      LoggerService().debug('DeliveryProofScreen: Image uploaded - URL: $photoUrl');
+      final String photoUrl = await courierService.uploadImage(_image!);
+      LoggerService().debug(
+        'DeliveryProofScreen: Image uploaded - URL: $photoUrl',
+      );
 
       // Process and upload signature
       String? signatureUrl;
@@ -106,11 +111,15 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
           ).create();
           await file.writeAsBytes(data);
           signatureUrl = await courierService.uploadImage(file);
-          LoggerService().debug('DeliveryProofScreen: Signature uploaded - URL: $signatureUrl');
+          LoggerService().debug(
+            'DeliveryProofScreen: Signature uploaded - URL: $signatureUrl',
+          );
         }
       }
 
-      LoggerService().debug('DeliveryProofScreen: Submitting proof to backend...');
+      LoggerService().debug(
+        'DeliveryProofScreen: Submitting proof to backend...',
+      );
       await courierService.submitProof(
         widget.orderId,
         photoUrl,
@@ -135,7 +144,11 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
         Navigator.pop(context, true); // Return success
       }
     } catch (e, stackTrace) {
-      LoggerService().error('DeliveryProofScreen: ERROR submitting proof', e, stackTrace);
+      LoggerService().error(
+        'DeliveryProofScreen: ERROR submitting proof',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -278,7 +291,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _isLoading
-                    ? CircularProgressIndicator(color: Colors.teal)
+                    ? const CircularProgressIndicator(color: Colors.teal)
                     : Text(
                         localizations?.submitProofAndCompleteDelivery ??
                             'Submit Proof & Complete Delivery',

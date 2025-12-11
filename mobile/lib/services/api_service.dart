@@ -23,23 +23,6 @@ class ApiService {
     _instance ??= ApiService._internal();
     return _instance!;
   }
-  static const String baseUrl = 'https://talabi.runasp.net/api';
-  static ApiService? _instance;
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-    ),
-  );
-
-  final CacheService _cacheService = CacheService();
-  final ApiRequestScheduler _requestScheduler = ApiRequestScheduler();
-  ConnectivityService? _connectivityService;
-
-  // Track refresh token operation to prevent concurrent calls
-  bool _isRefreshing = false;
-  Completer<Map<String, String>>? _refreshCompleter;
 
   ApiService._internal() {
     // Add logging interceptor
@@ -263,6 +246,24 @@ class ApiService {
       ),
     );
   }
+
+  static const String baseUrl = 'https://talabi.runasp.net/api';
+  static ApiService? _instance;
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+    ),
+  );
+
+  final CacheService _cacheService = CacheService();
+  final ApiRequestScheduler _requestScheduler = ApiRequestScheduler();
+  ConnectivityService? _connectivityService;
+
+  // Track refresh token operation to prevent concurrent calls
+  bool _isRefreshing = false;
+  Completer<Map<String, String>>? _refreshCompleter;
 
   // Expose Dio instance for other services
   Dio get dio => _dio;

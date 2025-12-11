@@ -11,9 +11,9 @@ import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 
 class CourierActiveDeliveriesScreen extends StatefulWidget {
-  final int? initialTabIndex;
-
   const CourierActiveDeliveriesScreen({super.key, this.initialTabIndex});
+
+  final int? initialTabIndex;
 
   @override
   State<CourierActiveDeliveriesScreen> createState() =>
@@ -65,10 +65,14 @@ class _CourierActiveDeliveriesScreenState
       );
       // Tab değiştiğinde ilgili tab'ın verilerini yeniden yükle
       if (_tabController.index == 0) {
-        LoggerService().debug('CourierActiveDeliveriesScreen: Reloading active orders');
+        LoggerService().debug(
+          'CourierActiveDeliveriesScreen: Reloading active orders',
+        );
         _loadActiveOrders();
       } else if (_tabController.index == 1) {
-        LoggerService().debug('CourierActiveDeliveriesScreen: Reloading delivery history');
+        LoggerService().debug(
+          'CourierActiveDeliveriesScreen: Reloading delivery history',
+        );
         _loadHistory(reset: true);
       }
     }
@@ -76,13 +80,16 @@ class _CourierActiveDeliveriesScreenState
 
   @override
   void dispose() {
-    _tabController.removeListener(_onTabChanged);
-    _tabController.dispose();
+    _tabController
+      ..removeListener(_onTabChanged)
+      ..dispose();
     super.dispose();
   }
 
   Future<void> _loadActiveOrders() async {
-    LoggerService().debug('CourierActiveDeliveriesScreen: Loading active orders...');
+    LoggerService().debug(
+      'CourierActiveDeliveriesScreen: Loading active orders...',
+    );
     setState(() {
       _isLoadingActive = true;
       _errorActive = null;
@@ -99,7 +106,11 @@ class _CourierActiveDeliveriesScreenState
         'CourierActiveDeliveriesScreen: Loaded ${orders.length} active orders',
       );
     } catch (e, stackTrace) {
-      LoggerService().error('CourierActiveDeliveriesScreen: ERROR loading orders', e, stackTrace);
+      LoggerService().error(
+        'CourierActiveDeliveriesScreen: ERROR loading orders',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       setState(() {
         _errorActive = e.toString();
@@ -147,7 +158,11 @@ class _CourierActiveDeliveriesScreenState
         'CourierActiveDeliveriesScreen: Loaded ${items.length} history items, total: ${_historyOrders.length}',
       );
     } catch (e, stackTrace) {
-      LoggerService().error('CourierActiveDeliveriesScreen: ERROR loading history', e, stackTrace);
+      LoggerService().error(
+        'CourierActiveDeliveriesScreen: ERROR loading history',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       setState(() {
         _errorHistory = e.toString();
@@ -212,7 +227,7 @@ class _CourierActiveDeliveriesScreenState
     return RefreshIndicator(
       onRefresh: _loadActiveOrders,
       child: _isLoadingActive
-          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : _errorActive != null
           ? Center(
               child: Column(
@@ -262,7 +277,7 @@ class _CourierActiveDeliveriesScreenState
     return RefreshIndicator(
       onRefresh: () => _loadHistory(reset: true),
       child: _isLoadingHistory
-          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : _errorHistory != null
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -310,8 +325,8 @@ class _CourierActiveDeliveriesScreenState
                 if (index == _historyOrders.length) {
                   // load more
                   _loadHistory();
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Center(
                       child: CircularProgressIndicator(color: Colors.teal),
                     ),

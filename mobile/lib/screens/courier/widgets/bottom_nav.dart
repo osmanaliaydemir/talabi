@@ -4,9 +4,8 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/dashboard_screen.dart';
 
 class CourierBottomNav extends StatelessWidget {
-  final int currentIndex;
-
   const CourierBottomNav({super.key, required this.currentIndex});
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context) {

@@ -1,16 +1,4 @@
 class VendorProfile {
-  final int id;
-  final String name;
-  final String? imageUrl;
-  final String address;
-  final String? city;
-  final double? latitude;
-  final double? longitude;
-  final String? phoneNumber;
-  final String? description;
-  final double? rating;
-  final int ratingCount;
-
   VendorProfile({
     required this.id,
     required this.name,
@@ -46,6 +34,17 @@ class VendorProfile {
       ratingCount: json['ratingCount'] ?? 0,
     );
   }
+  final int id;
+  final String name;
+  final String? imageUrl;
+  final String address;
+  final String? city;
+  final double? latitude;
+  final double? longitude;
+  final String? phoneNumber;
+  final String? description;
+  final double? rating;
+  final int ratingCount;
 
   Map<String, dynamic> toJson() {
     return {

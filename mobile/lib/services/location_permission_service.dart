@@ -287,6 +287,7 @@ class LocationPermissionService {
       if (!serviceEnabled) return null;
 
       // Then check permissions
+      if (!context.mounted) return null;
       final hasPermission = await checkAndRequestPermissions(context);
       if (!hasPermission) return null;
 
