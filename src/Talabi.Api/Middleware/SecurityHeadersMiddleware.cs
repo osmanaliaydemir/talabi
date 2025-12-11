@@ -16,11 +16,11 @@ public class SecurityHeadersMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Content Security Policy
+        // Content Security Policy - Güçlendirilmiş (unsafe-inline ve unsafe-eval kaldırıldı)
         context.Response.Headers.Append("Content-Security-Policy", 
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-            "style-src 'self' 'unsafe-inline'; " +
+            "script-src 'self'; " +  // unsafe-inline ve unsafe-eval kaldırıldı (XSS koruması)
+            "style-src 'self' 'unsafe-inline'; " +  // CSS için unsafe-inline gerekli (Scalar UI için)
             "img-src 'self' data: https:; " +
             "font-src 'self' data:; " +
             "connect-src 'self'; " +

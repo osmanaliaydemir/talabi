@@ -350,19 +350,106 @@ public class AuthController : BaseController
         }
     }
 
-    // Keep the old endpoint for backward compatibility (if needed)
+    /// <summary>
+    /// Email doğrulama token'ı ile email'i doğrular (legacy endpoint - backward compatibility için)
+    /// </summary>
+    /// <param name="token">Email doğrulama token'ı</param>
+    /// <param name="email">Doğrulanacak email adresi</param>
+    /// <returns>Doğrulama sonucu</returns>
     [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(string token, string email)
+    public async Task<IActionResult> ConfirmEmail(string? token, string? email)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null)
-            return BadRequest("Invalid email confirmation request.");
+        try
+        {
+            // Token validation
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Logger.LogWarning("ConfirmEmail: Token is null or empty");
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "TokenRequired", CurrentCulture),
+                    "TOKEN_REQUIRED"));
+            }
 
-        var result = await _userManager.ConfirmEmailAsync(user, token);
-        if (result.Succeeded)
-            return Ok("Email confirmed successfully!");
+            // Email validation
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                Logger.LogWarning("ConfirmEmail: Email is null or empty");
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailRequired", CurrentCulture),
+                    "EMAIL_REQUIRED"));
+            }
 
-        return BadRequest("Error confirming email.");
+            // Email format validation
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                Logger.LogWarning("ConfirmEmail: Invalid email format - {Email}", email);
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidEmailFormat", CurrentCulture),
+                    "INVALID_EMAIL_FORMAT"));
+            }
+
+            // Token format validation (ASP.NET Core Identity tokens are base64 encoded)
+            // Token should not be too short or too long
+            if (token.Length < 10 || token.Length > 1000)
+            {
+                Logger.LogWarning("ConfirmEmail: Invalid token format - Token length: {Length}", token.Length);
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture),
+                    "INVALID_TOKEN_FORMAT"));
+            }
+
+            // Find user
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // Don't reveal if user exists or not for security
+                Logger.LogWarning("ConfirmEmail: User not found for email - {Email}", email);
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidEmailConfirmationRequest", CurrentCulture),
+                    "INVALID_REQUEST"));
+            }
+
+            // Check if email is already confirmed
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                Logger.LogInformation("ConfirmEmail: Email already confirmed for - {Email}", email);
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailAlreadyConfirmed", CurrentCulture),
+                    "EMAIL_ALREADY_CONFIRMED"));
+            }
+
+            // URL decode token if needed (tokens in URLs are often URL encoded)
+            var decodedToken = Uri.UnescapeDataString(token);
+
+            // Confirm email with token
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+            
+            if (result.Succeeded)
+            {
+                Logger.LogInformation("Email confirmed successfully for - {Email}", email);
+                return Ok(new ApiResponse<object>(
+                    new { },
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailConfirmedSuccessfully", CurrentCulture)));
+            }
+
+            // Log specific errors
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            Logger.LogWarning("ConfirmEmail: Email confirmation failed for - {Email}, Errors: {Errors}", 
+                email, string.Join(", ", errorMessages));
+
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "EmailConfirmationFailed", CurrentCulture),
+                "EMAIL_CONFIRMATION_FAILED",
+                errorMessages));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error confirming email for - {Email}", email);
+            return StatusCode(500, new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "EmailConfirmationError", CurrentCulture),
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }));
+        }
     }
 
     /// <summary>

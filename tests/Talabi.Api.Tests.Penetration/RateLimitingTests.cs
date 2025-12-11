@@ -31,9 +31,9 @@ public class RateLimitingTests : IClassFixture<WebApplicationFactory<Program>>
             Password = "WrongPassword123!"
         };
 
-        // Act - 100 istek gönder
+        // Act - 5'ten fazla istek gönder (limit: 5/dakika)
         var tasks = new List<Task<HttpResponseMessage>>();
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 10; i++)
         {
             tasks.Add(_client.PostAsJsonAsync("/api/auth/login", loginDto));
         }
@@ -41,9 +41,13 @@ public class RateLimitingTests : IClassFixture<WebApplicationFactory<Program>>
         var responses = await Task.WhenAll(tasks);
 
         // Assert
-        // Rate limiting aktif olmalı - bazı istekler 429 dönmeli
+        // Rate limiting aktif olmalı - 5'ten fazla istek 429 dönmeli
         var rateLimitedResponses = responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests);
-        rateLimitedResponses.Should().NotBeEmpty("Rate limiting aktif olmalı");
+        rateLimitedResponses.Should().NotBeEmpty("Login endpoint'i için rate limiting aktif olmalı (limit: 5/dakika)");
+        
+        // İlk 5 istek başarılı olabilir, sonraki istekler rate limited olmalı
+        var successCount = responses.Count(r => r.StatusCode != HttpStatusCode.TooManyRequests);
+        successCount.Should().BeLessThanOrEqualTo(5, "Login endpoint'i için maksimum 5 istek/dakika izin verilmeli");
     }
 
     [Fact]
@@ -52,8 +56,8 @@ public class RateLimitingTests : IClassFixture<WebApplicationFactory<Program>>
         // Arrange
         var tasks = new List<Task<HttpResponseMessage>>();
         
-        // Act - Çok sayıda kayıt isteği
-        for (int i = 0; i < 100; i++)
+        // Act - 3'ten fazla kayıt isteği (limit: 3/saat)
+        for (int i = 0; i < 10; i++)
         {
             var registerDto = new
             {
@@ -68,9 +72,13 @@ public class RateLimitingTests : IClassFixture<WebApplicationFactory<Program>>
         var responses = await Task.WhenAll(tasks);
 
         // Assert
-        // Rate limiting aktif olmalı
+        // Rate limiting aktif olmalı - 3'ten fazla istek 429 dönmeli
         var rateLimitedResponses = responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests);
-        rateLimitedResponses.Should().NotBeEmpty("Rate limiting aktif olmalı");
+        rateLimitedResponses.Should().NotBeEmpty("Register endpoint'i için rate limiting aktif olmalı (limit: 3/saat)");
+        
+        // İlk 3 istek başarılı olabilir, sonraki istekler rate limited olmalı
+        var successCount = responses.Count(r => r.StatusCode != HttpStatusCode.TooManyRequests);
+        successCount.Should().BeLessThanOrEqualTo(3, "Register endpoint'i için maksimum 3 istek/saat izin verilmeli");
     }
 
     [Fact]

@@ -142,6 +142,20 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
 {
     options.GeneralRules = new List<RateLimitRule>
     {
+        // Login endpoint - strict rate limiting to prevent brute force attacks
+        new RateLimitRule
+        {
+            Endpoint = "/api/auth/login",
+            Period = "1m",
+            Limit = 5  // Max 5 login attempts per minute
+        },
+        // Register endpoint - very strict rate limiting to prevent abuse
+        new RateLimitRule
+        {
+            Endpoint = "/api/auth/register",
+            Period = "1h",
+            Limit = 3  // Max 3 registrations per hour
+        },
         // Email verification endpoint - very strict rate limiting
         new RateLimitRule
         {
@@ -155,6 +169,13 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
             Endpoint = "/api/auth/resend-verification-code",
             Period = "1h",
             Limit = 3  // Max 3 resends per hour
+        },
+        // Confirm email endpoint - strict rate limiting to prevent token brute force
+        new RateLimitRule
+        {
+            Endpoint = "/api/auth/confirm-email",
+            Period = "1m",
+            Limit = 5  // Max 5 attempts per minute
         },
         // General rate limit
         new RateLimitRule

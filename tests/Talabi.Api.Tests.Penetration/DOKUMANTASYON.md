@@ -31,6 +31,8 @@ Bu proje, Talabi API uygulamasının güvenlik açıklarını tespit etmek için
 - Rate Limiting
 - Information Disclosure
 - IDOR (Insecure Direct Object Reference)
+- Security Headers (CSP, X-Frame-Options, etc.)
+- CORS (Cross-Origin Resource Sharing)
 
 ---
 
@@ -44,6 +46,8 @@ Talabi.Api.Tests.Penetration/
 ├── IdorTests.cs                   # IDOR testleri
 ├── RateLimitingTests.cs           # Rate limiting testleri
 ├── InformationDisclosureTests.cs   # Bilgi açığa çıkması testleri
+├── SecurityHeadersTests.cs         # Security headers testleri
+├── CORSTests.cs                    # CORS policy testleri
 ├── Program.cs                     # Test helper dosyası
 ├── Talabi.Api.Tests.Penetration.csproj
 ├── README.md
@@ -187,24 +191,37 @@ if (!isVendorOwner && !isAssignedCourier && !isCustomer)
 - ✅ Farklı IP adreslerinden bypass denemeleri
 
 **Kritik Bulgular:**
-- ⚠️ Rate limiting 60 request/dakika (çok yüksek)
-- ⚠️ Endpoint bazlı rate limiting yok
+- ✅ Login endpoint için endpoint bazlı rate limiting eklendi (5/dakika)
+- ✅ Register endpoint için endpoint bazlı rate limiting eklendi (3/saat)
+- ✅ Email verification endpoint'leri için endpoint bazlı rate limiting eklendi (5/dakika, 3/saat)
 - ⚠️ IP bazlı rate limiting aktif ama bypass edilebilir
 
-**Önerilen Düzeltmeler:**
+**Uygulanan Düzeltmeler:**
 ```csharp
-// Daha düşük limitler ve endpoint bazlı rate limiting
+// Tüm kritik endpoint'ler için endpoint bazlı rate limiting eklendi
 new RateLimitRule
 {
     Endpoint = "/api/auth/login",
     Period = "1m",
-    Limit = 5  // Login için daha düşük limit
+    Limit = 5  // ✅ Eklendi - Brute force koruması
 },
 new RateLimitRule
 {
     Endpoint = "/api/auth/register",
     Period = "1h",
-    Limit = 3  // Kayıt için çok düşük limit
+    Limit = 3  // ✅ Eklendi - Abuse koruması
+},
+new RateLimitRule
+{
+    Endpoint = "/api/auth/verify-email-code",
+    Period = "1m",
+    Limit = 5  // ✅ Eklendi
+},
+new RateLimitRule
+{
+    Endpoint = "/api/auth/resend-verification-code",
+    Period = "1h",
+    Limit = 3  // ✅ Eklendi
 }
 ```
 
@@ -229,6 +246,51 @@ new RateLimitRule
 - ✅ **Hangfire Dashboard Authentication Eklendi**: `HangfireAuthorizationFilter` ile sadece Admin rolüne sahip kullanıcılar Hangfire Dashboard'a erişebilir. (✅ TAMAMLANDI)
 - ✅ **CORS Production Yapılandırması Eklendi**: Environment bazlı CORS yapılandırması eklendi. Local, Test ve Production için ayrı URL'ler appsettings.json'dan okunuyor. (✅ TAMAMLANDI)
 - ✅ **Health Check Endpoint'lerinde Hassas Bilgiler Gizlendi**: Production'da exception mesajları, stack trace'ler ve detaylı hata bilgileri gizleniyor. Sadece status bilgisi döndürülüyor. (✅ TAMAMLANDI)
+
+---
+
+### 7. SecurityHeadersTests
+
+**Amaç:** Security headers'ların doğru şekilde ayarlandığını test eder.
+
+**Test Senaryoları:**
+- ✅ Content-Security-Policy header kontrolü
+- ✅ CSP script-src'de unsafe-inline ve unsafe-eval olmaması kontrolü
+- ✅ CSP güvenli yapılandırma kontrolü
+- ✅ X-Frame-Options header kontrolü (clickjacking koruması)
+- ✅ X-Content-Type-Options header kontrolü (MIME sniffing koruması)
+- ✅ X-XSS-Protection header kontrolü (eski tarayıcılar için)
+- ✅ Referrer-Policy header kontrolü
+- ✅ Permissions-Policy header kontrolü
+- ✅ Server ve X-Powered-By header'larının olmaması kontrolü
+
+**Kritik Bulgular:**
+- ✅ **SecurityHeadersMiddleware Aktif**: Tüm güvenlik header'ları doğru şekilde ayarlanıyor.
+- ✅ **CSP (Content Security Policy) Güçlendirildi**: `unsafe-inline` ve `unsafe-eval` kaldırıldı. XSS ve injection saldırılarına karşı koruma güçlendirildi.
+- ✅ **X-Frame-Options DENY**: Clickjacking saldırılarına karşı koruma sağlanıyor.
+- ✅ **X-Content-Type-Options nosniff**: MIME type sniffing saldırılarına karşı koruma sağlanıyor.
+- ✅ **Inline Script Koruması**: CSP'de `script-src 'self'` ile inline script'ler ve eval() kullanımı engellendi.
+
+---
+
+### 8. CORSTests
+
+**Amaç:** CORS (Cross-Origin Resource Sharing) yapılandırmasını test eder.
+
+**Test Senaryoları:**
+- ✅ Preflight (OPTIONS) request'lerinde CORS header'ları
+- ✅ Cross-origin request'lerde CORS header'ları
+- ✅ Origin validation kontrolü
+- ✅ Allowed methods kontrolü
+- ✅ Allowed headers kontrolü
+- ✅ Credentials ile wildcard origin kontrolü
+- ✅ Sensitive headers'ın expose edilmemesi
+- ✅ Max-Age header kontrolü
+
+**Kritik Bulgular:**
+- ✅ **Environment Bazlı CORS Yapılandırması**: Local, Test ve Production için ayrı CORS yapılandırması.
+- ✅ **Origin Whitelist**: Production'da sadece whitelist'teki origin'lerden istek kabul ediliyor.
+- ✅ **Credentials Kontrolü**: Credentials kullanıldığında wildcard origin (*) kullanılmıyor.
 
 ---
 
@@ -319,34 +381,67 @@ Test sonuçları şu formatta görüntülenir:
 
 ### 🟠 Yüksek Öncelik
 
-#### 4. CORS Development'ta Tüm Origin'lere Açık
-**Lokasyon:** `Program.cs` (satır 175-177)
+#### 4. CORS Development'ta Tüm Origin'lere Açık ✅ TAMAMLANDI
+**Lokasyon:** `Program.cs` (satır 178-237)
 **Açıklama:** Development modunda tüm origin'lere izin veriliyor.
 **Risk:** CSRF saldırılarına açık.
-**Düzeltme:** Production'da sadece gerekli origin'lere izin ver.
+**Durum:** ✅ **TAMAMLANDI** - Environment bazlı CORS yapılandırması eklendi. Production'da sadece whitelist'teki origin'lerden istek kabul ediliyor.
+**Uygulanan Düzeltme:**
+- ✅ Environment bazlı CORS yapılandırması (Local, Test, Production)
+- ✅ Production'da sadece whitelist'teki origin'ler
+- ✅ Credentials kontrolü ile wildcard origin kullanılmıyor
 
-#### 5. Rate Limiting Yüksek
-**Lokasyon:** `Program.cs` (satır 137)
+#### 5. Rate Limiting Yüksek ✅ TAMAMLANDI
+**Lokasyon:** `Program.cs` (satır 141-175)
 **Açıklama:** 60 request/dakika çok yüksek.
 **Risk:** Brute force saldırılarına karşı yetersiz.
-**Düzeltme:** Endpoint bazlı düşük limitler.
+**Durum:** ✅ **TAMAMLANDI** - Tüm kritik endpoint'ler için endpoint bazlı rate limiting eklendi.
+**Uygulanan Düzeltme:**
+- ✅ Login endpoint: 5 deneme/dakika (brute force koruması)
+- ✅ Register endpoint: 3 kayıt/saat (abuse koruması)
+- ✅ Email verification: 5 deneme/dakika
+- ✅ Resend verification: 3 resend/saat
+- ✅ Confirm email endpoint: 5 deneme/dakika (token brute force koruması)
+- ✅ Genel rate limit: 60 request/dakika (diğer endpoint'ler için)
 
-#### 6. ConfirmEmail Endpoint'inde Token Validation Yok
+#### 6. ConfirmEmail Endpoint'inde Token Validation ✅ TAMAMLANDI
 **Lokasyon:** `AuthController.ConfirmEmail`
 **Açıklama:** Token validation yapılmıyor.
 **Risk:** Geçersiz token'larla email doğrulama yapılabilir.
+**Durum:** ✅ **TAMAMLANDI** - Token validation, email validation, format kontrolleri ve rate limiting eklendi.
+**Uygulanan Düzeltmeler:**
+- ✅ Token null/empty kontrolü eklendi
+- ✅ Email null/empty kontrolü eklendi
+- ✅ Email format validation eklendi (regex ile)
+- ✅ Token format validation eklendi (uzunluk kontrolü: 10-1000 karakter)
+- ✅ Kullanıcı zaten confirmed mi kontrolü eklendi
+- ✅ URL decode token desteği eklendi
+- ✅ Gelişmiş error handling ve logging eklendi
+- ✅ Rate limiting eklendi (5 deneme/dakika)
+- ✅ Kullanıcı varlığı bilgisi korunuyor (güvenli hata mesajları)
 
 ### 🟡 Orta Öncelik
 
-#### 7. CSP'de unsafe-inline ve unsafe-eval
+#### 7. CSP'de unsafe-inline ve unsafe-eval ✅ TAMAMLANDI
 **Lokasyon:** `SecurityHeadersMiddleware.cs`
 **Açıklama:** Content Security Policy'de güvenlik açıkları var.
 **Risk:** XSS saldırılarına karşı koruma zayıf.
+**Durum:** ✅ **TAMAMLANDI** - `unsafe-inline` ve `unsafe-eval` CSP'den kaldırıldı. XSS saldırılarına karşı koruma güçlendirildi.
+**Uygulanan Düzeltme:**
+- ✅ `script-src 'self' 'unsafe-inline' 'unsafe-eval'` → `script-src 'self'` olarak güncellendi
+- ✅ Inline script'ler ve eval() kullanımı engellendi
+- ✅ XSS saldırılarına karşı koruma güçlendirildi
+- ✅ `style-src 'self' 'unsafe-inline'` korundu (CSS için gerekli, Scalar UI için)
 
-#### 8. Hangfire Dashboard Erişim Kontrolü
-**Lokasyon:** `Program.cs` (satır 362)
+#### 8. Hangfire Dashboard Erişim Kontrolü ✅ TAMAMLANDI
+**Lokasyon:** `Program.cs` (satır 421-428)
 **Açıklama:** Dashboard herkese açık olabilir.
 **Risk:** Arka plan job'ları görüntülenebilir, manipüle edilebilir.
+**Durum:** ✅ **TAMAMLANDI** - `HangfireAuthorizationFilter` ile sadece Admin rolüne sahip kullanıcılar Hangfire Dashboard'a erişebilir.
+**Uygulanan Düzeltme:**
+- ✅ `HangfireAuthorizationFilter` eklendi
+- ✅ Sadece Admin rolüne sahip kullanıcılar erişebilir
+- ✅ Connection string bilgisi gizleniyor
 
 ---
 
@@ -360,6 +455,11 @@ Test sonuçları şu formatta görüntülenir:
 | `Register_WithWeakPassword_ShouldBeRejected` | Zayıf şifre ile kayıt | Kayıt reddedilmeli |
 | `RefreshToken_WithExpiredToken_ShouldBeRejected` | Süresi dolmuş token ile yenileme | İstek reddedilmeli |
 | `ExternalLogin_WithoutTokenVerification_ShouldBeVulnerable` | Token doğrulaması olmadan external login | Güvenlik açığı tespit edilmeli |
+| `ConfirmEmail_WithNullToken_ShouldReturnBadRequest` | Null token ile email doğrulama | BadRequest dönmeli |
+| `ConfirmEmail_WithInvalidEmailFormat_ShouldReturnBadRequest` | Geçersiz email formatı | BadRequest dönmeli |
+| `ConfirmEmail_WithInvalidTokenFormat_ShouldReturnBadRequest` | Geçersiz token formatı | BadRequest dönmeli |
+| `ConfirmEmail_WithBruteForce_ShouldBeRateLimited` | Brute force saldırısı | Rate limiting aktif olmalı |
+| `ConfirmEmail_WithNonExistentUser_ShouldNotRevealUserExistence` | Var olmayan kullanıcı | Kullanıcı varlığı açığa çıkmamalı |
 
 ### File Upload Test Senaryoları
 
@@ -406,26 +506,36 @@ Test sonuçları şu formatta görüntülenir:
 
 ### Önemli Düzeltmeler (Yüksek)
 
-4. **Rate Limiting İyileştirmesi**
+4. **Rate Limiting İyileştirmesi** ✅ TAMAMLANDI
+   - ✅ Login endpoint için endpoint bazlı rate limiting eklendi (5/dakika)
+   - ✅ Register endpoint için endpoint bazlı rate limiting eklendi (3/saat)
+   - ✅ Email verification endpoint'leri için endpoint bazlı rate limiting eklendi
+   - ✅ ConfirmEmail endpoint için endpoint bazlı rate limiting eklendi (5/dakika)
    ```csharp
    options.GeneralRules = new List<RateLimitRule>
    {
-       new RateLimitRule { Endpoint = "/api/auth/login", Period = "1m", Limit = 5 },
-       new RateLimitRule { Endpoint = "/api/auth/register", Period = "1h", Limit = 3 },
+       new RateLimitRule { Endpoint = "/api/auth/login", Period = "1m", Limit = 5 }, // ✅ Eklendi
+       new RateLimitRule { Endpoint = "/api/auth/register", Period = "1h", Limit = 3 }, // ✅ Eklendi
+       new RateLimitRule { Endpoint = "/api/auth/verify-email-code", Period = "1m", Limit = 5 }, // ✅ Eklendi
+       new RateLimitRule { Endpoint = "/api/auth/resend-verification-code", Period = "1h", Limit = 3 }, // ✅ Eklendi
+       new RateLimitRule { Endpoint = "/api/auth/confirm-email", Period = "1m", Limit = 5 }, // ✅ Eklendi
        new RateLimitRule { Endpoint = "*", Period = "1m", Limit = 60 }
    };
    ```
 
-5. **CORS Yapılandırması**
+5. **CORS Yapılandırması** ✅ TAMAMLANDI
+   - ✅ Environment bazlı CORS yapılandırması eklendi
+   - ✅ Production'da sadece whitelist'teki origin'ler
    ```csharp
    // Production'da sadece gerekli origin'ler
    if (!builder.Environment.IsDevelopment())
    {
-       policy.WithOrigins("https://talabi.com", "https://www.talabi.com");
+       policy.WithOrigins("https://talabi.runasp.net/", "https://talabi.runasp.net/");
    }
    ```
 
-6. **Hangfire Dashboard Güvenliği**
+6. **Hangfire Dashboard Güvenliği** ✅ TAMAMLANDI
+   - ✅ `HangfireAuthorizationFilter` ile Admin rolü kontrolü eklendi
    ```csharp
    app.UseHangfireDashboard("/hangfire", new DashboardOptions
    {
@@ -435,19 +545,52 @@ Test sonuçları şu formatta görüntülenir:
 
 ### İyileştirmeler (Orta)
 
-7. **CSP Güçlendirme**
+7. **CSP Güçlendirme** ✅ TAMAMLANDI
+   - ✅ `unsafe-inline` ve `unsafe-eval` CSP'den kaldırıldı
+   - ✅ XSS saldırılarına karşı koruma güçlendirildi
    ```csharp
    context.Response.Headers.Append("Content-Security-Policy", 
        "default-src 'self'; " +
-       "script-src 'self'; " +  // unsafe-inline ve unsafe-eval kaldırıldı
-       "style-src 'self' 'unsafe-inline'; " +
+       "script-src 'self'; " +  // ✅ unsafe-inline ve unsafe-eval kaldırıldı
+       "style-src 'self' 'unsafe-inline'; " +  // CSS için unsafe-inline gerekli
        "img-src 'self' data: https:;");
    ```
 
-8. **Error Handling İyileştirmesi**
-   - Production'da detaylı hata mesajları gizlenmeli
-   - Loglama ayrıntılı yapılmalı
-   - Stack trace'ler log'a yazılmalı, response'a değil
+8. **Error Handling İyileştirmesi** ✅ TAMAMLANDI
+   - ✅ `ExceptionHandlingMiddleware` aktif
+   - ✅ Production'da detaylı hata mesajları gizleniyor
+   - ✅ Health check endpoint'lerinde hassas bilgiler gizleniyor
+   - ✅ Stack trace'ler log'a yazılıyor, response'a değil
+
+9. **ConfirmEmail Endpoint Token Validation** ✅ TAMAMLANDI
+   - ✅ Token null/empty kontrolü eklendi
+   - ✅ Email null/empty kontrolü eklendi
+   - ✅ Email format validation eklendi (regex ile)
+   - ✅ Token format validation eklendi (uzunluk kontrolü: 10-1000 karakter)
+   - ✅ Kullanıcı zaten confirmed mi kontrolü eklendi
+   - ✅ URL decode token desteği eklendi
+   - ✅ Gelişmiş error handling ve logging eklendi
+   - ✅ Rate limiting eklendi (5 deneme/dakika)
+   - ✅ Kullanıcı varlığı bilgisi korunuyor (güvenli hata mesajları)
+   ```csharp
+   // Token validation
+   if (string.IsNullOrWhiteSpace(token))
+   {
+       return BadRequest(new ApiResponse<object>(..., "TOKEN_REQUIRED"));
+   }
+   
+   // Email format validation
+   if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+   {
+       return BadRequest(new ApiResponse<object>(..., "INVALID_EMAIL_FORMAT"));
+   }
+   
+   // Token format validation
+   if (token.Length < 10 || token.Length > 1000)
+   {
+       return BadRequest(new ApiResponse<object>(..., "INVALID_TOKEN_FORMAT"));
+   }
+   ```
 
 ---
 
@@ -537,6 +680,14 @@ Güvenlik açıkları için: security@talabi.com
 8. ✅ **CORS Production Yapılandırması Eklendi** - Environment bazlı CORS yapılandırması eklendi. Local, Test ve Production için ayrı URL'ler appsettings.json'dan okunuyor
 9. ✅ **Health Check Endpoint'lerinde Hassas Bilgiler Gizlendi** - Production'da exception mesajları, stack trace'ler ve detaylı hata bilgileri gizleniyor. Sadece status bilgisi döndürülüyor
 10. ✅ **OpenAPI Endpoint Production'da Kapalı** - OpenAPI endpoint'i (`/openapi/v1.json`) sadece Development ortamında aktif, Production'da kapalı
+11. ✅ **CORS Production Yapılandırması Tamamlandı** - Environment bazlı CORS yapılandırması eklendi. Production'da sadece whitelist'teki origin'lerden istek kabul ediliyor
+12. ✅ **Hangfire Dashboard Authentication Tamamlandı** - `HangfireAuthorizationFilter` ile sadece Admin rolüne sahip kullanıcılar Hangfire Dashboard'a erişebilir
+13. ✅ **Error Handling İyileştirmesi Tamamlandı** - `ExceptionHandlingMiddleware` ile production'da detaylı hata mesajları gizleniyor, stack trace'ler log'a yazılıyor
+14. ✅ **Security Headers Testleri Eklendi** - SecurityHeadersTests ile tüm güvenlik header'ları test ediliyor
+15. ✅ **CORS Testleri Eklendi** - CORSTests ile CORS yapılandırması test ediliyor
+16. ✅ **Rate Limiting İyileştirmesi Tamamlandı** - Login endpoint'i için 5/dakika, Register endpoint'i için 3/saat, ConfirmEmail endpoint'i için 5/dakika rate limiting eklendi. Brute force ve abuse saldırılarına karşı koruma sağlanıyor
+17. ✅ **CSP Güçlendirmesi Tamamlandı** - `unsafe-inline` ve `unsafe-eval` CSP'den kaldırıldı. XSS saldırılarına karşı koruma güçlendirildi. Inline script'ler ve eval() kullanımı engellendi
+18. ✅ **ConfirmEmail Endpoint Token Validation Tamamlandı** - Token validation, email validation, format kontrolleri, rate limiting ve güvenli error handling eklendi. Token brute force saldırılarına karşı koruma sağlanıyor
 
 **Email Doğrulama Güvenlik Özellikleri:**
 - ✅ Maximum 5 başarısız deneme sonrası 15 dakika lockout
@@ -549,6 +700,4 @@ Güvenlik açıkları için: security@talabi.com
 
 - ⚠️ User Secrets entegrasyonu (Development)
 - ⚠️ Azure Key Vault entegrasyonu (Production)
-- ⚠️ Rate Limiting iyileştirmesi (diğer endpoint'ler için)
-- ⚠️ CORS Production yapılandırması
 

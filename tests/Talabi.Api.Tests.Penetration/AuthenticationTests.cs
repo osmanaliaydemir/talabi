@@ -209,5 +209,133 @@ public class AuthenticationTests : IClassFixture<WebApplicationFactory<Program>>
         content.ToLowerInvariant().Should().NotContain("database");
         content.ToLowerInvariant().Should().NotContain("sql");
     }
+
+    [Fact]
+    public async Task ConfirmEmail_WithNullToken_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var email = "test@example.com";
+
+        // Act
+        var response = await _client.GetAsync($"/api/auth/confirm-email?token=&email={email}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("TOKEN_REQUIRED", "Token required hatası dönmeli");
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithNullEmail_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var token = "some_token_12345";
+
+        // Act
+        var response = await _client.GetAsync($"/api/auth/confirm-email?token={token}&email=");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("EMAIL_REQUIRED", "Email required hatası dönmeli");
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithInvalidEmailFormat_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var token = "some_token_12345";
+        var invalidEmail = "not-an-email";
+
+        // Act
+        var response = await _client.GetAsync($"/api/auth/confirm-email?token={token}&email={invalidEmail}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("INVALID_EMAIL_FORMAT", "Invalid email format hatası dönmeli");
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithInvalidTokenFormat_ShouldReturnBadRequest()
+    {
+        // Arrange
+        // Token çok kısa (10 karakterden az)
+        var invalidToken = "short";
+        var email = "test@example.com";
+
+        // Act
+        var response = await _client.GetAsync($"/api/auth/confirm-email?token={invalidToken}&email={email}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("INVALID_TOKEN_FORMAT", "Invalid token format hatası dönmeli");
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithTooLongToken_ShouldReturnBadRequest()
+    {
+        // Arrange
+        // Token çok uzun (1000 karakterden fazla)
+        var invalidToken = new string('a', 1001);
+        var email = "test@example.com";
+
+        // Act
+        var response = await _client.GetAsync($"/api/auth/confirm-email?token={invalidToken}&email={email}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("INVALID_TOKEN_FORMAT", "Invalid token format hatası dönmeli");
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithBruteForce_ShouldBeRateLimited()
+    {
+        // Arrange
+        var token = "some_token_12345";
+        var email = "test@example.com";
+
+        // Act - Çok sayıda istek gönder
+        var tasks = new List<Task<HttpResponseMessage>>();
+        for (int i = 0; i < 100; i++)
+        {
+            tasks.Add(_client.GetAsync($"/api/auth/confirm-email?token={token}&email={email}"));
+        }
+
+        var responses = await Task.WhenAll(tasks);
+
+        // Assert
+        // Rate limiting olmalı - bazı istekler 429 (Too Many Requests) dönmeli
+        var rateLimitedResponses = responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests);
+        rateLimitedResponses.Should().NotBeEmpty("Rate limiting aktif olmalı");
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_WithNonExistentUser_ShouldNotRevealUserExistence()
+    {
+        // Arrange
+        var token = "some_valid_looking_token_12345";
+        var email = "nonexistent@example.com";
+
+        // Act
+        var response = await _client.GetAsync($"/api/auth/confirm-email?token={token}&email={email}");
+
+        // Assert
+        // Kullanıcının var olup olmadığını açığa çıkarmamalı
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        // Hata mesajı genel olmalı, "kullanıcı bulunamadı" gibi spesifik olmamalı
+        content.ToLowerInvariant().Should().NotContain("not found");
+        content.ToLowerInvariant().Should().NotContain("user");
+        content.Should().Contain("INVALID_REQUEST", "Genel invalid request hatası dönmeli");
+    }
 }
 
