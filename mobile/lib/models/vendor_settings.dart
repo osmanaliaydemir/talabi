@@ -1,10 +1,4 @@
 class VendorSettings {
-  final double? minimumOrderAmount;
-  final double? deliveryFee;
-  final int? estimatedDeliveryTime;
-  final bool isActive;
-  final String? openingHours;
-
   VendorSettings({
     this.minimumOrderAmount,
     this.deliveryFee,
@@ -26,6 +20,11 @@ class VendorSettings {
       openingHours: json['openingHours'],
     );
   }
+  final double? minimumOrderAmount;
+  final double? deliveryFee;
+  final int? estimatedDeliveryTime;
+  final bool isActive;
+  final String? openingHours;
 
   Map<String, dynamic> toJson() {
     return {
