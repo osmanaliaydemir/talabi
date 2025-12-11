@@ -57,13 +57,18 @@ public class DatabaseHealthCheck : IHealthCheck
         catch (Exception ex)
         {
             _logger.LogError(ex, "Database health check failed with exception");
-            return HealthCheckResult.Unhealthy("Veritabanı sağlık kontrolü başarısız",
-                ex,
+            // Production'da exception detaylarını gizle
+            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+            
+            return HealthCheckResult.Unhealthy(
+                "Veritabanı sağlık kontrolü başarısız",
+                // Production'da exception'ı geçme, sadece development'ta
+                isDevelopment ? ex : null,
                 data: new Dictionary<string, object>
                 {
                     { "Database", "TalabiDbContext" },
-                    { "Status", "Unhealthy" },
-                    { "Error", ex.Message }
+                    { "Status", "Unhealthy" }
+                    // Error mesajını production'da gizle
                 });
         }
     }

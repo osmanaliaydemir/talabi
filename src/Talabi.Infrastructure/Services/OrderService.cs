@@ -160,13 +160,25 @@ public class OrderService : IOrderService
     /// </summary>
     public async Task<bool> CancelOrderAsync(Guid orderId, string? userId, CancelOrderDto dto, CultureInfo culture)
     {
+        // Authorization: userId must be provided
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Unauthorized", culture));
+        }
+
         var order = await _unitOfWork.Orders.Query()
             .Include(o => o.StatusHistory)
-            .FirstOrDefaultAsync(o => o.Id == orderId && (userId == null || o.CustomerId == userId));
+            .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
         {
             throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
+        }
+
+        // Authorization: Only the customer who owns the order can cancel it
+        if (order.CustomerId != userId)
+        {
+            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Forbidden", culture));
         }
 
         // Check if order can be cancelled
@@ -249,13 +261,38 @@ public class OrderService : IOrderService
     /// </summary>
     public async Task<bool> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto dto, string? userId, CultureInfo culture)
     {
+        // Authorization: userId must be provided
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Unauthorized", culture));
+        }
+
         var order = await _unitOfWork.Orders.Query()
             .Include(o => o.StatusHistory)
+            .Include(o => o.Vendor)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
         {
             throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
+        }
+
+        // Authorization: Check if user has permission to update order status
+        // Vendor owner, assigned courier, or customer (for their own orders) can update
+        var isVendorOwner = order.Vendor != null && order.Vendor.OwnerId == userId;
+        var isCustomer = order.CustomerId == userId;
+        
+        // Check if user is assigned courier
+        var isAssignedCourier = await _unitOfWork.OrderCouriers.Query()
+            .Include(oc => oc.Courier)
+            .AnyAsync(oc => oc.OrderId == orderId && 
+                           oc.Courier != null && 
+                           oc.Courier.UserId == userId && 
+                           oc.IsActive);
+
+        if (!isVendorOwner && !isAssignedCourier && !isCustomer)
+        {
+            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Forbidden", culture));
         }
 
         // Parse status

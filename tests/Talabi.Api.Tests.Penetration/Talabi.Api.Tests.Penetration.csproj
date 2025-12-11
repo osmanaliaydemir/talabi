@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Talabi.Api\Talabi.Api.csproj" />
+    <ProjectReference Include="..\..\src\Talabi.Api\Talabi.Api.csproj" />
   </ItemGroup>
 
 </Project>

@@ -29,6 +29,8 @@ public class AuthController : BaseController
     private readonly UserManager<AppUser> _userManager;
     private readonly IMemoryCache _memoryCache;
     private readonly IEmailSender _emailSender;
+    private readonly IExternalAuthTokenVerifier _tokenVerifier;
+    private readonly IVerificationCodeSecurityService _verificationSecurity;
     private const string ResourceName = "AuthResources";
 
     /// <summary>
@@ -39,6 +41,8 @@ public class AuthController : BaseController
         UserManager<AppUser> userManager,
         IMemoryCache memoryCache,
         IEmailSender emailSender,
+        IExternalAuthTokenVerifier tokenVerifier,
+        IVerificationCodeSecurityService verificationSecurity,
         IUnitOfWork unitOfWork,
         ILogger<AuthController> logger,
         ILocalizationService localizationService,
@@ -49,6 +53,8 @@ public class AuthController : BaseController
         _userManager = userManager;
         _memoryCache = memoryCache;
         _emailSender = emailSender;
+        _tokenVerifier = tokenVerifier;
+        _verificationSecurity = verificationSecurity;
     }
 
 
@@ -184,10 +190,38 @@ public class AuthController : BaseController
     {
         try
         {
+            // Check if verification attempts are allowed (brute force protection)
+            var canAttempt = await _verificationSecurity.CanAttemptVerificationAsync(dto.Email);
+            if (!canAttempt)
+            {
+                var lockoutExpiration = await _verificationSecurity.GetLockoutExpirationAsync(dto.Email);
+                if (lockoutExpiration.HasValue)
+                {
+                    var minutesRemaining = (int)Math.Ceiling((lockoutExpiration.Value - DateTime.UtcNow).TotalMinutes);
+                    Logger.LogWarning("Verification attempt blocked for locked email: {Email}, Lockout expires in {Minutes} minutes", 
+                        dto.Email, minutesRemaining);
+                    
+                    return BadRequest(new ApiResponse<object>(
+                        LocalizationService.GetLocalizedString(ResourceName, "TooManyFailedAttempts", CurrentCulture) 
+                            ?? $"Çok fazla başarısız deneme. Lütfen {minutesRemaining} dakika sonra tekrar deneyin.",
+                        "TOO_MANY_FAILED_ATTEMPTS",
+                        new List<string> { $"Lockout expires in {minutesRemaining} minutes" }
+                    ));
+                }
+
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "TooManyFailedAttempts", CurrentCulture) 
+                        ?? "Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.",
+                    "TOO_MANY_FAILED_ATTEMPTS"
+                ));
+            }
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "UserNotFound", CurrentCulture), "USER_NOT_FOUND"));
+                // Don't reveal user existence, but still record attempt to prevent enumeration
+                await _verificationSecurity.RecordFailedAttemptAsync(dto.Email);
+                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture), "INVALID_CODE"));
             }
 
             // Check if email is already confirmed
@@ -199,15 +233,33 @@ public class AuthController : BaseController
             var cacheKey = $"verification_code_{dto.Email}";
             if (!_memoryCache.TryGetValue(cacheKey, out string? cachedCode))
             {
+                await _verificationSecurity.RecordFailedAttemptAsync(dto.Email);
                 return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CodeExpired", CurrentCulture), "CODE_EXPIRED"));
             }
 
             if (cachedCode != dto.Code)
             {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture), "INVALID_CODE"));
+                // Record failed attempt
+                await _verificationSecurity.RecordFailedAttemptAsync(dto.Email);
+                
+                var remainingAttempts = await _verificationSecurity.GetRemainingAttemptsAsync(dto.Email);
+                Logger.LogWarning("Invalid verification code attempt for {Email}, Remaining attempts: {Remaining}", 
+                    dto.Email, remainingAttempts);
+
+                var errorMessage = LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture);
+                if (remainingAttempts <= 2)
+                {
+                    errorMessage += $" Kalan deneme hakkı: {remainingAttempts}";
+                }
+
+                return BadRequest(new ApiResponse<object>(
+                    errorMessage,
+                    "INVALID_CODE",
+                    remainingAttempts > 0 ? new List<string> { $"Remaining attempts: {remainingAttempts}" } : null
+                ));
             }
 
-            // Confirm email
+            // Code is valid, confirm email
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var result = await _userManager.ConfirmEmailAsync(user, token);
 
@@ -215,6 +267,11 @@ public class AuthController : BaseController
             {
                 // Remove code from cache
                 _memoryCache.Remove(cacheKey);
+                
+                // Record success and clear tracking
+                await _verificationSecurity.RecordSuccessAsync(dto.Email);
+
+                Logger.LogInformation("Email verified successfully for {Email}", dto.Email);
 
                 return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "EmailVerifiedSuccessfully", CurrentCulture)));
             }
@@ -228,6 +285,7 @@ public class AuthController : BaseController
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Error verifying email code for {Email}", dto.Email);
             return StatusCode(500, new ApiResponse<object>(
                 LocalizationService.GetLocalizedString(ResourceName, "VerificationError", CurrentCulture),
                 "INTERNAL_ERROR",
@@ -445,26 +503,45 @@ public class AuthController : BaseController
                 return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidProvider", CurrentCulture), "INVALID_PROVIDER"));
             }
 
-            // For now, we trust the token from mobile app
-            // In production, you should verify the token with the provider's API
-            // Example: For Google, verify with https://oauth2.googleapis.com/tokeninfo?id_token={token}
+            // Validate token
+            if (string.IsNullOrEmpty(dto.IdToken))
+            {
+                return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "TokenRequired", CurrentCulture), "TOKEN_REQUIRED"));
+            }
 
-            if (string.IsNullOrEmpty(dto.Email))
+            // Verify token with external provider
+            var isTokenValid = await _tokenVerifier.VerifyTokenAsync(dto.Provider, dto.IdToken, dto.Email);
+            if (!isTokenValid)
+            {
+                Logger.LogWarning("Invalid token for provider: {Provider}, Email: {Email}", dto.Provider, dto.Email);
+                return Unauthorized(new ApiResponse<LoginResponseDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), 
+                    "INVALID_TOKEN"));
+            }
+
+            // Get email from token if not provided (more secure)
+            var verifiedEmail = dto.Email;
+            if (string.IsNullOrEmpty(verifiedEmail))
+            {
+                verifiedEmail = await _tokenVerifier.GetEmailFromTokenAsync(dto.Provider, dto.IdToken);
+            }
+
+            if (string.IsNullOrEmpty(verifiedEmail))
             {
                 return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "EmailRequired", CurrentCulture), "EMAIL_REQUIRED"));
             }
 
             // Check if user exists
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            var user = await _userManager.FindByEmailAsync(verifiedEmail);
 
             if (user == null)
             {
                 // Create new user
                 user = new AppUser
                 {
-                    UserName = dto.Email,
-                    Email = dto.Email,
-                    FullName = dto.FullName ?? dto.Email,
+                    UserName = verifiedEmail,
+                    Email = verifiedEmail,
+                    FullName = dto.FullName ?? verifiedEmail,
                     EmailConfirmed = true, // Social login emails are pre-verified
                     Role = Talabi.Core.Enums.UserRole.Customer
                 };
@@ -491,12 +568,12 @@ public class AuthController : BaseController
                 await UnitOfWork.Customers.AddAsync(customer);
                 await UnitOfWork.SaveChangesAsync();
 
-                Logger.LogInformation($"New user created via {dto.Provider}: {dto.Email}");
+                Logger.LogInformation("New user created via {Provider}: {Email}", dto.Provider, verifiedEmail);
             }
             else
             {
                 // User exists, just log them in
-                Logger.LogInformation($"Existing user logged in via {dto.Provider}: {dto.Email}");
+                Logger.LogInformation("Existing user logged in via {Provider}: {Email}", dto.Provider, verifiedEmail);
             }
 
             // Generate JWT token

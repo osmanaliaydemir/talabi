@@ -42,8 +42,13 @@ public class SearchController : BaseController
                 LocalizationService.GetLocalizedString(ResourceName, "EmptyQuery", CurrentCulture)));
         }
 
+        // Query is sanitized by InputSanitizationActionFilter
+        // Entity Framework uses parameterized queries, so SQL injection is protected
+        // For XSS protection, the filter sanitizes HTML tags from the query
+        var searchQuery = query.Trim();
+
         var productResults = await UnitOfWork.Products.Query()
-            .Where(p => p.Name.Contains(query))
+            .Where(p => p.Name.Contains(searchQuery))
             .Take(5)
             .Select(p => new AutocompleteResultDto
             {
@@ -54,7 +59,7 @@ public class SearchController : BaseController
             .ToListAsync();
 
         var vendorResults = await UnitOfWork.Vendors.Query()
-            .Where(v => v.Name.Contains(query))
+            .Where(v => v.Name.Contains(searchQuery))
             .Take(5)
             .Select(v => new AutocompleteResultDto
             {

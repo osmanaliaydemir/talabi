@@ -1,6 +1,5 @@
 using AspNetCoreRateLimit;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -22,6 +21,7 @@ using Talabi.Infrastructure.Repositories;
 using Talabi.Infrastructure.Services;
 using Hangfire;
 using Talabi.Core.Options;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,12 +45,19 @@ builder.Logging.AddDebug();
 
 // Logging seviyeleri appsettings.json'da yapılandırılmıştır
 
+// FluentValidation filter'ı register et
+builder.Services.AddScoped<FluentValidationActionFilter>();
+
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
     // Add input sanitization filter globally
     options.Filters.Add<InputSanitizationActionFilter>();
+    // Add FluentValidation filter globally
+    options.Filters.Add<FluentValidationActionFilter>();
 });
+
+// OpenAPI ve Scalar yapılandırması
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
@@ -111,6 +118,11 @@ builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IInputSanitizationService, InputSanitizationService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
+// External Auth Token Verifier
+builder.Services.AddHttpClient<IExternalAuthTokenVerifier, ExternalAuthTokenVerifier>();
+// File Upload Security Service
+builder.Services.Configure<FileUploadSecurityOptions>(builder.Configuration.GetSection("FileUploadSecurity"));
+builder.Services.AddScoped<IFileUploadSecurityService, FileUploadSecurityService>();
 // ActivityLoggingService Singleton olmalı çünkü middleware'lerde kullanılıyor
 // Middleware'ler singleton olarak çalışır ve scoped service'leri inject edemez
 builder.Services.AddSingleton<IActivityLoggingService, ActivityLoggingService>();
@@ -130,6 +142,21 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
 {
     options.GeneralRules = new List<RateLimitRule>
     {
+        // Email verification endpoint - very strict rate limiting
+        new RateLimitRule
+        {
+            Endpoint = "/api/auth/verify-email-code",
+            Period = "1m",
+            Limit = 5  // Max 5 attempts per minute
+        },
+        // Resend verification code - limit to prevent abuse
+        new RateLimitRule
+        {
+            Endpoint = "/api/auth/resend-verification-code",
+            Period = "1h",
+            Limit = 3  // Max 3 resends per hour
+        },
+        // General rate limit
         new RateLimitRule
         {
             Endpoint = "*",
@@ -141,13 +168,39 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
+// Verification Code Security
+builder.Services.Configure<VerificationCodeSecurityOptions>(builder.Configuration.GetSection("VerificationCodeSecurity"));
+builder.Services.AddScoped<IVerificationCodeSecurityService, VerificationCodeSecurityService>();
+
 // FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 
-// CORS yapılandırması
+// CORS yapılandırması - Environment bazlı URL'ler
 var corsSettings = builder.Configuration.GetSection("Cors");
-var allowedOrigins = corsSettings.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+string[] allowedOrigins;
+
+// Environment'a göre CORS URL'lerini seç
+if (builder.Environment.IsDevelopment())
+{
+    // Development ortamında Local URL'leri kullan
+    allowedOrigins = corsSettings.GetSection("Local:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+}
+else if (builder.Environment.EnvironmentName.Equals("Test", StringComparison.OrdinalIgnoreCase))
+{
+    // Test ortamında Test URL'lerini kullan
+    allowedOrigins = corsSettings.GetSection("Test:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+}
+else if (builder.Environment.IsProduction())
+{
+    // Production ortamında Production URL'lerini kullan
+    allowedOrigins = corsSettings.GetSection("Production:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+}
+else
+{
+    // Diğer ortamlar için Local URL'leri kullan (fallback)
+    allowedOrigins = corsSettings.GetSection("Local:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+}
+
 var allowCredentials = corsSettings.GetValue<bool>("AllowCredentials", true);
 var allowedMethods = corsSettings.GetSection("AllowedMethods").Get<string[]>() ?? new[] { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
 var allowedHeaders = corsSettings.GetSection("AllowedHeaders").Get<string[]>() ?? new[] { "*" };
@@ -170,12 +223,18 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            // Eğer hiç origin belirtilmemişse, tüm origin'lere izin ver (sadece development için)
-            // Not: AllowAnyOrigin() kullanıldığında AllowCredentials() kullanılamaz
+            // Eğer hiç origin belirtilmemişse, sadece development için tüm origin'lere izin ver
+            // Production ve Test ortamlarında boş origin listesi güvenlik riski oluşturur
             if (builder.Environment.IsDevelopment())
             {
                 policy.AllowAnyOrigin();
                 // AllowCredentials() kullanılamaz çünkü AllowAnyOrigin() ile uyumsuz
+            }
+            else
+            {
+                // Production ve Test ortamlarında origin belirtilmediyse uyarı
+                // Not: Logger bu aşamada henüz yapılandırılmamış olabilir, bu yüzden Console.WriteLine kullanıyoruz
+                Console.WriteLine($"WARNING: CORS: {builder.Environment.EnvironmentName} ortamı için AllowedOrigins boş! CORS yapılandırması kontrol edilmeli.");
             }
         }
 
@@ -240,8 +299,6 @@ Talabi.Infrastructure.Services.ActivityLoggingService.SetServiceProvider(app.Ser
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
     // Seed Data (only if database is accessible)
     using (var scope = app.Services.CreateScope())
     {
@@ -298,6 +355,22 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// OpenAPI endpoint - Scalar için gerekli
+app.MapOpenApi();
+
+// Scalar API Documentation - Root path'te göster
+app.MapScalarApiReference(options =>
+{
+    options
+        .WithTitle("Talabi API Documentation")
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+        .WithTheme(ScalarTheme.BluePlanet);
+});
+
+// Root path'i Scalar'a yönlendir (Scalar default path: /scalar/v1)
+// Kullanıcı root path'e geldiğinde direkt Scalar dokümantasyonu açılır
+app.MapGet("/", () => Results.Redirect("/scalar/v1", permanent: false));
+
 app.MapControllers();
 app.MapHub<Talabi.Api.Hubs.NotificationHub>("/hubs/notifications");
 
@@ -307,6 +380,10 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
+        
+        // Production'da hassas bilgileri gizle
+        var isDevelopment = app.Environment.IsDevelopment();
+        
         var result = System.Text.Json.JsonSerializer.Serialize(new
         {
             status = report.Status.ToString(),
@@ -315,8 +392,11 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
                 name = e.Key,
                 status = e.Value.Status.ToString(),
                 description = e.Value.Description,
-                data = e.Value.Data,
-                duration = e.Value.Duration.TotalMilliseconds
+                // Production'da data ve exception detaylarını gizle
+                data = isDevelopment ? e.Value.Data : new Dictionary<string, object>(),
+                duration = e.Value.Duration.TotalMilliseconds,
+                // Exception detaylarını sadece development'ta göster
+                exception = isDevelopment && e.Value.Exception != null ? e.Value.Exception.Message : null
             }),
             totalDuration = report.TotalDuration.TotalMilliseconds
         });
@@ -330,14 +410,16 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
+        
+        // Production'da hassas bilgileri gizle - sadece status bilgisi
         var result = System.Text.Json.JsonSerializer.Serialize(new
         {
             status = report.Status.ToString(),
             checks = report.Entries.Select(e => new
             {
                 name = e.Key,
-                status = e.Value.Status.ToString(),
-                description = e.Value.Description
+                status = e.Value.Status.ToString()
+                // Description ve diğer detayları production'da gizle
             })
         });
         await context.Response.WriteAsync(result);
@@ -359,7 +441,15 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
     }
 });
 
-app.UseHangfireDashboard();
+// Hangfire Dashboard with authentication
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() },
+    DashboardTitle = "Talabi Background Jobs",
+    StatsPollingInterval = 2000,
+    DisplayStorageConnectionString = false, // Security: Don't display connection string
+    IgnoreAntiforgeryToken = false
+});
 
 // Schedule Recurring Jobs
 RecurringJob.AddOrUpdate<IBackgroundJobService>(

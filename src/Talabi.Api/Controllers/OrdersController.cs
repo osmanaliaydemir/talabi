@@ -97,15 +97,23 @@ public class OrdersController : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<OrderDto>>> GetOrder(Guid id)
     {
-
         var userId = UserContext.GetUserId();
+        
+        // Authorization: User must be authenticated to view orders
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<OrderDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
 
         IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product);
 
-        var order = await query.FirstOrDefaultAsync(o => o.Id == id && (userId == null || o.CustomerId == userId));
+        // Only allow access to orders that belong to the authenticated user
+        var order = await query.FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == userId);
 
         if (order == null)
         {
@@ -165,8 +173,15 @@ public class OrdersController : BaseController
     [HttpGet("{id}/detail")]
     public async Task<ActionResult<ApiResponse<OrderDetailDto>>> GetOrderDetail(Guid id)
     {
-
         var userId = UserContext.GetUserId();
+        
+        // Authorization: User must be authenticated to view order details
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<OrderDetailDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
 
         IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
@@ -175,7 +190,8 @@ public class OrdersController : BaseController
             .ThenInclude(oi => oi.Product)
             .Include(o => o.StatusHistory.OrderByDescending(sh => sh.CreatedAt));
 
-        var order = await query.FirstOrDefaultAsync(o => o.Id == id && (userId == null || o.CustomerId == userId));
+        // Only allow access to orders that belong to the authenticated user
+        var order = await query.FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == userId);
 
         if (order == null)
         {
@@ -201,6 +217,53 @@ public class OrdersController : BaseController
     public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(Guid id, UpdateOrderStatusDto dto)
     {
         var userId = UserContext.GetUserId();
+        
+        // Authorization: User must be authenticated
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        // Check if order exists and user has permission
+        var order = await UnitOfWork.Orders.Query()
+            .Include(o => o.Vendor)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (order == null)
+        {
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                "ORDER_NOT_FOUND"));
+        }
+
+        // Authorization: Only vendor owner, courier assigned to order, or admin can update status
+        // For customer orders, only the customer can update (but typically customers don't update status)
+        // This endpoint is typically used by vendors/couriers, so we check vendor ownership
+        var vendor = await UnitOfWork.Vendors.Query()
+            .FirstOrDefaultAsync(v => v.Id == order.VendorId && v.OwnerId == userId);
+
+        if (vendor == null)
+        {
+            // Check if user is a courier assigned to this order
+            var courier = await UnitOfWork.Couriers.Query()
+                .Include(c => c.OrderCouriers)
+                .FirstOrDefaultAsync(c => c.UserId == userId && 
+                    c.OrderCouriers.Any(oc => oc.OrderId == id && oc.IsActive));
+
+            if (courier == null)
+            {
+                // Check if user is the customer (customers typically can't update status, but we check for completeness)
+                if (order.CustomerId != userId)
+                {
+                    return Forbid(new ApiResponse<object>(
+                        LocalizationService.GetLocalizedString(ResourceName, "Forbidden", CurrentCulture),
+                        "FORBIDDEN").ToString() ?? "");
+                }
+            }
+        }
+
         await _orderService.UpdateOrderStatusAsync(id, dto, userId, CurrentCulture);
 
         return Ok(new ApiResponse<object>(

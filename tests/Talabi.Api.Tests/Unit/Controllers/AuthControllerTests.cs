@@ -12,6 +12,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Email;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Services;
 using Xunit;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
@@ -25,6 +26,8 @@ public class AuthControllerTests
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
     private readonly Mock<IMemoryCache> _mockMemoryCache;
     private readonly Mock<Talabi.Core.Services.IEmailSender> _mockEmailSender;
+    private readonly Mock<IExternalAuthTokenVerifier> _mockTokenVerifier;
+    private readonly Mock<IVerificationCodeSecurityService> _mockVerificationSecurity;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
@@ -39,6 +42,8 @@ public class AuthControllerTests
 
         _mockMemoryCache = new Mock<IMemoryCache>();
         _mockEmailSender = new Mock<Talabi.Core.Services.IEmailSender>();
+        _mockTokenVerifier = new Mock<IExternalAuthTokenVerifier>();
+        _mockVerificationSecurity = new Mock<IVerificationCodeSecurityService>();
         var logger = ControllerTestHelpers.CreateMockLogger<AuthController>();
 
         _controller = new AuthController(
@@ -46,6 +51,8 @@ public class AuthControllerTests
             _mockUserManager.Object,
             _mockMemoryCache.Object,
             _mockEmailSender.Object,
+            _mockTokenVerifier.Object,
+            _mockVerificationSecurity.Object,
             _mockUnitOfWork.Object,
             logger,
             _mockLocalizationService.Object,

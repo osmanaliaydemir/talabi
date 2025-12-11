@@ -59,12 +59,16 @@ public class MemoryHealthCheck : IHealthCheck
         catch (Exception ex)
         {
             _logger.LogError(ex, "Memory health check failed with exception");
-            return Task.FromResult(HealthCheckResult.Unhealthy("Bellek sağlık kontrolü başarısız",
-                ex,
-                data: new Dictionary<string, object>
-                {
-                    { "Error", ex.Message }
-                }));
+            // Production'da exception detaylarını gizle
+            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+            
+            return Task.FromResult(HealthCheckResult.Unhealthy(
+                "Bellek sağlık kontrolü başarısız",
+                // Production'da exception'ı geçme, sadece development'ta
+                isDevelopment ? ex : null,
+                data: new Dictionary<string, object>()
+                // Error mesajını production'da gizle
+            ));
         }
     }
 

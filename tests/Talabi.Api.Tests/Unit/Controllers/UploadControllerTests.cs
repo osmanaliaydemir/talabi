@@ -9,6 +9,7 @@ using Moq;
 using Talabi.Api.Controllers;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Services;
 using Xunit;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
@@ -19,6 +20,7 @@ public class UploadControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<IWebHostEnvironment> _mockEnvironment;
+    private readonly Mock<IFileUploadSecurityService> _mockSecurityService;
     private readonly UploadController _controller;
 
     public UploadControllerTests()
@@ -27,9 +29,16 @@ public class UploadControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockEnvironment = new Mock<IWebHostEnvironment>();
+        _mockSecurityService = new Mock<IFileUploadSecurityService>();
 
         // Mock web root path
         _mockEnvironment.Setup(x => x.WebRootPath).Returns(Path.GetTempPath());
+
+        // Mock security service
+        _mockSecurityService.Setup(x => x.IsAllowedExtension(It.IsAny<string>())).Returns(true);
+        _mockSecurityService.Setup(x => x.IsValidFileSize(It.IsAny<long>())).Returns(true);
+        _mockSecurityService.Setup(x => x.IsValidFileContentAsync(It.IsAny<Stream>(), It.IsAny<string>())).ReturnsAsync(true);
+        _mockSecurityService.Setup(x => x.SanitizeFileName(It.IsAny<string>())).Returns<string>(x => x);
 
         var logger = ControllerTestHelpers.CreateMockLogger<UploadController>();
 
@@ -38,7 +47,8 @@ public class UploadControllerTests
             logger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
-            _mockEnvironment.Object
+            _mockEnvironment.Object,
+            _mockSecurityService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()

@@ -68,7 +68,9 @@ public class ProductsController : BaseController
         // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
         {
-            var q = request.Query.ToLower();
+            // Query is already sanitized by InputSanitizationActionFilter
+            // But we trim and normalize for search
+            var q = request.Query.Trim().ToLower();
             query = query.Where(p => p.Name.ToLower().Contains(q) ||
                                    (p.Description != null && p.Description.ToLower().Contains(q)));
         }
