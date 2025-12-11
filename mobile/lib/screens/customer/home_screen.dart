@@ -1,4 +1,5 @@
 ﻿import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -62,6 +63,17 @@ class HomeScreenState extends State<HomeScreen> {
     );
     _loadAddresses();
     _loadFavoriteStatus();
+
+    // Listen to category changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final bottomNav = Provider.of<BottomNavProvider>(
+          context,
+          listen: false,
+        );
+        bottomNav.addListener(_onCategoryChanged);
+      }
+    });
   }
 
   /// VendorType'a göre verileri yükle
@@ -90,10 +102,42 @@ class HomeScreenState extends State<HomeScreen> {
     _loadBanners(vendorType: vendorType);
   }
 
+  void _onCategoryChanged() {
+    if (!mounted) return;
+
+    try {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final currentCategory = bottomNav.selectedCategory;
+
+      // Only reload if category actually changed
+      if (_lastCategory != null && _lastCategory != currentCategory) {
+        final vendorType = currentCategory == MainCategory.restaurant ? 1 : 2;
+        // Delay to avoid setState during bottom sheet animation
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            _loadData(vendorType: vendorType);
+            _lastCategory = currentCategory;
+          }
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in _onCategoryChanged: $e');
+      }
+    }
+  }
+
   @override
   void dispose() {
     _bannerTimer?.cancel();
     _bannerPageController.dispose();
+    // Remove category change listener
+    try {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      bottomNav.removeListener(_onCategoryChanged);
+    } catch (e) {
+      // Context might not be available during dispose
+    }
     super.dispose();
   }
 
@@ -169,17 +213,19 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Context hazır olduğunda verileri yükle (sadece ilk kez veya kategori değiştiyse)
-    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
-    final currentCategory = bottomNav.selectedCategory;
-    final vendorType = currentCategory == MainCategory.restaurant ? 1 : 2;
-
-    if (_lastCategory == null || _lastCategory != currentCategory) {
-      // Kategori değişti veya ilk yükleme - tüm verileri yeniden yükle
-      _loadData(vendorType: vendorType); // Bu _loadBanners'ı da çağırıyor
+    // Context hazır olduğunda verileri yükle (sadece ilk kez)
+    if (_lastCategory == null) {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final currentCategory = bottomNav.selectedCategory;
+      final vendorType = currentCategory == MainCategory.restaurant ? 1 : 2;
+      _loadData(vendorType: vendorType);
       _lastCategory = currentCategory;
     } else if (_banners.isEmpty) {
-      // Kategori aynı ama banner'lar yüklenmemiş - sadece banner'ları yükle
+      // Banner'lar yüklenmemiş - sadece banner'ları yükle
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
       _loadBanners(vendorType: vendorType);
     } else if (_banners.length > 1 && _bannerTimer == null) {
       // Ensure timer is started if banners are already loaded
@@ -312,12 +358,25 @@ class HomeScreenState extends State<HomeScreen> {
   IconData? _getIconFromString(String? iconString) {
     if (iconString == null || iconString.isEmpty) return null;
 
+    // Remove FontAwesome prefixes (fa-solid fa-, fa-regular fa-, etc.)
+    String cleanIconString = iconString.toLowerCase();
+    if (cleanIconString.contains('fa-')) {
+      final parts = cleanIconString.split('fa-');
+      if (parts.length > 1) {
+        cleanIconString = parts.last.split(' ').last;
+      }
+    }
+
     final iconMap = {
       'restaurant': Icons.restaurant,
       'store': Icons.store,
       'shopping_basket': Icons.shopping_basket,
       'local_drink': Icons.local_drink,
       'cake': Icons.cake,
+      'cake-candles': Icons.cake,
+      'drumstick-bite': Icons.restaurant_menu,
+      'burger': Icons.lunch_dining,
+      'pizza-slice': Icons.local_pizza,
       'devices': Icons.devices,
       'checkroom': Icons.checkroom,
       'category': Icons.category,
@@ -350,49 +409,58 @@ class HomeScreenState extends State<HomeScreen> {
       'build': Icons.build,
     };
 
-    return iconMap[iconString.toLowerCase()];
+    return iconMap[cleanIconString] ??
+        iconMap[cleanIconString.replaceAll('-', '_')];
   }
 
   // Helper to map color string to Color
   Color? _getColorFromString(String? colorString, {Color? primaryColor}) {
     if (colorString == null || colorString.isEmpty) return null;
 
-    // Try to parse hex color (e.g., "#FF5722" or "FF5722")
-    if (colorString.startsWith('#')) {
-      colorString = colorString.substring(1);
-    }
-    if (colorString.length == 6) {
-      try {
-        return Color(int.parse('FF$colorString', radix: 16));
-      } catch (e) {
-        // If parsing fails, try named colors
+    try {
+      // Try to parse hex color (e.g., "#FF5722" or "FF5722")
+      String cleanColorString = colorString.trim();
+      if (cleanColorString.startsWith('#')) {
+        cleanColorString = cleanColorString.substring(1);
       }
+      if (cleanColorString.length == 6) {
+        try {
+          return Color(int.parse('FF$cleanColorString', radix: 16));
+        } catch (e) {
+          // If parsing fails, try named colors
+        }
+      }
+
+      // Named color mapping
+      final colorMap = {
+        'orange': primaryColor ?? AppTheme.primaryOrange,
+        'blue': Colors.blue,
+        'green': Colors.green,
+        'purple': Colors.purple,
+        'pink': Colors.pink,
+        'indigo': Colors.indigo,
+        'teal': Colors.teal,
+        'red': Colors.red,
+        'amber': Colors.amber,
+        'cyan': Colors.cyan,
+        'deepOrange': Colors.deepOrange,
+        'deepPurple': Colors.deepPurple,
+        'lightBlue': Colors.lightBlue,
+        'lightGreen': Colors.lightGreen,
+        'lime': Colors.lime,
+        'yellow': Colors.yellow,
+        'brown': Colors.brown,
+        'grey': Colors.grey,
+        'gray': Colors.grey,
+      };
+
+      return colorMap[cleanColorString.toLowerCase()];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing color: $colorString - $e');
+      }
+      return null;
     }
-
-    // Named color mapping
-    final colorMap = {
-      'orange': primaryColor ?? AppTheme.primaryOrange,
-      'blue': Colors.blue,
-      'green': Colors.green,
-      'purple': Colors.purple,
-      'pink': Colors.pink,
-      'indigo': Colors.indigo,
-      'teal': Colors.teal,
-      'red': Colors.red,
-      'amber': Colors.amber,
-      'cyan': Colors.cyan,
-      'deepOrange': Colors.deepOrange,
-      'deepPurple': Colors.deepPurple,
-      'lightBlue': Colors.lightBlue,
-      'lightGreen': Colors.lightGreen,
-      'lime': Colors.lime,
-      'yellow': Colors.yellow,
-      'brown': Colors.brown,
-      'grey': Colors.grey,
-      'gray': Colors.grey,
-    };
-
-    return colorMap[colorString.toLowerCase()];
   }
 
   Widget _buildPromotionalBanner({required ColorScheme colorScheme}) {
@@ -640,7 +708,7 @@ class HomeScreenState extends State<HomeScreen> {
     }
 
     // Fallback to name-based logic if API data is not available or mapping failed
-    final name = (category['name'] as String).toLowerCase();
+    final name = (category['name'] as String? ?? '').toLowerCase();
     final defaultPrimary = primaryColor ?? AppTheme.primaryOrange;
 
     if (name.contains('yemek') ||
