@@ -205,8 +205,8 @@ public class ProductsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
 
-        apiResponse.Data.Items.Should().Contain(p => p.Name == "Test Product 1");
-        apiResponse.Data.Items.Should().NotContain(p => p.Name == "Other Product");
+        apiResponse.Data!.Items.Should().Contain(p => p.Name == "Test Product 1");
+        apiResponse.Data!.Items.Should().NotContain(p => p.Name == "Other Product");
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public class ProductsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<CategoryDto>>>().Subject;
 
-        apiResponse.Data.Items.Should().Contain(c => c.Name == "Electronics");
+        apiResponse.Data!.Items.Should().Contain(c => c.Name == "Electronics");
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public class ProductsControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<AutocompleteResultDto>>>().Subject;
 
         apiResponse.Data.Should().HaveCount(1);
-        apiResponse.Data.First().Name.Should().Be("Smart Phone");
+        apiResponse.Data!.First().Name.Should().Be("Smart Phone");
     }
 
     [Fact]
@@ -297,7 +297,7 @@ public class ProductsControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
 
         // Should be ordered by sales count descending
-        apiResponse.Data.Items.First().Name.Should().Be("Popular");
+        apiResponse.Data!.Items.First().Name.Should().Be("Popular");
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class ProductsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
 
-        apiResponse.Data.Items.Should().Contain(p => p.Name == "Similar One");
+        apiResponse.Data!.Items.Should().Contain(p => p.Name == "Similar One");
         apiResponse.Data.Items.Should().NotContain(p => p.Id == currentProdId); // Should exclude current
     }
 }

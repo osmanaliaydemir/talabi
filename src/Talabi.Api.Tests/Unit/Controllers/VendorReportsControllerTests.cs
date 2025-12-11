@@ -97,14 +97,14 @@ public class VendorReportsControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<SalesReportDto>>().Subject;
 
         // Assertions logic for stats
-        apiResponse.Data.TotalOrders.Should().Be(2); // Wait, local logic will filter by date which is handled by EF mock mostly if it works correctly with dates in memory... 
-                                                     // Note: MockQueryable handles Where/Date logic reasonably well but detailed sql functions might differ.
-                                                     // For simplicity, we assume generic behavior.
+        apiResponse.Data!.TotalOrders.Should().Be(2); // Wait, local logic will filter by date which is handled by EF mock mostly if it works correctly with dates in memory... 
+                                                      // Note: MockQueryable handles Where/Date logic reasonably well but detailed sql functions might differ.
+                                                      // For simplicity, we assume generic behavior.
 
-        apiResponse.Data.CompletedOrders.Should().Be(1);
-        apiResponse.Data.TotalRevenue.Should().Be(100);
-        apiResponse.Data.TopProducts.Should().HaveCount(1);
-        apiResponse.Data.TopProducts.First().ProductName.Should().Be("P1");
+        apiResponse.Data!.CompletedOrders.Should().Be(1);
+        apiResponse.Data!.TotalRevenue.Should().Be(100);
+        apiResponse.Data!.TopProducts.Should().HaveCount(1);
+        apiResponse.Data!.TopProducts.First().ProductName.Should().Be("P1");
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class VendorReportsControllerTests
         apiResponse.Data.Should().NotBeNull();
 
         // Just cursory check via reflection
-        var type = apiResponse.Data.GetType();
+        var type = apiResponse.Data!.GetType();
         type.GetProperty("todayOrders").Should().NotBeNull();
         type.GetProperty("pendingOrders").Should().NotBeNull();
     }

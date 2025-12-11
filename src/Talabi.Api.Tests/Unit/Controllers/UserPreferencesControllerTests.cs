@@ -73,9 +73,9 @@ public class UserPreferencesControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<UserPreferencesDto>>().Subject;
 
-        apiResponse.Data.Language.Should().Be("tr");
-        apiResponse.Data.Currency.Should().Be("TRY");
-        apiResponse.Data.TimeFormat.Should().Be("12h");
+        apiResponse.Data!.Language.Should().Be("tr");
+        apiResponse.Data!.Currency.Should().Be("TRY");
+        apiResponse.Data!.TimeFormat.Should().Be("12h");
     }
 
     [Fact]
@@ -101,10 +101,10 @@ public class UserPreferencesControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<UserPreferencesDto>>().Subject;
 
         // Default values
-        apiResponse.Data.Language.Should().Be("tr");
-        apiResponse.Data.Currency.Should().Be("TRY");
-        apiResponse.Data.TimeFormat.Should().Be("24h");
-        apiResponse.Data.DateFormat.Should().Be("dd/MM/yyyy");
+        apiResponse.Data!.Language.Should().Be("tr");
+        apiResponse.Data!.Currency.Should().Be("TRY");
+        apiResponse.Data!.TimeFormat.Should().Be("24h");
+        apiResponse.Data!.DateFormat.Should().Be("dd/MM/yyyy");
 
         // Verify creation
         _mockUnitOfWork.Verify(x => x.UserPreferences.AddAsync(It.Is<UserPreferences>(p => p.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);

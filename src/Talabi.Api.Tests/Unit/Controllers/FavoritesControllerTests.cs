@@ -74,7 +74,7 @@ public class FavoritesControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
 
-        apiResponse.Data.Items.Should().HaveCount(2);
+        apiResponse.Data!.Items.Should().HaveCount(2);
         apiResponse.Data.TotalCount.Should().Be(2);
         apiResponse.Data.Items.Should().Contain(p => p.Name == "Test Product");
     }
@@ -237,7 +237,7 @@ public class FavoritesControllerTests
         // Or if the implementation returns a specific DTO? It returns `new { IsFavorite = isFavorite }`.
 
         // Asserting anonymous type property in test:
-        var data = okResult.Value.GetType().GetProperty("Data")?.GetValue(okResult.Value);
+        var data = okResult.Value!.GetType().GetProperty("Data")?.GetValue(okResult.Value);
         // This is ApiResponse.Data which is object. The actual object inside is { IsFavorite = true }
 
         // Simpler way: check if returned object has property

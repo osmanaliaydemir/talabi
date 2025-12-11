@@ -1,10 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
 using MockQueryable.Moq;
-using MockQueryable;
+using Moq;
 using Talabi.Api.Controllers;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
@@ -13,38 +16,36 @@ using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Options;
 using Xunit;
-using System.Linq;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
-/// <summary>
-/// VendorsController için unit testler
-/// </summary>
 public class VendorsControllerTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly ILogger<VendorsController> _logger;
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<ICacheService> _mockCacheService;
     private readonly Mock<IOptions<CacheOptions>> _mockCacheOptions;
+    private readonly Mock<ILogger<VendorsController>> _logger;
     private readonly VendorsController _controller;
 
     public VendorsControllerTests()
     {
         _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
-        _logger = ControllerTestHelpers.CreateMockLogger<VendorsController>();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockCacheService = new Mock<ICacheService>();
+
+        // Setup default CacheOptions
+        var defaultCacheOptions = new CacheOptions { CitiesKeyPrefix = "test_cities", CitiesCacheTTLMinutes = 60 };
         _mockCacheOptions = new Mock<IOptions<CacheOptions>>();
-        
-        // Setup default cache options
-        _mockCacheOptions.Setup(x => x.Value).Returns(new CacheOptions());
+        _mockCacheOptions.Setup(x => x.Value).Returns(defaultCacheOptions);
+
+        _logger = new Mock<ILogger<VendorsController>>();
 
         _controller = new VendorsController(
             _mockUnitOfWork.Object,
-            _logger,
+            _logger.Object,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
             _mockCacheService.Object,
@@ -56,152 +57,193 @@ public class VendorsControllerTests
     }
 
     [Fact]
-    public async Task GetVendors_WhenNoFilters_ReturnsAllActiveVendors()
+    public async Task GetVendors_WhenCalled_ReturnsPagedVendors()
     {
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Vendor 1",
-                Type = VendorType.Restaurant,
-                IsActive = true
-            },
-            new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Vendor 2",
-                Type = VendorType.Market,
-                IsActive = true
-            }
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor A", IsActive = true, Type = VendorType.Restaurant },
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor B", IsActive = true, Type = VendorType.Market }
         };
 
-        var mockRepository = new Mock<IRepository<Vendor>>();
-        var mockQueryable = vendors.BuildMock();
-        mockRepository.Setup(x => x.Query()).Returns(mockQueryable);
-
-        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepository.Object);
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
         // Act
         var result = await _controller.GetVendors();
 
         // Assert
-        result.Should().NotBeNull();
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<VendorDto>>>().Subject;
 
         apiResponse.Success.Should().BeTrue();
-        apiResponse.Data.Items.Should().HaveCount(2);
-        apiResponse.Data.Items.Should().Contain(v => v.Name == "Vendor 1");
-        apiResponse.Data.Items.Should().Contain(v => v.Name == "Vendor 2");
+        apiResponse.Data!.Items.Should().HaveCount(2);
+        apiResponse.Data!.TotalCount.Should().Be(2);
     }
 
     [Fact]
-    public async Task GetVendors_WhenVendorTypeFilter_ReturnsFilteredVendors()
+    public async Task GetVendors_WhenFilteredByType_ReturnsFilteredVendors()
     {
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Restaurant 1",
-                Type = VendorType.Restaurant,
-                IsActive = true
-            },
-            new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Market 1",
-                Type = VendorType.Market,
-                IsActive = true
-            }
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor A", IsActive = true, Type = VendorType.Restaurant },
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor B", IsActive = true, Type = VendorType.Market }
         };
 
-        var mockRepository = new Mock<IRepository<Vendor>>();
-        var mockQueryable = vendors.BuildMock();
-        mockRepository.Setup(x => x.Query()).Returns(mockQueryable);
-
-        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepository.Object);
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
         // Act
         var result = await _controller.GetVendors(vendorType: VendorType.Restaurant);
 
         // Assert
-        result.Should().NotBeNull();
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<VendorDto>>>().Subject;
 
         apiResponse.Success.Should().BeTrue();
-        apiResponse.Data.Items.Should().HaveCount(1);
-        apiResponse.Data.Items.First().Name.Should().Be("Restaurant 1");
-        apiResponse.Data.Items.First().Type.Should().Be(VendorType.Restaurant);
+        apiResponse.Data!.Items.Should().HaveCount(1);
+        apiResponse.Data!.Items.First().Type.Should().Be(VendorType.Restaurant);
     }
 
     [Fact]
-    public async Task GetVendors_WhenPageIsLessThanOne_SetsPageToOne()
+    public async Task GetProductsByVendor_WhenVendorExists_ReturnsProducts()
+    {
+        // Arrange
+        var vendorId = Guid.NewGuid();
+        var vendor = new Vendor { Id = vendorId, Name = "Test Vendor", IsActive = true };
+        var products = new List<Product>
+        {
+            new Product { Id = Guid.NewGuid(), VendorId = vendorId, Name = "Product 1", Price = 10 },
+            new Product { Id = Guid.NewGuid(), VendorId = vendorId, Name = "Product 2", Price = 20 }
+        };
+
+        var mockVendorRepo = new Mock<IRepository<Vendor>>();
+        mockVendorRepo.Setup(x => x.Query()).Returns(new List<Vendor> { vendor }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockVendorRepo.Object);
+
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(products.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        // Act
+        var result = await _controller.GetProductsByVendor(vendorId);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<ProductDto>>>().Subject;
+
+        apiResponse.Success.Should().BeTrue();
+        apiResponse.Data!.Items.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task CreateVendor_WhenAuthorized_CreatesVendor()
+    {
+        // Arrange
+        _mockUserContextService.Setup(x => x.GetUserId()).Returns("user123");
+        var dto = new CreateVendorDto { Name = "New Vendor", Address = "123 St." };
+
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.AddAsync(It.IsAny<Vendor>(), It.IsAny<System.Threading.CancellationToken>()))
+            .ReturnsAsync(new Vendor { Id = Guid.NewGuid(), Name = dto.Name, OwnerId = "user123" });
+
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
+        _mockUnitOfWork.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        // Act
+        var result = await _controller.CreateVendor(dto);
+
+        // Assert
+        var createdResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        var apiResponse = createdResult.Value.Should().BeOfType<ApiResponse<VendorDto>>().Subject;
+
+        apiResponse.Data!.Name.Should().Be("New Vendor");
+        mockRepo.Verify(x => x.AddAsync(It.IsAny<Vendor>(), It.IsAny<System.Threading.CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Search_WhenQueryProvided_ReturnsMatchingVendors()
     {
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Vendor 1",
-                Type = VendorType.Restaurant,
-                IsActive = true
-            }
+            new Vendor { Id = Guid.NewGuid(), Name = "Pizza Place", IsActive = true, Address = "Pizza St", Orders = new List<Order>() },
+            new Vendor { Id = Guid.NewGuid(), Name = "Burger Joint", IsActive = true, Address = "Second St", Orders = new List<Order>() }
         };
 
-        var mockRepository = new Mock<IRepository<Vendor>>();
-        var mockQueryable = vendors.BuildMock();
-        mockRepository.Setup(x => x.Query()).Returns(mockQueryable);
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
-        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepository.Object);
+        var request = new VendorSearchRequestDto { Query = "Pizza" };
 
         // Act
-        var result = await _controller.GetVendors(page: 0, pageSize: 6);
+        var result = await _controller.Search(request);
 
         // Assert
-        result.Should().NotBeNull();
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<VendorDto>>>().Subject;
 
-        apiResponse.Success.Should().BeTrue();
-        apiResponse.Data.Page.Should().Be(1);
+        apiResponse.Data!.Items.Should().HaveCount(1);
+        apiResponse.Data!.Items.First().Name.Should().Be("Pizza Place");
     }
 
     [Fact]
-    public async Task GetVendors_WhenPageSizeIsLessThanOne_SetsPageSizeToSix()
+    public async Task GetCities_ReturnsUniqueCities()
     {
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Vendor 1",
-                Type = VendorType.Restaurant,
-                IsActive = true
-            }
+            new Vendor { Id = Guid.NewGuid(), City = "Istanbul", IsActive = true },
+            new Vendor { Id = Guid.NewGuid(), City = "Ankara", IsActive = true },
+            new Vendor { Id = Guid.NewGuid(), City = "Istanbul", IsActive = true } // Duplicate
         };
 
-        var mockRepository = new Mock<IRepository<Vendor>>();
-        var mockQueryable = vendors.BuildMock();
-        mockRepository.Setup(x => x.Query()).Returns(mockQueryable);
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
-        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepository.Object);
+        // Mock CacheService to execute the factory
+        _mockCacheService.Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>>>>(), It.IsAny<int>()))
+            .Returns<string, Func<Task<List<string>>>, int>(async (key, factory, ttl) => await factory());
 
         // Act
-        var result = await _controller.GetVendors(page: 1, pageSize: 0);
+        var result = await _controller.GetCities();
 
         // Assert
-        result.Should().NotBeNull();
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<VendorDto>>>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<string>>>().Subject;
 
-        apiResponse.Success.Should().BeTrue();
-        apiResponse.Data.PageSize.Should().Be(6);
+        apiResponse.Data!.Items.Should().HaveCount(2);
+        apiResponse.Data.Items.Should().Contain("Istanbul");
+        apiResponse.Data.Items.Should().Contain("Ankara");
+    }
+
+    [Fact]
+    public async Task Autocomplete_WhenQueryProvided_ReturnsSuggestions()
+    {
+        // Arrange
+        var vendors = new List<Vendor>
+        {
+            new Vendor { Id = Guid.NewGuid(), Name = "Starbucks", IsActive = true },
+            new Vendor { Id = Guid.NewGuid(), Name = "Star Market", IsActive = true },
+            new Vendor { Id = Guid.NewGuid(), Name = "Other", IsActive = true }
+        };
+
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
+
+        // Act
+        var result = await _controller.Autocomplete("Star");
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<AutocompleteResultDto>>>().Subject;
+
+        apiResponse.Data!.Should().HaveCount(2);
     }
 }

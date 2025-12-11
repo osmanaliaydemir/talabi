@@ -85,7 +85,7 @@ public class OrdersControllerTests
         var createdResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
         var apiResponse = createdResult.Value.Should().BeOfType<ApiResponse<OrderDto>>().Subject;
 
-        apiResponse.Data.Id.Should().Be(createdOrder.Id);
+        apiResponse.Data!.Id.Should().Be(createdOrder.Id);
 
         _mockUnitOfWork.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -199,5 +199,113 @@ public class OrdersControllerTests
         // Assert
         result.Result.Should().BeOfType<ConflictObjectResult>();
         _mockUnitOfWork.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelOrderItem_WhenSuccessful_CancelsItemAndUpdatesTotal()
+    {
+        // Arrange
+        var userId = "user-1";
+        _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
+        var orderId = Guid.NewGuid();
+        var orderItemId = Guid.NewGuid();
+        var customerOrderItemId = "item-123";
+
+        var order = new Order
+        {
+            Id = orderId,
+            CustomerId = userId,
+            Status = OrderStatus.Pending,
+            TotalAmount = 100,
+            StatusHistory = new List<OrderStatusHistory>()
+        };
+
+        var orderItem = new OrderItem
+        {
+            Id = orderItemId,
+            OrderId = orderId,
+            CustomerOrderItemId = customerOrderItemId,
+            Order = order,
+            Quantity = 2,
+            UnitPrice = 25, // Total 50
+            IsCancelled = false
+        };
+
+        var orderItems = new List<OrderItem> { orderItem, new OrderItem { Id = Guid.NewGuid(), OrderId = orderId, IsCancelled = false } }; // One cancelled, one remaining
+
+        var mockItemRepo = new Mock<IRepository<OrderItem>>();
+        // Setup Query to return correct items based on expression is tricky with simple lists
+        // MockQueryable handles Where/FirstOrDefault well
+        mockItemRepo.Setup(x => x.Query()).Returns(orderItems.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockItemRepo.Object);
+        _mockUnitOfWork.Setup(x => x.Orders.Update(It.IsAny<Order>()));
+
+        var cancelDto = new CancelOrderDto { Reason = "Too expensive" };
+
+        // Act
+        var result = await _controller.CancelOrderItem(customerOrderItemId, cancelDto);
+
+        // Assert
+        result.Result.Should().BeOfType<OkObjectResult>();
+
+        orderItem.IsCancelled.Should().BeTrue();
+        orderItem.CancelReason.Should().Be(cancelDto.Reason);
+        order.TotalAmount.Should().Be(50); // 100 - (2*25) = 50
+        order.Status.Should().Be(OrderStatus.Pending); // Still pending as items remain
+
+        _mockUnitOfWork.Verify(x => x.OrderItems.Update(orderItem), Times.Once);
+        _mockUnitOfWork.Verify(x => x.Orders.Update(order), Times.Once);
+        _mockUnitOfWork.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelOrderItem_WhenAllItemsCancelled_CancelsOrder()
+    {
+        // Arrange
+        var userId = "user-1";
+        _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
+        var orderId = Guid.NewGuid();
+        var customerOrderItemId = "item-123";
+
+        var order = new Order
+        {
+            Id = orderId,
+            CustomerId = userId,
+            Status = OrderStatus.Pending,
+            TotalAmount = 50,
+            StatusHistory = new List<OrderStatusHistory>()
+        };
+
+        var orderItem = new OrderItem
+        {
+            Id = Guid.NewGuid(),
+            OrderId = orderId,
+            CustomerOrderItemId = customerOrderItemId,
+            Order = order,
+            Quantity = 2,
+            UnitPrice = 25,
+            IsCancelled = false
+        };
+
+        // Only this item exists in DB query for this order
+        var orderItems = new List<OrderItem> { orderItem };
+
+        var mockItemRepo = new Mock<IRepository<OrderItem>>();
+        mockItemRepo.Setup(x => x.Query()).Returns(orderItems.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockItemRepo.Object);
+
+        var mockOrderRepo = new Mock<IRepository<Order>>();
+        _mockUnitOfWork.Setup(x => x.Orders).Returns(mockOrderRepo.Object);
+
+        var cancelDto = new CancelOrderDto { Reason = "Product is defective and not working" };
+
+        // Act
+        var result = await _controller.CancelOrderItem(customerOrderItemId, cancelDto);
+
+        // Assert
+        result.Result.Should().BeOfType<OkObjectResult>();
+
+        orderItem.IsCancelled.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled); // Order cancelled because all items cancelled
     }
 }

@@ -4,9 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using MockQueryable.Moq;
 using Talabi.Api.Controllers;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
+using Talabi.Core.Entities;
+using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Xunit;
 
@@ -155,6 +158,106 @@ public class MapControllerTests
         var apiResponse = actionResult.Value.Should().BeOfType<ApiResponse<object>>().Subject;
         apiResponse.Success.Should().BeFalse();
         apiResponse.ErrorCode.Should().Be("INTERNAL_SERVER_ERROR");
+    }
+    [Fact]
+    public async Task GetVendorsForMap_WhenCalled_ReturnsVendorsWithLocation()
+    {
+        // Arrange
+        var vendors = new List<Vendor>
+        {
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor 1", Latitude = 41.0082, Longitude = 28.9784 },
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor 2", Latitude = 41.0122, Longitude = 28.9764 }
+        };
+
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
+
+        _mockMapper.Setup(x => x.Map<VendorMapDto>(It.IsAny<Vendor>()))
+            .Returns((Vendor v) => new VendorMapDto { Id = v.Id, Name = v.Name, Latitude = v.Latitude ?? 0, Longitude = v.Longitude ?? 0 });
+
+        // Act
+        var result = await _controller.GetVendorsForMap(null, null);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<VendorMapDto>>>().Subject;
+
+        apiResponse.Success.Should().BeTrue();
+        apiResponse.Data.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetVendorsForMap_WhenUserLocationProvided_ReturnsSortedVendorsWithDistance()
+    {
+        // Arrange
+        var userLat = 41.0000;
+        var userLon = 28.0000;
+
+        // Vendor 1 is closer, Vendor 2 is farther (roughly)
+        var vendors = new List<Vendor>
+        {
+            new Vendor { Id = Guid.NewGuid(), Name = "Far Vendor", Latitude = 42.0000, Longitude = 29.0000 },
+            new Vendor { Id = Guid.NewGuid(), Name = "Near Vendor", Latitude = 41.0100, Longitude = 28.0100 }
+        };
+
+        var mockRepo = new Mock<IRepository<Vendor>>();
+        mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
+
+        _mockMapper.Setup(x => x.Map<VendorMapDto>(It.IsAny<Vendor>()))
+            .Returns((Vendor v) => new VendorMapDto { Id = v.Id, Name = v.Name, Latitude = v.Latitude ?? 0, Longitude = v.Longitude ?? 0 });
+
+        // Act
+        var result = await _controller.GetVendorsForMap(userLat, userLon);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<VendorMapDto>>>().Subject;
+
+        apiResponse.Success.Should().BeTrue();
+        apiResponse.Data!.Should().HaveCount(2);
+        apiResponse.Data![0].Name.Should().Be("Near Vendor"); // Should be first
+        apiResponse.Data![1].Name.Should().Be("Far Vendor");
+        apiResponse.Data![0].DistanceInKm.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task GetDeliveryTracking_WhenOrderExists_ReturnsTrackingInfo()
+    {
+        // Arrange
+        var userId = "user123";
+        _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
+        var orderId = Guid.NewGuid();
+
+        var order = new Order
+        {
+            Id = orderId,
+            CustomerId = userId,
+            Status = OrderStatus.OutForDelivery,
+            Vendor = new Vendor { Latitude = 41.0, Longitude = 29.0, Address = "Vendor Addr" },
+            DeliveryAddress = new UserAddress { Latitude = 41.1, Longitude = 29.1, FullAddress = "Delivery Addr" }
+        };
+
+        var mockOrderRepo = new Mock<IRepository<Order>>();
+        mockOrderRepo.Setup(x => x.Query()).Returns(new List<Order> { order }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Orders).Returns(mockOrderRepo.Object);
+
+        // Setup OrderCourier query (empty or valid)
+        var mockCourierRepo = new Mock<IRepository<OrderCourier>>();
+        mockCourierRepo.Setup(x => x.Query()).Returns(new List<OrderCourier>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderCouriers).Returns(mockCourierRepo.Object);
+
+        // Act
+        var result = await _controller.GetDeliveryTracking(orderId);
+
+        // Assert
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<DeliveryTrackingDto>>().Subject;
+
+        apiResponse.Success.Should().BeTrue();
+        apiResponse.Data!.OrderId.Should().Be(orderId);
+        apiResponse.Data!.VendorAddress.Should().Be("Vendor Addr");
     }
 }
 

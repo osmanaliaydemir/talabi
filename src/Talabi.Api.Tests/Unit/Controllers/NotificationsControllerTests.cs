@@ -69,9 +69,9 @@ public class NotificationsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<NotificationSettingsDto>>().Subject;
 
-        apiResponse.Data.OrderUpdates.Should().BeTrue();
-        apiResponse.Data.Promotions.Should().BeFalse();
-        apiResponse.Data.NewProducts.Should().BeTrue();
+        apiResponse.Data!.OrderUpdates.Should().BeTrue();
+        apiResponse.Data!.Promotions.Should().BeFalse();
+        apiResponse.Data!.NewProducts.Should().BeTrue();
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class NotificationsControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<NotificationSettingsDto>>().Subject;
 
         // Default: true, true, true
-        apiResponse.Data.OrderUpdates.Should().BeTrue();
+        apiResponse.Data!.OrderUpdates.Should().BeTrue();
 
         _mockUnitOfWork.Verify(x => x.NotificationSettings.AddAsync(It.Is<NotificationSettings>(s => s.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);

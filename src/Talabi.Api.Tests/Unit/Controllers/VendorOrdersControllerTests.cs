@@ -87,9 +87,9 @@ public class VendorOrdersControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<VendorOrderDto>>>().Subject;
 
-        apiResponse.Data.TotalCount.Should().Be(1);
-        apiResponse.Data.Items.Should().HaveCount(1);
-        apiResponse.Data.Items.First().CustomerName.Should().Be("John Doe");
+        apiResponse.Data!.TotalCount.Should().Be(1);
+        apiResponse.Data!.Items.Should().HaveCount(1);
+        apiResponse.Data!.Items.First().CustomerName.Should().Be("John Doe");
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class VendorOrdersControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<VendorOrderDto>>().Subject;
 
-        apiResponse.Data.Id.Should().Be(orderId);
+        apiResponse.Data!.Id.Should().Be(orderId);
     }
 
     [Fact]

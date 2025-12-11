@@ -33,7 +33,7 @@ public class CustomerNotificationsControllerTests
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
 
         var userStore = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null, null, null, null, null, null, null, null);
+        _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         var logger = ControllerTestHelpers.CreateMockLogger<CustomerNotificationsController>();
 
@@ -79,8 +79,8 @@ public class CustomerNotificationsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<CustomerNotificationResponseDto>>().Subject;
 
-        apiResponse.Data.Items.Should().Contain(n => n.Message == "Test");
-        apiResponse.Data.UnreadCount.Should().Be(1);
+        apiResponse.Data!.Items.Should().Contain(n => n.Message == "Test");
+        apiResponse.Data!.UnreadCount.Should().Be(1);
     }
 
     [Fact]

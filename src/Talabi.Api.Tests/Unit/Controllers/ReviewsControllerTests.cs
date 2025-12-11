@@ -38,7 +38,7 @@ public class ReviewsControllerTests
         var logger = ControllerTestHelpers.CreateMockLogger<ReviewsController>();
 
         var store = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
+        _mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         _controller = new ReviewsController(
             _mockUnitOfWork.Object,
@@ -152,8 +152,8 @@ public class ReviewsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<ProductReviewsSummaryDto>>().Subject;
 
-        apiResponse.Data.TotalRatings.Should().Be(2);
-        apiResponse.Data.AverageRating.Should().Be(4.5);
+        apiResponse.Data!.TotalRatings.Should().Be(2);
+        apiResponse.Data!.AverageRating.Should().Be(4.5);
     }
 
     [Fact]

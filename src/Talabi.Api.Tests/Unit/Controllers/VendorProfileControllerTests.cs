@@ -73,8 +73,8 @@ public class VendorProfileControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<VendorProfileDto>>().Subject;
 
-        apiResponse.Data.Id.Should().Be(vendorId);
-        apiResponse.Data.Name.Should().Be("Test Vendor");
+        apiResponse.Data!.Id.Should().Be(vendorId);
+        apiResponse.Data!.Name.Should().Be("Test Vendor");
     }
 
     [Fact]

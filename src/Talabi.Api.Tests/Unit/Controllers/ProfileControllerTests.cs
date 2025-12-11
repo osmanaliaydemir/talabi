@@ -32,7 +32,7 @@ public class ProfileControllerTests
         _logger = ControllerTestHelpers.CreateMockLogger<ProfileController>();
 
         var store = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
+        _mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         _controller = new ProfileController(
             _mockUnitOfWork.Object,
@@ -65,7 +65,7 @@ public class ProfileControllerTests
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<UserProfileDto>>().Subject;
-        apiResponse.Data.FullName.Should().Be("Test User");
+        apiResponse.Data!.FullName.Should().Be("Test User");
     }
 
     [Fact]

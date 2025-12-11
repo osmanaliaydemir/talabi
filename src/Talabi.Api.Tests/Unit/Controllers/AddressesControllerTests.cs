@@ -95,7 +95,7 @@ public class AddressesControllerTests
 
         apiResponse.Success.Should().BeTrue();
         apiResponse.Data.Should().HaveCount(2);
-        apiResponse.Data.First().IsDefault.Should().BeTrue(); // Should be ordered by IsDefault desc
+        apiResponse.Data!.First().IsDefault.Should().BeTrue(); // Should be ordered by IsDefault desc
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class AddressesControllerTests
         var createdResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
         var apiResponse = createdResult.Value.Should().BeOfType<ApiResponse<AddressDto>>().Subject;
 
-        apiResponse.Data.IsDefault.Should().BeTrue();
+        apiResponse.Data!.IsDefault.Should().BeTrue();
 
         _mockUnitOfWork.Verify(x => x.UserAddresses.AddAsync(It.Is<UserAddress>(a => a.IsDefault == true), It.IsAny<CancellationToken>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(default), Times.Once);

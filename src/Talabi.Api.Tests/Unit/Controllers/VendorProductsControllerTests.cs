@@ -78,8 +78,8 @@ public class VendorProductsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PagedResultDto<VendorProductDto>>>().Subject;
 
-        apiResponse.Data.Items.Should().HaveCount(2);
-        apiResponse.Data.Items.First().Name.Should().Be("P1"); // Ordered by CreatedAt Desc
+        apiResponse.Data!.Items.Should().HaveCount(2);
+        apiResponse.Data!.Items.First().Name.Should().Be("P1"); // Ordered by CreatedAt Desc
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class VendorProductsControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<VendorProductDto>>().Subject;
 
-        apiResponse.Data.Id.Should().Be(productId);
+        apiResponse.Data!.Id.Should().Be(productId);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class VendorProductsControllerTests
         var createdResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
         var apiResponse = createdResult.Value.Should().BeOfType<ApiResponse<VendorProductDto>>().Subject;
 
-        apiResponse.Data.Name.Should().Be("New Product");
+        apiResponse.Data!.Name.Should().Be("New Product");
 
         _mockUnitOfWork.Verify(x => x.Products.AddAsync(It.Is<Product>(p => p.Name == "New Product" && p.VendorId == vendorId), It.IsAny<CancellationToken>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);

@@ -104,11 +104,11 @@ public class UploadControllerTests
 
         // We can use reflection or dynamic to check 'Url' property
         value.Should().NotBeNull();
-        var type = value.GetType();
+        var type = value!.GetType();
         var urlProp = type.GetProperty("Url");
         urlProp.Should().NotBeNull();
 
-        var urlValue = urlProp.GetValue(value) as string;
+        var urlValue = urlProp!.GetValue(value) as string;
         urlValue.Should().StartWith("http://localhost/images/");
         urlValue.Should().EndWith(".jpg");
     }
