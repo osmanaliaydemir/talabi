@@ -359,7 +359,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
 
                   const SizedBox(height: 24),
 
@@ -1377,9 +1377,13 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                             order.courierStatus!,
                                           ).withValues(alpha: 0.15),
                                           label: Text(
-                                            _courierStatusLabel(order.courierStatus!),
+                                            _courierStatusLabel(
+                                              order.courierStatus!,
+                                            ),
                                             style: TextStyle(
-                                              color: _courierStatusColor(order.courierStatus!),
+                                              color: _courierStatusColor(
+                                                order.courierStatus!,
+                                              ),
                                               fontWeight: FontWeight.bold,
                                               fontSize: 11,
                                             ),
