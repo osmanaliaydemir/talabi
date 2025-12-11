@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:provider/provider.dart';
 
 class CourierHeader extends StatefulWidget implements PreferredSizeWidget {
@@ -51,13 +52,12 @@ class _CourierHeaderState extends State<CourierHeader> {
         _unreadNotifications = summary.unreadCount;
       });
     } catch (e, stackTrace) {
-      print('CourierHeader: ERROR refreshing notification count - $e');
-      print(stackTrace);
+      LoggerService().error('CourierHeader: ERROR refreshing notification count', e, stackTrace);
     }
   }
 
   Future<void> _openNotifications() async {
-    print('CourierHeader: Notifications icon tapped');
+    LoggerService().debug('CourierHeader: Notifications icon tapped');
     await Navigator.of(context).pushNamed('/courier/notifications');
     if (mounted) {
       await _refreshNotificationCount();
@@ -103,7 +103,7 @@ class _CourierHeaderState extends State<CourierHeader> {
                 IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {
-                    print('CourierHeader: Back button pressed');
+                    LoggerService().debug('CourierHeader: Back button pressed');
                     if (widget.onBack != null) {
                       widget.onBack!();
                     } else {
@@ -163,7 +163,7 @@ class _CourierHeaderState extends State<CourierHeader> {
                     size: 24,
                   ),
                   onPressed: () {
-                    print('CourierHeader: Refresh icon pressed');
+                    LoggerService().debug('CourierHeader: Refresh icon pressed');
                     widget.onRefresh?.call();
                   },
                 ),

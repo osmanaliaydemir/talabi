@@ -1,20 +1,6 @@
 import 'package:mobile/models/currency.dart';
 
 class Product {
-  final String id;
-  final String vendorId;
-  final String? vendorName;
-  final String name;
-  final String? description;
-  final String? category;
-  final String? categoryId;
-  final double price;
-  final Currency currency;
-  final String? imageUrl;
-  final bool isAvailable;
-  final int? stock;
-  final int? preparationTime;
-
   Product({
     required this.id,
     required this.vendorId,
@@ -69,4 +55,18 @@ class Product {
       'preparationTime': preparationTime,
     };
   }
+
+  final String id;
+  final String vendorId;
+  final String? vendorName;
+  final String name;
+  final String? description;
+  final String? category;
+  final String? categoryId;
+  final double price;
+  final Currency currency;
+  final String? imageUrl;
+  final bool isAvailable;
+  final int? stock;
+  final int? preparationTime;
 }

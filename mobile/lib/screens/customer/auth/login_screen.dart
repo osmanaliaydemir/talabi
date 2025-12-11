@@ -231,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -270,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         width: 100,
                         height: 100,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppTheme.primaryOrange,
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
@@ -286,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Title - Centered
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Text(
@@ -312,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(
@@ -326,12 +326,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               BoxShadow(
                                 color: AppTheme.shadowColor,
                                 blurRadius: 10,
-                                offset: const Offset(0, -4),
+                                offset: Offset(0, -4),
                               ),
                             ],
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -372,15 +374,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.email_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
@@ -412,7 +416,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock_outline,
                                           color: AppTheme.textSecondary,
                                         ),
@@ -431,10 +435,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                           },
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -467,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                           Text(
                                             localizations.rememberMe,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: AppTheme.textSecondary,
                                               fontSize: 14,
                                             ),
@@ -514,7 +520,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         elevation: 0,
                                       ),
                                       child: _isLoading
-                                          ? SizedBox(
+                                          ? const SizedBox(
                                               height: 20,
                                               width: 20,
                                               child: CircularProgressIndicator(
@@ -535,7 +541,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // Or continue with separator
                                   Row(
                                     children: [
-                                      Expanded(
+                                      const Expanded(
                                         child: Divider(
                                           color: AppTheme.dividerColor,
                                         ),
@@ -546,13 +552,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                         child: Text(
                                           localizations.orContinueWith,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             color: AppTheme.textSecondary,
                                             fontSize: 14,
                                           ),
                                         ),
                                       ),
-                                      Expanded(
+                                      const Expanded(
                                         child: Divider(
                                           color: AppTheme.dividerColor,
                                         ),
@@ -676,7 +682,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           );
                                         },
                                         child: Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: AppTheme.spacingMedium,
                                             vertical: AppTheme.spacingMedium,
                                           ),
@@ -684,7 +690,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.person_add_alt_1_rounded,
                                                 color: AppTheme.primaryOrange,
                                                 size: 20,
@@ -707,7 +713,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 ),
                                               ),
                                               AppTheme.horizontalSpace(0.25),
-                                              Icon(
+                                              const Icon(
                                                 Icons.arrow_forward_rounded,
                                                 color: AppTheme.primaryOrange,
                                                 size: 18,
@@ -748,7 +754,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        side: BorderSide(color: AppTheme.dividerColor),
+        side: const BorderSide(color: AppTheme.dividerColor),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: AppTheme.cardColor,
       ),
@@ -777,7 +783,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -789,11 +795,15 @@ class _LoginScreenState extends State<LoginScreen> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.store, color: AppTheme.primaryOrange, size: 20),
+                const Icon(
+                  Icons.store,
+                  color: AppTheme.primaryOrange,
+                  size: 20,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -805,7 +815,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.delivery_dining,
                   color: AppTheme.courierPrimary,
                   size: 20,
@@ -813,7 +823,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -861,7 +871,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

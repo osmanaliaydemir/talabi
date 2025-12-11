@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/models/vendor_notification.dart';
 
 class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
-  final String? title;
-  final String? subtitle;
-  final IconData leadingIcon;
-  final bool showBackButton;
-  final VoidCallback? onBack;
-  final VoidCallback? onRefresh;
-  final bool showNotifications;
-  final bool showRefresh;
-  final Map<String, int>? orderCounts;
-  final String? selectedStatus;
-
   const VendorHeader({
     super.key,
     this.title,
@@ -28,6 +18,17 @@ class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
     this.orderCounts,
     this.selectedStatus,
   });
+
+  final String? title;
+  final String? subtitle;
+  final IconData leadingIcon;
+  final bool showBackButton;
+  final VoidCallback? onBack;
+  final VoidCallback? onRefresh;
+  final bool showNotifications;
+  final bool showRefresh;
+  final Map<String, int>? orderCounts;
+  final String? selectedStatus;
 
   @override
   Size get preferredSize => const Size.fromHeight(90);
@@ -57,14 +58,18 @@ class _VendorHeaderState extends State<VendorHeader> {
       setState(() {
         _unreadNotifications = notifications.where((n) => !n.isRead).length;
       });
-    } catch (e) {
-      print('VendorHeader: ERROR refreshing notification count - $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'VendorHeader: ERROR refreshing notification count',
+        e,
+        stackTrace,
+      );
       // Keep 0 as default on error
     }
   }
 
   Future<void> _openNotifications() async {
-    print('VendorHeader: Notifications icon tapped');
+    LoggerService().debug('VendorHeader: Notifications icon tapped');
     await Navigator.of(context).pushNamed('/vendor/notifications');
     if (mounted) {
       await _refreshNotificationCount();
@@ -108,7 +113,7 @@ class _VendorHeaderState extends State<VendorHeader> {
                 IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {
-                    print('VendorHeader: Back button pressed');
+                    LoggerService().debug('VendorHeader: Back button pressed');
                     if (widget.onBack != null) {
                       widget.onBack!();
                     } else {
@@ -163,7 +168,7 @@ class _VendorHeaderState extends State<VendorHeader> {
                     size: 24,
                   ),
                   onPressed: () {
-                    print('VendorHeader: Refresh icon pressed');
+                    LoggerService().debug('VendorHeader: Refresh icon pressed');
                     widget.onRefresh?.call();
                   },
                 ),

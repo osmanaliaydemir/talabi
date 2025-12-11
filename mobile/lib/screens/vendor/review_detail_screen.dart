@@ -5,14 +5,14 @@ import 'package:mobile/models/review.dart';
 import 'package:mobile/services/api_service.dart';
 
 class VendorReviewDetailScreen extends StatefulWidget {
-  final Review review;
-  final VoidCallback onReviewUpdated;
-
   const VendorReviewDetailScreen({
     super.key,
     required this.review,
     required this.onReviewUpdated,
   });
+
+  final Review review;
+  final VoidCallback onReviewUpdated;
 
   @override
   State<VendorReviewDetailScreen> createState() =>

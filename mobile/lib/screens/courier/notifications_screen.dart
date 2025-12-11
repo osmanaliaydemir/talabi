@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_notification.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 
 class CourierNotificationsScreen extends StatefulWidget {
@@ -26,12 +27,12 @@ class _CourierNotificationsScreenState
   @override
   void initState() {
     super.initState();
-    print('CourierNotificationsScreen: initState called');
+    LoggerService().debug('CourierNotificationsScreen: initState called');
     _loadNotifications();
   }
 
   Future<void> _loadNotifications() async {
-    print('CourierNotificationsScreen: Loading notifications...');
+    LoggerService().debug('CourierNotificationsScreen: Loading notifications...');
     setState(() {
       _isLoading = true;
       _isError = false;
@@ -48,12 +49,11 @@ class _CourierNotificationsScreenState
         _unreadCount = response.unreadCount;
         _isLoading = false;
       });
-      print(
+      LoggerService().debug(
         'CourierNotificationsScreen: Loaded ${response.items.length} notifications. Unread: ${response.unreadCount}',
       );
     } catch (e, stackTrace) {
-      print('CourierNotificationsScreen: ERROR loading notifications - $e');
-      print(stackTrace);
+      LoggerService().error('CourierNotificationsScreen: ERROR loading notifications', e, stackTrace);
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -64,18 +64,17 @@ class _CourierNotificationsScreenState
   }
 
   Future<void> _handleRefresh() async {
-    print('CourierNotificationsScreen: Refresh triggered');
+    LoggerService().debug('CourierNotificationsScreen: Refresh triggered');
     await _loadNotifications();
   }
 
   Future<void> _markAsRead(String id) async {
     try {
-      print('CourierNotificationsScreen: Marking notification $id as read');
+      LoggerService().debug('CourierNotificationsScreen: Marking notification $id as read');
       await _courierService.markNotificationRead(id);
       await _loadNotifications();
     } catch (e, stackTrace) {
-      print('CourierNotificationsScreen: ERROR mark as read - $e');
-      print(stackTrace);
+      LoggerService().error('CourierNotificationsScreen: ERROR mark as read', e, stackTrace);
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -98,7 +97,7 @@ class _CourierNotificationsScreenState
   }
 
   void _handleNotificationTap(CourierNotification notification) async {
-    print(
+    LoggerService().debug(
       'CourierNotificationsScreen: Notification tapped - ${notification.id}',
     );
     if (!notification.isRead) {
@@ -109,7 +108,7 @@ class _CourierNotificationsScreenState
 
     if (notification.orderId != null && notification.orderId!.isNotEmpty) {
       final orderId = notification.orderId.toString();
-      print(
+      LoggerService().debug(
         'CourierNotificationsScreen: Navigating to order detail with orderId: $orderId',
       );
       Navigator.of(

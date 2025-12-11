@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service for handling location permissions with explanation dialog
@@ -106,7 +107,7 @@ class LocationPermissionService {
   /// Show dialog when location services are disabled
   static Future<bool> _showLocationServicesDialog(BuildContext context) async {
     final localizations = AppLocalizations.of(context);
-    
+
     final title = _getLocalizedString(
       localizations,
       'locationServicesDisabledTitle',
@@ -148,10 +149,7 @@ class LocationPermissionService {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(
-              cancelButton,
-              style: const TextStyle(fontSize: 16),
-            ),
+            child: Text(cancelButton, style: const TextStyle(fontSize: 16)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -295,8 +293,8 @@ class LocationPermissionService {
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-    } catch (e) {
-      print('Error getting location: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting location', e, stackTrace);
       return null;
     }
   }

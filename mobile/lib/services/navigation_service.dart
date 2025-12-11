@@ -51,9 +51,9 @@ class NavigationService {
   }
 
   Future<void> launchMap(double latitude, double longitude) async {
-    String googleUrl =
+    final googleUrl =
         'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
-    String appleUrl = 'https://maps.apple.com/?sll=$latitude,$longitude';
+    final appleUrl = 'https://maps.apple.com/?sll=$latitude,$longitude';
 
     if (Platform.isIOS) {
       if (await canLaunchUrl(Uri.parse(appleUrl))) {

@@ -5,13 +5,19 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
 
-class CurrencySettingsScreen extends StatelessWidget {
+class CurrencySettingsScreen extends StatefulWidget {
   const CurrencySettingsScreen({super.key});
 
+  @override
+  State<CurrencySettingsScreen> createState() => _CurrencySettingsScreenState();
+}
+
+class _CurrencySettingsScreenState extends State<CurrencySettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final localization = Provider.of<LocalizationProvider>(context);
     final appLocalizations = AppLocalizations.of(context);
+    final currentCurrency = localization.currency;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -20,11 +26,12 @@ class CurrencySettingsScreen extends StatelessWidget {
           _buildHeader(context, appLocalizations),
           Expanded(
             child: Container(
-              margin: EdgeInsets.all(AppTheme.spacingMedium),
+              margin: const EdgeInsets.all(AppTheme.spacingMedium),
               decoration: AppTheme.cardDecoration(),
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
+                  // ignore: deprecated_member_use
                   RadioListTile<String>(
                     activeColor: AppTheme.primaryOrange,
                     title: Text(
@@ -42,10 +49,14 @@ class CurrencySettingsScreen extends StatelessWidget {
                       ),
                     ),
                     value: 'TRY',
-                    groupValue: localization.currency,
+                    // ignore: deprecated_member_use
+                    groupValue: currentCurrency,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
                       if (value != null) {
-                        localization.setCurrency(value);
+                        setState(() {
+                          localization.setCurrency(value);
+                        });
                         if (appLocalizations != null) {
                           ToastMessage.show(
                             context,
@@ -56,28 +67,33 @@ class CurrencySettingsScreen extends StatelessWidget {
                       }
                     },
                   ),
-                  Divider(color: AppTheme.borderColor),
+                  const Divider(color: AppTheme.borderColor),
+                  // ignore: deprecated_member_use
                   RadioListTile<String>(
                     activeColor: AppTheme.primaryOrange,
                     title: Text(
-                      appLocalizations?.tether ?? 'Tether',
+                      appLocalizations?.tether ?? 'USD',
                       style: AppTheme.poppins(
                         fontWeight: FontWeight.w500,
                         color: AppTheme.textPrimary,
                       ),
                     ),
                     subtitle: Text(
-                      'USDT',
+                      '\$ USD',
                       style: AppTheme.poppins(
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
                     ),
-                    value: 'USDT',
-                    groupValue: localization.currency,
+                    value: 'USD',
+                    // ignore: deprecated_member_use
+                    groupValue: currentCurrency,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
                       if (value != null) {
-                        localization.setCurrency(value);
+                        setState(() {
+                          localization.setCurrency(value);
+                        });
                         if (appLocalizations != null) {
                           ToastMessage.show(
                             context,
@@ -102,7 +118,7 @@ class CurrencySettingsScreen extends StatelessWidget {
     AppLocalizations? appLocalizations,
   ) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -116,7 +132,7 @@ class CurrencySettingsScreen extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.spacingMedium,
             vertical: AppTheme.spacingMedium,
           ),
@@ -126,33 +142,33 @@ class CurrencySettingsScreen extends StatelessWidget {
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
+                  padding: const EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
                     color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              SizedBox(width: AppTheme.spacingSmall),
+              const SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                padding: const EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
                   color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.currency_exchange,
                   color: AppTheme.textOnPrimary,
                   size: AppTheme.iconSizeSmall,
                 ),
               ),
-              SizedBox(width: AppTheme.spacingSmall),
+              const SizedBox(width: AppTheme.spacingSmall),
               // Title
               Expanded(
                 child: Column(
@@ -167,7 +183,7 @@ class CurrencySettingsScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       appLocalizations?.selectCurrencyDescription ??
                           'Para birimi seçimi',

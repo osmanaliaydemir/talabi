@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class CacheService {
   static const String _productsBoxName = 'products_cache';
@@ -26,9 +27,9 @@ class CacheService {
       // Delay removed for faster startup - Hive.initFlutter() handles platform channels internally
       await Hive.initFlutter();
       _initialized = true;
-      print('✅ [CACHE] Hive initialized successfully');
-    } catch (e) {
-      print('❌ [CACHE] Error initializing Hive: $e');
+      LoggerService().info('✅ [CACHE] Hive initialized successfully');
+    } catch (e, stackTrace) {
+      LoggerService().error('❌ [CACHE] Error initializing Hive', e, stackTrace);
       // Don't rethrow - app can still work without cache
       // Cache operations will gracefully fail
       _initialized = false;
@@ -56,8 +57,8 @@ class CacheService {
       await box.put('products', jsonEncode(jsonList));
       await box.put('timestamp', DateTime.now().millisecondsSinceEpoch);
       await box.close();
-    } catch (e) {
-      print('Error caching products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error caching products', e, stackTrace);
     }
   }
 
@@ -89,8 +90,8 @@ class CacheService {
 
       final jsonList = jsonDecode(jsonString) as List;
       return jsonList.map((json) => Product.fromJson(json)).toList();
-    } catch (e) {
-      print('Error getting cached products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting cached products', e, stackTrace);
       return null;
     }
   }
@@ -102,8 +103,8 @@ class CacheService {
       await box.put('categories', categories);
       await box.put('timestamp', DateTime.now().millisecondsSinceEpoch);
       await box.close();
-    } catch (e) {
-      print('Error caching categories: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error caching categories', e, stackTrace);
     }
   }
 
@@ -133,8 +134,8 @@ class CacheService {
 
       if (categories == null) return null;
       return categories.map((e) => e.toString()).toList();
-    } catch (e) {
-      print('Error getting cached categories: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting cached categories', e, stackTrace);
       return null;
     }
   }
@@ -162,8 +163,8 @@ class CacheService {
       await box.put('vendors', jsonEncode(jsonList));
       await box.put('timestamp', DateTime.now().millisecondsSinceEpoch);
       await box.close();
-    } catch (e) {
-      print('Error caching vendors: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error caching vendors', e, stackTrace);
     }
   }
 
@@ -195,8 +196,8 @@ class CacheService {
 
       final jsonList = jsonDecode(jsonString) as List;
       return jsonList.map((json) => Vendor.fromJson(json)).toList();
-    } catch (e) {
-      print('Error getting cached vendors: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting cached vendors', e, stackTrace);
       return null;
     }
   }
@@ -208,8 +209,8 @@ class CacheService {
       await box.put('profile', jsonEncode(profile));
       await box.put('timestamp', DateTime.now().millisecondsSinceEpoch);
       await box.close();
-    } catch (e) {
-      print('Error caching profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error caching profile', e, stackTrace);
     }
   }
 
@@ -239,8 +240,8 @@ class CacheService {
 
       if (jsonString == null) return null;
       return jsonDecode(jsonString) as Map<String, dynamic>;
-    } catch (e) {
-      print('Error getting cached profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting cached profile', e, stackTrace);
       return null;
     }
   }
@@ -252,8 +253,8 @@ class CacheService {
       await Hive.deleteBoxFromDisk(_categoriesBoxName);
       await Hive.deleteBoxFromDisk(_vendorsBoxName);
       await Hive.deleteBoxFromDisk(_profileBoxName);
-    } catch (e) {
-      print('Error clearing cache: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error clearing cache', e, stackTrace);
     }
   }
 
@@ -290,8 +291,8 @@ class CacheService {
       await profileBox.close();
 
       return info;
-    } catch (e) {
-      print('Error getting cache info: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting cache info', e, stackTrace);
       return {};
     }
   }

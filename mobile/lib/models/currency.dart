@@ -3,10 +3,10 @@ enum Currency {
   usd('USD', '\$'),
   syp('SYP', 'ل.س');
 
+  const Currency(this.code, this.symbol);
+
   final String code;
   final String symbol;
-
-  const Currency(this.code, this.symbol);
 
   static Currency fromString(String? value) {
     if (value == null) return Currency.try_;

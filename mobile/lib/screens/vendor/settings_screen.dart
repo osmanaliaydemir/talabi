@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
 
@@ -27,7 +28,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    print('VendorSettingsScreen: initState');
+    LoggerService().debug('VendorSettingsScreen: initState');
     _minimumOrderController = TextEditingController();
     _deliveryFeeController = TextEditingController();
     _deliveryTimeController = TextEditingController();
@@ -43,13 +44,15 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    print('VendorSettingsScreen: Loading settings...');
+    LoggerService().debug('VendorSettingsScreen: Loading settings...');
     setState(() {
       _isLoading = true;
     });
     try {
       final settings = await _apiService.getVendorSettings();
-      print('VendorSettingsScreen: Settings loaded successfully');
+      LoggerService().debug(
+        'VendorSettingsScreen: Settings loaded successfully',
+      );
       setState(() {
         _minimumOrderController.text =
             settings['minimumOrderAmount']?.toString() ?? '';
@@ -60,8 +63,11 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         _isLoading = false;
       });
     } catch (e, stackTrace) {
-      print('VendorSettingsScreen: ERROR loading settings - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'VendorSettingsScreen: ERROR loading settings',
+        e,
+        stackTrace,
+      );
       setState(() {
         _isLoading = false;
       });
@@ -81,11 +87,11 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
 
   Future<void> _saveSettings() async {
     if (!_formKey.currentState!.validate()) {
-      print('VendorSettingsScreen: Form validation failed');
+      LoggerService().warning('VendorSettingsScreen: Form validation failed');
       return;
     }
 
-    print('VendorSettingsScreen: Saving settings...');
+    LoggerService().debug('VendorSettingsScreen: Saving settings...');
     setState(() {
       _isSaving = true;
     });
@@ -105,7 +111,9 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
       };
 
       await _apiService.updateVendorSettings(data);
-      print('VendorSettingsScreen: Settings saved successfully');
+      LoggerService().debug(
+        'VendorSettingsScreen: Settings saved successfully',
+      );
 
       if (mounted) {
         final localizations = AppLocalizations.of(context);
@@ -119,8 +127,11 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         Navigator.pop(context);
       }
     } catch (e, stackTrace) {
-      print('VendorSettingsScreen: ERROR saving settings - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'VendorSettingsScreen: ERROR saving settings',
+        e,
+        stackTrace,
+      );
       setState(() {
         _isSaving = false;
       });
@@ -152,7 +163,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         showNotifications: false,
       ),
       body: _isLoading
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(color: AppTheme.vendorPrimary),
             )
           : RefreshIndicator(
@@ -175,7 +186,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: _isActive
-                                  ? AppTheme.success.withOpacity(0.1)
+                                  ? AppTheme.success.withValues(alpha: 0.1)
                                   : Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(
                                 AppTheme.radiusMedium,
@@ -220,14 +231,14 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                           Switch(
                             value: _isActive,
                             onChanged: (value) {
-                              print(
+                              LoggerService().debug(
                                 'VendorSettingsScreen: Active status changed to $value',
                               );
                               setState(() {
                                 _isActive = value;
                               });
                             },
-                            activeColor: AppTheme.success,
+                            activeThumbColor: AppTheme.success,
                           ),
                         ],
                       ),

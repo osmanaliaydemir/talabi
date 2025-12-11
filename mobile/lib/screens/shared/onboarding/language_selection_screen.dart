@@ -9,9 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
-  final VoidCallback? onLanguageSelected;
-
   const LanguageSelectionScreen({super.key, this.onLanguageSelected});
+
+  final VoidCallback? onLanguageSelected;
 
   @override
   State<LanguageSelectionScreen> createState() =>
@@ -216,7 +216,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
       resizeToAvoidBottomInset:
           false, // Prevents overflow when keyboard is open
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -256,7 +256,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                                   AppTheme.radiusXLarge + AppTheme.spacingSmall,
                                 ),
                                 boxShadow: [
-                                  BoxShadow(
+                                  const BoxShadow(
                                     color: AppTheme.shadowColor,
                                     blurRadius: 20,
                                     spreadRadius: 5,
@@ -285,7 +285,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                       duration: const Duration(milliseconds: 300),
                       child: Container(
                         key: ValueKey(_currentSloganIndex),
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacingXLarge,
                         ),
                         child: Text(
@@ -353,7 +353,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
     final color = language['color'] as Color;
 
     return Container(
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppTheme.spacingXLarge,
         vertical: AppTheme.radiusMedium,
       ),
@@ -365,7 +365,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spacingLarge,
               vertical: AppTheme.spacingLarge,
             ),
@@ -447,7 +447,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                     color: isSelected ? color : Colors.transparent,
                   ),
                   child: isSelected
-                      ? Icon(Icons.check, size: 16, color: Colors.white)
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
                       : null,
                 ),
               ],

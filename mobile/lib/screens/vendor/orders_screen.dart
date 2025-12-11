@@ -7,6 +7,7 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class VendorOrdersScreen extends StatefulWidget {
   const VendorOrdersScreen({super.key});
@@ -79,7 +80,11 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
         });
       }
     } catch (e) {
-      print('Error loading order counts: $e');
+      LoggerService().error(
+        'Sipariş sayıları yüklenemedi: $e',
+        e,
+        StackTrace.current,
+      );
     }
   }
 
@@ -261,7 +266,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
     Map<String, dynamic> order,
     AppLocalizations localizations,
   ) {
-    dynamic dateValue =
+    final dateValue =
         order['createdAt'] ??
         order['CreatedAt'] ??
         order['created_at'] ??
@@ -284,12 +289,12 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
     }
 
     try {
-      DateTime dateTime;
+      late DateTime dateTime;
       if (dateValue is String) {
         if (dateValue.isEmpty) {
           return '$dateLabel: -';
         }
-        String dateString = dateValue;
+        var dateString = dateValue;
         if (dateString.contains('.') && dateString.contains('T')) {
           final parts = dateString.split('.');
           if (parts.length > 1) {
@@ -367,7 +372,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
               backgroundColor: Colors.deepPurple,
               onRefresh: () => _loadOrders(isRefresh: true, showLoading: false),
               child: _isFirstLoad
-                  ? Center(
+                  ? const Center(
                       child: CircularProgressIndicator(
                         color: Colors.deepPurple,
                       ),
@@ -443,7 +448,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                                   decoration: BoxDecoration(
                                     color: _getStatusColor(
                                       order['status'],
-                                    ).withOpacity(0.1),
+                                    ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(

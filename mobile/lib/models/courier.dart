@@ -1,24 +1,4 @@
 class Courier {
-  final String id;
-  final String userId;
-  final String name;
-  final String? phoneNumber;
-  final String? vehicleType;
-  final bool isActive;
-  final String status;
-  final int maxActiveOrders;
-  final int currentActiveOrders;
-  final double? currentLatitude;
-  final double? currentLongitude;
-  final DateTime? lastLocationUpdate;
-  final double totalEarnings;
-  final double currentDayEarnings;
-  final int totalDeliveries;
-  final double averageRating;
-  final String? workingHoursStart;
-  final String? workingHoursEnd;
-  final bool isWithinWorkingHours;
-
   Courier({
     required this.id,
     required this.userId,
@@ -96,21 +76,29 @@ class Courier {
       isWithinWorkingHours: json['isWithinWorkingHours'] ?? true,
     );
   }
+
+  final String id;
+  final String userId;
+  final String name;
+  final String? phoneNumber;
+  final String? vehicleType;
+  final bool isActive;
+  final String status;
+  final int maxActiveOrders;
+  final int currentActiveOrders;
+  final double? currentLatitude;
+  final double? currentLongitude;
+  final DateTime? lastLocationUpdate;
+  final double totalEarnings;
+  final double currentDayEarnings;
+  final int totalDeliveries;
+  final double averageRating;
+  final String? workingHoursStart;
+  final String? workingHoursEnd;
+  final bool isWithinWorkingHours;
 }
 
 class CourierStatistics {
-  final int totalDeliveries;
-  final int todayDeliveries;
-  final int weekDeliveries;
-  final int monthDeliveries;
-  final double totalEarnings;
-  final double todayEarnings;
-  final double weekEarnings;
-  final double monthEarnings;
-  final double averageRating;
-  final int totalRatings;
-  final int activeOrders;
-
   CourierStatistics({
     required this.totalDeliveries,
     required this.todayDeliveries,
@@ -140,4 +128,16 @@ class CourierStatistics {
       activeOrders: json['activeOrders'],
     );
   }
+
+  final int totalDeliveries;
+  final int todayDeliveries;
+  final int weekDeliveries;
+  final int monthDeliveries;
+  final double totalEarnings;
+  final double todayEarnings;
+  final double weekEarnings;
+  final double monthEarnings;
+  final double averageRating;
+  final int totalRatings;
+  final int activeOrders;
 }

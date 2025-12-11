@@ -9,6 +9,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -78,10 +79,11 @@ class _SearchScreenState extends State<SearchScreen>
     _vendorScrollController = ScrollController();
     _vendorScrollController!.addListener(_vendorScrollListener);
     _loadSearchHistory();
-    _searchController.addListener(_onSearchChanged);
-    _searchController.addListener(() {
-      setState(() {}); // Rebuild to show/hide clear button
-    });
+    _searchController
+      ..addListener(_onSearchChanged)
+      ..addListener(() {
+        setState(() {}); // Rebuild to show/hide clear button
+      });
   }
 
   void _productScrollListener() {
@@ -116,13 +118,16 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
+    _searchController
+      ..removeListener(_onSearchChanged)
+      ..dispose();
     _tabController.dispose();
-    _productScrollController?.removeListener(_productScrollListener);
-    _productScrollController?.dispose();
-    _vendorScrollController?.removeListener(_vendorScrollListener);
-    _vendorScrollController?.dispose();
+    _productScrollController
+      ?..removeListener(_productScrollListener)
+      ..dispose();
+    _vendorScrollController
+      ?..removeListener(_vendorScrollListener)
+      ..dispose();
     super.dispose();
   }
 
@@ -149,8 +154,8 @@ class _SearchScreenState extends State<SearchScreen>
         _categories = categories;
         _cities = cities;
       });
-    } catch (e) {
-      print('Error loading filter options: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading filter options', e, stackTrace);
     }
   }
 
@@ -161,8 +166,8 @@ class _SearchScreenState extends State<SearchScreen>
       setState(() {
         _searchHistory = history;
       });
-    } catch (e) {
-      print('Error loading search history: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading search history', e, stackTrace);
     }
   }
 
@@ -173,11 +178,10 @@ class _SearchScreenState extends State<SearchScreen>
       final prefs = await SharedPreferences.getInstance();
       final history = prefs.getStringList('search_history') ?? [];
 
-      // Remove if exists and add to beginning
-      history.remove(query);
-      history.insert(0, query);
-
-      // Keep only last 10
+      // Remove if exists and add to beginning, keep only last 10
+      history
+        ..remove(query)
+        ..insert(0, query);
       if (history.length > 10) {
         history.removeRange(10, history.length);
       }
@@ -186,8 +190,8 @@ class _SearchScreenState extends State<SearchScreen>
       setState(() {
         _searchHistory = history;
       });
-    } catch (e) {
-      print('Error saving search history: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error saving search history', e, stackTrace);
     }
   }
 
@@ -198,8 +202,8 @@ class _SearchScreenState extends State<SearchScreen>
         _autocompleteResults = results;
         _showAutocomplete = true;
       });
-    } catch (e) {
-      print('Error performing autocomplete: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error performing autocomplete', e, stackTrace);
     }
   }
 
@@ -387,9 +391,9 @@ class _SearchScreenState extends State<SearchScreen>
   Widget _buildFiltersSheet() {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppTheme.cardColor,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radiusXLarge),
           topRight: Radius.circular(AppTheme.radiusXLarge),
         ),
@@ -475,7 +479,7 @@ class _SearchScreenState extends State<SearchScreen>
                     ),
                     const SizedBox(height: AppTheme.spacingSmall),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategoryId,
+                      initialValue: _selectedCategoryId,
                       decoration: AppTheme.inputDecoration(
                         hint: l10n.selectCategory,
                       ),
@@ -560,7 +564,7 @@ class _SearchScreenState extends State<SearchScreen>
                     ),
                     const SizedBox(height: AppTheme.spacingSmall),
                     DropdownButtonFormField<String>(
-                      value: _selectedCity,
+                      initialValue: _selectedCity,
                       decoration: AppTheme.inputDecoration(
                         hint: l10n.selectCity,
                       ),
@@ -661,7 +665,7 @@ class _SearchScreenState extends State<SearchScreen>
                   ),
                   const SizedBox(height: AppTheme.spacingSmall),
                   DropdownButtonFormField<String>(
-                    value: _sortBy,
+                    initialValue: _sortBy,
                     decoration: AppTheme.inputDecoration(
                       hint: l10n.selectSortBy,
                     ),
@@ -723,7 +727,7 @@ class _SearchScreenState extends State<SearchScreen>
           // Apply Button
           Container(
             padding: const EdgeInsets.all(AppTheme.spacingMedium),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.cardColor,
               border: Border(
                 top: BorderSide(color: AppTheme.dividerColor, width: 1),
@@ -775,13 +779,13 @@ class _SearchScreenState extends State<SearchScreen>
         leading: GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: Container(
-            margin: EdgeInsets.all(AppTheme.spacingSmall),
-            padding: EdgeInsets.all(AppTheme.spacingSmall),
+            margin: const EdgeInsets.all(AppTheme.spacingSmall),
+            padding: const EdgeInsets.all(AppTheme.spacingSmall),
             decoration: BoxDecoration(
               color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_ios_new,
               color: AppTheme.textOnPrimary,
               size: 18,
@@ -821,10 +825,10 @@ class _SearchScreenState extends State<SearchScreen>
                 // Filter Button
                 Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withOpacity(0.1),
+                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                     border: Border.all(
-                      color: AppTheme.primaryOrange.withOpacity(0.3),
+                      color: AppTheme.primaryOrange.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -843,7 +847,7 @@ class _SearchScreenState extends State<SearchScreen>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.tune,
                               size: 20,
                               color: AppTheme.primaryOrange,
@@ -938,10 +942,10 @@ class _SearchScreenState extends State<SearchScreen>
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         boxShadow: [
-          BoxShadow(
+          const BoxShadow(
             color: AppTheme.shadowColor,
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -952,14 +956,14 @@ class _SearchScreenState extends State<SearchScreen>
         decoration: InputDecoration(
           hintText: l10n.searchProductsOrVendors,
           hintStyle: AppTheme.poppins(fontSize: 16, color: AppTheme.textHint),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.search,
             color: AppTheme.primaryOrange,
             size: 24,
           ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: Icon(Icons.clear, color: AppTheme.textSecondary),
+                  icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -1012,7 +1016,7 @@ class _SearchScreenState extends State<SearchScreen>
     final l10n = AppLocalizations.of(context)!;
     return Positioned.fill(
       child: Container(
-        color: AppTheme.overlayColor.withOpacity(0.3),
+        color: AppTheme.overlayColor.withValues(alpha: 0.3),
         child: Material(
           elevation: AppTheme.elevationHigh,
           borderRadius: const BorderRadius.only(
@@ -1021,9 +1025,9 @@ class _SearchScreenState extends State<SearchScreen>
           ),
           child: Container(
             constraints: const BoxConstraints(maxHeight: 400),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.cardColor,
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(AppTheme.radiusLarge),
                 bottomRight: Radius.circular(AppTheme.radiusLarge),
               ),
@@ -1037,7 +1041,7 @@ class _SearchScreenState extends State<SearchScreen>
                       if (_autocompleteResults.isNotEmpty) ...[
                         Container(
                           padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.backgroundColor,
                             border: Border(
                               bottom: BorderSide(
@@ -1048,7 +1052,7 @@ class _SearchScreenState extends State<SearchScreen>
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.auto_awesome,
                                 size: 20,
                                 color: AppTheme.primaryOrange,
@@ -1073,7 +1077,7 @@ class _SearchScreenState extends State<SearchScreen>
                           _autocompleteResults.isEmpty) ...[
                         Container(
                           padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.backgroundColor,
                             border: Border(
                               bottom: BorderSide(
@@ -1084,7 +1088,7 @@ class _SearchScreenState extends State<SearchScreen>
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.history,
                                 size: 20,
                                 color: AppTheme.textSecondary,
@@ -1130,8 +1134,8 @@ class _SearchScreenState extends State<SearchScreen>
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: result.type == 'product'
-                      ? AppTheme.primaryOrange.withOpacity(0.1)
-                      : AppTheme.vendorPrimary.withOpacity(0.1),
+                      ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                      : AppTheme.vendorPrimary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
@@ -1166,7 +1170,11 @@ class _SearchScreenState extends State<SearchScreen>
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: AppTheme.textHint),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: AppTheme.textHint,
+              ),
             ],
           ),
         ),
@@ -1189,7 +1197,11 @@ class _SearchScreenState extends State<SearchScreen>
           ),
           child: Row(
             children: [
-              Icon(Icons.history, size: 20, color: AppTheme.textSecondary),
+              const Icon(
+                Icons.history,
+                size: 20,
+                color: AppTheme.textSecondary,
+              ),
               const SizedBox(width: AppTheme.spacingMedium),
               Expanded(
                 child: Text(
@@ -1237,10 +1249,10 @@ class _SearchScreenState extends State<SearchScreen>
                 Container(
                   padding: const EdgeInsets.all(AppTheme.spacingLarge),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withOpacity(0.1),
+                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.search,
                     size: 64,
                     color: AppTheme.primaryOrange,
@@ -1273,10 +1285,10 @@ class _SearchScreenState extends State<SearchScreen>
                       color: AppTheme.cardColor,
                       borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                       boxShadow: [
-                        BoxShadow(
+                        const BoxShadow(
                           color: AppTheme.shadowColor,
                           blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
@@ -1285,7 +1297,7 @@ class _SearchScreenState extends State<SearchScreen>
                       children: [
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.history,
                               size: 20,
                               color: AppTheme.primaryOrange,
@@ -1321,7 +1333,7 @@ class _SearchScreenState extends State<SearchScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 64, color: AppTheme.textHint),
+            const Icon(Icons.search_off, size: 64, color: AppTheme.textHint),
             const SizedBox(height: AppTheme.spacingMedium),
             Text(
               l10n.noResultsFound,
@@ -1412,7 +1424,11 @@ class _SearchScreenState extends State<SearchScreen>
             ),
             child: Row(
               children: [
-                Icon(Icons.history, size: 16, color: AppTheme.textSecondary),
+                const Icon(
+                  Icons.history,
+                  size: 16,
+                  color: AppTheme.textSecondary,
+                ),
                 const SizedBox(width: AppTheme.spacingSmall),
                 Expanded(
                   child: Text(
@@ -1451,7 +1467,7 @@ class _SearchScreenState extends State<SearchScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SkeletonLoader(
+                SkeletonLoader(
                   width: double.infinity,
                   height: 150,
                   borderRadius: 0,
@@ -1460,9 +1476,9 @@ class _SearchScreenState extends State<SearchScreen>
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       SkeletonLoader(width: 150, height: 20),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       SkeletonLoader(width: 100, height: 16),
                     ],
                   ),
@@ -1485,10 +1501,10 @@ class _SearchScreenState extends State<SearchScreen>
                 Container(
                   padding: const EdgeInsets.all(AppTheme.spacingLarge),
                   decoration: BoxDecoration(
-                    color: AppTheme.vendorPrimary.withOpacity(0.1),
+                    color: AppTheme.vendorPrimary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.store,
                     size: 64,
                     color: AppTheme.vendorPrimary,
@@ -1524,7 +1540,11 @@ class _SearchScreenState extends State<SearchScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.store_outlined, size: 64, color: AppTheme.textHint),
+            const Icon(
+              Icons.store_outlined,
+              size: 64,
+              color: AppTheme.textHint,
+            ),
             const SizedBox(height: AppTheme.spacingMedium),
             Text(
               l10n.noResultsFound,
@@ -1618,7 +1638,7 @@ class _SearchScreenState extends State<SearchScreen>
                               ),
                             ),
                           )
-                        : Icon(
+                        : const Icon(
                             Icons.store,
                             size: 40,
                             color: AppTheme.vendorPrimary,
@@ -1644,7 +1664,7 @@ class _SearchScreenState extends State<SearchScreen>
                         if (vendor.address.isNotEmpty)
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.location_on,
                                 size: 14,
                                 color: AppTheme.textSecondary,
@@ -1683,7 +1703,7 @@ class _SearchScreenState extends State<SearchScreen>
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.amber.withOpacity(0.1),
+                                  color: Colors.amber.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Row(
@@ -1726,13 +1746,13 @@ class _SearchScreenState extends State<SearchScreen>
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.info.withOpacity(0.1),
+                                  color: AppTheme.info.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.navigation,
                                       size: 14,
                                       color: AppTheme.info,
@@ -1755,7 +1775,7 @@ class _SearchScreenState extends State<SearchScreen>
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: AppTheme.textHint),
+                  const Icon(Icons.chevron_right, color: AppTheme.textHint),
                 ],
               ),
             ),

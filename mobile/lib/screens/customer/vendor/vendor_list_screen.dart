@@ -150,10 +150,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   ? Center(child: Text(localizations.noResultsFound))
                   : ListView.separated(
                       controller: _scrollController,
-                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
                       itemCount: _vendors.length + (_isLoadingMore ? 1 : 0),
                       separatorBuilder: (context, index) =>
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
                       itemBuilder: (context, index) {
                         if (index == _vendors.length) {
                           return const Padding(
@@ -182,10 +182,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
         );
       },
       child: Container(
-        decoration: AppTheme.cardDecoration(
-          color: Theme.of(context).cardColor,
-          context: context,
-        ),
+        decoration: AppTheme.cardDecoration(color: Theme.of(context).cardColor),
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,8 +200,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
                           borderRadius: BorderRadius.zero,
                         )
                       : Container(
-                          color: AppTheme.textSecondary.withOpacity(0.1),
-                          child: Icon(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.1),
+                          child: const Icon(
                             Icons.store,
                             size: 50,
                             color: AppTheme.textSecondary,
@@ -215,7 +212,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       top: 8,
                       right: 8,
                       child: Container(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 4,
                         ),
@@ -226,12 +223,12 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.star,
                               size: 14,
-                              color: Colors.amber[600],
+                              color: AppTheme.warning,
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
                               vendor.rating!.toStringAsFixed(1),
                               style: AppTheme.poppins(
@@ -248,7 +245,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              padding: const EdgeInsets.all(AppTheme.spacingMedium),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -262,16 +259,16 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   if (vendor.address.isNotEmpty)
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on,
                           size: 14,
                           color: AppTheme.textSecondary,
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             vendor.address,
@@ -286,15 +283,15 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       ],
                     ),
                   if (vendor.distanceInKm != null) ...[
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.navigation,
                           size: 14,
                           color: AppTheme.textSecondary,
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
                           '${vendor.distanceInKm!.toStringAsFixed(1)} km',
                           style: AppTheme.poppins(

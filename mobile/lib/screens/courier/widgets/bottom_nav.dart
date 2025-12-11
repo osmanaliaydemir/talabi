@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/dashboard_screen.dart';
 
 class CourierBottomNav extends StatelessWidget {
@@ -18,7 +19,7 @@ class CourierBottomNav extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       currentIndex: currentIndex,
       onTap: (index) {
-        print('CourierBottomNav: tapped index $index');
+        LoggerService().debug('CourierBottomNav: tapped index $index');
         if (index == currentIndex) {
           return;
         }

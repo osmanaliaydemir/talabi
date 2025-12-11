@@ -1,8 +1,8 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:mobile/models/cart_item.dart';
 import 'package:mobile/models/product.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class AnalyticsService {
   static FirebaseAnalytics? _analytics;
@@ -31,10 +31,8 @@ class AnalyticsService {
     if (_analytics != null) {
       try {
         await _analytics!.logLogin(loginMethod: method);
-      } catch (e) {
-        if (kDebugMode) {
-          print('Analytics logLogin failed: $e');
-        }
+      } catch (e, stackTrace) {
+        LoggerService().warning('Analytics logLogin failed', e, stackTrace);
       }
     }
   }
@@ -45,10 +43,8 @@ class AnalyticsService {
     if (_analytics != null) {
       try {
         await _analytics!.logSignUp(signUpMethod: method);
-      } catch (e) {
-        if (kDebugMode) {
-          print('Analytics logSignUp failed: $e');
-        }
+      } catch (e, stackTrace) {
+        LoggerService().warning('Analytics logSignUp failed', e, stackTrace);
       }
     }
   }
@@ -72,10 +68,8 @@ class AnalyticsService {
           ),
         ],
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logViewItem failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning('Analytics logViewItem failed', e, stackTrace);
     }
   }
 
@@ -101,10 +95,8 @@ class AnalyticsService {
           ),
         ],
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logAddToCart failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning('Analytics logAddToCart failed', e, stackTrace);
     }
   }
 
@@ -130,10 +122,12 @@ class AnalyticsService {
           ),
         ],
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logRemoveFromCart failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning(
+        'Analytics logRemoveFromCart failed',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -162,10 +156,12 @@ class AnalyticsService {
             )
             .toList(),
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logBeginCheckout failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning(
+        'Analytics logBeginCheckout failed',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -203,10 +199,8 @@ class AnalyticsService {
             .toList(),
         parameters: params,
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logPurchase failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning('Analytics logPurchase failed', e, stackTrace);
     }
   }
 
@@ -216,10 +210,8 @@ class AnalyticsService {
     if (_analytics == null) return;
     try {
       await _analytics!.logSearch(searchTerm: searchTerm);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logSearch failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning('Analytics logSearch failed', e, stackTrace);
     }
   }
 
@@ -248,10 +240,8 @@ class AnalyticsService {
             )
             .toList(),
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logViewCart failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning('Analytics logViewCart failed', e, stackTrace);
     }
   }
 
@@ -264,10 +254,8 @@ class AnalyticsService {
     if (_analytics == null) return;
     try {
       await _analytics!.logEvent(name: name, parameters: parameters);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Analytics logCustomEvent failed: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning('Analytics logCustomEvent failed', e, stackTrace);
     }
   }
 
@@ -277,10 +265,8 @@ class AnalyticsService {
     if (_analytics != null && userId.isNotEmpty) {
       try {
         await _analytics!.setUserId(id: userId);
-      } catch (e) {
-        if (kDebugMode) {
-          print('Analytics setUserId failed: $e');
-        }
+      } catch (e, stackTrace) {
+        LoggerService().warning('Analytics setUserId failed', e, stackTrace);
       }
     }
   }

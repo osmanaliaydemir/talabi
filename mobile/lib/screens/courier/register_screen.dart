@@ -6,6 +6,7 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/courier/login_screen.dart';
 import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 
@@ -58,10 +59,10 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
       final fullName = _fullNameController.text.trim();
       final phone = _phoneController.text.trim();
 
-      print('🟡 [COURIER_REGISTER] Calling courierRegister API');
-      print('🟡 [COURIER_REGISTER] Email: $email');
-      print('🟡 [COURIER_REGISTER] FullName: $fullName');
-      print(
+      LoggerService().debug('🟡 [COURIER_REGISTER] Calling courierRegister API');
+      LoggerService().debug('🟡 [COURIER_REGISTER] Email: $email');
+      LoggerService().debug('🟡 [COURIER_REGISTER] FullName: $fullName');
+      LoggerService().debug(
         '🟡 [COURIER_REGISTER] Phone: ${phone.isEmpty ? "not provided" : phone}',
       );
 
@@ -82,7 +83,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
         language: languageCode,
       );
 
-      print('🟢 [COURIER_REGISTER] Register successful!');
+      LoggerService().debug('🟢 [COURIER_REGISTER] Register successful!');
 
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir
@@ -94,8 +95,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
         );
       }
     } catch (e, stackTrace) {
-      print('🔴 [COURIER_REGISTER] Register error: $e');
-      print('🔴 [COURIER_REGISTER] Stack trace: $stackTrace');
+      LoggerService().error('🔴 [COURIER_REGISTER] Register error', e, stackTrace);
 
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;

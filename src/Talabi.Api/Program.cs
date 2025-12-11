@@ -314,7 +314,8 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// ActivityLoggingService için service provider'ı set et (Hangfire job'ları için gerekli)
+// ActivityLoggingService ve ErrorLoggingService için service provider'ı set et (Hangfire job'ları için gerekli)
+Talabi.Infrastructure.Services.ErrorLoggingService.SetServiceProvider(app.Services);
 Talabi.Infrastructure.Services.ActivityLoggingService.SetServiceProvider(app.Services);
 
 // Configure the HTTP request pipeline.

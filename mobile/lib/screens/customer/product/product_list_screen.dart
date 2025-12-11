@@ -4,15 +4,15 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/screens/customer/widgets/persistent_bottom_nav_bar.dart';
 import 'package:mobile/widgets/toast_message.dart';
 
 class ProductListScreen extends StatefulWidget {
-  final Vendor vendor;
-
   const ProductListScreen({super.key, required this.vendor});
+  final Vendor vendor;
 
   @override
   State<ProductListScreen> createState() => _ProductListScreenState();
@@ -117,12 +117,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
       final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favoritesResult.items) {
+        for (final fav in favoritesResult.items) {
           _favoriteStatus[fav.id] = true;
         }
       });
     } catch (e) {
-      print('Error loading favorites: $e');
+      LoggerService().error('Error loading favorites: $e', e);
     }
   }
 
@@ -194,7 +194,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         },
         child: _isFirstLoad
             ? GridView.builder(
-                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                padding: const EdgeInsets.all(AppTheme.spacingMedium),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.75,
@@ -215,7 +215,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               )
             : GridView.builder(
                 controller: _scrollController,
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                padding: const EdgeInsets.all(AppTheme.spacingSmall),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.8,

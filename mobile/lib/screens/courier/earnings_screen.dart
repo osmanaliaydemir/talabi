@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_earning.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
@@ -36,21 +37,21 @@ class _EarningsScreenState extends State<EarningsScreen>
   }
 
   Future<void> _loadEarnings() async {
-    print('EarningsScreen: Loading earnings...');
+    LoggerService().debug('EarningsScreen: Loading earnings...');
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      print('EarningsScreen: Fetching today, weekly, and monthly earnings...');
+      LoggerService().debug('EarningsScreen: Fetching today, weekly, and monthly earnings...');
       final results = await Future.wait([
         _courierService.getTodayEarnings(),
         _courierService.getWeeklyEarnings(),
         _courierService.getMonthlyEarnings(),
       ]);
 
-      print(
+      LoggerService().debug(
         'EarningsScreen: Earnings loaded - Today: ${results[0].totalEarnings}, Week: ${results[1].totalEarnings}, Month: ${results[2].totalEarnings}',
       );
       if (mounted) {
@@ -62,8 +63,7 @@ class _EarningsScreenState extends State<EarningsScreen>
         });
       }
     } catch (e, stackTrace) {
-      print('EarningsScreen: ERROR loading earnings - $e');
-      print(stackTrace);
+      LoggerService().error('EarningsScreen: ERROR loading earnings', e, stackTrace);
       if (mounted) {
         setState(() {
           _error = e.toString();

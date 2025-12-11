@@ -9,6 +9,7 @@ import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart
 import 'package:mobile/screens/customer/auth/register_screen.dart';
 import 'package:mobile/screens/vendor/login_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 
@@ -66,11 +67,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
       final businessName = _businessNameController.text.trim();
       final phone = _phoneController.text.trim();
 
-      print('🟡 [VENDOR_REGISTER] Calling vendorRegister API');
-      print('🟡 [VENDOR_REGISTER] Email: $email');
-      print('🟡 [VENDOR_REGISTER] BusinessName: $businessName');
-      print('🟡 [VENDOR_REGISTER] FullName: $fullName');
-      print('🟡 [VENDOR_REGISTER] Phone: $phone');
+      LoggerService().debug('🟡 [VENDOR_REGISTER] Calling vendorRegister API');
+      LoggerService().debug('🟡 [VENDOR_REGISTER] Email: $email');
+      LoggerService().debug('🟡 [VENDOR_REGISTER] BusinessName: $businessName');
+      LoggerService().debug('🟡 [VENDOR_REGISTER] FullName: $fullName');
+      LoggerService().debug('🟡 [VENDOR_REGISTER] Phone: $phone');
 
       // Get user's language preference
       final localizationProvider = Provider.of<LocalizationProvider>(
@@ -91,7 +92,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         vendorType: _selectedVendorType,
       );
 
-      print('🟢 [VENDOR_REGISTER] Register successful!');
+      LoggerService().debug('🟢 [VENDOR_REGISTER] Register successful!');
 
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir
@@ -103,8 +104,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         );
       }
     } catch (e, stackTrace) {
-      print('🔴 [VENDOR_REGISTER] Register error: $e');
-      print('🔴 [VENDOR_REGISTER] Stack trace: $stackTrace');
+      LoggerService().error(
+        '🔴 [VENDOR_REGISTER] Register error',
+        e,
+        stackTrace,
+      );
 
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
@@ -170,7 +174,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -227,7 +231,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                     ),
                     // Content - Row layout
                     Padding(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingLarge,
                       ),
                       child: Center(
@@ -247,7 +251,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                   AppTheme.radiusMedium + 2,
                                 ),
                               ),
-                              child: Center(
+                              child: const Center(
                                 child: Icon(
                                   Icons.person_add_rounded,
                                   size: 24,
@@ -292,14 +296,14 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                   AppTheme.radiusMedium + 2,
                                 ),
                                 boxShadow: [
-                                  BoxShadow(
+                                  const BoxShadow(
                                     color: AppTheme.shadowColor,
                                     blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                                    offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Center(
+                              child: const Center(
                                 child: Icon(
                                   Icons.store_rounded,
                                   size: 24,
@@ -324,10 +328,10 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                           ),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(
@@ -341,12 +345,14 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                               BoxShadow(
                                 color: AppTheme.shadowColor,
                                 blurRadius: 10,
-                                offset: const Offset(0, -4),
+                                offset: Offset(0, -4),
                               ),
                             ],
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -355,7 +361,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                   // Welcome Message
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.business_center,
                                         color: AppTheme.vendorPrimary,
                                         size: 32,
@@ -400,15 +406,17 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.store_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -436,15 +444,17 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.person_outline,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -471,15 +481,17 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.email_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
@@ -513,7 +525,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock_outline,
                                           color: AppTheme.textSecondary,
                                         ),
@@ -532,10 +544,12 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           },
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -571,7 +585,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                             });
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.all(
+                                            padding: const EdgeInsets.all(
                                               AppTheme.spacingMedium,
                                             ),
                                             decoration: BoxDecoration(
@@ -631,7 +645,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                             });
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.all(
+                                            padding: const EdgeInsets.all(
                                               AppTheme.spacingMedium,
                                             ),
                                             decoration: BoxDecoration(
@@ -702,15 +716,17 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.phone_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.phone,
                                       validator: (value) {
@@ -831,7 +847,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           );
                                         },
                                         child: Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: AppTheme.spacingMedium,
                                             vertical: AppTheme.spacingSmall + 4,
                                           ),
@@ -839,7 +855,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.shopping_bag_outlined,
                                                 color: AppTheme.primaryOrange,
                                                 size: 20,
@@ -862,7 +878,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                                 ),
                                               ),
                                               AppTheme.horizontalSpace(0.25),
-                                              Icon(
+                                              const Icon(
                                                 Icons.arrow_forward_rounded,
                                                 color: AppTheme.primaryOrange,
                                                 size: 18,
@@ -918,7 +934,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                           );
                                         },
                                         child: Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: AppTheme.spacingMedium,
                                             vertical: AppTheme.spacingSmall + 4,
                                           ),
@@ -926,7 +942,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.delivery_dining_rounded,
                                                 color: AppTheme.courierPrimary,
                                                 size: 20,
@@ -950,7 +966,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                                                 ),
                                               ),
                                               AppTheme.horizontalSpace(0.25),
-                                              Icon(
+                                              const Icon(
                                                 Icons.arrow_forward_rounded,
                                                 color: AppTheme.courierPrimary,
                                                 size: 18,

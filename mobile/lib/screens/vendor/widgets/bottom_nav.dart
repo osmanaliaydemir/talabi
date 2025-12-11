@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/screens/vendor/dashboard_screen.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class VendorBottomNav extends StatelessWidget {
-  final int currentIndex;
-
   const VendorBottomNav({super.key, required this.currentIndex});
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class VendorBottomNav extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       currentIndex: currentIndex,
       onTap: (index) {
-        print('VendorBottomNav: tapped index $index');
+        LoggerService().debug('VendorBottomNav: tapped index $index');
         if (index == currentIndex) {
           return;
         }

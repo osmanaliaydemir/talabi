@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
+import 'package:mobile/services/logger_service.dart';
 
 /// Service for preloading critical assets to improve app startup performance
 class AssetPreloaderService {
@@ -8,6 +8,7 @@ class AssetPreloaderService {
   static Future<void> preloadCriticalAssets() async {
     try {
       // Preload critical images in parallel
+      // Using eagerError: false to continue loading even if one fails
       await Future.wait([
         // Logo and icon
         _preloadImage('assets/icon/icon.png'),
@@ -16,16 +17,18 @@ class AssetPreloaderService {
         // Other critical images
         _preloadImage('assets/images/banner_image.png'),
         _preloadImage('assets/images/location.png'),
-      ]);
+      ], eagerError: false);
 
-      if (kDebugMode) {
-        print('✅ [ASSET_PRELOADER] Critical assets preloaded successfully');
-      }
-    } catch (e) {
+      LoggerService().info(
+        '✅ [ASSET_PRELOADER] Critical assets preload completed',
+      );
+    } catch (e, stackTrace) {
       // Asset preloading failures shouldn't block app startup
-      if (kDebugMode) {
-        print('⚠️ [ASSET_PRELOADER] Failed to preload some assets: $e');
-      }
+      LoggerService().warning(
+        '⚠️ [ASSET_PRELOADER] Some assets failed to preload',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -34,14 +37,14 @@ class AssetPreloaderService {
     try {
       // Load asset into memory cache
       await rootBundle.load(assetPath);
-      if (kDebugMode) {
-        print('✅ [ASSET_PRELOADER] Preloaded: $assetPath');
-      }
-    } catch (e) {
+      LoggerService().debug('✅ [ASSET_PRELOADER] Preloaded: $assetPath');
+    } catch (e, stackTrace) {
       // Individual asset failures shouldn't block preloading
-      if (kDebugMode) {
-        print('⚠️ [ASSET_PRELOADER] Failed to preload $assetPath: $e');
-      }
+      LoggerService().warning(
+        '⚠️ [ASSET_PRELOADER] Failed to preload $assetPath',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -51,10 +54,8 @@ class AssetPreloaderService {
     // Google Fonts package handles font preloading automatically
     // If custom fonts are added to pubspec.yaml, they can be preloaded here
     // For now, this is a placeholder for future custom font support
-    if (kDebugMode) {
-      print(
-        '✅ [ASSET_PRELOADER] Fonts preloaded (Google Fonts handled automatically)',
-      );
-    }
+    LoggerService().debug(
+      '✅ [ASSET_PRELOADER] Fonts preloaded (Google Fonts handled automatically)',
+    );
   }
 }

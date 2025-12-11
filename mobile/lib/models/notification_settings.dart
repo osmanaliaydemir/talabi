@@ -1,8 +1,4 @@
 class NotificationSettings {
-  bool orderUpdates;
-  bool promotions;
-  bool newProducts;
-
   NotificationSettings({
     required this.orderUpdates,
     required this.promotions,
@@ -16,6 +12,10 @@ class NotificationSettings {
       newProducts: json['newProducts'],
     );
   }
+
+  bool orderUpdates;
+  bool promotions;
+  bool newProducts;
 
   Map<String, dynamic> toJson() {
     return {

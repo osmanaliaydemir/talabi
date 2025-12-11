@@ -1,13 +1,4 @@
 class CourierEarning {
-  final int id;
-  final String orderId;
-  final double baseDeliveryFee;
-  final double distanceBonus;
-  final double tipAmount;
-  final double totalEarning;
-  final DateTime earnedAt;
-  final bool isPaid;
-
   CourierEarning({
     required this.id,
     required this.orderId,
@@ -31,14 +22,17 @@ class CourierEarning {
       isPaid: json['isPaid'],
     );
   }
+  final int id;
+  final String orderId;
+  final double baseDeliveryFee;
+  final double distanceBonus;
+  final double tipAmount;
+  final double totalEarning;
+  final DateTime earnedAt;
+  final bool isPaid;
 }
 
 class EarningsSummary {
-  final double totalEarnings;
-  final int totalDeliveries;
-  final double averageEarningPerDelivery;
-  final List<CourierEarning> earnings;
-
   EarningsSummary({
     required this.totalEarnings,
     required this.totalDeliveries,
@@ -57,4 +51,8 @@ class EarningsSummary {
           .toList(),
     );
   }
+  final double totalEarnings;
+  final int totalDeliveries;
+  final double averageEarningPerDelivery;
+  final List<CourierEarning> earnings;
 }

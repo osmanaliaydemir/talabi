@@ -8,9 +8,9 @@ import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:intl/intl.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  final bool showBackButton;
-
   const OrderHistoryScreen({super.key, this.showBackButton = true});
+
+  final bool showBackButton;
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
@@ -96,10 +96,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     ),
                   )
                 : ListView.separated(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
+                    padding: const EdgeInsets.all(AppTheme.spacingMedium),
                     itemCount: _orders.length,
                     separatorBuilder: (context, index) =>
-                        SizedBox(height: AppTheme.spacingMedium),
+                        const SizedBox(height: AppTheme.spacingMedium),
                     itemBuilder: (context, index) {
                       final order = _orders[index];
                       return _buildOrderCard(context, order);
@@ -132,7 +132,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           },
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Padding(
-            padding: EdgeInsets.all(AppTheme.spacingMedium),
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
             child: Column(
               children: [
                 // Header: Vendor Info & Status
@@ -206,8 +206,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
                   child: Divider(height: 1, color: AppTheme.borderColor),
                 ),
                 // Footer: Order ID & Total
@@ -216,7 +216,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.receipt_long_outlined,
                           size: 16,
                           color: AppTheme.textSecondary,
@@ -243,7 +243,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
+                        const Icon(
                           Icons.arrow_forward_ios_rounded,
                           size: 14,
                           color: AppTheme.textSecondary,

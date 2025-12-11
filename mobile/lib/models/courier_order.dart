@@ -6,9 +6,9 @@ enum OrderCourierStatus {
   outForDelivery(4),
   delivered(5);
 
-  final int value;
   const OrderCourierStatus(this.value);
 
+  final int value;
   static OrderCourierStatus? fromValue(int? value) {
     if (value == null) return null;
     return OrderCourierStatus.values.firstWhere(
@@ -30,33 +30,6 @@ enum OrderCourierStatus {
 }
 
 class CourierOrder {
-  final String id;
-  final String customerOrderId;
-  final String vendorName;
-  final String vendorAddress;
-  final double vendorLatitude;
-  final double vendorLongitude;
-  final String customerName;
-  final String deliveryAddress;
-  final double deliveryLatitude;
-  final double deliveryLongitude;
-  final double totalAmount;
-  final double deliveryFee;
-  final String status;
-  final DateTime createdAt;
-  final List<CourierOrderItem> items;
-
-  // OrderCourier bilgileri
-  final OrderCourierStatus? courierStatus;
-  final DateTime? courierAssignedAt;
-  final DateTime? courierAcceptedAt;
-  final DateTime? courierRejectedAt;
-  final String? rejectReason;
-  final DateTime? pickedUpAt;
-  final DateTime? outForDeliveryAt;
-  final DateTime? deliveredAt;
-  final double? courierTip;
-
   CourierOrder({
     required this.id,
     required this.customerOrderId,
@@ -131,12 +104,35 @@ class CourierOrder {
       courierTip: (json['courierTip'] as num?)?.toDouble(),
     );
   }
+  final String id;
+  final String customerOrderId;
+  final String vendorName;
+  final String vendorAddress;
+  final double vendorLatitude;
+  final double vendorLongitude;
+  final String customerName;
+  final String deliveryAddress;
+  final double deliveryLatitude;
+  final double deliveryLongitude;
+  final double totalAmount;
+  final double deliveryFee;
+  final String status;
+  final DateTime createdAt;
+  final List<CourierOrderItem> items;
+
+  // OrderCourier bilgileri
+  final OrderCourierStatus? courierStatus;
+  final DateTime? courierAssignedAt;
+  final DateTime? courierAcceptedAt;
+  final DateTime? courierRejectedAt;
+  final String? rejectReason;
+  final DateTime? pickedUpAt;
+  final DateTime? outForDeliveryAt;
+  final DateTime? deliveredAt;
+  final double? courierTip;
 }
 
 class CourierOrderItem {
-  final String productName;
-  final int quantity;
-
   CourierOrderItem({required this.productName, required this.quantity});
 
   factory CourierOrderItem.fromJson(Map<String, dynamic> json) {
@@ -145,4 +141,6 @@ class CourierOrderItem {
       quantity: json['quantity'] ?? 0,
     );
   }
+  final String productName;
+  final int quantity;
 }

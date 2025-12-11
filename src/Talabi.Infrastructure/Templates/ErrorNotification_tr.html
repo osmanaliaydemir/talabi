@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kritik Hata Bildirimi</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #f7f7f7; 
+            margin: 0; 
+            padding: 0; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 32px auto; 
+            background: #ffffff; 
+            border-radius: 12px; 
+            padding: 32px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.07); 
+        }
+        .header { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+            margin: -32px -32px 24px -32px;
+        }
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+        .title { 
+            font-size: 24px; 
+            font-weight: 700; 
+            color: #ffffff;
+            margin: 0;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 4px;
+        }
+        .alert-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .alert-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #991b1b;
+            margin-bottom: 8px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            min-width: 140px;
+        }
+        .info-value {
+            font-size: 14px;
+            color: #111827;
+            text-align: right;
+            flex: 1;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-fatal {
+            background: #7f1d1d;
+            color: #ffffff;
+        }
+        .message-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .message-text {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+            font-family: 'Courier New', monospace;
+            word-break: break-word;
+        }
+        .button { 
+            display: inline-block; 
+            padding: 14px 28px; 
+            background: #0ea5e9; 
+            color: #ffffff; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: 600;
+            margin-top: 24px;
+            text-align: center;
+        }
+        .button:hover {
+            background: #0284c7;
+        }
+        .footer { 
+            font-size: 12px; 
+            color: #94a3b8; 
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .timestamp {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">⚠️</div>
+            <div class="title">Kritik Hata Bildirimi</div>
+            <div class="subtitle">Talabi Mobil Uygulama</div>
+        </div>
+
+        <div class="alert-box">
+            <div class="alert-title">⚠️ Acil İnceleme Gerekli</div>
+            <div style="font-size: 14px; color: #7f1d1d;">
+                Mobil uygulamadan kritik seviyede hata logları kaydedildi. Lütfen aşağıdaki detayları inceleyin.
+            </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+            <div class="info-row">
+                <span class="info-label">Hata Sayısı:</span>
+                <span class="info-value">
+                    <strong style="color: #ef4444; font-size: 18px;">{{ErrorCount}}</strong>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Log Seviyesi:</span>
+                <span class="info-value">
+                    <span class="badge {{BadgeClass}}">{{LogLevel}}</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Zaman:</span>
+                <span class="info-value">{{Timestamp}}</span>
+            </div>
+        </div>
+
+        <div class="message-box">
+            <div style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">
+                İlk Hata Mesajı:
+            </div>
+            <div class="message-text">{{FirstErrorMessage}}</div>
+        </div>
+
+        <div style="text-align: center;">
+            <a class="button" href="{{ViewLogsUrl}}" target="_blank" rel="noopener noreferrer">
+                📊 Tüm Logları Görüntüle
+            </a>
+        </div>
+
+        <div class="footer">
+            <div>Bu e-posta otomatik olarak oluşturulmuştur. Lütfen yanıtlamayın.</div>
+            <div class="timestamp">Talabi Error Logging System</div>
+        </div>
+    </div>
+</body>
+</html>
+

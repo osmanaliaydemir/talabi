@@ -46,19 +46,19 @@ class LegalMenuScreen extends StatelessWidget {
             child: Stack(
               children: [
                 ListView.builder(
-                  padding: EdgeInsets.only(top: AppTheme.spacingMedium),
+                  padding: const EdgeInsets.only(top: AppTheme.spacingMedium),
                   itemCount: legalDocuments.length,
                   itemBuilder: (context, index) {
                     final doc = legalDocuments[index];
                     return Container(
-                      margin: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingMedium,
                         vertical: AppTheme.spacingSmall,
                       ),
                       decoration: AppTheme.cardDecoration(),
                       child: ListTile(
                         leading: Container(
-                          padding: EdgeInsets.all(AppTheme.spacingSmall),
+                          padding: const EdgeInsets.all(AppTheme.spacingSmall),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryOrange.withValues(
                               alpha: 0.1,
@@ -80,7 +80,7 @@ class LegalMenuScreen extends StatelessWidget {
                             color: AppTheme.textPrimary,
                           ),
                         ),
-                        trailing: Icon(
+                        trailing: const Icon(
                           Icons.chevron_right,
                           color: AppTheme.textSecondary,
                         ),
@@ -115,7 +115,7 @@ class LegalMenuScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -129,7 +129,7 @@ class LegalMenuScreen extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.spacingMedium,
             vertical: AppTheme.spacingMedium,
           ),
@@ -139,33 +139,33 @@ class LegalMenuScreen extends StatelessWidget {
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
+                  padding: const EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
                     color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              SizedBox(width: AppTheme.spacingSmall),
+              const SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                padding: const EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
                   color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.gavel,
                   color: AppTheme.textOnPrimary,
                   size: AppTheme.iconSizeSmall,
                 ),
               ),
-              SizedBox(width: AppTheme.spacingSmall),
+              const SizedBox(width: AppTheme.spacingSmall),
               // Title
               Expanded(
                 child: Column(
@@ -180,7 +180,7 @@ class LegalMenuScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       l10n.legalDocumentsDescription,
                       style: AppTheme.poppins(

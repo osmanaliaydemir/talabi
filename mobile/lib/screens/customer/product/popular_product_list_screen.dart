@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/widgets/toast_message.dart';
@@ -146,13 +147,13 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
       if (mounted) {
         setState(() {
           _favoriteStatus.clear();
-          for (var fav in favoritesResult.items) {
+          for (final fav in favoritesResult.items) {
             _favoriteStatus[fav.id] = true;
           }
         });
       }
     } catch (e) {
-      print('Error loading favorites: $e');
+      LoggerService().error('Error loading favorites: $e', e);
     }
   }
 
@@ -226,7 +227,7 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
               },
               child: _isFirstLoad
                   ? GridView.builder(
-                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
@@ -244,18 +245,18 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.error_outline,
                             size: 64,
                             color: AppTheme.error,
                           ),
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
                           Text(
                             '${localizations.error}: $_errorMessage',
                             style: AppTheme.poppins(color: AppTheme.error),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
                           ElevatedButton(
                             onPressed: () => _loadProducts(isRefresh: true),
                             style: ElevatedButton.styleFrom(
@@ -279,7 +280,7 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                               alpha: 0.5,
                             ),
                           ),
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
                           Text(
                             localizations.noProductsYet,
                             style: AppTheme.poppins(
@@ -295,7 +296,7 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
                         SliverPadding(
-                          padding: EdgeInsets.all(AppTheme.spacingMedium),
+                          padding: const EdgeInsets.all(AppTheme.spacingMedium),
                           sliver: SliverGrid(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(

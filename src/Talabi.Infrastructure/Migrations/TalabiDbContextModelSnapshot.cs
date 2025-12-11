@@ -644,6 +644,66 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("DeliveryProofs");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.ErrorLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AppVersion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceInfo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LogId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StackTrace")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("LogId")
+                        .IsUnique();
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ErrorLogs");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.FavoriteProduct", b =>
                 {
                     b.Property<Guid>("Id")
@@ -757,18 +817,6 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("CourierAcceptedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CourierAssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CourierId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal?>("CourierTip")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -780,9 +828,6 @@ namespace Talabi.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DeliveredAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid?>("DeliveryAddressId")
                         .HasColumnType("uniqueidentifier");
 
@@ -790,12 +835,6 @@ namespace Talabi.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("EstimatedDeliveryTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("OutForDeliveryAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("PickedUpAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
@@ -812,8 +851,6 @@ namespace Talabi.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourierId");
-
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("DeliveryAddressId");
@@ -821,6 +858,69 @@ namespace Talabi.Infrastructure.Migrations
                     b.HasIndex("VendorId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.OrderCourier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CourierAcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CourierAssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CourierId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CourierRejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("CourierTip")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DeliveryFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("OutForDeliveryAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("PickedUpAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourierId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("OrderId", "IsActive")
+                        .HasFilter("[IsActive] = 1");
+
+                    b.ToTable("OrderCouriers");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.OrderItem", b =>
@@ -1595,11 +1695,6 @@ namespace Talabi.Infrastructure.Migrations
 
             modelBuilder.Entity("Talabi.Core.Entities.Order", b =>
                 {
-                    b.HasOne("Talabi.Core.Entities.Courier", "Courier")
-                        .WithMany("Orders")
-                        .HasForeignKey("CourierId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Talabi.Core.Entities.AppUser", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
@@ -1617,13 +1712,30 @@ namespace Talabi.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Courier");
-
                     b.Navigation("Customer");
 
                     b.Navigation("DeliveryAddress");
 
                     b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.OrderCourier", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.Courier", "Courier")
+                        .WithMany("OrderCouriers")
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Talabi.Core.Entities.Order", "Order")
+                        .WithMany("OrderCouriers")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Courier");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.OrderItem", b =>
@@ -1637,7 +1749,7 @@ namespace Talabi.Infrastructure.Migrations
                     b.HasOne("Talabi.Core.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -1770,7 +1882,7 @@ namespace Talabi.Infrastructure.Migrations
                 {
                     b.Navigation("Notifications");
 
-                    b.Navigation("Orders");
+                    b.Navigation("OrderCouriers");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.Order", b =>
@@ -1778,6 +1890,8 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("CourierEarning");
 
                     b.Navigation("DeliveryProof");
+
+                    b.Navigation("OrderCouriers");
 
                     b.Navigation("OrderItems");
 

@@ -7,14 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
 
 class SharedHeader extends StatelessWidget {
-  final String? title;
-  final String? subtitle;
-  final String? fullName;
-  final IconData? icon;
-  final bool showBackButton;
-  final VoidCallback? onBack;
-  final Widget? action;
-
   const SharedHeader({
     super.key,
     this.title,
@@ -26,6 +18,13 @@ class SharedHeader extends StatelessWidget {
     this.action,
   });
 
+  final String? title;
+  final String? subtitle;
+  final String? fullName;
+  final IconData? icon;
+  final bool showBackButton;
+  final VoidCallback? onBack;
+  final Widget? action;
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;

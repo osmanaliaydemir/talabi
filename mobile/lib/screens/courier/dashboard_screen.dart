@@ -9,6 +9,7 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/location_service.dart';
 import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
@@ -36,7 +37,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    print('CourierDashboardScreen: initState called');
+    LoggerService().debug('CourierDashboardScreen: initState called');
     _locationService = LocationService(_courierService);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -77,40 +78,42 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   }
 
   Future<void> _loadData() async {
-    print('CourierDashboardScreen: Loading data...');
+    LoggerService().debug('CourierDashboardScreen: Loading data...');
     setState(() {
       _isLoading = true;
     });
 
     try {
-      print('CourierDashboardScreen: Fetching profile...');
+      LoggerService().debug('CourierDashboardScreen: Fetching profile...');
       final courier = await _courierService.getProfile();
-      print(
+      LoggerService().debug(
         'CourierDashboardScreen: Profile loaded - ${courier.name}, Status: ${courier.status}',
       );
 
       // Start location tracking if courier is available
       if (courier.status == 'Available') {
-        print(
+        LoggerService().debug(
           'CourierDashboardScreen: Courier is available, starting location tracking...',
         );
         await _locationService.startLocationTracking();
       } else {
-        print(
+        LoggerService().debug(
           'CourierDashboardScreen: Courier is ${courier.status}, stopping location tracking...',
         );
         _locationService.stopLocationTracking();
       }
 
-      print('CourierDashboardScreen: Fetching statistics...');
+      LoggerService().debug('CourierDashboardScreen: Fetching statistics...');
       final statistics = await _courierService.getStatistics();
-      print(
+      LoggerService().debug(
         'CourierDashboardScreen: Statistics loaded - Total: ${statistics.totalDeliveries}, Earnings: ${statistics.totalEarnings}',
       );
 
-      print('CourierDashboardScreen: Fetching active orders...');
+      LoggerService().debug(
+        'CourierDashboardScreen: Fetching active orders...',
+      );
       final orders = await _courierService.getActiveOrders();
-      print(
+      LoggerService().debug(
         'CourierDashboardScreen: Active orders loaded - Count: ${orders.length}',
       );
 
@@ -121,11 +124,13 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           _activeOrders = orders;
           _isLoading = false;
         });
-        print('CourierDashboardScreen: Data loaded successfully');
+        LoggerService().debug(
+          'CourierDashboardScreen: Data loaded successfully',
+        );
 
         // Check if vehicle type is not selected
         if (courier.vehicleType == null || courier.vehicleType!.isEmpty) {
-          print(
+          LoggerService().debug(
             'CourierDashboardScreen: Vehicle type not selected, showing selection bottom sheet',
           );
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -135,7 +140,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         // Check if location is not set (only if vehicle type is already selected)
         else if (courier.currentLatitude == null ||
             courier.currentLongitude == null) {
-          print(
+          LoggerService().debug(
             'CourierDashboardScreen: Location not set, showing location selection bottom sheet',
           );
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -144,8 +149,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         }
       }
     } catch (e, stackTrace) {
-      print('CourierDashboardScreen: ERROR loading data - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierDashboardScreen: ERROR loading data',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -167,35 +175,46 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
   Future<void> _toggleStatus(bool value) async {
     if (_courier == null) {
-      print('CourierDashboardScreen: Cannot toggle status - courier is null');
+      LoggerService().warning(
+        'CourierDashboardScreen: Cannot toggle status - courier is null',
+      );
       return;
     }
 
     final newStatus = value ? 'Available' : 'Offline';
-    print('CourierDashboardScreen: Toggling status to $newStatus');
+    LoggerService().debug(
+      'CourierDashboardScreen: Toggling status to $newStatus',
+    );
     setState(() {
       _isStatusUpdating = true;
     });
 
     try {
       await _courierService.updateStatus(newStatus);
-      print(
+      LoggerService().debug(
         'CourierDashboardScreen: Status updated successfully to $newStatus',
       );
 
       // Handle location tracking based on new status
       if (value) {
-        print('CourierDashboardScreen: Starting location tracking...');
+        LoggerService().debug(
+          'CourierDashboardScreen: Starting location tracking...',
+        );
         await _locationService.startLocationTracking();
       } else {
-        print('CourierDashboardScreen: Stopping location tracking...');
+        LoggerService().debug(
+          'CourierDashboardScreen: Stopping location tracking...',
+        );
         _locationService.stopLocationTracking();
       }
 
       await _loadData(); // Reload to get updated profile
     } catch (e, stackTrace) {
-      print('CourierDashboardScreen: ERROR updating status - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierDashboardScreen: ERROR updating status',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -248,11 +267,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -279,7 +296,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       'selectVehicleType',
                       'Araç Türü Seçin',
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.textPrimary,
@@ -294,7 +311,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       'selectVehicleTypeDescription',
                       'Lütfen kullanacağınız araç türünü seçin. Bu seçim zorunludur.',
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
@@ -316,7 +333,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.courierPrimary.withOpacity(0.1)
+                              ? AppTheme.courierPrimary.withValues(alpha: 0.1)
                               : Colors.grey[100],
                           border: Border.all(
                             color: isSelected
@@ -351,7 +368,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                               ),
                             ),
                             if (isSelected)
-                              Icon(
+                              const Icon(
                                 Icons.check_circle,
                                 color: AppTheme.courierPrimary,
                               ),
@@ -425,8 +442,12 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           _showLocationSelectionBottomSheet();
         });
       }
-    } catch (e) {
-      print('CourierDashboardScreen: ERROR updating vehicle type - $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'CourierDashboardScreen: ERROR updating vehicle type',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -471,6 +492,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     await LocationPermissionService.checkLocationServices(
                       context,
                     );
+                if (!mounted) return;
                 if (!serviceEnabled) {
                   setState(() {
                     isGettingLocation = false;
@@ -485,6 +507,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
                 final position =
                     await LocationPermissionService.getCurrentLocation(context);
+                if (!mounted) return;
                 if (position != null) {
                   setState(() {
                     selectedLatitude = position.latitude;
@@ -510,11 +533,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
             }
 
             return Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -541,7 +562,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       'selectLocationRequired',
                       'Konum Seçimi Zorunlu',
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.textPrimary,
@@ -556,7 +577,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       'selectLocationRequiredDescription',
                       'Lütfen konumunuzu seçin. Bu bilgi sipariş almak için gereklidir.',
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
@@ -600,7 +621,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       padding: const EdgeInsets.all(16),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: AppTheme.courierPrimary.withOpacity(0.1),
+                        color: AppTheme.courierPrimary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: AppTheme.courierPrimary,
@@ -612,7 +633,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.location_on,
                                 color: AppTheme.courierPrimary,
                                 size: 20,
@@ -624,7 +645,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                   'selectedLocation',
                                   'Seçilen Konum',
                                 ),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.courierPrimary,
@@ -635,14 +656,14 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                           const SizedBox(height: 8),
                           Text(
                             'Lat: ${selectedLatitude!.toStringAsFixed(6)}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                             ),
                           ),
                           Text(
                             'Lng: ${selectedLongitude!.toStringAsFixed(6)}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                             ),
@@ -725,7 +746,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.courierPrimary,
-                        side: BorderSide(
+                        side: const BorderSide(
                           color: AppTheme.courierPrimary,
                           width: 2,
                         ),
@@ -818,8 +839,12 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         // Reload data to get updated profile
         await _loadData();
       }
-    } catch (e) {
-      print('CourierDashboardScreen: ERROR updating location - $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'CourierDashboardScreen: ERROR updating location',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -976,7 +1001,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           title: localizations?.roleCourier ?? 'Kurye Paneli',
           subtitle: authProvider.email ?? '',
         ),
-        body: Center(child: CircularProgressIndicator(color: Colors.teal)),
+        body: const Center(
+          child: CircularProgressIndicator(color: Colors.teal),
+        ),
         bottomNavigationBar: const CourierBottomNav(currentIndex: 0),
       );
     }
@@ -1058,12 +1085,12 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _getLocalizedStatus(_courier?.status ?? "Offline"),
+                            _getLocalizedStatus(_courier?.status ?? 'Offline'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: _getStatusColor(
-                                _courier?.status ?? "Offline",
+                                _courier?.status ?? 'Offline',
                               ),
                             ),
                           ),
@@ -1075,7 +1102,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                               height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.teal,
+                                color: AppTheme.courierPrimary,
                               ),
                             )
                           : Switch(
@@ -1083,7 +1110,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                   _courier?.status == 'Available' ||
                                   _courier?.status == 'Busy' ||
                                   _courier?.status == 'Assigned',
-                              activeColor: Colors.teal,
+                              activeThumbColor: AppTheme.courierPrimary,
                               onChanged: (value) {
                                 if (_courier?.status == 'Busy' ||
                                     _courier?.status == 'Assigned') {
@@ -1095,7 +1122,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                                       content: Text(
                                         localizations
                                                 ?.cannotChangeStatusWhileBusy ??
-                                            'Cannot change status while busy',
+                                            'Kurye meşgulken durum değiştirilemez',
                                       ),
                                     ),
                                   );
@@ -1191,7 +1218,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     Icons.delivery_dining,
                     Colors.teal,
                     () {
-                      print(
+                      LoggerService().debug(
                         'CourierDashboardScreen: Quick Action -> Active Deliveries',
                       );
                       Navigator.of(
@@ -1223,7 +1250,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     Icons.history,
                     Colors.purple,
                     () {
-                      print(
+                      LoggerService().debug(
                         'CourierDashboardScreen: Quick Action -> Delivery History',
                       );
                       Navigator.of(
@@ -1836,7 +1863,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         return;
       }
 
-      print(
+      LoggerService().debug(
         'CourierDashboardScreen: Order action successful - $successMessage',
       );
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1844,8 +1871,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       );
       await _loadData();
     } catch (e, stackTrace) {
-      print('CourierDashboardScreen: ERROR performing order action - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierDashboardScreen: ERROR performing order action',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(
           context,

@@ -7,7 +7,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
-
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
@@ -230,7 +230,9 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         onRefresh: _loadProfile,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.deepPurple))
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.deepPurple),
+            )
           : Form(
               key: _formKey,
               child: ListView(
@@ -257,7 +259,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                           if (_isUploading)
                             Positioned.fill(
                               child: Container(
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.black54,
                                   shape: BoxShape.circle,
                                 ),
@@ -326,7 +328,9 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                     ),
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        print('VendorEditProfileScreen: Map selection tapped');
+                        LoggerService().debug(
+                          'VendorEditProfileScreen: Map selection tapped',
+                        );
                         await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => AddressPickerScreen(
@@ -340,7 +344,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                                     latitude,
                                     longitude,
                                   ) {
-                                    print(
+                                    LoggerService().debug(
                                       'VendorEditProfileScreen: Address selected from map',
                                     );
                                     setState(() {

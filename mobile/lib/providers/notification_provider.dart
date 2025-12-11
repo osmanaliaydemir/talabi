@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/models/customer_notification.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class NotificationProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -40,13 +41,17 @@ class NotificationProvider extends ChangeNotifier {
 
     try {
       await _apiService.markNotificationAsRead('customer', notificationId);
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Revert optimistic update if API call fails
       if (index != -1) {
         _notifications[index] = _notifications[index].copyWith(isRead: false);
         notifyListeners();
       }
-      print('Error marking notification as read: $e');
+      LoggerService().error(
+        'Error marking notification as read',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -62,11 +67,15 @@ class NotificationProvider extends ChangeNotifier {
 
     try {
       await _apiService.markAllNotificationsAsRead('customer');
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Revert optimistic update if API call fails
       _notifications = originalNotifications;
       notifyListeners();
-      print('Error marking all notifications as read: $e');
+      LoggerService().error(
+        'Error marking all notifications as read',
+        e,
+        stackTrace,
+      );
     }
   }
 }

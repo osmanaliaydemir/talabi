@@ -4,14 +4,14 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 
 class CategorySelectionBottomSheet extends StatelessWidget {
-  final MainCategory currentCategory;
-  final Function(MainCategory) onCategorySelected;
-
   const CategorySelectionBottomSheet({
     super.key,
     required this.currentCategory,
     required this.onCategorySelected,
   });
+
+  final MainCategory currentCategory;
+  final Function(MainCategory) onCategorySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class CategorySelectionBottomSheet extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withOpacity(0.1)
+              ? color.withValues(alpha: 0.1)
               : (isDark ? Colors.grey[900] : Colors.grey[50]),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -116,7 +116,7 @@ class CategorySelectionBottomSheet extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 32, color: color),

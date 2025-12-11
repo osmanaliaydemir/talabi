@@ -7,6 +7,9 @@ class ToastMessage {
     required bool isSuccess,
     Duration duration = const Duration(seconds: 3),
   }) {
+    // Check if context is still mounted before using it
+    if (!context.mounted) return;
+
     final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
       builder: (context) => _ToastWidget(
@@ -25,15 +28,15 @@ class ToastMessage {
 }
 
 class _ToastWidget extends StatefulWidget {
-  final String message;
-  final bool isSuccess;
-  final Duration duration;
-
   const _ToastWidget({
     required this.message,
     required this.isSuccess,
     required this.duration,
   });
+
+  final String message;
+  final bool isSuccess;
+  final Duration duration;
 
   @override
   State<_ToastWidget> createState() => _ToastWidgetState();
@@ -132,4 +135,3 @@ class _ToastWidgetState extends State<_ToastWidget>
     );
   }
 }
-

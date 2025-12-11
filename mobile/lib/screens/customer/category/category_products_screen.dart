@@ -5,6 +5,7 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/widgets/toast_message.dart';
@@ -12,16 +13,16 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
-  final String categoryName;
-  final String? categoryId;
-  final String? imageUrl;
-
   const CategoryProductsScreen({
     super.key,
     required this.categoryName,
     this.categoryId,
     this.imageUrl,
   });
+
+  final String categoryName;
+  final String? categoryId;
+  final String? imageUrl;
 
   @override
   State<CategoryProductsScreen> createState() => _CategoryProductsScreenState();
@@ -70,12 +71,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favoritesResult.items) {
+        for (final fav in favoritesResult.items) {
           _favoriteStatus[fav.id] = true;
         }
       });
     } catch (e) {
-      print('Error loading favorites: $e');
+      LoggerService().error('Error loading favorites: $e', e);
     }
   }
 
@@ -152,7 +153,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   child: Container(
                     margin: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -188,14 +189,14 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     colorScheme.primary,
-                                    colorScheme.primary.withOpacity(0.8),
+                                    colorScheme.primary.withValues(alpha: 0.8),
                                   ],
                                 ),
                               ),
                               child: Icon(
                                 Icons.category,
                                 size: 64,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                               ),
                             ),
                       // Gradient overlay for better text visibility
@@ -206,7 +207,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),
@@ -217,7 +218,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingMedium),
+                  padding: const EdgeInsets.all(AppTheme.spacingMedium),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -239,7 +240,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: colorScheme.primary.withOpacity(0.1),
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -262,16 +265,17 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return SliverPadding(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingMedium,
                       ),
                       sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: AppTheme.spacingSmall,
-                          mainAxisSpacing: AppTheme.spacingSmall,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.75,
+                              crossAxisSpacing: AppTheme.spacingSmall,
+                              mainAxisSpacing: AppTheme.spacingSmall,
+                            ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) => const ProductSkeletonItem(),
                           childCount: 6,
@@ -296,9 +300,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                             Icon(
                               Icons.search_off,
                               size: 64,
-                              color: AppTheme.textSecondary.withOpacity(0.5),
+                              color: AppTheme.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
-                            SizedBox(height: AppTheme.spacingMedium),
+                            const SizedBox(height: AppTheme.spacingMedium),
                             Text(
                               localizations.noProductsYet,
                               style: AppTheme.poppins(
@@ -314,17 +320,18 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
                   final products = snapshot.data!;
                   return SliverPadding(
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppTheme.spacingMedium,
                       vertical: AppTheme.spacingSmall,
                     ),
                     sliver: SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.75,
-                        crossAxisSpacing: AppTheme.spacingSmall,
-                        mainAxisSpacing: AppTheme.spacingSmall,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.75,
+                            crossAxisSpacing: AppTheme.spacingSmall,
+                            mainAxisSpacing: AppTheme.spacingSmall,
+                          ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final product = products[index];
                         final isFavorite = _favoriteStatus[product.id] ?? false;

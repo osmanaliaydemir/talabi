@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:mobile/models/order.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/search_dtos.dart';
@@ -17,6 +18,11 @@ import 'package:mobile/services/navigation_service.dart';
 const String _requestPermitKey = '_apiRequestPermit';
 
 class ApiService {
+  // Singleton pattern
+  factory ApiService() {
+    _instance ??= ApiService._internal();
+    return _instance!;
+  }
   static const String baseUrl = 'https://talabi.runasp.net/api';
   static ApiService? _instance;
   final Dio _dio = Dio(
@@ -27,9 +33,6 @@ class ApiService {
     ),
   );
 
-  // Expose Dio instance for other services
-  Dio get dio => _dio;
-
   final CacheService _cacheService = CacheService();
   final ApiRequestScheduler _requestScheduler = ApiRequestScheduler();
   ConnectivityService? _connectivityService;
@@ -37,16 +40,6 @@ class ApiService {
   // Track refresh token operation to prevent concurrent calls
   bool _isRefreshing = false;
   Completer<Map<String, String>>? _refreshCompleter;
-
-  void setConnectivityService(ConnectivityService connectivityService) {
-    _connectivityService = connectivityService;
-  }
-
-  // Singleton pattern
-  factory ApiService() {
-    _instance ??= ApiService._internal();
-    return _instance!;
-  }
 
   ApiService._internal() {
     // Add logging interceptor
@@ -82,27 +75,31 @@ class ApiService {
             options.headers['Authorization'] = 'Bearer $token';
           }
 
-          print('📤 [HTTP REQUEST] ${options.method} ${options.uri}');
-          print('📤 [HTTP REQUEST] Headers: ${options.headers}');
-          print('📤 [HTTP REQUEST] Data: ${options.data}');
+          LoggerService().debug(
+            '📤 [HTTP REQUEST] ${options.method} ${options.uri}',
+          );
+          LoggerService().debug(
+            '📤 [HTTP REQUEST] Headers: ${options.headers}',
+          );
+          LoggerService().debug('📤 [HTTP REQUEST] Data: ${options.data}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
           _releasePermit(response.requestOptions);
-          print(
+          LoggerService().debug(
             '📥 [HTTP RESPONSE] ${response.statusCode} ${response.requestOptions.uri}',
           );
-          print('📥 [HTTP RESPONSE] Data: ${response.data}');
+          LoggerService().debug('📥 [HTTP RESPONSE] Data: ${response.data}');
           return handler.next(response);
         },
         onError: (error, handler) async {
           _releasePermit(error.requestOptions);
-          print(
-            '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri}',
+          final errorMessage =
+              '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri} | Status: ${error.response?.statusCode} | Message: ${error.message}';
+          LoggerService().error(errorMessage, error, error.stackTrace);
+          LoggerService().debug(
+            '❌ [HTTP ERROR] Response: ${error.response?.data}',
           );
-          print('❌ [HTTP ERROR] Status: ${error.response?.statusCode}');
-          print('❌ [HTTP ERROR] Message: ${error.message}');
-          print('❌ [HTTP ERROR] Response: ${error.response?.data}');
 
           // Try to parse standardized API response
           String? friendlyMessage;
@@ -117,7 +114,7 @@ class ApiService {
               friendlyMessage = apiResponse.message;
               errorCode = apiResponse.errorCode;
               if (errorCode != null) {
-                print('❌ [HTTP ERROR] Error Code: $errorCode');
+                LoggerService().debug('❌ [HTTP ERROR] Error Code: $errorCode');
               }
               if (apiResponse.errors != null &&
                   apiResponse.errors!.isNotEmpty) {
@@ -133,7 +130,9 @@ class ApiService {
           if (error.response?.statusCode == 401 &&
               !error.requestOptions.path.contains('login') &&
               !error.requestOptions.path.contains('refresh-token')) {
-            print('🔄 [REFRESH TOKEN] 401 detected. Attempting to refresh...');
+            LoggerService().debug(
+              '🔄 [REFRESH TOKEN] 401 detected. Attempting to refresh...',
+            );
 
             try {
               final prefs = await SharedPreferences.getInstance();
@@ -141,11 +140,13 @@ class ApiService {
               final refreshToken = prefs.getString('refreshToken');
 
               if (token != null && refreshToken != null) {
-                Map<String, String> newTokens;
+                late Map<String, String> newTokens;
 
                 // If already refreshing, wait for the existing refresh to complete
                 if (_isRefreshing && _refreshCompleter != null) {
-                  print('🔄 [REFRESH TOKEN] Already refreshing, waiting...');
+                  LoggerService().debug(
+                    '🔄 [REFRESH TOKEN] Already refreshing, waiting...',
+                  );
                   newTokens = await _refreshCompleter!.future;
                 } else {
                   // Start new refresh operation
@@ -163,9 +164,17 @@ class ApiService {
                     );
 
                     _refreshCompleter!.complete(newTokens);
-                  } catch (e) {
-                    _refreshCompleter!.completeError(e);
-                    rethrow;
+                  } catch (e, stackTrace) {
+                    _refreshCompleter!.completeError(
+                      DioException(
+                        requestOptions: error.requestOptions,
+                        response: error.response,
+                        type: error.type,
+                        error: e,
+                        message: e.toString(),
+                      ),
+                      stackTrace,
+                    );
                   } finally {
                     _isRefreshing = false;
                     _refreshCompleter = null;
@@ -189,8 +198,8 @@ class ApiService {
 
                 return handler.resolve(cloneReq);
               }
-            } catch (e) {
-              print('🔴 [REFRESH TOKEN] Failed: $e');
+            } catch (e, stackTrace) {
+              LoggerService().error('🔴 [REFRESH TOKEN] Failed', e, stackTrace);
               _isRefreshing = false;
               _refreshCompleter = null;
 
@@ -203,7 +212,7 @@ class ApiService {
           } else if (error.response?.statusCode == 401) {
             // Sadece '/auth/login' path'inde (veya genel login endpointlerinde) 401 gelirse yönlendirme YAPMA.
             // Çünkü kullanıcı zaten login olmaya çalışıyordur, şifre yanlıştır vs.
-            bool isLoginRequest = error.requestOptions.path.contains(
+            final bool isLoginRequest = error.requestOptions.path.contains(
               '/auth/login',
             );
 
@@ -253,6 +262,13 @@ class ApiService {
         },
       ),
     );
+  }
+
+  // Expose Dio instance for other services
+  Dio get dio => _dio;
+
+  void setConnectivityService(ConnectivityService connectivityService) {
+    _connectivityService = connectivityService;
   }
 
   Future<Map<String, String>> _refreshToken(
@@ -351,8 +367,8 @@ class ApiService {
       }
 
       return vendors;
-    } on DioException catch (e) {
-      print('Error fetching vendors: $e');
+    } on DioException catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendors', e, stackTrace);
 
       // If offline or network error, try cache (only for first page request)
       if (page == 1 &&
@@ -361,14 +377,14 @@ class ApiService {
               e.type == DioExceptionType.connectionError)) {
         final cachedVendors = await _cacheService.getCachedVendors();
         if (cachedVendors != null && cachedVendors.isNotEmpty) {
-          print('📦 [CACHE] Returning cached vendors');
+          LoggerService().debug('📦 [CACHE] Returning cached vendors');
           return cachedVendors;
         }
       }
 
       rethrow;
-    } catch (e) {
-      print('Error fetching vendors: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendors', e, stackTrace);
       rethrow;
     }
   }
@@ -430,8 +446,8 @@ class ApiService {
       }
 
       return products;
-    } on DioException catch (e) {
-      print('Error fetching products: $e');
+    } on DioException catch (e, stackTrace) {
+      LoggerService().error('Error fetching products', e, stackTrace);
 
       // If offline or network error, try cache (only for first page request)
       if (page == 1 &&
@@ -440,14 +456,14 @@ class ApiService {
               e.type == DioExceptionType.connectionError)) {
         final cachedProducts = await _cacheService.getCachedProducts();
         if (cachedProducts != null && cachedProducts.isNotEmpty) {
-          print('📦 [CACHE] Returning cached products');
+          LoggerService().debug('📦 [CACHE] Returning cached products');
           return cachedProducts;
         }
       }
 
       rethrow;
-    } catch (e) {
-      print('Error fetching products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching products', e, stackTrace);
       rethrow;
     }
   }
@@ -493,8 +509,8 @@ class ApiService {
 
       // ProductDto'yu Product'a çevir
       return apiResponse.data!.map((dto) => dto.toProduct()).toList();
-    } catch (e) {
-      print('Error fetching popular products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching popular products', e, stackTrace);
       rethrow;
     }
   }
@@ -528,8 +544,8 @@ class ApiService {
       return apiResponse.data!
           .map((json) => PromotionalBanner.fromJson(json))
           .toList();
-    } catch (e) {
-      print('Error fetching banners: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching banners', e, stackTrace);
       rethrow;
     }
   }
@@ -549,8 +565,8 @@ class ApiService {
 
       // ProductDto'yu Product'a çevir
       return apiResponse.data!.toProduct();
-    } catch (e) {
-      print('Error fetching product: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching product', e, stackTrace);
       rethrow;
     }
   }
@@ -591,8 +607,8 @@ class ApiService {
 
       // ProductDto listesini Product listesine çevir
       return apiResponse.data!.map((dto) => dto.toProduct()).toList();
-    } catch (e) {
-      print('Error fetching similar products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching similar products', e, stackTrace);
       return [];
     }
   }
@@ -636,8 +652,8 @@ class ApiService {
       }
       // Eski format (direkt Order)
       return Order.fromJson(response.data);
-    } catch (e) {
-      print('Error creating order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error creating order', e, stackTrace);
       rethrow;
     }
   }
@@ -664,8 +680,8 @@ class ApiService {
       }
 
       return apiResponse.data!;
-    } catch (e) {
-      print('Error logging in: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error logging in', e, stackTrace);
       rethrow;
     }
   }
@@ -677,12 +693,16 @@ class ApiService {
     String? language,
   }) async {
     try {
-      print('🔵 [REGISTER] Starting registration...');
-      print('🔵 [REGISTER] URL: $baseUrl/auth/register');
-      print('🔵 [REGISTER] Email: $email');
-      print('🔵 [REGISTER] FullName: $fullName');
-      print('🔵 [REGISTER] Password length: ${password.length}');
-      print('🔵 [REGISTER] Language: ${language ?? "not specified"}');
+      LoggerService().debug('🔵 [REGISTER] Starting registration...');
+      LoggerService().debug('🔵 [REGISTER] URL: $baseUrl/auth/register');
+      LoggerService().debug('🔵 [REGISTER] Email: $email');
+      LoggerService().debug('🔵 [REGISTER] FullName: $fullName');
+      LoggerService().debug(
+        '🔵 [REGISTER] Password length: ${password.length}',
+      );
+      LoggerService().debug(
+        '🔵 [REGISTER] Language: ${language ?? "not specified"}',
+      );
 
       final requestData = {
         'email': email,
@@ -690,12 +710,14 @@ class ApiService {
         'fullName': fullName,
         if (language != null) 'language': language,
       };
-      print('🔵 [REGISTER] Request data: $requestData');
+      LoggerService().debug('🔵 [REGISTER] Request data: $requestData');
 
       final response = await _dio.post('/auth/register', data: requestData);
 
-      print('🟢 [REGISTER] Success! Status: ${response.statusCode}');
-      print('🟢 [REGISTER] Response data: ${response.data}');
+      LoggerService().debug(
+        '🟢 [REGISTER] Success! Status: ${response.statusCode}',
+      );
+      LoggerService().debug('🟢 [REGISTER] Response data: ${response.data}');
 
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
@@ -713,15 +735,14 @@ class ApiService {
       }
 
       return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } on DioException catch (e) {
-      print('🔴 [REGISTER] DioException occurred!');
-      print('🔴 [REGISTER] Error type: ${e.type}');
-      print('🔴 [REGISTER] Error message: ${e.message}');
-      print('🔴 [REGISTER] Request path: ${e.requestOptions.path}');
-      print('🔴 [REGISTER] Request data: ${e.requestOptions.data}');
-      print('🔴 [REGISTER] Response status: ${e.response?.statusCode}');
-      print('🔴 [REGISTER] Response data: ${e.response?.data}');
-      print('🔴 [REGISTER] Stack trace: ${e.stackTrace}');
+    } on DioException catch (e, stackTrace) {
+      final errorMessage =
+          '🔴 [REGISTER] DioException | Type: ${e.type} | Path: ${e.requestOptions.path} | Status: ${e.response?.statusCode}';
+      LoggerService().error(errorMessage, e, stackTrace);
+      LoggerService().debug(
+        '🔴 [REGISTER] Request data: ${e.requestOptions.data}',
+      );
+      LoggerService().debug('🔴 [REGISTER] Response data: ${e.response?.data}');
 
       if (e.response != null) {
         final responseData = e.response?.data;
@@ -770,14 +791,15 @@ class ApiService {
               responseData?.toString() ?? e.message ?? 'Unknown error';
         }
 
-        print('🔴 [REGISTER] Parsed error message: $errorMessage');
+        LoggerService().debug(
+          '🔴 [REGISTER] Parsed error message: $errorMessage',
+        );
         throw Exception(errorMessage);
       } else {
         throw Exception('Network error: ${e.message}');
       }
     } catch (e, stackTrace) {
-      print('🔴 [REGISTER] Unexpected error: $e');
-      print('🔴 [REGISTER] Stack trace: $stackTrace');
+      LoggerService().error('🔴 [REGISTER] Unexpected error', e, stackTrace);
       rethrow;
     }
   }
@@ -796,13 +818,19 @@ class ApiService {
     int vendorType = 1, // 1 = Restaurant, 2 = Market (default: Restaurant)
   }) async {
     try {
-      print('🔵 [VENDOR_REGISTER] Starting vendor registration...');
-      print('🔵 [VENDOR_REGISTER] URL: $baseUrl/auth/vendor-register');
-      print('🔵 [VENDOR_REGISTER] Email: $email');
-      print('🔵 [VENDOR_REGISTER] FullName: $fullName');
-      print('🔵 [VENDOR_REGISTER] BusinessName: $businessName');
-      print('🔵 [VENDOR_REGISTER] Phone: $phone');
-      print('🔵 [VENDOR_REGISTER] Language: ${language ?? "not specified"}');
+      LoggerService().debug(
+        '🔵 [VENDOR_REGISTER] Starting vendor registration...',
+      );
+      LoggerService().debug(
+        '🔵 [VENDOR_REGISTER] URL: $baseUrl/auth/vendor-register',
+      );
+      LoggerService().debug('🔵 [VENDOR_REGISTER] Email: $email');
+      LoggerService().debug('🔵 [VENDOR_REGISTER] FullName: $fullName');
+      LoggerService().debug('🔵 [VENDOR_REGISTER] BusinessName: $businessName');
+      LoggerService().debug('🔵 [VENDOR_REGISTER] Phone: $phone');
+      LoggerService().debug(
+        '🔵 [VENDOR_REGISTER] Language: ${language ?? "not specified"}',
+      );
 
       final requestData = {
         'email': email,
@@ -816,15 +844,19 @@ class ApiService {
         if (description != null) 'description': description,
         if (language != null) 'language': language,
       };
-      print('🔵 [VENDOR_REGISTER] Request data: $requestData');
+      LoggerService().debug('🔵 [VENDOR_REGISTER] Request data: $requestData');
 
       final response = await _dio.post(
         '/auth/vendor-register',
         data: requestData,
       );
 
-      print('🟢 [VENDOR_REGISTER] Success! Status: ${response.statusCode}');
-      print('🟢 [VENDOR_REGISTER] Response data: ${response.data}');
+      LoggerService().debug(
+        '🟢 [VENDOR_REGISTER] Success! Status: ${response.statusCode}',
+      );
+      LoggerService().debug(
+        '🟢 [VENDOR_REGISTER] Response data: ${response.data}',
+      );
 
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
@@ -842,14 +874,16 @@ class ApiService {
       }
 
       return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } on DioException catch (e) {
-      print('🔴 [VENDOR_REGISTER] DioException occurred!');
-      print('🔴 [VENDOR_REGISTER] Error type: ${e.type}');
-      print('🔴 [VENDOR_REGISTER] Error message: ${e.message}');
-      print('🔴 [VENDOR_REGISTER] Request path: ${e.requestOptions.path}');
-      print('🔴 [VENDOR_REGISTER] Request data: ${e.requestOptions.data}');
-      print('🔴 [VENDOR_REGISTER] Response status: ${e.response?.statusCode}');
-      print('🔴 [VENDOR_REGISTER] Response data: ${e.response?.data}');
+    } on DioException catch (e, stackTrace) {
+      final errorMessage =
+          '🔴 [VENDOR_REGISTER] DioException | Type: ${e.type} | Path: ${e.requestOptions.path} | Status: ${e.response?.statusCode}';
+      LoggerService().error(errorMessage, e, stackTrace);
+      LoggerService().debug(
+        '🔴 [VENDOR_REGISTER] Request data: ${e.requestOptions.data}',
+      );
+      LoggerService().debug(
+        '🔴 [VENDOR_REGISTER] Response data: ${e.response?.data}',
+      );
 
       if (e.response != null) {
         final responseData = e.response?.data;
@@ -898,14 +932,19 @@ class ApiService {
               responseData?.toString() ?? e.message ?? 'Unknown error';
         }
 
-        print('🔴 [VENDOR_REGISTER] Parsed error message: $errorMessage');
+        LoggerService().debug(
+          '🔴 [VENDOR_REGISTER] Parsed error message: $errorMessage',
+        );
         throw Exception(errorMessage);
       } else {
         throw Exception('Network error: ${e.message}');
       }
     } catch (e, stackTrace) {
-      print('🔴 [VENDOR_REGISTER] Unexpected error: $e');
-      print('🔴 [VENDOR_REGISTER] Stack trace: $stackTrace');
+      LoggerService().error(
+        '🔴 [VENDOR_REGISTER] Unexpected error',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -918,12 +957,20 @@ class ApiService {
     String? language,
   }) async {
     try {
-      print('🔵 [COURIER_REGISTER] Starting courier registration...');
-      print('🔵 [COURIER_REGISTER] URL: $baseUrl/auth/courier-register');
-      print('🔵 [COURIER_REGISTER] Email: $email');
-      print('🔵 [COURIER_REGISTER] FullName: $fullName');
-      print('🔵 [COURIER_REGISTER] Phone: ${phone ?? "not specified"}');
-      print('🔵 [COURIER_REGISTER] Language: ${language ?? "not specified"}');
+      LoggerService().debug(
+        '🔵 [COURIER_REGISTER] Starting courier registration...',
+      );
+      LoggerService().debug(
+        '🔵 [COURIER_REGISTER] URL: $baseUrl/auth/courier-register',
+      );
+      LoggerService().debug('🔵 [COURIER_REGISTER] Email: $email');
+      LoggerService().debug('🔵 [COURIER_REGISTER] FullName: $fullName');
+      LoggerService().debug(
+        '🔵 [COURIER_REGISTER] Phone: ${phone ?? "not specified"}',
+      );
+      LoggerService().debug(
+        '🔵 [COURIER_REGISTER] Language: ${language ?? "not specified"}',
+      );
 
       final requestData = {
         'email': email,
@@ -932,15 +979,19 @@ class ApiService {
         if (phone != null && phone.isNotEmpty) 'phone': phone,
         if (language != null) 'language': language,
       };
-      print('🔵 [COURIER_REGISTER] Request data: $requestData');
+      LoggerService().debug('🔵 [COURIER_REGISTER] Request data: $requestData');
 
       final response = await _dio.post(
         '/auth/courier-register',
         data: requestData,
       );
 
-      print('🟢 [COURIER_REGISTER] Success! Status: ${response.statusCode}');
-      print('🟢 [COURIER_REGISTER] Response data: ${response.data}');
+      LoggerService().debug(
+        '🟢 [COURIER_REGISTER] Success! Status: ${response.statusCode}',
+      );
+      LoggerService().debug(
+        '🟢 [COURIER_REGISTER] Response data: ${response.data}',
+      );
 
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
@@ -958,14 +1009,16 @@ class ApiService {
       }
 
       return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } on DioException catch (e) {
-      print('🔴 [COURIER_REGISTER] DioException occurred!');
-      print('🔴 [COURIER_REGISTER] Error type: ${e.type}');
-      print('🔴 [COURIER_REGISTER] Error message: ${e.message}');
-      print('🔴 [COURIER_REGISTER] Request path: ${e.requestOptions.path}');
-      print('🔴 [COURIER_REGISTER] Request data: ${e.requestOptions.data}');
-      print('🔴 [COURIER_REGISTER] Response status: ${e.response?.statusCode}');
-      print('🔴 [COURIER_REGISTER] Response data: ${e.response?.data}');
+    } on DioException catch (e, stackTrace) {
+      final errorMessage =
+          '🔴 [COURIER_REGISTER] DioException | Type: ${e.type} | Path: ${e.requestOptions.path} | Status: ${e.response?.statusCode}';
+      LoggerService().error(errorMessage, e, stackTrace);
+      LoggerService().debug(
+        '🔴 [COURIER_REGISTER] Request data: ${e.requestOptions.data}',
+      );
+      LoggerService().debug(
+        '🔴 [COURIER_REGISTER] Response data: ${e.response?.data}',
+      );
 
       if (e.response != null) {
         final responseData = e.response?.data;
@@ -1009,14 +1062,19 @@ class ApiService {
               responseData?.toString() ?? e.message ?? 'Unknown error';
         }
 
-        print('🔴 [COURIER_REGISTER] Parsed error message: $errorMessage');
+        LoggerService().debug(
+          '🔴 [COURIER_REGISTER] Parsed error message: $errorMessage',
+        );
         throw Exception(errorMessage);
       } else {
         throw Exception('Network error: ${e.message}');
       }
     } catch (e, stackTrace) {
-      print('🔴 [COURIER_REGISTER] Unexpected error: $e');
-      print('🔴 [COURIER_REGISTER] Stack trace: $stackTrace');
+      LoggerService().error(
+        '🔴 [COURIER_REGISTER] Unexpected error',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -1040,8 +1098,12 @@ class ApiService {
       if (!apiResponse.success) {
         throw Exception(apiResponse.message ?? 'Şifre sıfırlama başarısız');
       }
-    } catch (e) {
-      print('Error sending forgot password request: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error sending forgot password request',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -1052,8 +1114,8 @@ class ApiService {
         '/auth/confirm-email',
         queryParameters: {'token': token, 'email': email},
       );
-    } catch (e) {
-      print('Error confirming email: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error confirming email', e, stackTrace);
       rethrow;
     }
   }
@@ -1083,8 +1145,8 @@ class ApiService {
       }
 
       return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } catch (e) {
-      print('Error verifying email code: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error verifying email code', e, stackTrace);
       rethrow;
     }
   }
@@ -1114,8 +1176,8 @@ class ApiService {
       }
 
       return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } catch (e) {
-      print('Error resending verification code: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error resending verification code', e, stackTrace);
       rethrow;
     }
   }
@@ -1129,9 +1191,9 @@ class ApiService {
     String? language,
   }) async {
     try {
-      print('🔵 [EXTERNAL_LOGIN] Starting $provider login...');
-      print('🔵 [EXTERNAL_LOGIN] Email: $email');
-      print('🔵 [EXTERNAL_LOGIN] FullName: $fullName');
+      LoggerService().debug('🔵 [EXTERNAL_LOGIN] Starting $provider login...');
+      LoggerService().debug('🔵 [EXTERNAL_LOGIN] Email: $email');
+      LoggerService().debug('🔵 [EXTERNAL_LOGIN] FullName: $fullName');
 
       final requestData = {
         'provider': provider,
@@ -1146,8 +1208,12 @@ class ApiService {
         data: requestData,
       );
 
-      print('🟢 [EXTERNAL_LOGIN] Success! Status: ${response.statusCode}');
-      print('🟢 [EXTERNAL_LOGIN] Response data: ${response.data}');
+      LoggerService().debug(
+        '🟢 [EXTERNAL_LOGIN] Success! Status: ${response.statusCode}',
+      );
+      LoggerService().debug(
+        '🟢 [EXTERNAL_LOGIN] Response data: ${response.data}',
+      );
 
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
@@ -1170,12 +1236,13 @@ class ApiService {
       }
 
       return apiResponse.data!;
-    } on DioException catch (e) {
-      print('🔴 [EXTERNAL_LOGIN] DioException occurred!');
-      print('🔴 [EXTERNAL_LOGIN] Error type: ${e.type}');
-      print('🔴 [EXTERNAL_LOGIN] Error message: ${e.message}');
-      print('🔴 [EXTERNAL_LOGIN] Response status: ${e.response?.statusCode}');
-      print('🔴 [EXTERNAL_LOGIN] Response data: ${e.response?.data}');
+    } on DioException catch (e, stackTrace) {
+      final errorMessage =
+          '🔴 [EXTERNAL_LOGIN] DioException | Type: ${e.type} | Status: ${e.response?.statusCode}';
+      LoggerService().error(errorMessage, e, stackTrace);
+      LoggerService().debug(
+        '🔴 [EXTERNAL_LOGIN] Response data: ${e.response?.data}',
+      );
 
       if (e.response != null) {
         final responseData = e.response?.data;
@@ -1190,14 +1257,19 @@ class ApiService {
           errorMessage = responseData;
         }
 
-        print('🔴 [EXTERNAL_LOGIN] Parsed error message: $errorMessage');
+        LoggerService().debug(
+          '🔴 [EXTERNAL_LOGIN] Parsed error message: $errorMessage',
+        );
         throw Exception(errorMessage);
       } else {
         throw Exception('Network error: ${e.message}');
       }
     } catch (e, stackTrace) {
-      print('🔴 [EXTERNAL_LOGIN] Unexpected error: $e');
-      print('🔴 [EXTERNAL_LOGIN] Stack trace: $stackTrace');
+      LoggerService().error(
+        '🔴 [EXTERNAL_LOGIN] Unexpected error',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -1217,12 +1289,14 @@ class ApiService {
         );
 
         if (!apiResponse.success) {
-          print('Error registering device token: ${apiResponse.message}');
+          LoggerService().warning(
+            'Error registering device token: ${apiResponse.message}',
+          );
           // Don't rethrow, just log, as this shouldn't block app usage
         }
       }
-    } catch (e) {
-      print('Error registering device token: $e');
+    } catch (e, stackTrace) {
+      LoggerService().warning('Error registering device token', e, stackTrace);
       // Don't rethrow, just log, as this shouldn't block app usage
     }
   }
@@ -1277,8 +1351,12 @@ class ApiService {
       } else {
         return [];
       }
-    } catch (e) {
-      print('Error fetching customer notifications: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching customer notifications',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -1308,8 +1386,8 @@ class ApiService {
       }
       // Eski format (direkt CartDto)
       return response.data as Map<String, dynamic>;
-    } catch (e) {
-      print('Error fetching cart: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching cart', e, stackTrace);
       rethrow;
     }
   }
@@ -1340,8 +1418,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Ürün sepete eklenemedi');
         }
       }
-    } catch (e) {
-      print('Error adding to cart: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error adding to cart', e, stackTrace);
       rethrow;
     }
   }
@@ -1364,8 +1442,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Sepet öğesi güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating cart item: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating cart item', e, stackTrace);
       rethrow;
     }
   }
@@ -1385,8 +1463,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Ürün sepetten çıkarılamadı');
         }
       }
-    } catch (e) {
-      print('Error removing from cart: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error removing from cart', e, stackTrace);
       rethrow;
     }
   }
@@ -1406,8 +1484,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Sepet temizlenemedi');
         }
       }
-    } catch (e) {
-      print('Error clearing cart: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error clearing cart', e, stackTrace);
       rethrow;
     }
   }
@@ -1448,8 +1526,8 @@ class ApiService {
       await _cacheService.cacheProfile(profile);
 
       return profile;
-    } on DioException catch (e) {
-      print('Error fetching profile: $e');
+    } on DioException catch (e, stackTrace) {
+      LoggerService().error('Error fetching profile', e, stackTrace);
 
       // If offline or network error, try cache
       if (e.type == DioExceptionType.connectionTimeout ||
@@ -1457,14 +1535,14 @@ class ApiService {
           e.type == DioExceptionType.connectionError) {
         final cachedProfile = await _cacheService.getCachedProfile();
         if (cachedProfile != null) {
-          print('📦 [CACHE] Returning cached profile');
+          LoggerService().debug('📦 [CACHE] Returning cached profile');
           return cachedProfile;
         }
       }
 
       rethrow;
-    } catch (e) {
-      print('Error fetching profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching profile', e, stackTrace);
       rethrow;
     }
   }
@@ -1489,8 +1567,8 @@ class ApiService {
           throw Exception(errorMessage);
         }
       }
-    } catch (e) {
-      print('Error updating profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating profile', e, stackTrace);
       rethrow;
     }
   }
@@ -1521,8 +1599,8 @@ class ApiService {
           throw Exception(errorMessage);
         }
       }
-    } catch (e) {
-      print('Error changing password: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error changing password', e, stackTrace);
       rethrow;
     }
   }
@@ -1548,8 +1626,8 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return response.data as List;
-    } catch (e) {
-      print('Error fetching addresses: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching addresses', e, stackTrace);
       rethrow;
     }
   }
@@ -1569,8 +1647,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Adres oluşturulamadı');
         }
       }
-    } catch (e) {
-      print('Error creating address: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error creating address', e, stackTrace);
       rethrow;
     }
   }
@@ -1590,8 +1668,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Adres güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating address: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating address', e, stackTrace);
       rethrow;
     }
   }
@@ -1611,8 +1689,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Adres silinemedi');
         }
       }
-    } catch (e) {
-      print('Error deleting address: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error deleting address', e, stackTrace);
       rethrow;
     }
   }
@@ -1634,8 +1712,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error setting default address: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error setting default address', e, stackTrace);
       rethrow;
     }
   }
@@ -1666,8 +1744,8 @@ class ApiService {
       }
 
       return apiResponse.data!;
-    } catch (e) {
-      print('Error fetching favorites: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching favorites', e, stackTrace);
       rethrow;
     }
   }
@@ -1684,8 +1762,8 @@ class ApiService {
       if (!apiResponse.success) {
         throw Exception(apiResponse.message ?? 'Favorilere eklenemedi');
       }
-    } catch (e) {
-      print('Error adding to favorites: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error adding to favorites', e, stackTrace);
       rethrow;
     }
   }
@@ -1702,8 +1780,8 @@ class ApiService {
       if (!apiResponse.success) {
         throw Exception(apiResponse.message ?? 'Favorilerden çıkarılamadı');
       }
-    } catch (e) {
-      print('Error removing from favorites: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error removing from favorites', e, stackTrace);
       rethrow;
     }
   }
@@ -1722,8 +1800,8 @@ class ApiService {
       }
 
       return apiResponse.data!['isFavorite'] ?? false;
-    } catch (e) {
-      print('Error checking favorite: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error checking favorite', e, stackTrace);
       return false;
     }
   }
@@ -1750,8 +1828,12 @@ class ApiService {
       }
 
       return apiResponse.data!;
-    } catch (e) {
-      print('Error fetching notification settings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching notification settings',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -1770,8 +1852,12 @@ class ApiService {
           apiResponse.message ?? 'Bildirim ayarları güncellenemedi',
         );
       }
-    } catch (e) {
-      print('Error updating notification settings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error updating notification settings',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -1796,8 +1882,8 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return response.data as List<dynamic>;
-    } catch (e) {
-      print('Error fetching orders: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching orders', e, stackTrace);
       rethrow;
     }
   }
@@ -1826,8 +1912,8 @@ class ApiService {
       }
       // Eski format (direkt OrderDto)
       return response.data as Map<String, dynamic>;
-    } catch (e) {
-      print('Error fetching order details: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching order details', e, stackTrace);
       rethrow;
     }
   }
@@ -1856,8 +1942,8 @@ class ApiService {
       }
       // Eski format (direkt OrderDetailDto)
       return response.data as Map<String, dynamic>;
-    } catch (e) {
-      print('Error fetching order detail: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching order detail', e, stackTrace);
       rethrow;
     }
   }
@@ -1887,8 +1973,8 @@ class ApiService {
         );
       }
       rethrow;
-    } catch (e) {
-      print('Error cancelling order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error cancelling order', e, stackTrace);
       rethrow;
     }
   }
@@ -1916,8 +2002,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error cancelling order item: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error cancelling order item', e, stackTrace);
       rethrow;
     }
   }
@@ -1945,8 +2031,8 @@ class ApiService {
       }
 
       return apiResponse.data!;
-    } catch (e) {
-      print('Error searching products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error searching products', e, stackTrace);
       rethrow;
     }
   }
@@ -1988,8 +2074,8 @@ class ApiService {
         response.data,
         (json) => VendorDto.fromJson(json),
       );
-    } catch (e) {
-      print('Error searching vendors: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error searching vendors', e, stackTrace);
       rethrow;
     }
   }
@@ -2050,8 +2136,8 @@ class ApiService {
       // await _cacheService.cacheCategories(categories);
 
       return categories;
-    } on DioException catch (e) {
-      print('Error fetching categories: $e');
+    } on DioException catch (e, stackTrace) {
+      LoggerService().error('Error fetching categories', e, stackTrace);
 
       // If offline or network error, try cache
       /*
@@ -2060,15 +2146,15 @@ class ApiService {
           e.type == DioExceptionType.connectionError) {
         final cachedCategories = await _cacheService.getCachedCategories();
         if (cachedCategories != null && cachedCategories.isNotEmpty) {
-          print('📦 [CACHE] Returning cached categories');
+          LoggerService().debug('📦 [CACHE] Returning cached categories');
           return cachedCategories;
         }
       }
       */
 
       rethrow;
-    } catch (e) {
-      print('Error fetching categories: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching categories', e, stackTrace);
       rethrow;
     }
   }
@@ -2105,8 +2191,8 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return List<String>.from(response.data);
-    } catch (e) {
-      print('Error fetching cities: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching cities', e, stackTrace);
       rethrow;
     }
   }
@@ -2140,8 +2226,8 @@ class ApiService {
       return (response.data as List)
           .map((e) => AutocompleteResultDto.fromJson(e))
           .toList();
-    } catch (e) {
-      print('Error during autocomplete: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error during autocomplete', e, stackTrace);
       rethrow;
     }
   }
@@ -2173,8 +2259,12 @@ class ApiService {
       }
       // Eski format (direkt { apiKey: "..." })
       return response.data['apiKey'] as String;
-    } catch (e) {
-      print('Error fetching Google Maps API key: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching Google Maps API key',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -2211,8 +2301,8 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      print('Error fetching vendors for map: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendors for map', e, stackTrace);
       rethrow;
     }
   }
@@ -2243,8 +2333,8 @@ class ApiService {
       }
       // Eski format (direkt DeliveryTrackingDto)
       return response.data as Map<String, dynamic>;
-    } catch (e) {
-      print('Error fetching delivery tracking: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching delivery tracking', e, stackTrace);
       rethrow;
     }
   }
@@ -2260,8 +2350,8 @@ class ApiService {
         '/courier/$courierId/location',
         data: {'latitude': latitude, 'longitude': longitude},
       );
-    } catch (e) {
-      print('Error updating courier location: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating courier location', e, stackTrace);
       rethrow;
     }
   }
@@ -2270,8 +2360,8 @@ class ApiService {
     try {
       final response = await _dio.get('/courier/$courierId/location');
       return response.data;
-    } catch (e) {
-      print('Error fetching courier location: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching courier location', e, stackTrace);
       rethrow;
     }
   }
@@ -2316,8 +2406,8 @@ class ApiService {
       }
       // Eski format (direkt ReviewDto)
       return Review.fromJson(response.data);
-    } catch (e) {
-      print('Error creating review: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error creating review', e, stackTrace);
       rethrow;
     }
   }
@@ -2392,8 +2482,8 @@ class ApiService {
       }
 
       throw Exception('Beklenmeyen response formatı');
-    } catch (e) {
-      print('Error fetching product reviews: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching product reviews', e, stackTrace);
       rethrow;
     }
   }
@@ -2421,8 +2511,8 @@ class ApiService {
       // Eski format (direkt liste)
       final List<dynamic> data = response.data;
       return data.map((json) => Review.fromJson(json)).toList();
-    } catch (e) {
-      print('Error fetching vendor reviews: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor reviews', e, stackTrace);
       rethrow;
     }
   }
@@ -2450,8 +2540,8 @@ class ApiService {
       // Eski format (direkt liste)
       final List<dynamic> data = response.data;
       return data.map((json) => Review.fromJson(json)).toList();
-    } catch (e) {
-      print('Error fetching pending reviews: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching pending reviews', e, stackTrace);
       rethrow;
     }
   }
@@ -2471,8 +2561,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Değerlendirme onaylanamadı');
         }
       }
-    } catch (e) {
-      print('Error approving review: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error approving review', e, stackTrace);
       rethrow;
     }
   }
@@ -2492,8 +2582,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Değerlendirme reddedilemedi');
         }
       }
-    } catch (e) {
-      print('Error rejecting review: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error rejecting review', e, stackTrace);
       rethrow;
     }
   }
@@ -2502,8 +2592,8 @@ class ApiService {
     try {
       final response = await _dio.get('/courier/active');
       return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      print('Error fetching active couriers: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching active couriers', e, stackTrace);
       rethrow;
     }
   }
@@ -2535,8 +2625,8 @@ class ApiService {
       }
       // Eski format (direkt UserPreferencesDto)
       return response.data as Map<String, dynamic>;
-    } catch (e) {
-      print('Error fetching user preferences: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching user preferences', e, stackTrace);
       rethrow;
     }
   }
@@ -2571,8 +2661,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error updating user preferences: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating user preferences', e, stackTrace);
       rethrow;
     }
   }
@@ -2599,8 +2689,12 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      print('Error fetching supported languages: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching supported languages',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -2627,8 +2721,12 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      print('Error fetching supported currencies: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching supported currencies',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -2678,8 +2776,8 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return response.data;
-    } catch (e) {
-      print('Error fetching vendor orders: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor orders', e, stackTrace);
       rethrow;
     }
   }
@@ -2734,8 +2832,12 @@ class ApiService {
         'items': response.data ?? [],
         'totalCount': (response.data as List?)?.length ?? 0,
       };
-    } catch (e) {
-      print('Error fetching vendor orders with count: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching vendor orders with count',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -2766,8 +2868,8 @@ class ApiService {
       }
       // Eski format (direkt VendorOrderDto)
       return response.data;
-    } catch (e) {
-      print('Error fetching vendor order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor order', e, stackTrace);
       rethrow;
     }
   }
@@ -2787,8 +2889,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Sipariş kabul edilemedi');
         }
       }
-    } catch (e) {
-      print('Error accepting order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error accepting order', e, stackTrace);
       rethrow;
     }
   }
@@ -2811,8 +2913,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Sipariş reddedilemedi');
         }
       }
-    } catch (e) {
-      print('Error rejecting order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error rejecting order', e, stackTrace);
       rethrow;
     }
   }
@@ -2841,8 +2943,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error updating order status: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating order status', e, stackTrace);
       rethrow;
     }
   }
@@ -2874,8 +2976,8 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      print('Error getting available couriers: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting available couriers', e, stackTrace);
       rethrow;
     }
   }
@@ -2899,8 +3001,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Kurye atanamadı');
         }
       }
-    } catch (e) {
-      print('Error assigning courier: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error assigning courier', e, stackTrace);
       rethrow;
     }
   }
@@ -2927,8 +3029,8 @@ class ApiService {
       }
       // Eski format (direkt Map)
       return response.data;
-    } catch (e) {
-      print('Error auto-assigning courier: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error auto-assigning courier', e, stackTrace);
       rethrow;
     }
   }
@@ -2973,8 +3075,8 @@ class ApiService {
       }
       // Eski format (direkt SalesReportDto)
       return response.data;
-    } catch (e) {
-      print('Error fetching sales report: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching sales report', e, stackTrace);
       rethrow;
     }
   }
@@ -3005,8 +3107,8 @@ class ApiService {
       }
       // Eski format (direkt summary object)
       return response.data;
-    } catch (e) {
-      print('Error fetching vendor summary: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor summary', e, stackTrace);
       rethrow;
     }
   }
@@ -3070,8 +3172,8 @@ class ApiService {
       }
 
       return [];
-    } catch (e) {
-      print('Error fetching vendor products: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor products', e, stackTrace);
       rethrow;
     }
   }
@@ -3100,8 +3202,8 @@ class ApiService {
       }
       // Eski format (direkt ProductDto)
       return Product.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching vendor product: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor product', e, stackTrace);
       rethrow;
     }
   }
@@ -3130,8 +3232,8 @@ class ApiService {
       }
       // Eski format (direkt ProductDto)
       return Product.fromJson(response.data);
-    } catch (e) {
-      print('Error creating product: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error creating product', e, stackTrace);
       rethrow;
     }
   }
@@ -3157,8 +3259,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Ürün güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating product: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating product', e, stackTrace);
       rethrow;
     }
   }
@@ -3178,8 +3280,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Ürün silinemedi');
         }
       }
-    } catch (e) {
-      print('Error deleting product: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error deleting product', e, stackTrace);
       rethrow;
     }
   }
@@ -3207,8 +3309,12 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error updating product availability: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error updating product availability',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -3231,8 +3337,8 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Ürün fiyatı güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating product price: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating product price', e, stackTrace);
       rethrow;
     }
   }
@@ -3256,20 +3362,24 @@ class ApiService {
       }
       // Eski format (direkt liste)
       return List<String>.from(response.data);
-    } catch (e) {
-      print('Error fetching vendor product categories: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching vendor product categories',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
 
   Future<String> uploadProductImage(dynamic file) async {
     try {
-      FormData formData = FormData.fromMap({'file': file});
+      final formData = FormData.fromMap({'file': file});
 
       final response = await _dio.post('/upload', data: formData);
       return response.data['url'];
-    } catch (e) {
-      print('Error uploading product image: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error uploading product image', e, stackTrace);
       rethrow;
     }
   }
@@ -3310,8 +3420,8 @@ class ApiService {
       }
       // Eski format (direkt VendorProfileDto)
       return response.data;
-    } catch (e) {
-      print('Error fetching vendor profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor profile', e, stackTrace);
       rethrow;
     }
   }
@@ -3333,8 +3443,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error updating vendor profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating vendor profile', e, stackTrace);
       rethrow;
     }
   }
@@ -3359,8 +3469,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error updating vendor image: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating vendor image', e, stackTrace);
       rethrow;
     }
   }
@@ -3391,8 +3501,8 @@ class ApiService {
       }
       // Eski format (direkt VendorSettingsDto)
       return response.data;
-    } catch (e) {
-      print('Error fetching vendor settings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor settings', e, stackTrace);
       rethrow;
     }
   }
@@ -3414,8 +3524,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error updating vendor settings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating vendor settings', e, stackTrace);
       rethrow;
     }
   }
@@ -3440,8 +3550,8 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error toggling vendor active: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error toggling vendor active', e, stackTrace);
       rethrow;
     }
   }
@@ -3493,8 +3603,8 @@ class ApiService {
       }
 
       return apiResponse.data!;
-    } catch (e) {
-      print('Error fetching legal content: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching legal content', e, stackTrace);
       rethrow;
     }
   }
@@ -3527,8 +3637,12 @@ class ApiService {
       }
       // Eski format (direkt VendorNotificationResponseDto)
       return response.data['items'] ?? [];
-    } catch (e) {
-      print('Error fetching vendor notifications: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching vendor notifications',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -3556,8 +3670,12 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error marking notification as read: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error marking notification as read',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -3586,8 +3704,12 @@ class ApiService {
           );
         }
       }
-    } catch (e) {
-      print('Error marking all notifications as read: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error marking all notifications as read',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }

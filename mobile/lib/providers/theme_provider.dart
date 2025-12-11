@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 
 class ThemeProvider with ChangeNotifier {
+  ThemeProvider() {
+    _loadSettings();
+  }
+
   ThemeMode _themeMode = ThemeMode.system;
   bool _isHighContrast = false;
   double _textScaleFactor = 0.8;
@@ -19,10 +22,6 @@ class ThemeProvider with ChangeNotifier {
   static const Color primaryOrange = Color(0xFFFF9800);
   static const Color darkOrange = Color(0xFFF57C00);
   static const Color lightOrange = Color(0xFFFFB74D);
-
-  ThemeProvider() {
-    _loadSettings();
-  }
 
   /// BottomNavProvider'dan kategori değişikliğini dinlemek için
   void setCategory(MainCategory category) {
@@ -65,21 +64,11 @@ class ThemeProvider with ChangeNotifier {
   ThemeData get lightTheme {
     // Eğer kategori seçilmişse, VendorType'a göre theme döndür
     if (_currentCategory != null) {
-      return AppTheme.getThemeForVendorType(_currentCategory!, isDark: false);
+      return AppTheme.getThemeForVendorType(_currentCategory!);
     }
-    
-    // Backward compatibility: Eski theme (Restaurant varsayılan)
-    return AppTheme.getThemeForVendorType(MainCategory.restaurant, isDark: false);
-  }
 
-  ThemeData get darkTheme {
-    // Eğer kategori seçilmişse, VendorType'a göre theme döndür
-    if (_currentCategory != null) {
-      return AppTheme.getThemeForVendorType(_currentCategory!, isDark: true);
-    }
-    
     // Backward compatibility: Eski theme (Restaurant varsayılan)
-    return AppTheme.getThemeForVendorType(MainCategory.restaurant, isDark: true);
+    return AppTheme.getThemeForVendorType(MainCategory.restaurant);
   }
 
   ThemeData get highContrastTheme {
@@ -90,8 +79,12 @@ class ThemeProvider with ChangeNotifier {
         secondary: Colors.yellow,
       ),
 
-      // 🎨 GOOGLE FONTS - High Contrast
-      textTheme: GoogleFonts.poppinsTextTheme(),
+      // 🎨 FONTS - High Contrast (Asset fontları kullan)
+      textTheme: TextTheme(
+        bodyLarge: AppTheme.poppins(),
+        bodyMedium: AppTheme.poppins(),
+        bodySmall: AppTheme.poppins(),
+      ),
 
       scaffoldBackgroundColor: Colors.white,
 
@@ -99,7 +92,7 @@ class ThemeProvider with ChangeNotifier {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: AppTheme.poppins(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: Colors.white,

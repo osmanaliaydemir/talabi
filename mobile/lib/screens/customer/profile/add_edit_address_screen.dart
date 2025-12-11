@@ -8,9 +8,9 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddEditAddressScreen extends StatefulWidget {
-  final Address? address;
-
   const AddEditAddressScreen({super.key, this.address});
+
+  final Address? address;
 
   @override
   State<AddEditAddressScreen> createState() => _AddEditAddressScreenState();
@@ -140,10 +140,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                margin: EdgeInsets.all(AppTheme.spacingMedium),
+                margin: const EdgeInsets.all(AppTheme.spacingMedium),
                 decoration: AppTheme.cardDecoration(withShadow: true),
                 child: Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingLarge),
+                  padding: const EdgeInsets.all(AppTheme.spacingLarge),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -160,7 +160,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             color: AppTheme.textPrimary,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingXSmall),
+                        const SizedBox(height: AppTheme.spacingXSmall),
                         Text(
                           isEdit
                               ? localizations.updateAddressInfo
@@ -171,7 +171,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             height: 1.4,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingLarge),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         // Address Title Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -182,12 +182,12 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.label_outline,
                                 color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
@@ -200,7 +200,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             },
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingSmall),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         // Map Button
                         SizedBox(
                           width: double.infinity,
@@ -236,18 +236,20 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                 ),
                               );
                             },
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.map,
                               size: AppTheme.iconSizeMedium,
                             ),
                             label: Text(localizations.selectAddressFromMap),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: colorScheme.primary,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
-                              side: BorderSide(color: AppTheme.borderColor),
+                              side: const BorderSide(
+                                color: AppTheme.borderColor,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
                                   AppTheme.radiusSmall,
@@ -256,7 +258,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingSmall),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         // Full Address Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),

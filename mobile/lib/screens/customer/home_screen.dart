@@ -1,12 +1,11 @@
 ﻿import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/models/promotional_banner.dart';
-
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
@@ -67,11 +66,10 @@ class HomeScreenState extends State<HomeScreen> {
     // Listen to category changes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final bottomNav = Provider.of<BottomNavProvider>(
+        Provider.of<BottomNavProvider>(
           context,
           listen: false,
-        );
-        bottomNav.addListener(_onCategoryChanged);
+        ).addListener(_onCategoryChanged);
       }
     });
   }
@@ -120,10 +118,8 @@ class HomeScreenState extends State<HomeScreen> {
           }
         });
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error in _onCategoryChanged: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error in _onCategoryChanged', e, stackTrace);
     }
   }
 
@@ -133,8 +129,10 @@ class HomeScreenState extends State<HomeScreen> {
     _bannerPageController.dispose();
     // Remove category change listener
     try {
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-      bottomNav.removeListener(_onCategoryChanged);
+      Provider.of<BottomNavProvider>(
+        context,
+        listen: false,
+      ).removeListener(_onCategoryChanged);
     } catch (e) {
       // Context might not be available during dispose
     }
@@ -181,8 +179,8 @@ class HomeScreenState extends State<HomeScreen> {
           });
         }
       }
-    } catch (e) {
-      print('Error loading banners: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading banners', e, stackTrace);
     }
   }
 
@@ -242,12 +240,12 @@ class HomeScreenState extends State<HomeScreen> {
       final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favoritesResult.items) {
+        for (final fav in favoritesResult.items) {
           _favoriteStatus[fav.id] = true;
         }
       });
-    } catch (e) {
-      print('Error loading favorites: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading favorites', e, stackTrace);
     }
   }
 
@@ -272,8 +270,8 @@ class HomeScreenState extends State<HomeScreen> {
           _isAddressesLoading = false;
         });
       }
-    } catch (e) {
-      print('Error loading addresses: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading addresses', e, stackTrace);
       if (mounted) {
         setState(() {
           _isAddressesLoading = false;
@@ -455,10 +453,12 @@ class HomeScreenState extends State<HomeScreen> {
       };
 
       return colorMap[cleanColorString.toLowerCase()];
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error parsing color: $colorString - $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning(
+        'Error parsing color: $colorString',
+        e,
+        stackTrace,
+      );
       return null;
     }
   }
@@ -504,13 +504,13 @@ class HomeScreenState extends State<HomeScreen> {
               final bannerIcon = bannerIcons[iconIndex];
 
               return Container(
-                margin: EdgeInsets.only(
+                margin: const EdgeInsets.only(
                   left: AppTheme.spacingXSmall,
                   right: AppTheme.spacingXSmall,
                   top: AppTheme.spacingXSmall,
                   bottom: AppTheme.spacingXSmall,
                 ),
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                   left: AppTheme.spacingMedium,
                   right: AppTheme.spacingMedium,
                   top: AppTheme.spacingMedium,
@@ -544,7 +544,7 @@ class HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          SizedBox(height: 6),
+                          const SizedBox(height: 6),
                           Flexible(
                             child: Text(
                               currentBanner.subtitle,
@@ -559,7 +559,7 @@ class HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           if (currentBanner.buttonText != null) ...[
-                            SizedBox(height: 10),
+                            const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
                                 // Handle button action
@@ -573,11 +573,11 @@ class HomeScreenState extends State<HomeScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.cardColor,
                                 foregroundColor: colorScheme.primary,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 10,
                                 ),
-                                minimumSize: Size(0, 36),
+                                minimumSize: const Size(0, 36),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                     AppTheme.radiusSmall,
@@ -597,7 +597,7 @@ class HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     // Icon container - her banner için farklı icon
                     // Icon container - her banner için farklı icon
                     SizedBox(
@@ -614,7 +614,7 @@ class HomeScreenState extends State<HomeScreen> {
                               alignment: Alignment.center,
                               children: [
                                 BouncingCircle(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                 ),
                                 if (currentBanner.imageUrl != null)
                                   ClipOval(
@@ -653,7 +653,7 @@ class HomeScreenState extends State<HomeScreen> {
         // Page indicators
         if (_banners.length > 1)
           Padding(
-            padding: EdgeInsets.only(
+            padding: const EdgeInsets.only(
               top: AppTheme.spacingSmall,
               left: AppTheme.spacingMedium,
               right: AppTheme.spacingMedium,
@@ -665,7 +665,7 @@ class HomeScreenState extends State<HomeScreen> {
                 (index) => Container(
                   width: 8,
                   height: 8,
-                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentBannerIndex == index
@@ -800,7 +800,9 @@ class HomeScreenState extends State<HomeScreen> {
                     onSearchTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SearchScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const SearchScreen(),
+                        ),
                       );
                     },
                     currentLocation: _selectedAddress != null
@@ -813,7 +815,7 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 // Spacing
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: SizedBox(height: AppTheme.spacingSmall),
                 ),
                 // Categories Section
@@ -822,7 +824,7 @@ class HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacingMedium,
                           vertical: AppTheme.spacingSmall,
                         ),
@@ -905,7 +907,7 @@ class HomeScreenState extends State<HomeScreen> {
                                   });
                             return ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                               ),
                               cacheExtent:
@@ -934,7 +936,7 @@ class HomeScreenState extends State<HomeScreen> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Column(
                           children: [
-                            SizedBox(height: AppTheme.spacingSmall),
+                            const SizedBox(height: AppTheme.spacingSmall),
                             SizedBox(
                               height: 200,
                               child: Center(
@@ -959,9 +961,9 @@ class HomeScreenState extends State<HomeScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: AppTheme.spacingSmall),
+                          const SizedBox(height: AppTheme.spacingSmall),
                           Padding(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: AppTheme.spacingMedium,
                               vertical: AppTheme.spacingSmall,
                             ),
@@ -1001,7 +1003,7 @@ class HomeScreenState extends State<HomeScreen> {
                             height: 220,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingSmall,
                               ),
                               cacheExtent:
@@ -1031,7 +1033,7 @@ class HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: 0,
                               ),
@@ -1069,7 +1071,7 @@ class HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsets.only(
+                              padding: const EdgeInsets.only(
                                 left: AppTheme.spacingSmall,
                                 right: AppTheme.spacingSmall,
                                 bottom: AppTheme.spacingMedium,
@@ -1090,7 +1092,7 @@ class HomeScreenState extends State<HomeScreen> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Column(
                           children: [
-                            SizedBox(height: AppTheme.spacingSmall),
+                            const SizedBox(height: AppTheme.spacingSmall),
                             SizedBox(
                               height: 200,
                               child: Center(
@@ -1115,9 +1117,9 @@ class HomeScreenState extends State<HomeScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: AppTheme.spacingSmall),
+                          const SizedBox(height: AppTheme.spacingSmall),
                           Padding(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: AppTheme.spacingMedium,
                               vertical: AppTheme.spacingSmall,
                             ),
@@ -1157,7 +1159,7 @@ class HomeScreenState extends State<HomeScreen> {
                             height: 200,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingSmall,
                               ),
                               cacheExtent:
@@ -1181,7 +1183,7 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 // Bottom Spacing
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: SizedBox(height: AppTheme.spacingLarge),
                 ),
               ],
@@ -1243,7 +1245,9 @@ class HomeScreenState extends State<HomeScreen> {
       },
       child: Container(
         width: 80,
-        margin: EdgeInsets.symmetric(horizontal: AppTheme.spacing1DotZero),
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing1DotZero,
+        ),
         child: Column(
           children: [
             Container(
@@ -1259,7 +1263,7 @@ class HomeScreenState extends State<HomeScreen> {
                 color,
               ),
             ),
-            SizedBox(height: AppTheme.spacingSmall),
+            const SizedBox(height: AppTheme.spacingSmall),
             Text(
               categoryName,
               style: AppTheme.poppins(
@@ -1294,34 +1298,28 @@ class HomeScreenState extends State<HomeScreen> {
             setState(() {
               _favoriteStatus[product.id] = false;
             });
-            if (mounted) {
-              ToastMessage.show(
-                context,
-                message: localizations.removedFromFavorites(product.name),
-                isSuccess: true,
-              );
-            }
+            ToastMessage.show(
+              context,
+              message: localizations.removedFromFavorites(product.name),
+              isSuccess: true,
+            );
           } else {
             await _apiService.addToFavorites(product.id);
             setState(() {
               _favoriteStatus[product.id] = true;
             });
-            if (mounted) {
-              ToastMessage.show(
-                context,
-                message: localizations.addedToFavorites(product.name),
-                isSuccess: true,
-              );
-            }
-          }
-        } catch (e) {
-          if (mounted) {
             ToastMessage.show(
               context,
-              message: localizations.favoriteOperationFailed(e.toString()),
-              isSuccess: false,
+              message: localizations.addedToFavorites(product.name),
+              isSuccess: true,
             );
           }
+        } catch (e) {
+          ToastMessage.show(
+            context,
+            message: localizations.favoriteOperationFailed(e.toString()),
+            isSuccess: false,
+          );
         }
       },
     );
@@ -1339,11 +1337,10 @@ class HomeScreenState extends State<HomeScreen> {
       },
       child: Container(
         width: 280,
-        margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
+        margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSmall),
         child: Container(
           decoration: AppTheme.cardDecoration(
             color: Theme.of(context).cardColor,
-            context: context,
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
@@ -1365,7 +1362,7 @@ class HomeScreenState extends State<HomeScreen> {
                             color: AppTheme.textSecondary.withValues(
                               alpha: 0.1,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.store,
                               size: 50,
                               color: AppTheme.textSecondary,
@@ -1376,7 +1373,7 @@ class HomeScreenState extends State<HomeScreen> {
                         top: 8,
                         right: 8,
                         child: Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
                           ),
@@ -1387,12 +1384,12 @@ class HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.star,
                                 size: 14,
-                                color: Colors.amber[600],
+                                color: AppTheme.warning,
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
                                 vendor.rating!.toStringAsFixed(1),
                                 style: AppTheme.poppins(
@@ -1410,7 +1407,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               Container(
                 color: Theme.of(context).cardColor,
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                padding: const EdgeInsets.all(AppTheme.spacingSmall),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1424,16 +1421,16 @@ class HomeScreenState extends State<HomeScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     if (vendor.address.isNotEmpty)
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.location_on,
                             size: 14,
                             color: AppTheme.textSecondary,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               vendor.address,
@@ -1448,15 +1445,15 @@ class HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     if (vendor.distanceInKm != null) ...[
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.navigation,
                             size: 14,
                             color: AppTheme.textSecondary,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
                             '${vendor.distanceInKm!.toStringAsFixed(1)} km',
                             style: AppTheme.poppins(
@@ -1480,12 +1477,6 @@ class HomeScreenState extends State<HomeScreen> {
 
 // Address Bottom Sheet Widget
 class _AddressBottomSheet extends StatefulWidget {
-  final List<dynamic> addresses;
-  final Map<String, dynamic>? selectedAddress;
-  final ColorScheme colorScheme;
-  final Function(Map<String, dynamic>) onAddressSelected;
-  final Function(Map<String, dynamic>) onSetDefault;
-
   const _AddressBottomSheet({
     required this.addresses,
     required this.selectedAddress,
@@ -1493,6 +1484,12 @@ class _AddressBottomSheet extends StatefulWidget {
     required this.onAddressSelected,
     required this.onSetDefault,
   });
+
+  final List<dynamic> addresses;
+  final Map<String, dynamic>? selectedAddress;
+  final ColorScheme colorScheme;
+  final Function(Map<String, dynamic>) onAddressSelected;
+  final Function(Map<String, dynamic>) onSetDefault;
 
   @override
   State<_AddressBottomSheet> createState() => _AddressBottomSheetState();
@@ -1526,7 +1523,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radiusLarge),
@@ -1538,7 +1535,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
         children: [
           // Drag Handle
           Container(
-            margin: EdgeInsets.only(top: 12, bottom: 8),
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
@@ -1548,7 +1545,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
           ),
           // Header
           Padding(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spacingMedium,
               vertical: AppTheme.spacingMedium,
             ),
@@ -1564,7 +1561,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close, color: AppTheme.textPrimary),
+                  icon: const Icon(Icons.close, color: AppTheme.textPrimary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -1573,15 +1570,15 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
           // Address List
           if (widget.addresses.isEmpty)
             Padding(
-              padding: EdgeInsets.all(40),
+              padding: const EdgeInsets.all(40),
               child: Column(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.location_off,
                     size: 64,
                     color: AppTheme.textSecondary,
                   ),
-                  SizedBox(height: AppTheme.spacingMedium),
+                  const SizedBox(height: AppTheme.spacingMedium),
                   Text(
                     localizations.noAddressesYet,
                     style: AppTheme.poppins(
@@ -1589,7 +1586,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       color: AppTheme.textSecondary,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingLarge),
+                  const SizedBox(height: AppTheme.spacingLarge),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context); // Close bottom sheet
@@ -1603,7 +1600,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: widget.colorScheme.primary,
                       foregroundColor: AppTheme.textOnPrimary,
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingLarge,
                         vertical: AppTheme.spacingMedium,
                       ),
@@ -1645,11 +1642,11 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                       widget.onAddressSelected(address);
                     },
                     child: Container(
-                      margin: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingMedium,
                         vertical: AppTheme.spacingSmall,
                       ),
-                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? widget.colorScheme.primary.withValues(alpha: 0.1)
@@ -1688,7 +1685,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                               size: 24,
                             ),
                           ),
-                          SizedBox(width: AppTheme.spacingMedium),
+                          const SizedBox(width: AppTheme.spacingMedium),
                           // Address Details
                           Expanded(
                             child: Column(
@@ -1711,7 +1708,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                     ),
                                     if (isDefault)
                                       Container(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: 8,
                                           vertical: 4,
                                         ),
@@ -1732,7 +1729,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                       ),
                                   ],
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   _getAddressDisplayText(
                                     address,
@@ -1748,7 +1745,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                                         .toString()
                                         .isNotEmpty)
                                   Padding(
-                                    padding: EdgeInsets.only(top: 4),
+                                    padding: const EdgeInsets.only(top: 4),
                                     child: Text(
                                       address['fullAddress'].toString(),
                                       style: AppTheme.poppins(
@@ -1780,7 +1777,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
           // Set Default Button
           if (widget.addresses.isNotEmpty && _tempSelectedAddress != null)
             Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              padding: const EdgeInsets.all(AppTheme.spacingMedium),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -1791,7 +1788,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: AppTheme.textOnPrimary,
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       vertical: AppTheme.spacingMedium,
                     ),
                     shape: RoundedRectangleBorder(
@@ -1818,16 +1815,7 @@ class _AddressBottomSheetState extends State<_AddressBottomSheet> {
 }
 
 class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final double expandedHeight;
-  final double collapsedHeight;
-  final double paddingTop;
-  final VoidCallback onNotificationTap;
-  final VoidCallback onLocationTap;
-  final String? currentLocation;
-  final VoidCallback onSearchTap;
-  final bool isAddressesLoading;
-
-  _HomeHeaderDelegate({
+  const _HomeHeaderDelegate({
     required this.expandedHeight,
     required this.collapsedHeight,
     required this.paddingTop,
@@ -1837,6 +1825,15 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onSearchTap,
     required this.isAddressesLoading,
   });
+
+  final double expandedHeight;
+  final double collapsedHeight;
+  final double paddingTop;
+  final VoidCallback onNotificationTap;
+  final VoidCallback onLocationTap;
+  final String? currentLocation;
+  final VoidCallback onSearchTap;
+  final bool isAddressesLoading;
 
   @override
   Widget build(
@@ -1883,7 +1880,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -1905,7 +1902,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(

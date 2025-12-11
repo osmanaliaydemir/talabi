@@ -5,6 +5,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
@@ -41,7 +42,7 @@ class _CourierActiveDeliveriesScreenState
   @override
   void initState() {
     super.initState();
-    print('CourierActiveDeliveriesScreen: initState');
+    LoggerService().debug('CourierActiveDeliveriesScreen: initState');
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -59,15 +60,15 @@ class _CourierActiveDeliveriesScreenState
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
-      print(
+      LoggerService().debug(
         'CourierActiveDeliveriesScreen: Tab changed to ${_tabController.index}',
       );
       // Tab değiştiğinde ilgili tab'ın verilerini yeniden yükle
       if (_tabController.index == 0) {
-        print('CourierActiveDeliveriesScreen: Reloading active orders');
+        LoggerService().debug('CourierActiveDeliveriesScreen: Reloading active orders');
         _loadActiveOrders();
       } else if (_tabController.index == 1) {
-        print('CourierActiveDeliveriesScreen: Reloading delivery history');
+        LoggerService().debug('CourierActiveDeliveriesScreen: Reloading delivery history');
         _loadHistory(reset: true);
       }
     }
@@ -81,7 +82,7 @@ class _CourierActiveDeliveriesScreenState
   }
 
   Future<void> _loadActiveOrders() async {
-    print('CourierActiveDeliveriesScreen: Loading active orders...');
+    LoggerService().debug('CourierActiveDeliveriesScreen: Loading active orders...');
     setState(() {
       _isLoadingActive = true;
       _errorActive = null;
@@ -94,12 +95,11 @@ class _CourierActiveDeliveriesScreenState
         _activeOrders = orders;
         _isLoadingActive = false;
       });
-      print(
+      LoggerService().debug(
         'CourierActiveDeliveriesScreen: Loaded ${orders.length} active orders',
       );
     } catch (e, stackTrace) {
-      print('CourierActiveDeliveriesScreen: ERROR loading orders - $e');
-      print(stackTrace);
+      LoggerService().error('CourierActiveDeliveriesScreen: ERROR loading orders', e, stackTrace);
       if (!mounted) return;
       setState(() {
         _errorActive = e.toString();
@@ -124,7 +124,7 @@ class _CourierActiveDeliveriesScreenState
     });
 
     try {
-      print(
+      LoggerService().debug(
         'CourierActiveDeliveriesScreen: Loading history page $_currentPage...',
       );
       final result = await _courierService.getOrderHistory(
@@ -143,12 +143,11 @@ class _CourierActiveDeliveriesScreenState
           _currentPage++;
         }
       });
-      print(
+      LoggerService().debug(
         'CourierActiveDeliveriesScreen: Loaded ${items.length} history items, total: ${_historyOrders.length}',
       );
     } catch (e, stackTrace) {
-      print('CourierActiveDeliveriesScreen: ERROR loading history - $e');
-      print(stackTrace);
+      LoggerService().error('CourierActiveDeliveriesScreen: ERROR loading history', e, stackTrace);
       if (!mounted) return;
       setState(() {
         _errorHistory = e.toString();
@@ -333,7 +332,7 @@ class _CourierActiveDeliveriesScreenState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
-          print(
+          LoggerService().debug(
             'CourierActiveDeliveriesScreen: Tapped order #${order.id}, navigating to detail',
           );
           final result = await Navigator.of(

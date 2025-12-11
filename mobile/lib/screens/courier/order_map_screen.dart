@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/navigation_service.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -29,25 +30,24 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   }
 
   Future<void> _initializeMap() async {
-    print('OrderMapScreen: Initializing map - OrderId: ${widget.order.id}');
+    LoggerService().debug('OrderMapScreen: Initializing map - OrderId: ${widget.order.id}');
     // Get current location
     try {
       _currentPosition = await LocationPermissionService.getCurrentLocation(
         context,
       );
-      print(
+      LoggerService().debug(
         'OrderMapScreen: Current location obtained - Lat: ${_currentPosition?.latitude}, Lng: ${_currentPosition?.longitude}',
       );
     } catch (e, stackTrace) {
-      print('OrderMapScreen: ERROR getting current location - $e');
-      print(stackTrace);
+      LoggerService().error('OrderMapScreen: ERROR getting current location', e, stackTrace);
     }
 
     if (mounted) {
       setState(() {
         _setupMarkers();
       });
-      print('OrderMapScreen: Map initialized with markers');
+      LoggerService().debug('OrderMapScreen: Map initialized with markers');
     }
   }
 

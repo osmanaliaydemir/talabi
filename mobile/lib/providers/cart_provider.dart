@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/cart_item.dart';
@@ -7,24 +6,25 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 class CartProvider with ChangeNotifier {
+  CartProvider({
+    SyncService? syncService,
+    ConnectivityProvider? connectivityProvider,
+  }) : _syncService = syncService,
+       _connectivityProvider = connectivityProvider;
+
   final Map<String, CartItem> _items = {};
   final ApiService _apiService = ApiService();
   final SyncService? _syncService;
   final ConnectivityProvider? _connectivityProvider;
   final _uuid = const Uuid();
   bool _isLoading = false;
-
-  CartProvider({
-    SyncService? syncService,
-    ConnectivityProvider? connectivityProvider,
-  }) : _syncService = syncService,
-       _connectivityProvider = connectivityProvider;
 
   Map<String, CartItem> get items => _items;
   int get itemCount => _items.length;
@@ -47,14 +47,14 @@ class CartProvider with ChangeNotifier {
       _items.clear();
 
       if (cartData['items'] != null) {
-        for (var item in cartData['items']) {
+        for (final item in cartData['items']) {
           String vendorId = item['vendorId']?.toString() ?? "0";
           String? vendorName = item['vendorName'];
 
           // If backend doesn't provide vendorId, fetch it from product endpoint
           if (vendorId == "0") {
             try {
-              print(
+              LoggerService().debug(
                 '🛒 [CART] Backend missing vendorId for product ${item['productId']}, fetching...',
               );
               final productData = await _apiService.getProduct(
@@ -62,9 +62,13 @@ class CartProvider with ChangeNotifier {
               );
               vendorId = productData.vendorId;
               vendorName = productData.vendorName;
-              print('🛒 [CART] Fetched vendorId: $vendorId');
-            } catch (e) {
-              print('🛒 [CART] Error fetching product details: $e');
+              LoggerService().debug('🛒 [CART] Fetched vendorId: $vendorId');
+            } catch (e, stackTrace) {
+              LoggerService().warning(
+                '🛒 [CART] Error fetching product details',
+                e,
+                stackTrace,
+              );
               // Continue with vendorId = 0 if fetch fails
             }
           }
@@ -89,8 +93,8 @@ class CartProvider with ChangeNotifier {
           );
         }
       }
-    } catch (e) {
-      print('Error loading cart: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading cart', e, stackTrace);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -110,8 +114,8 @@ class CartProvider with ChangeNotifier {
 
         // Reload from backend to get correct IDs
         await loadCart();
-      } catch (e) {
-        print('Error adding item: $e');
+      } catch (e, stackTrace) {
+        LoggerService().error('Error adding item', e, stackTrace);
 
         // Check if error is ADDRESS_REQUIRED
         if (e is DioException && e.response?.data != null) {
@@ -130,7 +134,9 @@ class CartProvider with ChangeNotifier {
         if (_syncService != null) {
           // Check if it's a 409 Conflict or other non-retriable error
           if (e is DioException && e.response?.statusCode == 409) {
-            print('🔴 [CART] Conflict error (409), NOT queuing action.');
+            LoggerService().warning(
+              '🔴 [CART] Conflict error (409), NOT queuing action.',
+            );
             rethrow;
           }
 
@@ -148,7 +154,7 @@ class CartProvider with ChangeNotifier {
             data: {'productId': product.id, 'quantity': 1},
           );
           await _syncService.addToQueue(action);
-          print('📦 [CART] Action queued: addToCart');
+          LoggerService().debug('📦 [CART] Action queued: addToCart');
         } else {
           // Re-throw error if no sync service available
           rethrow;
@@ -170,7 +176,7 @@ class CartProvider with ChangeNotifier {
           data: {'productId': product.id, 'quantity': 1},
         );
         await _syncService.addToQueue(action);
-        print('📦 [CART] Offline - Action queued: addToCart');
+        LoggerService().debug('📦 [CART] Offline - Action queued: addToCart');
       }
     }
   }
@@ -197,7 +203,7 @@ class CartProvider with ChangeNotifier {
         actions: [
           TextButton(
             onPressed: () {
-              print('🟡 [CART] Address dialog: Cancel clicked');
+              LoggerService().debug('🟡 [CART] Address dialog: Cancel clicked');
               Navigator.of(dialogContext).pop(false);
             },
             child: Text(
@@ -207,7 +213,9 @@ class CartProvider with ChangeNotifier {
           ),
           ElevatedButton(
             onPressed: () {
-              print('🟢 [CART] Address dialog: Add Address clicked');
+              LoggerService().debug(
+                '🟢 [CART] Address dialog: Add Address clicked',
+              );
               Navigator.of(dialogContext).pop(true);
             },
             style: ElevatedButton.styleFrom(
@@ -220,34 +228,40 @@ class CartProvider with ChangeNotifier {
       ),
     );
 
-    print('🟡 [CART] Address dialog result: $result');
+    LoggerService().debug('🟡 [CART] Address dialog result: $result');
 
     if (result == true) {
       // Use a small delay to ensure dialog is fully closed before navigation
       await Future.delayed(const Duration(milliseconds: 100));
 
       if (!context.mounted) {
-        print('🔴 [CART] Context not mounted after dialog close');
+        LoggerService().warning(
+          '🔴 [CART] Context not mounted after dialog close',
+        );
         return;
       }
 
-      print('🟢 [CART] Navigating to AddEditAddressScreen');
+      LoggerService().debug('🟢 [CART] Navigating to AddEditAddressScreen');
       // Navigate to add address screen
       final addressResult = await Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => const AddEditAddressScreen()),
       );
 
-      print('🟡 [CART] Returned from AddEditAddressScreen: $addressResult');
+      LoggerService().debug(
+        '🟡 [CART] Returned from AddEditAddressScreen: $addressResult',
+      );
 
       // After returning from address screen, try to add to cart again
       if (context.mounted) {
-        print('🟢 [CART] Retrying addItem after address added');
+        LoggerService().debug('🟢 [CART] Retrying addItem after address added');
         await addItem(product, context);
       } else {
-        print('🔴 [CART] Context not mounted after address screen');
+        LoggerService().warning(
+          '🔴 [CART] Context not mounted after address screen',
+        );
       }
     } else {
-      print('🟡 [CART] User cancelled address dialog');
+      LoggerService().debug('🟡 [CART] User cancelled address dialog');
     }
   }
 
@@ -268,8 +282,8 @@ class CartProvider with ChangeNotifier {
           product: cartItem.product,
           quantity: cartItem.quantity,
         );
-      } catch (e) {
-        print('Error removing item: $e');
+      } catch (e, stackTrace) {
+        LoggerService().error('Error removing item', e, stackTrace);
         // If online but request failed, queue it
         if (_syncService != null) {
           final action = SyncAction(
@@ -278,7 +292,7 @@ class CartProvider with ChangeNotifier {
             data: {'itemId': cartItem.backendId!},
           );
           await _syncService.addToQueue(action);
-          print('📦 [CART] Action queued: removeFromCart');
+          LoggerService().debug('📦 [CART] Action queued: removeFromCart');
         }
       }
     } else if (!isOnline && cartItem != null && cartItem.backendId != null) {
@@ -290,7 +304,9 @@ class CartProvider with ChangeNotifier {
           data: {'itemId': cartItem.backendId!},
         );
         await _syncService.addToQueue(action);
-        print('📦 [CART] Offline - Action queued: removeFromCart');
+        LoggerService().debug(
+          '📦 [CART] Offline - Action queued: removeFromCart',
+        );
       }
     }
   }
@@ -311,8 +327,8 @@ class CartProvider with ChangeNotifier {
           cartItem.backendId!,
           cartItem.quantity,
         );
-      } catch (e) {
-        print('Error increasing quantity: $e');
+      } catch (e, stackTrace) {
+        LoggerService().error('Error increasing quantity', e, stackTrace);
         // If online but request failed, queue it
         if (_syncService != null) {
           final action = SyncAction(
@@ -324,7 +340,7 @@ class CartProvider with ChangeNotifier {
             },
           );
           await _syncService.addToQueue(action);
-          print('📦 [CART] Action queued: updateCartItem');
+          LoggerService().debug('📦 [CART] Action queued: updateCartItem');
         }
       }
     } else if (!isOnline && cartItem.backendId != null) {
@@ -336,7 +352,9 @@ class CartProvider with ChangeNotifier {
           data: {'itemId': cartItem.backendId!, 'quantity': cartItem.quantity},
         );
         await _syncService.addToQueue(action);
-        print('📦 [CART] Offline - Action queued: updateCartItem');
+        LoggerService().debug(
+          '📦 [CART] Offline - Action queued: updateCartItem',
+        );
       }
     }
   }
@@ -358,8 +376,8 @@ class CartProvider with ChangeNotifier {
             cartItem.backendId!,
             cartItem.quantity,
           );
-        } catch (e) {
-          print('Error decreasing quantity: $e');
+        } catch (e, stackTrace) {
+          LoggerService().error('Error decreasing quantity', e, stackTrace);
           // If online but request failed, queue it
           if (_syncService != null) {
             final action = SyncAction(
@@ -371,7 +389,7 @@ class CartProvider with ChangeNotifier {
               },
             );
             await _syncService.addToQueue(action);
-            print('📦 [CART] Action queued: updateCartItem');
+            LoggerService().debug('📦 [CART] Action queued: updateCartItem');
           }
         }
       } else if (!isOnline && cartItem.backendId != null) {
@@ -386,7 +404,9 @@ class CartProvider with ChangeNotifier {
             },
           );
           await _syncService.addToQueue(action);
-          print('📦 [CART] Offline - Action queued: updateCartItem');
+          LoggerService().debug(
+            '📦 [CART] Offline - Action queued: updateCartItem',
+          );
         }
       }
     } else {
@@ -399,8 +419,8 @@ class CartProvider with ChangeNotifier {
       await _apiService.clearCart();
       _items.clear();
       notifyListeners();
-    } catch (e) {
-      print('Error clearing cart: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error clearing cart', e, stackTrace);
       rethrow;
     }
   }

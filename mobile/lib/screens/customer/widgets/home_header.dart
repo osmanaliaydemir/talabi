@@ -8,21 +8,6 @@ import 'package:mobile/screens/customer/search_screen.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeader extends StatefulWidget implements PreferredSizeWidget {
-  final String? title;
-  final String? subtitle;
-  final IconData leadingIcon;
-  final bool showBackButton;
-  final VoidCallback? onBack;
-  final VoidCallback? onRefresh;
-  final bool showCart;
-  final bool showSearch;
-  final bool showRefresh;
-  // Address related
-  final bool showAddress;
-  final Map<String, dynamic>? selectedAddress;
-  final bool isLoadingAddress;
-  final VoidCallback? onAddressTap;
-
   const HomeHeader({
     super.key,
     this.title,
@@ -39,6 +24,21 @@ class HomeHeader extends StatefulWidget implements PreferredSizeWidget {
     this.isLoadingAddress = false,
     this.onAddressTap,
   });
+
+  final String? title;
+  final String? subtitle;
+  final IconData leadingIcon;
+  final bool showBackButton;
+  final VoidCallback? onBack;
+  final VoidCallback? onRefresh;
+  final bool showCart;
+  final bool showSearch;
+  final bool showRefresh;
+  // Address related
+  final bool showAddress;
+  final Map<String, dynamic>? selectedAddress;
+  final bool isLoadingAddress;
+  final VoidCallback? onAddressTap;
 
   @override
   Size get preferredSize => Size.fromHeight(showAddress ? 120 : 90);
@@ -108,14 +108,14 @@ class _HomeHeaderState extends State<HomeHeader> {
                         }
                       },
                       child: Container(
-                        padding: EdgeInsets.all(AppTheme.spacingSmall),
+                        padding: const EdgeInsets.all(AppTheme.spacingSmall),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(
                             AppTheme.radiusSmall,
                           ),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.arrow_back_ios_new,
                           color: Colors.white,
                           size: 18,

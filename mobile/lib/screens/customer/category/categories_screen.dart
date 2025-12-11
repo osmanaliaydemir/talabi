@@ -246,12 +246,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.category_outlined,
                               size: 64,
                               color: AppTheme.textSecondary,
                             ),
-                            SizedBox(height: AppTheme.spacingMedium),
+                            const SizedBox(height: AppTheme.spacingMedium),
                             Text(
                               localizations.categoryNotFound,
                               style: AppTheme.poppins(
@@ -286,7 +286,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         });
                       },
                       child: GridView.builder(
-                        padding: EdgeInsets.all(AppTheme.spacingMedium),
+                        padding: const EdgeInsets.all(AppTheme.spacingMedium),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 1,
@@ -347,7 +347,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -388,7 +388,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withValues(alpha: 0.7),
                       ],
                       stops: const [0.5, 1.0],
                     ),
@@ -397,7 +397,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
               // Content Layer
               Padding(
-                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                padding: const EdgeInsets.all(AppTheme.spacingMedium),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,11 +429,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [color.withOpacity(0.8), color],
+          colors: [color.withValues(alpha: 0.8), color],
         ),
       ),
       child: Center(
-        child: Icon(icon, color: Colors.white.withOpacity(0.5), size: 64),
+        child: Icon(icon, color: Colors.white.withValues(alpha: 0.5), size: 64),
       ),
     );
   }

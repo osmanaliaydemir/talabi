@@ -1,16 +1,72 @@
-# mobile
+# Talâbî Mobile Application
 
-A new Flutter project.
+Flutter tabanlı mobil uygulama - Talâbî platformu için müşteri, satıcı ve kurye uygulamaları.
 
-## Getting Started
+## 📱 Özellikler
 
-This project is a starting point for a Flutter application.
+- **Multi-role Support**: Müşteri, Satıcı ve Kurye rolleri için ayrı arayüzler
+- **Localization**: Türkçe, İngilizce ve Arapça dil desteği
+- **Offline Support**: Çevrimdışı çalışma ve senkronizasyon
+- **Real-time Updates**: SignalR ile gerçek zamanlı bildirimler
+- **Location Services**: Konum takibi ve harita entegrasyonu
+- **Social Authentication**: Google, Apple ve Facebook ile giriş
+- **Firebase Integration**: Analytics, Crashlytics ve Push Notifications
 
-A few resources to get you started if this is your first Flutter project:
+## 🏗️ Proje Yapısı
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```
+lib/
+├── config/          # Tema ve konfigürasyon
+├── l10n/            # Lokalizasyon dosyaları
+├── models/          # Veri modelleri
+├── providers/       # State management (Provider)
+├── routers/         # Route yönetimi
+├── screens/         # Ekranlar (customer, vendor, courier, shared)
+├── services/        # API, cache, notification servisleri
+├── utils/           # Yardımcı fonksiyonlar
+└── widgets/         # Yeniden kullanılabilir widget'lar
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🚀 Kurulum
+
+1. Flutter SDK'yı yükleyin (3.9.2+)
+2. Bağımlılıkları yükleyin:
+   ```bash
+   flutter pub get
+   ```
+3. Lokalizasyon dosyalarını oluşturun:
+   ```bash
+   flutter gen-l10n
+   ```
+4. Uygulamayı çalıştırın:
+   ```bash
+   flutter run
+   ```
+
+## 📦 Bağımlılıklar
+
+Ana bağımlılıklar:
+- `provider` - State management
+- `dio` - HTTP client
+- `hive` - Local database
+- `google_maps_flutter` - Harita entegrasyonu
+- `firebase_core`, `firebase_auth`, `firebase_messaging` - Firebase servisleri
+- `signalr_core` - Real-time communication
+
+## 🔧 Geliştirme
+
+### Kod Standartları
+
+- `flutter analyze` ile kod analizi yapın
+- `flutter format .` ile kod formatını düzeltin
+- Linter kurallarına uyun (`analysis_options.yaml`)
+
+### Önemli Notlar
+
+- Production'da `print` yerine `debugPrint` kullanın
+- Deprecated API'leri kullanmaktan kaçının
+- Tüm public API'ler için dokümantasyon ekleyin
+
+## 📄 Lisans
+
+Bu proje özel bir projedir.

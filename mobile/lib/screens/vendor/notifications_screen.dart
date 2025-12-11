@@ -128,17 +128,17 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
               },
               itemBuilder: (BuildContext context) {
                 return [
-                  PopupMenuItem<String>(
+                  const PopupMenuItem<String>(
                     value: 'mark_all_read',
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.done_all,
                           color: Colors.deepPurple,
                           size: 20,
                         ),
-                        const SizedBox(width: 12),
-                        const Text(
+                        SizedBox(width: 12),
+                        Text(
                           'Tümünü okundu işaretle',
                           style: TextStyle(
                             fontSize: 14,

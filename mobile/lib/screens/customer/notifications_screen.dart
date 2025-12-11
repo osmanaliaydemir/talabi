@@ -94,7 +94,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 size: 20,
                               ),
                               const SizedBox(width: 12),
-                              Text(
+                              const Text(
                                 'Tümünü okundu işaretle',
                                 style: TextStyle(
                                   color: AppTheme.textPrimary,
@@ -194,19 +194,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         decoration: BoxDecoration(
           color: notification.isRead
               ? Theme.of(context).cardColor
-              : Theme.of(context).primaryColor.withOpacity(0.05),
+              : Theme.of(context).primaryColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
           border: notification.isRead
-              ? Border.all(color: Colors.grey.withOpacity(0.2))
+              ? Border.all(color: Colors.grey.withValues(alpha: 0.2))
               : Border.all(
-                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                 ),
         ),
         child: Padding(
@@ -217,7 +217,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _getIconColor(notification.type).withOpacity(0.1),
+                  color: _getIconColor(
+                    notification.type,
+                  ).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

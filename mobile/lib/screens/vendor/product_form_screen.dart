@@ -8,11 +8,12 @@ import 'package:mobile/models/product.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class VendorProductFormScreen extends StatefulWidget {
-  final Product? product;
-
   const VendorProductFormScreen({super.key, this.product});
+
+  final Product? product;
 
   @override
   State<VendorProductFormScreen> createState() =>
@@ -102,7 +103,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         }
       });
     } catch (e) {
-      print('Error loading categories: $e');
+      LoggerService().error(
+        'Kategoriler yüklenemedi: $e',
+        e,
+        StackTrace.current,
+      );
       setState(() {
         _isLoadingCategories = false;
       });
@@ -299,7 +304,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                   border: Border.all(color: Colors.grey[300]!),
                 ),
                 child: _isUploading
-                    ? Center(
+                    ? const Center(
                         child: CircularProgressIndicator(
                           color: Colors.deepPurple,
                         ),
@@ -354,7 +359,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
 
             // Category
             DropdownButtonFormField<String>(
-              value: _selectedCategoryId,
+              initialValue: _selectedCategoryId,
               decoration: InputDecoration(
                 labelText: localizations.vendorProductFormCategoryLabel,
                 border: const OutlineInputBorder(),
@@ -393,11 +398,11 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
 
             // Currency
             DropdownButtonFormField<Currency>(
-              value: _selectedCurrency,
-              decoration: InputDecoration(
+              initialValue: _selectedCurrency,
+              decoration: const InputDecoration(
                 labelText: 'Para Birimi',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.currency_exchange),
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.currency_exchange),
               ),
               items: Currency.values.map((currency) {
                 return DropdownMenuItem(
@@ -492,7 +497,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                   _isAvailable = value;
                 });
               },
-              activeColor: Colors.green,
+              activeThumbColor: Colors.green,
             ),
             const SizedBox(height: 24),
 

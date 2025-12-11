@@ -1,14 +1,4 @@
 class Address {
-  final String id;
-  final String title;
-  final String fullAddress;
-  final String city;
-  final String district;
-  final String? postalCode;
-  final bool isDefault;
-  final double? latitude;
-  final double? longitude;
-
   Address({
     required this.id,
     required this.title,
@@ -50,4 +40,14 @@ class Address {
       'longitude': longitude,
     };
   }
+
+  final String id;
+  final String title;
+  final String fullAddress;
+  final String city;
+  final String district;
+  final String? postalCode;
+  final bool isDefault;
+  final double? latitude;
+  final double? longitude;
 }

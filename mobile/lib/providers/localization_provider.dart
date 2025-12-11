@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class LocalizationProvider with ChangeNotifier {
+  LocalizationProvider() {
+    _loadPreferences();
+  }
   Locale _locale = const Locale('tr');
   String _currency = 'TRY';
   String? _timeZone;
@@ -16,25 +20,21 @@ class LocalizationProvider with ChangeNotifier {
   String? get dateFormat => _dateFormat;
   String? get timeFormat => _timeFormat;
 
-  LocalizationProvider() {
-    _loadPreferences();
-  }
-
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final languageCode = prefs.getString('language') ?? 'tr';
       final currencyCode = prefs.getString('currency') ?? 'TRY';
-      
+
       _locale = Locale(languageCode);
       _currency = currencyCode;
       _timeZone = prefs.getString('timeZone');
       _dateFormat = prefs.getString('dateFormat') ?? 'dd/MM/yyyy';
       _timeFormat = prefs.getString('timeFormat') ?? '24h';
-      
+
       notifyListeners();
-    } catch (e) {
-      print('Error loading preferences: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading preferences', e, stackTrace);
     }
   }
 
@@ -47,17 +47,9 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('language', languageCode);
-      
-      // Update on server if authenticated
-      try {
-        await _apiService.updateUserPreferences(
-          language: languageCode,
-        );
-      } catch (e) {
-        print('Error updating language on server: $e');
-      }
-    } catch (e) {
-      print('Error saving language: $e');
+      await _apiService.updateUserPreferences(language: languageCode);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error saving language', e, stackTrace);
     }
   }
 
@@ -70,17 +62,9 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('currency', currencyCode);
-      
-      // Update on server if authenticated
-      try {
-        await _apiService.updateUserPreferences(
-          currency: currencyCode,
-        );
-      } catch (e) {
-        print('Error updating currency on server: $e');
-      }
-    } catch (e) {
-      print('Error saving currency: $e');
+      await _apiService.updateUserPreferences(currency: currencyCode);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error saving currency', e, stackTrace);
     }
   }
 
@@ -95,16 +79,9 @@ class LocalizationProvider with ChangeNotifier {
       } else {
         await prefs.remove('timeZone');
       }
-      
-      try {
-        await _apiService.updateUserPreferences(
-          timeZone: timeZone,
-        );
-      } catch (e) {
-        print('Error updating timezone on server: $e');
-      }
-    } catch (e) {
-      print('Error saving timezone: $e');
+      await _apiService.updateUserPreferences(timeZone: timeZone);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error saving timezone', e, stackTrace);
     }
   }
 
@@ -115,16 +92,9 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('dateFormat', _dateFormat!);
-      
-      try {
-        await _apiService.updateUserPreferences(
-          dateFormat: _dateFormat,
-        );
-      } catch (e) {
-        print('Error updating date format on server: $e');
-      }
-    } catch (e) {
-      print('Error saving date format: $e');
+      await _apiService.updateUserPreferences(dateFormat: _dateFormat);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error saving date format', e, stackTrace);
     }
   }
 
@@ -135,29 +105,22 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('timeFormat', _timeFormat!);
-      
-      try {
-        await _apiService.updateUserPreferences(
-          timeFormat: _timeFormat,
-        );
-      } catch (e) {
-        print('Error updating time format on server: $e');
-      }
-    } catch (e) {
-      print('Error saving time format: $e');
+      await _apiService.updateUserPreferences(timeFormat: _timeFormat);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error saving time format', e, stackTrace);
     }
   }
 
   Future<void> loadFromServer() async {
     try {
       final preferences = await _apiService.getUserPreferences();
-      
+
       _locale = Locale(preferences['language'] ?? 'tr');
       _currency = preferences['currency'] ?? 'TRY';
       _timeZone = preferences['timeZone'];
       _dateFormat = preferences['dateFormat'] ?? 'dd/MM/yyyy';
       _timeFormat = preferences['timeFormat'] ?? '24h';
-      
+
       // Save to local storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('language', _locale.languageCode);
@@ -167,11 +130,14 @@ class LocalizationProvider with ChangeNotifier {
       }
       await prefs.setString('dateFormat', _dateFormat ?? 'dd/MM/yyyy');
       await prefs.setString('timeFormat', _timeFormat ?? '24h');
-      
+
       notifyListeners();
-    } catch (e) {
-      print('Error loading preferences from server: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error loading preferences from server',
+        e,
+        stackTrace,
+      );
     }
   }
 }
-

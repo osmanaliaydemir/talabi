@@ -9,15 +9,10 @@
 # packages, and plugins designed to encourage good coding practices.
 analyzer:
   errors:
-    sort_constructors_first: ignore
-    prefer_const_constructors: ignore
-    public_member_api_docs: ignore
-    avoid_print: ignore
-    deprecated_member_use: ignore
-    prefer_single_quotes: ignore
-    unnecessary_import: ignore
-    cascade_invocations: ignore
-    use_build_context_synchronously: ignore
+    # Deprecated member use warnings - can be fixed gradually
+    deprecated_member_use: warning
+    # Allow print in debug mode but warn in production
+    avoid_print: warning
 include: package:flutter_lints/flutter.yaml
 
 linter:
@@ -32,30 +27,45 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    avoid_print: true
+    # Code style rules
     prefer_single_quotes: true
     prefer_const_constructors: true
     prefer_final_fields: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    
+    # Widget rules
     sized_box_for_whitespace: true
     use_key_in_widget_constructors: true
+    avoid_unnecessary_containers: true
+    sort_child_properties_last: true
+    
+    # Code quality rules
     empty_statements: true
     no_leading_underscores_for_local_identifiers: true
     unnecessary_getters_setters: true
     prefer_is_not_empty: true
     unnecessary_this: true
     prefer_collection_literals: true
-    avoid_unnecessary_containers: true
     prefer_initializing_formals: true
-    use_build_context_synchronously: true
     avoid_returning_null_for_void: true
-    cascade_invocations: true
     prefer_if_null_operators: true
     prefer_spread_collections: true
     avoid_web_libraries_in_flutter: true
     sort_constructors_first: true
-    sort_child_properties_last: true
     always_use_package_imports: true
-    public_member_api_docs: true
+    
+    # Async/Context rules
+    use_build_context_synchronously: true
+    
+    # Documentation rules (warn but don't fail)
+    public_member_api_docs: false
+    
+    # Logging - prefer debugPrint over print
+    avoid_print: true
+    
+    # Code organization
+    cascade_invocations: true
 
 
 # Additional information about this file can be found at

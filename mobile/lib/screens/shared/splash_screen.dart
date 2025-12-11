@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/cache_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/services/preferences_service.dart';
 import 'package:mobile/services/asset_preloader_service.dart';
@@ -42,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
         await _checkAppState();
       }
     } catch (e) {
-      print('Error initializing app: $e');
+      LoggerService().error('Error initializing app: $e', e);
       // Even if initialization fails, try to proceed or show error
       if (mounted) {
         await _checkAppState();
@@ -128,13 +129,13 @@ class _SplashScreenState extends State<SplashScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.shopping_bag_outlined,
                 size: 64,
                 color: AppTheme.primaryOrange,

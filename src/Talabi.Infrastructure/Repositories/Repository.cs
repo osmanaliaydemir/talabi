@@ -78,6 +78,17 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     }
 
     /// <summary>
+    /// Birden fazla entity ekler
+    /// </summary>
+    public virtual async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+    {
+        if (entities == null)
+            throw new ArgumentNullException(nameof(entities));
+
+        await _dbSet.AddRangeAsync(entities, cancellationToken);
+    }
+
+    /// <summary>
     /// Mevcut bir entity'yi günceller
     /// </summary>
     public virtual void Update(T entity)

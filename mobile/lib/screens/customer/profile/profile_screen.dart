@@ -3,7 +3,6 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
-
 import 'package:mobile/screens/shared/settings/accessibility_settings_screen.dart';
 import 'package:mobile/screens/customer/profile/addresses_screen.dart';
 import 'package:mobile/screens/customer/profile/change_password_screen.dart';
@@ -14,6 +13,7 @@ import 'package:mobile/screens/customer/order/order_history_screen.dart';
 import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/screens/customer/favorites_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:provider/provider.dart';
@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     AuthProvider auth,
   ) {
     return Container(
-      margin: EdgeInsets.all(AppTheme.spacingMedium),
+      margin: const EdgeInsets.all(AppTheme.spacingMedium),
       decoration: AppTheme.cardDecoration(withShadow: true),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _showLogoutDialog(context, auth, localizations);
             },
           ),
-          SizedBox(height: AppTheme.spacingMedium),
+          const SizedBox(height: AppTheme.spacingMedium),
         ],
       ),
     );
@@ -255,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSectionHeader(String title, String sectionTitle) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         AppTheme.spacingMedium,
         AppTheme.spacingMedium,
         AppTheme.spacingMedium,
@@ -301,9 +301,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : null,
       trailing: titleColor == AppTheme.error
           ? null
-          : Icon(Icons.chevron_right, color: AppTheme.textHint),
+          : const Icon(Icons.chevron_right, color: AppTheme.textHint),
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(
+      contentPadding: const EdgeInsets.symmetric(
         horizontal: AppTheme.spacingMedium,
         vertical: AppTheme.spacingXSmall,
       ),
@@ -327,28 +327,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 fontSize: 14,
               ),
             ),
-            SizedBox(height: AppTheme.spacingMedium),
+            const SizedBox(height: AppTheme.spacingMedium),
             _buildHelpItem(
               icon: Icons.help_outline,
               title: localizations.faq,
               subtitle: localizations.frequentlyAskedQuestions,
               colorScheme: colorScheme,
             ),
-            SizedBox(height: AppTheme.spacingSmall),
+            const SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.email_outlined,
               title: localizations.contactSupport,
               subtitle: 'support@talabi.com',
               colorScheme: colorScheme,
             ),
-            SizedBox(height: AppTheme.spacingSmall),
+            const SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.phone_outlined,
               title: localizations.callUs,
               subtitle: '+90 (555) 123 45 67',
               colorScheme: colorScheme,
             ),
-            SizedBox(height: AppTheme.spacingSmall),
+            const SizedBox(height: AppTheme.spacingSmall),
             _buildHelpItem(
               icon: Icons.chat_bubble_outline,
               title: localizations.liveChat,
@@ -378,7 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Handle help item tap
       },
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall),
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSmall),
         child: Row(
           children: [
             Icon(
@@ -386,7 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: colorScheme.primary,
               size: AppTheme.iconSizeMedium,
             ),
-            SizedBox(width: AppTheme.spacingSmall),
+            const SizedBox(width: AppTheme.spacingSmall),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +398,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontSize: 14,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: AppTheme.poppins(
@@ -409,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppTheme.textHint),
+            const Icon(Icons.chevron_right, color: AppTheme.textHint),
           ],
         ),
       ),
@@ -506,7 +506,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         try {
                           navigator = Navigator.of(parentContext);
                         } catch (e) {
-                          print('Error getting navigator: $e');
+                          LoggerService().error(
+                            'Error getting navigator: $e',
+                            e,
+                          );
                           return; // Navigator bulunamazsa işlemi durdur
                         }
 
@@ -519,7 +522,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ).reset();
                           } catch (e) {
                             // Provider context'i artık geçerli değilse hata yok sayılır
-                            print('Error resetting bottom nav: $e');
+                            LoggerService().error(
+                              'Error resetting bottom nav: $e',
+                              e,
+                            );
                           }
                         }
 
@@ -547,7 +553,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }
                         } catch (e) {
                           // Navigator artık geçerli değilse hata yok sayılır
-                          print('Error navigating to login: $e');
+                          LoggerService().error(
+                            'Error navigating to login: $e',
+                            e,
+                          );
                         }
 
                         // SONRA logout işlemini yap (yönlendirme yapıldıktan sonra)

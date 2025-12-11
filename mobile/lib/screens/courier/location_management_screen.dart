@@ -5,6 +5,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -29,7 +30,7 @@ class _CourierLocationManagementScreenState
   @override
   void initState() {
     super.initState();
-    print('CourierLocationManagementScreen: initState called');
+    LoggerService().debug('CourierLocationManagementScreen: initState called');
     _loadProfile();
     _getCurrentLocation();
   }
@@ -41,7 +42,9 @@ class _CourierLocationManagementScreenState
   }
 
   Future<void> _loadProfile() async {
-    print('CourierLocationManagementScreen: Loading profile...');
+    LoggerService().debug(
+      'CourierLocationManagementScreen: Loading profile...',
+    );
     setState(() => _isLoading = true);
     try {
       final courier = await _courierService.getProfile();
@@ -57,8 +60,11 @@ class _CourierLocationManagementScreenState
         }
       });
     } catch (e, stackTrace) {
-      print('CourierLocationManagementScreen: ERROR loading profile - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierLocationManagementScreen: ERROR loading profile',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -90,8 +96,12 @@ class _CourierLocationManagementScreenState
           }
         });
       }
-    } catch (e) {
-      print('Error getting current location: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'CourierLocationManagementScreen: Error getting current location',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -120,8 +130,12 @@ class _CourierLocationManagementScreenState
           backgroundColor: Colors.green,
         ),
       );
-    } catch (e) {
-      print('Error updating location: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'CourierLocationManagementScreen: Error updating location',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -167,7 +181,12 @@ class _CourierLocationManagementScreenState
       // Use reflection to get the property dynamically
       final value = (localizations as dynamic)[key];
       return value?.toString() ?? fallback;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'CourierLocationManagementScreen: Error getting localized string',
+        e,
+        stackTrace,
+      );
       return fallback;
     }
   }

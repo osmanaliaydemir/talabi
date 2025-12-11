@@ -7,6 +7,7 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
 import 'package:mobile/screens/shared/settings/legal_menu_screen.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:provider/provider.dart';
@@ -26,16 +27,16 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
   @override
   void initState() {
     super.initState();
-    print('CourierProfileScreen: initState called');
+    LoggerService().debug('CourierProfileScreen: initState called');
     _loadProfile();
   }
 
   Future<void> _loadProfile() async {
-    print('CourierProfileScreen: Loading profile...');
+    LoggerService().debug('CourierProfileScreen: Loading profile...');
     setState(() => _isLoading = true);
     try {
       final courier = await _courierService.getProfile();
-      print(
+      LoggerService().debug(
         'CourierProfileScreen: Profile loaded - Name: ${courier.name}, Status: ${courier.status}',
       );
       if (!mounted) return;
@@ -43,8 +44,11 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         _courier = courier;
       });
     } catch (e, stackTrace) {
-      print('CourierProfileScreen: ERROR loading profile - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierProfileScreen: ERROR loading profile',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,10 +69,14 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
   }
 
   Future<void> _updateStatus(String newStatus) async {
-    print('CourierProfileScreen: Updating status to $newStatus');
+    LoggerService().debug(
+      'CourierProfileScreen: Updating status to $newStatus',
+    );
     try {
       await _courierService.updateStatus(newStatus);
-      print('CourierProfileScreen: Status updated successfully to $newStatus');
+      LoggerService().debug(
+        'CourierProfileScreen: Status updated successfully to $newStatus',
+      );
       await _loadProfile(); // Reload to confirm
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
@@ -80,8 +88,11 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         ),
       );
     } catch (e, stackTrace) {
-      print('CourierProfileScreen: ERROR updating status - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierProfileScreen: ERROR updating status',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -308,7 +319,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
-            print('CourierProfileScreen: Edit profile tapped');
+            LoggerService().debug('CourierProfileScreen: Edit profile tapped');
             final result = await Navigator.of(
               context,
             ).pushNamed('/courier/profile/edit');
@@ -326,7 +337,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('CourierProfileScreen: Availability tile tapped');
+            LoggerService().debug(
+              'CourierProfileScreen: Availability tile tapped',
+            );
             Navigator.of(context).pushNamed('/courier/availability');
           },
         ),
@@ -336,7 +349,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           subtitle: Text(currentLanguage),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('CourierProfileScreen: Language settings tapped');
+            LoggerService().debug(
+              'CourierProfileScreen: Language settings tapped',
+            );
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => const LanguageSettingsScreen(),
@@ -357,7 +372,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('CourierProfileScreen: Location management tapped');
+            LoggerService().debug(
+              'CourierProfileScreen: Location management tapped',
+            );
             Navigator.of(context).pushNamed('/courier/location-management');
           },
         ),
@@ -370,7 +387,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('CourierProfileScreen: Navigation app tile tapped');
+            LoggerService().debug(
+              'CourierProfileScreen: Navigation app tile tapped',
+            );
             Navigator.of(context).pushNamed('/courier/navigation-settings');
           },
         ),
@@ -379,7 +398,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           title: Text(localizations?.legalDocuments ?? 'Yasal Belgeler'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('CourierProfileScreen: Legal documents tapped');
+            LoggerService().debug(
+              'CourierProfileScreen: Legal documents tapped',
+            );
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const LegalMenuScreen()),
             );
@@ -392,7 +413,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             style: const TextStyle(color: Colors.red),
           ),
           onTap: () async {
-            print('CourierProfileScreen: Logout tapped');
+            LoggerService().debug('CourierProfileScreen: Logout tapped');
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(

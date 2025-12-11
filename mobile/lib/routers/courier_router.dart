@@ -11,6 +11,7 @@ import 'package:mobile/screens/courier/delivery_proof_screen.dart';
 import 'package:mobile/screens/courier/earnings_screen.dart';
 import 'package:mobile/screens/courier/order_detail_screen.dart';
 import 'package:mobile/screens/courier/order_map_screen.dart';
+import 'package:mobile/services/logger_service.dart';
 
 /// Courier modülü için route yöneticisi
 class CourierRouter {
@@ -20,12 +21,12 @@ class CourierRouter {
       case '/courier/order-detail':
         final orderId = settings.arguments as String?;
         if (orderId == null || orderId.isEmpty) {
-          print(
+          LoggerService().warning(
             'CourierRouter: order-detail route called but orderId is null or empty',
           );
           return null;
         }
-        print(
+        LoggerService().info(
           'CourierRouter: Creating OrderDetailScreen with orderId: $orderId',
         );
         return MaterialPageRoute(

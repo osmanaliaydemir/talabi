@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -38,10 +39,12 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
   }
 
   Future<void> _takePhoto() async {
-    print('DeliveryProofScreen: Taking photo - OrderId: ${widget.orderId}');
+    LoggerService().debug(
+      'DeliveryProofScreen: Taking photo - OrderId: ${widget.orderId}',
+    );
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
     if (photo != null) {
-      print('DeliveryProofScreen: Photo taken - Path: ${photo.path}');
+      LoggerService().debug('DeliveryProofScreen: Photo taken - Path: ${photo.path}');
       setState(() {
         _image = File(photo.path);
       });
@@ -49,18 +52,19 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
   }
 
   Future<void> _submitProof() async {
-    print('DeliveryProofScreen: Submitting proof - OrderId: ${widget.orderId}');
+    LoggerService().debug('DeliveryProofScreen: Submitting proof - OrderId: ${widget.orderId}');
     if (!_formKey.currentState!.validate()) {
-      print('DeliveryProofScreen: Form validation failed');
+      LoggerService().warning('DeliveryProofScreen: Form validation failed');
       return;
     }
     if (_image == null) {
-      print('DeliveryProofScreen: No image provided');
+      LoggerService().warning('DeliveryProofScreen: No image provided');
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            localizations?.pleaseTakePhoto ?? 'Please take a photo of the delivery',
+            localizations?.pleaseTakePhoto ??
+                'Please take a photo of the delivery',
           ),
         ),
       );
@@ -68,7 +72,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
     }
 
     if (_signatureController.isEmpty) {
-      print('DeliveryProofScreen: No signature provided');
+      LoggerService().warning('DeliveryProofScreen: No signature provided');
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -86,14 +90,14 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
       final courierService = CourierService();
 
       // Upload image
-      print('DeliveryProofScreen: Uploading image...');
+      LoggerService().debug('DeliveryProofScreen: Uploading image...');
       String photoUrl = await courierService.uploadImage(_image!);
-      print('DeliveryProofScreen: Image uploaded - URL: $photoUrl');
+      LoggerService().debug('DeliveryProofScreen: Image uploaded - URL: $photoUrl');
 
       // Process and upload signature
       String? signatureUrl;
       if (_signatureController.isNotEmpty) {
-        print('DeliveryProofScreen: Processing signature...');
+        LoggerService().debug('DeliveryProofScreen: Processing signature...');
         final Uint8List? data = await _signatureController.toPngBytes();
         if (data != null) {
           final tempDir = await getTemporaryDirectory();
@@ -102,11 +106,11 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
           ).create();
           await file.writeAsBytes(data);
           signatureUrl = await courierService.uploadImage(file);
-          print('DeliveryProofScreen: Signature uploaded - URL: $signatureUrl');
+          LoggerService().debug('DeliveryProofScreen: Signature uploaded - URL: $signatureUrl');
         }
       }
 
-      print('DeliveryProofScreen: Submitting proof to backend...');
+      LoggerService().debug('DeliveryProofScreen: Submitting proof to backend...');
       await courierService.submitProof(
         widget.orderId,
         photoUrl,
@@ -114,7 +118,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
         _notesController.text.isEmpty ? null : _notesController.text,
       );
 
-      print(
+      LoggerService().debug(
         'DeliveryProofScreen: Proof submitted successfully - OrderId: ${widget.orderId}',
       );
       if (mounted) {
@@ -131,8 +135,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
         Navigator.pop(context, true); // Return success
       }
     } catch (e, stackTrace) {
-      print('DeliveryProofScreen: ERROR submitting proof - $e');
-      print(stackTrace);
+      LoggerService().error('DeliveryProofScreen: ERROR submitting proof', e, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -161,7 +164,7 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            print('DeliveryProofScreen: Back button pressed');
+            LoggerService().debug('DeliveryProofScreen: Back button pressed');
             Navigator.of(context).pop();
           },
         ),
@@ -176,7 +179,10 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
             children: [
               Text(
                 '1. ${localizations?.takePhoto ?? 'Take Photo'}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               GestureDetector(
@@ -199,7 +205,9 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                               color: Colors.grey,
                             ),
                             const SizedBox(height: 8),
-                            Text(localizations?.takePhoto ?? 'Tap to take photo'),
+                            Text(
+                              localizations?.takePhoto ?? 'Tap to take photo',
+                            ),
                           ],
                         ),
                 ),
@@ -208,7 +216,10 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
 
               Text(
                 '2. ${localizations?.signature ?? 'Signature'}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -243,7 +254,10 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
               const SizedBox(height: 24),
               Text(
                 '3. ${localizations?.notes ?? 'Notes'}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -251,7 +265,9 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
                 decoration: InputDecoration(
                   labelText: localizations?.notesOptional ?? 'Notes (Optional)',
                   border: const OutlineInputBorder(),
-                  hintText: localizations?.leftAtFrontDoor ?? 'Left at front door, etc.',
+                  hintText:
+                      localizations?.leftAtFrontDoor ??
+                      'Left at front door, etc.',
                 ),
                 maxLines: 3,
               ),

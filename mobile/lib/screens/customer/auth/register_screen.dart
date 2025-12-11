@@ -5,6 +5,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
 import 'package:mobile/screens/vendor/register_screen.dart';
@@ -56,10 +57,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final password = _passwordController.text;
       final fullName = _fullNameController.text.trim();
 
-      print('🟡 [REGISTER_SCREEN] Calling authProvider.register');
-      print('🟡 [REGISTER_SCREEN] Email: $email');
-      print('🟡 [REGISTER_SCREEN] FullName: $fullName');
-      print('🟡 [REGISTER_SCREEN] Password length: ${password.length}');
+      LoggerService().debug(
+        '🟡 [REGISTER_SCREEN] Calling authProvider.register',
+      );
+      LoggerService().debug('🟡 [REGISTER_SCREEN] Email: $email');
+      LoggerService().debug('🟡 [REGISTER_SCREEN] FullName: $fullName');
+      LoggerService().debug(
+        '🟡 [REGISTER_SCREEN] Password length: ${password.length}',
+      );
 
       // Get user's language preference
       final localizationProvider = Provider.of<LocalizationProvider>(
@@ -76,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         language: languageCode,
       );
 
-      print('🟢 [REGISTER_SCREEN] Register successful!');
+      LoggerService().debug('🟢 [REGISTER_SCREEN] Register successful!');
 
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir (password ile otomatik login için)
@@ -90,8 +95,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     } catch (e, stackTrace) {
-      print('🔴 [REGISTER_SCREEN] Register error: $e');
-      print('🔴 [REGISTER_SCREEN] Stack trace: $stackTrace');
+      LoggerService().error(
+        '🔴 [REGISTER_SCREEN] Register error',
+        e,
+        stackTrace,
+      );
 
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
@@ -182,8 +190,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
-    } catch (e) {
-      print('🔴 [GOOGLE_LOGIN] Error: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('🔴 [GOOGLE_LOGIN] Error', e, stackTrace);
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -235,8 +243,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
-    } catch (e) {
-      print('🔴 [APPLE_LOGIN] Error: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('🔴 [APPLE_LOGIN] Error', e, stackTrace);
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -288,8 +296,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Navigate based on role
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
-    } catch (e) {
-      print('🔴 [FACEBOOK_LOGIN] Error: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('🔴 [FACEBOOK_LOGIN] Error', e, stackTrace);
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -313,7 +321,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -352,7 +360,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Container(
                         width: 100,
                         height: 100,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppTheme.primaryOrange,
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
@@ -368,7 +376,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Title - Centered
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Text(
@@ -394,7 +402,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.cardColor,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(
@@ -408,12 +416,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               BoxShadow(
                                 color: AppTheme.shadowColor,
                                 blurRadius: 10,
-                                offset: const Offset(0, -4),
+                                offset: Offset(0, -4),
                               ),
                             ],
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingLarge,
+                            ),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -454,15 +464,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.person_outline,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -489,15 +501,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.email_outlined,
                                           color: AppTheme.textSecondary,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
@@ -529,7 +543,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           color: AppTheme.textHint,
                                           fontSize: 14,
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock_outline,
                                           color: AppTheme.textSecondary,
                                         ),
@@ -548,10 +562,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           },
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppTheme.spacingMedium,
+                                              vertical: AppTheme.spacingMedium,
+                                            ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -574,7 +590,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primaryOrange,
                                         foregroundColor: AppTheme.textOnPrimary,
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           vertical: AppTheme.spacingMedium,
                                         ),
                                         shape: RoundedRectangleBorder(
@@ -585,7 +601,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         elevation: AppTheme.elevationNone,
                                       ),
                                       child: _isLoading
-                                          ? SizedBox(
+                                          ? const SizedBox(
                                               height: 20,
                                               width: 20,
                                               child: CircularProgressIndicator(
@@ -606,13 +622,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   // Or continue with separator
                                   Row(
                                     children: [
-                                      Expanded(
+                                      const Expanded(
                                         child: Divider(
                                           color: AppTheme.dividerColor,
                                         ),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: AppTheme.spacingMedium,
                                         ),
                                         child: Text(
@@ -623,7 +639,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           ),
                                         ),
                                       ),
-                                      Expanded(
+                                      const Expanded(
                                         child: Divider(
                                           color: AppTheme.dividerColor,
                                         ),
@@ -716,7 +732,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           Navigator.pop(context);
                                         },
                                         child: Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: AppTheme.spacingMedium,
                                             vertical: AppTheme.spacingMedium,
                                           ),
@@ -724,7 +740,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.login_rounded,
                                                 color: AppTheme.primaryOrange,
                                                 size: 20,
@@ -748,7 +764,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                                 ),
                                               ),
                                               AppTheme.horizontalSpace(0.25),
-                                              Icon(
+                                              const Icon(
                                                 Icons.arrow_forward_rounded,
                                                 color: AppTheme.primaryOrange,
                                                 size: 18,
@@ -787,8 +803,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall + 4),
-        side: BorderSide(color: AppTheme.borderColor),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppTheme.spacingSmall + 4,
+        ),
+        side: const BorderSide(color: AppTheme.borderColor),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         ),
@@ -831,7 +849,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.store, color: AppTheme.primaryOrange, size: 20),
+                const Icon(
+                  Icons.store,
+                  color: AppTheme.primaryOrange,
+                  size: 20,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   label,

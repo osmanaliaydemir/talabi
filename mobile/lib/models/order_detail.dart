@@ -1,18 +1,4 @@
 class OrderDetail {
-  final String id;
-  final String customerOrderId;
-  final String vendorId;
-  final String vendorName;
-  final String customerId;
-  final String customerName;
-  final double totalAmount;
-  final String status;
-  final DateTime createdAt;
-  final DateTime? cancelledAt;
-  final String? cancelReason;
-  final List<OrderItemDetail> items;
-  final List<OrderStatusHistory> statusHistory;
-
   OrderDetail({
     required this.id,
     required this.customerOrderId,
@@ -52,20 +38,23 @@ class OrderDetail {
           .toList(),
     );
   }
+
+  final String id;
+  final String customerOrderId;
+  final String vendorId;
+  final String vendorName;
+  final String customerId;
+  final String customerName;
+  final double totalAmount;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? cancelledAt;
+  final String? cancelReason;
+  final List<OrderItemDetail> items;
+  final List<OrderStatusHistory> statusHistory;
 }
 
 class OrderItemDetail {
-  final String productId;
-  final String customerOrderItemId;
-  final String productName;
-  final String? productImageUrl;
-  final int quantity;
-  final double unitPrice;
-  final double totalPrice;
-  final bool isCancelled;
-  final DateTime? cancelledAt;
-  final String? cancelReason;
-
   OrderItemDetail({
     required this.productId,
     required this.customerOrderItemId,
@@ -95,14 +84,19 @@ class OrderItemDetail {
       cancelReason: json['cancelReason'],
     );
   }
+  final String productId;
+  final String customerOrderItemId;
+  final String productName;
+  final String? productImageUrl;
+  final int quantity;
+  final double unitPrice;
+  final double totalPrice;
+  final bool isCancelled;
+  final DateTime? cancelledAt;
+  final String? cancelReason;
 }
 
 class OrderStatusHistory {
-  final String status;
-  final String? note;
-  final DateTime createdAt;
-  final String createdBy;
-
   OrderStatusHistory({
     required this.status,
     this.note,
@@ -118,4 +112,8 @@ class OrderStatusHistory {
       createdBy: json['createdBy'],
     );
   }
+  final String status;
+  final String? note;
+  final DateTime createdAt;
+  final String createdBy;
 }

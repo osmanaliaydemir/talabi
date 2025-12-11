@@ -14,9 +14,9 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  final String orderId;
-
   const OrderDetailScreen({super.key, required this.orderId});
+
+  final String orderId;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -233,7 +233,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final cart = Provider.of<CartProvider>(context, listen: false);
 
-      for (var item in _orderDetail!.items) {
+      for (final item in _orderDetail!.items) {
         final product = Product(
           id: item.productId,
           vendorId: _orderDetail!.vendorId,
@@ -260,11 +260,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         );
 
         // Navigate to Cart
-        final bottomNav = Provider.of<BottomNavProvider>(
+        Provider.of<BottomNavProvider>(
           context,
           listen: false,
-        );
-        bottomNav.setIndex(2); // Index 2 is CartScreen
+        ).setIndex(2); // Index 2 is CartScreen
 
         // Pop back to MainNavigationScreen to show the updated tab
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -274,7 +273,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: localizations.reorderFailed(e.toString()),
+          message: localizations.errorWithMessage(e.toString()),
           isSuccess: false,
         );
       }
@@ -372,13 +371,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     color: colorScheme.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Vendor Card
                           Container(
-                            padding: EdgeInsets.all(AppTheme.spacingMedium),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingMedium,
+                            ),
                             decoration: AppTheme.cardDecoration(),
                             child: Row(
                               children: [
@@ -396,7 +397,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     size: 24,
                                   ),
                                 ),
-                                SizedBox(width: AppTheme.spacingMedium),
+                                const SizedBox(width: AppTheme.spacingMedium),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -423,7 +424,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   ),
                                 ),
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 6,
                                   ),
@@ -455,7 +456,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ],
                             ),
                           ),
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
 
                           // Products List
                           Text(
@@ -466,17 +467,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               color: AppTheme.textPrimary,
                             ),
                           ),
-                          SizedBox(height: AppTheme.spacingSmall),
+                          const SizedBox(height: AppTheme.spacingSmall),
                           Container(
                             decoration: AppTheme.cardDecoration(),
                             child: ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: _orderDetail!.items.length,
-                              separatorBuilder: (context, index) => Divider(
-                                height: 1,
-                                color: AppTheme.borderColor,
-                              ),
+                              separatorBuilder: (context, index) =>
+                                  const Divider(
+                                    height: 1,
+                                    color: AppTheme.borderColor,
+                                  ),
                               itemBuilder: (context, index) {
                                 final item = _orderDetail!.items[index];
                                 final localizations = AppLocalizations.of(
@@ -502,7 +504,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         )
                                       : null,
                                   child: Padding(
-                                    padding: EdgeInsets.all(
+                                    padding: const EdgeInsets.all(
                                       AppTheme.spacingMedium,
                                     ),
                                     child: Column(
@@ -519,7 +521,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                   ? item.isCancelled
                                                         ? ColorFiltered(
                                                             colorFilter:
-                                                                ColorFilter.mode(
+                                                                const ColorFilter.mode(
                                                                   Colors.grey,
                                                                   BlendMode
                                                                       .saturation,
@@ -556,7 +558,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                       ),
                                                     ),
                                             ),
-                                            SizedBox(
+                                            const SizedBox(
                                               width: AppTheme.spacingMedium,
                                             ),
                                             Expanded(
@@ -722,11 +724,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               },
                             ),
                           ),
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
 
                           // Payment Summary
                           Container(
-                            padding: EdgeInsets.all(AppTheme.spacingMedium),
+                            padding: const EdgeInsets.all(
+                              AppTheme.spacingMedium,
+                            ),
                             decoration: AppTheme.cardDecoration(),
                             child: Column(
                               children: [
@@ -757,7 +761,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ],
                             ),
                           ),
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
 
                           // Status History Timeline
                           if (_orderDetail!.statusHistory.isNotEmpty) ...[
@@ -769,9 +773,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 color: AppTheme.textPrimary,
                               ),
                             ),
-                            SizedBox(height: AppTheme.spacingSmall),
+                            const SizedBox(height: AppTheme.spacingSmall),
                             Container(
-                              padding: EdgeInsets.all(AppTheme.spacingMedium),
+                              padding: const EdgeInsets.all(
+                                AppTheme.spacingMedium,
+                              ),
                               decoration: AppTheme.cardDecoration(),
                               child: Column(
                                 children: _orderDetail!.statusHistory
@@ -809,7 +815,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                 ),
                                             ],
                                           ),
-                                          SizedBox(
+                                          const SizedBox(
                                             width: AppTheme.spacingMedium,
                                           ),
                                           Expanded(
@@ -848,7 +854,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                     ),
                                                   ),
                                                 if (!isLast)
-                                                  SizedBox(
+                                                  const SizedBox(
                                                     height:
                                                         AppTheme.spacingMedium,
                                                   ),
@@ -862,7 +868,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                             ),
                           ],
-                          SizedBox(height: 100), // Bottom padding for button
+                          const SizedBox(
+                            height: 100,
+                          ), // Bottom padding for button
                         ],
                       ),
                     ),
@@ -870,7 +878,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           // Bottom Action Bar
           Container(
-            padding: EdgeInsets.all(AppTheme.spacingMedium),
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
             decoration: BoxDecoration(
               color: AppTheme.surfaceColor,
               boxShadow: [
@@ -895,7 +903,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.error,
                           foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusMedium,
@@ -920,7 +928,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorScheme.primary,
                           foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusMedium,

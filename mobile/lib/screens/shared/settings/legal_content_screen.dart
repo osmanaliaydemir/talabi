@@ -6,15 +6,14 @@ import 'package:mobile/widgets/connectivity_banner.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class LegalContentScreen extends StatefulWidget {
-  final String documentType;
-  final String title;
-
   const LegalContentScreen({
     super.key,
     required this.documentType,
     required this.title,
   });
 
+  final String documentType;
+  final String title;
   @override
   State<LegalContentScreen> createState() => _LegalContentScreenState();
 }

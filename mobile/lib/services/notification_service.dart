@@ -2,18 +2,20 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
+
+  static final NotificationService _instance = NotificationService._internal();
 
   FirebaseMessaging? _firebaseMessaging;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
-  
+
   bool get isFirebaseAvailable => _firebaseMessaging != null;
 
   // Callback for order assignment notifications
@@ -36,8 +38,12 @@ class NotificationService {
     // Try to initialize Firebase Messaging
     try {
       _firebaseMessaging = FirebaseMessaging.instance;
-    } catch (e) {
-      print('Firebase Messaging not available: $e');
+    } catch (e, stackTrace) {
+      LoggerService().warning(
+        'Firebase Messaging not available',
+        e,
+        stackTrace,
+      );
       _firebaseMessaging = null;
     }
 
@@ -51,15 +57,19 @@ class NotificationService {
     if (_firebaseMessaging != null) {
       try {
         final token = await _firebaseMessaging!.getToken();
-        print('🔥 FCM Token: $token');
+        LoggerService().debug('🔥 FCM Token: $token');
 
         if (token != null) {
           try {
             final deviceType = Platform.isIOS ? 'iOS' : 'Android';
             await ApiService().registerDeviceToken(token, deviceType);
-            print('✅ Device token registered with API');
-          } catch (e) {
-            print('❌ Failed to register device token: $e');
+            LoggerService().info('✅ Device token registered with API');
+          } catch (e, stackTrace) {
+            LoggerService().error(
+              '❌ Failed to register device token',
+              e,
+              stackTrace,
+            );
           }
         }
 
@@ -67,18 +77,26 @@ class NotificationService {
         FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
         // 5. Handle Background Message Tap
-        FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageTap);
+        FirebaseMessaging.onMessageOpenedApp.listen(
+          _handleBackgroundMessageTap,
+        );
 
         // 6. Check if app was opened from a terminated state
         final initialMessage = await _firebaseMessaging!.getInitialMessage();
         if (initialMessage != null) {
           _handleBackgroundMessageTap(initialMessage);
         }
-      } catch (e) {
-        print('Error initializing Firebase Messaging: $e');
+      } catch (e, stackTrace) {
+        LoggerService().error(
+          'Error initializing Firebase Messaging',
+          e,
+          stackTrace,
+        );
       }
     } else {
-      print('⚠️ Firebase Messaging not available - notifications disabled');
+      LoggerService().warning(
+        '⚠️ Firebase Messaging not available - notifications disabled',
+      );
     }
 
     _isInitialized = true;
@@ -86,7 +104,7 @@ class NotificationService {
 
   Future<void> _requestPermission() async {
     if (_firebaseMessaging == null) return;
-    
+
     if (Platform.isIOS) {
       await _firebaseMessaging!.requestPermission(
         alert: true,
@@ -119,14 +137,18 @@ class NotificationService {
       initSettings,
       onDidReceiveNotificationResponse: (details) {
         // Handle local notification tap
-        print('🔔 Local Notification Tapped: ${details.payload}');
+        LoggerService().debug(
+          '🔔 Local Notification Tapped: ${details.payload}',
+        );
       },
     );
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    print('🔔 Foreground Message: ${message.notification?.title}');
-    print('🔔 Message Data: ${message.data}');
+    LoggerService().debug(
+      '🔔 Foreground Message: ${message.notification?.title}',
+    );
+    LoggerService().debug('🔔 Message Data: ${message.data}');
 
     // Check if this is an order assignment notification
     if (message.data.containsKey('orderId') &&
@@ -135,7 +157,9 @@ class NotificationService {
       if (type == 'order_assigned' || type == 'ORDER_ASSIGNED') {
         final orderId = int.tryParse(message.data['orderId'].toString());
         if (orderId != null && onOrderAssigned != null) {
-          print('🔔 Triggering onOrderAssigned callback for order #$orderId');
+          LoggerService().debug(
+            '🔔 Triggering onOrderAssigned callback for order #$orderId',
+          );
           onOrderAssigned!(orderId);
         }
       }
@@ -147,7 +171,7 @@ class NotificationService {
   }
 
   void _handleBackgroundMessageTap(RemoteMessage message) {
-    print('🔔 Background Message Tapped: ${message.data}');
+    LoggerService().debug('🔔 Background Message Tapped: ${message.data}');
     // Navigate to specific screen based on data
   }
 
@@ -160,7 +184,7 @@ class NotificationService {
         notification.hashCode,
         notification.title,
         notification.body,
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'high_importance_channel', // id
             'High Importance Notifications', // title
@@ -170,7 +194,7 @@ class NotificationService {
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(),
+          iOS: DarwinNotificationDetails(),
         ),
         payload: message.data.toString(),
       );

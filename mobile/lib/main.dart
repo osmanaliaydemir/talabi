@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -22,8 +20,10 @@ import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/services/navigation_service.dart';
 import 'package:mobile/services/preferences_service.dart';
 import 'package:mobile/services/sync_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,13 +31,24 @@ Future<void> main() async {
   // Initialize SharedPreferences first (singleton pattern)
   await PreferencesService.init();
 
+  // Initialize Hive (required for LoggerService and CacheService)
+  try {
+    await Hive.initFlutter();
+  } catch (e, stackTrace) {
+    // Hive initialization failed - log but continue
+    // LoggerService will handle this gracefully
+    if (kDebugMode) {
+      LoggerService().error('Hive initialization failed', e, stackTrace);
+    }
+  }
+
   // Initialize Firebase with error handling
   try {
     await Firebase.initializeApp();
-    
+
     // Initialize Firebase Analytics
     MyApp._initializeFirebaseAnalytics();
-    
+
     // Pass all uncaught "fatal" errors from the framework to Crashlytics
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
@@ -46,12 +57,10 @@ Future<void> main() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
-  } catch (e) {
+  } catch (e, stackTrace) {
     // Firebase initialization failed - log but continue app execution
-    if (kDebugMode) {
-      print('Firebase initialization failed: $e');
-      print('App will continue without Firebase services');
-    }
+    LoggerService().error('Firebase initialization failed', e, stackTrace);
+    LoggerService().warning('App will continue without Firebase services');
     // Set basic error handlers even if Firebase is not available
     FlutterError.onError = (FlutterErrorDetails details) {
       if (kDebugMode) {
@@ -59,9 +68,7 @@ Future<void> main() async {
       }
     };
     PlatformDispatcher.instance.onError = (error, stack) {
-      if (kDebugMode) {
-        print('Unhandled error: $error');
-      }
+      LoggerService().fatal('Unhandled error', error, stack);
       return true;
     };
   }
@@ -72,6 +79,9 @@ Future<void> main() async {
 
   // Initialize API service with connectivity
   ApiService().setConnectivityService(connectivityService);
+
+  // Initialize Logger Service (will be fully initialized after providers)
+  // Logger will be initialized after AuthProvider is available
 
   runApp(
     MultiProvider(
@@ -117,10 +127,12 @@ class MyApp extends StatelessWidget {
     try {
       analytics = FirebaseAnalytics.instance;
       observer = FirebaseAnalyticsObserver(analytics: analytics!);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Firebase Analytics not available: $e');
-      }
+    } catch (e, stackTrace) {
+      LoggerService().warning(
+        'Firebase Analytics not available',
+        e,
+        stackTrace,
+      );
       analytics = null;
       observer = null;
     }
@@ -130,6 +142,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer3<LocalizationProvider, ThemeProvider, BottomNavProvider>(
       builder: (context, localization, themeProvider, bottomNav, _) {
+        // Initialize Logger Service after providers are available
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final authProvider = context.read<AuthProvider>();
+          final connectivityService = ConnectivityService();
+          await LoggerService().init(
+            connectivityService: connectivityService,
+            authProvider: authProvider,
+          );
+        });
+
         // BottomNavProvider'dan kategori değişikliğini ThemeProvider'a bildir
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (themeProvider.currentCategory != bottomNav.selectedCategory) {
@@ -157,10 +179,6 @@ class MyApp extends StatelessWidget {
           theme: themeProvider.isHighContrast
               ? themeProvider.highContrastTheme
               : themeProvider.lightTheme,
-          darkTheme: themeProvider.isHighContrast
-              ? themeProvider.highContrastTheme
-              : themeProvider.darkTheme,
-          // Dark mode geçici olarak kapatıldı - her zaman light mode kullan
           themeMode: ThemeMode.light,
           routes: {'/login': (context) => const LoginScreen()},
           onGenerateRoute: AppRouter.generateRoute,

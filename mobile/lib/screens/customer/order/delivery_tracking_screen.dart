@@ -5,9 +5,9 @@ import 'package:mobile/services/api_service.dart';
 import 'dart:async';
 
 class DeliveryTrackingScreen extends StatefulWidget {
-  final String orderId;
-
   const DeliveryTrackingScreen({super.key, required this.orderId});
+
+  final String orderId;
 
   @override
   State<DeliveryTrackingScreen> createState() => _DeliveryTrackingScreenState();
@@ -204,7 +204,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
     if (_isLoading || _googleMapsApiKey == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Teslimat Takibi')),
-        body: Center(
+        body: const Center(
           child: CircularProgressIndicator(color: AppTheme.primaryOrange),
         ),
       );

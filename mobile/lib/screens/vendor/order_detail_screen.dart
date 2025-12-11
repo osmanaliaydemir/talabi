@@ -8,9 +8,9 @@ import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
-  final String orderId;
-
   const VendorOrderDetailScreen({super.key, required this.orderId});
+
+  final String orderId;
 
   @override
   State<VendorOrderDetailScreen> createState() =>
@@ -214,9 +214,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Sipariş Reddi',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
@@ -403,9 +403,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Sipariş Durumu Güncelleme',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
@@ -539,7 +539,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.delivery_dining,
                       color: AppTheme.primaryOrange,
                       size: 28,
@@ -624,7 +624,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.orange.shade100,
-                    child: Icon(
+                    child: const Icon(
                       Icons.person,
                       size: 30,
                       color: AppTheme.primaryOrange,
@@ -646,7 +646,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.star, size: 16, color: Colors.amber),
+                            const Icon(
+                              Icons.star,
+                              size: 16,
+                              color: Colors.amber,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${courier['averageRating'].toStringAsFixed(1)} (${courier['totalDeliveries']} teslimat)',
@@ -787,7 +791,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.check_circle_outline,
               color: AppTheme.primaryOrange,
               size: 28,
@@ -982,7 +986,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     const Currency displayCurrency = Currency.try_;
 
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         appBar: VendorHeader(title: 'Sipariş Detayı', showBackButton: true),
         body: Center(
           child: CircularProgressIndicator(color: Colors.deepPurple),
@@ -991,9 +995,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     }
 
     if (_order == null) {
-      return Scaffold(
+      return const Scaffold(
         appBar: VendorHeader(title: 'Sipariş Detayı', showBackButton: true),
-        body: const Center(child: Text('Sipariş bulunamadı')),
+        body: Center(child: Text('Sipariş bulunamadı')),
       );
     }
 

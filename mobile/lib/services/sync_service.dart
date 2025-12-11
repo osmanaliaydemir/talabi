@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 enum SyncActionType {
   addToCart,
@@ -13,12 +14,6 @@ enum SyncActionType {
 }
 
 class SyncAction {
-  final String id;
-  final SyncActionType type;
-  final Map<String, dynamic> data;
-  final DateTime timestamp;
-  final int retryCount;
-
   SyncAction({
     required this.id,
     required this.type,
@@ -27,14 +22,6 @@ class SyncAction {
     this.retryCount = 0,
   }) : timestamp = timestamp ?? DateTime.now();
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'type': type.toString(),
-    'data': data,
-    'timestamp': timestamp.toIso8601String(),
-    'retryCount': retryCount,
-  };
-
   factory SyncAction.fromJson(Map<String, dynamic> json) => SyncAction(
     id: json['id'],
     type: SyncActionType.values.firstWhere((e) => e.toString() == json['type']),
@@ -42,17 +29,30 @@ class SyncAction {
     timestamp: DateTime.parse(json['timestamp']),
     retryCount: json['retryCount'] ?? 0,
   );
+
+  final String id;
+  final SyncActionType type;
+  final Map<String, dynamic> data;
+  final DateTime timestamp;
+  final int retryCount;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': type.toString(),
+    'data': data,
+    'timestamp': timestamp.toIso8601String(),
+    'retryCount': retryCount,
+  };
 }
 
 class SyncService {
+  SyncService(this._connectivityService) {
+    _init();
+  }
   static const String _queueBoxName = 'sync_queue';
   static const int _maxRetries = 3;
   final ApiService _apiService = ApiService();
   final ConnectivityService _connectivityService;
-
-  SyncService(this._connectivityService) {
-    _init();
-  }
 
   Future<void> _init() async {
     // Listen to connectivity changes and process queue when online
@@ -68,9 +68,11 @@ class SyncService {
       final box = await Hive.openBox(_queueBoxName);
       await box.put(action.id, jsonEncode(action.toJson()));
       await box.close();
-      print('📦 [SYNC] Action queued: ${action.type} (${action.id})');
-    } catch (e) {
-      print('Error adding to sync queue: $e');
+      LoggerService().debug(
+        '📦 [SYNC] Action queued: ${action.type} (${action.id})',
+      );
+    } catch (e, stackTrace) {
+      LoggerService().error('Error adding to sync queue', e, stackTrace);
     }
   }
 
@@ -79,8 +81,8 @@ class SyncService {
       final box = await Hive.openBox(_queueBoxName);
       await box.delete(actionId);
       await box.close();
-    } catch (e) {
-      print('Error removing from sync queue: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error removing from sync queue', e, stackTrace);
     }
   }
 
@@ -89,50 +91,52 @@ class SyncService {
       final box = await Hive.openBox(_queueBoxName);
       final actions = <SyncAction>[];
 
-      for (var key in box.keys) {
+      for (final key in box.keys) {
         try {
           final jsonString = box.get(key) as String?;
           if (jsonString != null) {
             final json = jsonDecode(jsonString) as Map<String, dynamic>;
             actions.add(SyncAction.fromJson(json));
           }
-        } catch (e) {
-          print('Error parsing queued action: $e');
+        } catch (e, stackTrace) {
+          LoggerService().warning('Error parsing queued action', e, stackTrace);
         }
       }
 
       await box.close();
       return actions;
-    } catch (e) {
-      print('Error getting queued actions: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error getting queued actions', e, stackTrace);
       return [];
     }
   }
 
   Future<void> processQueue() async {
     if (!_connectivityService.isOnline) {
-      print('📦 [SYNC] Skipping queue processing - offline');
+      LoggerService().debug('📦 [SYNC] Skipping queue processing - offline');
       return;
     }
 
-    print('📦 [SYNC] Processing queue...');
+    LoggerService().debug('📦 [SYNC] Processing queue...');
     final actions = await getQueuedActions();
 
     if (actions.isEmpty) {
-      print('📦 [SYNC] Queue is empty');
+      LoggerService().debug('📦 [SYNC] Queue is empty');
       return;
     }
 
     // Sort by timestamp (oldest first)
     actions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-    for (var action in actions) {
+    for (final action in actions) {
       try {
         final success = await _executeAction(action);
 
         if (success) {
           await removeFromQueue(action.id);
-          print('✅ [SYNC] Action synced: ${action.type} (${action.id})');
+          LoggerService().debug(
+            '✅ [SYNC] Action synced: ${action.type} (${action.id})',
+          );
         } else {
           // Increment retry count
           final updatedAction = SyncAction(
@@ -146,19 +150,23 @@ class SyncService {
           if (updatedAction.retryCount >= _maxRetries) {
             // Remove after max retries
             await removeFromQueue(action.id);
-            print(
+            LoggerService().warning(
               '❌ [SYNC] Action failed after max retries: ${action.type} (${action.id})',
             );
           } else {
             // Update retry count
             await addToQueue(updatedAction);
-            print(
+            LoggerService().debug(
               '🔄 [SYNC] Action retry queued: ${action.type} (${action.id}) - Retry ${updatedAction.retryCount}/$_maxRetries',
             );
           }
         }
-      } catch (e) {
-        print('❌ [SYNC] Error processing action ${action.id}: $e');
+      } catch (e, stackTrace) {
+        LoggerService().error(
+          '❌ [SYNC] Error processing action ${action.id}',
+          e,
+          stackTrace,
+        );
 
         // Increment retry count on error
         final updatedAction = SyncAction(
@@ -215,8 +223,8 @@ class SyncService {
           );
           return true;
       }
-    } catch (e) {
-      print('Error executing sync action: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error executing sync action', e, stackTrace);
       return false;
     }
   }
@@ -224,9 +232,9 @@ class SyncService {
   Future<void> clearQueue() async {
     try {
       await Hive.deleteBoxFromDisk(_queueBoxName);
-      print('📦 [SYNC] Queue cleared');
-    } catch (e) {
-      print('Error clearing sync queue: $e');
+      LoggerService().debug('📦 [SYNC] Queue cleared');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error clearing sync queue', e, stackTrace);
     }
   }
 

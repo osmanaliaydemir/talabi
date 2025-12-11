@@ -140,7 +140,7 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
           // Report content
           Expanded(
             child: _isLoading
-                ? Center(
+                ? const Center(
                     child: CircularProgressIndicator(color: Colors.deepPurple),
                   )
                 : _report == null

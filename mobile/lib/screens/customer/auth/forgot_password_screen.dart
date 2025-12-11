@@ -69,7 +69,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -108,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         width: 100,
                         height: 100,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppTheme.primaryOrange,
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(
@@ -126,7 +126,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       top: AppTheme.spacingSmall,
                       left: AppTheme.spacingSmall,
                       child: IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.arrow_back,
                           color: AppTheme.textOnPrimary,
                         ),
@@ -136,7 +136,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     // Title - Centered
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                           top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
                         ),
                         child: Text(
@@ -155,10 +155,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               // Main Content Card
               Expanded(
                 child: Container(
-                  margin: EdgeInsets.only(
+                  margin: const EdgeInsets.only(
                     top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
                   ),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppTheme.cardColor,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(
@@ -177,7 +177,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ],
                   ),
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(AppTheme.spacingLarge),
+                    padding: const EdgeInsets.all(AppTheme.spacingLarge),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -229,12 +229,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   color: AppTheme.textHint,
                                   fontSize: 14,
                                 ),
-                                prefixIcon: Icon(
+                                prefixIcon: const Icon(
                                   Icons.email_outlined,
                                   color: AppTheme.textSecondary,
                                 ),
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: AppTheme.spacingMedium,
                                   vertical: AppTheme.spacingMedium,
                                 ),
@@ -259,7 +259,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryOrange,
                                 foregroundColor: AppTheme.textOnPrimary,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   vertical: AppTheme.spacingMedium,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -270,7 +270,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 elevation: AppTheme.elevationNone,
                               ),
                               child: _isLoading
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(
@@ -297,8 +297,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   : () => Navigator.pop(context),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.textPrimary,
-                                side: BorderSide(color: AppTheme.borderColor),
-                                padding: EdgeInsets.symmetric(
+                                side: const BorderSide(
+                                  color: AppTheme.borderColor,
+                                ),
+                                padding: const EdgeInsets.symmetric(
                                   vertical: AppTheme.spacingMedium,
                                 ),
                                 shape: RoundedRectangleBorder(

@@ -7,9 +7,9 @@ import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:intl/intl.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  final Map<String, dynamic> profile;
-
   const EditProfileScreen({super.key, required this.profile});
+
+  final Map<String, dynamic> profile;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -130,10 +130,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                margin: EdgeInsets.all(AppTheme.spacingMedium),
+                margin: const EdgeInsets.all(AppTheme.spacingMedium),
                 decoration: AppTheme.cardDecoration(withShadow: true),
                 child: Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingLarge),
+                  padding: const EdgeInsets.all(AppTheme.spacingLarge),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -148,7 +148,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             color: AppTheme.textPrimary,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingXSmall),
+                        const SizedBox(height: AppTheme.spacingXSmall),
                         Text(
                           localizations.updatePersonalInfo,
                           style: AppTheme.poppins(
@@ -157,7 +157,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             height: 1.4,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingLarge),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         // Full Name Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -168,12 +168,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.person_outline,
                                 color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
@@ -186,7 +186,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             },
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingSmall),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         // Phone Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -198,19 +198,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.phone_outlined,
                                 color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingMedium),
+                        const SizedBox(height: AppTheme.spacingMedium),
                         // Profile Image URL Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -221,35 +221,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.image_outlined,
                                 color: AppTheme.textSecondary,
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingSmall),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         // Date of Birth Field
                         GestureDetector(
                           onTap: _selectDate,
                           child: Container(
                             decoration: AppTheme.inputBoxDecoration(),
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: AppTheme.spacingMedium,
                               vertical: AppTheme.spacingMedium,
                             ),
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.calendar_today_outlined,
                                   color: AppTheme.textSecondary,
                                 ),
-                                SizedBox(width: AppTheme.spacingMedium),
+                                const SizedBox(width: AppTheme.spacingMedium),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -262,7 +262,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           fontSize: 14,
                                         ),
                                       ),
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
                                       Text(
                                         _dateOfBirth != null
                                             ? DateFormat(
@@ -279,7 +279,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ],
                                   ),
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.chevron_right,
                                   color: AppTheme.textSecondary,
                                 ),
@@ -287,7 +287,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingLarge),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         // Save Button
                         SizedBox(
                           width: double.infinity,
@@ -296,7 +296,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorScheme.primary,
                               foregroundColor: AppTheme.textOnPrimary,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: AppTheme.spacingMedium,
                               ),
                               shape: RoundedRectangleBorder(
@@ -307,7 +307,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               elevation: 0,
                             ),
                             child: _isLoading
-                                ? SizedBox(
+                                ? const SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(

@@ -7,11 +7,6 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'dart:math' as math;
 
 class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
-  final VoidCallback? onNotificationTap;
-  final VoidCallback? onLocationTap;
-  final String? currentLocation;
-  final bool isAddressesLoading;
-
   const SpecialHomeHeader({
     super.key,
     this.onNotificationTap,
@@ -19,6 +14,11 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
     this.currentLocation,
     this.isAddressesLoading = true,
   });
+
+  final VoidCallback? onNotificationTap;
+  final VoidCallback? onLocationTap;
+  final String? currentLocation;
+  final bool isAddressesLoading;
 
   @override
   Size get preferredSize => const Size.fromHeight(310);
@@ -198,7 +198,7 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                                 width: 224,
                                 child: Text(
                                   isMarket
-                                      ? "Market Alışverişin\nKapında"
+                                      ? 'Market Alışverişin\nKapında'
                                       : l10n.promotionalBannerTitle,
                                   style: const TextStyle(
                                     color: Colors.white,
@@ -265,10 +265,10 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(1000),
                   boxShadow: [
-                    BoxShadow(
-                      color: const Color(0x1A1A1A1A),
+                    const BoxShadow(
+                      color: Color(0x1A1A1A1A),
                       blurRadius: 20,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
@@ -303,10 +303,10 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class _AnimatedNotificationIcon extends StatefulWidget {
+  const _AnimatedNotificationIcon({this.onTap, required this.unreadCount});
+
   final VoidCallback? onTap;
   final int unreadCount;
-
-  const _AnimatedNotificationIcon({this.onTap, required this.unreadCount});
 
   @override
   State<_AnimatedNotificationIcon> createState() =>

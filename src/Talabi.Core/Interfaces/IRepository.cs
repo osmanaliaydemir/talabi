@@ -55,6 +55,13 @@ public interface IRepository<T> where T : BaseEntity
     Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Birden fazla entity ekler
+    /// </summary>
+    /// <param name="entities">Eklenecek entity koleksiyonu</param>
+    /// <param name="cancellationToken">İptal token'ı</param>
+    Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Mevcut bir entity'yi günceller
     /// </summary>
     /// <param name="entity">Güncellenecek entity</param>

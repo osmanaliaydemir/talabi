@@ -4,10 +4,13 @@ import 'package:geocoding/geocoding.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 
 class AddressPickerScreen extends StatefulWidget {
+  const AddressPickerScreen({super.key, this.onAddressSelected});
+
   final Function(
     String title,
     String fullAddress,
@@ -18,8 +21,6 @@ class AddressPickerScreen extends StatefulWidget {
     double longitude,
   )?
   onAddressSelected;
-
-  const AddressPickerScreen({super.key, this.onAddressSelected});
 
   @override
   State<AddressPickerScreen> createState() => _AddressPickerScreenState();
@@ -113,7 +114,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
     });
 
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
+      final placemarks = await placemarkFromCoordinates(
         location.latitude,
         location.longitude,
       );
@@ -137,7 +138,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       setState(() {
         _isLoadingAddress = false;
       });
-      print('Error getting address: $e');
+      LoggerService().error('Error getting address: $e', e);
     }
   }
 
@@ -294,7 +295,7 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                             : {},
                       ),
                       // Center indicator
-                      Center(
+                      const Center(
                         child: Icon(
                           Icons.location_on,
                           color: Colors.red,

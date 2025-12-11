@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class ConnectivityService {
+  ConnectivityService() {
+    _init();
+  }
+
   final Connectivity _connectivity = Connectivity();
   final StreamController<bool> _connectivityController =
       StreamController<bool>.broadcast();
@@ -9,10 +14,6 @@ class ConnectivityService {
   Stream<bool> get connectivityStream => _connectivityController.stream;
   bool _isOnline = true;
   bool get isOnline => _isOnline;
-
-  ConnectivityService() {
-    _init();
-  }
 
   Future<void> _init() async {
     // Initial check
@@ -36,14 +37,14 @@ class ConnectivityService {
       if (hasConnection != _isOnline) {
         _isOnline = hasConnection;
         _connectivityController.add(_isOnline);
-        print(
+        LoggerService().debug(
           '📡 [CONNECTIVITY] Device status: ${_isOnline ? "ONLINE" : "OFFLINE"}',
         );
       }
 
       return _isOnline;
-    } catch (e) {
-      print('Error checking connectivity: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error checking connectivity', e, stackTrace);
       // On error, assume we're online (better UX)
       if (!_isOnline) {
         _isOnline = true;

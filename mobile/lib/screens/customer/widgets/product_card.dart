@@ -10,17 +10,6 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class ProductCard extends StatefulWidget {
-  final Product product;
-  final double? width;
-  final bool isFavorite;
-  final VoidCallback? onFavoriteTap;
-  final VoidCallback? onTap;
-  final VoidCallback? onToggleAvailability;
-  final VoidCallback? onDelete;
-  final bool showRating;
-  final String? rating;
-  final String? ratingCount;
-
   const ProductCard({
     super.key,
     required this.product,
@@ -34,6 +23,17 @@ class ProductCard extends StatefulWidget {
     this.rating,
     this.ratingCount,
   });
+
+  final Product product;
+  final double? width;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
+  final VoidCallback? onTap;
+  final VoidCallback? onToggleAvailability;
+  final VoidCallback? onDelete;
+  final bool showRating;
+  final String? rating;
+  final String? ratingCount;
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -87,7 +87,7 @@ class _ProductCardState extends State<ProductCard> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -118,7 +118,7 @@ class _ProductCardState extends State<ProductCard> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -166,7 +166,7 @@ class _ProductCardState extends State<ProductCard> {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -224,7 +224,7 @@ class _ProductCardState extends State<ProductCard> {
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                           ),
                           child: PopupMenuButton<String>(

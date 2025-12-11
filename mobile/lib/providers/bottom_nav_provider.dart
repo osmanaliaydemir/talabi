@@ -3,6 +3,10 @@ import 'package:flutter/foundation.dart';
 enum MainCategory { restaurant, market }
 
 class BottomNavProvider with ChangeNotifier {
+  BottomNavProvider() {
+    _selectedCategory = MainCategory.restaurant;
+  }
+
   int _currentIndex = 0;
   MainCategory _selectedCategory = MainCategory.restaurant;
 

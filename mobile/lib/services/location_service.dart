@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/location_permission_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class LocationService {
+  LocationService(this._courierService);
+
   final CourierService? _courierService;
   StreamSubscription<Position>? _positionStreamSubscription;
   Timer? _updateTimer;
   BuildContext? _context;
-
-  LocationService(this._courierService);
 
   /// Set context for permission dialogs (should be called before using location)
   void setContext(BuildContext context) {
@@ -21,11 +22,11 @@ class LocationService {
   // Check and request location permissions with explanation dialog
   Future<bool> checkAndRequestPermissions() async {
     if (_context == null) {
-      print(
+      LoggerService().warning(
         'Warning: Context not set for LocationService. Permission dialog cannot be shown.',
       );
       // Fallback to direct permission check
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return false;
 
       LocationPermission permission = await Geolocator.checkPermission();
@@ -46,12 +47,12 @@ class LocationService {
   // Get current location with permission check
   Future<Position?> getCurrentLocation() async {
     if (_context == null) {
-      print(
+      LoggerService().warning(
         'Warning: Context not set for LocationService. Using direct permission check.',
       );
       // Fallback
       try {
-        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
         if (!serviceEnabled) return null;
 
         LocationPermission permission = await Geolocator.checkPermission();
@@ -65,8 +66,8 @@ class LocationService {
         return await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
-      } catch (e) {
-        print('Error getting location: $e');
+      } catch (e, stackTrace) {
+        LoggerService().error('Error getting location', e, stackTrace);
         return null;
       }
     }
@@ -79,7 +80,7 @@ class LocationService {
     final hasPermission = await checkAndRequestPermissions();
     if (!hasPermission) return;
 
-    LocationSettings locationSettings;
+    late LocationSettings locationSettings;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       locationSettings = AndroidSettings(
@@ -88,8 +89,8 @@ class LocationService {
         forceLocationManager: true,
         intervalDuration: const Duration(seconds: 10),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationTitle: "Talabi Kurye",
-          notificationText: "Teslimat takibi için konumunuz kullanılıyor",
+          notificationTitle: 'Talabi Kurye',
+          notificationText: 'Teslimat takibi için konumunuz kullanılıyor',
           enableWakeLock: true,
         ),
       );
@@ -119,8 +120,8 @@ class LocationService {
                   position.latitude,
                   position.longitude,
                 );
-              } catch (e) {
-                print('Error updating location: $e');
+              } catch (e, stackTrace) {
+                LoggerService().error('Error updating location', e, stackTrace);
               }
             }
           },
@@ -137,8 +138,8 @@ class LocationService {
               position.longitude,
             );
           }
-        } catch (e) {
-          print('Error in periodic update: $e');
+        } catch (e, stackTrace) {
+          LoggerService().error('Error in periodic update', e, stackTrace);
         }
       }
     });

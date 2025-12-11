@@ -105,10 +105,10 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
 
                     final banners = snapshot.data!;
                     return ListView.separated(
-                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
                       itemCount: banners.length,
                       separatorBuilder: (context, index) =>
-                          SizedBox(height: AppTheme.spacingMedium),
+                          const SizedBox(height: AppTheme.spacingMedium),
                       itemBuilder: (context, index) {
                         return _buildBannerCard(
                           banners[index],
@@ -135,7 +135,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
     // Use dynamic theme color for banners
     final gradientColors = [
       colorScheme.primary,
-      colorScheme.primary.withOpacity(0.8),
+      colorScheme.primary.withValues(alpha: 0.8),
     ];
 
     // Her banner için farklı icon
@@ -164,7 +164,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
         );
       },
       child: Container(
-        padding: EdgeInsets.all(AppTheme.spacingMedium),
+        padding: const EdgeInsets.all(AppTheme.spacingMedium),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -174,7 +174,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -198,18 +198,18 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text(
                     banner.subtitle,
                     style: AppTheme.poppins(
                       fontSize: 13,
-                      color: AppTheme.textOnPrimary.withOpacity(0.9),
+                      color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (banner.buttonText != null) ...[
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
                         // Handle button action
@@ -224,11 +224,11 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.cardColor,
                         foregroundColor: colorScheme.primary,
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 10,
                         ),
-                        minimumSize: Size(0, 36),
+                        minimumSize: const Size(0, 36),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             AppTheme.radiusSmall,
@@ -248,7 +248,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                 ],
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             // Icon container
             SizedBox(
               width: 120,
@@ -263,7 +263,9 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        BouncingCircle(color: Colors.white.withOpacity(0.2)),
+                        BouncingCircle(
+                          color: Colors.white.withValues(alpha: 0.2),
+                        ),
                         if (banner.imageUrl != null)
                           ClipOval(
                             child: CachedNetworkImageWidget(

@@ -5,9 +5,8 @@ import 'package:mobile/widgets/bouncing_circle.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class CampaignDetailScreen extends StatelessWidget {
-  final PromotionalBanner banner;
-
   const CampaignDetailScreen({super.key, required this.banner});
+  final PromotionalBanner banner;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class CampaignDetailScreen extends StatelessWidget {
                         end: Alignment.bottomRight,
                         colors: [
                           colorScheme.primary,
-                          colorScheme.primary.withOpacity(0.8),
+                          colorScheme.primary.withValues(alpha: 0.8),
                         ],
                       ),
                     ),
@@ -51,7 +50,7 @@ class CampaignDetailScreen extends StatelessWidget {
                     right: -40,
                     bottom: -60,
                     child: BouncingCircle(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       size: 200,
                     ),
                   ),
@@ -65,7 +64,7 @@ class CampaignDetailScreen extends StatelessWidget {
                           fit: BoxFit.cover,
                           maxWidth: 300,
                           maxHeight: 300,
-                          errorWidget: Icon(
+                          errorWidget: const Icon(
                             Icons.local_offer,
                             size: 80,
                             color: Colors.white,
@@ -74,7 +73,7 @@ class CampaignDetailScreen extends StatelessWidget {
                       ),
                     )
                   else
-                    Center(
+                    const Center(
                       child: Icon(
                         Icons.local_offer,
                         size: 80,
@@ -87,7 +86,7 @@ class CampaignDetailScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              padding: const EdgeInsets.all(AppTheme.spacingMedium),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -99,7 +98,7 @@ class CampaignDetailScreen extends StatelessWidget {
                       color: AppTheme.textPrimary,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingMedium),
+                  const SizedBox(height: AppTheme.spacingMedium),
                   Text(
                     banner.subtitle,
                     style: AppTheme.poppins(
@@ -107,7 +106,7 @@ class CampaignDetailScreen extends StatelessWidget {
                       color: AppTheme.textSecondary,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingLarge),
+                  const SizedBox(height: AppTheme.spacingLarge),
                   if (banner.buttonText != null)
                     SizedBox(
                       width: double.infinity,
@@ -118,7 +117,7 @@ class CampaignDetailScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorScheme.primary,
                           foregroundColor: AppTheme.textOnPrimary,
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             vertical: AppTheme.spacingMedium,
                           ),
                           shape: RoundedRectangleBorder(

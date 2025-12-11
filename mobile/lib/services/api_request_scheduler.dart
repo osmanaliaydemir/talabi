@@ -4,14 +4,15 @@ import 'dart:collection';
 class ApiRequestScheduler {
   ApiRequestScheduler._internal();
 
-  static final ApiRequestScheduler _instance = ApiRequestScheduler._internal();
-
   factory ApiRequestScheduler() => _instance;
+
+  static final ApiRequestScheduler _instance = ApiRequestScheduler._internal();
 
   static const int _maxRequestsPerMinute = 50;
   static const int _maxConcurrentRequests = 4;
-  static const Duration _minSpacingBetweenRequests =
-      Duration(milliseconds: 200);
+  static const Duration _minSpacingBetweenRequests = Duration(
+    milliseconds: 200,
+  );
 
   final Queue<_QueuedPermit> _highPriorityQueue = Queue<_QueuedPermit>();
   final Queue<_QueuedPermit> _queue = Queue<_QueuedPermit>();
@@ -109,4 +110,3 @@ class RequestPermit {
 class _QueuedPermit {
   final Completer<RequestPermit> completer = Completer<RequestPermit>();
 }
-

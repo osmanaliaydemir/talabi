@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mobile/services/connectivity_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class ConnectivityProvider with ChangeNotifier {
+  ConnectivityProvider(this._connectivityService) {
+    _init();
+  }
+
   final ConnectivityService _connectivityService;
   StreamSubscription<bool>? _subscription;
   bool _isOnline = true;
@@ -10,10 +15,6 @@ class ConnectivityProvider with ChangeNotifier {
 
   bool get isOnline => _isOnline;
   DateTime? get lastOnlineTime => _lastOnlineTime;
-
-  ConnectivityProvider(this._connectivityService) {
-    _init();
-  }
 
   Future<void> _init() async {
     // Listen to connectivity changes first
@@ -24,7 +25,7 @@ class ConnectivityProvider with ChangeNotifier {
           _lastOnlineTime = DateTime.now();
         }
         notifyListeners();
-        print(
+        LoggerService().debug(
           '📡 [CONNECTIVITY] Status changed: ${isOnline ? "ONLINE" : "OFFLINE"}',
         );
       }
@@ -36,7 +37,7 @@ class ConnectivityProvider with ChangeNotifier {
       _lastOnlineTime = DateTime.now();
     }
     notifyListeners();
-    print(
+    LoggerService().debug(
       '📡 [CONNECTIVITY] Initial status: ${_isOnline ? "ONLINE" : "OFFLINE"}',
     );
   }

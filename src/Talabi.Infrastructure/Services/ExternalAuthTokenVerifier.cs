@@ -91,8 +91,12 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
             
             if (tokenInfo == null)
             {
+                _logger.LogWarning("Google tokeninfo response is null");
                 return false;
             }
+
+            _logger.LogDebug("Google token verification - Email: {Email}, Exp: {Exp}, ExpiresIn: {ExpiresIn}", 
+                tokenInfo.Email, tokenInfo.Exp, tokenInfo.ExpiresIn);
 
             // Verify email matches if provided
             if (!string.IsNullOrEmpty(expectedEmail) && 
@@ -104,9 +108,21 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
             }
 
             // Verify token is not expired
-            if (tokenInfo.ExpiresIn <= 0)
+            // Google tokeninfo returns 'exp' as Unix timestamp, not 'expires_in'
+            if (tokenInfo.Exp.HasValue)
             {
-                _logger.LogWarning("Google token has expired");
+                var expirationTime = DateTimeOffset.FromUnixTimeSeconds(tokenInfo.Exp.Value);
+                if (expirationTime < DateTimeOffset.UtcNow)
+                {
+                    _logger.LogWarning("Google token has expired. Expiration: {Expiration}, Current: {Current}", 
+                        expirationTime, DateTimeOffset.UtcNow);
+                    return false;
+                }
+            }
+            else if (tokenInfo.ExpiresIn.HasValue && tokenInfo.ExpiresIn.Value <= 0)
+            {
+                // Fallback to ExpiresIn if Exp is not available (legacy)
+                _logger.LogWarning("Google token has expired (using ExpiresIn)");
                 return false;
             }
 
@@ -321,7 +337,8 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
     private class GoogleTokenInfo
     {
         public string? Email { get; set; }
-        public int ExpiresIn { get; set; }
+        public long? Exp { get; set; } // Expiration timestamp (Unix time)
+        public int? ExpiresIn { get; set; } // Legacy field, may not be present
     }
 
     private class FacebookDebugTokenResponse

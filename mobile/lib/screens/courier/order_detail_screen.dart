@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  final String orderId;
-
   const OrderDetailScreen({super.key, required this.orderId});
+
+  final String orderId;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -24,12 +24,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
-    print('OrderDetailScreen: initState - OrderId: ${widget.orderId}');
+    LoggerService().debug(
+      'OrderDetailScreen: initState - OrderId: ${widget.orderId}',
+    );
     _loadOrderDetail();
   }
 
   Future<void> _loadOrderDetail() async {
-    print(
+    LoggerService().debug(
       'OrderDetailScreen: Loading order detail - OrderId: ${widget.orderId}',
     );
     setState(() {
@@ -38,7 +40,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
     try {
       final order = await _courierService.getOrderDetail(widget.orderId);
-      print(
+      LoggerService().debug(
         'OrderDetailScreen: Order loaded - Status: ${order.status}, Vendor: ${order.vendorName}',
       );
       if (mounted) {
@@ -48,8 +50,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         });
       }
     } catch (e, stackTrace) {
-      print('OrderDetailScreen: ERROR loading order - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'OrderDetailScreen: ERROR loading order',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -102,7 +107,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _acceptOrder() async {
-    print('OrderDetailScreen: Attempting to accept order ${widget.orderId}');
+    LoggerService().debug(
+      'OrderDetailScreen: Attempting to accept order ${widget.orderId}',
+    );
     setState(() {
       _isProcessing = true;
     });
@@ -110,7 +117,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.acceptOrder(widget.orderId);
       if (success && mounted) {
-        print('OrderDetailScreen: Order accepted successfully');
+        LoggerService().debug('OrderDetailScreen: Order accepted successfully');
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -121,8 +128,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         await _loadOrderDetail();
       }
     } catch (e, stackTrace) {
-      print('OrderDetailScreen: ERROR accepting order - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'OrderDetailScreen: ERROR accepting order',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -219,7 +229,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _rejectOrder(String reason) async {
-    print('OrderDetailScreen: Attempting to reject order ${widget.orderId}');
+    LoggerService().debug(
+      'OrderDetailScreen: Attempting to reject order ${widget.orderId}',
+    );
     setState(() {
       _isProcessing = true;
     });
@@ -227,7 +239,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.rejectOrder(widget.orderId, reason);
       if (success && mounted) {
-        print('OrderDetailScreen: Order rejected successfully');
+        LoggerService().debug('OrderDetailScreen: Order rejected successfully');
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -238,8 +250,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Navigator.of(context).pop(true); // Return to dashboard
       }
     } catch (e, stackTrace) {
-      print('OrderDetailScreen: ERROR rejecting order - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'OrderDetailScreen: ERROR rejecting order',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -262,7 +277,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _pickupOrder() async {
-    print('OrderDetailScreen: Attempting to pick up order ${widget.orderId}');
+    LoggerService().debug(
+      'OrderDetailScreen: Attempting to pick up order ${widget.orderId}',
+    );
     setState(() {
       _isProcessing = true;
     });
@@ -270,7 +287,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.pickupOrder(widget.orderId);
       if (success && mounted) {
-        print('OrderDetailScreen: Order picked up successfully');
+        LoggerService().debug(
+          'OrderDetailScreen: Order picked up successfully',
+        );
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -284,8 +303,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         await _loadOrderDetail();
       }
     } catch (e, stackTrace) {
-      print('OrderDetailScreen: ERROR picking up order - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'OrderDetailScreen: ERROR picking up order',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -308,7 +330,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _deliverOrder() async {
-    print('OrderDetailScreen: Attempting to deliver order ${widget.orderId}');
+    LoggerService().debug(
+      'OrderDetailScreen: Attempting to deliver order ${widget.orderId}',
+    );
     setState(() {
       _isProcessing = true;
     });
@@ -316,14 +340,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.deliverOrder(widget.orderId);
       if (success && mounted) {
-        print('OrderDetailScreen: Order delivered, navigating to proof screen');
+        LoggerService().debug(
+          'OrderDetailScreen: Order delivered, navigating to proof screen',
+        );
         // Navigate to delivery proof screen
         final proofSubmitted = await Navigator.of(
           context,
         ).pushNamed('/courier/delivery-proof', arguments: widget.orderId);
 
         if (proofSubmitted == true && mounted) {
-          print('OrderDetailScreen: Delivery proof submitted');
+          LoggerService().debug('OrderDetailScreen: Delivery proof submitted');
           final localizations = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -336,14 +362,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           );
           Navigator.of(context).pop(true); // Return to dashboard
         } else if (mounted) {
-          print('OrderDetailScreen: Order delivered without proof submission');
+          LoggerService().debug(
+            'OrderDetailScreen: Order delivered without proof submission',
+          );
           // Proof not submitted, but order is delivered
           Navigator.of(context).pop(true);
         }
       }
     } catch (e, stackTrace) {
-      print('OrderDetailScreen: ERROR delivering order - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'OrderDetailScreen: ERROR delivering order',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -362,7 +393,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator(color: Colors.teal)),
       );
     }
@@ -460,12 +491,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 _order!.courierAcceptedAt != null ||
                 _order!.pickedUpAt != null ||
                 _order!.deliveredAt != null) ...[
-              Text(
+              const Text(
                 'Timeline',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Card(
@@ -479,7 +507,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           iconColor: Colors.blue,
                           title: 'Assigned',
                           time: _order!.courierAssignedAt!,
-                          isActive: _order!.courierStatus != null &&
+                          isActive:
+                              _order!.courierStatus != null &&
                               (_order!.courierStatus ==
                                       OrderCourierStatus.assigned ||
                                   _order!.courierStatus ==
@@ -497,7 +526,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           iconColor: Colors.green,
                           title: 'Accepted',
                           time: _order!.courierAcceptedAt!,
-                          isActive: _order!.courierStatus != null &&
+                          isActive:
+                              _order!.courierStatus != null &&
                               (_order!.courierStatus ==
                                       OrderCourierStatus.accepted ||
                                   _order!.courierStatus ==
@@ -522,7 +552,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           iconColor: Colors.orange,
                           title: 'Picked Up',
                           time: _order!.pickedUpAt!,
-                          isActive: _order!.courierStatus != null &&
+                          isActive:
+                              _order!.courierStatus != null &&
                               (_order!.courierStatus ==
                                       OrderCourierStatus.pickedUp ||
                                   _order!.courierStatus ==
@@ -536,7 +567,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           iconColor: Colors.purple,
                           title: 'Out for Delivery',
                           time: _order!.outForDeliveryAt!,
-                          isActive: _order!.courierStatus != null &&
+                          isActive:
+                              _order!.courierStatus != null &&
                               (_order!.courierStatus ==
                                       OrderCourierStatus.outForDelivery ||
                                   _order!.courierStatus ==
@@ -566,8 +598,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
-                      Icon(Icons.monetization_on,
-                          color: Colors.green, size: 32),
+                      const Icon(
+                        Icons.monetization_on,
+                        color: Colors.green,
+                        size: 32,
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -615,7 +650,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
                 TextButton.icon(
                   onPressed: () {
-                    print('OrderDetailScreen: View map tapped');
+                    LoggerService().debug('OrderDetailScreen: View map tapped');
                     Navigator.of(
                       context,
                     ).pushNamed('/courier/order-map', arguments: _order!);
@@ -809,7 +844,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     String? subtitle,
     required bool isActive,
   }) {
-    final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} - ${time.day}/${time.month}/${time.year}';
+    final timeStr =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} - ${time.day}/${time.month}/${time.year}';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -855,10 +891,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   timeStr,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                 ),
               ],
             ),

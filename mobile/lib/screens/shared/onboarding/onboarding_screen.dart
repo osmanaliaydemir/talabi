@@ -123,12 +123,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class TopCurveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    var path = Path();
-    path.moveTo(0, 50);
-    path.quadraticBezierTo(size.width / 2, -20, size.width, 50);
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
+    final path = Path()
+      ..moveTo(0, 50)
+      ..quadraticBezierTo(size.width / 2, -20, size.width, 50)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
     return path;
   }
 
@@ -137,10 +137,9 @@ class TopCurveClipper extends CustomClipper<Path> {
 }
 
 class SlideActionBtn extends StatefulWidget {
+  const SlideActionBtn({super.key, required this.text, required this.onSubmit});
   final String text;
   final VoidCallback onSubmit;
-
-  const SlideActionBtn({super.key, required this.text, required this.onSubmit});
 
   @override
   State<SlideActionBtn> createState() => _SlideActionBtnState();
@@ -177,7 +176,12 @@ class _SlideActionBtnState extends State<SlideActionBtn> {
                   width: padding + _dragValue + buttonSize,
                   height: 70, // Match container height
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.2),
+                    color: const Color.fromARGB(
+                      255,
+                      0,
+                      0,
+                      0,
+                    ).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(100),
                   ),
                 ),

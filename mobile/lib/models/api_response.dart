@@ -1,10 +1,4 @@
 class ApiResponse<T> {
-  final bool success;
-  final String? message;
-  final T? data;
-  final String? errorCode;
-  final List<String>? errors;
-
   ApiResponse({
     required this.success,
     this.message,
@@ -25,4 +19,9 @@ class ApiResponse<T> {
       errors: json['errors'] != null ? List<String>.from(json['errors']) : null,
     );
   }
+  final bool success;
+  final String? message;
+  final T? data;
+  final String? errorCode;
+  final List<String>? errors;
 }

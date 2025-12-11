@@ -55,7 +55,7 @@ class _VendorReviewsScreenState extends State<VendorReviewsScreen> {
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(color: AppTheme.vendorPrimary),
             )
           : _reviews.isEmpty

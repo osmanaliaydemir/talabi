@@ -6,6 +6,7 @@ import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/models/courier_earning.dart';
 import 'package:mobile/models/courier_notification.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class CourierService {
   final Dio _dio = ApiService().dio;
@@ -28,8 +29,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return Courier.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching courier profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching courier profile', e, stackTrace);
       rethrow;
     }
   }
@@ -52,8 +53,8 @@ class CourierService {
           throw Exception(apiResponse.message ?? 'Durum güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating status: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating status', e, stackTrace);
       rethrow;
     }
   }
@@ -76,8 +77,8 @@ class CourierService {
           throw Exception(apiResponse.message ?? 'Konum güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating location: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating location', e, stackTrace);
       rethrow;
     }
   }
@@ -100,8 +101,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return CourierStatistics.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching statistics: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching statistics', e, stackTrace);
       rethrow;
     }
   }
@@ -132,8 +133,8 @@ class CourierService {
       return (response.data as List)
           .map((json) => CourierOrder.fromJson(json))
           .toList();
-    } catch (e) {
-      print('Error fetching active orders: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching active orders', e, stackTrace);
       rethrow;
     }
   }
@@ -154,8 +155,8 @@ class CourierService {
         }
       }
       return true;
-    } catch (e) {
-      print('Error accepting order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error accepting order', e, stackTrace);
       rethrow;
     }
   }
@@ -179,8 +180,8 @@ class CourierService {
         }
       }
       return true;
-    } catch (e) {
-      print('Error rejecting order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error rejecting order', e, stackTrace);
       rethrow;
     }
   }
@@ -203,8 +204,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return CourierOrder.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching order detail: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching order detail', e, stackTrace);
       rethrow;
     }
   }
@@ -225,8 +226,8 @@ class CourierService {
         }
       }
       return true;
-    } catch (e) {
-      print('Error picking up order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error picking up order', e, stackTrace);
       rethrow;
     }
   }
@@ -247,8 +248,8 @@ class CourierService {
         }
       }
       return true;
-    } catch (e) {
-      print('Error delivering order: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error delivering order', e, stackTrace);
       rethrow;
     }
   }
@@ -279,8 +280,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return CourierNotificationResponse.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching notifications: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching notifications', e, stackTrace);
       rethrow;
     }
   }
@@ -302,8 +303,8 @@ class CourierService {
           );
         }
       }
-    } catch (e) {
-      print('Error marking notification read: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error marking notification read', e, stackTrace);
       rethrow;
     }
   }
@@ -326,8 +327,12 @@ class CourierService {
           );
         }
       }
-    } catch (e) {
-      print('Error marking all notifications read: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error marking all notifications read',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -352,8 +357,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return EarningsSummary.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching today earnings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching today earnings', e, stackTrace);
       rethrow;
     }
   }
@@ -378,8 +383,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return EarningsSummary.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching weekly earnings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching weekly earnings', e, stackTrace);
       rethrow;
     }
   }
@@ -404,8 +409,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return EarningsSummary.fromJson(response.data);
-    } catch (e) {
-      print('Error fetching monthly earnings: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching monthly earnings', e, stackTrace);
       rethrow;
     }
   }
@@ -434,8 +439,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return response.data;
-    } catch (e) {
-      print('Error fetching earnings history: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching earnings history', e, stackTrace);
       rethrow;
     }
   }
@@ -460,8 +465,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return response.data;
-    } catch (e) {
-      print('Error checking availability: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error checking availability', e, stackTrace);
       rethrow;
     }
   }
@@ -492,8 +497,8 @@ class CourierService {
         return apiResponse.data!;
       }
       return response.data;
-    } catch (e) {
-      print('Error fetching order history: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching order history', e, stackTrace);
       rethrow;
     }
   }
@@ -527,8 +532,8 @@ class CourierService {
           );
         }
       }
-    } catch (e) {
-      print('Error submitting proof: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error submitting proof', e, stackTrace);
       rethrow;
     }
   }
@@ -548,16 +553,16 @@ class CourierService {
           throw Exception(apiResponse.message ?? 'Profil güncellenemedi');
         }
       }
-    } catch (e) {
-      print('Error updating profile: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating profile', e, stackTrace);
       rethrow;
     }
   }
 
   Future<String> uploadImage(File file) async {
     try {
-      String fileName = file.path.split('/').last;
-      FormData formData = FormData.fromMap({
+      final fileName = file.path.split('/').last;
+      final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(file.path, filename: fileName),
       });
 
@@ -582,8 +587,8 @@ class CourierService {
       }
 
       throw Exception('Failed to upload image');
-    } catch (e) {
-      print('Error uploading image: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error uploading image', e, stackTrace);
       rethrow;
     }
   }
@@ -614,17 +619,14 @@ class CourierService {
       return data
           .map((e) => VehicleTypeOption.fromJson(e as Map<String, dynamic>))
           .toList();
-    } catch (e) {
-      print('Error fetching vehicle types: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vehicle types', e, stackTrace);
       rethrow;
     }
   }
 }
 
 class VehicleTypeOption {
-  final String key;
-  final String name;
-
   VehicleTypeOption({required this.key, required this.name});
 
   factory VehicleTypeOption.fromJson(Map<String, dynamic> json) {
@@ -633,4 +635,6 @@ class VehicleTypeOption {
       name: json['name'] as String,
     );
   }
+  final String key;
+  final String name;
 }

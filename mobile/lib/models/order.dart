@@ -1,12 +1,4 @@
 class Order {
-  final String id;
-  final String customerOrderId;
-  final String vendorId;
-  final String vendorName;
-  final double totalAmount;
-  final String status;
-  final DateTime createdAt;
-
   Order({
     required this.id,
     required this.customerOrderId,
@@ -28,4 +20,11 @@ class Order {
       createdAt: DateTime.parse(json['createdAt']),
     );
   }
+  final String id;
+  final String customerOrderId;
+  final String vendorId;
+  final String vendorName;
+  final double totalAmount;
+  final String status;
+  final DateTime createdAt;
 }

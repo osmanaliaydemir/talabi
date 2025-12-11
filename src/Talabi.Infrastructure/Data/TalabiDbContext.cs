@@ -37,6 +37,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
     public DbSet<PromotionalBanner> PromotionalBanners { get; set; }
     public DbSet<PromotionalBannerTranslation> PromotionalBannerTranslations { get; set; }
+    public DbSet<ErrorLog> ErrorLogs { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -395,5 +396,23 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<LegalDocument>()
             .HasIndex(ld => new { ld.Type, ld.LanguageCode })
             .IsUnique();
+
+        // ErrorLog configuration
+        builder.Entity<ErrorLog>()
+            .HasIndex(el => el.LogId)
+            .IsUnique();
+
+        builder.Entity<ErrorLog>()
+            .HasIndex(el => el.UserId);
+
+        builder.Entity<ErrorLog>()
+            .HasIndex(el => el.Level);
+
+        builder.Entity<ErrorLog>()
+            .HasIndex(el => el.Timestamp);
+
+        builder.Entity<ErrorLog>()
+            .Property(el => el.LogId)
+            .HasMaxLength(100);
     }
 }

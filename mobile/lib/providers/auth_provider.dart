@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,16 +62,18 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> register(String email, String password, String fullName) async {
     try {
-      print('🟡 [AUTH_PROVIDER] Register called');
-      print('🟡 [AUTH_PROVIDER] Email: $email');
-      print('🟡 [AUTH_PROVIDER] FullName: $fullName');
+      LoggerService().debug('🟡 [AUTH_PROVIDER] Register called');
+      LoggerService().debug('🟡 [AUTH_PROVIDER] Email: $email');
+      LoggerService().debug('🟡 [AUTH_PROVIDER] FullName: $fullName');
 
       final apiService = ApiService();
       final response = await apiService.register(email, password, fullName);
 
-      print('🟢 [AUTH_PROVIDER] Register response received');
-      print('🟢 [AUTH_PROVIDER] Response keys: ${response.keys}');
-      print('🟢 [AUTH_PROVIDER] Response: $response');
+      LoggerService().debug('🟢 [AUTH_PROVIDER] Register response received');
+      LoggerService().debug(
+        '🟢 [AUTH_PROVIDER] Response keys: ${response.keys}',
+      );
+      LoggerService().debug('🟢 [AUTH_PROVIDER] Response: $response');
 
       // Note: Register usually doesn't return tokens if email verification is required
       // But if it does, we handle it.
@@ -84,10 +87,12 @@ class AuthProvider with ChangeNotifier {
           _refreshToken = response['refreshToken'];
         }
 
-        print('🟢 [AUTH_PROVIDER] Token: ${_token != null ? "Set" : "Null"}');
-        print('🟢 [AUTH_PROVIDER] UserId: $_userId');
-        print('🟢 [AUTH_PROVIDER] Email: $_email');
-        print('🟢 [AUTH_PROVIDER] FullName: $_fullName');
+        LoggerService().debug(
+          '🟢 [AUTH_PROVIDER] Token: ${_token != null ? "Set" : "Null"}',
+        );
+        LoggerService().debug('🟢 [AUTH_PROVIDER] UserId: $_userId');
+        LoggerService().debug('🟢 [AUTH_PROVIDER] Email: $_email');
+        LoggerService().debug('🟢 [AUTH_PROVIDER] FullName: $_fullName');
 
         // Save to secure storage
         final secureStorage = SecureStorageService.instance;
@@ -106,7 +111,9 @@ class AuthProvider with ChangeNotifier {
           await prefs.setString('refreshToken', _refreshToken!);
         }
 
-        print('🟢 [AUTH_PROVIDER] Data saved to Secure Storage');
+        LoggerService().debug(
+          '🟢 [AUTH_PROVIDER] Data saved to Secure Storage',
+        );
 
         // Analytics
         await AnalyticsService.setUserId(_userId!);
@@ -115,8 +122,11 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e, stackTrace) {
-      print('🔴 [AUTH_PROVIDER] Register failed: $e');
-      print('🔴 [AUTH_PROVIDER] Stack trace: $stackTrace');
+      LoggerService().error(
+        '🔴 [AUTH_PROVIDER] Register failed',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }

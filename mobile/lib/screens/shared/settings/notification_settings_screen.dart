@@ -86,7 +86,7 @@ class _NotificationSettingsScreenState
           // Content
           Expanded(
             child: _isLoading
-                ? Center(
+                ? const Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryOrange,
                     ),
@@ -100,14 +100,14 @@ class _NotificationSettingsScreenState
                     ),
                   )
                 : Container(
-                    margin: EdgeInsets.all(AppTheme.spacingMedium),
+                    margin: const EdgeInsets.all(AppTheme.spacingMedium),
                     decoration: AppTheme.cardDecoration(),
                     child: ListView(
                       shrinkWrap: true,
                       padding: EdgeInsets.zero,
                       children: [
                         SwitchListTile(
-                          activeColor: AppTheme.primaryOrange,
+                          activeThumbColor: AppTheme.primaryOrange,
                           title: Text(
                             AppLocalizations.of(context)!.orderUpdates,
                             style: AppTheme.poppins(
@@ -132,9 +132,9 @@ class _NotificationSettingsScreenState
                             _updateSettings();
                           },
                         ),
-                        Divider(color: AppTheme.borderColor),
+                        const Divider(color: AppTheme.borderColor),
                         SwitchListTile(
-                          activeColor: AppTheme.primaryOrange,
+                          activeThumbColor: AppTheme.primaryOrange,
                           title: Text(
                             AppLocalizations.of(context)!.promotions,
                             style: AppTheme.poppins(
@@ -157,9 +157,9 @@ class _NotificationSettingsScreenState
                             _updateSettings();
                           },
                         ),
-                        Divider(color: AppTheme.borderColor),
+                        const Divider(color: AppTheme.borderColor),
                         SwitchListTile(
-                          activeColor: AppTheme.primaryOrange,
+                          activeThumbColor: AppTheme.primaryOrange,
                           title: Text(
                             AppLocalizations.of(context)!.newProducts,
                             style: AppTheme.poppins(

@@ -10,22 +10,6 @@ import 'package:flutter/material.dart';
 /// - Fade-in animation
 /// - Configurable max width/height for memory optimization
 class CachedNetworkImageWidget extends StatelessWidget {
-  final String imageUrl;
-  final double? width;
-  final double? height;
-  final BoxFit fit;
-  final Widget? placeholder;
-  final Widget? errorWidget;
-  final BorderRadius? borderRadius;
-  final Color? placeholderColor;
-  final Color? errorColor;
-  final int? maxWidth;
-  final int? maxHeight;
-  final Duration fadeInDuration;
-  final Duration fadeOutDuration;
-  final bool useOldImageOnUrlChange;
-  final Curve fadeInCurve;
-
   const CachedNetworkImageWidget({
     super.key,
     required this.imageUrl,
@@ -47,6 +31,22 @@ class CachedNetworkImageWidget extends StatelessWidget {
     // Daha yumuşak geçiş için curve (easeOut daha doğal görünür)
     this.fadeInCurve = Curves.easeOut,
   });
+
+  final String imageUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Widget? placeholder;
+  final Widget? errorWidget;
+  final BorderRadius? borderRadius;
+  final Color? placeholderColor;
+  final Color? errorColor;
+  final int? maxWidth;
+  final int? maxHeight;
+  final Duration fadeInDuration;
+  final Duration fadeOutDuration;
+  final bool useOldImageOnUrlChange;
+  final Curve fadeInCurve;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +91,7 @@ class CachedNetworkImageWidget extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              placeholderColor?.withOpacity(0.6) ?? Colors.grey[500]!,
+              placeholderColor?.withValues(alpha: 0.6) ?? Colors.grey[500]!,
             ),
           ),
         ),
@@ -217,4 +217,3 @@ class OptimizedCachedImage {
     );
   }
 }
-

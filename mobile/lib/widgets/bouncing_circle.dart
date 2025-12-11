@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class BouncingCircle extends StatefulWidget {
+  const BouncingCircle({super.key, required this.color, this.size = 140.0});
+
   final Color color;
   final double size;
-
-  const BouncingCircle({super.key, required this.color, this.size = 140.0});
 
   @override
   State<BouncingCircle> createState() => _BouncingCircleState();
@@ -55,4 +55,3 @@ class _BouncingCircleState extends State<BouncingCircle>
     );
   }
 }
-

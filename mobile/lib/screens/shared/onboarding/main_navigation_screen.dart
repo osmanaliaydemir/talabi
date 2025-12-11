@@ -12,6 +12,7 @@ import 'package:mobile/screens/customer/profile/profile_screen.dart';
 import 'package:mobile/screens/customer/home_screen.dart';
 import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/connectivity_banner.dart';
 import 'package:mobile/screens/customer/widgets/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,8 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final ApiService _apiService = ApiService();
   bool _hasCheckedAddress = false;
-  final GlobalKey<HomeScreenState> _homeScreenKey = GlobalKey<HomeScreenState>();
+  final GlobalKey<HomeScreenState> _homeScreenKey =
+      GlobalKey<HomeScreenState>();
 
   @override
   Widget build(BuildContext context) {
@@ -68,15 +70,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final auth = Provider.of<AuthProvider>(context, listen: false);
       if (auth.token != null && mounted) {
         // Load cart from backend
-        final cart = Provider.of<CartProvider>(context, listen: false);
-        cart.loadCart();
+        Provider.of<CartProvider>(context, listen: false).loadCart();
 
         // Load notifications
-        final notifications = Provider.of<NotificationProvider>(
+        Provider.of<NotificationProvider>(
           context,
           listen: false,
-        );
-        notifications.loadNotifications();
+        ).loadNotifications();
 
         // Check if user has address
         _checkAndShowAddressBottomSheet();
@@ -86,13 +86,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Future<void> _checkAndShowAddressBottomSheet() async {
     if (_hasCheckedAddress) return;
-    
+
     try {
       final addresses = await _apiService.getAddresses();
       if (!mounted) return;
-      
+
       _hasCheckedAddress = true;
-      
+
       // If no addresses, show bottom sheet
       if (addresses.isEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,7 +102,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         });
       }
     } catch (e) {
-      print('Error checking addresses: $e');
+      LoggerService().error('Error checking addresses: $e', e);
       // Don't block user if check fails
       _hasCheckedAddress = true;
     }
@@ -119,11 +119,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       isScrollControlled: true,
       builder: (BuildContext context) {
         return Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -146,7 +144,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               // Title
               Text(
                 localizations.addressRequiredTitle,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
@@ -157,7 +155,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               // Description
               Text(
                 localizations.addressRequiredMessage,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppTheme.textSecondary,
                 ),

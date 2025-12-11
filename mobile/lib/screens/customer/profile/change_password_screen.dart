@@ -103,10 +103,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-                margin: EdgeInsets.all(AppTheme.spacingMedium),
+                margin: const EdgeInsets.all(AppTheme.spacingMedium),
                 decoration: AppTheme.cardDecoration(withShadow: true),
                 child: Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingLarge),
+                  padding: const EdgeInsets.all(AppTheme.spacingLarge),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -121,7 +121,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             color: AppTheme.textPrimary,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingXSmall),
+                        const SizedBox(height: AppTheme.spacingXSmall),
                         Text(
                           localizations.changePasswordDescription,
                           style: AppTheme.poppins(
@@ -130,7 +130,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             height: 1.4,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingLarge),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         // Current Password Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -142,7 +142,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.lock_outline,
                                 color: AppTheme.textSecondary,
                               ),
@@ -159,7 +159,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 ),
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
@@ -170,7 +170,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 : null,
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingSmall),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         // New Password Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -182,7 +182,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.lock_outline,
                                 color: AppTheme.textSecondary,
                               ),
@@ -200,7 +200,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 },
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
@@ -216,7 +216,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingSmall),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         // Confirm Password Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -228,7 +228,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               hintStyle: AppTheme.poppins(
                                 color: AppTheme.textHint,
                               ),
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.lock_outline,
                                 color: AppTheme.textSecondary,
                               ),
@@ -247,7 +247,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 },
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
@@ -263,7 +263,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                           ),
                         ),
-                        SizedBox(height: AppTheme.spacingLarge),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         // Change Password Button
                         SizedBox(
                           width: double.infinity,
@@ -272,7 +272,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorScheme.primary,
                               foregroundColor: AppTheme.textOnPrimary,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: AppTheme.spacingMedium,
                               ),
                               shape: RoundedRectangleBorder(
@@ -283,7 +283,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               elevation: 0,
                             ),
                             child: _isLoading
-                                ? SizedBox(
+                                ? const SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(

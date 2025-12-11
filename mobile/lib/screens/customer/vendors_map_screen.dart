@@ -7,6 +7,7 @@ import 'package:mobile/screens/customer/product/product_list_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/location_permission_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class VendorsMapScreen extends StatefulWidget {
   const VendorsMapScreen({super.key});
@@ -87,11 +88,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
           _isLoadingLocation = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       setState(() {
         _isLoadingLocation = false;
       });
-      print('Error getting user location: $e');
+      LoggerService().error('Error getting user location', e, stackTrace);
     }
   }
 
@@ -108,7 +109,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
       });
 
       _updateMarkers();
-    } catch (e) {
+    } catch (e, stackTrace) {
       setState(() {
         _isLoading = false;
       });
@@ -120,6 +121,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
           isSuccess: false,
         );
       }
+      LoggerService().error('Error loading vendors', e, stackTrace);
     }
   }
 
@@ -140,7 +142,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
     }
 
     // Add vendor markers
-    for (var vendorData in _vendors) {
+    for (final vendorData in _vendors) {
       final vendorId = vendorData['id'] as int;
       final lat = (vendorData['latitude'] as num).toDouble();
       final lng = (vendorData['longitude'] as num).toDouble();
@@ -186,13 +188,13 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.cardColor,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppTheme.radiusLarge),
         ),
       ),
       builder: (context) => Container(
-        padding: EdgeInsets.all(AppTheme.spacingMedium),
+        padding: const EdgeInsets.all(AppTheme.spacingMedium),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +207,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                 color: AppTheme.textPrimary,
               ),
             ),
-            SizedBox(height: AppTheme.spacingSmall),
+            const SizedBox(height: AppTheme.spacingSmall),
             Text(
               vendorData['address'] as String,
               style: AppTheme.poppins(
@@ -214,15 +216,15 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
               ),
             ),
             if (vendorData['rating'] != null) ...[
-              SizedBox(height: AppTheme.spacingSmall),
+              const SizedBox(height: AppTheme.spacingSmall),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.star,
                     color: Colors.amber,
                     size: AppTheme.iconSizeSmall,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
                     (vendorData['rating'] as num).toStringAsFixed(1),
                     style: AppTheme.poppins(
@@ -234,15 +236,15 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
               ),
             ],
             if (vendorData['distanceInKm'] != null) ...[
-              SizedBox(height: AppTheme.spacingSmall),
+              const SizedBox(height: AppTheme.spacingSmall),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.location_on,
                     size: AppTheme.iconSizeSmall,
                     color: AppTheme.textSecondary,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
                     '${(vendorData['distanceInKm'] as num).toStringAsFixed(1)} km',
                     style: AppTheme.poppins(color: AppTheme.textSecondary),
@@ -250,24 +252,24 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                 ],
               ),
             ],
-            SizedBox(height: AppTheme.spacingMedium),
+            const SizedBox(height: AppTheme.spacingMedium),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
                   final vendor = Vendor(
-                    id: vendorData['id'],
-                    name: vendorData['name'],
-                    address: vendorData['address'],
-                    imageUrl: vendorData['imageUrl'],
-                    city: vendorData['city'],
+                    id: vendorData['id'] as String,
+                    name: vendorData['name'] as String,
+                    address: vendorData['address'] as String,
+                    imageUrl: vendorData['imageUrl'] as String?,
+                    city: vendorData['city'] as String?,
                     rating: vendorData['rating'] != null
-                        ? (vendorData['rating'] as num).toDouble()
+                        ? (vendorData['rating'] as num?)?.toDouble()
                         : null,
-                    ratingCount: vendorData['ratingCount'] ?? 0,
-                    latitude: (vendorData['latitude'] as num).toDouble(),
-                    longitude: (vendorData['longitude'] as num).toDouble(),
+                    ratingCount: vendorData['ratingCount'] as int? ?? 0,
+                    latitude: (vendorData['latitude'] as num?)?.toDouble(),
+                    longitude: (vendorData['longitude'] as num?)?.toDouble(),
                   );
                   Navigator.push(
                     context,
@@ -279,7 +281,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryOrange,
                   foregroundColor: AppTheme.textOnPrimary,
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     vertical: AppTheme.spacingMedium,
                   ),
                   shape: RoundedRectangleBorder(
@@ -304,7 +306,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _googleMapsApiKey == null) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppTheme.backgroundColor,
         body: Center(
           child: CircularProgressIndicator(color: AppTheme.primaryOrange),
@@ -332,7 +334,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.my_location, color: AppTheme.textOnPrimary),
+            icon: const Icon(Icons.my_location, color: AppTheme.textOnPrimary),
             onPressed: _getUserLocation,
             tooltip: AppLocalizations.of(context)!.findMyLocation,
           ),
@@ -366,11 +368,11 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
+                  padding: const EdgeInsets.all(AppTheme.spacingSmall),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
@@ -378,7 +380,7 @@ class _VendorsMapScreenState extends State<VendorsMapScreen> {
                           color: AppTheme.primaryOrange,
                         ),
                       ),
-                      SizedBox(width: AppTheme.spacingSmall),
+                      const SizedBox(width: AppTheme.spacingSmall),
                       Text(
                         AppLocalizations.of(context)!.gettingLocation,
                         style: AppTheme.poppins(

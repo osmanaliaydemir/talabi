@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CourierNavigationSettingsScreen extends StatefulWidget {
@@ -21,7 +22,7 @@ class _CourierNavigationSettingsScreenState
   @override
   void initState() {
     super.initState();
-    print('CourierNavigationSettingsScreen: initState');
+    LoggerService().debug('CourierNavigationSettingsScreen: initState');
     _loadPreference();
   }
 
@@ -29,7 +30,7 @@ class _CourierNavigationSettingsScreenState
     try {
       final prefs = await SharedPreferences.getInstance();
       final value = prefs.getString('courier_navigation_app') ?? 'google_maps';
-      print(
+      LoggerService().debug(
         'CourierNavigationSettingsScreen: Loaded navigation app preference: $value',
       );
       if (mounted) {
@@ -39,10 +40,11 @@ class _CourierNavigationSettingsScreenState
         });
       }
     } catch (e, stackTrace) {
-      print(
-        'CourierNavigationSettingsScreen: ERROR loading navigation preference - $e',
+      LoggerService().error(
+        'CourierNavigationSettingsScreen: ERROR loading navigation preference',
+        e,
+        stackTrace,
       );
-      print(stackTrace);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -52,7 +54,9 @@ class _CourierNavigationSettingsScreenState
   }
 
   Future<void> _savePreference(String value, BuildContext context) async {
-    print('CourierNavigationSettingsScreen: Saving navigation app: $value');
+    LoggerService().debug(
+      'CourierNavigationSettingsScreen: Saving navigation app: $value',
+    );
     setState(() {
       _selectedApp = value;
     });
@@ -71,10 +75,11 @@ class _CourierNavigationSettingsScreenState
         ),
       );
     } catch (e, stackTrace) {
-      print(
-        'CourierNavigationSettingsScreen: ERROR saving navigation preference - $e',
+      LoggerService().error(
+        'CourierNavigationSettingsScreen: ERROR saving navigation preference',
+        e,
+        stackTrace,
       );
-      print(stackTrace);
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +117,7 @@ class _CourierNavigationSettingsScreenState
         leadingIcon: Icons.map_outlined,
         showBackButton: true,
         onBack: () {
-          print('CourierNavigationSettingsScreen: Back tapped');
+          LoggerService().debug('CourierNavigationSettingsScreen: Back tapped');
           Navigator.of(context).pop();
         },
         showRefresh: false,
@@ -132,41 +137,33 @@ class _CourierNavigationSettingsScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        value: 'google_maps',
-                        groupValue: _selectedApp,
-                        onChanged: (value) {
-                          if (value == null) return;
-                          _savePreference(value, context);
-                        },
-                        title: Text(_getAppName(context, 'google_maps')),
-                        secondary: const Icon(Icons.map),
-                      ),
-                      const Divider(height: 0),
-                      RadioListTile<String>(
-                        value: 'waze',
-                        groupValue: _selectedApp,
-                        onChanged: (value) {
-                          if (value == null) return;
-                          _savePreference(value, context);
-                        },
-                        title: Text(_getAppName(context, 'waze')),
-                        secondary: const Icon(Icons.directions_car),
-                      ),
-                      const Divider(height: 0),
-                      RadioListTile<String>(
-                        value: 'yandex_maps',
-                        groupValue: _selectedApp,
-                        onChanged: (value) {
-                          if (value == null) return;
-                          _savePreference(value, context);
-                        },
-                        title: Text(_getAppName(context, 'yandex_maps')),
-                        secondary: const Icon(Icons.navigation),
-                      ),
-                    ],
+                  child: RadioGroup<String>(
+                    groupValue: _selectedApp,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      _savePreference(value, context);
+                    },
+                    child: Column(
+                      children: [
+                        RadioListTile<String>(
+                          value: 'google_maps',
+                          title: Text(_getAppName(context, 'google_maps')),
+                          secondary: const Icon(Icons.map),
+                        ),
+                        const Divider(height: 0),
+                        RadioListTile<String>(
+                          value: 'waze',
+                          title: Text(_getAppName(context, 'waze')),
+                          secondary: const Icon(Icons.directions_car),
+                        ),
+                        const Divider(height: 0),
+                        RadioListTile<String>(
+                          value: 'yandex_maps',
+                          title: Text(_getAppName(context, 'yandex_maps')),
+                          secondary: const Icon(Icons.navigation),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

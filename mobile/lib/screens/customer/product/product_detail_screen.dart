@@ -3,12 +3,11 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/review.dart';
-
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
-
 import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/widgets/toast_message.dart';
@@ -17,10 +16,10 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ProductDetailScreen extends StatefulWidget {
+  const ProductDetailScreen({super.key, required this.productId, this.product});
+
   final String productId;
   final Product? product;
-
-  const ProductDetailScreen({super.key, required this.productId, this.product});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -145,7 +144,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         _isLoadingReviews = false;
       });
     } catch (e) {
-      print('Error loading reviews: $e');
+      LoggerService().error('Error loading reviews: $e', e);
       setState(() {
         _isLoadingReviews = false;
       });
@@ -169,7 +168,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         _isLoadingSimilarProducts = false;
       });
     } catch (e) {
-      print('Error loading similar products: $e');
+      LoggerService().error('Error loading similar products: $e', e);
       setState(() {
         _similarProducts = [];
         _isLoadingSimilarProducts = false;
@@ -250,7 +249,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 15,
                                 offset: const Offset(0, 5),
                               ),
@@ -757,7 +756,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 20,
                     offset: const Offset(0, -5),
                   ),
@@ -931,7 +930,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             }
           } catch (e) {
             // Error is handled globally by ApiService interceptor
-            print('Error adding to cart: $e');
+            LoggerService().error('Error adding to cart: $e', e);
           }
         },
         child: Builder(
@@ -1047,9 +1046,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         minChildSize: 0.3,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [

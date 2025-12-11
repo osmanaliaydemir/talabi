@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/courier.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 
@@ -60,8 +60,11 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
       final courier = await _courierService.getProfile();
       _fillFromCourier(courier);
     } catch (e, stackTrace) {
-      print('CourierEditProfileScreen: ERROR loading profile - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierEditProfileScreen: ERROR loading profile',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -123,8 +126,11 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         _isVehicleTypesLoading = false;
       });
     } catch (e, stackTrace) {
-      print('CourierEditProfileScreen: ERROR loading vehicle types - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierEditProfileScreen: ERROR loading vehicle types',
+        e,
+        stackTrace,
+      );
       if (!mounted) return;
       setState(() {
         _vehicleTypes = [];
@@ -189,7 +195,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         data['isWithinWorkingHours'] = false;
       }
 
-      print('CourierEditProfileScreen: Saving profile $data');
+      LoggerService().debug('CourierEditProfileScreen: Saving profile $data');
       await _courierService.updateProfile(data);
 
       if (!mounted) return;
@@ -206,8 +212,11 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
 
       Navigator.of(context).pop(true);
     } catch (e, stackTrace) {
-      print('CourierEditProfileScreen: ERROR saving profile - $e');
-      print(stackTrace);
+      LoggerService().error(
+        'CourierEditProfileScreen: ERROR saving profile',
+        e,
+        stackTrace,
+      );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +251,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         onRefresh: _loadProfile,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : SafeArea(
               child: Form(
                 key: _formKey,
@@ -267,7 +276,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                 decoration: InputDecoration(
                                   labelText:
                                       localizations?.fullName ?? 'Ad Soyad',
-                                  prefixIcon: Icon(Icons.person_outline),
+                                  prefixIcon: const Icon(Icons.person_outline),
                                 ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
@@ -284,7 +293,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                 decoration: InputDecoration(
                                   labelText:
                                       localizations?.phoneNumber ?? 'Telefon',
-                                  prefixIcon: Icon(Icons.phone_outlined),
+                                  prefixIcon: const Icon(Icons.phone_outlined),
                                 ),
                               ),
                             ],
@@ -315,7 +324,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                 )
                               else
                                 DropdownButtonFormField<String>(
-                                  value:
+                                  initialValue:
                                       _selectedVehicleKey != null &&
                                           _selectedVehicleKey!.isNotEmpty
                                       ? _selectedVehicleKey
@@ -324,7 +333,9 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                     labelText:
                                         localizations?.vehicleType ??
                                         'Araç Türü',
-                                    prefixIcon: Icon(Icons.delivery_dining),
+                                    prefixIcon: const Icon(
+                                      Icons.delivery_dining,
+                                    ),
                                   ),
                                   items: _vehicleTypes
                                       .map(
@@ -356,7 +367,9 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                   labelText:
                                       localizations?.maxActiveOrders ??
                                       'Maksimum Aktif Sipariş',
-                                  prefixIcon: Icon(Icons.countertops_outlined),
+                                  prefixIcon: const Icon(
+                                    Icons.countertops_outlined,
+                                  ),
                                 ),
                                 validator: (value) {
                                   final parsed = int.tryParse(value ?? '');
@@ -397,7 +410,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                             labelText:
                                                 localizations?.startTime ??
                                                 'Başlangıç Saati',
-                                            prefixIcon: Icon(
+                                            prefixIcon: const Icon(
                                               Icons.schedule_outlined,
                                             ),
                                           ),
@@ -418,7 +431,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                             labelText:
                                                 localizations?.endTime ??
                                                 'Bitiş Saati',
-                                            prefixIcon: Icon(
+                                            prefixIcon: const Icon(
                                               Icons.schedule_outlined,
                                             ),
                                           ),

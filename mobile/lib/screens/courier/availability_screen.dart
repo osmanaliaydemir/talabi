@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/courier_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 
@@ -26,12 +27,12 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
   @override
   void initState() {
     super.initState();
-    print('CourierAvailabilityScreen: initState');
+    LoggerService().debug('CourierAvailabilityScreen: initState');
     _loadAvailability();
   }
 
   Future<void> _loadAvailability() async {
-    print('CourierAvailabilityScreen: Loading availability...');
+    LoggerService().debug('CourierAvailabilityScreen: Loading availability...');
     setState(() {
       _isLoading = true;
       _error = null;
@@ -59,12 +60,11 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
         _isLoading = false;
       });
 
-      print(
+      LoggerService().debug(
         'CourierAvailabilityScreen: isAvailable=$_isAvailable, status=$_status, current=$_currentActiveOrders, max=$_maxActiveOrders',
       );
     } catch (e, stackTrace) {
-      print('CourierAvailabilityScreen: ERROR loading availability - $e');
-      print(stackTrace);
+      LoggerService().error('CourierAvailabilityScreen: ERROR loading availability', e, stackTrace);
       if (!mounted) return;
       setState(() {
         _error = e.toString();

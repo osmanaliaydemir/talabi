@@ -143,6 +143,11 @@ public interface IUnitOfWork : IDisposable
     IRepository<PromotionalBannerTranslation> PromotionalBannerTranslations { get; }
 
     /// <summary>
+    /// ErrorLog entity'leri için repository
+    /// </summary>
+    IRepository<ErrorLog> ErrorLogs { get; }
+
+    /// <summary>
     /// Tüm değişiklikleri asenkron olarak veritabanına kaydeder
     /// </summary>
     /// <param name="cancellationToken">İptal token'ı</param>

@@ -1,17 +1,4 @@
 class PromotionalBanner {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String? buttonText;
-  final String? buttonAction;
-  final String? imageUrl;
-  final int displayOrder;
-  final bool isActive;
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final String? languageCode;
-  final int? vendorType;
-
   PromotionalBanner({
     required this.id,
     required this.title,
@@ -62,4 +49,17 @@ class PromotionalBanner {
       'vendorType': vendorType,
     };
   }
+
+  final String id;
+  final String title;
+  final String subtitle;
+  final String? buttonText;
+  final String? buttonAction;
+  final String? imageUrl;
+  final int displayOrder;
+  final bool isActive;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String? languageCode;
+  final int? vendorType;
 }

@@ -12,9 +12,9 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatefulWidget {
-  final bool showBackButton;
-
   const CartScreen({super.key, this.showBackButton = false});
+
+  final bool showBackButton;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -86,7 +86,7 @@ class _CartScreenState extends State<CartScreen> {
           // Main Content
           Expanded(
             child: cart.isLoading
-                ? Center(
+                ? const Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryOrange,
                     ),
@@ -424,7 +424,7 @@ class _CartScreenState extends State<CartScreen> {
                               Container(
                                 width: 24,
                                 height: 24,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
                                 ),
@@ -476,7 +476,7 @@ class _CartScreenState extends State<CartScreen> {
                               Container(
                                 width: 24,
                                 height: 24,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: AppTheme.primaryOrange,
                                   shape: BoxShape.circle,
                                 ),
@@ -597,7 +597,7 @@ class _CartScreenState extends State<CartScreen> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -609,7 +609,7 @@ class _CartScreenState extends State<CartScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

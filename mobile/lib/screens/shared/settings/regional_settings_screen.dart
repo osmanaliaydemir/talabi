@@ -49,10 +49,10 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
           // Content
           Expanded(
             child: Container(
-              margin: EdgeInsets.all(AppTheme.spacingMedium),
+              margin: const EdgeInsets.all(AppTheme.spacingMedium),
               decoration: AppTheme.cardDecoration(),
               child: ListView(
-                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                padding: const EdgeInsets.all(AppTheme.spacingMedium),
                 children: [
                   // Date Format
                   Text(
@@ -63,13 +63,14 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       fontSize: 16,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingSmall),
+                  const SizedBox(height: AppTheme.spacingSmall),
                   ...[
                     'dd/MM/yyyy',
                     'MM/dd/yyyy',
                     'yyyy-MM-dd',
                     'dd.MM.yyyy',
                   ].map((format) {
+                    // ignore: deprecated_member_use
                     return RadioListTile<String>(
                       activeColor: AppTheme.primaryOrange,
                       title: Text(
@@ -77,7 +78,9 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                         style: AppTheme.poppins(color: AppTheme.textPrimary),
                       ),
                       value: format,
+                      // ignore: deprecated_member_use
                       groupValue: _selectedDateFormat,
+                      // ignore: deprecated_member_use
                       onChanged: (value) {
                         setState(() {
                           _selectedDateFormat = value!;
@@ -86,7 +89,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     );
                   }),
 
-                  Divider(height: 32, color: AppTheme.borderColor),
+                  const Divider(height: 32, color: AppTheme.borderColor),
 
                   // Time Format
                   Text(
@@ -97,7 +100,8 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       fontSize: 16,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingSmall),
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  // ignore: deprecated_member_use
                   RadioListTile<String>(
                     activeColor: AppTheme.primaryOrange,
                     title: Text(
@@ -105,13 +109,16 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       style: AppTheme.poppins(color: AppTheme.textPrimary),
                     ),
                     value: '24h',
+                    // ignore: deprecated_member_use
                     groupValue: _selectedTimeFormat,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
                       setState(() {
                         _selectedTimeFormat = value!;
                       });
                     },
                   ),
+                  // ignore: deprecated_member_use
                   RadioListTile<String>(
                     activeColor: AppTheme.primaryOrange,
                     title: Text(
@@ -119,7 +126,9 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       style: AppTheme.poppins(color: AppTheme.textPrimary),
                     ),
                     value: '12h',
+                    // ignore: deprecated_member_use
                     groupValue: _selectedTimeFormat,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
                       setState(() {
                         _selectedTimeFormat = value!;
@@ -127,7 +136,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                     },
                   ),
 
-                  Divider(height: 32, color: AppTheme.borderColor),
+                  const Divider(height: 32, color: AppTheme.borderColor),
 
                   // Time Zone
                   Text(
@@ -138,7 +147,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       fontSize: 16,
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingSmall),
+                  const SizedBox(height: AppTheme.spacingSmall),
                   Container(
                     decoration: AppTheme.inputBoxDecoration(),
                     child: TextField(
@@ -150,26 +159,27 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                             'e.g., Europe/Istanbul, America/New_York',
                         hintStyle: AppTheme.poppins(color: AppTheme.textHint),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacingMedium,
                           vertical: AppTheme.spacingMedium,
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: AppTheme.spacingLarge),
+                  const SizedBox(height: AppTheme.spacingLarge),
                   // Save Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        localization.setDateFormat(_selectedDateFormat);
-                        localization.setTimeFormat(_selectedTimeFormat);
-                        localization.setTimeZone(
-                          _timeZoneController.text.isEmpty
-                              ? null
-                              : _timeZoneController.text,
-                        );
+                        localization
+                          ..setDateFormat(_selectedDateFormat)
+                          ..setTimeFormat(_selectedTimeFormat)
+                          ..setTimeZone(
+                            _timeZoneController.text.isEmpty
+                                ? null
+                                : _timeZoneController.text,
+                          );
 
                         ToastMessage.show(
                           context,
@@ -182,7 +192,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryOrange,
                         foregroundColor: AppTheme.textOnPrimary,
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           vertical: AppTheme.spacingMedium,
                         ),
                         shape: RoundedRectangleBorder(
@@ -216,7 +226,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
     LocalizationProvider localization,
   ) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -230,7 +240,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.spacingMedium,
             vertical: AppTheme.spacingMedium,
           ),
@@ -240,33 +250,33 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacingSmall),
+                  padding: const EdgeInsets.all(AppTheme.spacingSmall),
                   decoration: BoxDecoration(
                     color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: AppTheme.textOnPrimary,
                     size: 18,
                   ),
                 ),
               ),
-              SizedBox(width: AppTheme.spacingSmall),
+              const SizedBox(width: AppTheme.spacingSmall),
               // Icon
               Container(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                padding: const EdgeInsets.all(AppTheme.spacingSmall),
                 decoration: BoxDecoration(
                   color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.public,
                   color: AppTheme.textOnPrimary,
                   size: AppTheme.iconSizeSmall,
                 ),
               ),
-              SizedBox(width: AppTheme.spacingSmall),
+              const SizedBox(width: AppTheme.spacingSmall),
               // Title
               Expanded(
                 child: Column(
@@ -281,7 +291,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       appLocalizations?.regionalSettingsDescription ??
                           'Tarih ve saat ayarları',

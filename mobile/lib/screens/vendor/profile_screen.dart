@@ -5,6 +5,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/shared/settings/language_settings_screen.dart';
 import 'package:mobile/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/screens/vendor/settings_screen.dart';
@@ -231,7 +232,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(localizations.editProfileDescription),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
-            print('VendorProfileScreen: Edit profile tapped');
+            LoggerService().debug('VendorProfileScreen: Edit profile tapped');
             final result = await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => const VendorEditProfileScreen(),
@@ -248,7 +249,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(localizations.businessSettingsSubtitle),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('VendorProfileScreen: Settings tapped');
+            LoggerService().debug('VendorProfileScreen: Settings tapped');
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => const VendorSettingsScreen(),
@@ -262,7 +263,9 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(currentLanguage),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            print('VendorProfileScreen: Language settings tapped');
+            LoggerService().debug(
+              'VendorProfileScreen: Language settings tapped',
+            );
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => const LanguageSettingsScreen(),
@@ -277,7 +280,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             style: const TextStyle(color: Colors.red),
           ),
           onTap: () {
-            print('VendorProfileScreen: Logout tapped');
+            LoggerService().debug('VendorProfileScreen: Logout tapped');
             _showLogoutDialog(context, authProvider, localizations);
           },
         ),
@@ -343,7 +346,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                         color: AppTheme.vendorPrimary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.logout,
                         color: AppTheme.vendorPrimary,
                         size: 28,
@@ -401,8 +404,12 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                         NavigatorState? navigator;
                         try {
                           navigator = Navigator.of(parentContext);
-                        } catch (e) {
-                          print('Error getting navigator: $e');
+                        } catch (e, stackTrace) {
+                          LoggerService().error(
+                            'Error getting navigator',
+                            e,
+                            stackTrace,
+                          );
                           return; // Navigator bulunamazsa işlemi durdur
                         }
 
@@ -428,9 +435,13 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
                               (route) => false,
                             );
                           }
-                        } catch (e) {
+                        } catch (e, stackTrace) {
                           // Navigator artık geçerli değilse hata yok sayılır
-                          print('Error navigating to login: $e');
+                          LoggerService().error(
+                            'Error navigating to login',
+                            e,
+                            stackTrace,
+                          );
                         }
 
                         // SONRA logout işlemini yap (yönlendirme yapıldıktan sonra)

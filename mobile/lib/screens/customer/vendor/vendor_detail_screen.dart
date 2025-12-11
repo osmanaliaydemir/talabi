@@ -11,11 +11,12 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/screens/customer/cart_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/services/logger_service.dart';
 
 class VendorDetailScreen extends StatefulWidget {
-  final Vendor vendor;
-
   const VendorDetailScreen({super.key, required this.vendor});
+
+  final Vendor vendor;
 
   @override
   State<VendorDetailScreen> createState() => _VendorDetailScreenState();
@@ -120,12 +121,12 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
       final favoritesResult = await _apiService.getFavorites();
       setState(() {
         _favoriteStatus.clear();
-        for (var fav in favoritesResult.items) {
+        for (final fav in favoritesResult.items) {
           _favoriteStatus[fav.id] = true;
         }
       });
-    } catch (e) {
-      print('Error loading favorites: $e');
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading favorites', e, stackTrace);
     }
   }
 
@@ -159,7 +160,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -168,6 +169,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
           isSuccess: false,
         );
       }
+      LoggerService().error('Error toggling favorite', e, stackTrace);
     }
   }
 
@@ -295,7 +297,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -306,18 +308,18 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              padding: const EdgeInsets.all(AppTheme.spacingMedium),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         size: 16,
                         color: AppTheme.textSecondary,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           widget.vendor.address,
@@ -328,24 +330,26 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                         ),
                       ),
                       if (widget.vendor.rating != null) ...[
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withOpacity(0.1),
+                            color: AppTheme.primaryOrange.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.star,
                                 size: 16,
                                 color: AppTheme.primaryOrange,
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
                                 widget.vendor.rating!.toStringAsFixed(1),
                                 style: AppTheme.poppins(
@@ -359,7 +363,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                       ],
                     ],
                   ),
-                  SizedBox(height: AppTheme.spacingMedium),
+                  const SizedBox(height: AppTheme.spacingMedium),
                   Text(
                     localizations.products,
                     style: AppTheme.poppins(
@@ -374,9 +378,11 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
           ),
           if (_isFirstLoad)
             SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingMedium),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingMedium,
+              ),
               sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.75,
                   crossAxisSpacing: AppTheme.spacingSmall,
@@ -399,12 +405,12 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
             )
           else
             SliverPadding(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.spacingMedium,
                 vertical: AppTheme.spacingSmall,
               ),
               sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.75,
                   crossAxisSpacing: AppTheme.spacingSmall,
@@ -426,12 +432,12 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
               ),
             ),
           if (_isLoadingMore && !_isFirstLoad)
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                padding: EdgeInsets.symmetric(vertical: 24.0),
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppTheme.primaryOrange,
                   ),
                 ),
               ),
