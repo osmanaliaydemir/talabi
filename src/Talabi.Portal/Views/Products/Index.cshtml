@@ -1,0 +1,359 @@
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Products");
+}
+
+<div class="container-fluid p-0">
+    <!-- Header & Actions -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("Products")</h1>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" onclick="openProductModal()">
+                <i class="fas fa-plus me-1"></i> @LocalizationService.GetString("AddProduct")
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("Filter")</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">@LocalizationService.GetString("Category")</label>
+                    <select id="filterCategory" class="form-select">
+                        <option value="">@LocalizationService.GetString("All")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@LocalizationService.GetString("Status")</label>
+                    <select id="filterStatus" class="form-select">
+                        <option value="">@LocalizationService.GetString("All")</option>
+                        <option value="active">@LocalizationService.GetString("Active")</option>
+                        <option value="inactive">@LocalizationService.GetString("Inactive")</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" onclick="refreshTable()">
+                        <i class="fas fa-filter me-1"></i> @LocalizationService.GetString("Apply")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="productsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@LocalizationService.GetString("Image")</th>
+                            <th>@LocalizationService.GetString("Name")</th>
+                            <th>@LocalizationService.GetString("Category")</th>
+                            <th>@LocalizationService.GetString("Price")</th>
+                            <th>@LocalizationService.GetString("Stock")</th>
+                            <th>@LocalizationService.GetString("Status")</th>
+                            <th>@LocalizationService.GetString("Actions")</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">@LocalizationService.GetString("AddProduct")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="productId" />
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">@LocalizationService.GetString("Name")</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@LocalizationService.GetString("Category")</label>
+                            <select class="form-select" id="productCategory" required>
+                                <option value="">@LocalizationService.GetString("Select")</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Description")</label>
+                        <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                         <div class="col-md-4">
+                            <label class="form-label">@LocalizationService.GetString("Price")</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="productPrice" step="0.01" min="0" required>
+                                <span class="input-group-text">Min</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">@LocalizationService.GetString("Stock")</label>
+                            <input type="number" class="form-control" id="productStock" min="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">@LocalizationService.GetString("PreparationTime") (dk)</label>
+                            <input type="number" class="form-control" id="productPrepTime" min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Image") URL</label>
+                        <input type="url" class="form-control" id="productImage">
+                        <small class="text-muted">Görsel URL'si giriniz (örn: https://...)</small>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="productIsAvailable" checked>
+                        <label class="form-check-label" for="productIsAvailable">@LocalizationService.GetString("Active")</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-primary" onclick="saveProduct()">@LocalizationService.GetString("Save")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- DataTables & SweetAlert -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let dataTable;
+        let productModal;
+
+        $(document).ready(function() {
+            productModal = new bootstrap.Modal(document.getElementById('productModal'));
+            loadCategories();
+            initDataTable();
+        });
+
+        function initDataTable() {
+            dataTable = $('#productsTable').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '/Products/GetList',
+                    type: 'GET',
+                    data: function(d) {
+                        d.category = $('#filterCategory').val();
+                        d.status = $('#filterStatus').val();
+                    }
+                },
+                columns: [
+                    { 
+                        data: 'imageUrl',
+                        render: function(data) {
+                            return data ? `<img src="${data}" class="img-thumbnail" style="height: 50px; width: 50px; object-fit: cover;">` : '<div class="bg-light d-flex align-items-center justify-content-center" style="height:50px;width:50px;"><i class="fas fa-image text-muted"></i></div>';
+                        },
+                        orderable: false
+                    },
+                    { data: 'name', name: 'name' },
+                    { data: 'category', name: 'category' },
+                    { 
+                        data: 'price', 
+                        name: 'price',
+                        render: function(data, type, row) {
+                            return `${data} ${row.currency}`;
+                        }
+                    },
+                    { data: 'stock', name: 'stock' },
+                    { 
+                        data: 'isAvailable', 
+                        name: 'isAvailable',
+                        render: function(data) {
+                            return data 
+                                ? '<span class="badge bg-success">@LocalizationService.GetString("Active")</span>' 
+                                : '<span class="badge bg-danger">@LocalizationService.GetString("Inactive")</span>';
+                        }
+                    },
+                    {
+                        data: 'id',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return `
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="editProduct('${data}')" title="@LocalizationService.GetString("Edit")">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-${row.isAvailable ? 'warning' : 'success'}" onclick="toggleStatus('${data}', ${!row.isAvailable})" title="${row.isAvailable ? '@LocalizationService.GetString("Deactivate")' : '@LocalizationService.GetString("Activate")'}">
+                                        <i class="fas fa-${row.isAvailable ? 'ban' : 'check'}"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteProduct('${data}')" title="@LocalizationService.GetString("Delete")">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ],
+                order: [[1, 'asc']], // Sort by Name default
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/' + ('@System.Globalization.CultureInfo.CurrentCulture.Name' === 'tr-TR' ? 'tr' : 'en-GB') + '.json'
+                }
+            });
+        }
+
+        function refreshTable() {
+            dataTable.ajax.reload();
+        }
+
+        function loadCategories() {
+            $.get('/Products/GetCategories', function(data) {
+                const filterSelect = $('#filterCategory');
+                const modalSelect = $('#productCategory');
+                
+                // Keep existing "All" option in filter
+                
+                data.forEach(cat => {
+                    filterSelect.append(`<option value="${cat}">${cat}</option>`);
+                    modalSelect.append(`<option value="${cat}">${cat}</option>`);
+                });
+            });
+        }
+
+        function openProductModal() {
+            $('#productId').val('');
+            $('#productForm')[0].reset();
+            $('#modalTitle').text('@LocalizationService.GetString("AddProduct")');
+            productModal.show();
+        }
+
+        function editProduct(id) {
+            $.get('/Products/Get/' + id, function(data) {
+                $('#productId').val(data.id);
+                $('#productName').val(data.name);
+                $('#productCategory').val(data.category);
+                $('#productDescription').val(data.description);
+                $('#productPrice').val(data.price);
+                $('#productStock').val(data.stock);
+                $('#productPrepTime').val(data.preparationTime);
+                $('#productImage').val(data.imageUrl);
+                $('#productIsAvailable').prop('checked', data.isAvailable);
+                
+                $('#modalTitle').text('@LocalizationService.GetString("EditProduct")');
+                productModal.show();
+            });
+        }
+
+        function saveProduct() {
+            if (!$('#productForm')[0].checkValidity()) {
+                $('#productForm')[0].reportValidity();
+                return;
+            }
+
+            const id = $('#productId').val();
+            const product = {
+                name: $('#productName').val(),
+                category: $('#productCategory').val(),
+                description: $('#productDescription').val(),
+                price: parseFloat($('#productPrice').val()),
+                stock: parseInt($('#productStock').val()) || null,
+                preparationTime: parseInt($('#productPrepTime').val()) || null,
+                imageUrl: $('#productImage').val(),
+                isAvailable: $('#productIsAvailable').is(':checked')
+            };
+
+            const url = id ? `/Products/Update/${id}` : '/Products/Create';
+            const method = id ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                type: method,
+                contentType: 'application/json',
+                data: JSON.stringify(product),
+                success: function(response) {
+                    if (response.success) {
+                        productModal.hide();
+                        refreshTable();
+                        Swal.fire({
+                            icon: 'success',
+                            title: '@LocalizationService.GetString("Success")',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        Swal.fire('Hata', response.message || 'Bir hata oluştu', 'error');
+                    }
+                },
+                error: function() {
+                     Swal.fire('Hata', 'İstek işlenirken hata oluştu', 'error');
+                }
+            });
+        }
+
+        function deleteProduct(id) {
+            Swal.fire({
+                title: '@LocalizationService.GetString("DeleteConfirmation")',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '@LocalizationService.GetString("Delete")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Products/Delete/' + id, function(response) {
+                        if (response.success) {
+                            refreshTable();
+                            Swal.fire(
+                                '@LocalizationService.GetString("Deleted")',
+                                'Ürün silindi.',
+                                'success'
+                            );
+                        } else {
+                            Swal.fire('Hata', response.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function toggleStatus(id, newStatus) {
+            $.post('/Products/ToggleStatus', { id: id, isAvailable: newStatus }, function(response) {
+                if (response.success) {
+                    refreshTable();
+                    const msg = newStatus ? '@LocalizationService.GetString("Activated")' : '@LocalizationService.GetString("Deactivated")';
+                    const toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    toast.fire({
+                        icon: 'success',
+                        title: msg
+                    });
+                } else {
+                    Swal.fire('Hata', response.message, 'error');
+                }
+            });
+        }
+    </script>
+}

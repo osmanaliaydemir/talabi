@@ -1,0 +1,405 @@
+@model Getir.MerchantPortal.Models.CustomerAnalyticsModel
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Customer Analytics");
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">@LocalizationService.GetString("Customer Analytics")</h2>
+            <p class="text-muted mb-0">@LocalizationService.GetString("CustomerAnalyticsDescription")</p>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                <i class="fas fa-file-pdf me-2"></i>@LocalizationService.GetString("ExportPDF")
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="exportReport('excel')">
+                <i class="fas fa-file-excel me-2"></i>@LocalizationService.GetString("ExportExcel")
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Selector -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label">@LocalizationService.GetString("StartDate")</label>
+            <input type="date" id="startDate" class="form-control" value="@Model?.StartDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">@LocalizationService.GetString("EndDate")</label>
+            <input type="date" id="endDate" class="form-control" value="@Model?.EndDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-primary me-2" onclick="loadCustomerAnalytics()">
+                <i class="fas fa-sync me-2"></i>@LocalizationService.GetString("Refresh")
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.TotalCustomers ?? 0)</h4>
+                            <p class="mb-0">@LocalizationService.GetString("TotalCustomers")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.NewCustomers ?? 0)</h4>
+                            <p class="mb-0">@LocalizationService.GetString("NewCustomers")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.ReturningCustomers ?? 0)</h4>
+                            <p class="mb-0">@LocalizationService.GetString("ReturningCustomers")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.CustomerRetentionRate.ToString("F1") ?? "0")%</h4>
+                            <p class="mb-0">@LocalizationService.GetString("RetentionRate")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Customer Growth Chart -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("CustomerGrowth")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="customerGrowthChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customer Type Distribution -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("CustomerTypeDistribution")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="customerTypeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Segments -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("CustomerSegments")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="customerSegmentsChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Customers Table -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("TopCustomers")</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService.GetString("Customer")</th>
+                                    <th>@LocalizationService.GetString("Orders")</th>
+                                    <th>@LocalizationService.GetString("TotalSpent")</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topCustomersTable">
+                                @if (Model?.TopCustomers != null)
+                                {
+                                    @foreach (var customer in Model.TopCustomers.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@customer.CustomerName</td>
+                                            <td>@customer.OrderCount</td>
+                                            <td>@customer.TotalSpent.ToString("C")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Lifetime Value -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("CustomerLifetimeValue")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="customerLTVChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let customerGrowthChart, customerTypeChart, customerSegmentsChart, customerLTVChart;
+
+        // Initialize charts
+        function initializeCharts() {
+            // Customer Growth Chart
+            const growthCtx = document.getElementById('customerGrowthChart').getContext('2d');
+            customerGrowthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Select(x => x.Date.ToString("MMM dd")) ?? new List<string>())),
+                    datasets: [{
+                        label: '@LocalizationService.GetString("NewCustomers")',
+                        data: @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Select(x => x.NewCustomers) ?? new List<int>())),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: '@LocalizationService.GetString("ReturningCustomers")',
+                        data: @Html.Raw(Json.Serialize(Model?.CustomerGrowth?.Select(x => x.ReturningCustomers) ?? new List<int>())),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Customer Type Distribution Chart
+            const typeCtx = document.getElementById('customerTypeChart').getContext('2d');
+            customerTypeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['@LocalizationService.GetString("NewCustomers")', '@LocalizationService.GetString("ReturningCustomers")'],
+                    datasets: [{
+                        data: [@(Model?.NewCustomers ?? 0), @(Model?.ReturningCustomers ?? 0)],
+                        backgroundColor: ['#28a745', '#17a2b8'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Customer Segments Chart
+            const segmentsCtx = document.getElementById('customerSegmentsChart').getContext('2d');
+            customerSegmentsChart = new Chart(segmentsCtx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model?.CustomerSegments?.Select(x => x.Segment) ?? new List<string>())),
+                    datasets: [{
+                        label: '@LocalizationService.GetString("CustomerCount")',
+                        data: @Html.Raw(Json.Serialize(Model?.CustomerSegments?.Select(x => x.Count) ?? new List<int>())),
+                        backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Customer LTV Chart
+            const ltvCtx = document.getElementById('customerLTVChart').getContext('2d');
+            customerLTVChart = new Chart(ltvCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model?.CustomerLTV?.Select(x => x.Date.ToString("MMM")) ?? new List<string>())),
+                    datasets: [{
+                        label: '@LocalizationService.GetString("AverageLTV")',
+                        data: @Html.Raw(Json.Serialize(Model?.CustomerLTV?.Select(x => x.AverageLTV) ?? new List<decimal>())),
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load customer analytics
+        function loadCustomerAnalytics() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            fetch(`/Reports/GetCustomerAnalyticsData?startDate=${startDate}&endDate=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update charts with new data
+                    updateCharts(data);
+                })
+                .catch(error => {
+                    console.error('Error loading customer analytics:', error);
+                    alert('@LocalizationService.GetString("ErrorLoadingData")');
+                });
+        }
+
+        // Update charts with new data
+        function updateCharts(data) {
+            // Update customer growth chart
+            customerGrowthChart.data.labels = data.customerGrowth.map(x => new Date(x.date).toLocaleDateString());
+            customerGrowthChart.data.datasets[0].data = data.customerGrowth.map(x => x.newCustomers);
+            customerGrowthChart.data.datasets[1].data = data.customerGrowth.map(x => x.returningCustomers);
+            customerGrowthChart.update();
+
+            // Update customer type chart
+            customerTypeChart.data.datasets[0].data = [data.newCustomers, data.returningCustomers];
+            customerTypeChart.update();
+
+            // Update segments chart
+            customerSegmentsChart.data.labels = data.customerSegments.map(x => x.segment);
+            customerSegmentsChart.data.datasets[0].data = data.customerSegments.map(x => x.count);
+            customerSegmentsChart.update();
+
+            // Update LTV chart
+            customerLTVChart.data.labels = data.customerLTV.map(x => new Date(x.date).toLocaleDateString());
+            customerLTVChart.data.datasets[0].data = data.customerLTV.map(x => x.averageLTV);
+            customerLTVChart.update();
+
+            // Update summary cards
+            document.querySelector('.card.bg-primary h4').textContent = data.totalCustomers;
+            document.querySelector('.card.bg-success h4').textContent = data.newCustomers;
+            document.querySelector('.card.bg-info h4').textContent = data.returningCustomers;
+            document.querySelector('.card.bg-warning h4').textContent = data.customerRetentionRate.toFixed(1) + '%';
+
+            // Update top customers table
+            const tableBody = document.getElementById('topCustomersTable');
+            tableBody.innerHTML = data.topCustomers.slice(0, 5).map(customer => 
+                `<tr>
+                    <td>${customer.customerName}</td>
+                    <td>${customer.orderCount}</td>
+                    <td>${customer.totalSpent.toLocaleString('tr-TR', {style: 'currency', currency: 'TRY'})}</td>
+                </tr>`
+            ).join('');
+        }
+
+        // Export report
+        function exportReport(format) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            const request = {
+                reportType: 'CustomerAnalytics',
+                format: format,
+                startDate: startDate,
+                endDate: endDate
+            };
+
+            fetch('/Reports/ExportReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(request)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `customer-analytics-${startDate}-${endDate}.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                alert('@LocalizationService.GetString("ExportError")');
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+    </script>
+}

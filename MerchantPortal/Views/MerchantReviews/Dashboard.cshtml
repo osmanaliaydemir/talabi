@@ -1,0 +1,300 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.ReviewDashboardModel
+@{
+    ViewData["Title"] = LocalizationService.GetString("Review Dashboard");
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">@LocalizationService.GetString("ReviewDashboardTitle")</h1>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <!-- Merchant Reviews Summary -->
+        <div class="col-xl-6 col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("MerchantReviewsStats")</h6>
+                    <i class="fas fa-store fa-2x text-gray-300"></i>
+                </div>
+                <div class="card-body">
+                    @if (Model.MerchantStats != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <div class="h2 font-weight-bold text-primary">@Model.MerchantStats.AverageRating.ToString("F1")</div>
+                                    <div class="text-xs text-uppercase text-muted">@LocalizationService.GetString("AverageScore")</div>
+                                    <div class="rating mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= Math.Floor(Model.MerchantStats.AverageRating) ? "text-warning" : "text-gray-300")"></i>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <div class="h2 font-weight-bold text-success">@Model.MerchantStats.TotalReviews</div>
+                                    <div class="text-xs text-uppercase text-muted">@LocalizationService.GetString("TotalReviewsCount")</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rating Distribution -->
+                        <div class="mt-3">
+                            <h6 class="text-xs text-uppercase text-muted mb-2">@LocalizationService.GetString("RatingDistribution")</h6>
+                            @for (int i = 5; i >= 1; i--)
+                            {
+                                var count = Model.MerchantStats.RatingDistribution.GetValueOrDefault(i, 0);
+                                var percentage = Model.MerchantStats.TotalReviews > 0 ? (count * 100.0 / Model.MerchantStats.TotalReviews) : 0;
+                                <div class="mb-1">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-xs">@i @LocalizationService.GetString("Stars")</span>
+                                        <span class="text-xs">@count (@percentage.ToString("F1")%)</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-@(i >= 4 ? "success" : i >= 3 ? "warning" : "danger")" 
+                                             style="width: @percentage%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-3">
+                            <h6 class="text-xs text-uppercase text-muted mb-2">@LocalizationService.GetString("TopTags")</h6>
+                            @if (Model.MerchantStats.TopTags?.Any() == true)
+                            {
+                                <ul class="list-inline mb-0">
+                                    @foreach (var tag in Model.MerchantStats.TopTags.Take(6))
+                                    {
+                                        <li class="list-inline-item mb-1">
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                #@tag.Tag <span class="text-muted">(@tag.Count)</span>
+                                            </span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">@LocalizationService.GetString("NoTagData")</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-store fa-3x text-gray-300 mb-2"></i>
+                            <p class="text-muted">@LocalizationService.GetString("NoMerchantReviewsYet")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Courier Reviews Summary -->
+        <div class="col-xl-6 col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">@LocalizationService.GetString("CourierReviewsStats")</h6>
+                    <i class="fas fa-motorcycle fa-2x text-gray-300"></i>
+                </div>
+                <div class="card-body">
+                    @if (Model.CourierStats != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <div class="h2 font-weight-bold text-info">@Model.CourierStats.AverageRating.ToString("F1")</div>
+                                    <div class="text-xs text-uppercase text-muted">@LocalizationService.GetString("AverageScore")</div>
+                                    <div class="rating mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= Math.Floor(Model.CourierStats.AverageRating) ? "text-warning" : "text-gray-300")"></i>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <div class="h2 font-weight-bold text-success">@Model.CourierStats.TotalReviews</div>
+                                    <div class="text-xs text-uppercase text-muted">@LocalizationService.GetString("TotalReviewsCount")</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rating Distribution -->
+                        <div class="mt-3">
+                            <h6 class="text-xs text-uppercase text-muted mb-2">@LocalizationService.GetString("RatingDistribution")</h6>
+                            @for (int i = 5; i >= 1; i--)
+                            {
+                                var count = Model.CourierStats.RatingDistribution.GetValueOrDefault(i, 0);
+                                var percentage = Model.CourierStats.TotalReviews > 0 ? (count * 100.0 / Model.CourierStats.TotalReviews) : 0;
+                                <div class="mb-1">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-xs">@i @LocalizationService.GetString("Stars")</span>
+                                        <span class="text-xs">@count (@percentage.ToString("F1")%)</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-@(i >= 4 ? "success" : i >= 3 ? "warning" : "danger")" 
+                                             style="width: @percentage%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-3">
+                            <h6 class="text-xs text-uppercase text-muted mb-2">@LocalizationService.GetString("TopTags")</h6>
+                            @if (Model.CourierStats.TopTags?.Any() == true)
+                            {
+                                <ul class="list-inline mb-0">
+                                    @foreach (var tag in Model.CourierStats.TopTags.Take(6))
+                                    {
+                                        <li class="list-inline-item mb-1">
+                                            <span class="badge bg-info-subtle text-info">
+                                                #@tag.Tag <span class="text-muted">(@tag.Count)</span>
+                                            </span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">@LocalizationService.GetString("NoTagData")</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-motorcycle fa-3x text-gray-300 mb-2"></i>
+                            <p class="text-muted">@LocalizationService.GetString("NoCourierReviewsYet")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Chart -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("MerchantVsCourierComparison")</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.MerchantStats != null || Model.CourierStats != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-center text-muted mb-3">@LocalizationService.GetString("MerchantPerformance")</h6>
+                                <div class="text-center">
+                                    <div class="h1 font-weight-bold text-primary">@(Model.MerchantStats?.AverageRating.ToString("F1") ?? "0.0")</div>
+                                    <div class="text-muted">@(Model.MerchantStats?.TotalReviews ?? 0) @LocalizationService.GetString("ReviewsLowercase")</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-center text-muted mb-3">@LocalizationService.GetString("CourierPerformance")</h6>
+                                <div class="text-center">
+                                    <div class="h1 font-weight-bold text-info">@(Model.CourierStats?.AverageRating.ToString("F1") ?? "0.0")</div>
+                                    <div class="text-muted">@(Model.CourierStats?.TotalReviews ?? 0) @LocalizationService.GetString("ReviewsLowercase")</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Indicator -->
+                        <div class="mt-4">
+                            @{
+                                var merchantRating = Model.MerchantStats?.AverageRating ?? 0;
+                                var courierRating = Model.CourierStats?.AverageRating ?? 0;
+                                var overallRating = (merchantRating + courierRating) / 2;
+                                var performanceLevel = overallRating >= 4.5 ? LocalizationService.GetString("Excellent") : 
+                                                     overallRating >= 4.0 ? LocalizationService.GetString("VeryGood") : 
+                                                     overallRating >= 3.5 ? LocalizationService.GetString("Good") : 
+                                                     overallRating >= 3.0 ? LocalizationService.GetString("Average") : LocalizationService.GetString("NeedsImprovement");
+                                var performanceColor = overallRating >= 4.5 ? "success" : 
+                                                     overallRating >= 4.0 ? "info" : 
+                                                     overallRating >= 3.5 ? "warning" : "danger";
+                            }
+                            <div class="text-center">
+                                <div class="h3 font-weight-bold text-@performanceColor">@performanceLevel</div>
+                                <div class="text-muted">@LocalizationService.GetString("OverallPerformanceScore"): @overallRating.ToString("F1")/5.0</div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-gray-300 mb-3"></i>
+                            <h5 class="text-gray-600">@LocalizationService.GetString("NoReviewDataYet")</h5>
+                            <p class="text-gray-500">@LocalizationService.GetString("ReviewsWillAppearHere")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("QuickActions")</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Index")" class="btn btn-primary btn-block">
+                                <i class="fas fa-store me-2"></i>@LocalizationService.GetString("MerchantReviewsStats")
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("CourierReviews")" class="btn btn-info btn-block">
+                                <i class="fas fa-motorcycle me-2"></i>@LocalizationService.GetString("CourierReviewsStats")
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-success btn-block" onclick="exportAllReviews()">
+                                <i class="fas fa-download me-2"></i>@LocalizationService.GetString("DownloadAll")
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-warning btn-block" onclick="refreshData()">
+                                <i class="fas fa-sync me-2"></i>@LocalizationService.GetString("Refresh")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Updated -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="text-center text-muted">
+                <small>@LocalizationService.GetString("LastUpdated"): @Model.GeneratedAt.ToString("dd MMMM yyyy HH:mm")</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function exportAllReviews() {
+            // TODO: Implement export functionality
+            alert('@LocalizationService.GetString("DownloadAllReviewsComingSoon")');
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+
+        // Auto refresh every 5 minutes
+        setInterval(function() {
+            location.reload();
+        }, 300000);
+    </script>
+}

@@ -1,0 +1,512 @@
+@model Getir.MerchantPortal.Models.ProductPerformanceModel
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Product Performance");
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">@LocalizationService.GetString("Product Performance")</h2>
+            <p class="text-muted mb-0">@LocalizationService.GetString("ProductPerformanceDescription")</p>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                <i class="fas fa-file-pdf me-2"></i>@LocalizationService.GetString("ExportPDF")
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="exportReport('excel')">
+                <i class="fas fa-file-excel me-2"></i>@LocalizationService.GetString("ExportExcel")
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Selector -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label">@LocalizationService.GetString("StartDate")</label>
+            <input type="date" id="startDate" class="form-control" value="@Model?.StartDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">@LocalizationService.GetString("EndDate")</label>
+            <input type="date" id="endDate" class="form-control" value="@Model?.EndDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-primary me-2" onclick="loadProductPerformance()">
+                <i class="fas fa-sync me-2"></i>@LocalizationService.GetString("Refresh")
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.TotalProducts ?? 0)</h4>
+                            <p class="mb-0">@LocalizationService.GetString("TotalProducts")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-box fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.TotalSales.ToString("N0") ?? "0")</h4>
+                            <p class="mb-0">@LocalizationService.GetString("TotalSales")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.AverageOrderValue.ToString("C") ?? "₺0")</h4>
+                            <p class="mb-0">@LocalizationService.GetString("AverageOrderValue")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shopping-cart fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@(Model?.SalesGrowth.ToString("F1") ?? "0")%</h4>
+                            <p class="mb-0">@LocalizationService.GetString("SalesGrowth")</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-trending-up fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Product Sales Chart -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("ProductSalesTrend")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="productSalesChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Category Performance -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("CategoryPerformance")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Performance Tables -->
+    <div class="row mb-4">
+        <!-- Top Products -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("TopProducts")</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService.GetString("Product")</th>
+                                    <th>@LocalizationService.GetString("Sales")</th>
+                                    <th>@LocalizationService.GetString("Revenue")</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topProductsTable">
+                                @if (Model?.TopProducts != null)
+                                {
+                                    @foreach (var product in Model.TopProducts.Take(10))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                                    {
+                                                        <img src="@product.ImageUrl" alt="@product.Name" class="me-2" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;">
+                                                    }
+                                                    <div>
+                                                        <div class="fw-bold">@product.Name</div>
+                                                        <small class="text-muted">@product.Category</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@product.SalesCount</td>
+                                            <td>@product.Revenue.ToString("C")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Low Performance Products -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("LowPerformanceProducts")</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService.GetString("Product")</th>
+                                    <th>@LocalizationService.GetString("Sales")</th>
+                                    <th>@LocalizationService.GetString("Revenue")</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lowPerformanceTable">
+                                @if (Model?.LowPerformanceProducts != null)
+                                {
+                                    @foreach (var product in Model.LowPerformanceProducts.Take(10))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                                    {
+                                                        <img src="@product.ImageUrl" alt="@product.Name" class="me-2" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;">
+                                                    }
+                                                    <div>
+                                                        <div class="fw-bold">@product.Name</div>
+                                                        <small class="text-muted">@product.Category</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@product.SalesCount</td>
+                                            <td>@product.Revenue.ToString("C")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Performance Metrics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("ProductPerformanceMetrics")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceMetricsChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Status -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@LocalizationService.GetString("InventoryStatus")</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="inventoryChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let productSalesChart, categoryChart, performanceMetricsChart, inventoryChart;
+
+        // Initialize charts
+        function initializeCharts() {
+            // Product Sales Chart
+            const salesCtx = document.getElementById('productSalesChart').getContext('2d');
+            productSalesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model?.SalesByDay?.Select(x => x.Date.ToString("MMM dd")) ?? new List<string>())),
+                    datasets: [{
+                        label: '@LocalizationService.GetString("Sales")',
+                        data: @Html.Raw(Json.Serialize(Model?.SalesByDay?.Select(x => x.Sales) ?? new List<int>())),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }, {
+                        label: '@LocalizationService.GetString("Revenue")',
+                        data: @Html.Raw(Json.Serialize(Model?.SalesByDay?.Select(x => x.Revenue) ?? new List<decimal>())),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+
+            // Category Performance Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model?.CategoryBreakdown?.Select(x => x.Label) ?? new List<string>())),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model?.CategoryBreakdown?.Select(x => x.Value) ?? new List<decimal>())),
+                        backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Performance Metrics Chart
+            const metricsCtx = document.getElementById('performanceMetricsChart').getContext('2d');
+            performanceMetricsChart = new Chart(metricsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['@LocalizationService.GetString("SalesVolume")', '@LocalizationService.GetString("Revenue")', '@LocalizationService.GetString("ProfitMargin")', '@LocalizationService.GetString("CustomerSatisfaction")', '@LocalizationService.GetString("MarketShare")'],
+                    datasets: [{
+                        label: '@LocalizationService.GetString("CurrentPeriod")',
+                        data: [85, 78, 92, 88, 75],
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        pointBackgroundColor: 'rgb(54, 162, 235)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(54, 162, 235)'
+                    }, {
+                        label: '@LocalizationService.GetString("PreviousPeriod")',
+                        data: [72, 65, 85, 82, 68],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        pointBackgroundColor: 'rgb(255, 99, 132)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(255, 99, 132)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Inventory Status Chart
+            const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+            inventoryChart = new Chart(inventoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['@LocalizationService.GetString("InStock")', '@LocalizationService.GetString("LowStock")', '@LocalizationService.GetString("OutOfStock")'],
+                    datasets: [{
+                        label: '@LocalizationService.GetString("ProductCount")',
+                        data: [@(Model?.TotalProducts - (Model?.LowStockProducts?.Count ?? 0) - (Model?.OutOfStockProducts?.Count ?? 0) ?? 0), @(Model?.LowStockProducts?.Count ?? 0), @(Model?.OutOfStockProducts?.Count ?? 0)],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load product performance
+        function loadProductPerformance() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            fetch(`/Reports/GetProductPerformanceData?startDate=${startDate}&endDate=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update charts with new data
+                    updateCharts(data);
+                })
+                .catch(error => {
+                    console.error('Error loading product performance:', error);
+                    alert('@LocalizationService.GetString("ErrorLoadingData")');
+                });
+        }
+
+        // Update charts with new data
+        function updateCharts(data) {
+            // Update product sales chart
+            productSalesChart.data.labels = data.salesByDay.map(x => new Date(x.date).toLocaleDateString());
+            productSalesChart.data.datasets[0].data = data.salesByDay.map(x => x.sales);
+            productSalesChart.data.datasets[1].data = data.salesByDay.map(x => x.revenue);
+            productSalesChart.update();
+
+            // Update category chart
+            categoryChart.data.labels = data.categoryBreakdown.map(x => x.label);
+            categoryChart.data.datasets[0].data = data.categoryBreakdown.map(x => x.value);
+            categoryChart.update();
+
+            // Update inventory chart
+            inventoryChart.data.datasets[0].data = [
+                data.totalProducts - data.lowStockCount - data.outOfStockCount,
+                data.lowStockCount,
+                data.outOfStockCount
+            ];
+            inventoryChart.update();
+
+            // Update summary cards
+            document.querySelector('.card.bg-primary h4').textContent = data.totalProducts;
+            document.querySelector('.card.bg-success h4').textContent = data.totalSales.toLocaleString('tr-TR');
+            document.querySelector('.card.bg-info h4').textContent = data.averageOrderValue.toLocaleString('tr-TR', {style: 'currency', currency: 'TRY'});
+            document.querySelector('.card.bg-warning h4').textContent = data.salesGrowth.toFixed(1) + '%';
+
+            // Update top products table
+            const topProductsTable = document.getElementById('topProductsTable');
+            topProductsTable.innerHTML = data.topProducts.slice(0, 10).map(product => 
+                `<tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" class="me-2" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;">` : ''}
+                            <div>
+                                <div class="fw-bold">${product.name}</div>
+                                <small class="text-muted">${product.category}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${product.salesCount}</td>
+                    <td>${product.revenue.toLocaleString('tr-TR', {style: 'currency', currency: 'TRY'})}</td>
+                </tr>`
+            ).join('');
+
+            // Update low performance table
+            const lowPerformanceTable = document.getElementById('lowPerformanceTable');
+            lowPerformanceTable.innerHTML = data.lowPerformanceProducts.slice(0, 10).map(product => 
+                `<tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" class="me-2" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;">` : ''}
+                            <div>
+                                <div class="fw-bold">${product.name}</div>
+                                <small class="text-muted">${product.category}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${product.salesCount}</td>
+                    <td>${product.revenue.toLocaleString('tr-TR', {style: 'currency', currency: 'TRY'})}</td>
+                </tr>`
+            ).join('');
+        }
+
+        // Export report
+        function exportReport(format) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            const request = {
+                reportType: 'ProductPerformance',
+                format: format,
+                startDate: startDate,
+                endDate: endDate
+            };
+
+            fetch('/Reports/ExportReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(request)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `product-performance-${startDate}-${endDate}.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                alert('@LocalizationService.GetString("ExportError")');
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+    </script>
+}

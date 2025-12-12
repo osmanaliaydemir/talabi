@@ -1,0 +1,148 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.MerchantDocumentDetailViewModel
+
+@{
+	var document = Model.Document;
+	ViewData["Title"] = LocalizationService.GetString("DocumentDetails");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<h3 class="mb-0">@LocalizationService.GetString("DocumentDetails")</h3>
+	<div class="d-flex gap-2">
+		<a class="btn btn-outline-secondary" href="@Url.Action("Download", new { id = document.Id })">
+			<i class="fas fa-download me-1"></i> İndir
+		</a>
+		<a class="btn btn-secondary" href="@Url.Action("Index")">@LocalizationService.GetString("Back")</a>
+	</div>
+</div>
+
+<div class="card mb-4">
+	<div class="card-body">
+		<div class="row g-3">
+			<div class="col-md-6">
+				<div class="text-muted small">Belge Türü</div>
+				<div class="fw-semibold">@document.DocumentType</div>
+			</div>
+			<div class="col-md-6">
+				<div class="text-muted small">Belge Adı</div>
+				<div class="fw-semibold">@document.DocumentName</div>
+			</div>
+			<div class="col-md-6">
+				<div class="text-muted small">Dosya</div>
+				<div class="fw-semibold">@document.FileName</div>
+				@if (document.FileSize > 0)
+				{
+					<div class="text-muted small">@((document.FileSize / 1024d).ToString("N1")) KB</div>
+				}
+			</div>
+			<div class="col-md-6">
+				<div class="text-muted small">Durum</div>
+				<div>
+					<span class="badge bg-secondary">@document.Status</span>
+					@if (document.IsApproved)
+					{
+						<span class="badge bg-success ms-1">Onaylandı</span>
+					}
+					else if (document.IsVerified)
+					{
+						<span class="badge bg-info ms-1">Doğrulandı</span>
+					}
+					else
+					{
+						<span class="badge bg-warning text-dark ms-1">Beklemede</span>
+					}
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="text-muted small">Yükleyen</div>
+				<div>@document.UploadedByUserName</div>
+			</div>
+			@if (!string.IsNullOrWhiteSpace(document.VerifiedByUserName))
+			{
+				<div class="col-md-6">
+					<div class="text-muted small">Doğrulayan</div>
+					<div>@document.VerifiedByUserName</div>
+				</div>
+			}
+			<div class="col-md-6">
+				<div class="text-muted small">Yükleme Tarihi</div>
+				<div>@document.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+			</div>
+			@if (document.ExpiryDate.HasValue)
+			{
+				<div class="col-md-6">
+					<div class="text-muted small">Son Geçerlilik</div>
+					<div>@document.ExpiryDate.Value.ToString("yyyy-MM-dd")</div>
+				</div>
+			}
+			@if (!string.IsNullOrWhiteSpace(document.Description))
+			{
+				<div class="col-12">
+					<div class="text-muted small">Açıklama</div>
+					<p class="mb-0">@document.Description</p>
+				</div>
+			}
+			@if (!string.IsNullOrWhiteSpace(document.VerificationNotes))
+			{
+				<div class="col-12">
+					<div class="text-muted small">Doğrulama Notu</div>
+					<p class="mb-0">@document.VerificationNotes</p>
+				</div>
+			}
+			@if (!string.IsNullOrWhiteSpace(document.RejectionReason))
+			{
+				<div class="col-12">
+					<div class="text-muted small text-danger">Red Gerekçesi</div>
+					<p class="mb-0 text-danger">@document.RejectionReason</p>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+@if (Model.IsAdmin)
+{
+	<div class="card">
+		<div class="card-header">
+			<i class="fas fa-user-check me-1"></i> Belge İncelemesi
+		</div>
+		<div class="card-body">
+			<form asp-action="Verify" method="post">
+				@Html.AntiForgeryToken()
+				<input type="hidden" name="id" value="@document.Id" />
+				<input type="hidden" name="returnUrl" value="@Url.Action("Details", new { id = document.Id })" />
+				<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+				<div class="mb-3">
+					<label class="form-label">Karar</label>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="input.IsApproved" id="approveTrue" value="true" checked="checked" />
+						<label class="form-check-label" for="approveTrue">Onayla</label>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="input.IsApproved" id="approveFalse" value="false" />
+						<label class="form-check-label" for="approveFalse">Reddet</label>
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label">Açıklama</label>
+					<textarea name="input.VerificationNotes" class="form-control" rows="3"></textarea>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label text-danger">Red Gerekçesi</label>
+					<textarea name="input.RejectionReason" class="form-control" rows="3"></textarea>
+					<span class="text-muted small">Belge reddedilecekse doldurulması zorunludur.</span>
+				</div>
+
+				<div class="d-flex justify-content-end gap-2">
+					<button type="submit" class="btn btn-primary">
+						<i class="fas fa-save me-1"></i> Kaydet
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}
+

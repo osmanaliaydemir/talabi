@@ -1,0 +1,370 @@
+@using Getir.MerchantPortal.Models
+@model InventoryDashboardViewModel
+@inject ILocalizationService LocalizationService
+
+@{
+    ViewData["Title"] = LocalizationService.GetString("InventoryAnalytics");
+    var l = LocalizationService;
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="page-title">@l.GetString("InventoryAnalytics")</h1>
+        <p class="text-muted mb-0">@l.GetString("InventoryAnalyticsDescription")</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="badge bg-primary-subtle text-primary">
+            @l.GetString("InventoryTotalValue"): <strong>@Model.TotalInventoryValue.ToString("C")</strong>
+        </span>
+        <span class="badge bg-success-subtle text-success">
+            @l.GetString("InventoryTotalItems"): <strong>@Model.TotalInventoryItems</strong>
+        </span>
+        <span class="badge bg-info-subtle text-info">
+            @l.GetString("InventoryAverageTurnover"): <strong>@Model.AverageTurnoverRate.ToString("0.00")</strong>
+        </span>
+    </div>
+</div>
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">@l.GetString("FromDate")</label>
+                <input type="date" name="fromDate" class="form-control" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@l.GetString("ToDate")</label>
+                <input type="date" name="toDate" class="form-control" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@l.GetString("SlowMovingThresholdDays")</label>
+                <input type="number" min="1" name="slowThreshold" class="form-control" value="@Model.SlowMovingThresholdDays" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@l.GetString("ValuationMethod")</label>
+                <select class="form-select" name="valuationMethod">
+                    @{
+                        var methods = Enum.GetNames(typeof(ValuationMethodModel));
+                        foreach (var method in methods)
+                        {
+                            <option value="@method" selected="@(string.Equals(method, Model.ValuationMethod, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
+                                @l.GetString(method)
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" name="includeVariants" value="true" @(Model.IncludeVariants ? "checked" : null) />
+                    <input type="hidden" name="includeVariants" value="false" />
+                    <label class="form-check-label">@l.GetString("IncludeVariants")</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-repeat me-1"></i>@l.GetString("ApplyFilter")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@l.GetString("InventoryValuation")</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Valuation is { } valuation)
+                {
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <span class="text-muted">@l.GetString("ValuationMethod")</span>
+                            <div class="fw-semibold">@l.GetString(valuation.Method.ToString())</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">@l.GetString("ValuationDate")</span>
+                            <div class="fw-semibold">@valuation.ValuationDate.ToString("dd MMM yyyy")</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">@l.GetString("TotalValue")</span>
+                            <div class="fw-semibold">@valuation.TotalValue.ToString("C")</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">@l.GetString("TotalItems")</span>
+                            <div class="fw-semibold">@valuation.TotalItems</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">@l.GetString("NoDataAvailable")</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@l.GetString("InventoryTurnover")</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Turnover is { } turnover)
+                {
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <span class="text-muted">@l.GetString("Period")</span>
+                            <div class="fw-semibold">@turnover.FromDate.ToString("dd MMM") - @turnover.ToDate.ToString("dd MMM")</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">@l.GetString("AverageTurnoverRate")</span>
+                            <div class="fw-semibold">@turnover.AverageTurnoverRate.ToString("0.00")</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">@l.GetString("TurnoverTotalItems")</span>
+                            <div class="fw-semibold">@turnover.TotalItems</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">@l.GetString("TurnoverTotalValue")</span>
+                            <div class="fw-semibold">@turnover.TotalValue.ToString("C")</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">@l.GetString("TurnoverDataUnavailable")</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@l.GetString("SlowMovingInventory")</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.SlowMovingItems.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in Model.SlowMovingItems.Take(5))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold">@item.ProductName</div>
+                                    <small class="text-muted">@string.Format(l.GetString("DaysSinceMovement"), item.DaysSinceLastMovement)</small>
+                                </div>
+                                <span class="badge bg-warning-subtle text-warning">@item.TotalValue.ToString("C")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">@l.GetString("NoSlowMovingItems")</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">@l.GetString("InventoryLevels")</h5>
+        <small class="text-muted">@l.GetString("InventoryLevelsDescription")</small>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>@l.GetString("Product")</th>
+                    <th>@l.GetString("Category")</th>
+                    <th class="text-end">@l.GetString("CurrentStock")</th>
+                    <th class="text-end">@l.GetString("MinStock")</th>
+                    <th class="text-end">@l.GetString("MaxStock")</th>
+                    <th class="text-end">@l.GetString("UnitPrice")</th>
+                    <th class="text-end">@l.GetString("TotalValue")</th>
+                    <th>@l.GetString("Status")</th>
+                    <th>@l.GetString("LastUpdated")</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.InventoryLevels.Any())
+                {
+                    foreach (var item in Model.InventoryLevels.Take(25))
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.ProductName</div>
+                                @if (!string.IsNullOrEmpty(item.VariantName))
+                                {
+                                    <small class="text-muted">@item.VariantName</small>
+                                }
+                            </td>
+                            <td>@item.CategoryName</td>
+                            <td class="text-end">@item.CurrentStock</td>
+                            <td class="text-end">@item.MinimumStock</td>
+                            <td class="text-end">@item.MaximumStock</td>
+                            <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                            <td class="text-end">@item.TotalValue.ToString("C")</td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary">@l.GetString(item.Status.ToString())</span>
+                            </td>
+                            <td>@item.LastUpdated.ToString("dd MMM yyyy HH:mm")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">@l.GetString("NoInventoryData")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @{
+        var displayedCount = Math.Min(25, Model.InventoryLevels.Count);
+    }
+    <div class="card-footer text-muted">
+        @string.Format(l.GetString("ShowingFirstItems"), Model.InventoryLevels.Count, displayedCount)
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">@l.GetString("InventoryCountHistory")</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>@l.GetString("CountDate")</th>
+                            <th>@l.GetString("CountType")</th>
+                            <th>@l.GetString("Status")</th>
+                            <th class="text-end">@l.GetString("Discrepancies")</th>
+                            <th>@l.GetString("Notes")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.CountHistory.Any())
+                        {
+                            foreach (var count in Model.CountHistory.Take(15))
+                            {
+                                <tr>
+                                    <td>@count.CountDate.ToString("dd MMM yyyy")</td>
+                                    <td>@l.GetString(count.CountType.ToString())</td>
+                                    <td><span class="badge bg-info-subtle text-info">@l.GetString(count.Status.ToString())</span></td>
+                                    <td class="text-end">@count.DiscrepancyCount</td>
+                                    <td>@count.Notes</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">@l.GetString("NoCountHistory")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">@l.GetString("InventoryDiscrepancies")</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>@l.GetString("Product")</th>
+                            <th class="text-end">@l.GetString("Expected")</th>
+                            <th class="text-end">@l.GetString("Actual")</th>
+                            <th class="text-end">@l.GetString("Variance")</th>
+                            <th>@l.GetString("Status")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Discrepancies.Any())
+                        {
+                            foreach (var discrepancy in Model.Discrepancies.Take(15))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@discrepancy.ProductName</div>
+                                        @if (!string.IsNullOrEmpty(discrepancy.VariantName))
+                                        {
+                                            <small class="text-muted">@discrepancy.VariantName</small>
+                                        }
+                                    </td>
+                                    <td class="text-end">@discrepancy.ExpectedQuantity</td>
+                                    <td class="text-end">@discrepancy.ActualQuantity</td>
+                                    <td class="text-end">
+                                        <span class="text-danger">@discrepancy.Variance (@discrepancy.VariancePercentage.ToString("0.##")%)</span>
+                                    </td>
+                                    <td><span class="badge bg-warning-subtle text-warning">@l.GetString(discrepancy.Status.ToString())</span></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">@l.GetString("NoDiscrepancies")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">@l.GetString("TopValuationItems")</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>@l.GetString("Product")</th>
+                    <th class="text-end">@l.GetString("Quantity")</th>
+                    <th class="text-end">@l.GetString("UnitValue")</th>
+                    <th class="text-end">@l.GetString("TotalValue")</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Valuation?.TopValueItems?.Any() == true)
+                {
+                    foreach (var item in Model.Valuation.TopValueItems)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td class="text-end">@item.Quantity</td>
+                            <td class="text-end">@item.UnitValue.ToString("C")</td>
+                            <td class="text-end">@item.TotalValue.ToString("C")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">@l.GetString("NoValuationItems")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

@@ -1,0 +1,211 @@
+@model Getir.MerchantPortal.Models.PlatformAdminDashboardViewModel
+@inject ILocalizationService LocalizationService
+
+@{
+    ViewData["Title"] = LocalizationService.GetString("PlatformAdminCenter");
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="page-title">@LocalizationService.GetString("PlatformAdminCenter")</h1>
+        <p class="text-muted mb-0">@LocalizationService.GetString("PlatformAdminCenterDescription")</p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<div class="row g-4 mb-4">
+    @if (Model.Dashboard?.Stats != null)
+    {
+        <div class="col-md-3">
+            <div class="stat-card bg-primary-subtle text-primary">
+                <div class="stat-label">@LocalizationService.GetString("TotalUsers")</div>
+                <div class="stat-value">@Model.Dashboard.Stats.TotalUsers</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-success-subtle text-success">
+                <div class="stat-label">@LocalizationService.GetString("TotalMerchants")</div>
+                <div class="stat-value">@Model.Dashboard.Stats.TotalMerchants</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-info-subtle text-info">
+                <div class="stat-label">@LocalizationService.GetString("TodayRevenue")</div>
+                <div class="stat-value">@Model.Dashboard.Stats.TodayRevenue.ToString("C0")</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-warning-subtle text-warning">
+                <div class="stat-label">@LocalizationService.GetString("PendingApplications")</div>
+                <div class="stat-value">@Model.Dashboard.Stats.PendingMerchantApplications</div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">@LocalizationService.GetString("SystemStatistics")</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.SystemStatistics != null)
+                {
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h6 class="text-muted">@LocalizationService.GetString("UserGrowth")</h6>
+                                <p class="fw-semibold mb-1">@LocalizationService.GetString("TotalUsers"): @Model.SystemStatistics.UserStats.TotalUsers</p>
+                                <p class="text-muted mb-0 small">@LocalizationService.GetString("NewUsersThisMonth"): @Model.SystemStatistics.UserStats.NewUsersThisMonth</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h6 class="text-muted">@LocalizationService.GetString("MerchantGrowth")</h6>
+                                <p class="fw-semibold mb-1">@LocalizationService.GetString("TotalMerchants"): @Model.SystemStatistics.MerchantStats.TotalMerchants</p>
+                                <p class="text-muted mb-0 small">@LocalizationService.GetString("PendingApplications"): @Model.SystemStatistics.MerchantStats.PendingApplications</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h6 class="text-muted">@LocalizationService.GetString("OrderStatistics")</h6>
+                                <p class="fw-semibold mb-1">@LocalizationService.GetString("TotalOrders"): @Model.SystemStatistics.OrderStats.TotalOrders</p>
+                                <p class="text-muted mb-0 small">@LocalizationService.GetString("AverageOrderValue"): @Model.SystemStatistics.OrderStats.AverageOrderValue.ToString("C0")</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h6 class="text-muted">@LocalizationService.GetString("PerformanceMetrics")</h6>
+                                <p class="fw-semibold mb-1">@LocalizationService.GetString("SystemUptime"): @Model.SystemStatistics.PerformanceMetrics.SystemUptime.ToString("P0")</p>
+                                <p class="text-muted mb-0 small">@LocalizationService.GetString("AverageResponseTime"): @Model.SystemStatistics.PerformanceMetrics.AverageResponseTime.ToString("N2") ms</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted text-center py-4">@LocalizationService.GetString("NoDataAvailable")</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">@LocalizationService.GetString("RecentMerchantApplications")</h5>
+                <span class="badge bg-primary-subtle text-primary">@Model.MerchantApplications?.TotalCount ?? 0</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.MerchantApplications?.Items.Any() == true)
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService.GetString("BusinessName")</th>
+                                    <th>@LocalizationService.GetString("Owner")</th>
+                                    <th>@LocalizationService.GetString("Status")</th>
+                                    <th>@LocalizationService.GetString("SubmittedAt")</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in Model.MerchantApplications.Items)
+                                {
+                                    <tr>
+                                        <td>@app.BusinessName</td>
+                                        <td>@app.OwnerName</td>
+                                        <td>
+                                            <span class="badge bg-secondary-subtle text-secondary">@app.Status</span>
+                                        </td>
+                                        <td>@app.SubmittedAt.ToLocalTime().ToString("g")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">@LocalizationService.GetString("NoDataAvailable")</div>
+                }
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+                @if ((Model.MerchantApplications?.TotalPages ?? 0) > 1)
+                {
+                    var currentPage = Model.MerchantApplications?.Page ?? 1;
+                    if (currentPage > 1)
+                    {
+                        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index", "PlatformAdmin", new { page = currentPage - 1, pageSize = Model.Pagination.PageSize })">
+                            <i class="bi bi-chevron-left"></i> @LocalizationService.GetString("Previous")
+                        </a>
+                    }
+                    if (currentPage < (Model.MerchantApplications?.TotalPages ?? 0))
+                    {
+                        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index", "PlatformAdmin", new { page = currentPage + 1, pageSize = Model.Pagination.PageSize })">
+                            @LocalizationService.GetString("Next") <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">@LocalizationService.GetString("SystemNotifications")</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Notifications.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var notification in Model.Notifications.OrderByDescending(n => n.CreatedAt))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="fw-semibold mb-1">@notification.Title</h6>
+                                    <p class="mb-1">@notification.Message</p>
+                                    <div class="text-muted small">@notification.CreatedAt.ToLocalTime().ToString("g")</div>
+                                </div>
+                                <div class="ms-3 text-end">
+                                    @if (!notification.IsRead)
+                                    {
+                                        <form asp-action="MarkNotification" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="notificationId" value="@notification.Id" />
+                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-check2-circle"></i> @LocalizationService.GetString("MarkAsRead")
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success">@LocalizationService.GetString("Read")</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted text-center py-4">@LocalizationService.GetString("NoNotifications")</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+

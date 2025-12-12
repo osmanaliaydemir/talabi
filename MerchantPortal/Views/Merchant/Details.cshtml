@@ -1,0 +1,129 @@
+@using System.Linq
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.MerchantDetailViewModel
+
+@{
+    var merchant = Model.Merchant;
+    var category = Model.ServiceCategories.FirstOrDefault(c => c.Id == merchant.ServiceCategoryId);
+    ViewData["Title"] = $"Mağaza Detayı - {merchant.Name}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">@merchant.Name</h3>
+    <a class="btn btn-secondary" href="@Url.Action("Directory")">
+        <i class="fas fa-arrow-left me-1"></i> @LocalizationService.GetString("Back")
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Hizmet Kategorisi</div>
+                <div class="fw-semibold">@merchant.ServiceCategoryName</div>
+                @if (category != null)
+                {
+                    <div class="text-muted small">Tür: @category.Type</div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Durum</div>
+                <div>
+                    @if (merchant.IsActive)
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Pasif</span>
+                    }
+                    @if (merchant.IsBusy)
+                    {
+                        <span class="badge bg-warning text-dark ms-1">Meşgul</span>
+                    }
+                </div>
+                <div class="text-muted small mt-2">
+                    Ortalama Teslimat: @merchant.AverageDeliveryTime dk
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">İletişim</div>
+                <div class="fw-semibold">@merchant.PhoneNumber</div>
+                @if (!string.IsNullOrWhiteSpace(merchant.Email))
+                {
+                    <div>@merchant.Email</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Adres ve Konum
+    </div>
+    <div class="card-body">
+        <p class="mb-2 fw-semibold">@merchant.Address</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="text-muted small">Enlem</div>
+                <div>@merchant.Latitude</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Boylam</div>
+                <div>@merchant.Longitude</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Minimum Sipariş / Teslimat Ücreti</div>
+                <div>@merchant.MinimumOrderAmount.ToString("C") / @merchant.DeliveryFee.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(merchant.Description))
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            Açıklama
+        </div>
+        <div class="card-body">
+            <p class="mb-0">@merchant.Description</p>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        Bilgiler
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-muted small">Sahip</div>
+                <div>@merchant.OwnerName</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Oluşturulma</div>
+                <div>@merchant.CreatedAt.ToString("yyyy-MM-dd")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Son Güncelleme</div>
+                <div>@merchant.UpdatedAt?.ToString("yyyy-MM-dd") ?? "-"</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Puan / Yorum</div>
+                <div>@(merchant.Rating?.ToString("F1") ?? "-") (@merchant.TotalReviews)</div>
+            </div>
+        </div>
+    </div>
+</div>
+

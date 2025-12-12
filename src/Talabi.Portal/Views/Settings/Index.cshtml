@@ -1,0 +1,152 @@
+@model Talabi.Portal.Models.SettingsViewModel
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Settings");
+}
+
+<div class="container-fluid p-0">
+    <div class="row items-center mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("Settings")</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Vendor Settings -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("VendorSettings")</h6>
+                </div>
+                <div class="card-body">
+                    <form id="vendorSettingsForm">
+                        <div class="mb-3">
+                            <label class="form-label">@LocalizationService.GetString("MinOrderAmount")</label>
+                            <div class="input-group">
+                                <input asp-for="Vendor.MinimumOrderAmount" type="number" class="form-control" step="0.01" min="0">
+                                <span class="input-group-text">₺</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@LocalizationService.GetString("DeliveryFee")</label>
+                            <div class="input-group">
+                                <input asp-for="Vendor.DeliveryFee" type="number" class="form-control" step="0.01" min="0">
+                                <span class="input-group-text">₺</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@LocalizationService.GetString("EstDeliveryTime") (dk)</label>
+                            <input asp-for="Vendor.EstimatedDeliveryTime" type="number" class="form-control" min="0">
+                        </div>
+                        <div class="mb-3">
+                             <label class="form-label">@LocalizationService.GetString("OpeningHours")</label>
+                             <input asp-for="Vendor.OpeningHours" type="text" class="form-control" placeholder="09:00 - 22:00">
+                        </div>
+                        <div class="mb-3 form-check form-switch">
+                            <input asp-for="Vendor.IsActive" class="form-check-input" type="checkbox">
+                            <label class="form-check-label" for="Vendor_IsActive">@LocalizationService.GetString("StoreOpen")</label>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveVendorSettings()">@LocalizationService.GetString("Save")</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Settings -->
+        <div class="col-lg-6 mb-4">
+             <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("SystemSettings")</h6>
+                </div>
+                <div class="card-body">
+                    <form id="systemSettingsForm">
+                         <h6 class="mb-3">@LocalizationService.GetString("Notifications")</h6>
+                         <div class="mb-3 form-check form-switch">
+                            <input asp-for="System.OrderUpdates" class="form-check-input" type="checkbox">
+                            <label class="form-check-label" for="System_OrderUpdates">@LocalizationService.GetString("OrderUpdates")</label>
+                            <div class="form-text">@LocalizationService.GetString("OrderUpdatesDesc")</div>
+                        </div>
+                        <div class="mb-3 form-check form-switch">
+                            <input asp-for="System.Promotions" class="form-check-input" type="checkbox">
+                            <label class="form-check-label" for="System_Promotions">@LocalizationService.GetString("Promotions")</label>
+                        </div>
+                        <div class="mb-3 form-check form-switch">
+                            <input asp-for="System.NewProducts" class="form-check-input" type="checkbox">
+                            <label class="form-check-label" for="System_NewProducts">@LocalizationService.GetString("NewFeatures")</label>
+                        </div>
+                         <button type="button" class="btn btn-primary mt-3" onclick="saveSystemSettings()">@LocalizationService.GetString("Save")</button>
+                    </form>
+                </div>
+             </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function saveVendorSettings() {
+            const data = {
+                minimumOrderAmount: parseFloat($('#Vendor_MinimumOrderAmount').val()),
+                deliveryFee: parseFloat($('#Vendor_DeliveryFee').val()),
+                estimatedDeliveryTime: parseInt($('#Vendor_EstimatedDeliveryTime').val()),
+                openingHours: $('#Vendor_OpeningHours').val(),
+                isActive: $('#Vendor_IsActive').is(':checked')
+            };
+
+            $.ajax({
+                url: '/Settings/UpdateVendor',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                             icon: 'success',
+                             title: '@LocalizationService.GetString("Saved")',
+                             text: response.message,
+                             showConfirmButton: false,
+                             timer: 1500
+                        });
+                    } else {
+                        Swal.fire('Hata', response.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Hata', 'Kayıt sırasında hata oluştu.', 'error');
+                }
+            });
+        }
+
+        function saveSystemSettings() {
+            const data = {
+                orderUpdates: $('#System_OrderUpdates').is(':checked'),
+                promotions: $('#System_Promotions').is(':checked'),
+                newProducts: $('#System_NewProducts').is(':checked')
+            };
+
+            $.ajax({
+                url: '/Settings/UpdateSystem',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                     if (response.success) {
+                        Swal.fire({
+                             icon: 'success',
+                             title: '@LocalizationService.GetString("Saved")',
+                             text: response.message,
+                             showConfirmButton: false,
+                             timer: 1500
+                        });
+                    } else {
+                        Swal.fire('Hata', response.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Hata', 'Kayıt sırasında hata oluştu.', 'error');
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,23 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.NotificationPreferencesResponse
+
+<h3>@LocalizationService.GetString("NotificationPreferences")</h3>
+
+<form asp-action="Preferences" method="post">
+	@Html.AntiForgeryToken()
+	<div class="form-check mb-2">
+		<input class="form-check-input" type="checkbox" name="EmailEnabled" @(Model.EmailEnabled ? "checked" : "") />
+		<label class="form-check-label">Email</label>
+	</div>
+	<div class="form-check mb-2">
+		<input class="form-check-input" type="checkbox" name="SmsEnabled" @(Model.SmsEnabled ? "checked" : "") />
+		<label class="form-check-label">SMS</label>
+	</div>
+	<div class="form-check mb-3">
+		<input class="form-check-input" type="checkbox" name="PushEnabled" @(Model.PushEnabled ? "checked" : "") />
+		<label class="form-check-label">Push</label>
+	</div>
+	<button type="submit" class="btn btn-primary">@LocalizationService.GetString("Save")</button>
+</form>
+
+

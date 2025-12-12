@@ -1,0 +1,24 @@
+﻿@inject ILocalizationService LocalizationService
+@model ErrorViewModel
+@{
+    ViewData["Title"] = LocalizationService.GetString("Error");
+}
+
+<h1 class="text-danger">@LocalizationService.GetString("Error").</h1>
+<h2 class="text-danger">@LocalizationService.GetString("ErrorOccurred")</h2>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>@LocalizationService.GetString("RequestId"):</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<h3>@LocalizationService.GetString("DevelopmentMode")</h3>
+<p>
+    @LocalizationService.GetString("DevHint1")
+</p>
+<p>
+    <strong>@LocalizationService.GetString("DevWarningTitle")</strong>
+    @LocalizationService.GetString("DevWarningBody")
+</p>

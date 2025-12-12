@@ -1,0 +1,82 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.MerchantCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Mağaza Oluştur";
+}
+
+<h3 class="mb-4">Yeni Mağaza Oluştur</h3>
+
+<form asp-action="Create" method="post" class="card">
+    @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Input.Name" class="form-label"></label>
+                <input asp-for="Input.Name" class="form-control" />
+                <span asp-validation-for="Input.Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Input.ServiceCategoryId" class="form-label">Hizmet Kategorisi</label>
+                <select asp-for="Input.ServiceCategoryId" class="form-select">
+                    <option value="">Seçiniz</option>
+                    @foreach (var category in Model.ServiceCategories)
+                    {
+                        <option value="@category.Id">@category.Name (@category.Type)</option>
+                    }
+                </select>
+                <span asp-validation-for="Input.ServiceCategoryId" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Input.Description" class="form-label"></label>
+                <textarea asp-for="Input.Description" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="Input.Address" class="form-label"></label>
+                <input asp-for="Input.Address" class="form-control" />
+                <span asp-validation-for="Input.Address" class="text-danger"></span>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Input.Latitude" class="form-label"></label>
+                <input asp-for="Input.Latitude" class="form-control" />
+                <span asp-validation-for="Input.Latitude" class="text-danger"></span>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Input.Longitude" class="form-label"></label>
+                <input asp-for="Input.Longitude" class="form-control" />
+                <span asp-validation-for="Input.Longitude" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                <input asp-for="Input.PhoneNumber" class="form-control" />
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Input.Email" class="form-label"></label>
+                <input asp-for="Input.Email" class="form-control" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Input.MinimumOrderAmount" class="form-label"></label>
+                <input asp-for="Input.MinimumOrderAmount" class="form-control" />
+                <span asp-validation-for="Input.MinimumOrderAmount" class="text-danger"></span>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Input.DeliveryFee" class="form-label"></label>
+                <input asp-for="Input.DeliveryFee" class="form-control" />
+                <span asp-validation-for="Input.DeliveryFee" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <a class="btn btn-secondary" href="@Url.Action("Directory")">@LocalizationService.GetString("Cancel")</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Kaydet
+        </button>
+    </div>
+</form>
+
+<partial name="_ValidationScriptsPartial" />
+

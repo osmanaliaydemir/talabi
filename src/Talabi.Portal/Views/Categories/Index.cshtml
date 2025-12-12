@@ -1,0 +1,180 @@
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Categories");
+}
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("Categories")</h1>
+            <p class="text-muted small">@LocalizationService.GetString("CategoriesDerivedFromProducts")</p>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="categoriesTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@LocalizationService.GetString("Name")</th>
+                            <th>@LocalizationService.GetString("ProductCount")</th>
+                            <th>@LocalizationService.GetString("Actions")</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@LocalizationService.GetString("EditCategory")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <input type="hidden" id="oldCategoryName" />
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Name")</label>
+                        <input type="text" class="form-control" id="newCategoryName" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-primary" onclick="saveCategory()">@LocalizationService.GetString("Save")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let dataTable;
+        let categoryModal;
+
+        $(document).ready(function() {
+            categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+            initDataTable();
+        });
+
+        function initDataTable() {
+            dataTable = $('#categoriesTable').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '/Categories/GetList',
+                    type: 'GET'
+                },
+                columns: [
+                    { data: 'name', name: 'name' },
+                    { data: 'productCount', name: 'productCount' },
+                    {
+                        data: 'name',
+                        orderable: false,
+                        render: function(data) {
+                            // Escape quotes for onclick
+                            const safeData = data.replace(/'/g, "\\'");
+                            return `
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="editCategory('${safeData}')" title="@LocalizationService.GetString("Edit")">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteCategory('${safeData}')" title="@LocalizationService.GetString("Delete")">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ],
+                order: [[0, 'asc']], 
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/' + ('@System.Globalization.CultureInfo.CurrentCulture.Name' === 'tr-TR' ? 'tr' : 'en-GB') + '.json'
+                }
+            });
+        }
+
+        function refreshTable() {
+            dataTable.ajax.reload();
+        }
+
+        function editCategory(name) {
+            $('#oldCategoryName').val(name);
+            $('#newCategoryName').val(name);
+            categoryModal.show();
+        }
+
+        function saveCategory() {
+            if (!$('#categoryForm')[0].checkValidity()) {
+                $('#categoryForm')[0].reportValidity();
+                return;
+            }
+
+            const oldName = $('#oldCategoryName').val();
+            const newName = $('#newCategoryName').val();
+
+            if(oldName === newName) {
+                categoryModal.hide();
+                return;
+            }
+
+            $.ajax({
+                url: '/Categories/Update',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ oldName: oldName, newName: newName }),
+                success: function(response) {
+                    if (response.success) {
+                        categoryModal.hide();
+                        refreshTable();
+                        Swal.fire({
+                             icon: 'success',
+                             title: '@LocalizationService.GetString("Success")',
+                             showConfirmButton: false,
+                             timer: 1500
+                        });
+                    } else {
+                        Swal.fire('Hata', response.message, 'error');
+                    }
+                }
+            });
+        }
+
+        function deleteCategory(name) {
+            Swal.fire({
+                title: '@LocalizationService.GetString("DeleteConfirmation")',
+                text: '@LocalizationService.GetString("CategoryDeleteWarning")',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '@LocalizationService.GetString("Delete")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Categories/Delete', { name: name }, function(response) {
+                        if (response.success) {
+                            refreshTable();
+                            Swal.fire('@LocalizationService.GetString("Deleted")', '', 'success');
+                        } else {
+                            Swal.fire('Hata', response.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

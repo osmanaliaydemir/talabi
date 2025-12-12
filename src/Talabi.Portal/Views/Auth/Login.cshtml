@@ -1,0 +1,126 @@
+@using Talabi.Portal.Services
+@inject ILocalizationService LocalizationService
+@model Talabi.Portal.Models.LoginRequest
+@{
+    ViewData["Title"] = LocalizationService.GetString("Login");
+    var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+}
+
+<!DOCTYPE html>
+<html lang="@currentCulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - Talabi Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="~/css/modules/auth/login.css" asp-append-version="true"/>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card position-relative">
+        <!-- Language Switcher -->
+        <div class="position-absolute top-0 end-0 p-3">
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle border-0" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-globe me-1"></i>
+                    @switch (currentCulture.TwoLetterISOLanguageName)
+                    {
+                        case "tr": <text>TR</text> break;
+                        case "en": <text>EN</text> break;
+                        case "ar": <text>AR</text> break;
+                        default: <text>EN</text> break;
+                    }
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                    <li>
+                        <button class="dropdown-item @(currentCulture.Name == "tr-TR" ? "active" : "")" onclick="changeLanguage('tr-TR')">
+                            <i class="flag-icon flag-icon-tr me-2"></i> Türkçe
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item @(currentCulture.Name == "en-US" ? "active" : "")" onclick="changeLanguage('en-US')">
+                            <i class="flag-icon flag-icon-us me-2"></i> English
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item @(currentCulture.Name == "ar-SA" ? "active" : "")" onclick="changeLanguage('ar-SA')">
+                            <i class="flag-icon flag-icon-sa me-2"></i> العربية
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fas fa-store"></i>
+            </div>
+            <h2>Talabi Portal</h2>
+            <p class="mb-0">@LocalizationService.GetString("Welcome")</p>
+        </div>
+        <div class="login-body">
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+
+                @if (!string.IsNullOrEmpty(ViewData["ReturnUrl"]?.ToString()))
+                {
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]"/>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">@LocalizationService.GetString("Email")</label>
+                    <input asp-for="Email" class="form-control" placeholder="ornek@email.com" autofocus/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Password" class="form-label">@LocalizationService.GetString("Password")</label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="••••••••"/>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <button type="submit" id="loginBtn" class="btn btn-login">
+                    <span class="btn-text">
+                        <i class="fas fa-sign-in-alt me-2"></i> @LocalizationService.GetString("Login")
+                    </span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        @LocalizationService.GetString("Loading")...
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/modules/auth/login.js" asp-append-version="true"></script>
+<script>
+    function changeLanguage(culture) {
+        // 1. Save to LocalStorage
+        localStorage.setItem('talabi_language', culture);
+
+        // 2. Redirect to Server to set Cookie
+        var returnUrl = window.location.pathname + window.location.search;
+        var url = '@Url.Action("SetLanguage", "Language")' + '?culture=' + culture + '&returnUrl=' + encodeURIComponent(returnUrl);
+        window.location.href = url;
+    }
+
+    // Optional: Check LocalStorage on load if no cookie is present (client-side enforcement)
+    document.addEventListener('DOMContentLoaded', function() {
+        var storedLang = localStorage.getItem('talabi_language');
+        var currentLang = '@currentCulture.Name';
+
+        // If we have a stored language, but the server rendered a different one (and it's the default/fallback),
+        // we might want to switch. However, to avoid loops, we only do this if we are sure the user intended it.
+        // A simpler approach for "persistence" is just relying on the cookie we set above.
+        // The request says "sakla" (store) and "ayarla" (set). The cookie does the setting.
+        // storage is just for client-side reference or re-init if cookies are cleared.
+
+        // For now, the changeLanguage function handles the "Selection -> Store -> Set Cookie" flow requested.
+    });
+</script>
+</body>
+</html>

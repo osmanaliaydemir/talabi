@@ -1,0 +1,178 @@
+/* SignalR Toast Notifications */
+.signalr-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    max-width: 500px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 9999;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.signalr-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.signalr-toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.signalr-toast-content i {
+    font-size: 1.5rem;
+}
+
+.signalr-toast-content span {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.signalr-toast-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 1rem;
+    transition: color 0.2s;
+}
+
+.signalr-toast-close:hover {
+    color: #333;
+}
+
+/* Toast Types */
+.signalr-toast-success {
+    border-left: 4px solid #28a745;
+}
+
+.signalr-toast-success .signalr-toast-content i {
+    color: #28a745;
+}
+
+.signalr-toast-danger {
+    border-left: 4px solid #dc3545;
+}
+
+.signalr-toast-danger .signalr-toast-content i {
+    color: #dc3545;
+}
+
+.signalr-toast-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.signalr-toast-warning .signalr-toast-content i {
+    color: #ffc107;
+}
+
+.signalr-toast-info {
+    border-left: 4px solid #17a2b8;
+}
+
+.signalr-toast-info .signalr-toast-content i {
+    color: #17a2b8;
+}
+
+/* New Order Notification - Special Style */
+.new-order-notification {
+    border-left: 4px solid #5D3EBC;
+    animation: pulse 1s ease-in-out;
+}
+
+.new-order-notification .signalr-toast-content i {
+    color: #5D3EBC;
+    animation: ring 1s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    50% {
+        box-shadow: 0 10px 40px rgba(93, 62, 188, 0.4);
+    }
+}
+
+@keyframes ring {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: rotate(10deg);
+    }
+    20%, 40%, 60%, 80% {
+        transform: rotate(-10deg);
+    }
+}
+
+/* Connection Status Indicator */
+.signalr-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 20px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    z-index: 1000;
+}
+
+.signalr-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #28a745;
+    animation: pulse-dot 2s infinite;
+}
+
+.signalr-status.disconnected .signalr-status-dot {
+    background: #dc3545;
+    animation: none;
+}
+
+.signalr-status.connecting .signalr-status-dot {
+    background: #ffc107;
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .signalr-toast {
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .signalr-status {
+        bottom: 10px;
+        right: 10px;
+    }
+}
+

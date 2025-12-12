@@ -1,0 +1,35 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.UpdateProductOptionRequest
+
+<h3>@LocalizationService.GetString("EditOption")</h3>
+
+<form asp-action="EditOption" method="post">
+	@Html.AntiForgeryToken()
+	<input type="hidden" name="id" value="@ViewBag.OptionId" />
+
+	<div class="mb-3">
+		<label class="form-label">@LocalizationService.GetString("Name")</label>
+		<input asp-for="Name" class="form-control" />
+	</div>
+	<div class="mb-3">
+		<label class="form-label">@LocalizationService.GetString("Description")</label>
+		<input asp-for="Description" class="form-control" />
+	</div>
+	<div class="mb-3">
+		<label class="form-label">@LocalizationService.GetString("ExtraPrice")</label>
+		<input asp-for="ExtraPrice" type="number" step="0.01" class="form-control" />
+	</div>
+	<div class="mb-3">
+		<label class="form-label">@LocalizationService.GetString("DisplayOrder")</label>
+		<input asp-for="DisplayOrder" type="number" class="form-control" />
+	</div>
+	<div class="form-check mb-3">
+		<input asp-for="IsActive" class="form-check-input" />
+		<label class="form-check-label">@LocalizationService.GetString("Active")</label>
+	</div>
+
+	<button type="submit" class="btn btn-primary">@LocalizationService.GetString("Save")</button>
+	<a class="btn btn-secondary" href="@Url.Action("Options", new { groupId = Model.ProductOptionGroupId })">@LocalizationService.GetString("Cancel")</a>
+</form>
+
+

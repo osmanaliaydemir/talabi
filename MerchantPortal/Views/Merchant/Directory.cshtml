@@ -1,0 +1,107 @@
+@using System.Linq
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.MerchantListViewModel
+
+@{
+    ViewData["Title"] = "Mağaza Yönetimi";
+    var categoryTypes = Model.ServiceCategories
+        .Select(c => c.Type)
+        .Distinct()
+        .OrderBy(t => t)
+        .ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">Mağaza Yönetimi</h3>
+    <a class="btn btn-primary" href="@Url.Action("Create")">
+        <i class="fas fa-plus me-1"></i> Yeni Mağaza
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row gy-2 gx-3 align-items-end" method="get">
+            <div class="col-md-4">
+                <label class="form-label">Hizmet Kategorisi</label>
+                <select class="form-select" name="categoryType">
+                    <option value="">Tümü</option>
+                    @foreach (var type in categoryTypes)
+                    {
+                        <option value="@type" selected="@(type.Equals(Model.Filter.CategoryType, StringComparison.OrdinalIgnoreCase))">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 form-check mt-4">
+                <input class="form-check-input" type="checkbox" id="onlyActive" name="onlyActive" value="true" @(Model.Filter.OnlyActive ? "checked" : null) />
+                <label class="form-check-label" for="onlyActive">Sadece aktif mağazalar</label>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button type="submit" class="btn btn-primary me-2">@LocalizationService.GetString("Filter")</button>
+                <a class="btn btn-outline-secondary" href="@Url.Action("Directory")">@LocalizationService.GetString("Reset")</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Merchants.Items.Any())
+{
+    <div class="alert alert-info">
+        Kriterlere uygun mağaza bulunamadı.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Mağaza</th>
+                    <th>Kategori</th>
+                    <th>Durum</th>
+                    <th>Telefon</th>
+                    <th>Oluşturulma</th>
+                    <th class="text-end">@LocalizationService.GetString("Actions")</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var merchant in Model.Merchants.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@merchant.Name</div>
+                            <div class="text-muted small">Sahip: @merchant.OwnerName</div>
+                        </td>
+                        <td>@merchant.ServiceCategoryName</td>
+                        <td>
+                            @if (merchant.IsActive)
+                            {
+                                <span class="badge bg-success">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Pasif</span>
+                            }
+                        </td>
+                        <td>@merchant.PhoneNumber</td>
+                        <td>@merchant.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a class="btn btn-outline-primary" href="@Url.Action("Details", new { id = merchant.Id })">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <form asp-action="Delete" method="post" onsubmit="return confirm('Mağaza silinsin mi?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@merchant.Id" />
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+

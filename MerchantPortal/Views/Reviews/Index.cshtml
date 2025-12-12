@@ -1,0 +1,683 @@
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Product Reviews");
+    var reviews = ViewBag.Reviews as PagedResult<ProductReviewResponse>;
+    var stats = ViewBag.Stats as ProductReviewStatsResponse;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var selectedRating = ViewBag.SelectedRating as int?;
+    var selectedApproval = ViewBag.SelectedApproval as bool?;
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="fas fa-star text-warning me-2"></i>
+            @LocalizationService.GetString("Product Reviews")
+        </h2>
+        <p class="text-muted mb-0">@LocalizationService.GetString("ReviewsWillAppearHere")</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+@if (stats != null)
+{
+    <div class="row mb-4">
+        <!-- Average Rating -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card gradient-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">@LocalizationService.GetString("AverageScore")</p>
+                            <h3 class="mb-0">@stats.AverageRating.ToString("F1") <small class="text-muted">/ 5</small></h3>
+                            <div class="star-rating mt-1">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Floor(stats.AverageRating))
+                                    {
+                                        <i class="fas fa-star text-warning"></i>
+                                    }
+                                    else if (i - 0.5m <= stats.AverageRating)
+                                    {
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star text-warning"></i>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="icon-box bg-warning-soft">
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Reviews -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card gradient-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">@LocalizationService.GetString("TotalReviewsCount")</p>
+                            <h3 class="mb-0">@stats.TotalReviews</h3>
+                            <small class="text-success">
+                                <i class="fas fa-check-circle"></i> @stats.VerifiedPurchaseCount doğrulanmış
+                            </small>
+                        </div>
+                        <div class="icon-box bg-primary-soft">
+                            <i class="fas fa-comments text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Reviews -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card gradient-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">@LocalizationService.GetString("Pending")</p>
+                            <h3 class="mb-0">@stats.PendingApprovalCount</h3>
+                            @if (stats.PendingApprovalCount > 0)
+                            {
+                                <small class="text-danger">
+                                    <i class="fas fa-exclamation-circle"></i> İnceleme gerekli
+                                </small>
+                            }
+                            else
+                            {
+                                <small class="text-success">
+                                    <i class="fas fa-check"></i> Hepsi onaylandı
+                                </small>
+                            }
+                        </div>
+                        <div class="icon-box bg-info-soft">
+                            <i class="fas fa-hourglass-half text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 Star Reviews -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card gradient-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">@LocalizationService.GetString("FiveStars")</p>
+                            <h3 class="mb-0">@stats.FiveStarCount</h3>
+                            @if (stats.TotalReviews > 0)
+                            {
+                                var percentage = (double)stats.FiveStarCount / stats.TotalReviews * 100;
+                                <small class="text-success">
+                                    <i class="fas fa-arrow-up"></i> %@percentage.ToString("F1")
+                                </small>
+                            }
+                        </div>
+                        <div class="icon-box bg-success-soft">
+                            <i class="fas fa-trophy text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Distribution -->
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>@LocalizationService.GetString("RatingDistribution")</h5>
+        </div>
+        <div class="card-body">
+            <div class="rating-distribution">
+                @{
+                    var ratingData = new (int Stars, int Count, string Color)[]
+                    {
+                        (5, stats.FiveStarCount, "#28a745"),
+                        (4, stats.FourStarCount, "#5D3EBC"),
+                        (3, stats.ThreeStarCount, "#ffc107"),
+                        (2, stats.TwoStarCount, "#fd7e14"),
+                        (1, stats.OneStarCount, "#dc3545")
+                    };
+
+                    foreach (var item in ratingData)
+                    {
+                        var percentage = stats.TotalReviews > 0 ? (double)item.Count / stats.TotalReviews * 100 : 0;
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rating-label me-2" style="width: 60px;">
+                                <span>@item.Stars</span> <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <div class="progress flex-grow-1" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: @percentage%; background-color: @item.Color"
+                                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                    @item.Count
+                                </div>
+                            </div>
+                            <div class="rating-count ms-2" style="width: 60px; text-align: right;">
+                                %@percentage.ToString("F1")
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">@LocalizationService.GetString("RatingFilter")</label>
+                <select name="rating" class="form-select" onchange="this.form.submit()">
+                    <option value="">@LocalizationService.GetString("All")</option>
+                    <option value="5" selected="@(selectedRating == 5)">5 @LocalizationService.GetString("Stars")</option>
+                    <option value="4" selected="@(selectedRating == 4)">4 @LocalizationService.GetString("Stars")</option>
+                    <option value="3" selected="@(selectedRating == 3)">3 @LocalizationService.GetString("Stars")</option>
+                    <option value="2" selected="@(selectedRating == 2)">2 @LocalizationService.GetString("Stars")</option>
+                    <option value="1" selected="@(selectedRating == 1)">1 @LocalizationService.GetString("Stars")</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@LocalizationService.GetString("Status")</label>
+                <select name="approved" class="form-select" onchange="this.form.submit()">
+                    <option value="">@LocalizationService.GetString("All")</option>
+                    <option value="true" selected="@(selectedApproval == true)">@LocalizationService.GetString("Approved")</option>
+                    <option value="false" selected="@(selectedApproval == false)">@LocalizationService.GetString("Pending")</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo"></i> @LocalizationService.GetString("ClearFilter")
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reviews List -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">@LocalizationService.GetString("Reviews") (@(reviews?.TotalCount ?? 0))</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (reviews?.Items != null && reviews.Items.Any())
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var review in reviews.Items)
+                {
+                    <div class="list-group-item">
+                        <div class="row">
+                            <!-- Left: Review Content -->
+                            <div class="col-md-8">
+                                <!-- Product Name & Rating -->
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a href="#" class="text-decoration-none text-dark">
+                                                @review.ProductName
+                                            </a>
+                                        </h6>
+                                        <div class="star-rating mb-1">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= review.Rating)
+                                                {
+                                                    <i class="fas fa-star text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star text-warning"></i>
+                                                }
+                                            }
+                                            <span class="ms-1 text-muted">(@review.Rating/5)</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        @if (review.IsVerifiedPurchase)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> @LocalizationService.GetString("VerifiedPurchase")
+                                            </span>
+                                        }
+                                        @if (!review.IsApproved)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock"></i> @LocalizationService.GetString("Pending")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> @LocalizationService.GetString("Approved")
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- User & Date -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="avatar-circle me-2">
+                                        @review.UserName.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <strong>@review.UserName</strong>
+                                        <small class="text-muted d-block">
+                                            <i class="far fa-clock"></i> @review.CreatedAt.ToString("dd MMM yyyy, HH:mm")
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Comment -->
+                                @if (!string.IsNullOrEmpty(review.Comment))
+                                {
+                                    <p class="mb-2">@review.Comment</p>
+                                }
+
+                                <!-- Helpful Count -->
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-thumbs-up text-success"></i> @review.HelpfulCount @LocalizationService.GetString("Helpful")
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-thumbs-down text-danger"></i> @review.NotHelpfulCount @LocalizationService.GetString("NotHelpful")
+                                    </small>
+                                </div>
+
+                                <!-- Merchant Response -->
+                                @if (!string.IsNullOrEmpty(review.MerchantResponse))
+                                {
+                                    <div class="merchant-response p-3 bg-light rounded mt-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-store text-primary me-2"></i>
+                                            <strong>@LocalizationService.GetString("StoreResponse")</strong>
+                                            <small class="text-muted ms-2">
+                                                @review.MerchantRespondedAt?.ToString("dd MMM yyyy")
+                                            </small>
+                                        </div>
+                                        <p class="mb-0">@review.MerchantResponse</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Right: Actions -->
+                            <div class="col-md-4 text-end">
+                                <div class="btn-group-vertical w-100" role="group">
+                                    @if (string.IsNullOrEmpty(review.MerchantResponse))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-primary mb-2" 
+                                                onclick="openResponseModal('@review.Id', '@review.ProductName')">
+                                            <i class="fas fa-reply"></i> @LocalizationService.GetString("RespondToReviewBtn")
+                                        </button>
+                                    }
+
+                                    @if (!review.IsApproved)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success mb-2" 
+                                                onclick="approveReview('@review.Id')">
+                                            <i class="fas fa-check"></i> @LocalizationService.GetString("Approve")
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger mb-2" 
+                                                onclick="openRejectModal('@review.Id', '@review.ProductName')">
+                                            <i class="fas fa-times"></i> @LocalizationService.GetString("Reject")
+                                        </button>
+                                    }
+
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                            onclick="viewReviewDetails('@review.Id')">
+                                        <i class="fas fa-info-circle"></i> @LocalizationService.GetString("Details")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (reviews.TotalPages > 1)
+            {
+                <div class="card-footer bg-white">
+                    <nav aria-label="Reviews pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            @if (currentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@(currentPage - 1)&rating=@selectedRating&approved=@selectedApproval">
+                                        <i class="fas fa-chevron-left"></i> Önceki
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(reviews.TotalPages, currentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="?page=@i&rating=@selectedRating&approved=@selectedApproval">@i</a>
+                                </li>
+                            }
+
+                            @if (currentPage < reviews.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@(currentPage + 1)&rating=@selectedRating&approved=@selectedApproval">
+                                        Sonraki <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-star fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">@LocalizationService.GetString("NoReviewsYet")</h5>
+                <p class="text-muted">@LocalizationService.GetString("NoReviewsSubtitle")</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Respond Modal -->
+<div class="modal fade" id="respondModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="respondForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">@LocalizationService.GetString("RespondToReview")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="respondReviewId" />
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Product")</label>
+                        <input type="text" id="respondProductName" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("YourResponse")</label>
+                        <textarea id="respondText" class="form-control" rows="4" 
+                                  placeholder="@LocalizationService.GetString("ResponsePlaceholder")" required></textarea>
+                        <div class="form-text">@LocalizationService.GetString("ResponseInfo")</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> @LocalizationService.GetString("Send")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="rejectForm">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">@LocalizationService.GetString("RejectReview")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="rejectReviewId" />
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>@LocalizationService.GetString("Warning"):</strong> @LocalizationService.GetString("IrreversibleAction")
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Product")</label>
+                        <input type="text" id="rejectProductName" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("RejectReason")</label>
+                        <textarea id="rejectReason" class="form-control" rows="3" 
+                                  placeholder="@LocalizationService.GetString("RejectReasonPlaceholder")" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban"></i> @LocalizationService.GetString("Reject")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .gradient-card {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .gradient-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+        .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+        .bg-info-soft { background-color: rgba(13, 202, 240, 0.1); }
+        .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5D3EBC, #7952CC);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .merchant-response {
+            border-left: 4px solid #5D3EBC;
+        }
+
+        .list-group-item {
+            transition: background-color 0.2s;
+        }
+
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .rating-distribution .progress {
+            border-radius: 10px;
+        }
+
+        .rating-distribution .progress-bar {
+            border-radius: 10px;
+        }
+
+        .star-rating {
+            font-size: 16px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let respondModal, rejectModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            respondModal = new bootstrap.Modal(document.getElementById('respondModal'));
+            rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+
+            // Respond form submit
+            document.getElementById('respondForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const reviewId = document.getElementById('respondReviewId').value;
+                const response = document.getElementById('respondText').value;
+
+                if (!response.trim()) {
+                    alert('Lütfen yanıtınızı yazın');
+                    return;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('reviewId', reviewId);
+                    formData.append('response', response);
+                    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                    const result = await fetch('/Reviews/RespondToReview', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await result.json();
+
+                    if (data.success) {
+                        respondModal.hide();
+                        showToast('success', data.message);
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('error', data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('error', 'İşlem sırasında hata oluştu');
+                }
+            });
+
+            // Reject form submit
+            document.getElementById('rejectForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const reviewId = document.getElementById('rejectReviewId').value;
+                const reason = document.getElementById('rejectReason').value;
+
+                if (!reason.trim()) {
+                    alert('Lütfen red nedenini belirtin');
+                    return;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('reviewId', reviewId);
+                    formData.append('reason', reason);
+                    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                    const result = await fetch('/Reviews/RejectReview', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await result.json();
+
+                    if (data.success) {
+                        rejectModal.hide();
+                        showToast('success', data.message);
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('error', data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('error', 'İşlem sırasında hata oluştu');
+                }
+            });
+        });
+
+        function openResponseModal(reviewId, productName) {
+            document.getElementById('respondReviewId').value = reviewId;
+            document.getElementById('respondProductName').value = productName;
+            document.getElementById('respondText').value = '';
+            respondModal.show();
+        }
+
+        function openRejectModal(reviewId, productName) {
+            document.getElementById('rejectReviewId').value = reviewId;
+            document.getElementById('rejectProductName').value = productName;
+            document.getElementById('rejectReason').value = '';
+            rejectModal.show();
+        }
+
+        async function approveReview(reviewId) {
+            if (!confirm('Bu yorumu onaylamak istediğinize emin misiniz?')) {
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('reviewId', reviewId);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                const result = await fetch('/Reviews/ApproveReview', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await result.json();
+
+                if (data.success) {
+                    showToast('success', data.message);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast('error', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('error', 'İşlem sırasında hata oluştu');
+            }
+        }
+
+        function viewReviewDetails(reviewId) {
+            // Implement review details modal if needed
+            console.log('View details for review:', reviewId);
+        }
+
+        function showToast(type, message) {
+            // Simple toast notification (can be enhanced with a library)
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            
+            const toast = document.createElement('div');
+            toast.className = `alert ${alertClass} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <i class="fas fa-${icon} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 150);
+            }, 3000);
+        }
+    </script>
+}
+

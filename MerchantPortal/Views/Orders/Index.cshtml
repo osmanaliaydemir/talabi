@@ -1,0 +1,233 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.PagedResult<Getir.MerchantPortal.Models.OrderResponse>
+@{
+    ViewData["Title"] = LocalizationService.GetString("Orders");
+    var currentStatus = ViewBag.CurrentStatus as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard-modern.css" />
+    <link rel="stylesheet" href="~/css/modules/orders/orders.css" asp-append-version="true" />
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <div>
+        <h2 class="mb-1"><i class="fas fa-shopping-cart me-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>@LocalizationService.GetString("MyOrders")</h2>
+        <p class="text-muted mb-0">@LocalizationService.GetString("ManageAllOrders")</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-3 mb-4 fade-in" style="animation-delay: 0.1s;">
+    <div class="col-md-3">
+        <div class="stats-card-mini">
+            <span class="value" style="color: #fbbf24;">@(Model?.Items?.Count(o => o?.Status == "Pending") ?? 0)</span>
+            <span class="label">@LocalizationService?.GetString("Pending") ?? "Pending"</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card-mini">
+            <span class="value" style="color: #8b5cf6;">@(Model?.Items?.Count(o => o?.Status == "Preparing") ?? 0)</span>
+            <span class="label">@LocalizationService?.GetString("Preparing") ?? "Preparing"</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card-mini">
+            <span class="value" style="color: #10b981;">@(Model?.Items?.Count(o => o?.Status == "Ready") ?? 0)</span>
+            <span class="label">@LocalizationService?.GetString("Ready") ?? "Ready"</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card-mini">
+            <span class="value" style="color: #059669;">@(Model?.Items?.Count(o => o?.Status == "Delivered") ?? 0)</span>
+            <span class="label">@LocalizationService?.GetString("Delivered") ?? "Delivered"</span>
+        </div>
+    </div>
+</div>
+
+<!-- Status Tabs -->
+<div class="d-flex gap-2 mb-4 flex-wrap fade-in" style="animation-delay: 0.2s;">
+    <a href="@Url.Action("Index")" class="status-tab @(string.IsNullOrEmpty(currentStatus) ? "active" : "")">
+        <i class="fas fa-list me-2"></i>@LocalizationService.GetString("All")
+    </a>
+    <a href="@Url.Action("Index", new { status = "Pending" })" class="status-tab @(currentStatus == "Pending" ? "active" : "")">
+        <i class="fas fa-clock me-2"></i>@LocalizationService.GetString("Pending")
+    </a>
+    <a href="@Url.Action("Index", new { status = "Confirmed" })" class="status-tab @(currentStatus == "Confirmed" ? "active" : "")">
+        <i class="fas fa-check me-2"></i>@LocalizationService.GetString("Confirmed")
+    </a>
+    <a href="@Url.Action("Index", new { status = "Preparing" })" class="status-tab @(currentStatus == "Preparing" ? "active" : "")">
+        <i class="fas fa-utensils me-2"></i>@LocalizationService.GetString("Preparing")
+    </a>
+    <a href="@Url.Action("Index", new { status = "Ready" })" class="status-tab @(currentStatus == "Ready" ? "active" : "")">
+        <i class="fas fa-check-circle me-2"></i>@LocalizationService.GetString("Ready")
+    </a>
+    <a href="@Url.Action("Index", new { status = "Delivered" })" class="status-tab @(currentStatus == "Delivered" ? "active" : "")">
+        <i class="fas fa-truck me-2"></i>@LocalizationService.GetString("Delivered")
+    </a>
+    <a href="@Url.Action("Index", new { status = "Cancelled" })" class="status-tab @(currentStatus == "Cancelled" ? "active" : "")">
+        <i class="fas fa-times me-2"></i>@LocalizationService.GetString("Cancelled")
+    </a>
+</div>
+
+<!-- Orders List -->
+@if (Model != null && Model.Items.Any())
+{
+    var delay = 0.3;
+    foreach (var order in Model.Items)
+    {
+        if (order == null) continue;
+        
+        delay += 0.05;
+        var statusClass = order.Status?.ToLower() ?? "unknown";
+        var badgeClass = (order.Status ?? "") switch
+        {
+            "Pending" => "warning",
+            "Confirmed" => "info",
+            "Preparing" => "primary",
+            "Ready" => "success",
+            "Delivered" => "success",
+            "Cancelled" => "danger",
+            _ => "secondary"
+        };
+
+        var statusText = (order.Status ?? "") switch
+        {
+            "Pending" => LocalizationService?.GetString("Pending") ?? "Pending",
+            "Confirmed" => LocalizationService?.GetString("Confirmed") ?? "Confirmed",
+            "Preparing" => LocalizationService?.GetString("Preparing") ?? "Preparing",
+            "Ready" => LocalizationService?.GetString("Ready") ?? "Ready",
+            "Delivered" => LocalizationService?.GetString("Delivered") ?? "Delivered",
+            "Cancelled" => LocalizationService?.GetString("Cancelled") ?? "Cancelled",
+            _ => order.Status ?? "Unknown"
+        };
+        
+        <div class="order-card @statusClass mb-3 fade-in" style="animation-delay: @(delay)s;">
+            <div class="order-header">
+                <div>
+                    <div class="order-number">#@order.OrderNumber</div>
+                    <div class="order-time">
+                        <i class="far fa-clock"></i>
+                        @order.CreatedAt.ToString("dd MMM yyyy, HH:mm")
+                    </div>
+                </div>
+                <span class="badge-modern @badgeClass">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                    @statusText
+                </span>
+            </div>
+            
+            <div class="customer-info">
+                <div class="customer-avatar">
+                    @(order.CustomerName?.Substring(0, 1).ToUpper() ?? "?")
+                </div>
+                <div class="customer-details flex-grow-1">
+                    <h6>@(order.CustomerName ?? "Unknown Customer")</h6>
+                    <small>
+                        <i class="fas fa-phone me-1"></i>@(order.CustomerPhone ?? "N/A")
+                    </small>
+                </div>
+                <div class="text-end">
+                    <div class="order-amount">₺@(order.TotalAmount.ToString("N2") ?? "0.00")</div>
+                    <small class="text-muted">@statusText</small>
+                </div>
+            </div>
+            
+            <div class="mb-2">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="fas fa-map-marker-alt mt-1 text-muted"></i>
+                    <small class="text-muted">@(order.DeliveryAddress ?? "No address")</small>
+                </div>
+            </div>
+            
+            <div class="order-footer">
+                <div class="d-flex gap-2">
+                    <small class="badge bg-light text-dark">
+                        <i class="fas fa-calendar me-1"></i>
+                        @order.CreatedAt.ToString("HH:mm")
+                    </small>
+                    @if (order.Notes != null && !string.IsNullOrEmpty(order.Notes))
+                    {
+                        <small class="badge" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #831843;">
+                            <i class="fas fa-sticky-note me-1"></i>
+                            @LocalizationService.GetString("HasNote")
+                        </small>
+                    }
+                </div>
+                <a href="@Url.Action("Details", new { id = order.Id })" class="btn btn-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+                    <i class="fas fa-eye me-1"></i> @LocalizationService.GetString("Details")
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-center mt-4 fade-in" style="animation-delay: 0.5s;">
+            <nav>
+                <ul class="pagination pagination-lg">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="?page=@(Model.Page - 1)&status=@currentStatus" style="border-radius: 10px 0 0 10px;">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" href="?page=@i&status=@currentStatus">@i</a>
+                        </li>
+                    }
+                    
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="?page=@(Model.Page + 1)&status=@currentStatus" style="border-radius: 0 10px 10px 0;">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+}
+else
+{
+    <div class="text-center py-5 fade-in">
+        <div class="chart-container-modern" style="max-width: 500px; margin: 0 auto;">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+            <h4 class="mb-3">@(string.IsNullOrEmpty(currentStatus) ? LocalizationService.GetString("NoOrdersYet") : $"{currentStatus} {LocalizationService.GetString("NoOrdersFound")}")</h4>
+            <p class="text-muted">@(string.IsNullOrEmpty(currentStatus) ? LocalizationService.GetString("FirstOrderWillAppear") : LocalizationService.GetString("TryDifferentFilter"))</p>
+        </div>
+    </div>
+}
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "warning",
+            "Confirmed" => "info",
+            "Preparing" => "primary",
+            "Ready" => "success",
+            "Delivered" => "success",
+            "Cancelled" => "danger",
+            _ => "secondary"
+        };
+    }
+
+    string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Pending" => LocalizationService.GetString("Pending"),
+            "Confirmed" => LocalizationService.GetString("Confirmed"),
+            "Preparing" => LocalizationService.GetString("Preparing"),
+            "Ready" => LocalizationService.GetString("Ready"),
+            "Delivered" => LocalizationService.GetString("Delivered"),
+            "Cancelled" => LocalizationService.GetString("Cancelled"),
+            _ => status
+        };
+    }
+}

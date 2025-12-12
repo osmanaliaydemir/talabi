@@ -1,0 +1,59 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.RouteOptimizationRequest
+
+<h3>@LocalizationService.GetString("RouteOptimization")</h3>
+
+<form asp-action="BestRoute" method="post">
+	@Html.AntiForgeryToken()
+	<input type="hidden" asp-for="MerchantId" />
+
+	<div class="mb-3">
+		<label class="form-label">@LocalizationService.GetString("Waypoints") (lat,lon; lat,lon)</label>
+		<input type="text" id="waypointsInput" class="form-control" placeholder="41.0,29.0; 41.01,29.02" />
+	</div>
+	<button type="submit" class="btn btn-primary" onclick="prepareWaypoints()">@LocalizationService.GetString("Calculate")</button>
+</form>
+
+@if (ViewBag.BestRoute != null)
+{
+	var r = (Getir.MerchantPortal.Models.DeliveryRouteResponse)ViewBag.BestRoute;
+	<div class="alert alert-success mt-3">
+		<div>@LocalizationService.GetString("Distance"): @r.DistanceKm.ToString("N2") km</div>
+		<div>@LocalizationService.GetString("Duration"): @r.DurationMinutes @LocalizationService.GetString("Minutes")</div>
+	</div>
+    <div class="card mt-2">
+        <div class="card-body">
+            <h6 class="mb-2">@LocalizationService.GetString("RoutePath")</h6>
+            <ol class="mb-0">
+                @foreach (var p in r.Path)
+                {
+                    <li>Lat: @p.Latitude, Lon: @p.Longitude</li>
+                }
+            </ol>
+        </div>
+    </div>
+}
+
+<script>
+function prepareWaypoints() {
+	const input = document.getElementById('waypointsInput');
+	if (!input) return;
+	const value = input.value.trim();
+	if (!value) return;
+	const parts = value.split(';').map(p => p.trim()).filter(Boolean);
+	const wp = parts.map(p => {
+		const [lat, lon] = p.split(',').map(Number);
+		return { latitude: lat, longitude: lon };
+	});
+	// Build hidden inputs for model binding
+	const form = input.form;
+	// remove existing
+	[...form.querySelectorAll('input[name^="Waypoints["]')].forEach(e => e.remove());
+	wp.forEach((w, i) => {
+		const a = document.createElement('input'); a.type = 'hidden'; a.name = `Waypoints[${i}].Latitude`; a.value = w.latitude; form.appendChild(a);
+		const b = document.createElement('input'); b.type = 'hidden'; b.name = `Waypoints[${i}].Longitude`; b.value = w.longitude; form.appendChild(b);
+	});
+}
+</script>
+
+

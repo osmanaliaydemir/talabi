@@ -1,0 +1,73 @@
+@inject ILocalizationService LocalizationService
+@model List<Getir.MerchantPortal.Models.OnboardingStepResponse>
+
+<h3>@LocalizationService.GetString("Onboarding")</h3>
+
+@{
+	var status = ViewBag.Status as Getir.MerchantPortal.Models.MerchantOnboardingResponse;
+	var progress = ViewBag.Progress as Getir.MerchantPortal.Models.OnboardingProgressResponse;
+}
+
+<div class="mb-3">
+	<strong>@LocalizationService.GetString("Status"):</strong> @(status?.Status ?? "-")
+	@if (progress != null)
+	{
+		<div class="progress mt-2" style="height: 18px;">
+			<div class="progress-bar" role="progressbar" style="width: @progress.Progress%">@progress.Progress%</div>
+		</div>
+	}
+</div>
+
+<div class="mb-3 d-flex gap-2">
+    <a href="@Url.Action("Index","Documents")" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-file-alt"></i> @LocalizationService.GetString("Documents")
+    </a>
+    <a href="@Url.Action("Settings","Merchant")" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
+    </a>
+</div>
+
+@if (Model != null && Model.Any())
+{
+	<ul class="list-group">
+		@foreach (var s in Model)
+		{
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div>
+					<div class="fw-bold">@s.Name</div>
+					<div class="text-muted">@s.Description</div>
+                    @if (s.Name?.ToLower().Contains("document") == true)
+                    {
+                        <a href="@Url.Action("Index","Documents")" class="btn btn-link p-0">@LocalizationService.GetString("GoTo") @LocalizationService.GetString("Documents")</a>
+                    }
+                    else if (s.Name?.ToLower().Contains("setting") == true)
+                    {
+                        <a href="@Url.Action("Settings","Merchant")" class="btn btn-link p-0">@LocalizationService.GetString("GoTo") @LocalizationService.GetString("Settings")</a>
+                    }
+				</div>
+				<div>
+					@if (!s.IsCompleted)
+					{
+						<form asp-action="Complete" method="post" class="d-inline">
+							@Html.AntiForgeryToken()
+							<input type="hidden" name="stepId" value="@s.Id" />
+							<button class="btn btn-sm btn-primary" type="submit">@LocalizationService.GetString("Complete")</button>
+						</form>
+					}
+					<span class="badge @(s.IsCompleted ? "bg-success" : "bg-secondary")">@(s.IsCompleted ? LocalizationService.GetString("Done") : LocalizationService.GetString("Pending"))</span>
+				</div>
+			</li>
+		}
+	</ul>
+
+	<form asp-action="Submit" method="post" class="mt-3">
+		@Html.AntiForgeryToken()
+		<button type="submit" class="btn btn-success">@LocalizationService.GetString("SubmitForReview")</button>
+	</form>
+}
+else
+{
+	<div class="alert alert-info">@LocalizationService.GetString("NoData")</div>
+}
+
+

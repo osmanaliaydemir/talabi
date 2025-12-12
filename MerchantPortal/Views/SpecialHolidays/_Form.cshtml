@@ -1,0 +1,79 @@
+@model Getir.MerchantPortal.Models.SpecialHolidayFormViewModel
+@inject ILocalizationService LocalizationService
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Description" class="form-label"></label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="StartDate" class="form-label"></label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="EndDate" class="form-label"></label>
+        <input asp-for="EndDate" class="form-control" type="date" />
+        <span asp-validation-for="EndDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <div class="form-check mt-4">
+            <input asp-for="IsClosed" class="form-check-input" type="checkbox" data-role="toggle-closed" />
+            <label asp-for="IsClosed" class="form-check-label"></label>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-check mt-4">
+            <input asp-for="IsRecurring" class="form-check-input" type="checkbox" />
+            <label asp-for="IsRecurring" class="form-check-label"></label>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-check mt-4">
+            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+            <label asp-for="IsActive" class="form-check-label"></label>
+        </div>
+    </div>
+    <div class="col-md-3"></div>
+    <div class="col-md-6" data-role="special-hours">
+        <label asp-for="SpecialOpenTime" class="form-label"></label>
+        <input asp-for="SpecialOpenTime" class="form-control" type="time" />
+        <span asp-validation-for="SpecialOpenTime" class="text-danger"></span>
+    </div>
+    <div class="col-md-6" data-role="special-hours">
+        <label asp-for="SpecialCloseTime" class="form-label"></label>
+        <input asp-for="SpecialCloseTime" class="form-control" type="time" />
+        <span asp-validation-for="SpecialCloseTime" class="text-danger"></span>
+    </div>
+</div>
+
+<input type="hidden" asp-for="MerchantId" />
+
+<script>
+    (function () {
+        const checkbox = document.querySelector('[data-role="toggle-closed"]');
+        const timeFields = document.querySelectorAll('[data-role="special-hours"]');
+
+        function toggleTimeFields() {
+            const disabled = checkbox?.checked;
+            timeFields.forEach(container => {
+                const input = container.querySelector('input');
+                if (!input) return;
+                input.disabled = disabled;
+                container.style.opacity = disabled ? '0.5' : '1';
+            });
+        }
+
+        if (checkbox) {
+            checkbox.addEventListener('change', toggleTimeFields);
+            toggleTimeFields();
+        }
+    })();
+</script>
+

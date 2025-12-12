@@ -1,0 +1,442 @@
+{
+    "Login": {
+        "tr-TR": "Giriş Yap",
+        "en-US": "Login",
+        "ar-SA": "تسجيل الدخول"
+    },
+    "Username": {
+        "tr-TR": "Kullanıcı Adı",
+        "en-US": "Username",
+        "ar-SA": "اسم المستخدم"
+    },
+    "Password": {
+        "tr-TR": "Şifre",
+        "en-US": "Password",
+        "ar-SA": "كلمة المرور"
+    },
+    "MarketShare": {
+        "tr-TR": "Pazar Payı",
+        "en-US": "Market Share",
+        "ar-SA": "حصة السوق"
+    },
+    "Dashboard": {
+        "tr-TR": "Ana Sayfa",
+        "en-US": "Dashboard",
+        "ar-SA": "لوحة التحكم"
+    },
+    "Welcome": {
+        "tr-TR": "Hoş Geldiniz",
+        "en-US": "Welcome",
+        "ar-SA": "مرحباً"
+    },
+    "LastUpdate": {
+        "tr-TR": "Son Güncelleme",
+        "en-US": "Last Update",
+        "ar-SA": "آخر تحديث"
+    },
+    "Score": {
+        "tr-TR": "Puan",
+        "en-US": "Score",
+        "ar-SA": "النتيجة"
+    },
+    "Evaluations": {
+        "tr-TR": "Değerlendirme",
+        "en-US": "Evaluations",
+        "ar-SA": "التقييمات"
+    },
+    "EditProfile": {
+        "tr-TR": "Profili Düzenle",
+        "en-US": "Edit Profile",
+        "ar-SA": "تعديل الملف الشخصي"
+    },
+    "QuickActions": {
+        "tr-TR": "Hızlı İşlemler",
+        "en-US": "Quick Actions",
+        "ar-SA": "إجراءات سريعة"
+    },
+    "AddProduct": {
+        "tr-TR": "Ürün Ekle",
+        "en-US": "Add Product",
+        "ar-SA": "إضافة منتج"
+    },
+    "CreateNewProductDesc": {
+        "tr-TR": "Yeni bir ürün oluştur",
+        "en-US": "Create a new product",
+        "ar-SA": "إنشاء منتج جديد"
+    },
+    "CreateCampaign": {
+        "tr-TR": "Kampanya Oluştur",
+        "en-US": "Create Campaign",
+        "ar-SA": "إنشاء حملة"
+    },
+    "SpecialOffersDesc": {
+        "tr-TR": "Müşterilere özel teklifler",
+        "en-US": "Special offers for customers",
+        "ar-SA": "عروض خاصة للعملاء"
+    },
+    "CloseShop": {
+        "tr-TR": "Dükkanı Kapat",
+        "en-US": "Close Shop",
+        "ar-SA": "إغلاق المتجر"
+    },
+    "StopOrdersTempDesc": {
+        "tr-TR": "Geçici olarak sipariş alımını durdur",
+        "en-US": "Temporarily stop receiving orders",
+        "ar-SA": "إيقاف استلام الطلبات مؤقتًا"
+    },
+    "ManageOrders": {
+        "tr-TR": "Siparişleri Yönet",
+        "en-US": "Manage Orders",
+        "ar-SA": "إدارة الطلبات"
+    },
+    "ViewIncomingOrdersDesc": {
+        "tr-TR": "Gelen siparişleri görüntüle",
+        "en-US": "View incoming orders",
+        "ar-SA": "عرض الطلبات الواردة"
+    },
+    "UpdateStock": {
+        "tr-TR": "Stok Güncelle",
+        "en-US": "Update Stock",
+        "ar-SA": "تحديث المخزون"
+    },
+    "QuickStockEditDesc": {
+        "tr-TR": "Hızlı stok düzenleme",
+        "en-US": "Quick stock editing",
+        "ar-SA": "تعديل سريع للمخزون"
+    },
+    "ReadReviews": {
+        "tr-TR": "Yorumları Oku",
+        "en-US": "Read Reviews",
+        "ar-SA": "قراءة المراجعات"
+    },
+    "CustomerFeedbackDesc": {
+        "tr-TR": "Müşteri geri bildirimleri",
+        "en-US": "Customer feedback",
+        "ar-SA": "ملاحظات العملاء"
+    },
+    "RevenueReport": {
+        "tr-TR": "Gelir Raporu",
+        "en-US": "Revenue Report",
+        "ar-SA": "تقرير الإيرادات"
+    },
+    "DetailedFinancialAnalysisDesc": {
+        "tr-TR": "Detaylı finansal analiz",
+        "en-US": "Detailed financial analysis",
+        "ar-SA": "تحليل مالي مفصل"
+    },
+    "CourierTracking": {
+        "tr-TR": "Kurye Takibi",
+        "en-US": "Courier Tracking",
+        "ar-SA": "تتبع المندوب"
+    },
+    "LiveCourierLocationsDesc": {
+        "tr-TR": "Canlı kurye konumları",
+        "en-US": "Live courier locations",
+        "ar-SA": "مواقع المندوبين الحية"
+    },
+    "SupportCenter": {
+        "tr-TR": "Destek Merkezi",
+        "en-US": "Support Center",
+        "ar-SA": "مركز الدعم"
+    },
+    "ReportIssueGetHelpDesc": {
+        "tr-TR": "Sorun bildir ve yardım al",
+        "en-US": "Report issue and get help",
+        "ar-SA": "الإبلاغ عن مشكلة والحصول على المساعدة"
+    },
+    "TodayRevenue": {
+        "tr-TR": "Bugünün Cirosu",
+        "en-US": "Today's Revenue",
+        "ar-SA": "إيرادات اليوم"
+    },
+    "OrdersCount": {
+        "tr-TR": "sipariş",
+        "en-US": "orders",
+        "ar-SA": "طلبات"
+    },
+    "PendingOrders": {
+        "tr-TR": "Bekleyen Siparişler",
+        "en-US": "Pending Orders",
+        "ar-SA": "الطلبات المعلقة"
+    },
+    "PendingAction": {
+        "tr-TR": "İşlem bekliyor",
+        "en-US": "Pending action",
+        "ar-SA": "في انتظار الإجراء"
+    },
+    "ActiveProducts": {
+        "tr-TR": "Aktif Ürünler",
+        "en-US": "Active Products",
+        "ar-SA": "المنتجات النشطة"
+    },
+    "OnSale": {
+        "tr-TR": "Satışta",
+        "en-US": "On Sale",
+        "ar-SA": "للبيع"
+    },
+    "Review": {
+        "tr-TR": "Değerlendirme",
+        "en-US": "Review",
+        "ar-SA": "تقييم"
+    },
+    "Reviews": {
+        "tr-TR": "yorum",
+        "en-US": "reviews",
+        "ar-SA": "مراجعات"
+    },
+    "AverageOrderValue": {
+        "tr-TR": "Ortalama Sipariş Tutarı",
+        "en-US": "Average Order Value",
+        "ar-SA": "متوسط قيمة الطلب"
+    },
+    "TotalOrders": {
+        "tr-TR": "Toplam Sipariş",
+        "en-US": "Total Orders",
+        "ar-SA": "إجمالي الطلبات"
+    },
+    "MerchantPerformance": {
+        "tr-TR": "Mağaza Performansı",
+        "en-US": "Merchant Performance",
+        "ar-SA": "أداء المتجر"
+    },
+    "OrdersPerDay": {
+        "tr-TR": "Sipariş/Gün",
+        "en-US": "Orders Per Day",
+        "ar-SA": "الطلبات يوميًا"
+    },
+    "AveragePreparationTime": {
+        "tr-TR": "Ort. Hazırlık Süresi",
+        "en-US": "Avg. Preparation Time",
+        "ar-SA": "متوسط وقت التحضير"
+    },
+    "CompletionRate": {
+        "tr-TR": "Tamamlama Oranı",
+        "en-US": "Completion Rate",
+        "ar-SA": "معدل الإكمال"
+    },
+    "CustomerSatisfaction": {
+        "tr-TR": "Müşteri Memnuniyeti",
+        "en-US": "Customer Satisfaction",
+        "ar-SA": "رضا العملاء"
+    },
+    "StockStatus": {
+        "tr-TR": "Stok Durumu",
+        "en-US": "Stock Status",
+        "ar-SA": "حالة المخزون"
+    },
+    "Details": {
+        "tr-TR": "Detaylar",
+        "en-US": "Details",
+        "ar-SA": "التفاصيل"
+    },
+    "ActiveAlerts": {
+        "tr-TR": "aktif uyarı",
+        "en-US": "active alerts",
+        "ar-SA": "تنبيهات نشطة"
+    },
+    "LowStock": {
+        "tr-TR": "Düşük Stok",
+        "en-US": "Low Stock",
+        "ar-SA": "مخزون منخفض"
+    },
+    "OutOfStock": {
+        "tr-TR": "Stok Tükendi",
+        "en-US": "Out of Stock",
+        "ar-SA": "نفد المخزون"
+    },
+    "StockNormal": {
+        "tr-TR": "Stok seviyeleri normal",
+        "en-US": "Stock levels are normal",
+        "ar-SA": "مستويات المخزون طبيعية"
+    },
+    "SalesTrend": {
+        "tr-TR": "Satış Trendi",
+        "en-US": "Sales Trend",
+        "ar-SA": "اتجاه المبيعات"
+    },
+    "Last30Days": {
+        "tr-TR": "Son 30 Gün",
+        "en-US": "Last 30 Days",
+        "ar-SA": "آخر 30 يوم"
+    },
+    "Days30": {
+        "tr-TR": "30 Gün",
+        "en-US": "30 Days",
+        "ar-SA": "30 يوم"
+    },
+    "Days7": {
+        "tr-TR": "7 Gün",
+        "en-US": "7 Days",
+        "ar-SA": "7 أيام"
+    },
+    "OrderStatus": {
+        "tr-TR": "Sipariş Durumu",
+        "en-US": "Order Status",
+        "ar-SA": "حالة الطلب"
+    },
+    "CategoryDistribution": {
+        "tr-TR": "Kategori Dağılımı",
+        "en-US": "Category Distribution",
+        "ar-SA": "توزيع الفئات"
+    },
+    "Revenue": {
+        "tr-TR": "Ciro",
+        "en-US": "Revenue",
+        "ar-SA": "الإيرادات"
+    },
+    "TopSellers": {
+        "tr-TR": "En Çok Satanlar",
+        "en-US": "Top Sellers",
+        "ar-SA": "الأكثر مبيعاً"
+    },
+    "ViewAll": {
+        "tr-TR": "Tümünü Gör",
+        "en-US": "View All",
+        "ar-SA": "عرض الكل"
+    },
+    "NoSalesYet": {
+        "tr-TR": "Henüz satış yok",
+        "en-US": "No sales yet",
+        "ar-SA": "لا توجد مبيعات بعد"
+    },
+    "RecentOrders": {
+        "tr-TR": "Son Siparişler",
+        "en-US": "Recent Orders",
+        "ar-SA": "الطلبات الأخيرة"
+    },
+    "NoOrdersYetShort": {
+        "tr-TR": "Henüz sipariş yok",
+        "en-US": "No orders yet",
+        "ar-SA": "لا توجد طلبات بعد"
+    },
+    "Select": {
+        "tr-TR": "Seçiniz",
+        "en-US": "Select",
+        "ar-SA": "تحديد"
+    },
+    "Deleted": {
+        "tr-TR": "Silindi",
+        "en-US": "Deleted",
+        "ar-SA": "تم الحذف"
+    },
+    "Activated": {
+        "tr-TR": "Aktifleştirildi",
+        "en-US": "Activated",
+        "ar-SA": "تم التفعيل"
+    },
+    "Deactivated": {
+        "tr-TR": "Pasifleştirildi",
+        "en-US": "Deactivated",
+        "ar-SA": "تم التعطيل"
+    },
+    "EditProduct": {
+        "tr-TR": "Ürünü Düzenle",
+        "en-US": "Edit Product",
+        "ar-SA": "تعديل المنتج"
+    },
+    "Success": {
+        "tr-TR": "Başarılı",
+        "en-US": "Success",
+        "ar-SA": "ناجح"
+    },
+    "Delete": {
+        "tr-TR": "Sil",
+        "en-US": "Delete",
+        "ar-SA": "حذف"
+    },
+    "DeleteConfirmation": {
+        "tr-TR": "Bunu silmek istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to delete this?",
+        "ar-SA": "هل أنت متأكد أنك تريد حذف هذا؟"
+    },
+    "Cancel": {
+        "tr-TR": "İptal",
+        "en-US": "Cancel",
+        "ar-SA": "إلغاء"
+    },
+    "Save": {
+        "tr-TR": "Kaydet",
+        "en-US": "Save",
+        "ar-SA": "حفظ"
+    },
+    "Active": {
+        "tr-TR": "Aktif",
+        "en-US": "Active",
+        "ar-SA": "نشط"
+    },
+    "Inactive": {
+        "tr-TR": "Pasif",
+        "en-US": "Inactive",
+        "ar-SA": "غير نشط"
+    },
+    "Category": {
+        "tr-TR": "Kategori",
+        "en-US": "Category",
+        "ar-SA": "الفئة"
+    },
+    "Apply": {
+        "tr-TR": "Uygula",
+        "en-US": "Apply",
+        "ar-SA": "تطبيق"
+    },
+    "Filter": {
+        "tr-TR": "Filtrele",
+        "en-US": "Filter",
+        "ar-SA": "تصفية"
+    },
+    "All": {
+        "tr-TR": "Tümü",
+        "en-US": "All",
+        "ar-SA": "الكل"
+    },
+    "Name": {
+        "tr-TR": "İsim",
+        "en-US": "Name",
+        "ar-SA": "الاسم"
+    },
+    "Image": {
+        "tr-TR": "Resim",
+        "en-US": "Image",
+        "ar-SA": "الصورة"
+    },
+    "Price": {
+        "tr-TR": "Fiyat",
+        "en-US": "Price",
+        "ar-SA": "السعر"
+    },
+    "Stock": {
+        "tr-TR": "Stok",
+        "en-US": "Stock",
+        "ar-SA": "المخزون"
+    },
+    "Status": {
+        "tr-TR": "Durum",
+        "en-US": "Status",
+        "ar-SA": "الحالة"
+    },
+    "Actions": {
+        "tr-TR": "İşlemler",
+        "en-US": "Actions",
+        "ar-SA": "الإجراءات"
+    },
+    "Deactivate": {
+        "tr-TR": "Pasifleştir",
+        "en-US": "Deactivate",
+        "ar-SA": "تعطيل"
+    },
+    "Activate": {
+        "tr-TR": "Aktifleştir",
+        "en-US": "Activate",
+        "ar-SA": "تفعيل"
+    },
+    "Description": {
+        "tr-TR": "Açıklama",
+        "en-US": "Description",
+        "ar-SA": "الوصف"
+    },
+    "PreparationTime": {
+        "tr-TR": "Hazırlık Süresi",
+        "en-US": "Preparation Time",
+        "ar-SA": "وقت التحضير"
+    }
+}

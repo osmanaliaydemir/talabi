@@ -1,0 +1,579 @@
+﻿@model Talabi.Portal.Models.HomeViewModel
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+	ViewData["Title"] = LocalizationService.GetString("Dashboard");
+
+	// Map HomeViewModel data to the structure expected by the view
+	var stats = new
+	{
+		TodayRevenue = Model.TotalRevenueToday,
+		TodayOrders = Model.CompletedOrdersToday,
+		PendingOrders = Model.PendingOrdersCount,
+		ActiveProducts = 0, // Not available in HomeViewModel yet
+		AverageRating = Model.Profile.Rating,
+		TotalReviews = Model.Profile.RatingCount,
+		TotalOrders = Model.CompletedOrdersToday // Using this as proxy
+	};
+
+	// Placeholder objects for data not yet in HomeViewModel
+	var performance = new
+	{
+		AverageOrderValue = 0m,
+		OrdersPerDay = 0,
+		AveragePreparationTime = 0,
+		CompletionRate = 0d,
+		CustomerSatisfactionScore = 0d
+	};
+
+	var recentOrders = new List<dynamic>();
+	var topProducts = new List<dynamic>();
+	var stockSummary = new { ActiveAlerts = 0, LowStockItems = 0, OutOfStockItems = 0 };
+}
+
+@section Styles {
+	<link rel="stylesheet" href="~/css/dashboard-modern.css"/>
+}
+
+<!-- Welcome Banner -->
+<div class="quick-stats-banner fade-in mb-4">
+	<div class="row align-items-center">
+		<div class="col-md-8">
+			<h2><i class="fas fa-store me-2"></i>@LocalizationService.GetString("Welcome"), @(User.Identity?.Name ?? Model.Profile.Name)!</h2>
+			<span class="fw-semibold">@Model.Profile.Name</span>
+		</div>
+		<div class="col-md-4 text-md-end mt-3 mt-md-0">
+			<div class="d-flex align-items-center justify-content-md-end gap-2">
+				<i class="fas fa-clock fa-2x opacity-75"></i>
+				<div>
+					<div class="small opacity-75">@LocalizationService.GetString("LastUpdate")</div>
+					<div id="lastUpdate" class="fw-bold">@DateTime.Now.ToString("HH:mm")</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="row g-4 mb-4">
+	<!-- Profil Kartı -->
+	<div class="col-md-4">
+		<div class="card h-100 border-0 shadow-sm user-card">
+			<div class="card-body text-center p-4">
+				<div class="position-relative d-inline-block mb-3">
+					@if (!string.IsNullOrEmpty(Model.Profile.ImageUrl))
+					{
+						<img src="@Model.Profile.ImageUrl" class="rounded-circle shadow-sm" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white;" alt="@Model.Profile.Name">
+					}
+					else
+					{
+						<div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto shadow-sm" style="width: 120px; height: 120px; border: 4px solid white;">
+							<i class="fas fa-store fa-4x text-muted"></i>
+						</div>
+					}
+					<div class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle p-2" title="Online"></div>
+				</div>
+
+				<h4 class="fw-bold mb-1">@Model.Profile.Name</h4>
+				<p class="text-secondary mb-3">
+					<i class="fas fa-map-marker-alt me-1"></i> @Model.Profile.City
+				</p>
+
+				<div class="d-flex justify-content-center gap-3 mb-4">
+					<div class="text-center px-3 py-2 bg-light rounded-3">
+						<div class="fw-bold text-dark fs-5">@Model.Profile.Rating.ToString("F1")</div>
+						<div class="small text-secondary">
+							<i class="fas fa-star text-warning"></i> @LocalizationService.GetString("Score")
+						</div>
+					</div>
+					<div class="text-center px-3 py-2 bg-light rounded-3">
+						<div class="fw-bold text-dark fs-5">@Model.Profile.RatingCount</div>
+						<div class="small text-secondary">
+							<i class="fas fa-users text-primary"></i> @LocalizationService.GetString("Evaluations")
+						</div>
+					</div>
+				</div>
+
+				<div class="d-grid">
+					<button class="btn btn-outline-primary rounded-pill">
+						<i class="fas fa-edit me-2"></i>@LocalizationService.GetString("EditProfile")
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Hızlı İşlemler -->
+	<div class="col-md-8">
+		<div class="row g-4">
+			<div class="col-12 mt-4">
+				<h5 class="fw-bold text-dark mb-3">@LocalizationService.GetString("QuickActions")</h5>
+				<div class="row g-3">
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+									<i class="fas fa-plus fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("AddProduct")</h6>
+									<small class="text-muted">@LocalizationService.GetString("CreateNewProductDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-info bg-opacity-10 text-info rounded-3 p-3 me-3">
+									<i class="fas fa-bullhorn fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("CreateCampaign")</h6>
+									<small class="text-muted">@LocalizationService.GetString("SpecialOffersDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-danger bg-opacity-10 text-danger rounded-3 p-3 me-3">
+									<i class="fas fa-store-slash fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("CloseShop")</h6>
+									<small class="text-muted">@LocalizationService.GetString("StopOrdersTempDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<!-- Yeni 6 Hızlı İşlem -->
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
+									<i class="fas fa-clipboard-list fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("ManageOrders")</h6>
+									<small class="text-muted">@LocalizationService.GetString("ViewIncomingOrdersDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-warning bg-opacity-10 text-warning rounded-3 p-3 me-3">
+									<i class="fas fa-box-open fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("UpdateStock")</h6>
+									<small class="text-muted">@LocalizationService.GetString("QuickStockEditDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+									<i class="fas fa-comments fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("ReadReviews")</h6>
+									<small class="text-muted">@LocalizationService.GetString("CustomerFeedbackDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
+									<i class="fas fa-chart-pie fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("RevenueReport")</h6>
+									<small class="text-muted">@LocalizationService.GetString("DetailedFinancialAnalysisDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-info bg-opacity-10 text-info rounded-3 p-3 me-3">
+									<i class="fas fa-motorcycle fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("CourierTracking")</h6>
+									<small class="text-muted">@LocalizationService.GetString("LiveCourierLocationsDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="#" class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+							<div class="card-body p-3 d-flex align-items-center">
+								<div class="icon-square bg-secondary bg-opacity-10 text-secondary rounded-3 p-3 me-3">
+									<i class="fas fa-headset fa-lg"></i>
+								</div>
+								<div>
+									<h6 class="fw-bold text-dark mb-1">@LocalizationService.GetString("SupportCenter")</h6>
+									<small class="text-muted">@LocalizationService.GetString("ReportIssueGetHelpDesc")</small>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modern Stat Cards -->
+<div class="row g-4 mb-4">
+	<div class="col-md-6 col-lg-3">
+		<div class="stat-card-gradient primary fade-in" style="animation-delay: 0.1s;">
+			<div class="gradient-bg"></div>
+			<div class="stat-icon-modern primary">
+				<i class="fas fa-lira-sign"></i>
+			</div>
+			<div class="stat-label">@LocalizationService.GetString("TodayRevenue")</div>
+			<div class="stat-value">₺@(stats.TodayRevenue.ToString("N2"))</div>
+			<div class="stat-change positive">
+				<i class="fas fa-arrow-up"></i>
+				<span>@(stats.TodayOrders) @LocalizationService.GetString("OrdersCount")</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-6 col-lg-3">
+		<div class="stat-card-gradient warning fade-in" style="animation-delay: 0.2s;">
+			<div class="gradient-bg"></div>
+			<div class="stat-icon-modern warning">
+				<i class="fas fa-clock"></i>
+			</div>
+			<div class="stat-label">@LocalizationService.GetString("PendingOrders")</div>
+			<div class="stat-value">@(stats.PendingOrders)</div>
+			<div class="stat-change @(stats.PendingOrders > 0 ? "negative" : "neutral")">
+				<i class="fas fa-exclamation-circle"></i>
+				<span>@LocalizationService.GetString("PendingAction")</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-6 col-lg-3">
+		<div class="stat-card-gradient success fade-in" style="animation-delay: 0.3s;">
+			<div class="gradient-bg"></div>
+			<div class="stat-icon-modern success">
+				<i class="fas fa-box"></i>
+			</div>
+			<div class="stat-label">@LocalizationService.GetString("ActiveProducts")</div>
+			<div class="stat-value">@(stats.ActiveProducts)</div>
+			<div class="stat-change positive">
+				<i class="fas fa-check-circle"></i>
+				<span>@LocalizationService.GetString("OnSale")</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-6 col-lg-3">
+		<div class="stat-card-gradient info fade-in" style="animation-delay: 0.4s;">
+			<div class="gradient-bg"></div>
+			<div class="stat-icon-modern info">
+				<i class="fas fa-star"></i>
+			</div>
+			<div class="stat-label">@LocalizationService.GetString("Review")</div>
+			<div class="stat-value">@(stats.AverageRating.ToString("N1"))</div>
+			<div class="stat-change neutral">
+				<i class="fas fa-users"></i>
+				<span>@(stats.TotalReviews) @LocalizationService.GetString("Reviews")</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Performance Cards & Stock Alerts -->
+<div class="row g-4 mb-4">
+	<div class="col-md-6 col-lg-4">
+		<div class="performance-card fade-in" style="animation-delay: 0.5s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-coins"></i>
+					@LocalizationService.GetString("AverageOrderValue")
+				</div>
+			</div>
+			<div class="metric-row">
+				<div>
+					<div class="metric-label">@LocalizationService.GetString("AverageOrderValue")</div>
+					<div class="metric-value text-primary">
+						₺@(performance.AverageOrderValue.ToString("N2"))
+					</div>
+				</div>
+				<div>
+					<div class="metric-label">@LocalizationService.GetString("TotalOrders")</div>
+					<div class="metric-value text-success">
+						@(stats.TotalOrders)
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-6 col-lg-4">
+		<div class="performance-card fade-in" style="animation-delay: 0.6s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-stream"></i>
+					@LocalizationService.GetString("MerchantPerformance")
+				</div>
+			</div>
+			<div class="metric-row">
+				<div>
+					<div class="metric-label">@LocalizationService.GetString("OrdersPerDay")</div>
+					<div class="metric-value text-info">
+						@(performance.OrdersPerDay)
+					</div>
+				</div>
+				<div>
+					<div class="metric-label">@LocalizationService.GetString("AveragePreparationTime")</div>
+					<div class="metric-value text-warning">
+						@(performance.AveragePreparationTime) dk
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-12 col-lg-4">
+		<div class="performance-card fade-in" style="animation-delay: 0.7s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-percentage"></i>
+					@LocalizationService.GetString("CompletionRate")
+				</div>
+			</div>
+			<div class="metric-row">
+				<div>
+					<div class="metric-label">@LocalizationService.GetString("CompletionRate")</div>
+					<div class="metric-value text-success">
+						@(performance.CompletionRate.ToString("N1"))%
+					</div>
+				</div>
+				<div>
+					<div class="metric-label">@LocalizationService.GetString("CustomerSatisfaction")</div>
+					<div class="metric-value text-primary">
+						@(performance.CustomerSatisfactionScore.ToString("N1"))
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Stock Alert Widget -->
+	<div class="col-md-12 col-lg-4">
+		<div class="performance-card fade-in" style="animation-delay: 0.7s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-boxes"></i>
+					@LocalizationService.GetString("StockStatus")
+				</div>
+				<a href="/Stock/Alerts" class="btn btn-sm btn-outline-primary">
+					@LocalizationService.GetString("Details") <i class="fas fa-arrow-right ms-1"></i>
+				</a>
+			</div>
+
+			@if (stockSummary.ActiveAlerts > 0)
+			{
+				<div class="stock-alert-summary">
+					<div class="d-flex justify-content-between align-items-center mb-2">
+						<span class="text-danger">
+							<i class="fas fa-exclamation-triangle me-1"></i>
+							<strong>@stockSummary.ActiveAlerts</strong> @LocalizationService.GetString("ActiveAlerts")
+						</span>
+					</div>
+					<div class="row g-2 mt-2">
+						@if (stockSummary.LowStockItems > 0)
+						{
+							<div class="col-6">
+								<div class="alert alert-warning mb-0 py-2 px-2 d-flex align-items-center">
+									<i class="fas fa-exclamation-circle me-2"></i>
+									<div>
+										<small class="d-block">@LocalizationService.GetString("LowStock")</small>
+										<strong>@stockSummary.LowStockItems</strong>
+									</div>
+								</div>
+							</div>
+						}
+						@if (stockSummary.OutOfStockItems > 0)
+						{
+							<div class="col-6">
+								<div class="alert alert-danger mb-0 py-2 px-2 d-flex align-items-center">
+									<i class="fas fa-times-circle me-2"></i>
+									<div>
+										<small class="d-block">@LocalizationService.GetString("OutOfStock")</small>
+										<strong>@stockSummary.OutOfStockItems</strong>
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			}
+			else
+			{
+				<div class="text-center py-3">
+					<i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+					<p class="text-muted mb-0 small">@LocalizationService.GetString("StockNormal")</p>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+<!-- Analytics Charts -->
+<div class="row g-4 mb-4">
+	<!-- Sales Line Chart -->
+	<div class="col-lg-8">
+		<div class="chart-container-modern fade-in" style="animation-delay: 0.9s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-chart-line"></i>
+					@LocalizationService.GetString("SalesTrend") (@LocalizationService.GetString("Last30Days"))
+				</div>
+				<div class="btn-group btn-group-sm" role="group">
+					<button type="button" class="btn btn-outline-secondary active" data-period="30">@LocalizationService.GetString("Days30")</button>
+					<button type="button" class="btn btn-outline-secondary" data-period="7">@LocalizationService.GetString("Days7")</button>
+				</div>
+			</div>
+			<div class="p-3">
+				<canvas id="salesChart" height="80"></canvas>
+			</div>
+		</div>
+	</div>
+
+	<!-- Orders Bar Chart -->
+	<div class="col-lg-4">
+		<div class="chart-container-modern fade-in" style="animation-delay: 1.0s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-chart-bar"></i>
+					@LocalizationService.GetString("OrderStatus")
+				</div>
+			</div>
+			<div class="p-3">
+				<canvas id="ordersChart" height="120"></canvas>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Category Pie Chart & Top Products -->
+<div class="row g-4 mb-4">
+	<!-- Category Pie Chart -->
+	<div class="col-lg-5">
+		<div class="chart-container-modern fade-in" style="animation-delay: 1.1s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-chart-pie"></i>
+					@LocalizationService.GetString("CategoryDistribution") (@LocalizationService.GetString("Revenue"))
+				</div>
+			</div>
+			<div class="p-3">
+				<canvas id="categoryChart" height="150"></canvas>
+			</div>
+		</div>
+	</div>
+
+	<!-- Top Products -->
+	<div class="col-lg-7">
+		<div class="chart-container-modern fade-in" style="animation-delay: 1.2s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-fire"></i>
+					@LocalizationService.GetString("TopSellers")
+				</div>
+				<a href="/Products/Index" class="btn btn-sm btn-outline-primary">
+					@LocalizationService.GetString("ViewAll") <i class="fas fa-arrow-right ms-1"></i>
+				</a>
+			</div>
+
+			@if (topProducts.Any())
+			{
+				<div class="d-flex flex-column gap-3 p-3">
+					@* Loop implementation omitted as list is empty *@
+				</div>
+			}
+			else
+			{
+				<div class="text-center py-5">
+					<i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+					<p class="text-muted">@LocalizationService.GetString("NoSalesYet")</p>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+<!-- Recent Orders -->
+<div class="row g-4">
+	<div class="col-12">
+		<div class="chart-container-modern fade-in" style="animation-delay: 1.3s;">
+			<div class="chart-header">
+				<div class="chart-title">
+					<i class="fas fa-shopping-bag"></i>
+					@LocalizationService.GetString("RecentOrders")
+				</div>
+				<a href="/Orders/Index" class="btn btn-sm btn-outline-primary">
+					@LocalizationService.GetString("ViewAll") <i class="fas fa-arrow-right ms-1"></i>
+				</a>
+			</div>
+
+			@if (recentOrders.Any())
+			{
+				<div class="table-responsive">
+					@* Table implementation omitted as list is empty *@
+				</div>
+			}
+			else
+			{
+				<div class="text-center py-5">
+					<i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+					<p class="text-muted">@LocalizationService.GetString("NoOrdersYetShort")</p>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+	<script src="~/js/signalr-helper.js"></script>
+	<script>
+		// Initialize SignalR connection
+		if (typeof initializeSignalR === 'function') {
+		   initializeSignalR('@Url.Content("~/")');
+		}
+	</script>
+	<!--
+	<script src="~/js/modules/dashboard/dashboard.js" asp-append-version="true"></script>
+	-->
+	<script>
+		// Placeholder for dashboard.js if it accesses elements that might error out due to missing data.
+		// For now we leave the charts canvas present but we don't init the charts to avoid JS errors if data is missing.
+	</script>
+}
+
+
+<style>
+	.hover-lift:hover {
+		transform: translateY(-5px);
+		transition: transform 0.2s;
+	}
+
+	.hover-opacity-100:hover {
+		opacity: 1 !important;
+	}
+</style>

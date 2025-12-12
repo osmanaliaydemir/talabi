@@ -1,0 +1,325 @@
+@inject ILocalizationService LocalizationService
+@model List<Getir.MerchantPortal.Models.ReviewResponse>
+@{
+    ViewData["Title"] = LocalizationService.GetString("Courier Reviews");
+    var stats = ViewBag.Stats as Getir.MerchantPortal.Models.ReviewStatsResponse;
+    var filter = ViewBag.Filter as Getir.MerchantPortal.Models.ReviewFilterModel;
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">@LocalizationService.GetString("Courier Reviews")</h1>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">@LocalizationService.GetString("AverageScore")</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @(stats?.AverageRating.ToString("F1") ?? "0.0") 
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-motorcycle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">@LocalizationService.GetString("TotalReviewsCount")</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.TotalReviews ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">@LocalizationService.GetString("FiveStars")</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.RatingDistribution.GetValueOrDefault(5, 0))</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">@LocalizationService.GetString("OneStar")</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.RatingDistribution.GetValueOrDefault(1, 0))</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Distribution Chart -->
+    @if (stats != null && stats.RatingDistribution.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("CourierRatingDistribution")</h6>
+                    </div>
+                    <div class="card-body">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            var count = stats.RatingDistribution.GetValueOrDefault(i, 0);
+                            var percentage = stats.TotalReviews > 0 ? (count * 100.0 / stats.TotalReviews) : 0;
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>@i @LocalizationService.GetString("Stars")</span>
+                                    <span>@count (@percentage.ToString("F1")%)</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-@(i >= 4 ? "success" : i >= 3 ? "warning" : "danger")" 
+                                         style="width: @percentage%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">@LocalizationService.GetString("RatingFilter")</label>
+                    <select name="Rating" class="form-select">
+                        <option value="">@LocalizationService.GetString("All")</option>
+                        <option value="5" selected="@(filter?.Rating == 5)">5 @LocalizationService.GetString("Stars")</option>
+                        <option value="4" selected="@(filter?.Rating == 4)">4 @LocalizationService.GetString("Stars")</option>
+                        <option value="3" selected="@(filter?.Rating == 3)">3 @LocalizationService.GetString("Stars")</option>
+                        <option value="2" selected="@(filter?.Rating == 2)">2 @LocalizationService.GetString("Stars")</option>
+                        <option value="1" selected="@(filter?.Rating == 1)">1 @LocalizationService.GetString("Stars")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@LocalizationService.GetString("StartDate")</label>
+                    <input type="date" name="StartDate" class="form-control" value="@(filter?.StartDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@LocalizationService.GetString("EndDate")</label>
+                    <input type="date" name="EndDate" class="form-control" value="@(filter?.EndDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">@LocalizationService.GetString("ApplyFilter")</button>
+                        <a href="@Url.Action("CourierReviews")" class="btn btn-outline-secondary">@LocalizationService.GetString("ClearFilter")</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("CourierReviewsTitle")</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+                    <div class="dropdown-header">@LocalizationService.GetString("Operations"):</div>
+                    <a class="dropdown-item" href="#" onclick="exportReviews()">@LocalizationService.GetString("ExportToExcel")</a>
+                    <a class="dropdown-item" href="#" onclick="printReviews()">@LocalizationService.GetString("Print")</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var review in Model)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h6 class="mb-0 me-2">@review.ReviewerName</h6>
+                                        <span class="badge bg-info me-2">@review.RevieweeName</span>
+                                        <div class="rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fas fa-star @(i <= review.Rating ? "text-warning" : "text-gray-300")"></i>
+                                            }
+                                        </div>
+                                        <span class="badge bg-secondary ms-2">@review.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                    
+                                    <p class="mb-2">@review.Comment</p>
+                                    
+                                    @if (review.Tags.Any())
+                                    {
+                                        <div class="mb-2">
+                                            @foreach (var tag in review.Tags)
+                                            {
+                                                <span class="badge bg-light text-dark me-1">@tag</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="d-flex flex-column gap-2">
+                                    <button class="btn btn-sm btn-outline-@(review.IsLiked ? "danger" : "secondary")" 
+                                            onclick="toggleLike('@review.Id', @review.IsLiked.ToString().ToLower())">
+                                        <i class="fas fa-heart"></i> @(review.IsLiked ? LocalizationService.GetString("Unlike") : LocalizationService.GetString("Like"))
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="reportReview('@review.Id')">
+                                        <i class="fas fa-flag"></i> @LocalizationService.GetString("Report")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-motorcycle fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-600">@LocalizationService.GetString("NoCourierReviewsYet")</h5>
+                    <p class="text-gray-500">@LocalizationService.GetString("CourierReviewsWillAppear")</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@LocalizationService.GetString("ReportReview")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <input type="hidden" id="reportReviewId" />
+                    <div class="mb-3">
+                        <label for="reportReason" class="form-label">@LocalizationService.GetString("ReportReason")</label>
+                        <textarea class="form-control" id="reportReason" rows="3" maxlength="500" required></textarea>
+                        <div class="form-text">@LocalizationService.GetString("MaxCharacters")</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-warning" onclick="submitReport()">@LocalizationService.GetString("ReportBtn")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleLike(reviewId, isLiked) {
+            fetch('@Url.Action("ToggleLike")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    reviewId: reviewId,
+                    isLiked: !isLiked
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Bir hata oluştu');
+            });
+        }
+
+        function reportReview(reviewId) {
+            document.getElementById('reportReviewId').value = reviewId;
+            document.getElementById('reportReason').value = '';
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        }
+
+        function submitReport() {
+            const reviewId = document.getElementById('reportReviewId').value;
+            const reason = document.getElementById('reportReason').value;
+            
+            if (!reason.trim()) {
+                alert('@LocalizationService.GetString("PleaseEnterReason")');
+                return;
+            }
+
+            fetch('@Url.Action("ReportReview")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    reviewId: reviewId,
+                    reason: reason
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('@LocalizationService.GetString("ReportSentSuccess")');
+                    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('@LocalizationService.GetString("AnErrorOccurred")');
+            });
+        }
+
+        function exportReviews() {
+            alert('@LocalizationService.GetString("ExportFeatureComingSoon")');
+        }
+
+        function printReviews() {
+            window.print();
+        }
+    </script>
+}

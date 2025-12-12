@@ -1,0 +1,100 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.CategoryTreeNode
+@{
+    var level = Model.Category.ParentCategoryId == null ? 0 : 
+                (Model.Category.ParentCategoryId != null && ViewBag.Level == null) ? 1 : 
+                (int)(ViewBag.Level ?? 2);
+    var hasChildren = Model.Children.Any();
+}
+
+<div class="category-node level-@level" draggable="false" data-category-id="@Model.Category.Id" data-parent-id="@Model.Category.ParentCategoryId" data-display-order="@Model.Category.DisplayOrder">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center flex-grow-1">
+            <span class="drag-handle" title="@LocalizationService.GetString("Drag")">
+                <i class="fas fa-grip-vertical"></i>
+            </span>
+            @if (hasChildren)
+            {
+                <i class="fas fa-chevron-down category-toggle me-2" data-target="#children-@Model.Category.Id"></i>
+            }
+            else
+            {
+                <span style="width: 20px; display: inline-block;"></span>
+            }
+            
+            <div class="category-icon level-@level">
+                @if (level == 0)
+                {
+                    <i class="fas fa-folder"></i>
+                }
+                else if (level == 1)
+                {
+                    <i class="fas fa-folder-open"></i>
+                }
+                else
+                {
+                    <i class="fas fa-tag"></i>
+                }
+            </div>
+            
+            <div class="flex-grow-1">
+                <h6 class="mb-0">
+                    @Model.Category.Name
+                    @if (!Model.Category.IsActive)
+                    {
+                        <span class="badge bg-secondary ms-2">@LocalizationService.GetString("Inactive")</span>
+                    }
+                </h6>
+                @if (!string.IsNullOrEmpty(Model.Category.Description))
+                {
+                    <small class="text-muted">@Model.Category.Description</small>
+                }
+                <div class="mt-1">
+                    <small class="text-muted">
+                        <i class="fas fa-box"></i> @Model.Category.ProductCount @LocalizationService.GetString("ProductCount")
+                        @if (hasChildren)
+                        {
+                            <span class="ms-2">
+                                <i class="fas fa-sitemap"></i> @Model.Children.Count @LocalizationService.GetString("SubCategories")
+                            </span>
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="btn-group btn-group-sm">
+            <a href="@Url.Action("Edit", new { id = Model.Category.Id })" class="btn btn-outline-primary" title="@LocalizationService.GetString("Edit")">
+                <i class="fas fa-edit"></i>
+            </a>
+            @if (Model.Category.ProductCount == 0 && !hasChildren)
+            {
+                <form asp-action="Delete" asp-route-id="@Model.Category.Id" method="post" style="display:inline;" 
+                      onsubmit="return confirm('@LocalizationService.GetString("ConfirmDeleteCategory")');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger" title="@LocalizationService.GetString("Delete")">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <button type="button" class="btn btn-outline-secondary" disabled title="@LocalizationService.GetString("CannotDelete")">
+                    <i class="fas fa-lock"></i>
+                </button>
+            }
+        </div>
+    </div>
+    
+    @if (hasChildren)
+    {
+        <div class="category-children" id="children-@Model.Category.Id">
+            @foreach (var child in Model.Children)
+            {
+                ViewBag.Level = level + 1;
+                @await Html.PartialAsync("_CategoryTreeNode", child)
+            }
+        </div>
+    }
+</div>
+

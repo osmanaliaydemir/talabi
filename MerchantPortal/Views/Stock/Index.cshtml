@@ -1,0 +1,347 @@
+@inject ILocalizationService LocalizationService
+@model List<ProductResponse>
+@{
+    ViewData["Title"] = LocalizationService.GetString("StockManagement");
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-boxes me-2"></i>@LocalizationService.GetString("StockManagement")</h2>
+        <div class="btn-group">
+            <button type="button" class="btn btn-success" onclick="bulkUpdateManager.openModal()">
+                <i class="fas fa-edit me-1"></i>@LocalizationService.GetString("BulkUpdate")
+            </button>
+            <button type="button" class="btn btn-primary" onclick="csvImporter.downloadTemplate()">
+                <i class="fas fa-download me-1"></i>@LocalizationService.GetString("DownloadTemplate")
+            </button>
+            <button type="button" class="btn btn-info" onclick="csvImporter.openImportModal()">
+                <i class="fas fa-upload me-1"></i>@LocalizationService.GetString("ImportCSV")
+            </button>
+            <a href="/Stock/ExportToCSV" class="btn btn-secondary">
+                <i class="fas fa-file-export me-1"></i>@LocalizationService.GetString("ExportCSV")
+            </a>
+        </div>
+    </div>
+
+    <!-- Stock Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h6 class="text-success"><i class="fas fa-check-circle me-1"></i>@LocalizationService.GetString("StockNormal")</h6>
+                    <h3 id="normalStockCount">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h6 class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>@LocalizationService.GetString("LowStock")</h6>
+                    <h3 id="lowStockCount">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h6 class="text-danger"><i class="fas fa-times-circle me-1"></i>@LocalizationService.GetString("OutOfStock")</h6>
+                    <h3 id="outOfStockCount">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h6 class="text-info"><i class="fas fa-boxes me-1"></i>@LocalizationService.GetString("TotalProducts")</h6>
+                    <h3 id="totalProductCount">@Model.Count</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Table -->
+    <div class="card">
+        <div class="card-body">
+            <table id="stockTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>@LocalizationService.GetString("Product")</th>
+                        <th>SKU</th>
+                        <th>@LocalizationService.GetString("Stock")</th>
+                        <th>@LocalizationService.GetString("Min")</th>
+                        <th>@LocalizationService.GetString("Max")</th>
+                        <th>@LocalizationService.GetString("Status")</th>
+                        <th>@LocalizationService.GetString("Action")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model)
+                    {
+                        <tr data-product-id="@product.Id">
+                            <td><input type="checkbox" class="product-checkbox" value="@product.Id"></td>
+                            <td>@product.Name</td>
+                            <td>@product.SKU</td>
+                            <td>
+                                <span class="badge bg-@(product.StockQuantity > 10 ? "success" : product.StockQuantity > 0 ? "warning" : "danger")">
+                                    @product.StockQuantity
+                                </span>
+                            </td>
+                            <td>@(product.MinStock ?? 0)</td>
+                            <td>@(product.MaxStock ?? 999)</td>
+                            <td>
+                                @if (product.StockQuantity == 0)
+                                {
+                                    <span class="badge bg-danger">@LocalizationService.GetString("OutOfStock")</span>
+                                }
+                                else if (product.StockQuantity < (product.MinStock ?? 10))
+                                {
+                                    <span class="badge bg-warning">@LocalizationService.GetString("Low")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">@LocalizationService.GetString("Normal")</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="openUpdateModal('@product.Id', '@product.Name', @product.StockQuantity)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="/Stock/History?productId=@product.Id" class="btn btn-sm btn-info">
+                                    <i class="fas fa-history"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Update Modal -->
+<div class="modal fade" id="bulkUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>@LocalizationService.GetString("BulkStockUpdate")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong id="selectedCount">0</strong> @LocalizationService.GetString("ProductsSelected")
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("OperationType")</label>
+                    <select id="bulkOperationType" class="form-select">
+                        <option value="set">@LocalizationService.GetString("SetStockEquals")</option>
+                        <option value="add">@LocalizationService.GetString("AddStockPlus")</option>
+                        <option value="subtract">@LocalizationService.GetString("SubtractStockMinus")</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("Amount")</label>
+                    <input type="number" id="bulkAmount" class="form-control" min="0" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("Note")</label>
+                    <textarea id="bulkNote" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-primary" onclick="bulkUpdateManager.applyUpdate()">
+                    <i class="fas fa-check me-1"></i>@LocalizationService.GetString("Apply")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSV Import Modal -->
+<div class="modal fade" id="csvImportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas a-upload me-2"></i>@LocalizationService.GetString("ImportCSV")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("CSVFile")</label>
+                    <input type="file" id="csvFileInput" class="form-control" accept=".csv">
+                    <small class="text-muted">@LocalizationService.GetString("CSVFormatHint")</small>
+                </div>
+
+                <div id="importPreview" class="mt-3" style="display:none;">
+                    <h6>@LocalizationService.GetString("Preview")</h6>
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService.GetString("Product")</th>
+                                    <th>SKU</th>
+                                    <th>@LocalizationService.GetString("NewStock")</th>
+                                    <th>@LocalizationService.GetString("Status")</th>
+                                </tr>
+                            </thead>
+                            <tbody id="importPreviewBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="importResult" class="alert" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" id="btnImport" class="btn btn-primary" onclick="csvImporter.importData()">
+                    <i class="fas fa-upload me-1"></i>@LocalizationService.GetString("Import")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Single Update Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@LocalizationService.GetString("UpdateStockTitle")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="updateProductId">
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("Product")</label>
+                    <input type="text" id="updateProductName" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("CurrentStock")</label>
+                    <input type="number" id="updateCurrentStock" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("NewStock")</label>
+                    <input type="number" id="updateNewStock" class="form-control" min="0" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-primary" onclick="updateStock()">@LocalizationService.GetString("Update")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/modules/stock/csvImport.js"></script>
+    <script src="~/js/modules/stock/bulkUpdate.js"></script>
+    <script>
+        // Initialize managers
+        const csvImporter = new CSVImporter('/Stock');
+        const bulkUpdateManager = new BulkUpdateManager('/Stock');
+
+        // DataTable initialization
+        $(document).ready(function() {
+            $('#stockTable').DataTable({
+                pageLength: 25,
+                order: [[3, 'asc']], // Sort by stock quantity
+                language: {
+                    @{
+                        var culture = System.Globalization.CultureInfo.CurrentCulture.Name;
+                        var dataTablesLang = culture switch
+                        {
+                            "tr-TR" => "tr.json",
+                            "en-US" => "en.json", 
+                            "ar-SA" => "ar.json",
+                            _ => "tr.json"
+                        };
+                    }
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/@dataTablesLang'
+                }
+            });
+
+            // Select all checkbox
+            $('#selectAll').on('change', function() {
+                $('.product-checkbox').prop('checked', this.checked);
+                updateSelectedCount();
+            });
+
+            $('.product-checkbox').on('change', updateSelectedCount);
+
+            // Calculate stock summary
+            calculateStockSummary();
+        });
+
+        function updateSelectedCount() {
+            const count = $('.product-checkbox:checked').length;
+            $('#selectedCount').text(count);
+        }
+
+        function calculateStockSummary() {
+            let normal = 0, low = 0, out = 0;
+            
+            @foreach (var product in Model)
+            {
+                if (product.StockQuantity == 0)
+                {
+                    <text>out++;</text>
+                }
+                else if (product.StockQuantity < (product.MinStock ?? 10))
+                {
+                    <text>low++;</text>
+                }
+                else
+                {
+                    <text>normal++;</text>
+                }
+            }
+
+            $('#normalStockCount').text(normal);
+            $('#lowStockCount').text(low);
+            $('#outOfStockCount').text(out);
+        }
+
+        function openUpdateModal(productId, productName, currentStock) {
+            $('#updateProductId').val(productId);
+            $('#updateProductName').val(productName);
+            $('#updateCurrentStock').val(currentStock);
+            $('#updateNewStock').val(currentStock);
+            new bootstrap.Modal(document.getElementById('updateModal')).show();
+        }
+
+        async function updateStock() {
+            const productId = $('#updateProductId').val();
+            const newStock = parseInt($('#updateNewStock').val());
+
+            try {
+                const response = await fetch('/Stock/UpdateStock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({
+                        productId: productId,
+                        newStockLevel: newStock
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Hata: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                alert('Güncelleme sırasında hata oluştu');
+            }
+        }
+    </script>
+}
+

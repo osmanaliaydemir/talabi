@@ -1,0 +1,288 @@
+@inject ILocalizationService LocalizationService
+@model List<Getir.MerchantPortal.Models.WorkingHoursResponse>
+@{
+    ViewData["Title"] = LocalizationService.GetString("WorkingHours");
+    var merchantId = ViewBag.MerchantId as Guid?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="fas fa-clock"></i> @LocalizationService.GetString("WorkingHours")</h3>
+    <a href="@Url.Action("Edit", new { id = merchantId })" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> @LocalizationService.GetString("ReturnToProfile")
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="stat-card">
+            <h5 class="mb-4">@LocalizationService.GetString("WeeklySchedule")</h5>
+
+            <form asp-action="UpdateWorkingHours" method="post">
+                @Html.AntiForgeryToken()
+
+                @foreach (var (day, index) in Model.Select((d, i) => (d, i)))
+                {
+                    <div class="working-hours-row mb-3 p-3 border rounded">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <strong>@GetDayName(day.DayOfWeek)</strong>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small">@LocalizationService.GetString("OpenTime")</label>
+                                <input type="time" 
+                                       name="workingHours[@index].OpenTime" 
+                                       value="@day.OpenTime.ToString(@"hh\:mm")" 
+                                       class="form-control" 
+                                       id="open-@day.DayOfWeek" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small">@LocalizationService.GetString("CloseTime")</label>
+                                <input type="time" 
+                                       name="workingHours[@index].CloseTime" 
+                                       value="@day.CloseTime.ToString(@"hh\:mm")" 
+                                       class="form-control" 
+                                       id="close-@day.DayOfWeek" />
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" 
+                                           name="workingHours[@index].IsOpen24Hours" 
+                                           value="true"
+                                           @(day.IsOpen24Hours ? "checked" : "")
+                                           class="form-check-input" 
+                                           id="24h-@day.DayOfWeek"
+                                           onchange="toggle24Hours(this, '@day.DayOfWeek')" />
+                                    <label class="form-check-label small" for="24h-@day.DayOfWeek">
+                                        @LocalizationService.GetString("Hours24")
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" 
+                                           name="workingHours[@index].IsClosed" 
+                                           value="true"
+                                           @(day.IsClosed ? "checked" : "")
+                                           class="form-check-input" 
+                                           id="closed-@day.DayOfWeek"
+                                           onchange="toggleClosed(this, '@day.DayOfWeek')" />
+                                    <label class="form-check-label small" for="closed-@day.DayOfWeek">
+                                        @LocalizationService.GetString("ClosedDay")
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="workingHours[@index].DayOfWeek" value="@day.DayOfWeek" />
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="copyToAll()">
+                        <i class="fas fa-copy"></i> @LocalizationService.GetString("ApplyMondayToAll")
+                    </button>
+                    <button type="submit" class="btn btn-getir">
+                        <i class="fas fa-save"></i> @LocalizationService.GetString("SaveWorkingHours")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h6 class="mb-3">
+                <i class="fas fa-info-circle"></i> @LocalizationService.GetString("Information")
+            </h6>
+            <p class="small text-muted">
+                @LocalizationService.GetString("WorkingHoursInfo")
+            </p>
+            <hr />
+            <h6 class="mb-3">@LocalizationService.GetString("Features"):</h6>
+            <ul class="small text-muted">
+                <li class="mb-2">
+                    <strong>@LocalizationService.GetString("OpenTime")/@LocalizationService.GetString("CloseTime"):</strong> @LocalizationService.GetString("OpenCloseFeature")
+                </li>
+                <li class="mb-2">
+                    <strong>@LocalizationService.GetString("Hours24"):</strong> @LocalizationService.GetString("Hours24Feature")
+                </li>
+                <li class="mb-2">
+                    <strong>@LocalizationService.GetString("ClosedDay"):</strong> @LocalizationService.GetString("ClosedFeature")
+                </li>
+            </ul>
+        </div>
+
+        <div class="stat-card mt-3">
+            <h6 class="mb-3">
+                <i class="fas fa-calendar-alt"></i> @LocalizationService.GetString("QuickTemplates")
+            </h6>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="applyTemplate('weekdays')">
+                @LocalizationService.GetString("Weekdays")
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="applyTemplate('retail')">
+                @LocalizationService.GetString("Retail")
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="applyTemplate('24-7')">
+                @LocalizationService.GetString("Open247")
+            </button>
+        </div>
+
+        <div class="stat-card mt-3">
+            <h6 class="mb-3">
+                <i class="fas fa-lightbulb"></i> @LocalizationService.GetString("Tips")
+            </h6>
+            <ul class="small text-muted mb-0" style="list-style: none; padding-left: 0;">
+                <li class="mb-2">
+                    <i class="fas fa-check text-success"></i>
+                    @LocalizationService.GetString("EnterRealHours")
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-check text-success"></i>
+                    @LocalizationService.GetString("AddPreparationTime")
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-check text-success"></i>
+                    @LocalizationService.GetString("MarkHolidaysClosed")
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggle24Hours(checkbox, day) {
+            const openInput = document.getElementById('open-' + day);
+            const closeInput = document.getElementById('close-' + day);
+            const closedCheckbox = document.getElementById('closed-' + day);
+            
+            if (checkbox.checked) {
+                openInput.value = '00:00';
+                closeInput.value = '23:59';
+                openInput.disabled = true;
+                closeInput.disabled = true;
+                closedCheckbox.checked = false;
+                closedCheckbox.disabled = true;
+            } else {
+                openInput.disabled = false;
+                closeInput.disabled = false;
+                closedCheckbox.disabled = false;
+            }
+        }
+        
+        function toggleClosed(checkbox, day) {
+            const openInput = document.getElementById('open-' + day);
+            const closeInput = document.getElementById('close-' + day);
+            const open24Checkbox = document.getElementById('24h-' + day);
+            
+            if (checkbox.checked) {
+                openInput.value = '00:00';
+                closeInput.value = '00:00';
+                openInput.disabled = true;
+                closeInput.disabled = true;
+                open24Checkbox.checked = false;
+                open24Checkbox.disabled = true;
+            } else {
+                openInput.disabled = false;
+                closeInput.disabled = false;
+                open24Checkbox.disabled = false;
+            }
+        }
+        
+        function copyToAll() {
+            const mondayOpen = document.getElementById('open-Monday').value;
+            const mondayClose = document.getElementById('close-Monday').value;
+            const monday24h = document.getElementById('24h-Monday').checked;
+            const mondayClosed = document.getElementById('closed-Monday').checked;
+            
+            const days = ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            days.forEach(day => {
+                document.getElementById('open-' + day).value = mondayOpen;
+                document.getElementById('close-' + day).value = mondayClose;
+                document.getElementById('24h-' + day).checked = monday24h;
+                document.getElementById('closed-' + day).checked = mondayClosed;
+            });
+            
+            showToast('@LocalizationService.GetString("MondayAppliedToAll")', 'success');
+        }
+        
+        function applyTemplate(template) {
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            switch(template) {
+                case 'weekdays':
+                    days.forEach((day, index) => {
+                        if (index < 5) { // Mon-Fri
+                            document.getElementById('open-' + day).value = '09:00';
+                            document.getElementById('close-' + day).value = '18:00';
+                            document.getElementById('24h-' + day).checked = false;
+                            document.getElementById('closed-' + day).checked = false;
+                        } else { // Sat-Sun
+                            document.getElementById('closed-' + day).checked = true;
+                            toggleClosed(document.getElementById('closed-' + day), day);
+                        }
+                    });
+                    showToast('@LocalizationService.GetString("WeekdayTemplateApplied")', 'success');
+                    break;
+                    
+                case 'retail':
+                    days.forEach(day => {
+                        document.getElementById('open-' + day).value = '10:00';
+                        document.getElementById('close-' + day).value = '22:00';
+                        document.getElementById('24h-' + day).checked = false;
+                        document.getElementById('closed-' + day).checked = false;
+                    });
+                    showToast('@LocalizationService.GetString("RetailTemplateApplied")', 'success');
+                    break;
+                    
+                case '24-7':
+                    days.forEach(day => {
+                        const checkbox = document.getElementById('24h-' + day);
+                        checkbox.checked = true;
+                        toggle24Hours(checkbox, day);
+                    });
+                    showToast('@LocalizationService.GetString("Template247Applied")', 'success');
+                    break;
+            }
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            days.forEach(day => {
+                const closed = document.getElementById('closed-' + day);
+                const open24 = document.getElementById('24h-' + day);
+                
+                if (closed.checked) {
+                    toggleClosed(closed, day);
+                }
+                if (open24.checked) {
+                    toggle24Hours(open24, day);
+                }
+            });
+        });
+    </script>
+}
+
+@functions {
+    string GetDayName(string day)
+    {
+        return day switch
+        {
+            "Monday" => LocalizationService.GetString("Monday"),
+            "Tuesday" => LocalizationService.GetString("Tuesday"),
+            "Wednesday" => LocalizationService.GetString("Wednesday"),
+            "Thursday" => LocalizationService.GetString("Thursday"),
+            "Friday" => LocalizationService.GetString("Friday"),
+            "Saturday" => LocalizationService.GetString("Saturday"),
+            "Sunday" => LocalizationService.GetString("Sunday"),
+            _ => day
+        };
+    }
+}
+

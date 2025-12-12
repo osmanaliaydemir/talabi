@@ -1,0 +1,129 @@
+/**
+ * Categories Page Styles
+ */
+
+.category-tree {
+    position: relative;
+    padding-left: 0;
+}
+
+.category-node {
+    cursor: move;
+    transition: all 0.2s ease;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.category-node:hover {
+    background: #f0f0f0;
+    border-color: var(--getir-purple);
+}
+
+.category-node.dragging {
+    opacity: 0.5;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.category-node.drag-over {
+    border-top: 3px solid #667eea;
+}
+
+.category-node.level-0 {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid var(--getir-purple);
+}
+
+.category-node.level-1 {
+    margin-left: 2rem;
+    background: white;
+    border-left: 3px solid #6c757d;
+}
+
+.category-node.level-2 {
+    margin-left: 4rem;
+    background: white;
+    border-left: 2px solid #adb5bd;
+}
+
+.category-children {
+    margin-top: 0.5rem;
+}
+
+.category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+}
+
+.category-icon.level-0 {
+    background: var(--getir-purple);
+    color: white;
+}
+
+.category-icon.level-1 {
+    background: #6c757d;
+    color: white;
+}
+
+.category-icon.level-2 {
+    background: #adb5bd;
+    color: white;
+}
+
+.category-toggle {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.category-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.drag-handle {
+    cursor: grab;
+    color: #9ca3af;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    opacity: 0.3;
+}
+
+.drag-handle:hover {
+    color: #667eea;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.reorder-mode .category-actions {
+    display: none !important;
+}
+
+.reorder-mode .category-node {
+    border: 2px dashed #667eea;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    cursor: move !important;
+    background: #f8f9ff;
+}
+
+.reorder-mode .category-node:hover {
+    background: #eef2ff;
+    border-color: #5b21b6;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.1);
+}
+
+.reorder-mode .drag-handle {
+    opacity: 1 !important;
+    color: #667eea !important;
+}
+

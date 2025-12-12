@@ -1,0 +1,305 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.PagedResult<Getir.MerchantPortal.Models.ProductResponse>
+@{
+    ViewData["Title"] = LocalizationService.GetString("Products");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard-modern.css" />
+    <link rel="stylesheet" href="~/css/modules/products/products.css" asp-append-version="true" />
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <div>
+        <h2 class="mb-1"><i class="fas fa-box-open me-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>@LocalizationService.GetString("ProductList")</h2>
+        <p class="text-muted mb-0">@LocalizationService.GetString("Products")</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-lg btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkStockModal" style="border-radius: 12px; padding: 0.75rem 1.5rem;">
+            <i class="fas fa-boxes me-2"></i> @LocalizationService.GetString("BulkStockUpdate")
+        </button>
+    <a href="@Url.Action("Create")" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; padding: 0.75rem 1.5rem; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+        <i class="fas fa-plus me-2"></i> @LocalizationService.GetString("AddProduct")
+    </a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<form method="get" class="search-filter-bar fade-in" style="animation-delay: 0.1s;">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold"><i class="fas fa-search me-2"></i>@LocalizationService.GetString("Search")</label>
+            <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="@LocalizationService.GetString("ProductName")..." style="border-radius: 10px; border: 2px solid #e5e7eb;">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold"><i class="fas fa-tag me-2"></i>@LocalizationService.GetString("Category")</label>
+            <select name="categoryId" class="form-select" style="border-radius: 10px; border: 2px solid #e5e7eb;">
+                <option value="">@LocalizationService.GetString("AllCategories")</option>
+                @if (ViewBag.Categories != null)
+                {
+                    foreach (var cat in (List<Getir.MerchantPortal.Models.ProductCategoryResponse>)ViewBag.Categories)
+                    {
+                        <option value="@cat.Id" selected="@((ViewBag.CategoryId != null && (Guid)ViewBag.CategoryId == cat.Id) ? "selected" : null)">@cat.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px;">
+                <i class="fas fa-search me-2"></i>@LocalizationService.GetString("Search")
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Products Grid -->
+@if (Model != null && Model.Items.Any())
+{
+    <div class="row g-4">
+        @{
+            var delay = 0.1;
+        }
+        @foreach (var product in Model.Items)
+        {
+            delay += 0.05;
+            var discountPercentage = product.DiscountedPrice.HasValue 
+                ? Math.Round(((product.Price - product.DiscountedPrice.Value) / product.Price) * 100) 
+                : 0;
+            
+            <div class="col-md-6 col-lg-4 col-xl-3 fade-in" style="animation-delay: @(delay)s;">
+                <div class="product-card">
+                    <div class="product-image-container">
+                        @if (discountPercentage > 0)
+                        {
+                            <div class="product-discount-badge">
+                                <i class="fas fa-percent me-1"></i>@discountPercentage @LocalizationService.GetString("Discount")
+                            </div>
+                        }
+                        
+                        @if (product.IsActive && product.IsAvailable)
+                        {
+                            <div class="product-badge active">
+                                <i class="fas fa-check-circle me-1"></i>@LocalizationService.GetString("Active")
+                            </div>
+                        }
+                        else if (!product.IsActive)
+                        {
+                            <div class="product-badge inactive">
+                                <i class="fas fa-pause-circle me-1"></i>@LocalizationService.GetString("Inactive")
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="product-badge out-of-stock">
+                                <i class="fas fa-exclamation-circle me-1"></i>@LocalizationService.GetString("OutOfStock")
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="https://localhost:7001@product.ImageUrl" alt="@product.Name" class="product-image" onerror="this.src='/images/product-placeholder.png'">
+                        }
+                        else
+                        {
+                            <div class="product-image d-flex align-items-center justify-content-center">
+                                <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="product-body">
+                        <div class="product-meta">
+                            @if (!string.IsNullOrEmpty(product.CategoryName))
+                            {
+                                <span class="badge" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #831843; font-weight: 600;">
+                                    @product.CategoryName
+                                </span>
+                            }
+                        </div>
+                        
+                        <h5 class="product-title">@product.Name</h5>
+                        
+                        @if (!string.IsNullOrEmpty(product.Description))
+                        {
+                            <p class="product-description">@product.Description</p>
+                        }
+                        
+                        <div class="product-price">
+                            @if (product.DiscountedPrice.HasValue)
+                            {
+                                <span class="price-current">₺@product.DiscountedPrice.Value.ToString("N2")</span>
+                                <span class="price-original">₺@product.Price.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="price-current">₺@product.Price.ToString("N2")</span>
+                            }
+                        </div>
+                        
+                        <div class="mb-3">
+                            @if (product.StockQuantity > 10)
+                            {
+                                <span class="product-stock stock-available">
+                                    <i class="fas fa-check-circle"></i>
+                                    @LocalizationService.GetString("InStockWith") (@product.StockQuantity @product.Unit)
+                                </span>
+                            }
+                            else if (product.StockQuantity > 0)
+                            {
+                                <span class="product-stock stock-low">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    @LocalizationService.GetString("LowStock") (@product.StockQuantity @product.Unit)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="product-stock stock-out">
+                                    <i class="fas fa-times-circle"></i>
+                                    @LocalizationService.GetString("OutOfStock")
+                                </span>
+                            }
+                        </div>
+                        
+                        <div class="product-actions mt-auto">
+                            <a href="@Url.Action("Edit", new { id = product.Id })" class="btn btn-primary btn-icon" title="@LocalizationService.GetString("Edit")">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@product.Id" method="post" style="flex: 1;" onsubmit="return confirm('@LocalizationService.GetString("ConfirmDelete")');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-icon w-100" title="@LocalizationService.GetString("Delete")">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-center mt-5 fade-in" style="animation-delay: 0.5s;">
+            <nav>
+                <ul class="pagination pagination-lg">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(Model.Page - 1)&q=@(ViewBag.Query)&categoryId=@(ViewBag.CategoryId)" style="border-radius: 10px 0 0 10px;">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" href="?page=@i&q=@(ViewBag.Query)&categoryId=@(ViewBag.CategoryId)">@i</a>
+                        </li>
+                    }
+                    
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(Model.Page + 1)&q=@(ViewBag.Query)&categoryId=@(ViewBag.CategoryId)" style="border-radius: 0 10px 10px 0;">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+}
+else
+{
+    <div class="text-center py-5 fade-in">
+        <div class="chart-container-modern" style="max-width: 500px; margin: 0 auto;">
+            <i class="fas fa-box-open fa-5x text-muted mb-4"></i>
+            <h4 class="mb-3">@LocalizationService.GetString("NoProductsYet")</h4>
+            <p class="text-muted mb-4">@LocalizationService.GetString("AddFirstProduct")</p>
+            <a href="@Url.Action("Create")" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px;">
+                <i class="fas fa-plus me-2"></i> @LocalizationService.GetString("AddFirstProductBtn")
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Bulk Stock Update Modal -->
+<div class="modal fade" id="bulkStockModal" tabindex="-1" aria-labelledby="bulkStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 25px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title" id="bulkStockModalLabel">
+                    <i class="fas fa-boxes me-2"></i>@LocalizationService.GetString("BulkStockUpdate")
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>@LocalizationService.GetString("Info"):</strong> @LocalizationService.GetString("BulkUpdateInfo")
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">@LocalizationService.GetString("UpdateReason") (@LocalizationService.GetString("Optional"))</label>
+                    <input type="text" id="bulkUpdateReason" class="form-control" placeholder="@LocalizationService.GetString("ReasonPlaceholder")" style="border-radius: 10px;">
+                </div>
+
+                <div id="stockUpdateList" class="mt-4">
+                    @if (Model != null && Model.Items.Any())
+                    {
+                        foreach (var product in Model.Items)
+                        {
+                            <div class="card mb-2" style="border-radius: 12px; border: 2px solid #e5e7eb;">
+                                <div class="card-body p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-1">
+                                            <input class="form-check-input product-checkbox" type="checkbox" value="@product.Id" id="check_@product.Id">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-check-label" for="check_@product.Id">
+                                                <div class="d-flex align-items-center">
+                                                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                                    {
+                                                        <img src="https://localhost:7001@product.ImageUrl" alt="@product.Name" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px;">
+                                                    }
+                                                    <div>
+                                                        <div class="fw-bold">@product.Name</div>
+                                                        <small class="text-muted">@LocalizationService.GetString("CurrentStock"): <span class="badge bg-secondary">@product.StockQuantity</span></small>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small mb-1">@LocalizationService.GetString("NewStock")</label>
+                                            <input type="number" class="form-control stock-input" data-product-id="@product.Id" value="@product.StockQuantity" min="0" style="border-radius: 8px;">
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <a href="/Stock/History?productId=@product.Id" class="btn btn-sm btn-outline-secondary" title="@LocalizationService.GetString("StockHistory")">
+                                                <i class="fas fa-history"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 2px solid #e5e7eb;">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <span id="selectedCount" class="text-muted">0 @LocalizationService.GetString("SelectedItems")</span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">@LocalizationService.GetString("Cancel")</button>
+                        <button type="button" id="bulkUpdateBtn" class="btn btn-primary" style="border-radius: 10px;">
+                            <i class="fas fa-save me-2"></i>@LocalizationService.GetString("Update")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/modules/products/products.js" asp-append-version="true"></script>
+}

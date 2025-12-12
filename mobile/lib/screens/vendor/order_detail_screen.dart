@@ -210,7 +210,8 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       barrierDismissible: false,
       builder: (context) => CustomConfirmationDialog(
         title: 'Sipariş Durumu Güncelleme',
-        message: 'Siparişi "Hazır" olarak işaretlemek istediğinizden emin misiniz?',
+        message:
+            'Siparişi "Hazır" olarak işaretlemek istediğinizden emin misiniz?',
         confirmText: 'Hazır Olarak İşaretle',
         cancelText: localizations.cancel,
         icon: Icons.check_circle_outline,
@@ -538,8 +539,10 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
           'assignCourierConfirmationTitle',
           'Kurye Atama',
         ),
-        message:
-            '${_getLocalizedString('assignCourierConfirmationMessage', 'Siparişi {courierName} adlı kuryeye atamak istediğinizden emin misiniz?').replaceFirst('{courierName}', courierName)}',
+        message: _getLocalizedString(
+          'assignCourierConfirmationMessage',
+          'Siparişi {courierName} adlı kuryeye atamak istediğinizden emin misiniz?',
+        ).replaceFirst('{courierName}', courierName),
         confirmText: _getLocalizedString('assign', 'Atama Yap'),
         cancelText: localizations?.cancel ?? 'İptal',
         icon: Icons.check_circle_outline,
@@ -586,7 +589,8 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       context: context,
       builder: (context) => CustomConfirmationDialog(
         title: 'Otomatik Kurye Ataması',
-        message: 'Sistem en yakın ve en uygun kuryeyi otomatik olarak atayacak. Devam etmek istiyor musunuz?',
+        message:
+            'Sistem en yakın ve en uygun kuryeyi otomatik olarak atayacak. Devam etmek istiyor musunuz?',
         confirmText: 'Evet, Ata',
         cancelText: 'Vazgeç',
         icon: Icons.auto_awesome,

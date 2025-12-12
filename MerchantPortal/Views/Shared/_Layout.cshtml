@@ -1,0 +1,535 @@
+@inject ILocalizationService LocalizationService
+@using System.Globalization
+@using Getir.MerchantPortal.Services
+@{
+    var currentCulture = CultureInfo.CurrentUICulture;
+    var isRtl = currentCulture.Name.StartsWith("ar");
+    var langCode = currentCulture.TwoLetterISOLanguageName;
+}
+<!DOCTYPE html>
+<html lang="@langCode" dir="@(isRtl ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @LocalizationService.GetString("AppTitle")</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/signalr-notifications.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/dashboard-modern.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/dark-mode.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/rtl-support.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modules/language-switcher.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+    <style>
+        :root {
+            --getir-purple: #5D3EBC;
+            --getir-yellow: #FFD300;
+            --sidebar-width: 260px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--getir-purple) 0%, #4a2d96 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-brand {
+            padding: 1.5rem 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: var(--getir-yellow);
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar-nav i {
+            width: 30px;
+            margin-right: 10px;
+        }
+        
+        /* Dropdown Menu Styles */
+        .dropdown-menu-item {
+            position: relative;
+        }
+        
+        .dropdown-toggle {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .dropdown-toggle:hover,
+        .dropdown-toggle.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .dropdown-toggle .fa-chevron-down {
+            transition: transform 0.2s;
+            font-size: 0.8rem;
+        }
+        
+        .dropdown-toggle[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: rgba(0,0,0,0.8);
+            border: none;
+            border-radius: 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 0.5rem 0;
+            margin: 0;
+            min-width: 100%;
+            z-index: 1000;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .dropdown-item.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+        
+        /* RTL Support for Dropdown */
+        [dir="rtl"] .dropdown-item i {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+        
+        [dir="rtl"] .dropdown-toggle .fa-chevron-down {
+            margin-right: 0;
+            margin-left: auto;
+        }
+        
+        .dropdown-divider {
+            margin: 0.5rem 0;
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--getir-purple);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .content-wrapper {
+            padding: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-getir {
+            background: var(--getir-purple);
+            color: white;
+            border: none;
+        }
+        
+        .btn-getir:hover {
+            background: #4a2d96;
+            color: white;
+        }
+        
+        .alert-custom {
+            border-left: 4px solid var(--getir-purple);
+        }
+    </style>
+</head>
+<body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-store"></i> @LocalizationService.GetString("AppTitle")
+            </div>
+            <nav class="sidebar-nav">
+                <a href="@Url.Action("Index", "Dashboard")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                    <i class="fas fa-home"></i> @LocalizationService.GetString("Dashboard")
+                </a>
+                <a href="@Url.Action("Index", "Products")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")">
+                    <i class="fas fa-box"></i> @LocalizationService.GetString("Products")
+                </a>
+                <a href="@Url.Action("Index", "Orders")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" ? "active" : "")">
+                    <i class="fas fa-shopping-cart"></i> @LocalizationService.GetString("Orders")
+                </a>
+                <a href="@Url.Action("Pending", "Orders")">
+                    <i class="fas fa-clock"></i> @LocalizationService.GetString("PendingOrders")
+                </a>
+                <a href="@Url.Action("Index", "Categories")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Categories" ? "active" : "")">
+                    <i class="fas fa-tags"></i> @LocalizationService.GetString("Categories")
+                </a>
+                
+                <!-- Reviews & Ratings Dropdown Menu -->
+                <div class="dropdown-menu-item">
+                    <a href="#" class="dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reviews" || ViewContext.RouteData.Values["Controller"]?.ToString() == "MerchantReviews" ? "active" : "")" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-star"></i> @LocalizationService.GetString("Reviews & Ratings")
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li>
+                            <a href="@Url.Action("Index", "Reviews")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reviews" ? "active" : "")">
+                                <i class="fas fa-star me-2"></i> @LocalizationService.GetString("Product Reviews")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "MerchantReviews")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "MerchantReviews" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="fas fa-comments me-2"></i> @LocalizationService.GetString("Customer Reviews")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("CourierReviews", "MerchantReviews")" class="dropdown-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "CourierReviews" ? "active" : "")">
+                                <i class="fas fa-motorcycle me-2"></i> @LocalizationService.GetString("Courier Reviews")
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a href="@Url.Action("Dashboard", "MerchantReviews")" class="dropdown-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                                <i class="fas fa-chart-bar me-2"></i> @LocalizationService.GetString("Review Dashboard")
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <a href="@Url.Action("Index", "Payments")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Payments" ? "active" : "")">
+                    <i class="fas fa-money-bill-wave"></i> @LocalizationService.GetString("Payments")
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("Directory", "Merchant")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Merchant" && ViewContext.RouteData.Values["Action"]?.ToString() == "Directory" ? "active" : "")">
+                        <i class="fas fa-store-alt"></i> Mağazalar
+                    </a>
+                    <a href="@Url.Action("Index", "Campaigns")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Campaigns" ? "active" : "")">
+                        <i class="fas fa-bullhorn"></i> @LocalizationService.GetString("Campaigns")
+                    </a>
+                    <a href="@Url.Action("Index", "Coupons")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Coupons" ? "active" : "")">
+                        <i class="fas fa-ticket"></i> @LocalizationService.GetString("Coupons")
+                    </a>
+                    <a href="@Url.Action("Index", "Documents")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Documents" ? "active" : "")">
+                        <i class="fas fa-file-shield"></i> @LocalizationService.GetString("Documents")
+                    </a>
+                    <a href="@Url.Action("Index", "LocalizationAdmin")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "LocalizationAdmin" ? "active" : "")">
+                        <i class="fas fa-language"></i> @LocalizationService.GetString("Localization")
+                    </a>
+                    <a href="@Url.Action("Index", "RateLimitAdmin")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "RateLimitAdmin" ? "active" : "")">
+                        <i class="fas fa-tachometer-alt"></i> @LocalizationService.GetString("RateLimit")
+                    </a>
+                }
+                
+                <!-- Reports & Analytics Dropdown Menu -->
+                <div class="dropdown-menu-item">
+                    <a href="#" class="dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" ? "active" : "")" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-chart-line"></i> @LocalizationService.GetString("Reports & Analytics")
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li>
+                            <a href="@Url.Action("Dashboard", "Reports")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" && ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                                <i class="fas fa-chart-bar me-2"></i> @LocalizationService.GetString("Sales Dashboard")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Revenue", "Reports")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" && ViewContext.RouteData.Values["Action"]?.ToString() == "Revenue" ? "active" : "")">
+                                <i class="fas fa-chart-line me-2"></i> @LocalizationService.GetString("Revenue Analytics")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Customers", "Reports")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" && ViewContext.RouteData.Values["Action"]?.ToString() == "Customers" ? "active" : "")">
+                                <i class="fas fa-users me-2"></i> @LocalizationService.GetString("Customer Analytics")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Products", "Reports")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" && ViewContext.RouteData.Values["Action"]?.ToString() == "Products" ? "active" : "")">
+                                <i class="fas fa-box me-2"></i> @LocalizationService.GetString("Product Performance")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "Inventory")" class="dropdown-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inventory" ? "active" : "")">
+                                <i class="fas fa-warehouse me-2"></i> @LocalizationService.GetString("InventoryAnalytics")
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <a href="@Url.Action("Index", "Stock")">
+                    <i class="fas fa-cubes"></i> @LocalizationService.GetString("Stock")
+                </a>
+                <a href="@Url.Action("Index", "SpecialHolidays")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "SpecialHolidays" ? "active" : "")">
+                    <i class="fas fa-calendar-alt"></i> @LocalizationService.GetString("SpecialHolidays")
+                </a>
+                <a href="@Url.Action("Index", "DeliveryZones")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "DeliveryZones" ? "active" : "")">
+                    <i class="fas fa-draw-polygon"></i> @LocalizationService.GetString("DeliveryZones")
+                </a>
+                <div class="dropdown-menu-item">
+                    <a href="#" class="dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "DeliveryOptimization" ? "active" : "")" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-route"></i> @LocalizationService.GetString("Delivery Optimization")
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li>
+                            <a href="@Url.Action("Capacity", "DeliveryOptimization")" class="dropdown-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Capacity" ? "active" : "")">
+                                <i class="fas fa-gauge me-2"></i> @LocalizationService.GetString("Capacity")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Routes", "DeliveryOptimization")" class="dropdown-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Routes" ? "active" : "")">
+                                <i class="fas fa-location-arrow me-2"></i> @LocalizationService.GetString("Routes")
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <a href="@Url.Action("Index", "Notifications")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Notifications" ? "active" : "")">
+                    <i class="fas fa-bell"></i> @LocalizationService.GetString("Notifications")
+                </a>
+                <a href="@Url.Action("Index", "Documents")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Documents" ? "active" : "")">
+                    <i class="fas fa-file-alt"></i> @LocalizationService.GetString("Documents")
+                </a>
+                <a href="@Url.Action("Index", "FileManager")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "FileManager" ? "active" : "")">
+                    <i class="fas fa-cloud-upload-alt"></i> @LocalizationService.GetString("FileManager")
+                </a>
+                <a href="@Url.Action("Index", "RealtimeTracking")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "RealtimeTracking" ? "active" : "")">
+                    <i class="fas fa-map-marker-alt"></i> @LocalizationService.GetString("RealtimeTracking")
+                </a>
+                <a href="@Url.Action("Index", "UserSelfService")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "UserSelfService" ? "active" : "")">
+                    <i class="fas fa-user-circle"></i> @LocalizationService.GetString("UserSelfService")
+                </a>
+                <a href="@Url.Action("Index", "AuditLoggingAdmin")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "AuditLoggingAdmin" ? "active" : "")">
+                    <i class="fas fa-shield-alt"></i> @LocalizationService.GetString("AuditLoggingCenter")
+                </a>
+                <a href="@Url.Action("Index", "PlatformAdmin")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "PlatformAdmin" ? "active" : "")">
+                    <i class="fas fa-tachometer-alt"></i> @LocalizationService.GetString("PlatformAdminCenter")
+                </a>
+                <a href="@Url.Action("Index", "GeoAnalytics")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "GeoAnalytics" ? "active" : "")">
+                    <i class="fas fa-globe-europe"></i> @LocalizationService.GetString("GeoAnalytics")
+                </a>
+                <a href="@Url.Action("Index", "Onboarding")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Onboarding" ? "active" : "")">
+                    <i class="fas fa-list-check"></i> @LocalizationService.GetString("Onboarding")
+                </a>
+                <a href="@Url.Action("Settings", "Merchant")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Merchant" ? "active" : "")">
+                    <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-navbar">
+                <div>
+                    <h5 class="mb-0">@ViewData["Title"]</h5>
+                </div>
+                <div class="user-menu">
+                    <!-- Language Switcher -->
+                    <div class="dropdown me-2">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="@LocalizationService.GetString("LanguageSelection")">
+                            <i class="fas fa-globe"></i>
+                            @switch (currentCulture.TwoLetterISOLanguageName)
+                            {
+                                case "tr": <text>🇹🇷 TR</text> break;
+                                case "en": <text>🇬🇧 EN</text> break;
+                                case "ar": <text>🇸🇦 AR</text> break;
+                            }
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            <li>
+                                <a href="@Url.Action("SetLanguage", "Language", new { culture = "tr-TR", returnUrl = Context.Request.Path })" 
+                                   class="dropdown-item @(currentCulture.Name == "tr-TR" ? "active" : "")">
+                                    🇹🇷 Türkçe
+                                </a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("SetLanguage", "Language", new { culture = "en-US", returnUrl = Context.Request.Path })" 
+                                   class="dropdown-item @(currentCulture.Name == "en-US" ? "active" : "")">
+                                    🇬🇧 English
+                                </a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("SetLanguage", "Language", new { culture = "ar-SA", returnUrl = Context.Request.Path })" 
+                                   class="dropdown-item @(currentCulture.Name == "ar-SA" ? "active" : "")">
+                                    🇸🇦 العربية
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Theme Toggle -->
+                    <button type="button" id="themeToggleBtn" class="btn btn-sm btn-outline-secondary me-2" title="@LocalizationService.GetString("ToggleTheme")" onclick="ThemeManager.toggle()">
+                        <i class="fas fa-moon theme-toggle-icon moon"></i>
+                        <i class="fas fa-sun theme-toggle-icon sun" style="display:none;"></i>
+                    </button>
+                    
+                    <a href="@Url.Action("Index","Notifications")" class="btn btn-sm btn-outline-secondary position-relative me-2">
+                        <i class="fas fa-bell"></i>
+                        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">0</span>
+                    </a>
+                    <span>@Context.Session.GetString("UserName")</span>
+                    <div class="user-avatar">
+                        @(Context.Session.GetString("UserName")?.Substring(0, 1).ToUpper())
+                    </div>
+                    <form asp-controller="Auth" asp-action="Logout" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-sign-out-alt"></i>@LocalizationService.GetString("Logout")
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show alert-custom" role="alert">
+                        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show alert-custom" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                @RenderBody()
+            </div>
+        </div>
+    }
+    else
+    {
+        @RenderBody()
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.14/dist/browser/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="~/js/theme-manager.js" asp-append-version="true"></script>
+    <script src="~/js/signalr-helper.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        async function refreshUnreadBadge(){
+            try{
+                const res = await fetch('@Url.Action("UnreadCount","Notifications")', { credentials: 'same-origin' });
+                if(!res.ok) return;
+                const data = await res.json();
+                const el = document.getElementById('notifBadge');
+                if(!el) return;
+                if(data.count && data.count > 0){
+                    el.textContent = data.count;
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            }catch{}
+        }
+        refreshUnreadBadge();
+        setInterval(refreshUnreadBadge, 30000);
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

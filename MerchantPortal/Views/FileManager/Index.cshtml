@@ -1,0 +1,140 @@
+@model Getir.MerchantPortal.Models.FileManagerViewModel
+@inject ILocalizationService LocalizationService
+
+@{
+    ViewData["Title"] = LocalizationService.GetString("FileManager");
+    var files = Model.Files.Items ?? new List<Getir.MerchantPortal.Models.FileUploadResponse>();
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">@LocalizationService.GetString("FileManager")</h1>
+        <p class="text-muted mb-0">@LocalizationService.GetString("FileManagerDescription")</p>
+    </div>
+    <form asp-action="Upload" method="post" enctype="multipart/form-data" class="d-flex gap-2">
+        @Html.AntiForgeryToken()
+        <input type="file" name="file" class="form-control" required />
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-cloud-upload-fill me-1"></i>@LocalizationService.GetString("Upload")
+        </button>
+    </form>
+</div>
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">@LocalizationService.GetString("UploadedFiles")</h5>
+        <span class="text-muted">@string.Format(LocalizationService.GetString("TotalFilesCount"), Model.Files.TotalCount)</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>@LocalizationService.GetString("FileName")</th>
+                    <th>@LocalizationService.GetString("Container")</th>
+                    <th class="text-end">@LocalizationService.GetString("Size")</th>
+                    <th>@LocalizationService.GetString("ContentType")</th>
+                    <th>@LocalizationService.GetString("UploadedAt")</th>
+                    <th class="text-end">@LocalizationService.GetString("Actions")</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (files.Any())
+                {
+                    foreach (var file in files)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@file.BlobUrl" target="_blank" rel="noopener">
+                                    @file.FileName
+                                </a>
+                            </td>
+                            <td>@file.ContainerName</td>
+                            <td class="text-end">@FormatFileSize(file.FileSizeBytes)</td>
+                            <td>@file.ContentType</td>
+                            <td>@file.UploadedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a class="btn btn-outline-secondary" href="@file.BlobUrl" target="_blank">
+                                        <i class="bi bi-box-arrow-up-right"></i> @LocalizationService.GetString("View")
+                                    </a>
+                                    <form asp-action="Delete" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="containerName" value="@file.ContainerName" />
+                                        <input type="hidden" name="fileName" value="@file.FileName" />
+                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('@LocalizationService.GetString("DeleteConfirmation")');">
+                                            <i class="bi bi-trash"></i> @LocalizationService.GetString("Delete")
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">@LocalizationService.GetString("NoFilesUploaded")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @{
+        var currentPage = Model.Files.Page;
+        var totalPages = Math.Max(Model.Files.TotalPages, 1);
+    }
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <div class="text-muted">
+            @string.Format(LocalizationService.GetString("PaginationInfo"), currentPage, totalPages)
+        </div>
+        <nav aria-label="File pagination">
+            <ul class="pagination mb-0">
+                @{
+                    var prevDisabled = currentPage <= 1 ? "disabled" : string.Empty;
+                    var nextDisabled = currentPage >= totalPages ? "disabled" : string.Empty;
+                }
+                <li class="page-item @prevDisabled">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-pageSize="@Model.Files.PageSize">@LocalizationService.GetString("Previous")</a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link">@currentPage</span>
+                </li>
+                <li class="page-item @nextDisabled">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-pageSize="@Model.Files.PageSize">@LocalizationService.GetString("Next")</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@functions {
+    private static string FormatFileSize(long sizeInBytes)
+    {
+        if (sizeInBytes < 1024)
+        {
+            return $"{sizeInBytes} B";
+        }
+
+        double size = sizeInBytes;
+        string[] suffixes = { "KB", "MB", "GB", "TB" };
+        int suffixIndex = 0;
+
+        while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+        {
+            size /= 1024;
+            suffixIndex++;
+        }
+
+        return $"{size:0.##} {suffixes[suffixIndex]}";
+    }
+}
+

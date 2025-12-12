@@ -1,0 +1,227 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.UpdateMerchantRequest
+@{
+    ViewData["Title"] = LocalizationService.GetString("Profile");
+    var merchantId = ViewBag.MerchantId as Guid?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="fas fa-store"></i> @LocalizationService.GetString("MerchantProfile")</h3>
+    <div class="btn-group">
+        <a href="@Url.Action("WorkingHours")" class="btn btn-outline-primary">
+            <i class="fas fa-clock"></i> @LocalizationService.GetString("WorkingHours")
+        </a>
+        <a href="@Url.Action("Settings")" class="btn btn-outline-secondary">
+            <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
+        </a>
+    </div>
+</div>
+
+<form asp-action="Edit" asp-route-id="@merchantId" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="row g-4">
+        <!-- Basic Information -->
+        <div class="col-md-8">
+            <div class="stat-card">
+                <h5 class="mb-4">
+                    <i class="fas fa-info-circle"></i> @LocalizationService.GetString("BasicInfo")
+                </h5>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">@LocalizationService.GetString("StoreName") *</label>
+                    <input asp-for="Name" class="form-control" placeholder="Migros, Şok, CarrefourSA vb." />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">@LocalizationService.GetString("Description")</label>
+                    <textarea asp-for="Description" class="form-control" rows="3" 
+                              placeholder="Mağazanız hakkında kısa bir açıklama..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">@LocalizationService.GetString("Phone") *</label>
+                        <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="+90 555 123 4567" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label">@LocalizationService.GetString("Email")</label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="magaza@ornek.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label">@LocalizationService.GetString("Address") *</label>
+                    <textarea asp-for="Address" class="form-control" rows="2" 
+                              placeholder="Tam adres bilgisi..."></textarea>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Latitude" class="form-label">@LocalizationService.GetString("Latitude")</label>
+                        <input asp-for="Latitude" type="number" step="0.000001" class="form-control" placeholder="41.008..." />
+                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Longitude" class="form-label">@LocalizationService.GetString("Longitude")</label>
+                        <input asp-for="Longitude" type="number" step="0.000001" class="form-control" placeholder="28.978..." />
+                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <small>
+                        @LocalizationService.GetString("LocationInfo")
+                        <a href="https://www.google.com/maps" target="_blank">Google Maps</a>'ten @LocalizationService.GetString("GetCoordinates").
+                    </small>
+                </div>
+            </div>
+
+            <div class="stat-card mt-3">
+                <h5 class="mb-4">
+                    <i class="fas fa-truck"></i> @LocalizationService.GetString("DeliverySettings")
+                </h5>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MinimumOrderAmount" class="form-label">
+                            @LocalizationService.GetString("MinimumOrderAmount") (₺) *
+                        </label>
+                        <input asp-for="MinimumOrderAmount" type="number" step="0.01" class="form-control" placeholder="50.00" />
+                        <span asp-validation-for="MinimumOrderAmount" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DeliveryFee" class="form-label">
+                            @LocalizationService.GetString("DeliveryFee") (₺) *
+                        </label>
+                        <input asp-for="DeliveryFee" type="number" step="0.01" class="form-control" placeholder="9.99" />
+                        <span asp-validation-for="DeliveryFee" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="AverageDeliveryTime" class="form-label">
+                            @LocalizationService.GetString("AverageDeliveryTime") (@LocalizationService.GetString("Minutes")) *
+                        </label>
+                        <input asp-for="AverageDeliveryTime" type="number" class="form-control" placeholder="30" />
+                        <span asp-validation-for="AverageDeliveryTime" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card mt-3">
+                <h5 class="mb-4">
+                    <i class="fas fa-image"></i> @LocalizationService.GetString("Images")
+                </h5>
+
+                <div class="mb-3">
+                    <label asp-for="LogoUrl" class="form-label">@LocalizationService.GetString("LogoURL")</label>
+                    <input asp-for="LogoUrl" class="form-control" placeholder="https://..." />
+                    <span asp-validation-for="LogoUrl" class="text-danger"></span>
+                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                    {
+                        <div class="mt-2">
+                            <img src="@Model.LogoUrl" alt="Logo" class="img-thumbnail" style="max-width: 200px;" />
+                        </div>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CoverImageUrl" class="form-label">@LocalizationService.GetString("CoverImageURL")</label>
+                    <input asp-for="CoverImageUrl" class="form-control" placeholder="https://..." />
+                    <span asp-validation-for="CoverImageUrl" class="text-danger"></span>
+                    @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                    {
+                        <div class="mt-2">
+                            <img src="@Model.CoverImageUrl" alt="Cover" class="img-thumbnail" style="max-width: 100%; max-height: 300px;" />
+                        </div>
+                    }
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <small>
+                        @LocalizationService.GetString("FileUploadComingSoon")
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status & Actions -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h5 class="mb-4">
+                    <i class="fas fa-toggle-on"></i> @LocalizationService.GetString("Status")
+                </h5>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsActive" class="form-check-label">
+                            <strong>@LocalizationService.GetString("Active")</strong>
+                            <br><small class="text-muted">@LocalizationService.GetString("ShowToCustomersInfo")</small>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsBusy" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsBusy" class="form-check-label">
+                            <strong>@LocalizationService.GetString("Busy")</strong>
+                            <br><small class="text-muted">@LocalizationService.GetString("SlowDownOrders")</small>
+                        </label>
+                    </div>
+                </div>
+
+                <hr />
+
+                <button type="submit" class="btn btn-getir w-100 mb-2">
+                    <i class="fas fa-save"></i> @LocalizationService.GetString("SaveChanges")
+                </button>
+
+                <a href="@Url.Action("Index", "Dashboard")" class="btn btn-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> @LocalizationService.GetString("Cancel")
+                </a>
+            </div>
+
+            <div class="stat-card mt-3">
+                <h6 class="mb-3">
+                    <i class="fas fa-lightbulb"></i> @LocalizationService.GetString("Tips")
+                </h6>
+                <ul class="small text-muted mb-0" style="list-style: none; padding-left: 0;">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        @LocalizationService.GetString("KeepProfileUpdated")
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        @LocalizationService.GetString("SetReasonableMinimum")
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        @LocalizationService.GetString("SetRealisticDeliveryTime")
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        @LocalizationService.GetString("AddLogoAndCover")
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

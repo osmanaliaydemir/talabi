@@ -1,0 +1,223 @@
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("PaymentReports");
+}
+
+@section Styles {
+    <style>
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+    </style>
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-chart-line me-2"></i>@LocalizationService.GetString("PaymentReportsAndAnalytics")</h2>
+        <p class="text-muted mb-0">@LocalizationService.GetString("DetailedRevenueAndMethodBreakdown")</p>
+    </div>
+    <div>
+        <a href="/Payments/Index" class="btn btn-outline-primary">
+            <i class="fas fa-list me-1"></i> @LocalizationService.GetString("PaymentsList")
+        </a>
+    </div>
+</div>
+
+<!-- Revenue Cards -->
+<div class="row g-3 mb-4" id="revenueCards">
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="metric-label">@LocalizationService.GetString("Today")</div>
+            <div class="metric-value" id="todayRevenue">₺0</div>
+            <div class="small"><span id="todayOrders">0</span> @LocalizationService.GetString("OrdersLowercase")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="metric-label">@LocalizationService.GetString("ThisWeek")</div>
+            <div class="metric-value" id="weekRevenue">₺0</div>
+            <div class="small"><span id="weekOrders">0</span> @LocalizationService.GetString("OrdersLowercase")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="metric-label">@LocalizationService.GetString("ThisMonth")</div>
+            <div class="metric-value" id="monthRevenue">₺0</div>
+            <div class="small"><span id="monthOrders">0</span> @LocalizationService.GetString("OrdersLowercase")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="metric-label">@LocalizationService.GetString("AverageOrder")</div>
+            <div class="metric-value" id="avgOrderValue">₺0</div>
+            <div class="small">@LocalizationService.GetString("AverageAmountShort")</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Payment Method Breakdown -->
+    <div class="col-lg-6">
+        <div class="report-card">
+            <h5 class="mb-3">
+                <i class="fas fa-credit-card me-2"></i>
+                @LocalizationService.GetString("PaymentMethodDistribution")
+            </h5>
+            <canvas id="paymentMethodChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Payment Method Table -->
+    <div class="col-lg-6">
+        <div class="report-card">
+            <h5 class="mb-3">
+                <i class="fas fa-table me-2"></i>
+                @LocalizationService.GetString("MethodDetails")
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-sm" id="methodBreakdownTable">
+                    <thead>
+                        <tr>
+                            <th>@LocalizationService.GetString("Method")</th>
+                            <th class="text-end">@LocalizationService.GetString("Count")</th>
+                            <th class="text-end">@LocalizationService.GetString("Amount")</th>
+                            <th class="text-end">@LocalizationService.GetString("Percentage")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Trend Chart -->
+<div class="report-card">
+    <h5 class="mb-3">
+        <i class="fas fa-chart-area me-2"></i>
+        @LocalizationService.GetString("RevenueTrend") (@LocalizationService.GetString("Last30Days"))
+    </h5>
+    <canvas id="revenueTrendChart" height="80"></canvas>
+</div>
+
+@section Scripts {
+    <script>
+        let methodChart, trendChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnalytics();
+            loadPaymentMethodBreakdown();
+        });
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/Payments/GetRevenueAnalytics');
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error('Failed to load analytics');
+                    return;
+                }
+
+                const data = result.data;
+
+                // Update cards
+                document.getElementById('todayRevenue').textContent = `₺${data.todayRevenue.toFixed(2)}`;
+                document.getElementById('weekRevenue').textContent = `₺${data.weekRevenue.toFixed(2)}`;
+                document.getElementById('monthRevenue').textContent = `₺${data.monthRevenue.toFixed(2)}`;
+                document.getElementById('avgOrderValue').textContent = `₺${data.averageOrderValue.toFixed(2)}`;
+                document.getElementById('todayOrders').textContent = data.todayOrders;
+                document.getElementById('weekOrders').textContent = data.weekOrders;
+                document.getElementById('monthOrders').textContent = data.monthOrders;
+
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        async function loadPaymentMethodBreakdown() {
+            try {
+                const response = await fetch('/Payments/GetPaymentMethodBreakdown');
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error('Failed to load breakdown');
+                    return;
+                }
+
+                // Render chart
+                if (methodChart) methodChart.destroy();
+                const ctx = document.getElementById('paymentMethodChart');
+                methodChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: result.data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        return `${label}: ₺${value.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Render table
+                const tbody = document.querySelector('#methodBreakdownTable tbody');
+                tbody.innerHTML = '';
+                result.breakdown.forEach(item => {
+                    const row = `
+                        <tr>
+                            <td>
+                                <span class="badge" style="background-color: ${item.color};">
+                                    ${item.displayName}
+                                </span>
+                            </td>
+                            <td class="text-end">${item.orderCount}</td>
+                            <td class="text-end fw-bold">₺${item.totalAmount.toFixed(2)}</td>
+                            <td class="text-end">${item.percentage.toFixed(1)}%</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+            } catch (error) {
+                console.error('Error loading payment method breakdown:', error);
+            }
+        }
+    </script>
+}
+

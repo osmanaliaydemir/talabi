@@ -1,0 +1,58 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.PagedResult<Getir.MerchantPortal.Models.ProductOptionGroupResponse>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<h3>@LocalizationService.GetString("OptionGroups")</h3>
+	<a class="btn btn-primary" href="@Url.Action("CreateGroup", new { productId = (Guid)ViewBag.ProductId })">
+		<i class="fas fa-plus me-1"></i> @LocalizationService.GetString("Add")
+	</a>
+</div>
+
+@if (Model != null && Model.Items.Any())
+{
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>@LocalizationService.GetString("Name")</th>
+				<th>@LocalizationService.GetString("Required")</th>
+				<th>@LocalizationService.GetString("DisplayOrder")</th>
+				<th class="text-end"></th>
+			</tr>
+		</thead>
+		<tbody>
+		@foreach (var g in Model.Items)
+		{
+			<tr>
+				<td>@g.Name</td>
+				<td>@(g.IsRequired ? "Evet" : "Hayır")</td>
+				<td>@g.DisplayOrder</td>
+				<td class="text-end">
+					<a class="btn btn-sm btn-outline-secondary" href="@Url.Action("EditGroup", new { id = g.Id })"><i class="fas fa-edit"></i></a>
+					<a class="btn btn-sm btn-outline-primary" href="@Url.Action("Options", new { groupId = g.Id })">@LocalizationService.GetString("Options")</a>
+					<form asp-action="DeleteGroup" method="post" class="d-inline" onsubmit="return confirm('Silinsin mi?');">
+						@Html.AntiForgeryToken()
+						<input type="hidden" name="id" value="@g.Id" />
+						<input type="hidden" name="productId" value="@ViewBag.ProductId" />
+						<button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+					</form>
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+
+	<form asp-action="ReorderGroups" method="post" class="mt-3">
+		@Html.AntiForgeryToken()
+		<input type="hidden" name="productId" value="@ViewBag.ProductId" />
+		<div class="mb-2">@LocalizationService.GetString("ReorderByIdsCommaSeparated")</div>
+		<input type="text" class="form-control" name="orderedGroupIds" placeholder="id1,id2,id3" />
+		<small class="text-muted">Basit sürüm: ID’leri sırayla virgülle girin.</small>
+		<button class="btn btn-sm btn-outline-primary mt-2" type="submit">@LocalizationService.GetString("SaveOrder")</button>
+	</form>
+}
+else
+{
+	<div class="alert alert-info">@LocalizationService.GetString("NoData")</div>
+}
+
+

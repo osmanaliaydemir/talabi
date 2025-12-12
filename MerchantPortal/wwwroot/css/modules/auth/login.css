@@ -1,0 +1,112 @@
+/**
+ * Login Page Styles
+ */
+
+body {
+    background: linear-gradient(135deg, #5D3EBC 0%, #4a2d96 100%);
+}
+
+/* Dark mode support for login page */
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+}
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+    max-width: 450px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .login-card {
+    background: #2d2d2d;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+.login-header {
+    background: linear-gradient(135deg, #5D3EBC 0%, #4a2d96 100%);
+    color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+[data-theme="dark"] .login-header {
+    background: linear-gradient(135deg, #7c5fd4 0%, #5D3EBC 100%);
+}
+
+.login-logo {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.login-body {
+    padding: 3rem 2rem;
+}
+
+[data-theme="dark"] .login-body {
+    color: #e0e0e0;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .form-control {
+    background-color: #3a3a3a;
+    border-color: #4a4a4a;
+    color: #e0e0e0;
+}
+
+.form-control:focus {
+    border-color: #5D3EBC;
+    box-shadow: 0 0 0 0.2rem rgba(93, 62, 188, 0.25);
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: #404040;
+    border-color: #7c5fd4;
+}
+
+.btn-login {
+    background: #5D3EBC;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-weight: bold;
+    border: none;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.btn-login:hover {
+    background: #4a2d96;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(93, 62, 188, 0.4);
+}
+
+[data-theme="dark"] .btn-login:hover {
+    background: #7c5fd4;
+}
+
+[data-theme="dark"] .text-muted {
+    color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] a.text-decoration-none {
+    color: #7c5fd4 !important;
+}
+

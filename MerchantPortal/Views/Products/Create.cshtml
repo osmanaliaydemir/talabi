@@ -1,0 +1,223 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.CreateProductRequest
+@{
+    ViewData["Title"] = LocalizationService.GetString("AddProduct");
+    var categories = ViewBag.Categories as List<Getir.MerchantPortal.Models.ProductCategoryResponse> ?? new();
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="stat-card">
+            <h4 class="mb-4">
+                <i class="fas fa-box"></i> @LocalizationService.GetString("AddProductTitle")
+            </h4>
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Name" class="form-label">@LocalizationService.GetString("ProductNameLabel") *</label>
+                        <input asp-for="Name" class="form-control" placeholder="@LocalizationService.GetString("ExampleProductPlaceholder")" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ProductCategoryId" class="form-label">@LocalizationService.GetString("CategoryLabel")</label>
+                        <select asp-for="ProductCategoryId" class="form-select">
+                            <option value="">@LocalizationService.GetString("SelectCategory")</option>
+                            @foreach (var category in categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="ProductCategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">@LocalizationService.GetString("DescriptionLabel")</label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="@LocalizationService.GetString("ProductDescriptionPlaceholder")"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Price" class="form-label">@LocalizationService.GetString("PriceLabel") *</label>
+                        <input asp-for="Price" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DiscountedPrice" class="form-label">@LocalizationService.GetString("DiscountedPriceLabel")</label>
+                        <input asp-for="DiscountedPrice" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                        <span asp-validation-for="DiscountedPrice" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="StockQuantity" class="form-label">@LocalizationService.GetString("StockQuantityLabel") *</label>
+                        <input asp-for="StockQuantity" type="number" class="form-control" placeholder="0" />
+                        <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Unit" class="form-label">@LocalizationService.GetString("UnitLabel")</label>
+                        <input asp-for="Unit" class="form-control" placeholder="@LocalizationService.GetString("UnitPlaceholder")" />
+                        <span asp-validation-for="Unit" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DisplayOrder" class="form-label">@LocalizationService.GetString("DisplayOrderLabel")</label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" placeholder="0" />
+                        <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Modern Image Upload Component -->
+                <div class="mb-4">
+                    <label class="form-label">@LocalizationService.GetString("ProductImages")</label>
+                    <partial name="_ImageUploadPartial" 
+                             model="@(new { 
+                                 FieldName = nameof(Model.ImageUrl),
+                                 MaxFiles = 5,
+                                 AcceptedTypes = new string[] { "image/jpeg", "image/png", "image/webp" },
+                                 MaxFileSize = 5242880
+                             })" />
+                    <input asp-for="ImageUrl" type="hidden" id="imageUrlField" />
+                    <div class="mt-2">
+                        <label class="form-label">@LocalizationService.GetString("UploadImage")</label>
+                        <input type="file" name="imageFile" id="imageFileInput" class="form-control" accept="image/*" />
+                        <div id="imagePreview" class="mt-2" style="display:none;">
+                            <img id="imagePreviewImg" src="#" alt="preview" style="max-height:120px;border:1px solid #eee;border-radius:6px;padding:4px;" />
+                            <button type="button" id="btnRemoveImage" class="btn btn-sm btn-outline-danger ms-2">@LocalizationService.GetString("Remove")</button>
+                            <small id="imageValidationMsg" class="text-danger d-block mt-1" style="display:none;"></small>
+                        </div>
+                    </div>
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsAvailable" class="form-check-input" type="checkbox" checked />
+                            <label asp-for="IsAvailable" class="form-check-label">@LocalizationService.GetString("InStock")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                            <label asp-for="IsActive" class="form-check-label">@LocalizationService.GetString("ActiveLabel")</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> @LocalizationService.GetString("Back")
+                    </a>
+                    <button type="submit" class="btn btn-getir">
+                        <i class="fas fa-save"></i> @LocalizationService.GetString("SaveProduct")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <!-- Image Upload Scripts -->
+    <script src="~/js/modules/upload/dragDrop.js"></script>
+    <script src="~/js/modules/upload/imageCompression.js"></script>
+    <script src="~/js/modules/upload/multipleFiles.js"></script>
+    <script src="~/js/modules/upload/uploadProgress.js"></script>
+    <script>
+        (function(){
+            const input = document.getElementById('imageFileInput');
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('imagePreviewImg');
+            const removeBtn = document.getElementById('btnRemoveImage');
+            const msg = document.getElementById('imageValidationMsg');
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const types = ['image/jpeg','image/png','image/webp','image/jpg'];
+            if(!input) return;
+            input.addEventListener('change', function(){
+                msg.style.display = 'none';
+                if(!input.files || input.files.length === 0){ preview.style.display = 'none'; return; }
+                const f = input.files[0];
+                if(f.size > maxSize){ msg.textContent = 'Dosya boyutu 5MB üzeri'; msg.style.display=''; input.value=''; preview.style.display='none'; return; }
+                if(!types.includes(f.type)){ msg.textContent = 'Geçersiz dosya türü'; msg.style.display=''; input.value=''; preview.style.display='none'; return; }
+                const url = URL.createObjectURL(f);
+                img.src = url; preview.style.display = '';
+            });
+            removeBtn?.addEventListener('click', function(){ input.value=''; preview.style.display='none'; });
+        })();
+    </script>
+    
+    <script>
+        // Initialize image upload
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        if (dropZone && fileInput) {
+            const dragDropUploader = new DragDropUploader(dropZone, fileInput);
+            const multipleFilesManager = new MultipleFilesManager();
+            const imageCompressor = new ImageCompressor();
+            
+            // Handle file selection
+            fileInput.addEventListener('change', async function(e) {
+                const files = Array.from(e.target.files);
+                
+                for (const file of files) {
+                    if (file.type.startsWith('image/')) {
+                        try {
+                            // Compress image
+                            const compressedBlob = await imageCompressor.compress(file);
+                            
+                            // Add to preview
+                            multipleFilesManager.addFile(file);
+                            
+                            // Upload to server (implement this endpoint)
+                            await uploadImage(compressedBlob, file.name);
+                        } catch (error) {
+                            console.error('Image processing error:', error);
+                        }
+                    }
+                }
+            });
+            
+            async function uploadImage(blob, fileName) {
+                const formData = new FormData();
+                formData.append('file', blob, fileName);
+                
+                try {
+                    const response = await fetch('/api/upload/product-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Update hidden ImageUrl field
+                        const imageUrlField = document.getElementById('imageUrlField');
+                        if (imageUrlField) {
+                            const currentUrls = imageUrlField.value ? imageUrlField.value.split(',') : [];
+                            currentUrls.push(data.url);
+                            imageUrlField.value = currentUrls.join(',');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    alert('Görsel yükleme başarısız oldu');
+                }
+            }
+        }
+    </script>
+}
+

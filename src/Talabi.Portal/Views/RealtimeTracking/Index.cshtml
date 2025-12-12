@@ -1,0 +1,193 @@
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("RealtimeTracking");
+}
+
+<style>
+    .tracking-map-container {
+        height: 80vh; /* Geniş bir harita alanı */
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        background-color: #e5e9ec; /* Map placeholder color */
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    
+    .tracking-sidebar {
+        height: 80vh;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .courier-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .courier-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border-color: #4e73df;
+    }
+
+    .courier-card.active {
+        border-color: #4e73df;
+        background-color: #f8faff;
+    }
+
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 20px;
+    }
+
+    .map-overlay-info {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        min-width: 250px;
+        display: none;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("RealtimeTracking")</h1>
+            <p class="text-muted small mb-0">@LocalizationService.GetString("ActiveDeliveriesDescription")</p>
+        </div>
+        <div>
+            <span class="badge bg-success shadow-sm p-2">
+                <i class="fas fa-circle fa-xs me-1 anim-pulse"></i> 3 @LocalizationService.GetString("ActiveCouriers")
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar List -->
+        <div class="col-lg-3 tracking-sidebar custom-scrollbar">
+            <!-- Mock Data -->
+            <div class="courier-card" onclick="focusCourier('courier1')">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:35px;height:35px">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Ahmet Yılmaz</h6>
+                            <span class="text-xs text-muted">ID: #C-1023</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="status-badge bg-info text-white">@LocalizationService.GetString("OnWay")</span>
+                    <small class="text-success fw-bold">Order #4521</small>
+                </div>
+                 <div class="mt-2 text-xs text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i> Kadıköy, İstanbul
+                </div>
+            </div>
+
+            <div class="courier-card" onclick="focusCourier('courier2')">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-info text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:35px;height:35px">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Mehmet Demir</h6>
+                            <span class="text-xs text-muted">ID: #C-1045</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="status-badge bg-warning text-dark">@LocalizationService.GetString("PickingUp")</span>
+                    <small class="text-success fw-bold">Order #4525</small>
+                </div>
+                 <div class="mt-2 text-xs text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i> Beşiktaş, İstanbul
+                </div>
+            </div>
+
+             <div class="courier-card" onclick="focusCourier('courier3')">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-success text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:35px;height:35px">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Ali Kaya</h6>
+                            <span class="text-xs text-muted">ID: #C-1050</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="status-badge bg-success text-white">@LocalizationService.GetString("Delivered")</span>
+                    <small class="text-success fw-bold">Order #4510</small>
+                </div>
+                 <div class="mt-2 text-xs text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i> Üsküdar, İstanbul
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Area -->
+        <div class="col-lg-9">
+            <div class="tracking-map-container d-flex align-items-center justify-content-center flex-column">
+                <div id="mapOverlay" class="map-overlay-info">
+                   <div class="d-flex justify-content-between">
+                       <h6 class="fw-bold mb-0">Ahmet Yılmaz</h6>
+                       <small class="text-success">2 dk sonra varış</small>
+                   </div>
+                   <hr class="my-2">
+                   <div class="small">
+                       <div><strong>Hız:</strong> 45 km/s</div>
+                       <div><strong>Mesafe:</strong> 1.2 km</div>
+                       <div><strong>Hedef:</strong> Bağdat Cd. No:12</div>
+                   </div>
+                </div>
+                
+                <!-- Mock Map Visual -->
+                <i class="fas fa-map-marked-alt fa-5x text-gray-300 mb-3"></i>
+                <h5 class="text-gray-500">Google Maps / Mapbox Entegrasyonu</h5>
+                <p class="text-gray-400 small">API Key tanımlandığında harita burada görüntülenecektir.</p>
+                <div class="mt-4">
+                     <span class="badge bg-white text-dark shadow-sm me-2"><i class="fas fa-motorcycle text-primary"></i> 3 Moto</span>
+                     <span class="badge bg-white text-dark shadow-sm"><i class="fas fa-home text-danger"></i> 1 Restoran</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function focusCourier(id) {
+            // Remove active class from all
+            $('.courier-card').removeClass('active');
+            
+            // Add to clicked (in real app, find by ID)
+            // For now just toggle mock active state on click
+            $(event.currentTarget).addClass('active');
+
+            // Show overlay
+            $('#mapOverlay').hide().fadeIn();
+        }
+    </script>
+}

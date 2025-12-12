@@ -1,0 +1,266 @@
+@inject ILocalizationService LocalizationService
+@model Getir.MerchantPortal.Models.OrderDetailsResponse
+@{
+    ViewData["Title"] = LocalizationService.GetString("OrderDetails");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="fas fa-file-invoice"></i> @LocalizationService.GetString("OrderDetail")</h3>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> @LocalizationService.GetString("Back")
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Order Summary -->
+    <div class="col-md-8">
+        <div class="stat-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="mb-1">@LocalizationService.GetString("Order") #@Model.OrderNumber</h5>
+                    <small class="text-muted">@Model.CreatedAt.ToString("dd MMMM yyyy, HH:mm")</small>
+                </div>
+                <span class="badge bg-@GetStatusBadgeClass(Model.Status) fs-6">
+                    @GetStatusText(Model.Status)
+                </span>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">@LocalizationService.GetString("CustomerInfo")</h6>
+                    <p class="mb-1"><strong>@Model.CustomerName</strong></p>
+                    <p class="mb-1"><i class="fas fa-phone"></i> @Model.CustomerPhone</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">@LocalizationService.GetString("DeliveryAddress")</h6>
+                    <p class="mb-0">
+                        <i class="fas fa-map-marker-alt"></i> @Model.DeliveryAddress
+                    </p>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="alert alert-info">
+                    <strong><i class="fas fa-sticky-note"></i> @LocalizationService.GetString("Note"):</strong> @Model.Notes
+                </div>
+            }
+        </div>
+
+        <!-- Order Items -->
+        <div class="stat-card">
+            <h5 class="mb-3">@LocalizationService.GetString("OrderContent")</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>@LocalizationService.GetString("Product")</th>
+                            <th>@LocalizationService.GetString("UnitPrice")</th>
+                            <th>@LocalizationService.GetString("Quantity")</th>
+                            <th class="text-end">@LocalizationService.GetString("Total")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderLines)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                        {
+                                            <img src="@item.ProductImageUrl" alt="@item.ProductName" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                <i class="fas fa-box text-muted"></i>
+                                            </div>
+                                        }
+                                        <span>@item.ProductName</span>
+                                    </div>
+                                </td>
+                                <td>₺@item.UnitPrice.ToString("N2")</td>
+                                <td><strong>x @item.Quantity</strong></td>
+                                <td class="text-end"><strong>₺@item.TotalPrice.ToString("N2")</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>@LocalizationService.GetString("Subtotal"):</strong></td>
+                            <td class="text-end"><strong>₺@Model.SubTotal.ToString("N2")</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end">@LocalizationService.GetString("DeliveryFee"):</td>
+                            <td class="text-end">₺@Model.DeliveryFee.ToString("N2")</td>
+                        </tr>
+                        <tr class="table-active">
+                            <td colspan="3" class="text-end"><strong>@LocalizationService.GetString("TOTAL"):</strong></td>
+                            <td class="text-end"><h5 class="mb-0">₺@Model.TotalAmount.ToString("N2")</h5></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Actions -->
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h5 class="mb-3">@LocalizationService.GetString("OrderActions")</h5>
+            
+            @if (Model.Status == "Pending")
+            {
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post" class="mb-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="status" value="Confirmed" />
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-check"></i> @LocalizationService.GetString("ConfirmOrder")
+                    </button>
+                </form>
+
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@LocalizationService.GetString("CancelOrderConfirm")');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="status" value="Cancelled" />
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-times"></i> @LocalizationService.GetString("CancelOrder")
+                    </button>
+                </form>
+            }
+            else if (Model.Status == "Confirmed")
+            {
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="status" value="Preparing" />
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-hourglass-half"></i> @LocalizationService.GetString("StartPreparing")
+                    </button>
+                </form>
+            }
+            else if (Model.Status == "Preparing")
+            {
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="status" value="Ready" />
+                    <button type="submit" class="btn btn-info w-100">
+                        <i class="fas fa-check-circle"></i> @LocalizationService.GetString("Ready")
+                    </button>
+                </form>
+            }
+            else if (Model.Status == "Ready")
+            {
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="status" value="OnTheWay" />
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-shipping-fast"></i> @LocalizationService.GetString("HandedToCourier")
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-@(Model.Status == "Completed" || Model.Status == "Delivered" ? "success" : "secondary") mb-0">
+                    <i class="fas fa-info-circle"></i> 
+                    @LocalizationService.GetString("OrderStatus"): <strong>@GetStatusText(Model.Status)</strong>
+                </div>
+            }
+
+            @if (Model.CompletedAt.HasValue)
+            {
+                <div class="mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> @LocalizationService.GetString("CompletedAt"): <br>
+                        @Model.CompletedAt.Value.ToString("dd MMMM yyyy, HH:mm")
+                    </small>
+                </div>
+            }
+        </div>
+
+        <!-- Order Timeline -->
+        <div class="stat-card mt-3">
+            <h6 class="mb-3">@LocalizationService.GetString("OrderTracking")</h6>
+            <div class="timeline">
+                <div class="timeline-item @(IsStatusReached(Model.Status, "Pending") ? "active" : "")">
+                    <i class="fas fa-circle"></i>
+                    <small>@LocalizationService.GetString("OrderReceived")</small>
+                </div>
+                <div class="timeline-item @(IsStatusReached(Model.Status, "Confirmed") ? "active" : "")">
+                    <i class="fas fa-circle"></i>
+                    <small>@LocalizationService.GetString("Confirmed")</small>
+                </div>
+                <div class="timeline-item @(IsStatusReached(Model.Status, "Preparing") ? "active" : "")">
+                    <i class="fas fa-circle"></i>
+                    <small>@LocalizationService.GetString("Preparing")</small>
+                </div>
+                <div class="timeline-item @(IsStatusReached(Model.Status, "Ready") ? "active" : "")">
+                    <i class="fas fa-circle"></i>
+                    <small>@LocalizationService.GetString("Ready")</small>
+                </div>
+                <div class="timeline-item @(IsStatusReached(Model.Status, "OnTheWay") ? "active" : "")">
+                    <i class="fas fa-circle"></i>
+                    <small>@LocalizationService.GetString("OnTheWay")</small>
+                </div>
+                <div class="timeline-item @(Model.Status == "Completed" || Model.Status == "Delivered" ? "active" : "")">
+                    <i class="fas fa-circle"></i>
+                    <small>@LocalizationService.GetString("Delivered")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/modules/orders/orders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        // Set order context for module
+        window.jwtToken = '@Context.Session.GetString("JwtToken")';
+        window.currentOrderId = '@Model.Id';
+    </script>
+    <script src="~/js/modules/orders/orders.js" asp-append-version="true"></script>
+}
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "warning",
+            "Confirmed" => "info",
+            "Preparing" => "primary",
+            "Ready" => "success",
+            "OnTheWay" => "info",
+            "Delivered" => "success",
+            "Completed" => "success",
+            "Cancelled" => "danger",
+            _ => "secondary"
+        };
+    }
+
+    string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Pending" => LocalizationService.GetString("Pending"),
+            "Confirmed" => LocalizationService.GetString("Confirmed"),
+            "Preparing" => LocalizationService.GetString("Preparing"),
+            "Ready" => LocalizationService.GetString("Ready"),
+            "OnTheWay" => LocalizationService.GetString("OnTheWay"),
+            "Delivered" => LocalizationService.GetString("Delivered"),
+            "Completed" => LocalizationService.GetString("Completed"),
+            "Cancelled" => LocalizationService.GetString("Cancelled"),
+            _ => status
+        };
+    }
+
+    bool IsStatusReached(string currentStatus, string checkStatus)
+    {
+        var statusOrder = new[] { "Pending", "Confirmed", "Preparing", "Ready", "OnTheWay", "Delivered", "Completed" };
+        var currentIndex = Array.IndexOf(statusOrder, currentStatus);
+        var checkIndex = Array.IndexOf(statusOrder, checkStatus);
+        return currentIndex >= checkIndex && currentIndex >= 0 && checkIndex >= 0;
+    }
+}
+

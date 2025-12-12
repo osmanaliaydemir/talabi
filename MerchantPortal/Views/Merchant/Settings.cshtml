@@ -1,0 +1,302 @@
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Settings");
+    var merchantId = ViewBag.MerchantId as Guid?;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/modules/settings/settings.css" asp-append-version="true" />
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="fas fa-cog"></i> @LocalizationService.GetString("MerchantSettings")</h3>
+    <a href="@Url.Action("Edit", new { id = merchantId })" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> @LocalizationService.GetString("ReturnToProfile")
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <!-- Quick Actions -->
+        <div class="stat-card mb-3">
+            <h5 class="mb-4">@LocalizationService.GetString("QuickActions")</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <a href="@Url.Action("Edit", new { id = merchantId })" class="quick-action-card">
+                        <div class="quick-action-icon" style="background: #e3f2fd;">
+                            <i class="fas fa-store" style="color: #2196F3;"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h6>@LocalizationService.GetString("ProfileInfo")</h6>
+                            <small class="text-muted">@LocalizationService.GetString("ProfileInfoDesc")</small>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a href="@Url.Action("WorkingHours")" class="quick-action-card">
+                        <div class="quick-action-icon" style="background: #fff3e0;">
+                            <i class="fas fa-clock" style="color: #FF9800;"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h6>@LocalizationService.GetString("WorkingHours")</h6>
+                            <small class="text-muted">@LocalizationService.GetString("WorkingSchedule")</small>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a href="@Url.Action("Index", "Categories")" class="quick-action-card">
+                        <div class="quick-action-icon" style="background: #f3e5f5;">
+                            <i class="fas fa-tags" style="color: #9C27B0;"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h6>@LocalizationService.GetString("Categories")</h6>
+                            <small class="text-muted">@LocalizationService.GetString("ManageCategories")</small>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a href="@Url.Action("Index", "Products")" class="quick-action-card">
+                        <div class="quick-action-icon" style="background: #e8f5e9;">
+                            <i class="fas fa-box" style="color: #4CAF50;"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h6>@LocalizationService.GetString("Products")</h6>
+                            <small class="text-muted">@LocalizationService.GetString("ManageProducts")</small>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="stat-card mb-3">
+            <h5 class="mb-4">
+                <i class="fas fa-bell"></i> @LocalizationService.GetString("NotificationPreferences")
+            </h5>
+            <div class="notification-setting mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-new-order" checked />
+                    <label class="form-check-label" for="notif-new-order">
+                        <strong>@LocalizationService.GetString("NewOrderNotifications")</strong>
+                        <br><small class="text-muted">@LocalizationService.GetString("NewOrderNotificationsDesc")</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="notification-setting mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-sound" checked />
+                    <label class="form-check-label" for="notif-sound">
+                        <strong>@LocalizationService.GetString("NotificationSound")</strong>
+                        <br><small class="text-muted">@LocalizationService.GetString("NotificationSoundDesc")</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="notification-setting mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-email" />
+                    <label class="form-check-label" for="notif-email">
+                        <strong>@LocalizationService.GetString("EmailNotifications")</strong>
+                        <br><small class="text-muted">@LocalizationService.GetString("EmailNotificationsDesc")</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="notification-setting">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-sms" />
+                    <label class="form-check-label" for="notif-sms">
+                        <strong>@LocalizationService.GetString("SMSNotifications")</strong>
+                        <br><small class="text-muted">@LocalizationService.GetString("SMSNotificationsDesc")</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i>
+                <small>@LocalizationService.GetString("NotificationsSavedLocally")</small>
+            </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <div class="stat-card">
+            <h5 class="mb-4">
+                <i class="fas fa-sliders-h"></i> @LocalizationService.GetString("AdvancedSettings")
+            </h5>
+
+            <div class="mb-3">
+                <label class="form-label">@LocalizationService.GetString("LanguagePreference")</label>
+                <select class="form-select">
+                    <option value="tr" selected>Türkçe</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-palette me-2"></i>@LocalizationService.GetString("Theme")
+                </label>
+                <select id="themeSelect" class="form-select">
+                    <option value="light">@LocalizationService.GetString("LightTheme")</option>
+                    <option value="dark">@LocalizationService.GetString("DarkTheme")</option>
+                    <option value="auto">@LocalizationService.GetString("AutoTheme")</option>
+                </select>
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>@LocalizationService.GetString("ThemeInfo")
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Account Information -->
+        <div class="stat-card mb-3">
+            <h6 class="mb-3">
+                <i class="fas fa-user-circle"></i> @LocalizationService.GetString("AccountInfo")
+            </h6>
+            <div class="mb-2">
+                <small class="text-muted">@LocalizationService.GetString("Username")</small>
+                <div><strong>@Context.Session.GetString("UserName")</strong></div>
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">@LocalizationService.GetString("Email")</small>
+                <div><strong>@Context.Session.GetString("UserEmail")</strong></div>
+            </div>
+            <hr />
+            <button class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                <i class="fas fa-key"></i> @LocalizationService.GetString("ChangePassword")
+            </button>
+        </div>
+
+        <!-- System Information -->
+        <div class="stat-card mb-3">
+            <h6 class="mb-3">
+                <i class="fas fa-info-circle"></i> @LocalizationService.GetString("SystemInfo")
+            </h6>
+            <div class="mb-2">
+                <small class="text-muted">@LocalizationService.GetString("PortalVersion")</small>
+                <div><strong>v1.0.0</strong></div>
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">@LocalizationService.GetString("LastUpdateDate")</small>
+                <div><strong>14 Ekim 2025</strong></div>
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">@LocalizationService.GetString("Status")</small>
+                <div>
+                    <span class="badge bg-success">
+                        <i class="fas fa-circle"></i> @LocalizationService.GetString("Online")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help & Support -->
+        <div class="stat-card">
+            <h6 class="mb-3">
+                <i class="fas fa-question-circle"></i> @LocalizationService.GetString("HelpSupport")
+            </h6>
+            <a href="#" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                <i class="fas fa-book"></i> @LocalizationService.GetString("UserGuide")
+            </a>
+            <a href="#" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                <i class="fas fa-headset"></i> @LocalizationService.GetString("SupportRequest")
+            </a>
+            <a href="#" class="btn btn-outline-primary btn-sm w-100">
+                <i class="fas fa-comments"></i> @LocalizationService.GetString("Feedback")
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 25px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-key me-2"></i>@LocalizationService.GetString("ChangePassword")
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <form id="changePasswordForm">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small><strong>@LocalizationService.GetString("Security"):</strong> @LocalizationService.GetString("PasswordRequirements")</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">
+                            <i class="fas fa-lock me-1"></i>@LocalizationService.GetString("CurrentPassword")
+                        </label>
+                        <input type="password" class="form-control" id="currentPassword" required 
+                               style="border-radius: 10px; border: 2px solid #e0e0e0;" 
+                               placeholder="@LocalizationService.GetString("EnterCurrentPassword")">
+                        <div class="invalid-feedback">@LocalizationService.GetString("PasswordValidation")</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">
+                            <i class="fas fa-lock me-1"></i>@LocalizationService.GetString("NewPassword")
+                        </label>
+                        <input type="password" class="form-control" id="newPassword" required 
+                               style="border-radius: 10px; border: 2px solid #e0e0e0;"
+                               placeholder="@LocalizationService.GetString("EnterNewPassword")"
+                               minlength="8">
+                        <div class="invalid-feedback">@LocalizationService.GetString("PasswordMinLength")</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">
+                            <i class="fas fa-lock me-1"></i>@LocalizationService.GetString("ConfirmNewPassword")
+                        </label>
+                        <input type="password" class="form-control" id="confirmPassword" required 
+                               style="border-radius: 10px; border: 2px solid #e0e0e0;"
+                               placeholder="@LocalizationService.GetString("ConfirmNewPasswordPlaceholder")"
+                               minlength="8">
+                        <div class="invalid-feedback">@LocalizationService.GetString("PasswordsMustMatch")</div>
+                    </div>
+
+                    <div id="passwordStrength" class="mb-3" style="display: none;">
+                        <small class="text-muted">@LocalizationService.GetString("PasswordStrength"):</small>
+                        <div class="progress" style="height: 5px; border-radius: 10px;">
+                            <div id="strengthBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small id="strengthText" class="text-muted"></small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 2px solid #e5e7eb;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">
+                    @LocalizationService.GetString("Cancel")
+                </button>
+                <button type="button" id="savePasswordBtn" class="btn btn-danger" style="border-radius: 10px;">
+                    <span class="btn-text">
+                        <i class="fas fa-save me-2"></i>@LocalizationService.GetString("ChangePasswordBtn")
+                    </span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        @LocalizationService.GetString("Saving")
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/modules/settings/settings.js" asp-append-version="true"></script>
+}
+
