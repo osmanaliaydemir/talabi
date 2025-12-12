@@ -7,7 +7,6 @@ import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
-import 'package:mobile/screens/customer/widgets/category_selection_bottom_sheet.dart';
 
 class PersistentBottomNavBar extends StatefulWidget {
   const PersistentBottomNavBar({super.key});
@@ -175,55 +174,44 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
     );
   }
 
-  void _showCategoryBottomSheet(
+  void _handleCategoryToggle(
     BuildContext context,
     BottomNavProvider bottomNav,
   ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder:
-          (context) => CategorySelectionBottomSheet(
-            currentCategory: bottomNav.selectedCategory,
-            onCategorySelected: (category) {
-              if (bottomNav.selectedCategory == category) return;
+    final currentCategory = bottomNav.selectedCategory;
+    final targetCategory = currentCategory == MainCategory.restaurant
+        ? MainCategory.market
+        : MainCategory.restaurant;
 
-              final cart = Provider.of<CartProvider>(context, listen: false);
-              
-              Navigator.pop(context); // Close bottom sheet first
+    final cart = Provider.of<CartProvider>(context, listen: false);
 
-              if (cart.itemCount > 0) {
-                 final localizations = AppLocalizations.of(context)!;
-                // Show confirmation dialog
-                showDialog(
-                  context: context,
-                  builder:
-                      (context) => CustomConfirmationDialog(
-                        title: localizations.categoryChangeConfirmTitle,
-                        message: localizations.categoryChangeConfirmMessage,
-                        confirmText: localizations.categoryChangeConfirmOk,
-                        cancelText: localizations.categoryChangeConfirmCancel,
-                        icon: Icons.delete_outline,
-                        iconColor: Colors.red,
-                        confirmButtonColor: Colors.red,
-                        onConfirm: () {
-                          Navigator.pop(context); // Close dialog
-                          cart.clear(); // Clear cart
-                          bottomNav
-                            ..setCategory(category)
-                            ..setIndex(0); // Go to home screen
-                        },
-                      ),
-                );
-              } else {
-                bottomNav
-                  ..setCategory(category)
-                  ..setIndex(0); // Go to home screen
-              }
-            },
-          ),
-    );
+    if (cart.itemCount > 0) {
+      final localizations = AppLocalizations.of(context)!;
+      // Show confirmation dialog
+      showDialog(
+        context: context,
+        builder: (context) => CustomConfirmationDialog(
+          title: localizations.categoryChangeConfirmTitle,
+          message: localizations.categoryChangeConfirmMessage,
+          confirmText: localizations.categoryChangeConfirmOk,
+          cancelText: localizations.categoryChangeConfirmCancel,
+          icon: Icons.delete_outline,
+          iconColor: Colors.red,
+          confirmButtonColor: Colors.red,
+          onConfirm: () {
+            Navigator.pop(context); // Close dialog
+            cart.clear(); // Clear cart
+            bottomNav
+              ..setCategory(targetCategory)
+              ..setIndex(0); // Go to home screen
+          },
+        ),
+      );
+    } else {
+      bottomNav
+        ..setCategory(targetCategory)
+        ..setIndex(0); // Go to home screen
+    }
   }
 
   void _onItemTapped(
@@ -260,17 +248,14 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16 : 12,
-          vertical: 10,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(context).primaryColor
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
@@ -308,21 +293,19 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
                   ),
               ],
             ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  label,
-                  style: AppTheme.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: AppTheme.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : AppTheme.textSecondary,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -334,16 +317,28 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
     required BottomNavProvider bottomNav,
     required AppLocalizations localizations,
   }) {
-    final icon = bottomNav.selectedCategory == MainCategory.restaurant
-        ? Icons.restaurant_outlined
-        : Icons.shopping_basket_outlined;
-    final selectedIcon = bottomNav.selectedCategory == MainCategory.restaurant
-        ? Icons.restaurant
-        : Icons.shopping_basket;
+    // Helper to determine target category logic (opposite of current)
+    final isCurrentRestaurant =
+        bottomNav.selectedCategory == MainCategory.restaurant;
+
+    // We show the icon/label of the TARGET category (what we will switch TO)
+    // If current is Restaurant, we show Market icon/label
+    // If current is Market, we show Restaurant icon/label
+    final icon = isCurrentRestaurant
+        ? Icons.storefront_outlined
+        : Icons.restaurant_outlined;
+    final selectedIcon = isCurrentRestaurant
+        ? Icons.storefront
+        : Icons.restaurant;
+
+    // Using hardcoded strings as per current codebase patterns in CategorySelectionBottomSheet
+    // In a full implementation, these should be localized keys
+    final label = isCurrentRestaurant ? 'Market' : 'Restoran';
+
     final isSelected = bottomNav.currentIndex == 1;
 
     return GestureDetector(
-      onTap: () => _showCategoryBottomSheet(context, bottomNav),
+      onTap: () => _handleCategoryToggle(context, bottomNav),
       child: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
@@ -360,17 +355,14 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSelected ? 16 : 12,
-                  vertical: 10,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Theme.of(context).primaryColor
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Stack(
@@ -385,21 +377,21 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
                         ),
                       ],
                     ),
-                    if (isSelected) ...[
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          localizations.category,
-                          style: AppTheme.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: AppTheme.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected
+                              ? Colors.white
+                              : AppTheme.textSecondary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),

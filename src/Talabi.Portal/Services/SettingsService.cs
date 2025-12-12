@@ -50,6 +50,7 @@ public class SettingsService : ISettingsService
                 MinimumOrderAmount = vendor.MinimumOrderAmount ?? 0,
                 DeliveryFee = vendor.DeliveryFee ?? 0,
                 EstimatedDeliveryTime = vendor.EstimatedDeliveryTime ?? 30,
+                BusyStatus = vendor.BusyStatus,
                 IsActive = vendor.IsActive,
                 OpeningHours = vendor.OpeningHours
             };
@@ -76,6 +77,7 @@ public class SettingsService : ISettingsService
             vendor.MinimumOrderAmount = dto.MinimumOrderAmount;
             vendor.DeliveryFee = dto.DeliveryFee;
             vendor.EstimatedDeliveryTime = dto.EstimatedDeliveryTime;
+            vendor.BusyStatus = dto.BusyStatus;
             vendor.IsActive = dto.IsActive;
             vendor.OpeningHours = dto.OpeningHours;
             vendor.UpdatedAt = DateTime.UtcNow;
@@ -87,6 +89,32 @@ public class SettingsService : ISettingsService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating vendor settings");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateBusyStatusAsync(Talabi.Core.Enums.BusyStatus status, CancellationToken ct = default)
+    {
+        try
+        {
+            var vendorId = await GetVendorIdAsync(ct);
+            if (vendorId == null) return false;
+
+            var vendor = await _unitOfWork.Vendors.Query()
+                .FirstOrDefaultAsync(v => v.Id == vendorId.Value, ct);
+
+            if (vendor == null) return false;
+
+            vendor.BusyStatus = status;
+            vendor.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.Vendors.Update(vendor);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating busy status");
             return false;
         }
     }

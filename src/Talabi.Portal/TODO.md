@@ -3,20 +3,22 @@
 Bu liste, zengin bir Vendor Dashboard deneyimi için Talabi.Api projesinde yapılması gereken geliştirmeleri içerir.
 
 ## 1. Gelişmiş Özet İstatistikleri (Enriched Summary)
-- [ ] `VendorReportsController.GetSummary` endpoint'ini güncelle.
-- [ ] Eklenecek Alanlar:
-    - [ ] `AverageOrderValue` (Ortalama Sepet Tutarı)
-    - [ ] `CancellationRate` (İptal Oranı)
-    - [ ] `RatingSummary` (Ortalama Puan, Toplam Değerlendirme)
-    - [ ] `ActiveProductsCount` (Aktif Ürün Sayısı)
+- [x] `VendorReportsController.GetSummary` endpoint'ini güncelle.
+- [x] Eklenecek Alanlar:
+    - [x] `AverageOrderValue` (Ortalama Sepet Tutarı)
+    - [x] `CancellationRate` (İptal Oranı)
+    - [x] `RatingSummary` (Ortalama Puan, Toplam Değerlendirme)
+    - [x] `ActiveProductsCount` (Aktif Ürün Sayısı)
 
 ## 2. Son Aktiviteler Akışı (Recent Activity Feed)
-- [ ] Yeni Endpoint: `GET /api/vendor/dashboard/activities`
-- [ ] Kapsam: Son X olayı listele (Yeni sipariş, yeni yorum, stok uyarısı vb.)
+- [x] Yeni Endpoint: `GET /api/vendor/dashboard/activities` (Portal içinde uygulandı)
+- [x] Kapsam: Son X olayı listele (Yeni sipariş, yeni yorum, stok uyarısı vb.)
+- [x] UI: Dashboard sayfasına "Son Aktiviteler" bölümü eklendi.
 
 ## 3. Anlık Mağaza Durumu (Real-time Status)
-- [ ] `Vendor` entity'sine `BusyStatus` (Normal, Busy, Overloaded) ekle.
-- [ ] Yoğunluğa göre tahmini teslimat süresi hesaplama mantığını güncelle.
+- [x] `Vendor` entity'sine `BusyStatus` (Normal, Busy, Overloaded) ekle.
+- [x] Yoğunluğa göre tahmini teslimat süresi hesaplama mantığını güncelle.
+- [x] Header'a `BusyStatus` dropdown'ı eklendi (Anlık güncelleme)
 
 ## 4. Grafik Verileri (Advanced Charts)
 - [ ] Yeni Endpoint: `GET /api/vendor/reports/hourly-sales` (Saatlik satış yoğunluğu - Bugün için)

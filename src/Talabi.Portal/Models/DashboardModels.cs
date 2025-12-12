@@ -21,8 +21,32 @@ public class HomeViewModel
     public VendorProfileDto Profile { get; set; } = new();
     public VendorSettingsDto Settings { get; set; } = new();
     
-    // Dashboard Stats (API modeline göre eklenebilir)
+    // Dashboard Stats
     public int PendingOrdersCount { get; set; }
     public int CompletedOrdersToday { get; set; }
     public decimal TotalRevenueToday { get; set; }
+    
+    // Enriched Stats
+    public decimal AverageOrderValue { get; set; }
+    public double CancellationRate { get; set; }
+    public int ActiveProductsCount { get; set; }
+    
+    // Activity Feed
+    public List<DashboardActivity> RecentActivities { get; set; } = new();
+}
+
+public class DashboardActivity
+{
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public string Type { get; set; } = string.Empty; // NewOrder, Alert, Info
+    
+    public string GetTimeAgo()
+    {
+        var span = DateTime.UtcNow - CreatedAt;
+        if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes}m ago";
+        if (span.TotalHours < 24) return $"{(int)span.TotalHours}h ago";
+        return $"{(int)span.TotalDays}d ago";
+    }
 }

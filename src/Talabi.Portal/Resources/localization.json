@@ -154,11 +154,6 @@
         "en-US": "orders",
         "ar-SA": "طلبات"
     },
-    "PendingOrders": {
-        "tr-TR": "Bekleyen Siparişler",
-        "en-US": "Pending Orders",
-        "ar-SA": "الطلبات المعلقة"
-    },
     "PendingAction": {
         "tr-TR": "İşlem bekliyor",
         "en-US": "Pending action",
@@ -438,5 +433,255 @@
         "tr-TR": "Hazırlık Süresi",
         "en-US": "Preparation Time",
         "ar-SA": "وقت التحضير"
+    },
+    "StatusNormal": {
+        "tr-TR": "Normal",
+        "en-US": "Normal",
+        "ar-SA": "عادي"
+    },
+    "StatusBusy": {
+        "tr-TR": "Yoğun",
+        "en-US": "Busy",
+        "ar-SA": "مشغول"
+    },
+    "StatusOverloaded": {
+        "tr-TR": "Çok Yoğun",
+        "en-US": "Overloaded",
+        "ar-SA": "مفرط الضغط"
+    },
+    "ChangeStatus": {
+        "tr-TR": "Durumu Değiştir",
+        "en-US": "Change Status",
+        "ar-SA": "تغيير الحالة"
+    },
+    "RecentActivity": {
+        "tr-TR": "Son Aktiviteler",
+        "en-US": "Recent Activity",
+        "ar-SA": "النشاط الأخير"
+    },
+    "NoRecentActivity": {
+        "tr-TR": "Henüz aktivite yok",
+        "en-US": "No recent activity",
+        "ar-SA": "لا يوجد نشاط حديث"
+    },
+    "AppTitle": {
+        "tr-TR": "Talabi Portal",
+        "en-US": "Talabi Portal",
+        "ar-SA": "بوابة طلبي"
+    },
+    "LanguageSelection": {
+        "tr-TR": "Dil Seçimi",
+        "en-US": "Language Selection",
+        "ar-SA": "اختيار اللغة"
+    },
+    "ToggleTheme": {
+        "tr-TR": "Temayı Değiştir",
+        "en-US": "Toggle Theme",
+        "ar-SA": "تبديل المظهر"
+    },
+    "Logout": {
+        "tr-TR": "Çıkış Yap",
+        "en-US": "Logout",
+        "ar-SA": "تسجيل الخروج"
+    },
+    "PendingOrders": {
+        "tr-TR": "Bekleyen Siparişler",
+        "en-US": "Pending Orders",
+        "ar-SA": "الطلبات المعلقة"
+    },
+    "Categories": {
+        "tr-TR": "Kategoriler",
+        "en-US": "Categories",
+        "ar-SA": "الفئات"
+    },
+    "Reviews & Ratings": {
+        "tr-TR": "Yorumlar & Puanlar",
+        "en-US": "Reviews & Ratings",
+        "ar-SA": "المراجعات والتقييمات"
+    },
+    "Product Reviews": {
+        "tr-TR": "Ürün Yorumları",
+        "en-US": "Product Reviews",
+        "ar-SA": "مراجعات المنتج"
+    },
+    "Customer Reviews": {
+        "tr-TR": "Müşteri Yorumları",
+        "en-US": "Customer Reviews",
+        "ar-SA": "مراجعات العملاء"
+    },
+    "Courier Reviews": {
+        "tr-TR": "Kurye Yorumları",
+        "en-US": "Courier Reviews",
+        "ar-SA": "مراجعات السائق"
+    },
+    "Review Dashboard": {
+        "tr-TR": "Yorum Paneli",
+        "en-US": "Review Dashboard",
+        "ar-SA": "لوحة المراجعات"
+    },
+    "Payments": {
+        "tr-TR": "Ödemeler",
+        "en-US": "Payments",
+        "ar-SA": "المدفوعات"
+    },
+    "Reports & Analytics": {
+        "tr-TR": "Raporlar & Analiz",
+        "en-US": "Reports & Analytics",
+        "ar-SA": "التقارير والتحليلات"
+    },
+    "Sales Dashboard": {
+        "tr-TR": "Satış Paneli",
+        "en-US": "Sales Dashboard",
+        "ar-SA": "لوحة المبيعات"
+    },
+    "Revenue Analytics": {
+        "tr-TR": "Gelir Analizi",
+        "en-US": "Revenue Analytics",
+        "ar-SA": "تحليل الإيرادات"
+    },
+    "Customer Analytics": {
+        "tr-TR": "Müşteri Analizi",
+        "en-US": "Customer Analytics",
+        "ar-SA": "تحليل العملاء"
+    },
+    "Product Performance": {
+        "tr-TR": "Ürün Performansı",
+        "en-US": "Product Performance",
+        "ar-SA": "أداء المنتج"
+    },
+    "InventoryAnalytics": {
+        "tr-TR": "Envanter Analizi",
+        "en-US": "Inventory Analytics",
+        "ar-SA": "تحليل المخزون"
+    },
+    "SpecialHolidays": {
+        "tr-TR": "Özel Tatiller",
+        "en-US": "Special Holidays",
+        "ar-SA": "العطلات الخاصة"
+    },
+    "DeliveryZones": {
+        "tr-TR": "Teslimat Bölgeleri",
+        "en-US": "Delivery Zones",
+        "ar-SA": "مناطق التوصيل"
+    },
+    "Delivery Optimization": {
+        "tr-TR": "Teslimat Optimizasyonu",
+        "en-US": "Delivery Optimization",
+        "ar-SA": "تحسين التوصيل"
+    },
+    "Capacity": {
+        "tr-TR": "Kapasite",
+        "en-US": "Capacity",
+        "ar-SA": "السعة"
+    },
+    "Routes": {
+        "tr-TR": "Rotalar",
+        "en-US": "Routes",
+        "ar-SA": "المسارات"
+    },
+    "Notifications": {
+        "tr-TR": "Bildirimler",
+        "en-US": "Notifications",
+        "ar-SA": "الإشعارات"
+    },
+    "Documents": {
+        "tr-TR": "Belgeler",
+        "en-US": "Documents",
+        "ar-SA": "المستندات"
+    },
+    "FileManager": {
+        "tr-TR": "Dosya Yöneticisi",
+        "en-US": "File Manager",
+        "ar-SA": "مدير الملفات"
+    },
+    "RealtimeTracking": {
+        "tr-TR": "Canlı Takip",
+        "en-US": "Real-time Tracking",
+        "ar-SA": "التتبع المباشر"
+    },
+    "UserSelfService": {
+        "tr-TR": "Kullanıcı İşlemleri",
+        "en-US": "User Self Service",
+        "ar-SA": "الخدمة الذاتية للمستخدم"
+    },
+    "AuditLoggingCenter": {
+        "tr-TR": "Denetim Kayıtları",
+        "en-US": "Audit Logging Center",
+        "ar-SA": "مركز سجلات التدقيق"
+    },
+    "PlatformAdminCenter": {
+        "tr-TR": "Platform Yönetimi",
+        "en-US": "Platform Admin Center",
+        "ar-SA": "مركز إدارة المنصة"
+    },
+    "GeoAnalytics": {
+        "tr-TR": "Coğrafi Analiz",
+        "en-US": "Geo Analytics",
+        "ar-SA": "التحليل الجغرافي"
+    },
+    "Onboarding": {
+        "tr-TR": "Başlangıç Eğitimi",
+        "en-US": "Onboarding",
+        "ar-SA": "التأهيل"
+    },
+    "VendorSettings": {
+        "tr-TR": "Restoran Ayarları",
+        "en-US": "Vendor Settings",
+        "ar-SA": "إعدادات المتجر"
+    },
+    "MinOrderAmount": {
+        "tr-TR": "Min. Sipariş Tutarı",
+        "en-US": "Min. Order Amount",
+        "ar-SA": "الحد الأدنى للطلب"
+    },
+    "DeliveryFee": {
+        "tr-TR": "Teslimat Ücreti",
+        "en-US": "Delivery Fee",
+        "ar-SA": "رسوم التوصيل"
+    },
+    "EstDeliveryTime": {
+        "tr-TR": "Tahmini Teslimat Süresi",
+        "en-US": "Est. Delivery Time",
+        "ar-SA": "وقت التوصيل المقدر"
+    },
+    "OpeningHours": {
+        "tr-TR": "Çalışma Saatleri",
+        "en-US": "Opening Hours",
+        "ar-SA": "ساعات العمل"
+    },
+    "StoreOpen": {
+        "tr-TR": "Dükkan Açık",
+        "en-US": "Store Open",
+        "ar-SA": "المتجر مفتوح"
+    },
+    "SystemSettings": {
+        "tr-TR": "Sistem Ayarları",
+        "en-US": "System Settings",
+        "ar-SA": "إعدادات النظام"
+    },
+    "OrderUpdates": {
+        "tr-TR": "Sipariş Güncellemeleri",
+        "en-US": "Order Updates",
+        "ar-SA": "تحديثات الطلب"
+    },
+    "OrderUpdatesDesc": {
+        "tr-TR": "Yeni siparişler için bildirim al",
+        "en-US": "Receive notifications for new orders",
+        "ar-SA": "تلقي إشعارات للطلبات الجديدة"
+    },
+    "Promotions": {
+        "tr-TR": "Promosyonlar",
+        "en-US": "Promotions",
+        "ar-SA": "العروض الترويجية"
+    },
+    "NewFeatures": {
+        "tr-TR": "Yeni Özellikler",
+        "en-US": "New Features",
+        "ar-SA": "ميزات جديدة"
+    },
+    "Saved": {
+        "tr-TR": "Kaydedildi",
+        "en-US": "Saved",
+        "ar-SA": "تم الحفظ"
     }
 }

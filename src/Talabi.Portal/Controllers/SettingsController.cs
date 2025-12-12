@@ -60,4 +60,14 @@ public class SettingsController : Controller
 
         return Json(new { success = false, message = "Güncelleme başarısız." });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateBusyStatus([FromBody] Talabi.Core.Enums.BusyStatus status)
+    {
+        var success = await _settingsService.UpdateBusyStatusAsync(status);
+        if (success)
+            return Json(new { success = true, message = "Durum güncellendi." });
+
+        return Json(new { success = false, message = "Güncelleme başarısız." });
+    }
 }

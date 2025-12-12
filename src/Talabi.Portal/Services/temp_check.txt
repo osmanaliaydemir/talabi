@@ -1,0 +1,1 @@
+I will read the OrderStatus enum to ensure I use the correct enum values.

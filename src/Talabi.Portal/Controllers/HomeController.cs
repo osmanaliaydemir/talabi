@@ -19,7 +19,8 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var viewModel = new HomeViewModel();
+        // İstatistikleri servisten çek (Enriched Summary dahil)
+        var viewModel = await _homeService.GetDashboardStatsAsync();
         
         // Profil bilgilerini çek
         var profile = await _homeService.GetProfileAsync();

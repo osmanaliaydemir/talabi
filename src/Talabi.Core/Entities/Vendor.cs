@@ -26,6 +26,7 @@ public class Vendor : BaseEntity
     public decimal? MinimumOrderAmount { get; set; }
     public decimal? DeliveryFee { get; set; }
     public int? EstimatedDeliveryTime { get; set; } // in minutes
+    public BusyStatus BusyStatus { get; set; } = BusyStatus.Normal;
     public bool IsActive { get; set; } = true;
     public string? OpeningHours { get; set; } // JSON format
 
