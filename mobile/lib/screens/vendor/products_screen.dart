@@ -8,6 +8,7 @@ import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
 //Todo: Remove this import OAA
 import 'package:mobile/screens/customer/widgets/product_card.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 
 class VendorProductsScreen extends StatefulWidget {
   const VendorProductsScreen({super.key});
@@ -213,22 +214,16 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
     final localizations = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.vendorProductsDeleteTitle),
-        content: Text(
-          localizations.vendorProductsDeleteConfirmation(product.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(localizations.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(localizations.delete),
-          ),
-        ],
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations.vendorProductsDeleteTitle,
+        message: localizations.vendorProductsDeleteConfirmation(product.name),
+        confirmText: localizations.delete,
+        cancelText: localizations.cancel,
+        icon: Icons.delete_outline,
+        iconColor: Colors.red,
+        confirmButtonColor: Colors.red,
+        onConfirm: () => Navigator.pop(context, true),
+        onCancel: () => Navigator.pop(context, false),
       ),
     );
 

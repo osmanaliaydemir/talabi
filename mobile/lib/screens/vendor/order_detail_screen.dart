@@ -6,6 +6,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
   const VendorOrderDetailScreen({super.key, required this.orderId});
@@ -53,103 +54,16 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.check_circle_outline,
-                      color: Colors.green.shade700,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          localizations.acceptOrderTitle,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          localizations.acceptOrderConfirmation,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.grey[300]!),
-                      ),
-                    ),
-                    child: Text(
-                      localizations.cancel,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      localizations.acceptOrder,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations.acceptOrderTitle,
+        message: localizations.acceptOrderConfirmation,
+        confirmText: localizations.acceptOrder,
+        cancelText: localizations.cancel,
+        icon: Icons.check_circle_outline,
+        iconColor: Colors.green.shade700,
+        confirmButtonColor: Colors.green.shade700,
+        onConfirm: () => Navigator.pop(context, true),
+        onCancel: () => Navigator.pop(context, false),
       ),
     );
 
@@ -184,164 +98,83 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.cancel_outlined,
-                        color: Colors.red.shade700,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Sipariş Reddi',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Bu siparişi reddetmek istediğinizden emin misiniz?',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+        builder: (context, setState) => CustomConfirmationDialog(
+          title: 'Sipariş Reddi',
+          message: 'Bu siparişi reddetmek istediğinizden emin misiniz?',
+          confirmText: 'Reddet',
+          cancelText: localizations.cancel,
+          icon: Icons.cancel_outlined,
+          iconColor: Colors.red.shade700,
+          confirmButtonColor: Colors.red.shade700,
+          isConfirmEnabled: isValid,
+          onConfirm: () => Navigator.pop(context, true),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Red sebebinizi girin (en az 10 karakter):',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Red sebebinizi girin (en az 10 karakter):',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                maxLines: 4,
+                onChanged: (value) {
+                  setState(() {
+                    isValid = value.length >= 10;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Red sebebi...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: reasonController,
-                  maxLines: 4,
-                  onChanged: (value) {
-                    setState(() {
-                      isValid = value.length >= 10;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Red sebebi...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.red.shade700,
-                        width: 2,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    contentPadding: const EdgeInsets.all(16),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.red.shade700,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  contentPadding: const EdgeInsets.all(16),
                 ),
-                if (reasonController.text.isNotEmpty && !isValid)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          size: 16,
+              ),
+              if (reasonController.text.isNotEmpty && !isValid)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Colors.orange.shade700,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'En az 10 karakter girmelisiniz (${reasonController.text.length}/10)',
+                        style: TextStyle(
+                          fontSize: 12,
                           color: Colors.orange.shade700,
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'En az 10 karakter girmelisiniz (${reasonController.text.length}/10)',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: Text(
-                        localizations.cancel,
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: isValid
-                          ? () => Navigator.pop(context, true)
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade700,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Reddet',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
-              ],
-            ),
+            ],
           ),
+          onCancel: () => Navigator.pop(context, false),
         ),
       ),
     );
@@ -375,103 +208,16 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.check_circle_outline,
-                      color: Colors.green.shade700,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Sipariş Durumu Güncelleme',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Siparişi "Hazır" olarak işaretlemek istediğinizden emin misiniz?',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.grey[300]!),
-                      ),
-                    ),
-                    child: Text(
-                      localizations.cancel,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Hazır Olarak İşaretle',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      builder: (context) => CustomConfirmationDialog(
+        title: 'Sipariş Durumu Güncelleme',
+        message: 'Siparişi "Hazır" olarak işaretlemek istediğinizden emin misiniz?',
+        confirmText: 'Hazır Olarak İşaretle',
+        cancelText: localizations.cancel,
+        icon: Icons.check_circle_outline,
+        iconColor: Colors.green.shade700,
+        confirmButtonColor: Colors.green.shade700,
+        onConfirm: () => Navigator.pop(context, true),
+        onCancel: () => Navigator.pop(context, false),
       ),
     );
 
@@ -787,60 +533,20 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              color: AppTheme.primaryOrange,
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                _getLocalizedString(
-                  'assignCourierConfirmationTitle',
-                  'Kurye Atamasını Onayla',
-                ),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+      builder: (BuildContext dialogContext) => CustomConfirmationDialog(
+        title: _getLocalizedString(
+          'assignCourierConfirmationTitle',
+          'Kurye Atama',
         ),
-        content: Text(
-          _getLocalizedString(
-            'assignCourierConfirmationMessage',
-            '$courierName adlı kuryeye bu siparişi atamak istediğinize emin misiniz?',
-          ).replaceAll('{courierName}', courierName),
-          style: const TextStyle(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(
-              localizations?.cancel ?? 'İptal',
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryOrange,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              _getLocalizedString('assign', 'Ata'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+        message:
+            '${_getLocalizedString('assignCourierConfirmationMessage', 'Siparişi {courierName} adlı kuryeye atamak istediğinizden emin misiniz?').replaceFirst('{courierName}', courierName)}',
+        confirmText: _getLocalizedString('assign', 'Atama Yap'),
+        cancelText: localizations?.cancel ?? 'İptal',
+        icon: Icons.check_circle_outline,
+        iconColor: AppTheme.primaryOrange,
+        confirmButtonColor: AppTheme.primaryOrange,
+        onConfirm: () => Navigator.pop(dialogContext, true),
+        onCancel: () => Navigator.pop(dialogContext, false),
       ),
     );
   }
@@ -878,28 +584,16 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     // Confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.auto_awesome, color: Colors.green),
-            SizedBox(width: 12),
-            Text('Otomatik Kurye Ataması'),
-          ],
-        ),
-        content: const Text(
-          'Sistem en yakın ve en uygun kuryeyi otomatik olarak atayacak. Devam etmek istiyor musunuz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Ata'),
-          ),
-        ],
+      builder: (context) => CustomConfirmationDialog(
+        title: 'Otomatik Kurye Ataması',
+        message: 'Sistem en yakın ve en uygun kuryeyi otomatik olarak atayacak. Devam etmek istiyor musunuz?',
+        confirmText: 'Evet, Ata',
+        cancelText: 'Vazgeç',
+        icon: Icons.auto_awesome,
+        iconColor: Colors.green,
+        confirmButtonColor: Colors.green,
+        onConfirm: () => Navigator.pop(context, true),
+        onCancel: () => Navigator.pop(context, false),
       ),
     );
 

@@ -433,6 +433,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get clearCartSuccess => 'تم تفريغ السلة بنجاح';
 
   @override
+  String get categoryChangeConfirmTitle => 'تغيير الفئة';
+
+  @override
+  String get categoryChangeConfirmMessage =>
+      'سيؤدي تغيير الفئة إلى مسح المنتجات الموجودة في سلتك.';
+
+  @override
+  String get categoryChangeConfirmOk => 'تأكيد';
+
+  @override
+  String get categoryChangeConfirmCancel => 'إلغاء';
+
+  @override
   String productByVendor(Object vendorName) {
     return 'بواسطة $vendorName';
   }

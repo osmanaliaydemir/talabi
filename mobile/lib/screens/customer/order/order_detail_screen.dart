@@ -11,6 +11,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -61,46 +62,41 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final localizations = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.cancelOrder),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(localizations.cancelReasonDescription),
-            const SizedBox(height: 16),
-            TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                hintText: localizations.cancelReason,
-                border: const OutlineInputBorder(),
-              ),
-              maxLines: 3,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return CustomConfirmationDialog(
+            title: localizations.cancelOrder,
+            message: '',
+            confirmText: localizations.cancelOrder,
+            cancelText: localizations.cancel,
+            icon: Icons.cancel_outlined,
+            iconColor: Colors.red,
+            confirmButtonColor: Colors.red,
+            isConfirmEnabled: reasonController.text.length >= 10,
+            onConfirm: () => Navigator.pop(context, true),
+            onCancel: () => Navigator.pop(context, false),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(localizations.cancelReasonDescription),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: reasonController,
+                  decoration: InputDecoration(
+                    hintText: localizations.cancelReason,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                  maxLines: 3,
+                  onChanged: (value) => setState(() {}),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(localizations.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              if (reasonController.text.length < 10) {
-                ToastMessage.show(
-                  context,
-                  message: localizations.cancelReasonDescription,
-                  isSuccess: false,
-                );
-                return;
-              }
-              Navigator.pop(context, true);
-            },
-            child: Text(
-              localizations.cancelOrder,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
+          );
+        }
       ),
     );
 
@@ -139,48 +135,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.cancelItem),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '${localizations.cancelReasonDescription}\n\n${item.productName}',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return CustomConfirmationDialog(
+            title: localizations.cancelItem,
+            message: '',
+            confirmText: localizations.cancelItem,
+            cancelText: localizations.cancel,
+            icon: Icons.remove_shopping_cart_outlined,
+            iconColor: Colors.red,
+            confirmButtonColor: Colors.red,
+            isConfirmEnabled: reasonController.text.length >= 10,
+            onConfirm: () => Navigator.pop(context, true),
+            onCancel: () => Navigator.pop(context, false),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${localizations.cancelReasonDescription}\n\n${item.productName}',
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: reasonController,
+                  decoration: InputDecoration(
+                    hintText: localizations.cancelReason,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                  maxLines: 3,
+                  onChanged: (value) => setState(() {}),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                hintText: localizations.cancelReason,
-                border: const OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(localizations.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              if (reasonController.text.length < 10) {
-                ToastMessage.show(
-                  context,
-                  message: localizations.cancelReasonDescription,
-                  isSuccess: false,
-                );
-                return;
-              }
-              Navigator.pop(context, true);
-            },
-            child: Text(
-              localizations.cancelItem,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
+          );
+        }
       ),
     );
 

@@ -10,6 +10,7 @@ import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class CourierProfileScreen extends StatefulWidget {
@@ -418,25 +419,17 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             LoggerService().debug('CourierProfileScreen: Logout tapped');
             final confirm = await showDialog<bool>(
               context: context,
-              builder: (context) => AlertDialog(
-                title: Text(localizations?.logout ?? 'Çıkış Yap'),
-                content: Text(
-                  localizations?.logoutConfirm ??
-                      'Çıkış yapmak istediğine emin misin?',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: Text(localizations?.cancel ?? 'İptal'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text(
-                      localizations?.logout ?? 'Çıkış Yap',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ],
+              builder: (context) => CustomConfirmationDialog(
+                title: localizations?.logout ?? 'Çıkış Yap',
+                message: localizations?.logoutConfirm ??
+                    'Çıkış yapmak istediğine emin misin?',
+                confirmText: localizations?.logout ?? 'Çıkış Yap',
+                cancelText: localizations?.cancel ?? 'İptal',
+                icon: Icons.logout,
+                iconColor: Colors.red,
+                confirmButtonColor: Colors.red,
+                onConfirm: () => Navigator.pop(context, true),
+                onCancel: () => Navigator.pop(context, false),
               ),
             );
 

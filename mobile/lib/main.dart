@@ -25,6 +25,8 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:mobile/firebase_options.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -44,7 +46,9 @@ Future<void> main() async {
 
   // Initialize Firebase with error handling
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
     // Initialize Firebase Analytics
     MyApp._initializeFirebaseAnalytics();

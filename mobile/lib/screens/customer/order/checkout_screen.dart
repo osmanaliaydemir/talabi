@@ -9,6 +9,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -163,75 +164,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         // Show error dialog
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Sipariş Oluşturulamadı',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    e.toString().replaceAll('Exception: ', ''),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.red.shade900,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Lütfen bilgilerinizi kontrol edip tekrar deneyin.',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  localizations.ok,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+          builder: (context) => CustomConfirmationDialog(
+            title: 'Sipariş Oluşturulamadı',
+            message: 'Lütfen bilgilerinizi kontrol edip tekrar deneyin.',
+            confirmText: localizations.ok,
+            cancelText: '', // Not shown when onCancel is null
+            icon: Icons.error_outline,
+            iconColor: Colors.red,
+            confirmButtonColor: AppTheme.primaryOrange, // Or red? Keeping consistent with action or error? The original had TextButton 'OK'. Let's use Red for error.
+            // Original had TextButton for OK. CustomConfirmationDialog uses ElevatedButton for confirm.
+            // Let's use primaryOrange for 'OK' as it is a safe action (dismiss), or Red because it's an error state?
+            // The icon is red.
+            // Let's use primaryOrange for the button to acknowledge.
+            onConfirm: () => Navigator.pop(context),
+            content: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                e.toString().replaceAll('Exception: ', ''),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.red.shade900,
+                  height: 1.4,
                 ),
               ),
-            ],
+            ),
           ),
         );
       }

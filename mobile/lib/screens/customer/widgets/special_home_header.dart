@@ -247,10 +247,10 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
           ),
 
           // 5. Search Bar (Overlapping)
-          Positioned.directional(
-            textDirection: textDirection,
-            top: 255,
-            start: 43,
+          Positioned(
+            top: 265,
+            left: 50, // Add padding from left
+            right: 50, // Add padding from right to ensure centering
             child: GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -259,8 +259,8 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                 );
               },
               child: Container(
-                width: 320,
                 height: 50,
+                // Removed fixed width: 320 to allow it to be responsive
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(1000),

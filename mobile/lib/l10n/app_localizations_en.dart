@@ -435,6 +435,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearCartSuccess => 'Cart cleared successfully';
 
   @override
+  String get categoryChangeConfirmTitle => 'Category Change';
+
+  @override
+  String get categoryChangeConfirmMessage =>
+      'Changing category will clear your cart items.';
+
+  @override
+  String get categoryChangeConfirmOk => 'Confirm';
+
+  @override
+  String get categoryChangeConfirmCancel => 'Cancel';
+
+  @override
   String productByVendor(Object vendorName) {
     return 'By $vendorName';
   }

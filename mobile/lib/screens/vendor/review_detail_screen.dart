@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/review.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 
 class VendorReviewDetailScreen extends StatefulWidget {
   const VendorReviewDetailScreen({
@@ -72,23 +73,17 @@ class _VendorReviewDetailScreenState extends State<VendorReviewDetailScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations?.rejectReview ?? 'Yorumu Reddet'),
-        content: Text(
-          localizations?.rejectReviewConfirmation ??
-              'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(localizations?.cancel ?? 'İptal'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(localizations?.reject ?? 'Reddet'),
-          ),
-        ],
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations?.rejectReview ?? 'Yorumu Reddet',
+        message: localizations?.rejectReviewConfirmation ??
+            'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+        confirmText: localizations?.reject ?? 'Reddet',
+        cancelText: localizations?.cancel ?? 'İptal',
+        icon: Icons.cancel_outlined,
+        iconColor: Colors.red,
+        confirmButtonColor: Colors.red,
+        onConfirm: () => Navigator.pop(context, true),
+        onCancel: () => Navigator.pop(context, false),
       ),
     );
 

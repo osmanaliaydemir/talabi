@@ -163,7 +163,12 @@
   "clearCartMessage": "هل تريد إزالة جميع المنتجات من السلة؟",
   "clearCartNo": "لا",
   "clearCartYes": "نعم",
+  "clearCartYes": "نعم",
   "clearCartSuccess": "تم تفريغ السلة بنجاح",
+  "categoryChangeConfirmTitle": "تغيير الفئة",
+  "categoryChangeConfirmMessage": "سيؤدي تغيير الفئة إلى مسح المنتجات الموجودة في سلتك.",
+  "categoryChangeConfirmOk": "تأكيد",
+  "categoryChangeConfirmCancel": "إلغاء",
   "productByVendor": "بواسطة {vendorName}",
   "@productByVendor": {
     "placeholders": {

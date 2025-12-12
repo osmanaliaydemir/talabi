@@ -56,7 +56,11 @@ class NotificationService {
     // 3. Get FCM Token (only if Firebase is available)
     if (_firebaseMessaging != null) {
       try {
-        final token = await _firebaseMessaging!.getToken();
+        // Add timeout to prevent app hang on startup if APNS is not ready
+        final token = await _firebaseMessaging!.getToken().timeout(
+          const Duration(seconds: 5),
+        );
+
         LoggerService().debug('🔥 FCM Token: $token');
 
         if (token != null) {
@@ -70,6 +74,7 @@ class NotificationService {
               e,
               stackTrace,
             );
+            // Don't rethrow, just log and continue
           }
         }
 
@@ -87,8 +92,10 @@ class NotificationService {
           _handleBackgroundMessageTap(initialMessage);
         }
       } catch (e, stackTrace) {
-        LoggerService().error(
-          'Error initializing Firebase Messaging',
+        // Log as warning instead of error to avoid alarming user on startup
+        // This is common on Simulators or if Push Capability is missing
+        LoggerService().warning(
+          'Warning: Firebase Messaging initialization failed (Notifications might be disabled). Error: $e',
           e,
           stackTrace,
         );

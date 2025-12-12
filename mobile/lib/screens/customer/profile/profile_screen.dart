@@ -16,6 +16,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -428,166 +429,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.logout,
-                        color: Colors.red.shade700,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            localizations.logoutConfirmTitle,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            localizations.logoutConfirmMessage,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: Text(
-                        localizations.cancel,
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () async {
-                        // Dialog'u kapat
-                        Navigator.of(dialogContext).pop();
+        return CustomConfirmationDialog(
+          title: localizations.logoutConfirmTitle,
+          message: localizations.logoutConfirmMessage,
+          confirmText: localizations.logout,
+          cancelText: localizations.cancel,
+          icon: Icons.logout,
+          iconColor: Colors.red.shade700,
+          confirmButtonColor: Colors.red.shade700,
+          onConfirm: () async {
+            // Dialog'u kapat
+            Navigator.of(dialogContext).pop();
 
-                        // Navigator'ı logout öncesi kaydet (context dispose edilmeden önce)
-                        NavigatorState? navigator;
-                        try {
-                          navigator = Navigator.of(parentContext);
-                        } catch (e) {
-                          LoggerService().error(
-                            'Error getting navigator: $e',
-                            e,
-                          );
-                          return; // Navigator bulunamazsa işlemi durdur
-                        }
+            // Navigator'ı logout öncesi kaydet (context dispose edilmeden önce)
+            NavigatorState? navigator;
+            try {
+              navigator = Navigator.of(parentContext);
+            } catch (e) {
+              LoggerService().error(
+                'Error getting navigator: $e',
+                e,
+              );
+              return; // Navigator bulunamazsa işlemi durdur
+            }
 
-                        // Reset bottom navigation index
-                        if (mounted) {
-                          try {
-                            Provider.of<BottomNavProvider>(
-                              parentContext,
-                              listen: false,
-                            ).reset();
-                          } catch (e) {
-                            // Provider context'i artık geçerli değilse hata yok sayılır
-                            LoggerService().error(
-                              'Error resetting bottom nav: $e',
-                              e,
-                            );
-                          }
-                        }
+            // Reset bottom navigation index
+            if (mounted) {
+              try {
+                Provider.of<BottomNavProvider>(
+                  parentContext,
+                  listen: false,
+                ).reset();
+              } catch (e) {
+                // Provider context'i artık geçerli değilse hata yok sayılır
+                LoggerService().error(
+                  'Error resetting bottom nav: $e',
+                  e,
+                );
+              }
+            }
 
-                        // Logout öncesi role bilgisini al
-                        final role = auth.role;
+            // Logout öncesi role bilgisini al
+            final role = auth.role;
 
-                        // ÖNCE login sayfasına yönlendir (keşfet sayfasına gitmesin)
-                        try {
-                          // Role'e göre ilgili login sayfasına yönlendir
-                          if (role?.toLowerCase() == 'courier') {
-                            navigator.pushNamedAndRemoveUntil(
-                              '/courier/login',
-                              (route) => false,
-                            );
-                          } else if (role?.toLowerCase() == 'vendor') {
-                            navigator.pushNamedAndRemoveUntil(
-                              '/vendor/login',
-                              (route) => false,
-                            );
-                          } else {
-                            navigator.pushNamedAndRemoveUntil(
-                              '/login',
-                              (route) => false,
-                            );
-                          }
-                        } catch (e) {
-                          // Navigator artık geçerli değilse hata yok sayılır
-                          LoggerService().error(
-                            'Error navigating to login: $e',
-                            e,
-                          );
-                        }
+            // ÖNCE login sayfasına yönlendir (keşfet sayfasına gitmesin)
+            try {
+              // Role'e göre ilgili login sayfasına yönlendir
+              if (role?.toLowerCase() == 'courier') {
+                navigator.pushNamedAndRemoveUntil(
+                  '/courier/login',
+                  (route) => false,
+                );
+              } else if (role?.toLowerCase() == 'vendor') {
+                navigator.pushNamedAndRemoveUntil(
+                  '/vendor/login',
+                  (route) => false,
+                );
+              } else {
+                navigator.pushNamedAndRemoveUntil(
+                  '/login',
+                  (route) => false,
+                );
+              }
+            } catch (e) {
+              // Navigator artık geçerli değilse hata yok sayılır
+              LoggerService().error(
+                'Error navigating to login: $e',
+                e,
+              );
+            }
 
-                        // SONRA logout işlemini yap (yönlendirme yapıldıktan sonra)
-                        // Bu sayede auth state değişikliği login sayfasında olur, keşfet sayfasına gitmez
-                        await auth.logout();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade700,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        localizations.logout,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+            // SONRA logout işlemini yap (yönlendirme yapıldıktan sonra)
+            // Bu sayede auth state değişikliği login sayfasında olur, keşfet sayfasına gitmez
+            await auth.logout();
+          },
+          onCancel: () => Navigator.of(dialogContext).pop(),
         );
       },
     );

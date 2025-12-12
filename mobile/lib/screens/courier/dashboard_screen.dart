@@ -14,6 +14,7 @@ import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class CourierDashboardScreen extends StatefulWidget {
@@ -1600,64 +1601,63 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          localizations?.rejectOrderTitle ??
-              localizations?.rejectOrder ??
-              'Reject Order',
-        ),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                localizations?.rejectReasonDescription ??
-                    'Please enter the reason for rejecting this order (minimum 1 character):',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: reasonController,
-                decoration: InputDecoration(
-                  hintText: localizations?.rejectReasonHint ?? 'Reason...',
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.all(12),
-                ),
-                maxLines: 4,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return localizations?.rejectReasonDescription ??
-                        'Reason is required (minimum 1 character)';
-                  }
-                  return null;
-                },
-                autofocus: true,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(localizations?.cancel ?? 'Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return CustomConfirmationDialog(
+            title: localizations?.rejectOrderTitle ??
+                localizations?.rejectOrder ??
+                'Reject Order',
+            message: '',
+            confirmText: localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
+            cancelText: localizations?.cancel ?? 'Cancel',
+            icon: Icons.cancel_outlined,
+            iconColor: Colors.red,
+            confirmButtonColor: Colors.red,
+            isConfirmEnabled: reasonController.text.trim().isNotEmpty,
+            onConfirm: () {
               if (formKey.currentState?.validate() ?? false) {
                 Navigator.of(context).pop(true);
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            onCancel: () => Navigator.of(context).pop(false),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations?.rejectReasonDescription ??
+                        'Please enter the reason for rejecting this order (minimum 1 character):',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: reasonController,
+                    decoration: InputDecoration(
+                      hintText: localizations?.rejectReasonHint ?? 'Reason...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    maxLines: 4,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return localizations?.rejectReasonDescription ??
+                            'Reason is required';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
             ),
-            child: Text(
-              localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
-            ),
-          ),
-        ],
+          );
+        }
       ),
     );
 
@@ -1677,28 +1677,17 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations?.acceptOrderTitle ?? 'Accept Order'),
-        content: Text(
-          localizations?.acceptOrderConfirmation ??
-              'Are you sure you want to accept this order?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(localizations?.cancel ?? 'Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
-            ),
-          ),
-        ],
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations?.acceptOrderTitle ?? 'Accept Order',
+        message: localizations?.acceptOrderConfirmation ??
+            'Are you sure you want to accept this order?',
+        confirmText: localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
+        cancelText: localizations?.cancel ?? 'Cancel',
+        icon: Icons.check_circle_outline,
+        iconColor: Colors.teal,
+        confirmButtonColor: Colors.teal,
+        onConfirm: () => Navigator.of(context).pop(true),
+        onCancel: () => Navigator.of(context).pop(false),
       ),
     );
 

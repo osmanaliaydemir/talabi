@@ -165,6 +165,10 @@
   "clearCartNo": "Hayır",
   "clearCartYes": "Evet",
   "clearCartSuccess": "Sepet başarıyla temizlendi",
+  "categoryChangeConfirmTitle": "Kategori Değişimi",
+  "categoryChangeConfirmMessage": "Kategori değişimi yaptığınızda sepetinizdeki ürünler silinecektir.",
+  "categoryChangeConfirmOk": "Onayla",
+  "categoryChangeConfirmCancel": "İptal Et",
   "productByVendor": "Satıcı: {vendorName}",
   "@productByVendor": {
     "placeholders": {

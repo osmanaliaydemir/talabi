@@ -164,6 +164,10 @@
   "clearCartNo": "No",
   "clearCartYes": "Yes",
   "clearCartSuccess": "Cart cleared successfully",
+  "categoryChangeConfirmTitle": "Category Change",
+  "categoryChangeConfirmMessage": "Changing category will clear your cart items.",
+  "categoryChangeConfirmOk": "Confirm",
+  "categoryChangeConfirmCancel": "Cancel",
   "productByVendor": "By {vendorName}",
   "@productByVendor": {
     "placeholders": {

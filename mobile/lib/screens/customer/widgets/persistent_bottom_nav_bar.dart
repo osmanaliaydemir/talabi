@@ -6,6 +6,7 @@ import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/providers/cart_provider.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/screens/customer/widgets/category_selection_bottom_sheet.dart';
 
 class PersistentBottomNavBar extends StatefulWidget {
@@ -182,13 +183,46 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => CategorySelectionBottomSheet(
-        currentCategory: bottomNav.selectedCategory,
-        onCategorySelected: (category) {
-          bottomNav.setCategory(category);
-          Navigator.pop(context);
-        },
-      ),
+      builder:
+          (context) => CategorySelectionBottomSheet(
+            currentCategory: bottomNav.selectedCategory,
+            onCategorySelected: (category) {
+              if (bottomNav.selectedCategory == category) return;
+
+              final cart = Provider.of<CartProvider>(context, listen: false);
+              
+              Navigator.pop(context); // Close bottom sheet first
+
+              if (cart.itemCount > 0) {
+                 final localizations = AppLocalizations.of(context)!;
+                // Show confirmation dialog
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => CustomConfirmationDialog(
+                        title: localizations.categoryChangeConfirmTitle,
+                        message: localizations.categoryChangeConfirmMessage,
+                        confirmText: localizations.categoryChangeConfirmOk,
+                        cancelText: localizations.categoryChangeConfirmCancel,
+                        icon: Icons.delete_outline,
+                        iconColor: Colors.red,
+                        confirmButtonColor: Colors.red,
+                        onConfirm: () {
+                          Navigator.pop(context); // Close dialog
+                          cart.clear(); // Clear cart
+                          bottomNav
+                            ..setCategory(category)
+                            ..setIndex(0); // Go to home screen
+                        },
+                      ),
+                );
+              } else {
+                bottomNav
+                  ..setCategory(category)
+                  ..setIndex(0); // Go to home screen
+              }
+            },
+          ),
     );
   }
 

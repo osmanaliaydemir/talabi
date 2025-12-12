@@ -910,6 +910,30 @@ abstract class AppLocalizations {
   /// **'Cart cleared successfully'**
   String get clearCartSuccess;
 
+  /// No description provided for @categoryChangeConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Change'**
+  String get categoryChangeConfirmTitle;
+
+  /// No description provided for @categoryChangeConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing category will clear your cart items.'**
+  String get categoryChangeConfirmMessage;
+
+  /// No description provided for @categoryChangeConfirmOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get categoryChangeConfirmOk;
+
+  /// No description provided for @categoryChangeConfirmCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get categoryChangeConfirmCancel;
+
   /// No description provided for @productByVendor.
   ///
   /// In en, this message translates to:

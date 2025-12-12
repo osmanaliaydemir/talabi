@@ -6,6 +6,7 @@ import 'package:mobile/screens/customer/profile/add_edit_address_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
@@ -106,19 +107,16 @@ class _AddressesScreenState extends State<AddressesScreen>
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deleteAddressTitle),
-        content: Text(l10n.deleteAddressConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
-          ),
-        ],
+      builder: (dialogContext) => CustomConfirmationDialog(
+        title: l10n.deleteAddressTitle,
+        message: l10n.deleteAddressConfirm,
+        confirmText: l10n.delete,
+        cancelText: l10n.cancel,
+        icon: Icons.delete_outline,
+        iconColor: Colors.red,
+        confirmButtonColor: Colors.red,
+        onConfirm: () => Navigator.pop(dialogContext, true),
+        onCancel: () => Navigator.pop(dialogContext, false),
       ),
     );
 

@@ -438,6 +438,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get clearCartSuccess => 'Sepet başarıyla temizlendi';
 
   @override
+  String get categoryChangeConfirmTitle => 'Kategori Değişimi';
+
+  @override
+  String get categoryChangeConfirmMessage =>
+      'Kategori değişimi yaptığınızda sepetinizdeki ürünler silinecektir.';
+
+  @override
+  String get categoryChangeConfirmOk => 'Onayla';
+
+  @override
+  String get categoryChangeConfirmCancel => 'İptal Et';
+
+  @override
   String productByVendor(Object vendorName) {
     return 'Satıcı: $vendorName';
   }
