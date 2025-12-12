@@ -7,6 +7,9 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/screens/customer/widgets/shared_header.dart';
 import 'package:intl/intl.dart';
 
+import 'package:provider/provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
+
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key, this.showBackButton = true});
 
@@ -20,16 +23,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final ApiService _apiService = ApiService();
   List<dynamic> _orders = [];
   bool _isLoading = true;
+  int? _selectedVendorType;
 
   @override
-  void initState() {
-    super.initState();
-    _loadOrders();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final bottomNavProvider = Provider.of<BottomNavProvider>(context);
+    final newType = bottomNavProvider.selectedCategory == MainCategory.market
+        ? 2
+        : 1;
+
+    if (_selectedVendorType != newType) {
+      _selectedVendorType = newType;
+      _loadOrders();
+    }
   }
 
   Future<void> _loadOrders() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      final orders = await _apiService.getOrders();
+      final orders = await _apiService.getOrders(
+        vendorType: _selectedVendorType ?? 1,
+      );
       setState(() {
         _orders = orders;
         _isLoading = false;
@@ -66,6 +84,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             icon: Icons.shopping_bag,
             showBackButton: widget.showBackButton,
           ),
+
           // Main Content
           Expanded(
             child: _isLoading

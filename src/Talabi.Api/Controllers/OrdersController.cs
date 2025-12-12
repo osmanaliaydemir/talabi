@@ -98,7 +98,7 @@ public class OrdersController : BaseController
     public async Task<ActionResult<ApiResponse<OrderDto>>> GetOrder(Guid id)
     {
         var userId = UserContext.GetUserId();
-        
+
         // Authorization: User must be authenticated to view orders
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -132,9 +132,10 @@ public class OrdersController : BaseController
     /// <summary>
     /// Kullanıcının tüm siparişlerini getirir
     /// </summary>
+    /// <param name="vendorType">Satıcı türü filtresi (opsiyonel)</param>
     /// <returns>Sipariş listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<OrderDto>>>> GetOrders()
+    public async Task<ActionResult<ApiResponse<List<OrderDto>>>> GetOrders([FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
 
         var userId = UserContext.GetUserId();
@@ -150,6 +151,12 @@ public class OrdersController : BaseController
             .Include(o => o.Vendor)
             .Where(o => o.CustomerId == userId);
 
+        // VendorType filtresi
+        if (vendorType.HasValue)
+        {
+            query = query.Where(o => o.Vendor.Type == vendorType.Value);
+        }
+
         IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.CreatedAt);
 
         // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
@@ -157,7 +164,7 @@ public class OrdersController : BaseController
         // Eğer pagination eklenirse ToPagedResultAsync kullanılabilir
         var orders = await orderedQuery
             .ToListAsync();
-        
+
         var orderDtos = _mapper.Map<List<OrderDto>>(orders);
 
         return Ok(new ApiResponse<List<OrderDto>>(
@@ -174,7 +181,7 @@ public class OrdersController : BaseController
     public async Task<ActionResult<ApiResponse<OrderDetailDto>>> GetOrderDetail(Guid id)
     {
         var userId = UserContext.GetUserId();
-        
+
         // Authorization: User must be authenticated to view order details
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -217,7 +224,7 @@ public class OrdersController : BaseController
     public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(Guid id, UpdateOrderStatusDto dto)
     {
         var userId = UserContext.GetUserId();
-        
+
         // Authorization: User must be authenticated
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -249,7 +256,7 @@ public class OrdersController : BaseController
             // Check if user is a courier assigned to this order
             var courier = await UnitOfWork.Couriers.Query()
                 .Include(c => c.OrderCouriers)
-                .FirstOrDefaultAsync(c => c.UserId == userId && 
+                .FirstOrDefaultAsync(c => c.UserId == userId &&
                     c.OrderCouriers.Any(oc => oc.OrderId == id && oc.IsActive));
 
             if (courier == null)

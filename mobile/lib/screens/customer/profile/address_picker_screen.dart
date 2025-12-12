@@ -152,13 +152,6 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
     return parts.join(', ');
   }
 
-  void _onMapTap(LatLng location) {
-    setState(() {
-      _selectedLocation = location;
-    });
-    _getAddressFromLocation(location);
-  }
-
   void _onCameraMove(CameraPosition position) {
     setState(() {
       _selectedLocation = position.target;
@@ -273,26 +266,15 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                             );
                           }
                         },
-                        onTap: _onMapTap,
+                        onTap: (LatLng location) {
+                          _mapController?.animateCamera(
+                            CameraUpdate.newLatLng(location),
+                          );
+                        },
                         onCameraMove: _onCameraMove,
                         onCameraIdle: _onCameraIdle,
                         myLocationEnabled: true,
                         myLocationButtonEnabled: false,
-                        markers: _selectedLocation != null
-                            ? {
-                                Marker(
-                                  markerId: const MarkerId('selected'),
-                                  position: _selectedLocation!,
-                                  draggable: true,
-                                  onDragEnd: (LatLng newPosition) {
-                                    setState(() {
-                                      _selectedLocation = newPosition;
-                                    });
-                                    _getAddressFromLocation(newPosition);
-                                  },
-                                ),
-                              }
-                            : {},
                       ),
                       // Center indicator
                       const Center(

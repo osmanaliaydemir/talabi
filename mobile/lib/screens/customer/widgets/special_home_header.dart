@@ -198,7 +198,7 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                                 width: 224,
                                 child: Text(
                                   isMarket
-                                      ? 'Market Alışverişin\nKapında'
+                                      ? l10n.marketBannerTitle
                                       : l10n.promotionalBannerTitle,
                                   style: const TextStyle(
                                     color: Colors.white,

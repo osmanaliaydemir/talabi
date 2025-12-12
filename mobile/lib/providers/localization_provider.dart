@@ -47,7 +47,11 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('language', languageCode);
-      await _apiService.updateUserPreferences(language: languageCode);
+
+      final token = prefs.getString('token');
+      if (token != null) {
+        await _apiService.updateUserPreferences(language: languageCode);
+      }
     } catch (e, stackTrace) {
       LoggerService().error('Error saving language', e, stackTrace);
     }
@@ -62,7 +66,11 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('currency', currencyCode);
-      await _apiService.updateUserPreferences(currency: currencyCode);
+
+      final token = prefs.getString('token');
+      if (token != null) {
+        await _apiService.updateUserPreferences(currency: currencyCode);
+      }
     } catch (e, stackTrace) {
       LoggerService().error('Error saving currency', e, stackTrace);
     }
@@ -79,7 +87,11 @@ class LocalizationProvider with ChangeNotifier {
       } else {
         await prefs.remove('timeZone');
       }
-      await _apiService.updateUserPreferences(timeZone: timeZone);
+
+      final token = prefs.getString('token');
+      if (token != null) {
+        await _apiService.updateUserPreferences(timeZone: timeZone);
+      }
     } catch (e, stackTrace) {
       LoggerService().error('Error saving timezone', e, stackTrace);
     }
@@ -92,7 +104,11 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('dateFormat', _dateFormat!);
-      await _apiService.updateUserPreferences(dateFormat: _dateFormat);
+
+      final token = prefs.getString('token');
+      if (token != null) {
+        await _apiService.updateUserPreferences(dateFormat: _dateFormat);
+      }
     } catch (e, stackTrace) {
       LoggerService().error('Error saving date format', e, stackTrace);
     }
@@ -105,7 +121,11 @@ class LocalizationProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('timeFormat', _timeFormat!);
-      await _apiService.updateUserPreferences(timeFormat: _timeFormat);
+
+      final token = prefs.getString('token');
+      if (token != null) {
+        await _apiService.updateUserPreferences(timeFormat: _timeFormat);
+      }
     } catch (e, stackTrace) {
       LoggerService().error('Error saving time format', e, stackTrace);
     }

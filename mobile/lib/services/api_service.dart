@@ -1864,9 +1864,17 @@ class ApiService {
   }
 
   // Orders methods
-  Future<List<dynamic>> getOrders() async {
+  Future<List<dynamic>> getOrders({int? vendorType}) async {
     try {
-      final response = await _dio.get('/orders');
+      final queryParams = <String, dynamic>{};
+      if (vendorType != null) {
+        queryParams['vendorType'] = vendorType;
+      }
+
+      final response = await _dio.get(
+        '/orders',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic>) {
         final apiResponse = ApiResponse.fromJson(

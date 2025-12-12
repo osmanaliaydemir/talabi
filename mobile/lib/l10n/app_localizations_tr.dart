@@ -2392,4 +2392,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String couldNotLaunchMaps(Object error) {
     return 'Haritalar açılamadı: $error';
   }
+
+  @override
+  String get marketBannerTitle => 'Market Alışverişin\nKapında';
 }

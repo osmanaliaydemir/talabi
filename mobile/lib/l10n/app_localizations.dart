@@ -4479,6 +4479,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not launch maps: {error}'**
   String couldNotLaunchMaps(Object error);
+
+  /// No description provided for @marketBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Shopping\nat Your Door'**
+  String get marketBannerTitle;
 }
 
 class _AppLocalizationsDelegate

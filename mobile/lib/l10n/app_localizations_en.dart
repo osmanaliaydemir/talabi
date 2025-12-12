@@ -2395,4 +2395,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String couldNotLaunchMaps(Object error) {
     return 'Could not launch maps: $error';
   }
+
+  @override
+  String get marketBannerTitle => 'Market Shopping\nat Your Door';
 }

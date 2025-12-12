@@ -2368,4 +2368,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String couldNotLaunchMaps(Object error) {
     return 'تعذر فتح الخرائط: $error';
   }
+
+  @override
+  String get marketBannerTitle => 'Market Shopping\nat Your Door';
 }
