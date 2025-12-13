@@ -2395,4 +2395,14 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get marketBannerTitle => 'Market Alışverişin\nKapında';
+
+  @override
+  String get selectCountry => 'Ülke Seçiniz';
+
+  @override
+  String get localityNeighborhood => 'Mahalle';
+
+  @override
+  String get selectCityDistrictWarning =>
+      'Lütfen onaylamak için İl ve İlçe seçiniz.';
 }

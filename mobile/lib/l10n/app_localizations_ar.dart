@@ -2371,4 +2371,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get marketBannerTitle => 'Market Shopping\nat Your Door';
+
+  @override
+  String get selectCountry => 'Select Country';
+
+  @override
+  String get localityNeighborhood => 'Locality / Neighborhood';
+
+  @override
+  String get selectCityDistrictWarning =>
+      'Please select City and District from dropdowns to confirm.';
 }

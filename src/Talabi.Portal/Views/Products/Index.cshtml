@@ -104,7 +104,7 @@
                             <label class="form-label">@LocalizationService.GetString("Price")</label>
                             <div class="input-group">
                                 <input type="number" class="form-control" id="productPrice" step="0.01" min="0" required>
-                                <span class="input-group-text">Min</span>
+                                <span class="input-group-text">@LocalizationService.GetString("Min")</span>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -112,7 +112,7 @@
                             <input type="number" class="form-control" id="productStock" min="0">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">@LocalizationService.GetString("PreparationTime") (dk)</label>
+                            <label class="form-label">@LocalizationService.GetString("PreparationTime") (@LocalizationService.GetString("MinutesAbbr"))</label>
                             <input type="number" class="form-control" id="productPrepTime" min="0">
                         </div>
                     </div>
@@ -120,7 +120,7 @@
                     <div class="mb-3">
                         <label class="form-label">@LocalizationService.GetString("Image") URL</label>
                         <input type="url" class="form-control" id="productImage">
-                        <small class="text-muted">Görsel URL'si giriniz (örn: https://...)</small>
+                        <small class="text-muted">@LocalizationService.GetString("EnterImageUrl")</small>
                     </div>
 
                     <div class="form-check form-switch mb-3">
@@ -299,11 +299,11 @@
                             timer: 1500
                         });
                     } else {
-                        Swal.fire('Hata', response.message || 'Bir hata oluştu', 'error');
+                        Swal.fire('@LocalizationService.GetString("Error")', response.message || '@LocalizationService.GetString("AnErrorOccurred")', 'error');
                     }
                 },
                 error: function() {
-                     Swal.fire('Hata', 'İstek işlenirken hata oluştu', 'error');
+                     Swal.fire('@LocalizationService.GetString("Error")', '@LocalizationService.GetString("RequestError")', 'error');
                 }
             });
         }
@@ -324,11 +324,11 @@
                             refreshTable();
                             Swal.fire(
                                 '@LocalizationService.GetString("Deleted")',
-                                'Ürün silindi.',
+                                '@LocalizationService.GetString("ProductDeleted")',
                                 'success'
                             );
                         } else {
-                            Swal.fire('Hata', response.message, 'error');
+                            Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
                         }
                     });
                 }
@@ -351,7 +351,7 @@
                         title: msg
                     });
                 } else {
-                    Swal.fire('Hata', response.message, 'error');
+                    Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
                 }
             });
         }

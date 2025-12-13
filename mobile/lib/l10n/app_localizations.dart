@@ -4485,6 +4485,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Market Shopping\nat Your Door'**
   String get marketBannerTitle;
+
+  /// No description provided for @selectCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Country'**
+  String get selectCountry;
+
+  /// No description provided for @localityNeighborhood.
+  ///
+  /// In en, this message translates to:
+  /// **'Locality / Neighborhood'**
+  String get localityNeighborhood;
+
+  /// No description provided for @selectCityDistrictWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select City and District from dropdowns to confirm.'**
+  String get selectCityDistrictWarning;
 }
 
 class _AppLocalizationsDelegate

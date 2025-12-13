@@ -1,0 +1,81 @@
+@model List<Talabi.Core.Entities.VendorNotification>
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+
+<div class="d-flex justify-content-between align-items-center px-3 py-3 border-bottom">
+    <h6 class="mb-0 fw-bold text-dark">@LocalizationService.GetString("Notifications")</h6>
+    @if (Model != null && Model.Any(x => !x.IsRead))
+    {
+        <a href="#" class="text-primary small text-decoration-none fw-medium" onclick="event.stopPropagation(); markAllAsReadDropdown()">
+            @LocalizationService.GetString("MarkAllAsRead")
+        </a>
+    }
+</div>
+
+<div class="list-group list-group-flush">
+@if (Model != null && Model.Any())
+{
+    foreach (var item in Model)
+    {
+        <a href="@Url.Action("ReadAndRedirect", "Notifications", new { id = item.Id })" class="list-group-item list-group-item-action border-0 py-3 px-3 position-relative @(!item.IsRead ? "bg-light" : "bg-white")">
+            <div class="d-flex">
+                <div class="flex-shrink-0 me-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border border-1" 
+                        style="width: 40px; height: 40px; 
+                               background-color: @(item.Type == "NewOrder" ? "#e7f1ff" : item.Type == "OrderStatusChanged" ? "#e0f7fa" : item.Type == "NewReview" ? "#fff9db" : "#f8f9fa");
+                               color: @(item.Type == "NewOrder" ? "#0d6efd" : item.Type == "OrderStatusChanged" ? "#0dcaf0" : item.Type == "NewReview" ? "#ffc107" : "#6c757d");">
+                        @if(item.Type == "NewOrder") { <i class="fas fa-shopping-bag"></i> }
+                        else if(item.Type == "OrderStatusChanged") { <i class="fas fa-truck"></i> }
+                        else if(item.Type == "NewReview") { <i class="fas fa-star"></i> }
+                        else { <i class="fas fa-bell"></i> }
+                    </div>
+                </div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold text-dark text-truncate d-block" style="max-width: 180px;">@item.Title</span>
+                        <small class="text-muted ms-2" style="font-size: 0.75rem;">@item.CreatedAt.ToLocalTime().ToString("HH:mm")</small>
+                    </div>
+                    <p class="mb-0 text-secondary small text-truncate" style="line-height: 1.4;">@item.Message</p>
+                </div>
+            </div>
+             @if(!item.IsRead)
+            {
+                <span class="position-absolute top-50 end-0 translate-middle-y me-2 p-1 bg-primary rounded-circle" style="width: 8px; height: 8px;"></span>
+            }
+        </a>
+    }
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="mb-3">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                <i class="fas fa-bell-slash fa-2x text-muted opacity-25"></i>
+            </div>
+        </div>
+        <p class="mb-0 text-muted small fw-medium">@LocalizationService.GetString("NoNotifications")</p>
+    </div>
+}
+</div>
+
+<div class="p-2 bg-light border-top">
+    <a href="@Url.Action("Index", "Notifications")" class="btn btn-outline-primary btn-sm w-100 fw-medium">
+        @LocalizationService.GetString("ViewAllNotifications") 
+    </a>
+</div>
+
+<script>
+    function markAsRead(id) {
+        $.post('/Notifications/MarkAsRead', { id: id }, function() {
+            refreshUnreadBadge();
+            // Optional: visually mark as read instantly without reload
+        });
+        return true; 
+    }
+    
+    function markAllAsReadDropdown() {
+        $.post('/Notifications/MarkAllAsReadAjax', function() {
+            refreshUnreadBadge();
+            loadRecentNotifications(); // Reload dropdown content
+        });
+    }
+</script>

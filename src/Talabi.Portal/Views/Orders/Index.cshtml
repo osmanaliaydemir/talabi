@@ -11,123 +11,109 @@
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("Filter")</h6>
-        </div>
-        <div class="card-body">
+    <!-- Status Tabs -->
+    <div class="d-flex overflow-auto pb-3 mb-3">
+        <ul class="nav nav-pills flex-nowrap">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-status="" onclick="switchTab(this, '')">
+                    <i class="fas fa-th-large me-2"></i>@LocalizationService.GetString("All")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="Pending" onclick="switchTab(this, 'Pending')">
+                    <i class="fas fa-clock me-2"></i>@LocalizationService.GetString("Pending")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="Preparing" onclick="switchTab(this, 'Preparing')">
+                    <i class="fas fa-fire me-2"></i>@LocalizationService.GetString("Preparing")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="Ready" onclick="switchTab(this, 'Ready')">
+                    <i class="fas fa-check-circle me-2"></i>@LocalizationService.GetString("Ready")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="Assigned" onclick="switchTab(this, 'Assigned')">
+                    <i class="fas fa-motorcycle me-2"></i>@LocalizationService.GetString("Assigned")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="OutForDelivery" onclick="switchTab(this, 'OutForDelivery')">
+                    <i class="fas fa-route me-2"></i>@LocalizationService.GetString("OutForDelivery")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="Delivered" onclick="switchTab(this, 'Delivered')">
+                    <i class="fas fa-home me-2"></i>@LocalizationService.GetString("Delivered")
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-status="Cancelled" onclick="switchTab(this, 'Cancelled')">
+                    <i class="fas fa-times-circle me-2"></i>@LocalizationService.GetString("Cancelled")
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <input type="hidden" id="filterStatus" value="">
+
+    <!-- Filters (Collapsible if needed, but keeping visible for Date/Amount) -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body bg-light rounded-3">
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">@LocalizationService.GetString("Status")</label>
-                    <select id="filterStatus" class="form-select">
-                        <option value="">@LocalizationService.GetString("All")</option>
-                        <option value="Pending">@LocalizationService.GetString("Pending")</option>
-                        <option value="Preparing">@LocalizationService.GetString("Preparing")</option>
-                        <option value="Ready">@LocalizationService.GetString("Ready")</option>
-                        <option value="Delivered">@LocalizationService.GetString("Delivered")</option>
-                        <option value="Cancelled">@LocalizationService.GetString("Cancelled")</option>
-                    </select>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">@LocalizationService.GetString("StartDate")</label>
+                    <input type="date" id="filterStartDate" class="form-control border-0 shadow-sm">
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-secondary w-100" onclick="refreshTable()">
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">@LocalizationService.GetString("EndDate")</label>
+                    <input type="date" id="filterEndDate" class="form-control border-0 shadow-sm">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold text-uppercase">@LocalizationService.GetString("MinAmount")</label>
+                    <input type="number" id="filterMinAmount" class="form-control border-0 shadow-sm" placeholder="0.00" step="0.01">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold text-uppercase">@LocalizationService.GetString("MaxAmount")</label>
+                    <input type="number" id="filterMaxAmount" class="form-control border-0 shadow-sm" placeholder="0.00" step="0.01">
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary w-100 shadow-sm" onclick="refreshTable()">
                         <i class="fas fa-filter me-1"></i> @LocalizationService.GetString("Apply")
+                    </button>
+                    <button class="btn btn-light shadow-sm" onclick="clearFilters()" title="@LocalizationService.GetString("ClearFilters")">
+                        <i class="fas fa-times text-muted"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Data Table -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover" id="ordersTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>@LocalizationService.GetString("OrderId")</th>
-                            <th>@LocalizationService.GetString("Customer")</th>
-                            <th>@LocalizationService.GetString("Date")</th>
-                            <th>@LocalizationService.GetString("Amount")</th>
-                            <th>@LocalizationService.GetString("Status")</th>
-                            <th>@LocalizationService.GetString("Actions")</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+    <!-- Orders List Container -->
+    <div id="ordersContainer" class="row">
+        <!-- Content loaded via JS -->
     </div>
-</div>
-
-<!-- Order Detail Modal -->
-<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@LocalizationService.GetString("OrderDetails") <span id="modalOrderId"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>@LocalizationService.GetString("Customer"):</strong> <span id="detailCustomer"></span><br>
-                        <strong>@LocalizationService.GetString("Phone"):</strong> <span id="detailPhone"></span>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <strong>@LocalizationService.GetString("Date"):</strong> <span id="detailDate"></span><br>
-                        <strong>@LocalizationService.GetString("Address"):</strong> <span id="detailAddress"></span>
-                    </div>
-                </div>
-                
-                <h6 class="mt-4">@LocalizationService.GetString("Products")</h6>
-                <table class="table table-sm table-striped">
-                    <thead>
-                        <tr>
-                            <th>@LocalizationService.GetString("Product")</th>
-                            <th class="text-center">@LocalizationService.GetString("Quantity")</th>
-                            <th class="text-end">@LocalizationService.GetString("Price")</th>
-                            <th class="text-end">@LocalizationService.GetString("Total")</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orderItemsBody"></tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end fw-bold">@LocalizationService.GetString("TotalAmount"):</td>
-                            <td class="text-end fw-bold" id="detailTotalAmount"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-
-                <div class="mt-3">
-                    <label class="form-label">@LocalizationService.GetString("UpdateStatus")</label>
-                    <select id="updateStatusSelect" class="form-select w-auto d-inline-block">
-                         <option value="0">@LocalizationService.GetString("Pending")</option>
-                         <option value="1">@LocalizationService.GetString("Preparing")</option>
-                         <option value="2">@LocalizationService.GetString("Ready")</option>
-                         <option value="3">@LocalizationService.GetString("Delivered")</option>
-                         <option value="4">@LocalizationService.GetString("Cancelled")</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="updateOrderStatus()">@LocalizationService.GetString("Update")</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Close")</button>
-            </div>
+    
+    <!-- Loading/Pagination -->
+    <div class="text-center my-4">
+        <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display:none;">
+            <span class="visually-hidden">Loading...</span>
         </div>
+        <button id="loadMoreBtn" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm" onclick="loadMore()" style="display:none;">
+            @LocalizationService.GetString("LoadMore")
+        </button>
     </div>
 </div>
 
 @section Scripts {
-    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        let dataTable;
-        let orderModal;
-        let currentOrderId = null;
+        let currentPage = 1;
+        const pageSize = 10;
+        let isLoading = false;
+        let hasMore = true;
 
         const StatusEnum = {
             0: 'Pending',
@@ -139,130 +125,216 @@
             6: 'Accepted',
             7: 'OutForDelivery'
         };
-
+        
+        // Match Mobile Colors
         const StatusColors = {
-            0: 'warning',
-            1: 'info',
-            2: 'primary',
-            3: 'success',
-            4: 'danger',
-            5: 'info',
-            6: 'info',
-            7: 'info'
+            'Pending': '#673ab7', // Deep Purple
+            'Preparing': '#2196f3',
+            'Ready': '#4caf50',
+            'Assigned': '#ff9800', // Orange
+            'Accepted': '#ff9800',
+            'OutForDelivery': '#ff9800',
+            'Delivered': '#9e9e9e',
+            'Cancelled': '#f44336'
         };
 
         $(document).ready(function() {
-            orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
-            initDataTable();
+            loadOrders(true);
         });
 
-        function initDataTable() {
-            dataTable = $('#ordersTable').DataTable({
-                serverSide: true,
-                processing: true,
-                ajax: {
-                    url: '/Orders/GetList',
-                    type: 'GET',
-                    data: function(d) {
-                        d.status = $('#filterStatus').val();
-                    }
-                },
-                columns: [
-                    { data: 'customerOrderId', name: 'customerOrderId' },
-                    { data: 'customerName', name: 'customerName' },
-                    { 
-                        data: 'createdAt', 
-                        name: 'createdAt',
-                        render: function(data) {
-                            return new Date(data).toLocaleString();
-                        }
-                    },
-                    { 
-                        data: 'totalAmount', 
-                        name: 'totalAmount',
-                        render: function(data) {
-                            return data.toFixed(2); // + Currency symbol if needed
-                        }
-                    },
-                    { 
-                        data: 'status', 
-                        name: 'status',
-                        render: function(data) {
-                            const statusText = StatusEnum[data] || data;
-                            const color = StatusColors[data] || 'secondary';
-                            return `<span class="badge bg-${color}">${statusText}</span>`;
-                        }
-                    },
-                    {
-                        data: 'id',
-                        orderable: false,
-                        render: function(data) {
-                            return `
-                                <button class="btn btn-sm btn-outline-primary" onclick="viewOrder('${data}')" title="@LocalizationService.GetString("View")">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+        function switchTab(element, status) {
+            // Remove active class from all tabs
+            $('.nav-link').removeClass('active');
+            // Add active class to clicked tab
+            $(element).addClass('active');
+            
+            // Set filter
+            $('#filterStatus').val(status);
+            
+            // Refresh
+            refreshTable();
+        }
+
+        function getStatusColor(statusStr) {
+             return StatusColors[statusStr] || '#9e9e9e';
+        }
+
+        function loadOrders(reset = false) {
+            if (isLoading) return;
+            if (reset) {
+                currentPage = 1;
+                hasMore = true;
+                $('#ordersContainer').empty();
+            }
+
+            isLoading = true;
+            $('#loadingSpinner').show();
+            $('#loadMoreBtn').hide();
+
+            const params = {
+                draw: 1, // Dummy for datatable compat
+                start: (currentPage - 1) * pageSize,
+                length: pageSize,
+                status: $('#filterStatus').val(),
+                startDate: $('#filterStartDate').val(),
+                endDate: $('#filterEndDate').val(),
+                minAmount: $('#filterMinAmount').val(),
+                maxAmount: $('#filterMaxAmount').val()
+            };
+
+            $.ajax({
+                url: '/Orders/GetList',
+                type: 'GET',
+                data: params,
+                success: function(response) {
+                    const data = response.data;
+                    if (data.length < pageSize) hasMore = false;
+                    
+                    if (data.length === 0 && currentPage === 1) {
+                         $('#ordersContainer').html(`
+                            <div class="col-12 text-center py-5">
+                                <div class="text-muted opacity-50">
+                                    <i class="fas fa-box-open fa-4x mb-3"></i>
+                                    <h5>@LocalizationService.GetString("NoOrdersYetShort")</h5>
+                                </div>
+                            </div>
+                         `);
+                    } else {
+                        data.forEach(order => {
+                            const statusStr = StatusEnum[order.status] || 'Pending';
+                            const color = getStatusColor(statusStr);
+                            // Using rgba for bg with 0.1 opacity
+                            const bgStyle = `background-color: ${color}1A; color: ${color};`;
+                            
+                            const dateStr = new Date(order.createdAt).toLocaleString();
+                            const amountStr = order.totalAmount.toFixed(2);
+
+                            const cardHtml = `
+                                <div class="col-12 mb-3">
+                                    <div class="card border-0 shadow-sm h-100 order-card" onclick="window.location.href='/Orders/Details/${order.id}'">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar-circle d-flex align-items-center justify-content-center text-white shadow-sm" 
+                                                         style="width: 50px; height: 50px; border-radius: 50%; background-color: ${color}">
+                                                        <i class="fas fa-receipt"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="fw-bold mb-1">@LocalizationService.GetString("Order") #${order.customerOrderId || order.id}</h6>
+                                                            <div class="text-muted small mb-1">
+                                                                <i class="fas fa-user me-1"></i> ${order.customerName}
+                                                            </div>
+                                                            <div class="text-muted small">
+                                                                <i class="far fa-clock me-1"></i> ${dateStr}
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <div class="h5 fw-bold text-dark mb-1">${amountStr} ₺</div>
+                                                            <span class="badge rounded-pill" style="${bgStyle}">${statusStr}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="ms-3">
+                                                    <i class="fas fa-chevron-right text-muted opacity-50"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             `;
-                        }
+                            $('#ordersContainer').append(cardHtml);
+                        });
                     }
-                ],
-                order: [[2, 'desc']], 
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/' + ('@System.Globalization.CultureInfo.CurrentCulture.Name' === 'tr-TR' ? 'tr' : 'en-GB') + '.json'
+
+                    currentPage++;
+                    isLoading = false;
+                    $('#loadingSpinner').hide();
+                    if (hasMore) $('#loadMoreBtn').show();
+                },
+                error: function() {
+                    isLoading = false;
+                    $('#loadingSpinner').hide();
+                    Swal.fire('Error', 'Failed to load orders', 'error');
                 }
             });
+        }
+
+        function loadMore() {
+            if(hasMore) loadOrders();
         }
 
         function refreshTable() {
-            dataTable.ajax.reload();
+            loadOrders(true);
         }
 
-        function viewOrder(id) {
-            currentOrderId = id;
-            $.get('/Orders/Get/' + id, function(data) {
-                $('#modalOrderId').text('#' + data.customerOrderId);
-                $('#detailCustomer').text(data.customerName);
-                $('#detailPhone').text(data.customerPhone || '-');
-                $('#detailDate').text(new Date(data.createdAt).toLocaleString());
-                $('#detailAddress').text(data.deliveryAddress || '-');
-                $('#detailTotalAmount').text(data.totalAmount.toFixed(2));
-                
-                $('#updateStatusSelect').val(data.status);
-
-                const tbody = $('#orderItemsBody');
-                tbody.empty();
-                data.items.forEach(item => {
-                    tbody.append(`
-                        <tr>
-                            <td>${item.productName}</td>
-                            <td class="text-center">${item.quantity}</td>
-                            <td class="text-end">${item.unitPrice.toFixed(2)}</td>
-                            <td class="text-end">${item.totalPrice.toFixed(2)}</td>
-                        </tr>
-                    `);
-                });
-
-                orderModal.show();
-            });
-        }
-
-        function updateOrderStatus() {
-            if(!currentOrderId) return;
-            const newStatus = $('#updateStatusSelect').val();
-
-            $.post('/Orders/UpdateStatus', { id: currentOrderId, status: newStatus }, function(response) {
-                if(response.success) {
-                    orderModal.hide();
-                    refreshTable();
-                     Swal.fire({
-                        icon: 'success',
-                        title: '@LocalizationService.GetString("Success")',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                } else {
-                    Swal.fire('Hata', response.message, 'error');
-                }
-            });
+        function clearFilters() {
+            // Reset date/amount but keep current tab status
+            $('#filterStartDate').val('');
+            $('#filterEndDate').val('');
+            $('#filterMinAmount').val('');
+            $('#filterMaxAmount').val('');
+            refreshTable();
         }
     </script>
+    
+    <style>
+        .order-card {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border-radius: 1rem !important;
+        }
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+        
+        /* Modern Scrollbar for tabs container */
+        .overflow-auto::-webkit-scrollbar {
+            height: 4px;
+        }
+        .overflow-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .overflow-auto::-webkit-scrollbar-thumb {
+            background: #dadada; 
+            border-radius: 4px;
+        }
+        .overflow-auto::-webkit-scrollbar-thumb:hover {
+            background: #c1c1c1; 
+        }
+
+        /* Modern Tabs / Pills */
+        .nav-pills {
+            gap: 0.5rem;
+        }
+        .nav-pills .nav-link {
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border: 1px solid #eaecf4;
+            border-radius: 50rem;
+            padding: 0.6rem 1.25rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .nav-pills .nav-link:hover {
+            background-color: #eaecf4;
+            color: #5a5c69;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #4e73df;
+            color: #fff;
+            border-color: #4e73df;
+            box-shadow: 0 4px 12px rgba(78, 115, 223, 0.3);
+            transform: translateY(-1px);
+        }
+        .nav-pills .nav-link i {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+    </style>
 }

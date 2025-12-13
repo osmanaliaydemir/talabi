@@ -71,7 +71,7 @@
 
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label">@LocalizationService.GetString("Email")</label>
-                    <input asp-for="Email" class="form-control" placeholder="ornek@email.com" autofocus/>
+                    <input asp-for="Email" class="form-control" placeholder="@LocalizationService.GetString("EmailPlaceholder")" autofocus/>
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 

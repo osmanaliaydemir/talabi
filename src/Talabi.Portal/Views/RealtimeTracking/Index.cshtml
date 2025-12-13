@@ -74,7 +74,7 @@
         </div>
         <div>
             <span class="badge bg-success shadow-sm p-2">
-                <i class="fas fa-circle fa-xs me-1 anim-pulse"></i> 3 @LocalizationService.GetString("ActiveCouriers")
+                <i class="fas fa-circle fa-xs me-1 anim-pulse"></i> @string.Format(LocalizationService.GetString("CouriersCount"), 3)
             </span>
         </div>
     </div>
@@ -97,7 +97,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="status-badge bg-info text-white">@LocalizationService.GetString("OnWay")</span>
-                    <small class="text-success fw-bold">Order #4521</small>
+                    <small class="text-success fw-bold">@string.Format(LocalizationService.GetString("OrderNo"), "4521")</small>
                 </div>
                  <div class="mt-2 text-xs text-muted">
                     <i class="fas fa-map-marker-alt me-1"></i> Kadıköy, İstanbul
@@ -118,7 +118,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="status-badge bg-warning text-dark">@LocalizationService.GetString("PickingUp")</span>
-                    <small class="text-success fw-bold">Order #4525</small>
+                    <small class="text-success fw-bold">@string.Format(LocalizationService.GetString("OrderNo"), "4525")</small>
                 </div>
                  <div class="mt-2 text-xs text-muted">
                     <i class="fas fa-map-marker-alt me-1"></i> Beşiktaş, İstanbul
@@ -139,7 +139,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="status-badge bg-success text-white">@LocalizationService.GetString("Delivered")</span>
-                    <small class="text-success fw-bold">Order #4510</small>
+                    <small class="text-success fw-bold">@string.Format(LocalizationService.GetString("OrderNo"), "4510")</small>
                 </div>
                  <div class="mt-2 text-xs text-muted">
                     <i class="fas fa-map-marker-alt me-1"></i> Üsküdar, İstanbul
@@ -153,23 +153,23 @@
                 <div id="mapOverlay" class="map-overlay-info">
                    <div class="d-flex justify-content-between">
                        <h6 class="fw-bold mb-0">Ahmet Yılmaz</h6>
-                       <small class="text-success">2 dk sonra varış</small>
+                       <small class="text-success">@string.Format(LocalizationService.GetString("ArrivingInXMinutes"), 2)</small>
                    </div>
                    <hr class="my-2">
                    <div class="small">
-                       <div><strong>Hız:</strong> 45 km/s</div>
-                       <div><strong>Mesafe:</strong> 1.2 km</div>
-                       <div><strong>Hedef:</strong> Bağdat Cd. No:12</div>
+                       <div><strong>@LocalizationService.GetString("Speed"):</strong> 45 @LocalizationService.GetString("SpeedUnit")</div>
+                       <div><strong>@LocalizationService.GetString("Distance"):</strong> 1.2 km</div>
+                       <div><strong>@LocalizationService.GetString("Destination"):</strong> Bağdat Cd. No:12</div>
                    </div>
                 </div>
                 
                 <!-- Mock Map Visual -->
                 <i class="fas fa-map-marked-alt fa-5x text-gray-300 mb-3"></i>
-                <h5 class="text-gray-500">Google Maps / Mapbox Entegrasyonu</h5>
-                <p class="text-gray-400 small">API Key tanımlandığında harita burada görüntülenecektir.</p>
+                <h5 class="text-gray-500">@LocalizationService.GetString("MapIntegrationTitle")</h5>
+                <p class="text-gray-400 small">@LocalizationService.GetString("MapKeyMissingDesc")</p>
                 <div class="mt-4">
-                     <span class="badge bg-white text-dark shadow-sm me-2"><i class="fas fa-motorcycle text-primary"></i> 3 Moto</span>
-                     <span class="badge bg-white text-dark shadow-sm"><i class="fas fa-home text-danger"></i> 1 Restoran</span>
+                     <span class="badge bg-white text-dark shadow-sm me-2"><i class="fas fa-motorcycle text-primary"></i> @string.Format(LocalizationService.GetString("CouriersCount"), 3)</span>
+                     <span class="badge bg-white text-dark shadow-sm"><i class="fas fa-home text-danger"></i> @string.Format(LocalizationService.GetString("RestaurantsCount"), 1)</span>
                 </div>
             </div>
         </div>

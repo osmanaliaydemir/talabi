@@ -84,8 +84,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Close")</button>
+                    <button type="submit" class="btn btn-primary">@LocalizationService.GetString("Save")</button>
                 </div>
             </form>
         </div>
@@ -121,8 +121,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Close")</button>
+                    <button type="submit" class="btn btn-primary">@LocalizationService.GetString("Update")</button>
                 </div>
             </form>
         </div>
@@ -139,7 +139,7 @@
             $('#countriesTable').DataTable({
                 "order": [[ 0, "asc" ]],
                 "language": {
-                     "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" // Default TR, can be dynamic
+                     "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/" + ('@System.Globalization.CultureInfo.CurrentCulture.Name' === 'tr-TR' ? 'tr' : 'en-GB') + ".json"
                 }
             });
         });

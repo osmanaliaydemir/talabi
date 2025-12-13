@@ -1,0 +1,392 @@
+@using Talabi.Core.Enums
+@using Talabi.Portal.Models
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@model VendorOrderDetailDto
+
+@{
+    ViewData["Title"] = LocalizationService.GetString("OrderDetails") + " #" + Model.CustomerOrderId;
+    // Status Colors mapping
+    string GetStatusColor(OrderStatus status) {
+        return status switch {
+            OrderStatus.Pending => "#673ab7", // Deep Purple
+            OrderStatus.Preparing => "#2196f3", // Blue
+            OrderStatus.Ready => "#4caf50", // Green
+            OrderStatus.OutForDelivery => "#ff9800", // Orange
+            OrderStatus.Delivered => "#9e9e9e", // Grey
+            OrderStatus.Cancelled => "#f44336", // Red
+            OrderStatus.Assigned => "#ff9800",
+            OrderStatus.Accepted => "#ff9800",
+            _ => "#9e9e9e"
+        };
+    }
+    
+    string GetStatusIcon(OrderStatus status) {
+        return status switch {
+            OrderStatus.Pending => "fas fa-hourglass-half",
+            OrderStatus.Preparing => "fas fa-utensils",
+            OrderStatus.Ready => "fas fa-check-circle",
+            OrderStatus.OutForDelivery => "fas fa-motorcycle",
+            OrderStatus.Delivered => "fas fa-box-open",
+            OrderStatus.Cancelled => "fas fa-times-circle",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    var statusColor = GetStatusColor(Model.Status);
+    var statusTitle = LocalizationService.GetString(Model.Status.ToString());
+}
+
+<div class="container-fluid p-0 pb-5">
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <a href="@Url.Action("Index", "Orders")" class="btn btn-light rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("Order") #@Model.CustomerOrderId</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Status Card -->
+            <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="p-4 text-white d-flex align-items-center justify-content-between" style="background-color: @statusColor;">
+                        <div class="d-flex align-items-center">
+                            <i class="@GetStatusIcon(Model.Status) fa-2x me-3 opacity-75"></i>
+                            <div>
+                                <h5 class="mb-1 fw-bold">@statusTitle</h5>
+                                <p class="mb-0 opacity-75">@Model.CreatedAt.ToString("g")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("OrderDetails")</h6>
+                </div>
+                <div class="card-body">
+                     @foreach (var item in Model.Items)
+                     {
+                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom last-border-0">
+                             <div class="flex-shrink-0 me-3">
+                                 <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                     <i class="fas fa-box text-secondary fa-lg"></i>
+                                 </div>
+                             </div>
+                             <div class="flex-grow-1">
+                                 <h6 class="mb-1 fw-bold">@item.ProductName</h6>
+                                 <div class="text-muted small">
+                                     @item.Quantity x @item.UnitPrice.ToString("N2") ₺
+                                 </div>
+                             </div>
+                             <div class="text-end fw-bold">
+                                 @item.TotalPrice.ToString("N2") ₺
+                             </div>
+                         </div>
+                     }
+                     
+                     <div class="mt-4 pt-2 border-top">
+                         <div class="d-flex justify-content-between mb-2">
+                             <span class="text-muted">@LocalizationService.GetString("SubTotal")</span>
+                             <span class="fw-bold">@((Model.TotalAmount - Model.DeliveryFee).ToString("N2")) ₺</span>
+                         </div>
+                         <div class="d-flex justify-content-between mb-2">
+                             <span class="text-muted">@LocalizationService.GetString("DeliveryFee")</span>
+                             <span>@Model.DeliveryFee.ToString("N2") ₺</span>
+                         </div>
+                         <div class="d-flex justify-content-between mt-3 text-success h5 fw-bold">
+                             <span>@LocalizationService.GetString("TotalAmount")</span>
+                             <span>@Model.TotalAmount.ToString("N2") ₺</span>
+                         </div>
+                     </div>
+                </div>
+            </div>
+            
+            <!-- Courier Info (If Assigned) -->
+            @if (!string.IsNullOrEmpty(Model.CourierName))
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("CourierInfo")</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                             <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                 <i class="fas fa-motorcycle text-primary"></i>
+                             </div>
+                             <div>
+                                 <h6 class="mb-1 fw-bold">@Model.CourierName</h6>
+                                 <div class="text-muted small">
+                                     <i class="fas fa-phone me-1"></i> @Model.CourierPhone
+                                 </div>
+                             </div>
+                             <div class="ms-auto">
+                                 <span class="badge bg-secondary">@Model.CourierStatus</span>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Customer -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("CustomerDetails")</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">@Model.CustomerName</h6>
+                                <small class="text-muted">@LocalizationService.GetString("Customer")</small>
+                            </div>
+                        </div>
+                        
+                        @if(!string.IsNullOrEmpty(Model.CustomerPhone)) {
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">@Model.CustomerPhone</h6>
+                                    <small class="text-muted">@LocalizationService.GetString("Phone")</small>
+                                </div>
+                            </div>
+                        }
+                        
+                         <div class="d-flex align-items-start">
+                            <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-medium">@(Model.DeliveryAddress ?? LocalizationService.GetString("NoAddressProvided"))</p>
+                                <small class="text-muted">@LocalizationService.GetString("Address")</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions Toolbar -->
+@if (Model.Status == OrderStatus.Pending || Model.Status == OrderStatus.Preparing || Model.Status == OrderStatus.Ready)
+{
+    <div class="fixed-bottom bg-white border-top shadow-lg p-3" style="z-index: 1000; left: 260px;"> <!-- Adjust left for sidebar width -->
+        <div class="container-fluid">
+            <div class="d-flex justify-content-end gap-3">
+                @if (Model.Status == OrderStatus.Pending)
+                {
+                    <button class="btn btn-outline-danger btn-lg px-5" onclick="openRejectModal()">
+                        @LocalizationService.GetString("Reject")
+                    </button>
+                    <button class="btn btn-success btn-lg px-5 text-white" onclick="acceptOrder()">
+                        @LocalizationService.GetString("Accept")
+                    </button>
+                }
+                else if (Model.Status == OrderStatus.Preparing)
+                {
+                     <button class="btn btn-primary btn-lg px-5" onclick="markAsReady()">
+                        @LocalizationService.GetString("MarkAsReady")
+                    </button>
+                }
+                else if (Model.Status == OrderStatus.Ready)
+                {
+                     <button class="btn btn-info btn-lg px-5 text-white" onclick="openCourierModal()">
+                        @LocalizationService.GetString("AssignCourier")
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@LocalizationService.GetString("RejectOrder")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">@LocalizationService.GetString("Reason")</label>
+                    <textarea id="rejectReason" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-danger" onclick="confirmReject()">@LocalizationService.GetString("Reject")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Courier Modal -->
+<div class="modal fade" id="courierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title text-white">@LocalizationService.GetString("AssignCourier")</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="couriersList" class="list-group list-group-flush">
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-info" role="status"></div>
+                        <p class="mt-2">@LocalizationService.GetString("SearchingCouriers")...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const orderId = '@Model.Id';
+        let rejectModal;
+        let courierModal;
+
+        $(document).ready(function() {
+            rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+            courierModal = new bootstrap.Modal(document.getElementById('courierModal'));
+        });
+
+        function acceptOrder() {
+            Swal.fire({
+                title: '@LocalizationService.GetString("AcceptOrderConfirmation")',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4caf50',
+                confirmButtonText: '@LocalizationService.GetString("YesAccept")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Orders/AcceptOrder', { id: orderId }, function(res) {
+                        if(res.success) {
+                            Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function openRejectModal() {
+            rejectModal.show();
+        }
+
+        function confirmReject() {
+            const reason = $('#rejectReason').val();
+            if(!reason) {
+                Swal.fire('Warning', '@LocalizationService.GetString("ReasonRequired")', 'warning');
+                return;
+            }
+
+            $.post('/Orders/RejectOrder', { id: orderId, reason: reason }, function(res) {
+                 if(res.success) {
+                    rejectModal.hide();
+                    Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            });
+        }
+
+        function markAsReady() {
+             Swal.fire({
+                title: '@LocalizationService.GetString("MarkAsReadyConfirmation")',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#2196f3',
+                confirmButtonText: '@LocalizationService.GetString("YesReady")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Orders/UpdateStatus', { id: orderId, status: 'Ready' }, function(res) {
+                         if(res.success) {
+                            Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function openCourierModal() {
+            courierModal.show();
+            // Load couriers
+            $('#couriersList').html('<div class="text-center p-5"><div class="spinner-border text-info"></div></div>');
+            
+            $.get('/Orders/GetAvailableCouriers/' + orderId, function(couriers) {
+                if(!couriers || couriers.length === 0) {
+                     $('#couriersList').html('<div class="text-center p-5 text-muted">@LocalizationService.GetString("NoCouriersFound")</div>');
+                     return;
+                }
+
+                let html = '';
+                couriers.forEach(c => {
+                    html += `
+                        <a href="#" class="list-group-item list-group-item-action p-3" onclick="assignCourier('${c.id}', '${c.fullName}')">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-motorcycle text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">${c.fullName}</h6>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-star text-warning"></i> ${c.averageRating.toFixed(1)} 
+                                        <span class="mx-2">•</span> ${c.distance} km (~${c.estimatedArrivalMinutes} min)
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-info">@LocalizationService.GetString("Assign")</button>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                $('#couriersList').html(html);
+            });
+        }
+
+        function assignCourier(courierId, name) {
+            Swal.fire({
+                title: '@LocalizationService.GetString("AssignCourierConfirmation")',
+                text: name,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4caf50',
+                confirmButtonText: '@LocalizationService.GetString("YesAssign")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if(result.isConfirmed) {
+                     $.post('/Orders/AssignCourier', { id: orderId, courierId: courierId }, function(res) {
+                         if(res.success) {
+                            courierModal.hide();
+                            Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

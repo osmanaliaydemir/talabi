@@ -34,47 +34,89 @@
                                 }
                                 @if(!Model.Cities.Any())
                                 {
-                                    <option disabled>No cities loaded</option>
+                                    <option disabled>@LocalizationService.GetString("NoCitiesLoaded")</option>
                                 }
                             </select>
                         </div>
 
-                        <!-- Districts Checkboxes -->
+                        <!-- Districts & Localities -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">@LocalizationService.GetString("Districts")</label>
+                            <label class="form-label fw-bold">@LocalizationService.GetString("Districts") / @LocalizationService.GetString("Localities")</label>
                             
                             @if(Model.SelectedCityId == Guid.Empty)
                             {
-                                <div class="alert alert-warning small">Please select a city first.</div>
+                                <div class="alert alert-warning small">@LocalizationService.GetString("PleaseSelectCity")</div>
                             }
                             else
                             {
-                                <div class="card p-2 border bg-light" style="max-height: 400px; overflow-y: auto;">
+                                <div class="card p-3 border bg-light" style="max-height: 500px; overflow-y: auto;">
                                     @foreach (var district in Model.AvailableDistricts)
                                     {
-                                        // Check if already added (naive check by District name is bad now, check by ID or assume service handles it)
-                                        // But Zone DTO has DistrictName. Wait, Zone DTO should have DistrictId for accurate check.
-                                        // For now let's just show all, service skips duplicates. Or check against names if unique enough.
-                                        // Better: Update DTO to have ID? Dto has ID of zone, not district ID. But we can assume names are unique per city? Or fetch IDs.
-                                        // Let's rely on service skipping for now.
-                                        
-                                        <div class="form-check mb-1">
-                                            <input class="form-check-input" type="checkbox" name="SelectedDistricts" value="@district.Id" id="d_@district.Id">
-                                            <label class="form-check-label w-100" for="d_@district.Id" style="cursor: pointer;">
-                                                @district.Name
-                                            </label>
+                                        <div class="mb-2">
+                                            <!-- District Parent -->
+                                            <div class="form-check fw-bold bg-white p-2 border rounded-top">
+                                                <input class="form-check-input district-check" type="checkbox" 
+                                                       value="@district.Id" id="d_@district.Id" 
+                                                       onchange="toggleDistrict('@district.Id', this.checked)">
+                                                <label class="form-check-label w-100" for="d_@district.Id" style="cursor: pointer;">
+                                                    @district.Name
+                                                </label>
+                                            </div>
+                                            <!-- Localities Children -->
+                                            <div class="ms-4 ps-2 border-start border-3" id="loc_container_@district.Id">
+                                                @foreach (var locality in district.Localities)
+                                                {
+                                                    <div class="form-check py-1">
+                                                        <input class="form-check-input locality-check loc-of-@district.Id" type="checkbox" 
+                                                               name="SelectedLocalities" value="@locality.Id" id="l_@locality.Id"
+                                                               onchange="checkParentDistrict('@district.Id')">
+                                                        <label class="form-check-label w-100" for="l_@locality.Id" style="cursor: pointer;">
+                                                            @locality.Name
+                                                        </label>
+                                                    </div>
+                                                }
+                                                 @if(!district.Localities.Any())
+                                                {
+                                                    <div class="text-muted small ps-2">@LocalizationService.GetString("NoLocalities")</div>
+                                                }
+                                            </div>
                                         </div>
                                     }
                                     @if(!Model.AvailableDistricts.Any())
                                     {
                                         <div class="text-center text-muted small py-2">
-                                           No districts found or all added.
+                                           @LocalizationService.GetString("NoDistrictsFound")
                                         </div>
                                     }
                                 </div>
                                 <div class="form-text mt-2"><i class="fas fa-info-circle me-1"></i> @LocalizationService.GetString("SelectMultipleDistricts")</div>
                             }
                         </div>
+
+                        <script>
+                            function toggleDistrict(districtId, isChecked) {
+                                // Select/Deselect all localities under this district
+                                var checkboxes = document.getElementsByClassName('loc-of-' + districtId);
+                                for(var i = 0; i < checkboxes.length; i++) {
+                                    checkboxes[i].checked = isChecked;
+                                }
+                            }
+
+                            function checkParentDistrict(districtId) {
+                                // If a locality is selected, auto-select the district
+                                // If all localities deselected, maybe deselect district? User requirement: "direk mahalleyi seçtiğinde ilçe otomatik seçilsin"
+                                // Strictly: If any child checked -> Parent checked.
+                                var checkboxes = document.getElementsByClassName('loc-of-' + districtId);
+                                var anyChecked = false;
+                                for(var i = 0; i < checkboxes.length; i++) {
+                                    if(checkboxes[i].checked) {
+                                        anyChecked = true;
+                                        break;
+                                    }
+                                }
+                                document.getElementById('d_' + districtId).checked = anyChecked;
+                            }
+                        </script>
 
                         <div class="row g-2 mb-4">
                             <div class="col-6">
@@ -117,7 +159,8 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light sticky-top">
                                 <tr>
-                                    <th class="ps-4">@LocalizationService.GetString("District")</th>
+                                    <th class="ps-4">@LocalizationService.GetString("Locality")</th>
+                                    <th>@LocalizationService.GetString("District")</th>
                                     <th>@LocalizationService.GetString("City")</th>
                                     <th>@LocalizationService.GetString("DeliveryFee")</th>
                                     <th>@LocalizationService.GetString("MinOrderAmount")</th>
@@ -128,7 +171,7 @@
                                 @if (!Model.Zones.Any())
                                 {
                                     <tr>
-                                        <td colspan="5" class="text-center py-5 text-muted">
+                                        <td colspan="6" class="text-center py-5 text-muted">
                                             <div class="py-5">
                                                 <i class="fas fa-map-marker-slash fa-3x mb-3 text-secondary opacity-50"></i>
                                                 <p class="mb-0 fw-medium">@LocalizationService.GetString("NoZonesDefined")</p>
@@ -142,7 +185,8 @@
                                     foreach (var zone in Model.Zones)
                                     {
                                         <tr>
-                                            <td class="ps-4 fw-bold text-dark">@zone.DistrictName</td>
+                                            <td class="ps-4 fw-bold text-dark">@zone.LocalityName</td>
+                                            <td>@zone.DistrictName</td>
                                             <td class="text-secondary">@zone.CityName</td>
                                             <td>
                                                 @if(zone.DeliveryFee.HasValue)
@@ -186,3 +230,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Active Locality IDs from Server
+        var activeLocalityIds = @Json.Serialize(Model.Zones.Select(z => z.LocalityId).Where(id => id.HasValue).ToList());
+
+        // Pre-select checkboxes
+        activeLocalityIds.forEach(function(id) {
+            var checkbox = document.getElementById('l_' + id);
+            if(checkbox) {
+                checkbox.checked = true;
+                // Also trigger parent check
+                var districtId = checkbox.className.split(' ').find(c => c.startsWith('loc-of-')).replace('loc-of-', '');
+                checkParentDistrict(districtId);
+            }
+        });
+    });
+</script>

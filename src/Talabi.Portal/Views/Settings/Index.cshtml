@@ -35,7 +35,7 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">@LocalizationService.GetString("EstDeliveryTime") (dk)</label>
+                            <label class="form-label">@LocalizationService.GetString("EstDeliveryTime") (@LocalizationService.GetString("MinutesAbbr"))</label>
                             <input asp-for="Vendor.EstimatedDeliveryTime" type="number" class="form-control" min="0">
                         </div>
                         <div class="mb-3">
@@ -109,11 +109,11 @@
                              timer: 1500
                         });
                     } else {
-                        Swal.fire('Hata', response.message, 'error');
+                        Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
                     }
                 },
                 error: function() {
-                    Swal.fire('Hata', 'Kayıt sırasında hata oluştu.', 'error');
+                    Swal.fire('@LocalizationService.GetString("Error")', '@LocalizationService.GetString("SaveError")', 'error');
                 }
             });
         }
@@ -140,11 +140,11 @@
                              timer: 1500
                         });
                     } else {
-                        Swal.fire('Hata', response.message, 'error');
+                        Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
                     }
                 },
                 error: function() {
-                    Swal.fire('Hata', 'Kayıt sırasında hata oluştu.', 'error');
+                    Swal.fire('@LocalizationService.GetString("Error")', '@LocalizationService.GetString("SaveError")', 'error');
                 }
             });
         }

@@ -127,9 +127,9 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                labels: ['@LocalizationService.GetString("Mon")', '@LocalizationService.GetString("Tue")', '@LocalizationService.GetString("Wed")', '@LocalizationService.GetString("Thu")', '@LocalizationService.GetString("Fri")', '@LocalizationService.GetString("Sat")', '@LocalizationService.GetString("Sun")'],
                 datasets: [{
-                    label: 'Kazanç (₺)',
+                    label: '@LocalizationService.GetString("Earnings") (₺)',
                     data: [1200, 1900, 1500, 2500, 2200, 3000, 3500],
                     borderColor: '#4e73df',
                     tension: 0.3,

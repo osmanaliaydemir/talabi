@@ -8,4 +8,5 @@ public interface ILocationService
     Task<List<LocationItemDto>> GetCitiesAsync(Guid? countryId = null);
     Task<List<LocationItemDto>> GetDistrictsAsync(Guid cityId);
     Task<List<LocationItemDto>> GetLocalitiesAsync(Guid districtId);
+    Task<List<DistrictWithLocalitiesDto>> GetDistrictsWithLocalitiesAsync(Guid cityId);
 }

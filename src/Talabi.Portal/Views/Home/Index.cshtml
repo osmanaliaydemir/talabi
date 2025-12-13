@@ -340,7 +340,7 @@
 				<div>
 					<div class="metric-label">@LocalizationService.GetString("AveragePreparationTime")</div>
 					<div class="metric-value text-warning">
-						@(performance.AveragePreparationTime) dk
+						@(performance.AveragePreparationTime) @LocalizationService.GetString("MinutesAbbr")
 					</div>
 				</div>
 			</div>
@@ -645,7 +645,7 @@
 	-->
 	<script>
 		// Placeholder for dashboard.js if it accesses elements that might error out due to missing data.
-		// For now we leave the charts canvas present but we don't init the charts to avoid JS errors if data is missing.
+		// For now we leave the charts canvas present but we don't init the charts
 	</script>
 }
 

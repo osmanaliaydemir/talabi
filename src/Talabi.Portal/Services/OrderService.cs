@@ -35,7 +35,9 @@ public class OrderService : IOrderService
     }
 
     public async Task<PagedResultDto<VendorOrderDto>?> GetOrdersAsync(int page = 1, int pageSize = 10, OrderStatus? status = null, 
-        string? search = null, string? sortBy = null, string sortOrder = "desc", CancellationToken ct = default)
+        string? search = null, string? sortBy = null, string sortOrder = "desc",
+        DateTime? startDate = null, DateTime? endDate = null, decimal? minAmount = null, decimal? maxAmount = null,
+        CancellationToken ct = default)
     {
         try
         {
@@ -51,6 +53,18 @@ public class OrderService : IOrderService
 
             if (status.HasValue)
                 query = query.Where(o => o.Status == status.Value);
+
+            if (startDate.HasValue)
+                query = query.Where(o => o.CreatedAt >= startDate.Value.ToUniversalTime());
+
+            if (endDate.HasValue)
+                query = query.Where(o => o.CreatedAt <= endDate.Value.ToUniversalTime()); // Should handle end of day logic in Controller or here if passing just date
+
+            if (minAmount.HasValue)
+                query = query.Where(o => o.TotalAmount >= minAmount.Value);
+
+            if (maxAmount.HasValue)
+                query = query.Where(o => o.TotalAmount <= maxAmount.Value);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -124,9 +138,16 @@ public class OrderService : IOrderService
                 .Include(o => o.DeliveryAddress)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
+                .Include(o => o.StatusHistory)
+                .Include(o => o.OrderCouriers)
+                .ThenInclude(oc => oc.Courier)
+                .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId.Value, ct);
 
             if (order == null) return null;
+
+            // Get active courier if any
+            var activeCourier = order.OrderCouriers.FirstOrDefault(oc => oc.IsActive);
 
             return new VendorOrderDetailDto
             {
@@ -135,7 +156,9 @@ public class OrderService : IOrderService
                 CustomerName = order.Customer != null ? (order.Customer.FullName) : "Unknown",
                 CustomerPhone = order.Customer?.PhoneNumber,
                 TotalAmount = order.TotalAmount,
+                DeliveryFee = order.DeliveryFee,
                 Status = order.Status,
+                CancelReason = order.CancelReason,
                 CreatedAt = order.CreatedAt,
                 ItemCount = order.OrderItems.Count,
                 DeliveryAddress = order.DeliveryAddress != null ? $"{order.DeliveryAddress.FullAddress} {(order.DeliveryAddress.City != null ? order.DeliveryAddress.City.NameTr : "")}" : null,
@@ -144,7 +167,16 @@ public class OrderService : IOrderService
                     ProductName = oi.Product?.Name ?? "Unknown Product",
                     Quantity = oi.Quantity,
                     UnitPrice = oi.UnitPrice
-                }).ToList()
+                }).ToList(),
+                StatusHistory = order.StatusHistory.OrderByDescending(h => h.CreatedAt).Select(h => new OrderStatusHistoryDto
+                {
+                    Status = h.Status,
+                    CreatedAt = h.CreatedAt,
+                    Note = h.Note
+                }).ToList(),
+                CourierName = activeCourier?.Courier?.User?.FullName,
+                CourierPhone = activeCourier?.Courier?.User?.PhoneNumber,
+                CourierStatus = activeCourier != null ? "Assigned" : null // Simplified logic
             };
         }
         catch (Exception ex)
@@ -162,15 +194,23 @@ public class OrderService : IOrderService
             if (vendorId == null) return false;
 
             var order = await _unitOfWork.Orders.Query()
+                .Include(o => o.StatusHistory)
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId.Value, ct);
 
             if (order == null) return false;
 
+            // Don't update if already in that status
+            if (order.Status == status) return true;
+
             order.Status = status;
             order.UpdatedAt = DateTime.UtcNow;
 
-            // Optional: Log status history
-            // _unitOfWork.OrderStatusHistories.Add(...)
+            order.StatusHistory.Add(new OrderStatusHistory
+            {
+                OrderId = order.Id,
+                Status = status,
+                CreatedAt = DateTime.UtcNow
+            });
 
             _unitOfWork.Orders.Update(order);
             await _unitOfWork.SaveChangesAsync(ct);
@@ -180,6 +220,158 @@ public class OrderService : IOrderService
         {
             _logger.LogError(ex, "Error updating order status {OrderId}", id);
             return false;
+        }
+    }
+
+    public async Task<bool> RejectOrderAsync(Guid id, string reason, CancellationToken ct = default)
+    {
+        try
+        {
+            var vendorId = await GetVendorIdAsync(ct);
+            if (vendorId == null) return false;
+
+            var order = await _unitOfWork.Orders.Query()
+                .Include(o => o.StatusHistory)
+                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId.Value, ct);
+
+            if (order == null) return false;
+
+            order.Status = OrderStatus.Cancelled;
+            order.CancelReason = reason;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            order.StatusHistory.Add(new OrderStatusHistory
+            {
+                OrderId = order.Id,
+                Status = OrderStatus.Cancelled,
+                Note = reason,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            _unitOfWork.Orders.Update(order);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error rejecting order {OrderId}", id);
+            return false;
+        }
+    }
+
+    public async Task<bool> AssignCourierAsync(Guid id, Guid courierId, CancellationToken ct = default)
+    {
+        try
+        {
+            var vendorId = await GetVendorIdAsync(ct);
+            if (vendorId == null) return false;
+
+            var order = await _unitOfWork.Orders.Query()
+                .Include(o => o.StatusHistory)
+                .Include(o => o.OrderCouriers)
+                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId.Value, ct);
+
+            if (order == null) return false;
+
+            // Deactivate existing couriers
+            foreach (var oc in order.OrderCouriers)
+            {
+                oc.IsActive = false;
+                oc.UpdatedAt = DateTime.UtcNow;
+            }
+
+            // Assign new courier
+            order.OrderCouriers.Add(new OrderCourier
+            {
+                OrderId = order.Id,
+                CourierId = courierId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                CourierAssignedAt = DateTime.UtcNow
+            });
+
+            // Update order status if needed (e.g. from Ready to Assigned)
+            if (order.Status == OrderStatus.Ready)
+            {
+                order.Status = OrderStatus.Assigned;
+                order.StatusHistory.Add(new OrderStatusHistory
+                {
+                    OrderId = order.Id,
+                    Status = OrderStatus.Assigned,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            order.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Orders.Update(order);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error assigning courier to order {OrderId}", id);
+            return false;
+        }
+    }
+
+    public async Task<List<AvailableCourierDto>> GetAvailableCouriersAsync(Guid orderId, CancellationToken ct = default)
+    {
+        try
+        {
+            var vendorId = await GetVendorIdAsync(ct);
+            if (vendorId == null) return new List<AvailableCourierDto>();
+
+             var order = await _unitOfWork.Orders.Query()
+                .Include(o => o.Vendor)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.VendorId == vendorId.Value, ct);
+
+            if (order == null || order.Status != OrderStatus.Ready) return new List<AvailableCourierDto>();
+
+            var vendor = order.Vendor;
+            if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue) return new List<AvailableCourierDto>();
+
+            var availableCouriersQuery = await _unitOfWork.Couriers.Query()
+                .Where(c => c.IsActive
+                    && c.Status == CourierStatus.Available
+                    && c.CurrentActiveOrders < c.MaxActiveOrders
+                    && c.CurrentLatitude.HasValue
+                    && c.CurrentLongitude.HasValue)
+                .ToListAsync(ct);
+
+            var availableCouriers = availableCouriersQuery
+                .Select(c => new
+                {
+                    Courier = c,
+                    Distance = Talabi.Core.Helpers.GeoHelper.CalculateDistance(
+                        vendor.Latitude.Value,
+                        vendor.Longitude.Value,
+                        c.CurrentLatitude!.Value,
+                        c.CurrentLongitude!.Value
+                    )
+                })
+                .Where(x => x.Distance <= 10) // Max 10km radius
+                .OrderBy(x => x.Distance)
+                .Select(x => new AvailableCourierDto
+                {
+                    Id = x.Courier.Id,
+                    FullName = x.Courier.Name,
+                    PhoneNumber = x.Courier.PhoneNumber ?? string.Empty,
+                    VehicleType = x.Courier.VehicleType ?? "Unknown",
+                    AverageRating = x.Courier.AverageRating,
+                    TotalDeliveries = x.Courier.TotalDeliveries,
+                    CurrentActiveOrders = x.Courier.CurrentActiveOrders,
+                    MaxActiveOrders = x.Courier.MaxActiveOrders,
+                    Distance = Math.Round(x.Distance, 2),
+                    EstimatedArrivalMinutes = (int)Math.Ceiling(x.Distance * 3)
+                })
+                .ToList();
+
+            return availableCouriers;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting available couriers for order {OrderId}", orderId);
+            return new List<AvailableCourierDto>();
         }
     }
 }

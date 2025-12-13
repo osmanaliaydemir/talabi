@@ -1056,5 +1056,8 @@
       "error": {}
     }
   },
-  "marketBannerTitle": "Market Alışverişin\nKapında"
+  "marketBannerTitle": "Market Alışverişin\nKapında",
+  "selectCountry": "Ülke Seçiniz",
+  "localityNeighborhood": "Mahalle",
+  "selectCityDistrictWarning": "Lütfen onaylamak için İl ve İlçe seçiniz."
 }

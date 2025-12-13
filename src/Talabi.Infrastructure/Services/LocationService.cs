@@ -79,4 +79,23 @@ public class LocationService : ILocationService
             Name = GetLocalizedName(l)
         }).OrderBy(x => x.Name).ToList();
     }
+
+    public async Task<List<DistrictWithLocalitiesDto>> GetDistrictsWithLocalitiesAsync(Guid cityId)
+    {
+        var districts = await _dbContext.Districts
+            .Where(d => d.CityId == cityId)
+            .Include(d => d.Localities)
+            .ToListAsync();
+
+        return districts.Select(d => new DistrictWithLocalitiesDto
+        {
+            Id = d.Id,
+            Name = GetLocalizedName(d),
+            Localities = d.Localities.Select(l => new LocationItemDto
+            {
+                Id = l.Id,
+                Name = GetLocalizedName(l)
+            }).OrderBy(x => x.Name).ToList()
+        }).OrderBy(x => x.Name).ToList();
+    }
 }

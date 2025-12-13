@@ -1,0 +1,67 @@
+@model List<Talabi.Core.Entities.VendorNotification>
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Notifications");
+}
+
+<div class="container p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary"><i class="fas fa-bell me-2"></i>@LocalizationService.GetString("Notifications")</h2>
+        
+        <form asp-action="MarkAllAsRead" method="post">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-check-double me-2"></i>@LocalizationService.GetString("MarkAllAsRead")
+            </button>
+        </form>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var item in Model)
+                    {
+                        <a href="@Url.Action("ReadAndRedirect", "Notifications", new { id = item.Id })" class="list-group-item list-group-item-action p-4 border-bottom @(!item.IsRead ? "bg-primary-subtle bg-opacity-10" : "bg-white")">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-4">
+                                     <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                        style="width: 50px; height: 50px; 
+                                               background-color: @(item.Type == "NewOrder" ? "#e7f1ff" : item.Type == "OrderStatusChanged" ? "#e0f7fa" : item.Type == "NewReview" ? "#fff9db" : "#f8f9fa");
+                                               color: @(item.Type == "NewOrder" ? "#0d6efd" : item.Type == "OrderStatusChanged" ? "#0dcaf0" : item.Type == "NewReview" ? "#ffc107" : "#6c757d");">
+                                        @if(item.Type == "NewOrder") { <i class="fas fa-shopping-bag fa-lg"></i> }
+                                        else if(item.Type == "OrderStatusChanged") { <i class="fas fa-truck fa-lg"></i> }
+                                        else if(item.Type == "NewReview") { <i class="fas fa-star fa-lg"></i> }
+                                        else { <i class="fas fa-bell fa-lg"></i> }
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h5 class="mb-0 text-truncate @(!item.IsRead ? "fw-bold text-dark" : "fw-semibold text-secondary")">@item.Title</h5>
+                                        <small class="text-muted ms-3 whitespace-nowrap"><i class="far fa-clock me-1"></i>@item.CreatedAt.ToLocalTime().ToString("g")</small>
+                                    </div>
+                                    <p class="mb-0 text-muted @(!item.IsRead ? "fw-medium" : "")" style="max-width: 90%;">@item.Message</p>
+                                </div>
+                                @if(!item.IsRead)
+                                {
+                                    <div class="ms-3">
+                                        <span class="badge bg-primary rounded-pill p-2" title="@LocalizationService.GetString("New")"> </span>
+                                    </div>
+                                }
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-4x text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted">@LocalizationService.GetString("NoNotifications")</h5>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+

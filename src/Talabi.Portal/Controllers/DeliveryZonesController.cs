@@ -28,8 +28,8 @@ public class DeliveryZonesController : Controller
         
         var zones = await _deliveryZoneService.GetVendorZonesAsync();
         var availableDistricts = selectedCityId != Guid.Empty 
-            ? await _locationService.GetDistrictsAsync(selectedCityId) 
-            : new List<LocationItemDto>();
+            ? await _locationService.GetDistrictsWithLocalitiesAsync(selectedCityId) 
+            : new List<DistrictWithLocalitiesDto>();
 
         var model = new DeliveryZonesViewModel
         {

@@ -57,6 +57,7 @@ public class DeliveryZoneService : IDeliveryZoneService
         return zones.Select(z => new VendorDeliveryZoneDto
             {
                 Id = z.Id,
+                LocalityId = z.LocalityId,
                 CityName = z.District?.City != null ? GetLocalizedName(z.District.City) : "-",
                 DistrictName = z.District != null ? GetLocalizedName(z.District) : "-",
                 LocalityName = z.Locality != null ? GetLocalizedName(z.Locality) : "-",
@@ -74,22 +75,49 @@ public class DeliveryZoneService : IDeliveryZoneService
         var vendorId = await GetVendorIdAsync(ct);
         if (vendorId == null) return;
 
-        var existingZoneDistrictIds = await _dbContext.VendorDeliveryZones
-            .Where(z => z.VendorId == vendorId.Value && z.IsActive)
-            .Select(z => z.DistrictId)
+        // If no localities selected, check if districts selected (backward compatibility or UI helper failed)
+        // If districts selected but no localities, we might want to fetch all localities for those districts.
+        // For now, let's assume UI sends SelectedLocalities.
+        
+        if (model.SelectedLocalities == null || !model.SelectedLocalities.Any())
+        {
+             // Fallback: If legacy SelectedDistricts present, maybe fetch all localities for them?
+             // But user wants Locality persistence. Let's do explicit check.
+             if (model.SelectedDistricts != null && model.SelectedDistricts.Any())
+             {
+                 var localitiesInDistricts = await _dbContext.Localities
+                    .Where(l => model.SelectedDistricts.Contains(l.DistrictId))
+                    .Select(l => l.Id)
+                    .ToListAsync(ct);
+                    
+                 model.SelectedLocalities = localitiesInDistricts;
+             }
+        }
+
+        if (model.SelectedLocalities == null || !model.SelectedLocalities.Any()) return;
+
+        // Fetch Localities to get DistrictId and check existence
+        var localitiesToAdd = await _dbContext.Localities
+            .Where(l => model.SelectedLocalities.Contains(l.Id))
+            .ToListAsync(ct);
+
+        var existingZoneLocalityIds = await _dbContext.VendorDeliveryZones
+            .Where(z => z.VendorId == vendorId.Value && z.IsActive && z.LocalityId.HasValue)
+            .Select(z => z.LocalityId.Value)
             .ToListAsync(ct);
 
         var newZones = new List<VendorDeliveryZone>();
 
-        foreach (var districtId in model.SelectedDistricts)
+        foreach (var locality in localitiesToAdd)
         {
-            if (existingZoneDistrictIds.Contains(districtId)) continue; // Skip duplicates (checking District level only for simplicity per UI)
+            if (existingZoneLocalityIds.Contains(locality.Id)) continue; 
 
             newZones.Add(new VendorDeliveryZone
             {
                 VendorId = vendorId.Value,
-                CityId = model.CityId,
-                DistrictId = districtId,
+                CityId = model.CityId, // Or locality.District.CityId if we include it
+                DistrictId = locality.DistrictId,
+                LocalityId = locality.Id,
                 DeliveryFee = model.DeliveryFee,
                 MinimumOrderAmount = model.MinimumOrderAmount,
                 IsActive = true

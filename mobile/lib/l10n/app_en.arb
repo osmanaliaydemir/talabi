@@ -1060,5 +1060,8 @@
       "error": {}
     }
   },
-  "marketBannerTitle": "Market Shopping\nat Your Door"
+  "marketBannerTitle": "Market Shopping\nat Your Door",
+  "selectCountry": "Select Country",
+  "localityNeighborhood": "Locality / Neighborhood",
+  "selectCityDistrictWarning": "Please select City and District from dropdowns to confirm."
 }

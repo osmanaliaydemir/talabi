@@ -110,8 +110,8 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.ILocationService, Talabi.Infrastructure.Services.LocationService>();
 builder.Services.AddScoped<IDeliveryZoneService, DeliveryZoneService>();
-builder.Services
-    .AddScoped<Talabi.Core.Interfaces.IUserContextService, Talabi.Infrastructure.Services.UserContextService>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.IUserContextService, Talabi.Infrastructure.Services.UserContextService>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.IDashboardNotificationService, Talabi.Infrastructure.Services.DashboardNotificationService>();
 
 var app = builder.Build();
 

@@ -332,7 +332,8 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Please select City and District from dropdowns to confirm.',
+                                                localizations
+                                                    .selectCityDistrictWarning,
                                               ),
                                             ),
                                           );
@@ -374,15 +375,18 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: DropdownButtonFormField<String>(
-                              value: _selectedCountryId,
+                              key: ValueKey(
+                                'country_${_selectedCountryId ?? "none"}',
+                              ),
+                              initialValue: _selectedCountryId,
                               decoration: InputDecoration(
-                                hintText: 'Select Country',
+                                hintText: localizations.selectCountry,
                                 prefixIcon: Icon(
                                   Icons.flag_outlined,
                                   color: Colors.grey[600],
                                 ),
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 16,
                                 ),
@@ -407,7 +411,8 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedCityId,
+                            key: ValueKey('city_${_selectedCityId ?? "none"}'),
+                            initialValue: _selectedCityId,
                             decoration: InputDecoration(
                               hintText: localizations.city,
                               prefixIcon: Icon(
@@ -415,7 +420,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                 color: Colors.grey[600],
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
                               ),
@@ -442,7 +447,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedDistrictId,
+                            key: ValueKey(
+                              'district_${_selectedDistrictId ?? "none"}',
+                            ),
+                            initialValue: _selectedDistrictId,
                             decoration: InputDecoration(
                               hintText: localizations.district,
                               prefixIcon: Icon(
@@ -450,7 +458,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                 color: Colors.grey[600],
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
                               ),
@@ -478,15 +486,18 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedLocalityId,
+                            key: ValueKey(
+                              'locality_${_selectedLocalityId ?? "none"}',
+                            ),
+                            initialValue: _selectedLocalityId,
                             decoration: InputDecoration(
-                              hintText: 'Locality / Neighborhood',
+                              hintText: localizations.localityNeighborhood,
                               prefixIcon: Icon(
                                 Icons.home_work_outlined,
                                 color: Colors.grey[600],
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
                               ),

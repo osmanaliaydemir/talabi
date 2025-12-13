@@ -714,6 +714,31 @@
         "en-US": "All districts added",
         "ar-SA": "تم إضافة جميع المناطق"
     },
+    "NoLocalities": {
+        "tr-TR": "Mahalle bulunamadı",
+        "en-US": "No localities found",
+        "ar-SA": "لم يتم العثور على أحياء"
+    },
+    "ViewAllNotifications": {
+        "tr-TR": "Tüm Bildirimleri Gör",
+        "en-US": "View All Notifications",
+        "ar-SA": "عرض جميع الإشعارات"
+    },
+    "NoNotifications": {
+        "tr-TR": "Bildiriminiz yok",
+        "en-US": "No notifications",
+        "ar-SA": "لا توجد إشعارات"
+    },
+    "MarkAllAsRead": {
+        "tr-TR": "Tümünü Okundu İşaretle",
+        "en-US": "Mark All as Read",
+        "ar-SA": "تحديد الكل كمقروء"
+    },
+    "MarkAsRead": {
+        "tr-TR": "Okundu İşaretle",
+        "en-US": "Mark as Read",
+        "ar-SA": "وضع علامة مقروء"
+    },
     "AddZoneInstructions": {
         "tr-TR": "Sol taraftan ilçe seçerek başlayın",
         "en-US": "Start by selecting districts from the left",
@@ -797,6 +822,403 @@
     "DeleteConfirmation": {
         "tr-TR": "Silmek istediğinize emin misiniz?",
         "en-US": "Are you sure you want to delete?",
-        "ar-SA": "هل أنت متأكد أنك تريد الحذف؟"
+        "ar-SA": "هل أنت متأكد أنك تريد الحذف؟",
+        "Close": "Close",
+        "Save": "Save",
+        "Update": "Update",
+        "PleaseSelectCity": "Please select a city first.",
+        "NoDistrictsFound": "No districts found or all added.",
+        "NoCitiesLoaded": "No cities loaded",
+        "AddZones": "Add Zones",
+        "Min": "Min",
+        "MinutesAbbr": "min",
+        "EnterImageUrl": "Enter Image URL (e.g. https://...)",
+        "Error": "Error",
+        "AnErrorOccurred": "An error occurred.",
+        "RequestError": "An error occurred while processing the request.",
+        "ProductDeleted": "Product deleted.",
+        "CategoryDeleteWarning": "Are you sure you want to delete this category?",
+        "EmailPlaceholder": "example@email.com",
+        "PrivacyPolicy": "Privacy Policy",
+        "PrivacyPolicyContent": "Use this page to detail your site's privacy policy.",
+        "SaveError": "An error occurred while saving.",
+        "Saved": "Saved",
+        "OrderNo": "Order #{0}",
+        "ArrivingInXMinutes": "Arriving in {0} min",
+        "Speed": "Speed",
+        "SpeedUnit": "km/h",
+        "Distance": "Distance",
+        "Destination": "Destination",
+        "MapIntegrationTitle": "Google Maps / Mapbox Integration",
+        "MapKeyMissingDesc": "Map will be displayed here when API Key is defined.",
+        "CouriersCount": "{0} Couriers",
+        "RestaurantsCount": "{0} Restaurant",
+        "Mon": "Mon",
+        "Tue": "Tue",
+        "Wed": "Wed",
+        "Thu": "Thu",
+        "Fri": "Fri",
+        "Sat": "Sat",
+        "Sun": "Sun",
+        "Earnings": "Earnings",
+        "ErrorTitle": "Error.",
+        "ErrorDescription": "An error occurred while processing your request.",
+        "RequestId": "Request ID",
+        "DevelopmentMode": "Development Mode",
+        "DevModeDesc1": "Swapping to Development environment will display more detailed information about the error that occurred.",
+        "DevModeDesc2": "The Development environment shouldn't be enabled for deployed applications.",
+        "OnWay": "On the Way",
+        "PickingUp": "Picking Up"
+    },
+    "tr-TR": {
+        "Close": "Kapat",
+        "Save": "Kaydet",
+        "Update": "Güncelle",
+        "PleaseSelectCity": "Lütfen önce bir şehir seçiniz.",
+        "NoDistrictsFound": "İlçe bulunamadı veya hepsi eklendi.",
+        "NoCitiesLoaded": "Şehirler yüklenemedi",
+        "AddZones": "Bölge Ekle",
+        "Min": "Min",
+        "MinutesAbbr": "dk",
+        "EnterImageUrl": "Görsel URL'si giriniz (örn: https://...)",
+        "Error": "Hata",
+        "AnErrorOccurred": "Bir hata oluştu.",
+        "RequestError": "İstek işlenirken hata oluştu.",
+        "ProductDeleted": "Ürün silindi.",
+        "CategoryDeleteWarning": "Bu kategoriyi silmek istediğinize emin misiniz?",
+        "EmailPlaceholder": "ornek@email.com",
+        "PrivacyPolicy": "Gizlilik Politikası",
+        "PrivacyPolicyContent": "Bu sayfada gizlilik politikanızı detaylandırın.",
+        "SaveError": "Kayıt sırasında hata oluştu.",
+        "Saved": "Kaydedildi",
+        "OrderNo": "Sipariş #{0}",
+        "ArrivingInXMinutes": "{0} dk sonra varış",
+        "Speed": "Hız",
+        "SpeedUnit": "km/s",
+        "Distance": "Mesafe",
+        "Destination": "Hedef",
+        "MapIntegrationTitle": "Google Maps / Mapbox Entegrasyonu",
+        "MapKeyMissingDesc": "API Key tanımlandığında harita burada görüntülenecektir.",
+        "CouriersCount": "{0} Moto",
+        "RestaurantsCount": "{0} Restoran",
+        "Mon": "Pzt",
+        "Tue": "Sal",
+        "Wed": "Çar",
+        "Thu": "Per",
+        "Fri": "Cum",
+        "Sat": "Cmt",
+        "Sun": "Paz",
+        "Earnings": "Kazanç",
+        "ErrorTitle": "Hata.",
+        "ErrorDescription": "İsteğiniz işlenirken bir hata oluştu.",
+        "RequestId": "İstek ID",
+        "DevelopmentMode": "Geliştirici Modu",
+        "DevModeDesc1": "Geliştirme ortamına geçmek, oluşan hata hakkında daha detaylı bilgi görüntüleyecektir.",
+        "DevModeDesc2": "Geliştirme ortamı canlı uygulamalar için etkinleştirilmemelidir.",
+        "OnWay": "Yolda",
+        "PickingUp": "Teslim Alınıyor"
+    },
+    "ar-SA": {
+        "Close": "إغلاق",
+        "Save": "حفظ",
+        "Update": "تحديث",
+        "PleaseSelectCity": "الرجاء تحديد مدينة أولاً.",
+        "NoDistrictsFound": "لم يتم العثور على مناطق أو تمت إضافتها جميعًا.",
+        "NoCitiesLoaded": "لم يتم تحميل المدن",
+        "AddZones": "إضافة مناطق",
+        "Min": "دقيقة",
+        "MinutesAbbr": "د",
+        "EnterImageUrl": "أدخل رابط الصورة",
+        "Error": "خطأ",
+        "AnErrorOccurred": "حدث خطأ.",
+        "RequestError": "حدث خطأ أثناء معالجة الطلب.",
+        "ProductDeleted": "تم حذف المنتج.",
+        "CategoryDeleteWarning": "هل أنت متأكد أنك تريد حذف هذه الفئة؟",
+        "EmailPlaceholder": "example@email.com",
+        "PrivacyPolicy": "سياسة الخصوصية",
+        "PrivacyPolicyContent": "استخدم هذه الصفحة لتفصيل سياسة الخصوصية الخاصة بموقعك.",
+        "SaveError": "حدث خطأ أثناء الحفظ.",
+        "Saved": "تم الحفظ",
+        "OrderNo": "طلب #{0}",
+        "ArrivingInXMinutes": "الوصول خلال {0} دقيقة",
+        "Speed": "السرعة",
+        "SpeedUnit": "كم/س",
+        "Distance": "المسافة",
+        "Destination": "الوجهة",
+        "MapIntegrationTitle": "تكامل خرائط جوجل / Mapbox",
+        "MapKeyMissingDesc": "سيتم عرض الخريطة هنا عند تحديد مفتاح API.",
+        "CouriersCount": "{0} ساعي",
+        "RestaurantsCount": "{0} مطعم",
+        "Mon": "الإثنين",
+        "Tue": "الثلاثاء",
+        "Wed": "الأربعاء",
+        "Thu": "الخميس",
+        "Fri": "الجمعة",
+        "Sat": "السبت",
+        "Sun": "الأحد",
+        "Earnings": "الأرباح",
+        "ErrorTitle": "خطأ.",
+        "ErrorDescription": "حدث خطأ أثناء معالجة طلبك.",
+        "RequestId": "معرف الطلب",
+        "DevelopmentMode": "وضع التطوير",
+        "DevModeDesc1": "سيؤدي التبديل إلى بيئة التطوير إلى عرض معلومات أكثر تفصيلاً حول الخطأ الذي حدث.",
+        "DevModeDesc2": "لا ينبغي تمكين بيئة التطوير للتطبيقات المنشورة.",
+        "OnWay": "في الطريق",
+        "PickingUp": "جاري الاستلام"
+    },
+    "OrderDetails": {
+        "tr-TR": "Sipariş Detayları",
+        "en-US": "Order Details",
+        "ar-SA": "تفاصيل الطلب"
+    },
+    "OrderId": {
+        "tr-TR": "Sipariş No",
+        "en-US": "Order ID",
+        "ar-SA": "رقم الطلب"
+    },
+    "Date": {
+        "tr-TR": "Tarih",
+        "en-US": "Date",
+        "ar-SA": "التاريخ"
+    },
+    "OrderCancelled": {
+        "tr-TR": "Sipariş İptal Edildi",
+        "en-US": "Order Cancelled",
+        "ar-SA": "تم إلغاء الطلب"
+    },
+    "Reason": {
+        "tr-TR": "Sebep",
+        "en-US": "Reason",
+        "ar-SA": "السبب"
+    },
+    "NoReasonProvided": {
+        "tr-TR": "Sebep belirtilmedi",
+        "en-US": "No reason provided",
+        "ar-SA": "لم يتم تقديم سبب"
+    },
+    "Products": {
+        "tr-TR": "Ürünler",
+        "en-US": "Products",
+        "ar-SA": "المنتجات"
+    },
+    "Product": {
+        "tr-TR": "Ürün",
+        "en-US": "Product",
+        "ar-SA": "المنتج"
+    },
+    "Quantity": {
+        "tr-TR": "Adet",
+        "en-US": "Quantity",
+        "ar-SA": "الكمية"
+    },
+    "Total": {
+        "tr-TR": "Toplam",
+        "en-US": "Total",
+        "ar-SA": "المجموع"
+    },
+    "SubTotal": {
+        "tr-TR": "Ara Toplam",
+        "en-US": "Sub Total",
+        "ar-SA": "المجموع الفرعي"
+    },
+    "TotalAmount": {
+        "tr-TR": "Toplam Tutar",
+        "en-US": "Total Amount",
+        "ar-SA": "المبلغ الإجمالي"
+    },
+    "OrderHistory": {
+        "tr-TR": "Sipariş Geçmişi",
+        "en-US": "Order History",
+        "ar-SA": "سجل الطلبات"
+    },
+    "CustomerDetails": {
+        "tr-TR": "Müşteri Detayları",
+        "en-US": "Customer Details",
+        "ar-SA": "تفاصيل العميل"
+    },
+    "Address": {
+        "tr-TR": "Adres",
+        "en-US": "Address",
+        "ar-SA": "العنوان"
+    },
+    "NoAddressProvided": {
+        "tr-TR": "Adres belirtilmedi",
+        "en-US": "No address provided",
+        "ar-SA": "لم يتم تقديم عنوان"
+    },
+    "AssignedCourier": {
+        "tr-TR": "Atanan Kurye",
+        "en-US": "Assigned Courier",
+        "ar-SA": "المندوب المخصص"
+    },
+    "Pending": {
+        "tr-TR": "Bekliyor",
+        "en-US": "Pending",
+        "ar-SA": "قيد الانتظار"
+    },
+    "Preparing": {
+        "tr-TR": "Hazırlanıyor",
+        "en-US": "Preparing",
+        "ar-SA": "جاري التحضير"
+    },
+    "Ready": {
+        "tr-TR": "Hazır",
+        "en-US": "Ready",
+        "ar-SA": "جاهز"
+    },
+    "Assigned": {
+        "tr-TR": "Atandı",
+        "en-US": "Assigned",
+        "ar-SA": "تم التعيين"
+    },
+    "Accepted": {
+        "tr-TR": "Kabul Edildi",
+        "en-US": "Accepted",
+        "ar-SA": "مقبولة"
+    },
+    "OutForDelivery": {
+        "tr-TR": "Dağıtımda",
+        "en-US": "Out For Delivery",
+        "ar-SA": "خرج للتوصيل"
+    },
+    "Delivered": {
+        "tr-TR": "Teslim Edildi",
+        "en-US": "Delivered",
+        "ar-SA": "تم التوصيل"
+    },
+    "Cancelled": {
+        "tr-TR": "İptal Edildi",
+        "en-US": "Cancelled",
+        "ar-SA": "ملغاة"
+    },
+    "StartDate": {
+        "tr-TR": "Başlangıç Tarihi",
+        "en-US": "Start Date",
+        "ar-SA": "تاريخ البدء"
+    },
+    "EndDate": {
+        "tr-TR": "Bitiş Tarihi",
+        "en-US": "End Date",
+        "ar-SA": "تاريخ الانتهاء"
+    },
+    "MinAmount": {
+        "tr-TR": "Min. Tutar",
+        "en-US": "Min. Amount",
+        "ar-SA": "الحد الأدنى للمبلغ"
+    },
+    "MaxAmount": {
+        "tr-TR": "Maks. Tutar",
+        "en-US": "Max. Amount",
+        "ar-SA": "الحد الأقصى للمبلغ"
+    },
+    "ClearFilters": {
+        "tr-TR": "Filtreleri Temizle",
+        "en-US": "Clear Filters",
+        "ar-SA": "مسح الفلاتر"
+    },
+    "Order": {
+        "tr-TR": "Sipariş",
+        "en-US": "Order",
+        "ar-SA": "طلب"
+    },
+    "CourierInfo": {
+        "tr-TR": "Kurye Bilgileri",
+        "en-US": "Courier Info",
+        "ar-SA": "معلومات المندوب"
+    },
+    "RejectOrder": {
+        "tr-TR": "Siparişi Reddet",
+        "en-US": "Reject Order",
+        "ar-SA": "رفض الطلب"
+    },
+    "YesAccept": {
+        "tr-TR": "Evet, Kabul Et",
+        "en-US": "Yes, Accept",
+        "ar-SA": "نعم، قبول"
+    },
+    "YesReady": {
+        "tr-TR": "Evet, Hazır",
+        "en-US": "Yes, Ready",
+        "ar-SA": "نعم، جاهز"
+    },
+    "YesAssign": {
+        "tr-TR": "Evet, Ata",
+        "en-US": "Yes, Assign",
+        "ar-SA": "نعم، تعيين"
+    },
+    "AcceptOrderConfirmation": {
+        "tr-TR": "Bu siparişi kabul etmek istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to accept this order?",
+        "ar-SA": "هل أنت متأكد أنك تريد قبول هذا الطلب؟"
+    },
+    "MarkAsReadyConfirmation": {
+        "tr-TR": "Bu siparişi hazır olarak işaretlemek istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to mark this order as ready?",
+        "ar-SA": "هل أنت متأكد أنك تريد تحديد هذا الطلب كجاهز؟"
+    },
+    "AssignCourierConfirmation": {
+        "tr-TR": "Bu siparişe kurye atamak istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to assign a courier to this order?",
+        "ar-SA": "هل أنت متأكد أنك تريد تعيين مندوب لهذا الطلب؟"
+    },
+    "Assign": {
+        "tr-TR": "Ata",
+        "en-US": "Assign",
+        "ar-SA": "تعيين"
+    },
+    "SearchingCouriers": {
+        "tr-TR": "Kuryeler aranıyor",
+        "en-US": "Searching couriers",
+        "ar-SA": "جارٍ البحث عن مندوبين"
+    },
+    "NoCouriersFound": {
+        "tr-TR": "Müsait kurye bulunamadı",
+        "en-US": "No available couriers found",
+        "ar-SA": "لم يتم العثور على مندوبين متاحين"
+    },
+    "ErrorUpdatingStatus": {
+        "tr-TR": "Sipariş durumu güncellenirken hata oluştu",
+        "en-US": "Error updating order status",
+        "ar-SA": "خطأ في تحديث حالة الطلب"
+    },
+    "ErrorAcceptingOrder": {
+        "tr-TR": "Sipariş kabul edilirken hata oluştu",
+        "en-US": "Error accepting order",
+        "ar-SA": "خطأ في قبول الطلب"
+    },
+    "ErrorRejectingOrder": {
+        "tr-TR": "Sipariş reddedilirken hata oluştu",
+        "en-US": "Error rejecting order",
+        "ar-SA": "خطأ في رفض الطلب"
+    },
+    "ReasonRequired": {
+        "tr-TR": "Lütfen bir sebep belirtiniz",
+        "en-US": "Please provide a reason",
+        "ar-SA": "يرجى تقديم سبب"
+    },
+    "ErrorAssigningCourier": {
+        "tr-TR": "Kurye atanırken hata oluştu",
+        "en-US": "Error assigning courier",
+        "ar-SA": "خطأ في تعيين المندوب"
+    },
+    "AssignCourier": {
+        "tr-TR": "Kurye Ata",
+        "en-US": "Assign Courier",
+        "ar-SA": "تعيين مندوب"
+    },
+    "Accept": {
+        "tr-TR": "Kabul Et",
+        "en-US": "Accept",
+        "ar-SA": "قبول"
+    },
+    "Reject": {
+        "tr-TR": "Reddet",
+        "en-US": "Reject",
+        "ar-SA": "رفض"
+    },
+    "MarkAsReady": {
+        "tr-TR": "Hazır Olarak İşaretle",
+        "en-US": "Mark as Ready",
+        "ar-SA": "تحديد كجاهز"
     }
 }

@@ -148,7 +148,7 @@
                              timer: 1500
                         });
                     } else {
-                        Swal.fire('Hata', response.message, 'error');
+                        Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
                     }
                 }
             });
@@ -170,7 +170,7 @@
                             refreshTable();
                             Swal.fire('@LocalizationService.GetString("Deleted")', '', 'success');
                         } else {
-                            Swal.fire('Hata', response.message, 'error');
+                            Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
                         }
                     });
                 }

@@ -1,6 +1,7 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+﻿@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("PrivacyPolicy");
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<p>@LocalizationService.GetString("PrivacyPolicyContent")</p>
