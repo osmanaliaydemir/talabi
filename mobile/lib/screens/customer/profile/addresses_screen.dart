@@ -510,7 +510,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${address.district}, ${address.city}',
+                        '${address.districtName ?? ''}, ${address.cityName ?? ''}',
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],

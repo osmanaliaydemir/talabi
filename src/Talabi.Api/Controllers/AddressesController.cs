@@ -30,6 +30,19 @@ public class AddressesController : BaseController
     {
     }
 
+    private string GetLocalizedName(dynamic? entity)
+    {
+        if (entity == null) return string.Empty;
+        var culture = CurrentCulture.TwoLetterISOLanguageName;
+        return culture switch
+        {
+            "tr" => entity.NameTr,
+            "en" => !string.IsNullOrEmpty(entity.NameEn) ? entity.NameEn : entity.NameTr,
+            "ar" => !string.IsNullOrEmpty(entity.NameAr) ? entity.NameAr : entity.NameTr,
+            _ => entity.NameTr
+        };
+    }
+
     /// <summary>
     /// Kullanıcının tüm adreslerini getirir
     /// </summary>
@@ -37,8 +50,6 @@ public class AddressesController : BaseController
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<AddressDto>>>> GetAddresses()
     {
-
-
         var userId = UserContext.GetUserId();
         if (userId == null)
         {
@@ -46,29 +57,36 @@ public class AddressesController : BaseController
         }
 
         IQueryable<UserAddress> query = UnitOfWork.UserAddresses.Query()
+            .Include(a => a.City)
+            .Include(a => a.District)
+            .Include(a => a.Locality)
             .Where(a => a.UserId == userId);
 
         IOrderedQueryable<UserAddress> orderedQuery = query
             .OrderByDescending(a => a.IsDefault)
             .ThenByDescending(a => a.CreatedAt);
 
-        var addresses = await orderedQuery
-            .Select(a => new AddressDto
-            {
-                Id = a.Id,
-                Title = a.Title,
-                FullAddress = a.FullAddress,
-                City = a.City,
-                District = a.District,
-                PostalCode = a.PostalCode,
-                IsDefault = a.IsDefault,
-                Latitude = a.Latitude,
-                Longitude = a.Longitude
-            })
-            .ToListAsync();
+        var addresses = await orderedQuery.ToListAsync();
+        
+        var dtos = addresses.Select(a => new AddressDto
+        {
+            Id = a.Id,
+            Title = a.Title,
+            FullAddress = a.FullAddress,
+            CityId = a.CityId,
+            CityName = GetLocalizedName(a.City),
+            DistrictId = a.DistrictId,
+            DistrictName = GetLocalizedName(a.District),
+            LocalityId = a.LocalityId,
+            LocalityName = GetLocalizedName(a.Locality),
+            PostalCode = a.PostalCode,
+            IsDefault = a.IsDefault,
+            Latitude = a.Latitude,
+            Longitude = a.Longitude
+        }).ToList();
 
         return Ok(new ApiResponse<List<AddressDto>>(
-            addresses,
+            dtos,
             LocalizationService.GetLocalizedString(ResourceName, "AddressesRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -80,8 +98,6 @@ public class AddressesController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<AddressDto>>> CreateAddress(CreateAddressDto dto)
     {
-
-
         var userId = UserContext.GetUserId();
         if (userId == null)
         {
@@ -93,8 +109,9 @@ public class AddressesController : BaseController
             UserId = userId,
             Title = dto.Title,
             FullAddress = dto.FullAddress,
-            City = dto.City,
-            District = dto.District,
+            CityId = dto.CityId,
+            DistrictId = dto.DistrictId,
+            LocalityId = dto.LocalityId,
             PostalCode = dto.PostalCode,
             Latitude = dto.Latitude,
             Longitude = dto.Longitude,
@@ -112,13 +129,24 @@ public class AddressesController : BaseController
         await UnitOfWork.UserAddresses.AddAsync(address);
         await UnitOfWork.SaveChangesAsync();
 
+        // Reload to get navigation properties for DTO
+        var createdAddress = await UnitOfWork.UserAddresses.Query()
+            .Include(a => a.City)
+            .Include(a => a.District)
+            .Include(a => a.Locality)
+            .FirstOrDefaultAsync(a => a.Id == address.Id);
+
         var addressDto = new AddressDto
         {
             Id = address.Id,
             Title = address.Title,
             FullAddress = address.FullAddress,
-            City = address.City,
-            District = address.District,
+            CityId = address.CityId,
+            CityName = GetLocalizedName(createdAddress?.City),
+            DistrictId = address.DistrictId,
+            DistrictName = GetLocalizedName(createdAddress?.District),
+            LocalityId = address.LocalityId,
+            LocalityName = GetLocalizedName(createdAddress?.Locality),
             PostalCode = address.PostalCode,
             IsDefault = address.IsDefault,
             Latitude = address.Latitude,
@@ -137,17 +165,10 @@ public class AddressesController : BaseController
     /// </summary>
     /// <param name="id">Adres ID'si</param>
     /// <param name="dto">Güncellenecek adres bilgileri</param>
-    /// <summary>
-    /// Adres bilgilerini günceller
-    /// </summary>
-    /// <param name="id">Adres ID'si</param>
-    /// <param name="dto">Güncellenecek adres bilgileri</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateAddress(Guid id, UpdateAddressDto dto)
     {
-
-
         var userId = UserContext.GetUserId();
         if (userId == null)
         {
@@ -166,8 +187,9 @@ public class AddressesController : BaseController
 
         address.Title = dto.Title;
         address.FullAddress = dto.FullAddress;
-        address.City = dto.City;
-        address.District = dto.District;
+        address.CityId = dto.CityId;
+        address.DistrictId = dto.DistrictId;
+        address.LocalityId = dto.LocalityId;
         address.PostalCode = dto.PostalCode;
         address.Latitude = dto.Latitude;
         address.Longitude = dto.Longitude;
@@ -184,16 +206,10 @@ public class AddressesController : BaseController
     /// Varsayılan adresi ayarlar
     /// </summary>
     /// <param name="id">Adres ID'si</param>
-    /// <summary>
-    /// Varsayılan adresi ayarlar
-    /// </summary>
-    /// <param name="id">Adres ID'si</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/set-default")]
     public async Task<ActionResult<ApiResponse<object>>> SetDefaultAddress(Guid id)
     {
-
-
         var userId = UserContext.GetUserId();
         if (userId == null)
         {
@@ -232,16 +248,10 @@ public class AddressesController : BaseController
     /// Adresi siler
     /// </summary>
     /// <param name="id">Adres ID'si</param>
-    /// <summary>
-    /// Adresi siler
-    /// </summary>
-    /// <param name="id">Adres ID'si</param>
     /// <returns>İşlem sonucu</returns>
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteAddress(Guid id)
     {
-
-
         var userId = UserContext.GetUserId();
         if (userId == null)
         {

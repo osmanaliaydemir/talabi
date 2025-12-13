@@ -3,8 +3,12 @@ class Address {
     required this.id,
     required this.title,
     required this.fullAddress,
-    required this.city,
-    required this.district,
+    this.cityId,
+    this.cityName,
+    this.districtId,
+    this.districtName,
+    this.localityId,
+    this.localityName,
     this.postalCode,
     required this.isDefault,
     this.latitude,
@@ -16,8 +20,12 @@ class Address {
       id: json['id'].toString(),
       title: json['title'],
       fullAddress: json['fullAddress'],
-      city: json['city'],
-      district: json['district'],
+      cityId: json['cityId']?.toString(),
+      cityName: json['cityName'],
+      districtId: json['districtId']?.toString(),
+      districtName: json['districtName'],
+      localityId: json['localityId']?.toString(),
+      localityName: json['localityName'],
       postalCode: json['postalCode'],
       isDefault: json['isDefault'],
       latitude: json['latitude'] != null
@@ -33,8 +41,9 @@ class Address {
     return {
       'title': title,
       'fullAddress': fullAddress,
-      'city': city,
-      'district': district,
+      'cityId': cityId,
+      'districtId': districtId,
+      'localityId': localityId,
       'postalCode': postalCode,
       'latitude': latitude,
       'longitude': longitude,
@@ -44,8 +53,12 @@ class Address {
   final String id;
   final String title;
   final String fullAddress;
-  final String city;
-  final String district;
+  final String? cityId;
+  final String? cityName;
+  final String? districtId;
+  final String? districtName;
+  final String? localityId;
+  final String? localityName;
   final String? postalCode;
   final bool isDefault;
   final double? latitude;

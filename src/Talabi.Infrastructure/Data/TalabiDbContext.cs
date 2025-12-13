@@ -38,6 +38,12 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<PromotionalBanner> PromotionalBanners { get; set; }
     public DbSet<PromotionalBannerTranslation> PromotionalBannerTranslations { get; set; }
     public DbSet<ErrorLog> ErrorLogs { get; set; }
+    public DbSet<VendorDeliveryZone> VendorDeliveryZones { get; set; }
+    public DbSet<CourierDeliveryZone> CourierDeliveryZones { get; set; }
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<City> Cities { get; set; }
+    public DbSet<District> Districts { get; set; }
+    public DbSet<Locality> Localities { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -414,5 +420,14 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<ErrorLog>()
             .Property(el => el.LogId)
             .HasMaxLength(100);
+
+        // VendorDeliveryZone configuration
+        builder.Entity<VendorDeliveryZone>()
+            .Property(v => v.DeliveryFee)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<VendorDeliveryZone>()
+            .Property(v => v.MinimumOrderAmount)
+            .HasColumnType("decimal(18,2)");
     }
 }

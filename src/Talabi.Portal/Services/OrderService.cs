@@ -138,7 +138,7 @@ public class OrderService : IOrderService
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
                 ItemCount = order.OrderItems.Count,
-                DeliveryAddress = order.DeliveryAddress != null ? $"{order.DeliveryAddress.FullAddress} {order.DeliveryAddress.City}" : null,
+                DeliveryAddress = order.DeliveryAddress != null ? $"{order.DeliveryAddress.FullAddress} {(order.DeliveryAddress.City != null ? order.DeliveryAddress.City.NameTr : "")}" : null,
                 Items = order.OrderItems.Select(oi => new VendorOrderItemDto
                 {
                     ProductName = oi.Product?.Name ?? "Unknown Product",

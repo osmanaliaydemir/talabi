@@ -1,0 +1,188 @@
+@model Talabi.Portal.Models.DeliveryZonesViewModel
+@using Talabi.Portal.Services
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("DeliveryZones");
+}
+
+<div class="container-fluid p-4">
+    <div class="row">
+        <!-- Add New Zone Column -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4 h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fas fa-plus-circle me-2"></i> @LocalizationService.GetString("AddZone")
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <!-- City Dropdown -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">@LocalizationService.GetString("City")</label>
+                            <select class="form-select bg-light" name="CityId" onchange="window.location.href='?cityId=' + this.value">
+                                @foreach(var city in Model.Cities)
+                                {
+                                    if(city.Id == Model.SelectedCityId)
+                                    {
+                                         <option value="@city.Id" selected>@city.Name</option>
+                                    }
+                                    else
+                                    {
+                                         <option value="@city.Id">@city.Name</option>
+                                    }
+                                }
+                                @if(!Model.Cities.Any())
+                                {
+                                    <option disabled>No cities loaded</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Districts Checkboxes -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">@LocalizationService.GetString("Districts")</label>
+                            
+                            @if(Model.SelectedCityId == Guid.Empty)
+                            {
+                                <div class="alert alert-warning small">Please select a city first.</div>
+                            }
+                            else
+                            {
+                                <div class="card p-2 border bg-light" style="max-height: 400px; overflow-y: auto;">
+                                    @foreach (var district in Model.AvailableDistricts)
+                                    {
+                                        // Check if already added (naive check by District name is bad now, check by ID or assume service handles it)
+                                        // But Zone DTO has DistrictName. Wait, Zone DTO should have DistrictId for accurate check.
+                                        // For now let's just show all, service skips duplicates. Or check against names if unique enough.
+                                        // Better: Update DTO to have ID? Dto has ID of zone, not district ID. But we can assume names are unique per city? Or fetch IDs.
+                                        // Let's rely on service skipping for now.
+                                        
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="checkbox" name="SelectedDistricts" value="@district.Id" id="d_@district.Id">
+                                            <label class="form-check-label w-100" for="d_@district.Id" style="cursor: pointer;">
+                                                @district.Name
+                                            </label>
+                                        </div>
+                                    }
+                                    @if(!Model.AvailableDistricts.Any())
+                                    {
+                                        <div class="text-center text-muted small py-2">
+                                           No districts found or all added.
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-text mt-2"><i class="fas fa-info-circle me-1"></i> @LocalizationService.GetString("SelectMultipleDistricts")</div>
+                            }
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">@LocalizationService.GetString("DeliveryFee")</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">₺</span>
+                                    <input type="number" step="0.5" class="form-control" name="DeliveryFee" placeholder="-" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">@LocalizationService.GetString("MinOrderAmount")</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">₺</span>
+                                    <input type="number" step="1" class="form-control" name="MinimumOrderAmount" placeholder="-" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-save me-2"></i> @LocalizationService.GetString("AddZones")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Zones Column -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 h-100">
+                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fas fa-map-marked-alt me-2"></i> @LocalizationService.GetString("ActiveZones")
+                    </h5>
+                    <span class="badge bg-light text-dark border">
+                        @Model.Zones.Count @LocalizationService.GetString("Districts")
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive h-100">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light sticky-top">
+                                <tr>
+                                    <th class="ps-4">@LocalizationService.GetString("District")</th>
+                                    <th>@LocalizationService.GetString("City")</th>
+                                    <th>@LocalizationService.GetString("DeliveryFee")</th>
+                                    <th>@LocalizationService.GetString("MinOrderAmount")</th>
+                                    <th class="text-end pe-4">@LocalizationService.GetString("Actions")</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.Zones.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <div class="py-5">
+                                                <i class="fas fa-map-marker-slash fa-3x mb-3 text-secondary opacity-50"></i>
+                                                <p class="mb-0 fw-medium">@LocalizationService.GetString("NoZonesDefined")</p>
+                                                <small>@LocalizationService.GetString("AddZoneInstructions")</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var zone in Model.Zones)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-bold text-dark">@zone.DistrictName</td>
+                                            <td class="text-secondary">@zone.CityName</td>
+                                            <td>
+                                                @if(zone.DeliveryFee.HasValue)
+                                                {
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                        @zone.DeliveryFee.Value.ToString("C2")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if(zone.MinimumOrderAmount.HasValue)
+                                                {
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                                        @zone.MinimumOrderAmount.Value.ToString("C2")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <form asp-action="Delete" asp-route-id="@zone.Id" method="post" class="d-inline" onsubmit="return confirm('@LocalizationService.GetString("DeleteConfirmation")');">
+                                                    <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="@LocalizationService.GetString("Delete")">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

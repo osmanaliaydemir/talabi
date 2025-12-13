@@ -1,0 +1,160 @@
+@model IEnumerable<Talabi.Core.Entities.Country>
+@using Talabi.Portal.Services
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Countries");
+}
+
+<div class="container p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary"><i class="fas fa-globe me-2"></i>@LocalizationService.GetString("Countries")</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="fas fa-plus me-2"></i> @LocalizationService.GetString("AddCountry")
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table id="countriesTable" class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>@LocalizationService.GetString("NameTr")</th>
+                        <th>@LocalizationService.GetString("NameEn")</th>
+                        <th>@LocalizationService.GetString("NameAr")</th>
+                        <th>@LocalizationService.GetString("Code")</th>
+                        <th class="text-end">@LocalizationService.GetString("Actions")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">
+                                <a asp-action="CountryDetails" asp-route-id="@item.Id" class="text-decoration-none">
+                                    @item.NameTr
+                                </a>
+                            </td>
+                            <td>@item.NameEn</td>
+                            <td>@item.NameAr</td>
+                            <td><span class="badge bg-secondary">@item.Code</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning me-1" onclick="openEditModal('@item.Id')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form asp-action="DeleteCountry" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('@LocalizationService.GetString("DeleteConfirmation")');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                                <a asp-action="CountryDetails" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary ms-1">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@LocalizationService.GetString("AddCountry")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateCountry" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("NameTr")</label>
+                        <input type="text" class="form-control" name="NameTr" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("NameEn")</label>
+                        <input type="text" class="form-control" name="NameEn">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("NameAr")</label>
+                        <input type="text" class="form-control" name="NameAr" dir="rtl">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Code")</label>
+                        <input type="text" class="form-control" name="Code">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@LocalizationService.GetString("EditCountry")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="EditCountry" method="post">
+                <input type="hidden" name="Id" id="edit_Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("NameTr")</label>
+                        <input type="text" class="form-control" name="NameTr" id="edit_NameTr" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("NameEn")</label>
+                        <input type="text" class="form-control" name="NameEn" id="edit_NameEn">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("NameAr")</label>
+                        <input type="text" class="form-control" name="NameAr" id="edit_NameAr" dir="rtl">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@LocalizationService.GetString("Code")</label>
+                        <input type="text" class="form-control" name="Code" id="edit_Code">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#countriesTable').DataTable({
+                "order": [[ 0, "asc" ]],
+                "language": {
+                     "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" // Default TR, can be dynamic
+                }
+            });
+        });
+
+        function openEditModal(id) {
+            $.get('/Locations/GetCountry/' + id, function(data) {
+                $('#edit_Id').val(data.id);
+                $('#edit_NameTr').val(data.nameTr);
+                $('#edit_NameEn').val(data.nameEn);
+                $('#edit_NameAr').val(data.nameAr);
+                $('#edit_Code').val(data.code);
+                
+                var myModal = new bootstrap.Modal(document.getElementById('editModal'));
+                myModal.show();
+            });
+        }
+    </script>
+}

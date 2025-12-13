@@ -102,6 +102,32 @@ public class OrderService : IOrderService
             });
         }
 
+        // Validate Delivery Address and Zone
+        if (!dto.DeliveryAddressId.HasValue)
+        {
+            throw new ArgumentException(_localizationService.GetLocalizedString(ResourceName, "AddressRequired", culture));
+        }
+
+        var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
+        if (userAddress == null)
+        {
+            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
+        }
+
+        // Check Delivery Zone
+        var deliveryZone = await _unitOfWork.VendorDeliveryZones.Query()
+            .FirstOrDefaultAsync(z => z.VendorId == dto.VendorId && z.DistrictId == userAddress.DistrictId && z.IsActive);
+
+        if (deliveryZone == null)
+        {
+             throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryZone", culture));
+        }
+
+        if (totalAmount < deliveryZone.MinimumOrderAmount)
+        {
+             throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "MinimumOrderAmountNotMet", culture, deliveryZone.MinimumOrderAmount));
+        }
+
         // Create order
         var customerOrderId = await GenerateUniqueCustomerOrderIdAsync();
 
@@ -110,7 +136,8 @@ public class OrderService : IOrderService
             VendorId = dto.VendorId,
             CustomerId = customerId,
             CustomerOrderId = customerOrderId,
-            TotalAmount = totalAmount,
+            TotalAmount = totalAmount + deliveryZone.DeliveryFee.GetValueOrDefault(), // Add Delivery Fee
+            DeliveryFee = deliveryZone.DeliveryFee.GetValueOrDefault(),
             Status = OrderStatus.Pending,
             OrderItems = orderItems,
             CreatedAt = DateTime.UtcNow,

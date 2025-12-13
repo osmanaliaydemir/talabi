@@ -21,12 +21,22 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   final ApiService _apiService = ApiService();
   late TextEditingController _titleController;
   late TextEditingController _fullAddressController;
-  late TextEditingController _cityController;
-  late TextEditingController _districtController;
   late TextEditingController _postalCodeController;
   double? _latitude;
   double? _longitude;
   bool _isLoading = false;
+  bool _isLoadingLocations = false;
+
+  // Location Data
+  List<Map<String, dynamic>> _countries = [];
+  List<Map<String, dynamic>> _cities = [];
+  List<Map<String, dynamic>> _districts = [];
+  List<Map<String, dynamic>> _localities = [];
+
+  String? _selectedCountryId;
+  String? _selectedCityId;
+  String? _selectedDistrictId;
+  String? _selectedLocalityId;
 
   @override
   void initState() {
@@ -35,23 +45,103 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     _fullAddressController = TextEditingController(
       text: widget.address?.fullAddress ?? '',
     );
-    _cityController = TextEditingController(text: widget.address?.city ?? '');
-    _districtController = TextEditingController(
-      text: widget.address?.district ?? '',
-    );
     _postalCodeController = TextEditingController(
       text: widget.address?.postalCode ?? '',
     );
     _latitude = widget.address?.latitude;
     _longitude = widget.address?.longitude;
+
+    if (widget.address != null) {
+      _selectedCityId = widget.address?.cityId;
+      _selectedDistrictId = widget.address?.districtId;
+      _selectedLocalityId = widget.address?.localityId;
+      // Note: We don't have countryId in Address model yet, but usually we infer or load it.
+      // For now, we will fetch countries and if there is only one (e.g. TR), select it.
+      // If we had countryId in address, we would set it here.
+    }
+
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    setState(() => _isLoadingLocations = true);
+    try {
+      _countries = await _apiService.getCountries();
+
+      // Auto-select first country if only one or none selected
+      if (_countries.isNotEmpty && _selectedCountryId == null) {
+        _selectedCountryId = _countries.first['id'].toString();
+      }
+
+      if (_selectedCountryId != null) {
+        _cities = await _apiService.getLocationCities(_selectedCountryId!);
+      }
+
+      if (_selectedCityId != null) {
+        _districts = await _apiService.getLocationDistricts(_selectedCityId!);
+      }
+
+      if (_selectedDistrictId != null) {
+        _localities = await _apiService.getLocationLocalities(
+          _selectedDistrictId!,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error loading location data: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingLocations = false);
+    }
+  }
+
+  Future<void> _onCountryChanged(String? value) async {
+    if (value == _selectedCountryId) return;
+    setState(() {
+      _selectedCountryId = value;
+      _selectedCityId = null;
+      _selectedDistrictId = null;
+      _selectedLocalityId = null;
+      _cities = [];
+      _districts = [];
+      _localities = [];
+    });
+    if (value != null) {
+      final cities = await _apiService.getLocationCities(value);
+      if (mounted) setState(() => _cities = cities);
+    }
+  }
+
+  Future<void> _onCityChanged(String? value) async {
+    if (value == _selectedCityId) return;
+    setState(() {
+      _selectedCityId = value;
+      _selectedDistrictId = null;
+      _selectedLocalityId = null;
+      _districts = [];
+      _localities = [];
+    });
+    if (value != null) {
+      final districts = await _apiService.getLocationDistricts(value);
+      if (mounted) setState(() => _districts = districts);
+    }
+  }
+
+  Future<void> _onDistrictChanged(String? value) async {
+    if (value == _selectedDistrictId) return;
+    setState(() {
+      _selectedDistrictId = value;
+      _selectedLocalityId = null;
+      _localities = [];
+    });
+    if (value != null) {
+      final localities = await _apiService.getLocationLocalities(value);
+      if (mounted) setState(() => _localities = localities);
+    }
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _fullAddressController.dispose();
-    _cityController.dispose();
-    _districtController.dispose();
     _postalCodeController.dispose();
     super.dispose();
   }
@@ -66,11 +156,16 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     });
 
     try {
+      // Find names for selected IDs
+      // final cityName = _cities.firstWhere((c) => c['id'].toString() == _selectedCityId)['name'];
+      // final districtName = _districts.firstWhere((d) => d['id'].toString() == _selectedDistrictId)['name'];
+
       final data = {
         'title': _titleController.text,
         'fullAddress': _fullAddressController.text,
-        'city': _cityController.text,
-        'district': _districtController.text,
+        'cityId': _selectedCityId,
+        'districtId': _selectedDistrictId,
+        'localityId': _selectedLocalityId,
         'postalCode': _postalCodeController.text.isEmpty
             ? null
             : _postalCodeController.text,
@@ -224,13 +319,23 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                             _titleController.text = title;
                                             _fullAddressController.text =
                                                 fullAddress;
-                                            _cityController.text = city;
-                                            _districtController.text = district;
+                                            // Note: Map picker returns string names.
+                                            // Mapping these to IDs is complex, so we just set fields.
+                                            // User still needs to select via dropdowns for accuracy in this version.
                                             _postalCodeController.text =
                                                 postalCode ?? '';
                                             _latitude = latitude;
                                             _longitude = longitude;
                                           });
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Please select City and District from dropdowns to confirm.',
+                                              ),
+                                            ),
+                                          );
                                         },
                                   ),
                                 ),
@@ -259,6 +364,146 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           ),
                         ),
                         const SizedBox(height: AppTheme.spacingSmall),
+
+                        // Country Dropdown (Hidden if single country logic handled)
+                        if (_countries.length > 1)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedCountryId,
+                              decoration: InputDecoration(
+                                hintText: 'Select Country',
+                                prefixIcon: Icon(
+                                  Icons.flag_outlined,
+                                  color: Colors.grey[600],
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                              ),
+                              items: _countries
+                                  .map(
+                                    (c) => DropdownMenuItem(
+                                      value: c['id'].toString(),
+                                      child: Text(c['name'] ?? ''),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: _onCountryChanged,
+                            ),
+                          ),
+
+                        // City Dropdown
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedCityId,
+                            decoration: InputDecoration(
+                              hintText: localizations.city,
+                              prefixIcon: Icon(
+                                Icons.location_city_outlined,
+                                color: Colors.grey[600],
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                            ),
+                            items: _cities
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c['id'].toString(),
+                                    child: Text(c['name'] ?? ''),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: _onCityChanged,
+                            validator: (val) =>
+                                val == null ? localizations.cityRequired : null,
+                          ),
+                        ),
+
+                        // District Dropdown
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedDistrictId,
+                            decoration: InputDecoration(
+                              hintText: localizations.district,
+                              prefixIcon: Icon(
+                                Icons.map_outlined,
+                                color: Colors.grey[600],
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                            ),
+                            items: _districts
+                                .map(
+                                  (d) => DropdownMenuItem(
+                                    value: d['id'].toString(),
+                                    child: Text(d['name'] ?? ''),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: _onDistrictChanged,
+                            validator: (val) => val == null
+                                ? localizations.districtRequired
+                                : null,
+                          ),
+                        ),
+
+                        // Locality Dropdown
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedLocalityId,
+                            decoration: InputDecoration(
+                              hintText: 'Locality / Neighborhood',
+                              prefixIcon: Icon(
+                                Icons.home_work_outlined,
+                                color: Colors.grey[600],
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                            ),
+                            items: _localities
+                                .map(
+                                  (l) => DropdownMenuItem(
+                                    value: l['id'].toString(),
+                                    child: Text(l['name'] ?? ''),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => _selectedLocalityId = val),
+                          ),
+                        ),
+
                         // Full Address Field
                         Container(
                           decoration: AppTheme.inputBoxDecoration(),
@@ -284,66 +529,6 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return localizations.addressRequired;
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // City Field
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: TextFormField(
-                            controller: _cityController,
-                            decoration: InputDecoration(
-                              hintText: localizations.city,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
-                              prefixIcon: Icon(
-                                Icons.location_city_outlined,
-                                color: Colors.grey[600],
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return localizations.cityRequired;
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // District Field
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: TextFormField(
-                            controller: _districtController,
-                            decoration: InputDecoration(
-                              hintText: localizations.district,
-                              hintStyle: TextStyle(color: Colors.grey[500]),
-                              prefixIcon: Icon(
-                                Icons.place_outlined,
-                                color: Colors.grey[600],
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return localizations.districtRequired;
                               }
                               return null;
                             },
@@ -379,7 +564,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _saveAddress,
+                            onPressed: (_isLoading || _isLoadingLocations)
+                                ? null
+                                : _saveAddress,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorScheme.primary,
                               foregroundColor: Colors.white,

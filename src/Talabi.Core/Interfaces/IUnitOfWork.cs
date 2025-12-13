@@ -148,6 +148,12 @@ public interface IUnitOfWork : IDisposable
     IRepository<ErrorLog> ErrorLogs { get; }
 
     /// <summary>
+    /// VendorDeliveryZone entity'leri için repository
+    /// </summary>
+    IRepository<VendorDeliveryZone> VendorDeliveryZones { get; }
+
+
+    /// <summary>
     /// Tüm değişiklikleri asenkron olarak veritabanına kaydeder
     /// </summary>
     /// <param name="cancellationToken">İptal token'ı</param>

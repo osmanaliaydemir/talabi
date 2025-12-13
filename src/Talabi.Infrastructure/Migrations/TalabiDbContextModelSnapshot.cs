@@ -362,6 +362,73 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("CategoryTranslations");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.City", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CountryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameTr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("Cities");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.Country", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameTr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Countries");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.Courier", b =>
                 {
                     b.Property<Guid>("Id")
@@ -444,6 +511,36 @@ namespace Talabi.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Couriers");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.CourierDeliveryZone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourierId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DistrictId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourierId");
+
+                    b.HasIndex("DistrictId");
+
+                    b.ToTable("CourierDeliveryZones");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.CourierEarning", b =>
@@ -644,6 +741,40 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("DeliveryProofs");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.District", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameTr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CityId");
+
+                    b.ToTable("Districts");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.ErrorLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -770,6 +901,40 @@ namespace Talabi.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("LegalDocuments");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.Locality", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DistrictId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameTr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DistrictId");
+
+                    b.ToTable("Localities");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.NotificationSettings", b =>
@@ -1253,16 +1418,17 @@ namespace Talabi.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("CityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CountryId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("District")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("DistrictId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FullAddress")
                         .IsRequired()
@@ -1273,6 +1439,9 @@ namespace Talabi.Infrastructure.Migrations
 
                     b.Property<double?>("Latitude")
                         .HasColumnType("float");
+
+                    b.Property<Guid?>("LocalityId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
@@ -1292,6 +1461,14 @@ namespace Talabi.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CityId");
+
+                    b.HasIndex("CountryId");
+
+                    b.HasIndex("DistrictId");
+
+                    b.HasIndex("LocalityId");
 
                     b.HasIndex("UserId");
 
@@ -1447,6 +1624,50 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("Vendors");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.VendorDeliveryZone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("DeliveryFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("DistrictId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("LocalityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("MinimumOrderAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DistrictId");
+
+                    b.HasIndex("LocalityId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("VendorDeliveryZones");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.VendorNotification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1579,6 +1800,17 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.City", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.Country", "Country")
+                        .WithMany("Cities")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.Courier", b =>
                 {
                     b.HasOne("Talabi.Core.Entities.AppUser", "User")
@@ -1588,6 +1820,25 @@ namespace Talabi.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.CourierDeliveryZone", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.Courier", "Courier")
+                        .WithMany()
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Talabi.Core.Entities.District", "District")
+                        .WithMany()
+                        .HasForeignKey("DistrictId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Courier");
+
+                    b.Navigation("District");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.CourierEarning", b =>
@@ -1666,6 +1917,17 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.District", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.City", "City")
+                        .WithMany("Districts")
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("City");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.FavoriteProduct", b =>
                 {
                     b.HasOne("Talabi.Core.Entities.Product", "Product")
@@ -1683,6 +1945,17 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.Locality", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.District", "District")
+                        .WithMany("Localities")
+                        .HasForeignKey("DistrictId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("District");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.NotificationSettings", b =>
@@ -1827,11 +2100,35 @@ namespace Talabi.Infrastructure.Migrations
 
             modelBuilder.Entity("Talabi.Core.Entities.UserAddress", b =>
                 {
+                    b.HasOne("Talabi.Core.Entities.City", "City")
+                        .WithMany()
+                        .HasForeignKey("CityId");
+
+                    b.HasOne("Talabi.Core.Entities.Country", "Country")
+                        .WithMany()
+                        .HasForeignKey("CountryId");
+
+                    b.HasOne("Talabi.Core.Entities.District", "District")
+                        .WithMany()
+                        .HasForeignKey("DistrictId");
+
+                    b.HasOne("Talabi.Core.Entities.Locality", "Locality")
+                        .WithMany()
+                        .HasForeignKey("LocalityId");
+
                     b.HasOne("Talabi.Core.Entities.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("City");
+
+                    b.Navigation("Country");
+
+                    b.Navigation("District");
+
+                    b.Navigation("Locality");
 
                     b.Navigation("User");
                 });
@@ -1858,6 +2155,31 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.VendorDeliveryZone", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.District", "District")
+                        .WithMany()
+                        .HasForeignKey("DistrictId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Talabi.Core.Entities.Locality", "Locality")
+                        .WithMany()
+                        .HasForeignKey("LocalityId");
+
+                    b.HasOne("Talabi.Core.Entities.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("District");
+
+                    b.Navigation("Locality");
+
+                    b.Navigation("Vendor");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.VendorNotification", b =>
                 {
                     b.HasOne("Talabi.Core.Entities.Vendor", "Vendor")
@@ -1881,11 +2203,26 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Translations");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.City", b =>
+                {
+                    b.Navigation("Districts");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.Country", b =>
+                {
+                    b.Navigation("Cities");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.Courier", b =>
                 {
                     b.Navigation("Notifications");
 
                     b.Navigation("OrderCouriers");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.District", b =>
+                {
+                    b.Navigation("Localities");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.Order", b =>

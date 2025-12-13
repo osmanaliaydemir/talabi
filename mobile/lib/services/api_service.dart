@@ -573,6 +573,60 @@ class ApiService {
   }
 
   /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
+  Future<List<Map<String, dynamic>>> getCountries() async {
+    try {
+      final response = await _dio.get('/locations/countries');
+      if (response.data is List) {
+        return List<Map<String, dynamic>>.from(response.data);
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching countries', e, stackTrace);
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getLocationCities(String countryId) async {
+    try {
+      final response = await _dio.get('/locations/cities/$countryId');
+      if (response.data is List) {
+        return List<Map<String, dynamic>>.from(response.data);
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching cities', e, stackTrace);
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getLocationDistricts(String cityId) async {
+    try {
+      final response = await _dio.get('/locations/districts/$cityId');
+      if (response.data is List) {
+        return List<Map<String, dynamic>>.from(response.data);
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching districts', e, stackTrace);
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getLocationLocalities(
+    String districtId,
+  ) async {
+    try {
+      final response = await _dio.get('/locations/localities/$districtId');
+      if (response.data is List) {
+        return List<Map<String, dynamic>>.from(response.data);
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching localities', e, stackTrace);
+      return [];
+    }
+  }
+
   Future<List<Product>> getSimilarProducts(
     String productId, {
     int page = 1,

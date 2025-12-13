@@ -108,6 +108,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.ILocationService, Talabi.Infrastructure.Services.LocationService>();
+builder.Services.AddScoped<IDeliveryZoneService, DeliveryZoneService>();
 builder.Services
     .AddScoped<Talabi.Core.Interfaces.IUserContextService, Talabi.Infrastructure.Services.UserContextService>();
 
@@ -126,6 +128,9 @@ using (var scope = app.Services.CreateScope())
 {
     var localizationService = scope.ServiceProvider.GetRequiredService<ILocalizationService>();
     await localizationService.LoadTranslationsAsync();
+    
+    var dbContext = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
+    await TalabiDbContextSeed.SeedAsync(dbContext);
 }
 
 app.UseRouting();

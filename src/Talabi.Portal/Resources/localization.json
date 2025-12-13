@@ -339,11 +339,6 @@
         "en-US": "Delete",
         "ar-SA": "حذف"
     },
-    "DeleteConfirmation": {
-        "tr-TR": "Bunu silmek istediğinize emin misiniz?",
-        "en-US": "Are you sure you want to delete this?",
-        "ar-SA": "هل أنت متأكد أنك تريد حذف هذا؟"
-    },
     "Cancel": {
         "tr-TR": "İptal",
         "en-US": "Cancel",
@@ -683,5 +678,125 @@
         "tr-TR": "Kaydedildi",
         "en-US": "Saved",
         "ar-SA": "تم الحفظ"
+    },
+    "AddZone": {
+        "tr-TR": "Yeni Bölge Ekle",
+        "en-US": "Add New Zone",
+        "ar-SA": "إضافة منطقة جديدة"
+    },
+    "Districts": {
+        "tr-TR": "İlçeler",
+        "en-US": "Districts",
+        "ar-SA": "المقاطعات"
+    },
+    "SelectMultipleDistricts": {
+        "tr-TR": "Birden fazla ilçe seçebilirsiniz",
+        "en-US": "You can select multiple districts",
+        "ar-SA": "يمكنك اختيار عدة مناطق"
+    },
+    "ActiveZones": {
+        "tr-TR": "Aktif Bölgeler",
+        "en-US": "Active Zones",
+        "ar-SA": "المناطق النشطة"
+    },
+    "NoZonesDefined": {
+        "tr-TR": "Henüz tanımlı bölge yok",
+        "en-US": "No zones defined yet",
+        "ar-SA": "لم يتم تحديد مناطق بعد"
+    },
+    "AddZones": {
+        "tr-TR": "Bölgeleri Ekle",
+        "en-US": "Add Zones",
+        "ar-SA": "إضافة المناطق"
+    },
+    "AllDistrictsAdded": {
+        "tr-TR": "Tüm ilçeler eklendi",
+        "en-US": "All districts added",
+        "ar-SA": "تم إضافة جميع المناطق"
+    },
+    "AddZoneInstructions": {
+        "tr-TR": "Sol taraftan ilçe seçerek başlayın",
+        "en-US": "Start by selecting districts from the left",
+        "ar-SA": "ابدأ باختيار المناطق من اليسار"
+    },
+    "Countries": {
+        "tr-TR": "Ülkeler",
+        "en-US": "Countries",
+        "ar-SA": "دول"
+    },
+    "Cities": {
+        "tr-TR": "Şehirler",
+        "en-US": "Cities",
+        "ar-SA": "مدن"
+    },
+    "Localities": {
+        "tr-TR": "Semtler/Mahalleler",
+        "en-US": "Localities",
+        "ar-SA": "المحليات"
+    },
+    "AddCountry": {
+        "tr-TR": "Ülke Ekle",
+        "en-US": "Add Country",
+        "ar-SA": "إضافة دولة"
+    },
+    "EditCountry": {
+        "tr-TR": "Ülke Düzenle",
+        "en-US": "Edit Country",
+        "ar-SA": "تعديل الدولة"
+    },
+    "AddCity": {
+        "tr-TR": "Şehir Ekle",
+        "en-US": "Add City",
+        "ar-SA": "إضافة مدينة"
+    },
+    "EditCity": {
+        "tr-TR": "Şehir Düzenle",
+        "en-US": "Edit City",
+        "ar-SA": "تعديل المدينة"
+    },
+    "AddDistrict": {
+        "tr-TR": "İlçe Ekle",
+        "en-US": "Add District",
+        "ar-SA": "إضافة حي"
+    },
+    "EditDistrict": {
+        "tr-TR": "İlçe Düzenle",
+        "en-US": "Edit District",
+        "ar-SA": "تعديل الحي"
+    },
+    "AddLocality": {
+        "tr-TR": "Semt Ekle",
+        "en-US": "Add Locality",
+        "ar-SA": "إضافة محلية"
+    },
+    "EditLocality": {
+        "tr-TR": "Semt Düzenle",
+        "en-US": "Edit Locality",
+        "ar-SA": "تعديل المحلية"
+    },
+    "NameTr": {
+        "tr-TR": "İsim (TR)",
+        "en-US": "Name (TR)",
+        "ar-SA": "الاسم (تركي)"
+    },
+    "NameEn": {
+        "tr-TR": "İsim (EN)",
+        "en-US": "Name (EN)",
+        "ar-SA": "الاسم (إنجليزي)"
+    },
+    "NameAr": {
+        "tr-TR": "İsim (AR)",
+        "en-US": "Name (AR)",
+        "ar-SA": "الاسم (عربي)"
+    },
+    "Code": {
+        "tr-TR": "Kod",
+        "en-US": "Code",
+        "ar-SA": "رمز"
+    },
+    "DeleteConfirmation": {
+        "tr-TR": "Silmek istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to delete?",
+        "ar-SA": "هل أنت متأكد أنك تريد الحذف؟"
     }
 }

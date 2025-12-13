@@ -42,6 +42,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<PromotionalBanner>? _promotionalBanners;
     private IRepository<PromotionalBannerTranslation>? _promotionalBannerTranslations;
     private IRepository<ErrorLog>? _errorLogs;
+    private IRepository<VendorDeliveryZone>? _vendorDeliveryZones;
 
     /// <summary>
     /// UnitOfWork constructor
@@ -191,6 +192,11 @@ public class UnitOfWork : IUnitOfWork
     /// ErrorLog entity'leri için repository
     /// </summary>
     public IRepository<ErrorLog> ErrorLogs => _errorLogs ??= new Repository<ErrorLog>(_context);
+
+    /// <summary>
+    /// VendorDeliveryZone entity'leri için repository
+    /// </summary>
+    public IRepository<VendorDeliveryZone> VendorDeliveryZones => _vendorDeliveryZones ??= new Repository<VendorDeliveryZone>(_context);
 
     /// <summary>
     /// Tüm değişiklikleri asenkron olarak veritabanına kaydeder

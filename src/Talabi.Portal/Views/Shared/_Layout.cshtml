@@ -312,6 +312,10 @@
             <a href="@Url.Action("Index", "DeliveryZones")">
                 <i class="fas fa-draw-polygon"></i> @LocalizationService.GetString("DeliveryZones")
             </a>
+            <!-- Location Management (Admin only in real app) -->
+             <a href="@Url.Action("Index", "Locations")">
+                <i class="fas fa-globe"></i> @LocalizationService.GetString("Countries")
+            </a>
             <!-- <div class="dropdown-menu-item">
                 <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-route"></i> @LocalizationService.GetString("Delivery Optimization")
