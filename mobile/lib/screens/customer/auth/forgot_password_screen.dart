@@ -81,6 +81,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               // Header with decorative shapes
@@ -177,7 +178,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ],
                   ),
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppTheme.spacingLarge),
+                    padding: EdgeInsets.fromLTRB(
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge +
+                          MediaQuery.of(context).padding.bottom,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(

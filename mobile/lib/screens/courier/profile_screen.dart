@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -356,7 +357,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
               'CourierProfileScreen: Language settings tapped',
             );
             Navigator.of(context).push(
-              MaterialPageRoute(
+              NoSlidePageRoute(
                 builder: (context) => const LanguageSettingsScreen(),
               ),
             );
@@ -405,7 +406,7 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
               'CourierProfileScreen: Legal documents tapped',
             );
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const LegalMenuScreen()),
+              NoSlidePageRoute(builder: (context) => const LegalMenuScreen()),
             );
           },
         ),

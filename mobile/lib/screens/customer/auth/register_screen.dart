@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -11,6 +12,7 @@ import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart
 import 'package:mobile/screens/vendor/register_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -44,6 +46,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TapLogger.logButtonPress(
         'Register',
         context: 'RegisterScreen - Validation Failed',
+      );
+      return;
+    }
+
+    final password = _passwordController.text;
+    final hasMinLength = password.length >= 6;
+    final hasDigit = password.contains(RegExp(r'[0-9]'));
+    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final hasLowercase = password.contains(RegExp(r'[a-z]'));
+    final hasSpecialChar = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+
+    if (!hasMinLength ||
+        !hasDigit ||
+        !hasUppercase ||
+        !hasLowercase ||
+        !hasSpecialChar) {
+      TapLogger.logButtonPress(
+        'Register',
+        context: 'RegisterScreen - Password Validation Failed',
+      );
+      // Show error toast
+      final localizations = AppLocalizations.of(context)!;
+      ToastMessage.show(
+        context,
+        message: localizations
+            .passwordMinLength, // Or a more generic "Invalid password" message
+        isSuccess: false,
       );
       return;
     }
@@ -86,7 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir (password ile otomatik login için)
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
+          NoSlidePageRoute(
             builder: (context) => EmailCodeVerificationScreen(
               email: email,
               password: password, // Otomatik login için password geçiliyor
@@ -111,23 +140,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
           // Duplicate email/username hatası için özel mesaj
           if (responseData is Map) {
-            if (responseData.containsKey('errors') &&
-                responseData['errors'] is List) {
-              final errors = responseData['errors'] as List;
-              final duplicateError = errors.firstWhere(
-                (error) =>
-                    error is Map &&
-                    (error['code'] == 'DuplicateEmail' ||
-                        error['code'] == 'DuplicateUserName'),
-                orElse: () => null,
-              );
+            String? specificError;
 
-              if (duplicateError != null) {
-                errorMessage = localizations.duplicateEmail;
-              } else if (responseData.containsKey('message')) {
-                errorMessage = responseData['message'].toString();
+            // 1. Check for 'errors' object
+            if (responseData.containsKey('errors')) {
+              final errors = responseData['errors'];
+
+              // Case A: Errors is a List (e.g. DuplicateEmail)
+              if (errors is List) {
+                final duplicateError = errors.firstWhere(
+                  (error) =>
+                      error is Map &&
+                      (error['code'] == 'DuplicateEmail' ||
+                          error['code'] == 'DuplicateUserName'),
+                  orElse: () => null,
+                );
+
+                if (duplicateError != null) {
+                  specificError = localizations.duplicateEmail;
+                }
               }
+              // Case B: Errors is a Map (Validation errors)
+              else if (errors is Map) {
+                // Check for 'Password' or 'password' key
+                final passwordErrors = errors['Password'] ?? errors['password'];
+
+                if (passwordErrors != null) {
+                  if (passwordErrors is List) {
+                    specificError = passwordErrors.join('\n');
+                  } else {
+                    specificError = passwordErrors.toString();
+                  }
+                }
+
+                // If no password specific error, look for other errors
+                if (specificError == null && errors.isNotEmpty) {
+                  final List<String> errorMessages = [];
+                  errors.forEach((key, value) {
+                    if (value is List) {
+                      errorMessages.addAll(value.map((e) => e.toString()));
+                    } else {
+                      errorMessages.add(value.toString());
+                    }
+                  });
+                  if (errorMessages.isNotEmpty) {
+                    specificError = errorMessages.join('\n');
+                  }
+                }
+              }
+            }
+
+            // 2. Set errorMessage
+            if (specificError != null) {
+              errorMessage = specificError;
             } else if (responseData.containsKey('message')) {
+              // Fallback to generic message if no specific error found
               errorMessage = responseData['message'].toString();
             }
           }
@@ -338,462 +405,537 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header with decorative shapes
-              SizedBox(
-                height: 170,
-                child: Stack(
-                  children: [
-                    // Decorative shape in top right
-                    Positioned(
-                      top: -50,
-                      right: -50,
-                      child: Container(
-                        width: 200,
-                        height: 220,
-                        decoration: BoxDecoration(
-                          color: AppTheme.lightOrange.withValues(alpha: 0.7),
-                          shape: BoxShape.circle,
-                        ),
+        child: Column(
+          children: [
+            // Header with modern decorative shapes
+            SizedBox(
+              height: 180 + MediaQuery.of(context).padding.top,
+              child: Stack(
+                children: [
+                  // Modern Abstract Shapes
+                  // Top Right - Large Faded Circle
+                  Positioned(
+                    top: -100,
+                    right: -100,
+                    child: Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
-                    // Decorative shape on left side (rounded pill shape)
-                    Positioned(
-                      bottom: 20, // Moved up to be fully visible
-                      left: -30,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryOrange,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(
-                              AppTheme.radiusXLarge * 2,
+                  ),
+                  // Top Right - Smaller brighter circle inside
+                  Positioned(
+                    top: -20,
+                    right: -20,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                  // Middle Left - Medium Circle
+                  Positioned(
+                    top: 40,
+                    left: -40,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+
+                  // Title Content
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Logo Icon
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
                             ),
-                            bottomRight: Radius.circular(
-                              AppTheme.radiusXLarge * 2,
+                            child: const Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 32,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    // Title - Centered
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
-                        ),
-                        child: Text(
-                          localizations.signUp,
-                          style: AppTheme.poppins(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textOnPrimary,
+                          const SizedBox(height: 12),
+                          Text(
+                            localizations.signUp,
+                            style: AppTheme.poppins(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textOnPrimary,
+                              letterSpacing: 1.0,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              // White Card Content
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: AppTheme.cardColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(
-                                AppTheme.radiusXLarge + AppTheme.spacingSmall,
-                              ),
-                              topRight: Radius.circular(
-                                AppTheme.radiusXLarge + AppTheme.spacingSmall,
-                              ),
+            ),
+            // White Card Content
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: AppTheme.cardColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(
+                              AppTheme.radiusXLarge + AppTheme.spacingSmall,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.shadowColor,
-                                blurRadius: 10,
-                                offset: Offset(0, -4),
-                              ),
-                            ],
+                            topRight: Radius.circular(
+                              AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                            ),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              AppTheme.spacingLarge,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.shadowColor,
+                              blurRadius: 10,
+                              offset: Offset(0, -4),
                             ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Welcome Message
-                                  Text(
-                                    localizations.createAccount,
-                                    style: AppTheme.poppins(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimary,
+                          ],
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            AppTheme.spacingLarge,
+                            AppTheme.spacingLarge,
+                            AppTheme.spacingLarge,
+                            AppTheme.spacingLarge +
+                                MediaQuery.of(context).padding.bottom,
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Welcome Message
+                                Text(
+                                  localizations.createAccount,
+                                  style: AppTheme.poppins(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  localizations.registerDescription,
+                                  style: AppTheme.poppins(
+                                    fontSize: 13,
+                                    color: AppTheme.textSecondary,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Full Name Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    localizations.registerDescription,
-                                    style: AppTheme.poppins(
-                                      fontSize: 13,
-                                      color: AppTheme.textSecondary,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Full Name Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
+                                  child: TextFormField(
+                                    controller: _fullNameController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.fullName,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
                                       ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _fullNameController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.fullName,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.person_outline,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
+                                      prefixIcon: const Icon(
+                                        Icons.person_outline,
                                       ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.fullNameRequired;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // Email Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _emailController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.emailAddress,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.email_outlined,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
-                                      ),
-                                      keyboardType: TextInputType.emailAddress,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.emailRequired;
-                                        }
-                                        if (!value.contains('@')) {
-                                          return localizations.validEmail;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(1),
-                                  // Password Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _passwordController,
-                                      obscureText: _obscurePassword,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.password,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.lock_outline,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _obscurePassword
-                                                ? Icons.visibility_off_outlined
-                                                : Icons.visibility_outlined,
-                                            color: AppTheme.textSecondary,
+                                      prefixIconColor:
+                                          WidgetStateColor.resolveWith(
+                                            (states) =>
+                                                states.contains(
+                                                  WidgetState.error,
+                                                )
+                                                ? AppTheme.error
+                                                : AppTheme.textSecondary,
                                           ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _obscurePassword =
-                                                  !_obscurePassword;
-                                            });
-                                          },
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.passwordRequired;
-                                        }
-                                        if (value.length < 6) {
-                                          return localizations
-                                              .passwordMinLength;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  // Register Button
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: _isLoading ? () {} : _register,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.primaryOrange,
-                                        foregroundColor: AppTheme.textOnPrimary,
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: AppTheme.spacingMedium,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            AppTheme.radiusMedium,
-                                          ),
-                                        ),
-                                        elevation: AppTheme.elevationNone,
-                                      ),
-                                      child: _isLoading
-                                          ? const SizedBox(
-                                              height: 20,
-                                              width: 20,
-                                              child: CircularProgressIndicator(
-                                                color: AppTheme.textOnPrimary,
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                          : Text(
-                                              localizations.signUp,
-                                              style: AppTheme.poppins(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Or continue with separator
-                                  Row(
-                                    children: [
-                                      const Expanded(
-                                        child: Divider(
-                                          color: AppTheme.dividerColor,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingMedium,
-                                        ),
-                                        child: Text(
-                                          localizations.orContinueWith,
-                                          style: AppTheme.poppins(
-                                            color: AppTheme.textSecondary,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                      const Expanded(
-                                        child: Divider(
-                                          color: AppTheme.dividerColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  // Social Login Buttons
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildSocialButton(
-                                          icon: Icons.g_mobiledata,
-                                          label: localizations.google,
-                                          onPressed: _signInWithGoogle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildSocialButton(
-                                          icon: Icons.apple,
-                                          label: localizations.apple,
-                                          onPressed: _signInWithApple,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildSocialButton(
-                                          icon: Icons.facebook,
-                                          label: localizations.facebook,
-                                          onPressed: _signInWithFacebook,
-                                          isFacebook: true,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildSocialButton(
-                                          icon: Icons.store,
-                                          label: localizations.vendor,
-                                          onPressed: () {
-                                            TapLogger.logButtonPress(
-                                              'Vendor Register',
-                                              context: 'RegisterScreen',
-                                            );
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const VendorRegisterScreen(),
-                                              ),
-                                            );
-                                          },
-                                          isVendor: true,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Login Link - Modern Design
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppTheme.primaryOrange.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          AppTheme.lightOrange.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                        ],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                      border: Border.all(
-                                        color: AppTheme.primaryOrange
-                                            .withValues(alpha: 0.3),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
-                                        ),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
                                             horizontal: AppTheme.spacingMedium,
                                             vertical: AppTheme.spacingMedium,
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Icon(
-                                                Icons.login_rounded,
-                                                color: AppTheme.primaryOrange,
-                                                size: 20,
-                                              ),
-                                              AppTheme.horizontalSpace(0.5),
-                                              Text(
-                                                localizations
-                                                    .alreadyHaveAccount,
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.textSecondary,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              Text(
-                                                localizations.signIn,
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.primaryOrange,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              const Icon(
-                                                Icons.arrow_forward_rounded,
-                                                color: AppTheme.primaryOrange,
-                                                size: 18,
-                                              ),
-                                            ],
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations.fullNameRequired;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                // Email Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _emailController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.emailAddress,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.email_outlined,
+                                      ),
+                                      prefixIconColor:
+                                          WidgetStateColor.resolveWith(
+                                            (states) =>
+                                                states.contains(
+                                                  WidgetState.error,
+                                                )
+                                                ? AppTheme.error
+                                                : AppTheme.textSecondary,
                                           ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
+                                          ),
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations.emailRequired;
+                                      }
+                                      if (!value.contains('@')) {
+                                        return localizations.validEmail;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(1),
+                                // Password Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _passwordController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    obscureText: _obscurePassword,
+                                    onChanged: (value) {
+                                      setState(() {});
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: localizations.password,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.lock_outline,
+                                      ),
+                                      prefixIconColor:
+                                          WidgetStateColor.resolveWith(
+                                            (states) =>
+                                                states.contains(
+                                                  WidgetState.error,
+                                                )
+                                                ? AppTheme.error
+                                                : AppTheme.textSecondary,
+                                          ),
+                                      suffixIconColor:
+                                          WidgetStateColor.resolveWith(
+                                            (states) =>
+                                                states.contains(
+                                                  WidgetState.error,
+                                                )
+                                                ? AppTheme.error
+                                                : AppTheme.textSecondary,
+                                          ),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword =
+                                                !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
+                                          ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations.passwordRequired;
+                                      }
+                                      // We use strict validaton in button press, here we check length only to be nice
+                                      if (value.length < 6) {
+                                        return localizations.passwordMinLength;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                // Password Validation Widget
+                                if (_passwordController.text.isNotEmpty)
+                                  PasswordValidationWidget(
+                                    password: _passwordController.text,
+                                  ),
+                                const SizedBox(height: 12),
+                                // Register Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: _isLoading ? () {} : _register,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primaryOrange,
+                                      foregroundColor: AppTheme.textOnPrimary,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: AppTheme.spacingMedium,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusMedium,
+                                        ),
+                                      ),
+                                      elevation: AppTheme.elevationNone,
+                                    ),
+                                    child: _isLoading
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              color: AppTheme.textOnPrimary,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : Text(
+                                            localizations.signUp,
+                                            style: AppTheme.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Or continue with separator
+                                Row(
+                                  children: [
+                                    const Expanded(
+                                      child: Divider(
+                                        color: AppTheme.dividerColor,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppTheme.spacingMedium,
+                                      ),
+                                      child: Text(
+                                        localizations.orContinueWith,
+                                        style: AppTheme.poppins(
+                                          color: AppTheme.textSecondary,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    const Expanded(
+                                      child: Divider(
+                                        color: AppTheme.dividerColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                // Social Login Buttons
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        icon: Icons.g_mobiledata,
+                                        label: localizations.google,
+                                        onPressed: _signInWithGoogle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        icon: Icons.apple,
+                                        label: localizations.apple,
+                                        onPressed: _signInWithApple,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        icon: Icons.facebook,
+                                        label: localizations.facebook,
+                                        onPressed: _signInWithFacebook,
+                                        isFacebook: true,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        icon: Icons.store,
+                                        label: localizations.vendor,
+                                        onPressed: () {
+                                          TapLogger.logButtonPress(
+                                            'Vendor Register',
+                                            context: 'RegisterScreen',
+                                          );
+                                          Navigator.pushReplacement(
+                                            context,
+                                            NoSlidePageRoute(
+                                              builder: (context) =>
+                                                  const VendorRegisterScreen(),
+                                            ),
+                                          );
+                                        },
+                                        isVendor: true,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Login Link - Modern Design
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppTheme.primaryOrange.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        AppTheme.lightOrange.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                    border: Border.all(
+                                      color: AppTheme.primaryOrange.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppTheme.spacingMedium,
+                                          vertical: AppTheme.spacingMedium,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Icons.login_rounded,
+                                              color: AppTheme.primaryOrange,
+                                              size: 20,
+                                            ),
+                                            AppTheme.horizontalSpace(0.5),
+                                            Text(
+                                              localizations.alreadyHaveAccount,
+                                              style: AppTheme.poppins(
+                                                color: AppTheme.textSecondary,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            AppTheme.horizontalSpace(0.25),
+                                            Text(
+                                              localizations.signIn,
+                                              style: AppTheme.poppins(
+                                                color: AppTheme.primaryOrange,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            AppTheme.horizontalSpace(0.25),
+                                            const Icon(
+                                              Icons.arrow_forward_rounded,
+                                              color: AppTheme.primaryOrange,
+                                              size: 18,
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                  AppTheme.verticalSpace(1),
-                                ],
-                              ),
+                                ),
+                                AppTheme.verticalSpace(1),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

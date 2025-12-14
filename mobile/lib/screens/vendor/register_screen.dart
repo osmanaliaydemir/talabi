@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -97,7 +98,7 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
+          NoSlidePageRoute(
             builder: (context) =>
                 EmailCodeVerificationScreen(email: email, password: password),
           ),
@@ -185,811 +186,786 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
             ],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Purple Header for Vendor
-              SizedBox(
-                height: 160,
-                child: Stack(
-                  children: [
-                    // Decorative circles
-                    Positioned(
-                      top: -80,
-                      right: -60,
-                      child: Container(
-                        width: 220,
-                        height: 220,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              AppTheme.textOnPrimary.withValues(alpha: 0.15),
-                              AppTheme.textOnPrimary.withValues(alpha: 0.05),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
+        child: Column(
+          children: [
+            // Purple Header for Vendor
+            SizedBox(
+              height: 180 + MediaQuery.of(context).padding.top,
+              child: Stack(
+                children: [
+                  // Modern Abstract Shapes
+                  Positioned(
+                    top: -100,
+                    right: -100,
+                    child: Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
-                    Positioned(
-                      top: 40,
-                      left: -40,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              AppTheme.textOnPrimary.withValues(alpha: 0.12),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
+                  ),
+                  Positioned(
+                    top: -20,
+                    right: -20,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
-                    // Content - Row layout
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingLarge,
+                  ),
+                  Positioned(
+                    top: 40,
+                    left: -40,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Left Icon
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: AppTheme.textOnPrimary.withValues(
-                                  alpha: 0.2,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusMedium + 2,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.person_add_rounded,
-                                  size: 24,
-                                  color: AppTheme.textOnPrimary,
-                                ),
-                              ),
+                    ),
+                  ),
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 4,
+                    left: AppTheme.spacingMedium,
+                    child: _buildCircleButton(
+                      icon: Icons.arrow_back,
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          NoSlidePageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Title Content
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
                             ),
-                            // Center Title
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  localizations.vendorRegister,
-                                  style: AppTheme.poppins(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textOnPrimary,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                AppTheme.verticalSpace(0.25),
-                                Text(
-                                  localizations.talabiBusiness,
-                                  style: AppTheme.poppins(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppTheme.textOnPrimary.withValues(
-                                      alpha: 0.85,
-                                    ),
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                              ],
+                            child: const Icon(
+                              Icons.store,
+                              size: 32,
+                              color: Colors.white,
                             ),
-                            // Right App Icon
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: AppTheme.textOnPrimary,
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusMedium + 2,
-                                ),
-                                boxShadow: [
-                                  const BoxShadow(
-                                    color: AppTheme.shadowColor,
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.store_rounded,
-                                  size: 24,
-                                  color: AppTheme.vendorPrimary,
-                                ),
-                              ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            localizations.vendorRegister,
+                            style: AppTheme.poppins(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textOnPrimary,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // White Card Content
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.only(
+                          top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: AppTheme.cardColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(
+                              AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                            ),
+                            topRight: Radius.circular(
+                              AppTheme.radiusXLarge + AppTheme.spacingSmall,
+                            ),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.shadowColor,
+                              blurRadius: 10,
+                              offset: Offset(0, -4),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // White Card Content
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            AppTheme.spacingLarge,
+                            AppTheme.spacingLarge,
+                            AppTheme.spacingLarge,
+                            AppTheme.spacingLarge +
+                                MediaQuery.of(context).padding.bottom,
                           ),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.cardColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(
-                                AppTheme.radiusXLarge + AppTheme.spacingSmall,
-                              ),
-                              topRight: Radius.circular(
-                                AppTheme.radiusXLarge + AppTheme.spacingSmall,
-                              ),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.shadowColor,
-                                blurRadius: 10,
-                                offset: Offset(0, -4),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              AppTheme.spacingLarge,
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Welcome Message
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.business_center,
-                                        color: AppTheme.vendorPrimary,
-                                        size: 32,
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Welcome Message
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.business_center,
+                                      color: AppTheme.vendorPrimary,
+                                      size: 32,
+                                    ),
+                                    AppTheme.horizontalSpace(0.75),
+                                    Expanded(
+                                      child: Text(
+                                        localizations.createBusinessAccount,
+                                        style: AppTheme.poppins(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimary,
+                                        ),
                                       ),
-                                      AppTheme.horizontalSpace(0.75),
-                                      Expanded(
-                                        child: Text(
-                                          localizations.createBusinessAccount,
-                                          style: AppTheme.poppins(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppTheme.textPrimary,
+                                    ),
+                                  ],
+                                ),
+                                AppTheme.verticalSpace(0.5),
+                                Text(
+                                  localizations.createYourStoreAndStartSelling,
+                                  style: AppTheme.poppins(
+                                    fontSize: 14,
+                                    color: AppTheme.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(1.5),
+                                // Business Name Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _businessNameController,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.businessName,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.store_outlined,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  AppTheme.verticalSpace(0.5),
-                                  Text(
-                                    localizations
-                                        .createYourStoreAndStartSelling,
-                                    style: AppTheme.poppins(
-                                      fontSize: 14,
-                                      color: AppTheme.textSecondary,
-                                      height: 1.5,
                                     ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations
+                                            .businessNameRequired;
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  AppTheme.verticalSpace(1.5),
-                                  // Business Name Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _businessNameController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.businessName,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.store_outlined,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations
-                                              .businessNameRequired;
-                                        }
-                                        return null;
-                                      },
+                                ),
+                                AppTheme.verticalSpace(1),
+                                // Full Name Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
                                     ),
                                   ),
-                                  AppTheme.verticalSpace(1),
-                                  // Full Name Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
+                                  child: TextFormField(
+                                    controller: _fullNameController,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.fullName,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
                                       ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _fullNameController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.fullName,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.person_outline,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
+                                      prefixIcon: const Icon(
+                                        Icons.person_outline,
+                                        color: AppTheme.textSecondary,
                                       ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.fullNameRequired;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(1),
-                                  // Email Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _emailController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.emailAddress,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.email_outlined,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
-                                      ),
-                                      keyboardType: TextInputType.emailAddress,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.emailRequired;
-                                        }
-                                        if (!RegExp(
-                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                        ).hasMatch(value)) {
-                                          return localizations.validEmail;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(1),
-                                  // Password Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                    ),
-                                    child: TextFormField(
-                                      controller: _passwordController,
-                                      obscureText: _obscurePassword,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.password,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.lock_outline,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _obscurePassword
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
-                                            color: AppTheme.textSecondary,
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
                                           ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _obscurePassword =
-                                                  !_obscurePassword;
-                                            });
-                                          },
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations.fullNameRequired;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(1),
+                                // Email Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _emailController,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.emailAddress,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
                                       ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations.passwordRequired;
-                                        }
-                                        if (value.length < 6) {
-                                          return localizations
-                                              .passwordMinLength;
-                                        }
-                                        return null;
-                                      },
+                                      prefixIcon: const Icon(
+                                        Icons.email_outlined,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
+                                          ),
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations.emailRequired;
+                                      }
+                                      if (!RegExp(
+                                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                      ).hasMatch(value)) {
+                                        return localizations.validEmail;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(1),
+                                // Password Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
                                     ),
                                   ),
-                                  AppTheme.verticalSpace(1),
-                                  // Business Type Selection
-                                  Text(
-                                    'İşletme Türü',
-                                    style: AppTheme.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textPrimary,
+                                  child: TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.password,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.lock_outline,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword =
+                                                !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
+                                          ),
                                     ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations.passwordRequired;
+                                      }
+                                      if (value.length < 6) {
+                                        return localizations.passwordMinLength;
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  AppTheme.verticalSpace(0.5),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedVendorType =
-                                                  1; // Restaurant
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.all(
-                                              AppTheme.spacingMedium,
+                                ),
+                                AppTheme.verticalSpace(1),
+                                // Business Type Selection
+                                Text(
+                                  'İşletme Türü',
+                                  style: AppTheme.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(0.5),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedVendorType =
+                                                1; // Restaurant
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(
+                                            AppTheme.spacingMedium,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _selectedVendorType == 1
+                                                ? AppTheme.vendorPrimary
+                                                      .withValues(alpha: 0.1)
+                                                : AppTheme.backgroundColor,
+                                            borderRadius: BorderRadius.circular(
+                                              AppTheme.radiusMedium,
                                             ),
-                                            decoration: BoxDecoration(
+                                            border: Border.all(
                                               color: _selectedVendorType == 1
                                                   ? AppTheme.vendorPrimary
-                                                        .withValues(alpha: 0.1)
-                                                  : AppTheme.backgroundColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AppTheme.radiusMedium,
-                                                  ),
-                                              border: Border.all(
+                                                  : AppTheme.borderColor,
+                                              width: _selectedVendorType == 1
+                                                  ? 2
+                                                  : 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.restaurant,
                                                 color: _selectedVendorType == 1
                                                     ? AppTheme.vendorPrimary
-                                                    : AppTheme.borderColor,
-                                                width: _selectedVendorType == 1
-                                                    ? 2
-                                                    : 1,
+                                                    : AppTheme.textSecondary,
+                                                size: 24,
                                               ),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.restaurant,
+                                              AppTheme.horizontalSpace(0.5),
+                                              Text(
+                                                'Restoran',
+                                                style: AppTheme.poppins(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
                                                   color:
                                                       _selectedVendorType == 1
                                                       ? AppTheme.vendorPrimary
                                                       : AppTheme.textSecondary,
-                                                  size: 24,
                                                 ),
-                                                AppTheme.horizontalSpace(0.5),
-                                                Text(
-                                                  'Restoran',
-                                                  style: AppTheme.poppins(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    color:
-                                                        _selectedVendorType == 1
-                                                        ? AppTheme.vendorPrimary
-                                                        : AppTheme
-                                                              .textSecondary,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                      AppTheme.horizontalSpace(1),
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedVendorType = 2; // Market
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.all(
-                                              AppTheme.spacingMedium,
+                                    ),
+                                    AppTheme.horizontalSpace(1),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedVendorType = 2; // Market
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(
+                                            AppTheme.spacingMedium,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _selectedVendorType == 2
+                                                ? Colors.green.withValues(
+                                                    alpha: 0.1,
+                                                  )
+                                                : AppTheme.backgroundColor,
+                                            borderRadius: BorderRadius.circular(
+                                              AppTheme.radiusMedium,
                                             ),
-                                            decoration: BoxDecoration(
+                                            border: Border.all(
                                               color: _selectedVendorType == 2
-                                                  ? Colors.green.withValues(
-                                                      alpha: 0.1,
-                                                    )
-                                                  : AppTheme.backgroundColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AppTheme.radiusMedium,
-                                                  ),
-                                              border: Border.all(
+                                                  ? Colors.green
+                                                  : AppTheme.borderColor,
+                                              width: _selectedVendorType == 2
+                                                  ? 2
+                                                  : 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.shopping_basket,
                                                 color: _selectedVendorType == 2
                                                     ? Colors.green
-                                                    : AppTheme.borderColor,
-                                                width: _selectedVendorType == 2
-                                                    ? 2
-                                                    : 1,
+                                                    : AppTheme.textSecondary,
+                                                size: 24,
                                               ),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.shopping_basket,
+                                              AppTheme.horizontalSpace(0.5),
+                                              Text(
+                                                'Market',
+                                                style: AppTheme.poppins(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
                                                   color:
                                                       _selectedVendorType == 2
                                                       ? Colors.green
                                                       : AppTheme.textSecondary,
-                                                  size: 24,
                                                 ),
-                                                AppTheme.horizontalSpace(0.5),
-                                                Text(
-                                                  'Market',
-                                                  style: AppTheme.poppins(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    color:
-                                                        _selectedVendorType == 2
-                                                        ? Colors.green
-                                                        : AppTheme
-                                                              .textSecondary,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                AppTheme.verticalSpace(1),
+                                // Phone Field
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.backgroundColor,
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _phoneController,
+                                    decoration: InputDecoration(
+                                      hintText: localizations.phoneNumber,
+                                      hintStyle: AppTheme.poppins(
+                                        color: AppTheme.textHint,
+                                        fontSize: 14,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.phone_outlined,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppTheme.spacingMedium,
+                                            vertical: AppTheme.spacingMedium,
+                                          ),
+                                    ),
+                                    keyboardType: TextInputType.phone,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return localizations
+                                            .phoneNumberRequired;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                AppTheme.verticalSpace(2),
+                                // Register Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: _isLoading ? null : _register,
+                                    style: AppTheme.primaryButtonVendor,
+                                    child: _isLoading
+                                        ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 3,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    AppTheme.textOnPrimary,
                                                   ),
-                                                ),
-                                              ],
+                                            ),
+                                          )
+                                        : Text(
+                                            localizations.createVendorAccount,
+                                            style: AppTheme.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.textOnPrimary,
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
                                   ),
-                                  AppTheme.verticalSpace(1),
-                                  // Phone Field
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.backgroundColor,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
+                                ),
+                                AppTheme.verticalSpace(1.5),
+                                // Login Link
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      localizations.alreadyHaveVendorAccount,
+                                      style: AppTheme.poppins(
+                                        color: AppTheme.textSecondary,
                                       ),
                                     ),
-                                    child: TextFormField(
-                                      controller: _phoneController,
-                                      decoration: InputDecoration(
-                                        hintText: localizations.phoneNumber,
-                                        hintStyle: AppTheme.poppins(
-                                          color: AppTheme.textHint,
-                                          fontSize: 14,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.phone_outlined,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingMedium,
-                                              vertical: AppTheme.spacingMedium,
-                                            ),
-                                      ),
-                                      keyboardType: TextInputType.phone,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return localizations
-                                              .phoneNumberRequired;
-                                        }
-                                        return null;
+                                    InkWell(
+                                      onTap: () {
+                                        TapLogger.logNavigation(
+                                          'VendorRegister',
+                                          'VendorLogin',
+                                        );
+                                        Navigator.pushReplacement(
+                                          context,
+                                          NoSlidePageRoute(
+                                            builder: (context) =>
+                                                const VendorLoginScreen(),
+                                          ),
+                                        );
                                       },
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(2),
-                                  // Register Button
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _register,
-                                      style: AppTheme.primaryButtonVendor,
-                                      child: _isLoading
-                                          ? const SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 3,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                      Color
-                                                    >(AppTheme.textOnPrimary),
-                                              ),
-                                            )
-                                          : Text(
-                                              localizations.createVendorAccount,
-                                              style: AppTheme.poppins(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.textOnPrimary,
-                                              ),
-                                            ),
-                                    ),
-                                  ),
-                                  AppTheme.verticalSpace(1.5),
-                                  // Login Link
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        localizations.alreadyHaveVendorAccount,
+                                      child: Text(
+                                        localizations.vendorLogin,
                                         style: AppTheme.poppins(
-                                          color: AppTheme.textSecondary,
+                                          color: AppTheme.vendorPrimary,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      InkWell(
-                                        onTap: () {
-                                          TapLogger.logNavigation(
-                                            'VendorRegister',
-                                            'VendorLogin',
-                                          );
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const VendorLoginScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
-                                          localizations.vendorLogin,
-                                          style: AppTheme.poppins(
-                                            color: AppTheme.vendorPrimary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Switch to Customer Account - Modern Design
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppTheme.primaryOrange.withValues(
+                                          alpha: 0.1,
                                         ),
+                                        AppTheme.lightOrange.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                    border: Border.all(
+                                      color: AppTheme.primaryOrange.withValues(
+                                        alpha: 0.3,
                                       ),
-                                    ],
+                                      width: 1.5,
+                                    ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  // Switch to Customer Account - Modern Design
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppTheme.primaryOrange.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          AppTheme.lightOrange.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                        ],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                      ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium,
                                       ),
-                                      border: Border.all(
-                                        color: AppTheme.primaryOrange
-                                            .withValues(alpha: 0.3),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
+                                      onTap: () {
+                                        TapLogger.logNavigation(
+                                          'VendorRegister',
+                                          'CustomerRegister',
+                                        );
+                                        Navigator.pushReplacement(
+                                          context,
+                                          NoSlidePageRoute(
+                                            builder: (context) =>
+                                                const RegisterScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppTheme.spacingMedium,
+                                          vertical: AppTheme.spacingSmall + 4,
                                         ),
-                                        onTap: () {
-                                          TapLogger.logNavigation(
-                                            'VendorRegister',
-                                            'CustomerRegister',
-                                          );
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const RegisterScreen(),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Icons.shopping_bag_outlined,
+                                              color: AppTheme.primaryOrange,
+                                              size: 20,
                                             ),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppTheme.spacingMedium,
-                                            vertical: AppTheme.spacingSmall + 4,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Icon(
-                                                Icons.shopping_bag_outlined,
+                                            AppTheme.horizontalSpace(0.5),
+                                            Text(
+                                              localizations.isCustomerAccount,
+                                              style: AppTheme.poppins(
+                                                color: AppTheme.textSecondary,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            AppTheme.horizontalSpace(0.25),
+                                            Text(
+                                              localizations.createAccount,
+                                              style: AppTheme.poppins(
                                                 color: AppTheme.primaryOrange,
-                                                size: 20,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                              AppTheme.horizontalSpace(0.5),
-                                              Text(
-                                                localizations.isCustomerAccount,
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.textSecondary,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              Text(
-                                                localizations.createAccount,
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.primaryOrange,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              const Icon(
-                                                Icons.arrow_forward_rounded,
-                                                color: AppTheme.primaryOrange,
-                                                size: 18,
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                            AppTheme.horizontalSpace(0.25),
+                                            const Icon(
+                                              Icons.arrow_forward_rounded,
+                                              color: AppTheme.primaryOrange,
+                                              size: 18,
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
-                                  // Switch to Courier Account - Modern Design
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppTheme.courierPrimary.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          AppTheme.courierLight.withValues(
-                                            alpha: 0.05,
-                                          ),
-                                        ],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
+                                ),
+                                const SizedBox(height: 12),
+                                // Switch to Courier Account - Modern Design
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppTheme.courierPrimary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        AppTheme.courierLight.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
+                                    border: Border.all(
+                                      color: AppTheme.courierPrimary.withValues(
+                                        alpha: 0.3,
                                       ),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium,
                                       ),
-                                      border: Border.all(
-                                        color: AppTheme.courierPrimary
-                                            .withValues(alpha: 0.3),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
+                                      onTap: () {
+                                        TapLogger.logNavigation(
+                                          'VendorRegister',
+                                          'CourierLogin',
+                                        );
+                                        Navigator.pushReplacement(
+                                          context,
+                                          NoSlidePageRoute(
+                                            builder: (context) =>
+                                                const CourierLoginScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppTheme.spacingMedium,
+                                          vertical: AppTheme.spacingSmall + 4,
                                         ),
-                                        onTap: () {
-                                          TapLogger.logNavigation(
-                                            'VendorRegister',
-                                            'CourierLogin',
-                                          );
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const CourierLoginScreen(),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Icons.delivery_dining_rounded,
+                                              color: AppTheme.courierPrimary,
+                                              size: 20,
                                             ),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppTheme.spacingMedium,
-                                            vertical: AppTheme.spacingSmall + 4,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Icon(
-                                                Icons.delivery_dining_rounded,
+                                            AppTheme.horizontalSpace(0.5),
+                                            Text(
+                                              localizations.areYouCourier,
+                                              style: AppTheme.poppins(
+                                                color: AppTheme.textSecondary,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            AppTheme.horizontalSpace(0.25),
+                                            Text(
+                                              localizations.courierLoginLink,
+                                              style: AppTheme.poppins(
                                                 color: AppTheme.courierPrimary,
-                                                size: 20,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                              AppTheme.horizontalSpace(0.5),
-                                              Text(
-                                                localizations.areYouCourier,
-                                                style: AppTheme.poppins(
-                                                  color: AppTheme.textSecondary,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              Text(
-                                                localizations.courierLoginLink,
-                                                style: AppTheme.poppins(
-                                                  color:
-                                                      AppTheme.courierPrimary,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              AppTheme.horizontalSpace(0.25),
-                                              const Icon(
-                                                Icons.arrow_forward_rounded,
-                                                color: AppTheme.courierPrimary,
-                                                size: 18,
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                            AppTheme.horizontalSpace(0.25),
+                                            const Icon(
+                                              Icons.arrow_forward_rounded,
+                                              color: AppTheme.courierPrimary,
+                                              size: 18,
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = Colors.black,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

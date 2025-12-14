@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/logger_service.dart';
@@ -26,7 +27,7 @@ class CourierBottomNav extends StatelessWidget {
         switch (index) {
           case 0:
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const CourierDashboardScreen()),
+              NoSlidePageRoute(builder: (_) => const CourierDashboardScreen()),
             );
             break;
           case 1:

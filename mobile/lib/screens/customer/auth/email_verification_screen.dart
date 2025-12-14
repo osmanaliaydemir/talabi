@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
@@ -86,6 +87,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               // Orange Header with Gradient
@@ -171,7 +173,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       ],
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(AppTheme.spacingLarge),
+                      padding: EdgeInsets.fromLTRB(
+                        AppTheme.spacingLarge,
+                        AppTheme.spacingLarge,
+                        AppTheme.spacingLarge,
+                        AppTheme.spacingLarge +
+                            MediaQuery.of(context).padding.bottom,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -218,7 +226,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                             child: ElevatedButton(
                               onPressed: () {
                                 Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
+                                  NoSlidePageRoute(
                                     builder: (context) => const LoginScreen(),
                                   ),
                                   (route) => false,

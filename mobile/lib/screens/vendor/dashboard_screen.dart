@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
+import 'package:flutter/material.dart';
 
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/vendor/orders_screen.dart';
@@ -211,7 +212,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             );
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              NoSlidePageRoute(
                                 builder: (context) =>
                                     const VendorOrdersScreen(),
                               ),
@@ -230,7 +231,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             );
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              NoSlidePageRoute(
                                 builder: (context) =>
                                     const VendorProductsScreen(),
                               ),
@@ -249,7 +250,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             );
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              NoSlidePageRoute(
                                 builder: (context) =>
                                     const VendorReportsScreen(),
                               ),
@@ -270,7 +271,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             );
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              NoSlidePageRoute(
                                 builder: (context) =>
                                     const VendorReviewsScreen(),
                               ),

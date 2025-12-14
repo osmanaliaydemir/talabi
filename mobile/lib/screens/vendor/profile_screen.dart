@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mobile/config/app_theme.dart';
@@ -234,7 +235,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           onTap: () async {
             LoggerService().debug('VendorProfileScreen: Edit profile tapped');
             final result = await Navigator.of(context).push(
-              MaterialPageRoute(
+              NoSlidePageRoute(
                 builder: (context) => const VendorEditProfileScreen(),
               ),
             );
@@ -251,7 +252,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           onTap: () {
             LoggerService().debug('VendorProfileScreen: Settings tapped');
             Navigator.of(context).push(
-              MaterialPageRoute(
+              NoSlidePageRoute(
                 builder: (context) => const VendorSettingsScreen(),
               ),
             );
@@ -267,7 +268,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
               'VendorProfileScreen: Language settings tapped',
             );
             Navigator.of(context).push(
-              MaterialPageRoute(
+              NoSlidePageRoute(
                 builder: (context) => const LanguageSettingsScreen(),
               ),
             );

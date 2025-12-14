@@ -73,10 +73,36 @@ public class AddressesControllerTests
         var userId = "user-1";
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
+        var cityId = Guid.NewGuid();
+        var district1Id = Guid.NewGuid();
+        var district2Id = Guid.NewGuid();
+
         var addresses = new List<UserAddress>
         {
-            new UserAddress { Id = Guid.NewGuid(), UserId = userId, Title = "Home", IsDefault = true, FullAddress = "Address 1", City = "Ist", District = "Sisli" },
-            new UserAddress { Id = Guid.NewGuid(), UserId = userId, Title = "Work", IsDefault = false, FullAddress = "Address 2", City = "Ist", District = "Besiktas" }
+            new UserAddress
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Title = "Home",
+                IsDefault = true,
+                FullAddress = "Address 1",
+                CityId = cityId,
+                City = new City { Id = cityId, NameTr = "Istanbul", NameEn = "Istanbul" },
+                DistrictId = district1Id,
+                District = new District { Id = district1Id, NameTr = "Sisli", NameEn = "Sisli", CityId = cityId }
+            },
+            new UserAddress
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Title = "Work",
+                IsDefault = false,
+                FullAddress = "Address 2",
+                CityId = cityId,
+                City = new City { Id = cityId, NameTr = "Istanbul", NameEn = "Istanbul" },
+                DistrictId = district2Id,
+                District = new District { Id = district2Id, NameTr = "Besiktas", NameEn = "Besiktas", CityId = cityId }
+            }
         };
 
         var mockRepository = new Mock<IRepository<UserAddress>>();
@@ -116,8 +142,8 @@ public class AddressesControllerTests
         {
             Title = "Home",
             FullAddress = "Test Address",
-            City = "Istanbul",
-            District = "Kadikoy",
+            CityId = Guid.NewGuid(),
+            DistrictId = Guid.NewGuid(),
             PostalCode = "34000",
             Latitude = 41.0,
             Longitude = 29.0
@@ -157,8 +183,8 @@ public class AddressesControllerTests
         {
             Title = "Work",
             FullAddress = "Test Address 2",
-            City = "Istanbul",
-            District = "Sisli"
+            CityId = Guid.NewGuid(),
+            DistrictId = Guid.NewGuid()
         };
 
         // Act

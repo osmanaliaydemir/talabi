@@ -253,6 +253,7 @@ class AppTheme {
         ),
         hintStyle: plusJakartaSans(color: textHint, fontSize: 14),
         labelStyle: plusJakartaSans(color: textSecondary, fontSize: 14),
+        errorStyle: plusJakartaSans(color: error, fontSize: 12),
       ),
 
       // Card Theme

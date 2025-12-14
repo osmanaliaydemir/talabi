@@ -98,7 +98,8 @@ public class AuthControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<LoginResponseDto>>().Subject;
 
-        apiResponse.Data.Token.Should().Be("token");
+        apiResponse.Data.Should().NotBeNull();
+        apiResponse.Data!.Token.Should().Be("token");
     }
 
     [Fact]

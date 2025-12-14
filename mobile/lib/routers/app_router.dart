@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
 // Import routers normally - Flutter's tree-shaking will remove unused code
 // For true lazy loading, we use a factory pattern that only instantiates routers when needed
 import 'package:mobile/routers/courier_router.dart';
@@ -31,26 +32,24 @@ class AppRouter {
 
     // Shared/Auth route'ları - Most common routes first
     if (routeName == _loginRoute) {
-      return MaterialPageRoute(builder: (context) => const LoginScreen());
+      return NoSlidePageRoute(builder: (context) => const LoginScreen());
     }
 
     // Courier login route
     if (routeName == _courierLoginRoute) {
-      return MaterialPageRoute(
-        builder: (context) => const CourierLoginScreen(),
-      );
+      return NoSlidePageRoute(builder: (context) => const CourierLoginScreen());
     }
 
     // Courier register route
     if (routeName == '/courier/register') {
-      return MaterialPageRoute(
+      return NoSlidePageRoute(
         builder: (context) => const CourierRegisterScreen(),
       );
     }
 
     // Vendor login route
     if (routeName == _vendorLoginRoute) {
-      return MaterialPageRoute(builder: (context) => const VendorLoginScreen());
+      return NoSlidePageRoute(builder: (context) => const VendorLoginScreen());
     }
 
     // Courier route'ları - Lazy load (only instantiate when needed)

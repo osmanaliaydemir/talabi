@@ -1,3 +1,4 @@
+
 {
   "@@locale": "tr",
   "appTitle": "Talabi",
@@ -135,11 +136,6 @@
   },
   "ok": "Tamam",
   "duplicateEmail": "Bu email adresi ile zaten bir hesap bulunmaktadır.",
-  "passwordRuleChars": "En az 6 karakter",
-  "passwordRuleDigit": "En az bir rakam (0-9)",
-  "passwordRuleUpper": "En az bir büyük harf (A-Z)",
-  "passwordRuleLower": "En az bir küçük harf (a-z)",
-  "passwordRuleSpecial": "En az bir özel karakter (@,*,!,? vb.)",
   "googleLoginFailed": "Google ile giriş başarısız: {error}",
   "@googleLoginFailed": {
     "placeholders": {

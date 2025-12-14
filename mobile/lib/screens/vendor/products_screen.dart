@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/product.dart';
@@ -330,7 +331,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                             onPressed: () async {
                               final result = await Navigator.push(
                                 context,
-                                MaterialPageRoute(
+                                NoSlidePageRoute(
                                   builder: (context) =>
                                       const VendorProductFormScreen(),
                                 ),
@@ -373,7 +374,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                                   );
                                   final result = await Navigator.push(
                                     context,
-                                    MaterialPageRoute(
+                                    NoSlidePageRoute(
                                       builder: (context) =>
                                           VendorProductFormScreen(
                                             product: product,
@@ -415,7 +416,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
           TapLogger.logNavigation('VendorProducts', 'VendorProductForm');
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(
+            NoSlidePageRoute(
               builder: (context) => const VendorProductFormScreen(),
             ),
           );

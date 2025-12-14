@@ -402,6 +402,21 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu email adresi ile zaten bir hesap bulunmaktadır.';
 
   @override
+  String get passwordRuleChars => 'En az 6 karakter';
+
+  @override
+  String get passwordRuleDigit => 'En az bir rakam (0-9)';
+
+  @override
+  String get passwordRuleUpper => 'En az bir büyük harf (A-Z)';
+
+  @override
+  String get passwordRuleLower => 'En az bir küçük harf (a-z)';
+
+  @override
+  String get passwordRuleSpecial => 'En az bir özel karakter (@,*,!,? vb.)';
+
+  @override
   String googleLoginFailed(Object error) {
     return 'Google ile giriş başarısız: $error';
   }

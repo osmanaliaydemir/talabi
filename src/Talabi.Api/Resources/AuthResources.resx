@@ -129,6 +129,9 @@
   <data name="PasswordCorrupted" xml:space="preserve">
     <value>Account password is corrupted. Please contact support or register a new account.</value>
   </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>Your account has been locked due to multiple failed login attempts. Please try again later.</value>
+  </data>
   <data name="InvalidRequest" xml:space="preserve">
     <value>Invalid client request</value>
   </data>

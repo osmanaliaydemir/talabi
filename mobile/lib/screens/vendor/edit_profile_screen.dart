@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -332,7 +333,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                           'VendorEditProfileScreen: Map selection tapped',
                         );
                         await Navigator.of(context).push(
-                          MaterialPageRoute(
+                          NoSlidePageRoute(
                             builder: (context) => AddressPickerScreen(
                               onAddressSelected:
                                   (

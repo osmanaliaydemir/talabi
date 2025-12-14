@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
@@ -144,7 +145,7 @@ class _EmailCodeVerificationScreenState
             if (mounted) {
               // Customer keşfet ekranına (MainNavigationScreen) yönlendir
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
+                NoSlidePageRoute(
                   builder: (context) => const MainNavigationScreen(),
                 ),
                 (route) => false,
@@ -159,7 +160,7 @@ class _EmailCodeVerificationScreenState
                 isSuccess: false,
               );
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                NoSlidePageRoute(builder: (context) => const LoginScreen()),
                 (route) => false,
               );
             }
@@ -167,7 +168,7 @@ class _EmailCodeVerificationScreenState
         } else {
           // Password yoksa login ekranına yönlendir
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            NoSlidePageRoute(builder: (context) => const LoginScreen()),
             (route) => false,
           );
         }
@@ -289,6 +290,7 @@ class _EmailCodeVerificationScreenState
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               // Orange Header
@@ -373,7 +375,13 @@ class _EmailCodeVerificationScreenState
                       ],
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(AppTheme.spacingLarge),
+                      padding: EdgeInsets.fromLTRB(
+                        AppTheme.spacingLarge,
+                        AppTheme.spacingLarge,
+                        AppTheme.spacingLarge,
+                        AppTheme.spacingLarge +
+                            MediaQuery.of(context).padding.bottom,
+                      ),
                       child: Column(
                         children: [
                           AppTheme.verticalSpace(1.25),

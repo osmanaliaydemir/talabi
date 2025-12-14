@@ -235,3 +235,9 @@ src/Talabi.Api/wwwroot/images/*
 !mobile/assets/icon/icon.png
 
 /PROJECT_SETUP_GUIDE.md
+*.pubxml.user
+
+# Deployment credentials (security)
+deploy-to-runasp.sh
+*.publishSettings
+DEPLOYMENT.md

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/logger_service.dart';
@@ -79,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!onboardingCompleted) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+          NoSlidePageRoute(builder: (_) => const OnboardingScreen()),
         );
       }
       return;
@@ -95,11 +96,11 @@ class _SplashScreenState extends State<SplashScreen> {
         final role = authProvider.role?.toLowerCase();
         if (role == 'courier') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const CourierDashboardScreen()),
+            NoSlidePageRoute(builder: (_) => const CourierDashboardScreen()),
           );
         } else if (role == 'vendor') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const VendorDashboardScreen()),
+            NoSlidePageRoute(builder: (_) => const VendorDashboardScreen()),
           );
         } else {
           Navigator.of(context).pushReplacement(
@@ -108,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       } else {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          NoSlidePageRoute(builder: (_) => const LoginScreen()),
         );
       }
     }

@@ -856,6 +856,36 @@ abstract class AppLocalizations {
   /// **'An account with this email address already exists.'**
   String get duplicateEmail;
 
+  /// No description provided for @passwordRuleChars.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 characters'**
+  String get passwordRuleChars;
+
+  /// No description provided for @passwordRuleDigit.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one digit (0-9)'**
+  String get passwordRuleDigit;
+
+  /// No description provided for @passwordRuleUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one uppercase letter (A-Z)'**
+  String get passwordRuleUpper;
+
+  /// No description provided for @passwordRuleLower.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one lowercase letter (a-z)'**
+  String get passwordRuleLower;
+
+  /// No description provided for @passwordRuleSpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one special character (!@#\$%^&* etc.)'**
+  String get passwordRuleSpecial;
+
   /// No description provided for @googleLoginFailed.
   ///
   /// In en, this message translates to:

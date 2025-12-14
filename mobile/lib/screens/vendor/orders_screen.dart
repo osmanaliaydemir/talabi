@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
@@ -490,7 +491,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
                               );
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
+                                NoSlidePageRoute(
                                   builder: (context) => VendorOrderDetailScreen(
                                     orderId: order['id'],
                                   ),

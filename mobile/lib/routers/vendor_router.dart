@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:mobile/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/screens/vendor/notifications_screen.dart';
 import 'package:mobile/screens/vendor/orders_screen.dart';
@@ -11,27 +12,27 @@ class VendorRouter {
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/vendor/orders':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const VendorOrdersScreen(),
         );
 
       case '/vendor/notifications':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const VendorNotificationsScreen(),
         );
 
       case '/vendor/products':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const VendorProductsScreen(),
         );
 
       case '/vendor/profile':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const VendorProfileScreen(),
         );
 
       case '/vendor/profile/edit':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const VendorEditProfileScreen(),
         );
 

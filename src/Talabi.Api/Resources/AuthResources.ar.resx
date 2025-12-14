@@ -129,6 +129,9 @@
   <data name="PasswordCorrupted" xml:space="preserve">
     <value>كلمة مرور الحساب تالفة. يرجى الاتصال بالدعم أو إنشاء حساب جديد.</value>
   </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>تم قفل حسابك بسبب محاولات تسجيل دخول فاشلة متعددة. يرجى المحاولة مرة أخرى لاحقًا.</value>
+  </data>
   <data name="InvalidRequest" xml:space="preserve">
     <value>طلب غير صالح</value>
   </data>

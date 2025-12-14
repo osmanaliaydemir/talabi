@@ -135,11 +135,6 @@
   },
   "ok": "OK",
   "duplicateEmail": "An account with this email address already exists.",
-  "passwordRuleChars": "At least 6 characters",
-  "passwordRuleDigit": "At least one digit (0-9)",
-  "passwordRuleUpper": "At least one uppercase letter (A-Z)",
-  "passwordRuleLower": "At least one lowercase letter (a-z)",
-  "passwordRuleSpecial": "At least one special character (!@#$%^&* etc.)",
   "googleLoginFailed": "Google login failed: {error}",
   "@googleLoginFailed": {
     "placeholders": {

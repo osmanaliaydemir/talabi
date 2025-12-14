@@ -175,22 +175,30 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto, string? languageCode)
     {
+        // Determine culture from languageCode
+        var culture = string.IsNullOrEmpty(languageCode)
+            ? CultureInfo.CurrentCulture
+            : new CultureInfo(languageCode);
+
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
         {
-            throw new UnauthorizedAccessException("Invalid credentials");
+            var errorMessage = _localizationService.GetLocalizedString(ResourceName, "InvalidCredentials", culture);
+            throw new UnauthorizedAccessException(errorMessage);
         }
 
         // Check if email is confirmed
         if (!await _userManager.IsEmailConfirmedAsync(user))
         {
-            throw new UnauthorizedAccessException("Email not confirmed");
+            var errorMessage = _localizationService.GetLocalizedString(ResourceName, "EmailNotConfirmed", culture);
+            throw new UnauthorizedAccessException(errorMessage);
         }
 
         // Check if password hash is valid before attempting to verify
         if (string.IsNullOrEmpty(user.PasswordHash))
         {
-            throw new UnauthorizedAccessException("Password not set");
+            var errorMessage = _localizationService.GetLocalizedString(ResourceName, "PasswordNotSet", culture);
+            throw new UnauthorizedAccessException(errorMessage);
         }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
@@ -215,13 +223,16 @@ public class AuthService : IAuthService
             };
         }
 
-        // Handle corrupted password hash
+        // Handle locked out account
         if (result.IsLockedOut)
         {
-            throw new InvalidOperationException("Account is locked out");
+            var errorMessage = _localizationService.GetLocalizedString(ResourceName, "AccountLockedOut", culture);
+            throw new InvalidOperationException(errorMessage);
         }
 
-        throw new UnauthorizedAccessException("Invalid credentials");
+        // Invalid password - return same message as invalid user for security
+        var invalidCredsMessage = _localizationService.GetLocalizedString(ResourceName, "InvalidCredentials", culture);
+        throw new UnauthorizedAccessException(invalidCredsMessage);
     }
 
     /// <summary>

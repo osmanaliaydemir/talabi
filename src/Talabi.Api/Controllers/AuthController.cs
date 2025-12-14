@@ -505,7 +505,9 @@ public class AuthController : BaseController
     {
         try
         {
-            var loginResponse = await _authService.LoginAsync(dto, null);
+            // Pass current culture language code to service
+            var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+            var loginResponse = await _authService.LoginAsync(dto, languageCode);
             return Ok(new ApiResponse<LoginResponseDto>(loginResponse, LocalizationService.GetLocalizedString(ResourceName, "LoginSuccess", CurrentCulture)));
         }
         catch (UnauthorizedAccessException ex)
@@ -514,7 +516,7 @@ public class AuthController : BaseController
         }
         catch (InvalidOperationException ex)
         {
-            return StatusCode(500, new ApiResponse<LoginResponseDto>(ex.Message, "LOGIN_ERROR"));
+            return BadRequest(new ApiResponse<LoginResponseDto>(ex.Message, "ACCOUNT_LOCKED"));
         }
         catch (Exception ex)
         {

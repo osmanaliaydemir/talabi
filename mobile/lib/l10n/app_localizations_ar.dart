@@ -398,6 +398,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get duplicateEmail => 'يوجد بالفعل حساب بهذا البريد الإلكتروني';
 
   @override
+  String get passwordRuleChars => 'At least 6 characters';
+
+  @override
+  String get passwordRuleDigit => 'At least one digit (0-9)';
+
+  @override
+  String get passwordRuleUpper => 'At least one uppercase letter (A-Z)';
+
+  @override
+  String get passwordRuleLower => 'At least one lowercase letter (a-z)';
+
+  @override
+  String get passwordRuleSpecial =>
+      'At least one special character (!@#\$%^&* etc.)';
+
+  @override
   String googleLoginFailed(Object error) {
     return 'فشل تسجيل الدخول عبر Google: $error';
   }

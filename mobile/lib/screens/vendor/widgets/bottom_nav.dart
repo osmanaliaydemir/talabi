@@ -1,3 +1,4 @@
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/screens/vendor/dashboard_screen.dart';
@@ -26,7 +27,7 @@ class VendorBottomNav extends StatelessWidget {
         switch (index) {
           case 0:
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const VendorDashboardScreen()),
+              NoSlidePageRoute(builder: (_) => const VendorDashboardScreen()),
             );
             break;
           case 1:

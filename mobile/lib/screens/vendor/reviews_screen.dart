@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/review.dart';
 import 'package:mobile/screens/vendor/review_detail_screen.dart';
@@ -142,7 +143,7 @@ class _VendorReviewsScreenState extends State<VendorReviewsScreen> {
                         );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
+                          NoSlidePageRoute(
                             builder: (context) => VendorReviewDetailScreen(
                               review: review,
                               onReviewUpdated: _loadReviews,

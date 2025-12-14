@@ -129,6 +129,9 @@
   <data name="PasswordCorrupted" xml:space="preserve">
     <value>Hesap şifresi bozuk. Lütfen destek ile iletişime geçin veya yeni bir hesap oluşturun.</value>
   </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>Çok fazla başarısız giriş denemesi nedeniyle hesabınız kilitlendi. Lütfen daha sonra tekrar deneyin.</value>
+  </data>
   <data name="InvalidRequest" xml:space="preserve">
     <value>Geçersiz istek</value>
   </data>

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/utils/custom_routes.dart';
 import 'package:mobile/models/courier_order.dart';
 import 'package:mobile/screens/courier/active_deliveries_screen.dart';
 import 'package:mobile/screens/courier/availability_screen.dart';
@@ -29,59 +30,59 @@ class CourierRouter {
         LoggerService().info(
           'CourierRouter: Creating OrderDetailScreen with orderId: $orderId',
         );
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => OrderDetailScreen(orderId: orderId),
         );
 
       case '/courier/order-map':
         final order = settings.arguments as CourierOrder;
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => OrderMapScreen(order: order),
         );
 
       case '/courier/profile':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const CourierProfileScreen(),
         );
 
       case '/courier/profile/edit':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const CourierEditProfileScreen(),
         );
 
       case '/courier/notifications':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const CourierNotificationsScreen(),
         );
 
       case '/courier/earnings':
-        return MaterialPageRoute(builder: (context) => const EarningsScreen());
+        return NoSlidePageRoute(builder: (context) => const EarningsScreen());
 
       case '/courier/availability':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const CourierAvailabilityScreen(),
         );
 
       case '/courier/navigation-settings':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const CourierNavigationSettingsScreen(),
         );
 
       case '/courier/location-management':
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => const CourierLocationManagementScreen(),
         );
 
       case '/courier/active-deliveries':
         final initialTab = settings.arguments as int?;
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) =>
               CourierActiveDeliveriesScreen(initialTabIndex: initialTab),
         );
 
       case '/courier/delivery-proof':
         final orderId = settings.arguments as String;
-        return MaterialPageRoute(
+        return NoSlidePageRoute(
           builder: (context) => DeliveryProofScreen(orderId: orderId),
         );
 
