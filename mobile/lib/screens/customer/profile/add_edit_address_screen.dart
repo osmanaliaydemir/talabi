@@ -151,6 +151,17 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       return;
     }
 
+    if (_latitude == null || _longitude == null) {
+      final l10n = AppLocalizations.of(context)!;
+      ToastMessage.show(
+        context,
+        message: l10n
+            .pleaseSelectLocation, // Use a localized message like "Please select a location from the map"
+        isSuccess: false,
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -512,6 +523,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                 .toList(),
                             onChanged: (val) =>
                                 setState(() => _selectedLocalityId = val),
+                            validator: (val) => val == null
+                                ? localizations.addressRequired
+                                : null,
                           ),
                         ),
 

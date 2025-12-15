@@ -1138,12 +1138,14 @@ class ApiService {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
-  Future<void> forgotPassword(String email) async {
+  Future<void> forgotPassword(String email, {String? language}) async {
     try {
-      final response = await _dio.post(
-        '/auth/forgot-password',
-        data: {'email': email},
-      );
+      final data = {'email': email};
+      if (language != null) {
+        data['language'] = language;
+      }
+
+      final response = await _dio.post('/auth/forgot-password', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -1159,6 +1161,53 @@ class ApiService {
         e,
         stackTrace,
       );
+      rethrow;
+    }
+  }
+
+  Future<String> verifyResetCode(String email, String code) async {
+    try {
+      final response = await _dio.post(
+        '/auth/verify-reset-code',
+        data: {'email': email, 'code': code},
+      );
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Kod doğrulama başarısız');
+      }
+
+      // Token'ı döndür
+      return apiResponse.data!['token'] as String;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error verifying reset code', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(
+    String email,
+    String token,
+    String newPassword,
+  ) async {
+    try {
+      final response = await _dio.post(
+        '/auth/reset-password',
+        data: {'email': email, 'token': token, 'newPassword': newPassword},
+      );
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Şifre sıfırlama başarısız');
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error resetting password', e, stackTrace);
       rethrow;
     }
   }

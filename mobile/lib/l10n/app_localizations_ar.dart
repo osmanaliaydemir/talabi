@@ -2386,15 +2386,36 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get marketBannerTitle => 'Market Shopping\nat Your Door';
+  String get marketBannerTitle => 'تبضّع من الماركت\nلباب بيتك';
 
   @override
-  String get selectCountry => 'Select Country';
+  String get selectCountry => 'اختر الدولة';
 
   @override
-  String get localityNeighborhood => 'Locality / Neighborhood';
+  String get localityNeighborhood => 'المنطقة / الحي';
 
   @override
   String get selectCityDistrictWarning =>
-      'Please select City and District from dropdowns to confirm.';
+      'يرجى تحديد المدينة والمنطقة من القوائم للتأكيد.';
+
+  @override
+  String get passwordResetSuccess => 'تم إعادة تعيين كلمة المرور بنجاح';
+
+  @override
+  String get verificationCode => 'رمز التحقق';
+
+  @override
+  String get verificationCodeSentDesc => 'يرجى إدخال رمز التحقق المرسل إلى';
+
+  @override
+  String get createPassword => 'إنشاء كلمة مرور جديدة';
+
+  @override
+  String get createPasswordDesc => 'رجأ إدخال كلمة مرور جديدة لحسابك';
+
+  @override
+  String get requiredField => 'هذا الحقل مطلوب';
+
+  @override
+  String get resetPassword => 'إعادة تعيين كلمة المرور';
 }

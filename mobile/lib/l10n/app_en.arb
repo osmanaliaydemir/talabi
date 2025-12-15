@@ -1068,5 +1068,12 @@
   "marketBannerTitle": "Market Shopping\nat Your Door",
   "selectCountry": "Select Country",
   "localityNeighborhood": "Locality / Neighborhood",
-  "selectCityDistrictWarning": "Please select City and District from dropdowns to confirm."
+  "selectCityDistrictWarning": "Please select City and District from dropdowns to confirm.",
+  "passwordResetSuccess": "Password reset successfully",
+  "verificationCode": "Verification Code",
+  "verificationCodeSentDesc": "Please enter the verification code sent to",
+  "createPassword": "Create New Password",
+  "createPasswordDesc": "Please enter a new password for your account",
+  "requiredField": "This field is required",
+  "resetPassword": "Reset Password"
 }

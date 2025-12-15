@@ -9,25 +9,20 @@ using Talabi.Core.Services;
 
 namespace Talabi.Infrastructure.Services;
 
-public class EmailSender : IEmailSender
+public class EmailSender(
+    IOptions<EmailSettings> options,
+    IEmailTemplateRenderer templateRenderer,
+    ILogger<EmailSender> logger)
+    : IEmailSender
 {
-    private readonly EmailSettings _settings;
-    private readonly IEmailTemplateRenderer _templateRenderer;
-    private readonly ILogger<EmailSender> _logger;
-
-    public EmailSender(IOptions<EmailSettings> options, IEmailTemplateRenderer templateRenderer, ILogger<EmailSender> logger)
-    {
-        _settings = options.Value;
-        _templateRenderer = templateRenderer;
-        _logger = logger;
-    }
+    private readonly EmailSettings _settings = options.Value;
 
     public async Task SendEmailAsync(EmailTemplateRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             // Render email template
-            var htmlBody = await _templateRenderer.RenderAsync(request.TemplateName, request.Variables,
+            var htmlBody = await templateRenderer.RenderAsync(request.TemplateName, request.Variables,
                 request.LanguageCode, cancellationToken);
 
             // Create email message
@@ -46,7 +41,8 @@ public class EmailSender : IEmailSender
             using var client = new SmtpClient();
 
             // Port 465 için SslOnConnect (test edildi)
-            await client.ConnectAsync(_settings.SmtpServer, _settings.SmtpPort, SecureSocketOptions.SslOnConnect, cancellationToken);
+            await client.ConnectAsync(_settings.SmtpServer, _settings.SmtpPort, SecureSocketOptions.SslOnConnect,
+                cancellationToken);
 
             // Basit authentication - MailKit otomatik olarak en uygun mekanizmayı seçer
             await client.AuthenticateAsync(_settings.SenderEmail, _settings.SenderPassword, cancellationToken);
@@ -54,14 +50,16 @@ public class EmailSender : IEmailSender
             await client.SendAsync(message, cancellationToken);
             await client.DisconnectAsync(true, cancellationToken);
 
-            _logger.LogInformation("E-posta başarıyla gönderildi. Alıcı: {Recipient}, Şablon: {Template}",
+            logger.LogInformation("E-posta başarıyla gönderildi. Alıcı: {Recipient}, Şablon: {Template}",
                 request.To, request.TemplateName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "E-posta gönderimi sırasında bir hata oluştu. Alıcı: {Recipient}, Şablon: {Template}, Hata: {ErrorMessage}",
+            logger.LogError(ex,
+                "E-posta gönderimi sırasında bir hata oluştu. Alıcı: {Recipient}, Şablon: {Template}, Hata: {ErrorMessage}",
                 request.To, request.TemplateName, ex.Message);
-            throw new InvalidOperationException("E-posta gönderimi yapılamadı, lütfen sistem yöneticisine danışın.", ex);
+            throw new InvalidOperationException("E-posta gönderimi yapılamadı, lütfen sistem yöneticisine danışın.",
+                ex);
         }
     }
 

@@ -28,7 +28,6 @@ class AddressPickerScreen extends StatefulWidget {
 
 class _AddressPickerScreenState extends State<AddressPickerScreen> {
   final ApiService _apiService = ApiService();
-  final TextEditingController _titleController = TextEditingController();
   GoogleMapController? _mapController;
   String? _googleMapsApiKey;
 
@@ -176,10 +175,8 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
       return;
     }
 
-    // Title is optional - if empty, use a default value
-    final title = _titleController.text.trim().isEmpty
-        ? l10n.selectedLocation
-        : _titleController.text.trim();
+    // Title is not collected here anymore
+    const title = '';
 
     if (widget.onAddressSelected != null) {
       widget.onAddressSelected!(
@@ -299,15 +296,6 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextField(
-                              controller: _titleController,
-                              decoration: InputDecoration(
-                                labelText: l10n.addressTitleOptional,
-                                border: const OutlineInputBorder(),
-                                helperText: l10n.canBeLeftEmpty,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
                             if (_isLoadingAddress)
                               Center(
                                 child: CircularProgressIndicator(
@@ -379,7 +367,6 @@ class _AddressPickerScreenState extends State<AddressPickerScreen> {
 
   @override
   void dispose() {
-    _titleController.dispose();
     _mapController?.dispose();
     super.dispose();
   }

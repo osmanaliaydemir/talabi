@@ -3,9 +3,9 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class PasswordValidationWidget extends StatelessWidget {
-  final String password;
-
   const PasswordValidationWidget({super.key, required this.password});
+
+  final String password;
 
   bool get _hasMinLength => password.length >= 6;
   bool get _hasDigit => password.contains(RegExp(r'[0-9]'));

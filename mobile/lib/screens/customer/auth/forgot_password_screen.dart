@@ -3,6 +3,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/screens/customer/auth/verify_reset_code_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -33,17 +34,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
+      // Current language code
+      final localizations = AppLocalizations.of(context)!;
+      final languageCode = localizations.localeName;
+
       // API'ye şifre sıfırlama isteği gönder
-      await _apiService.forgotPassword(_emailController.text.trim());
+      await _apiService.forgotPassword(
+        _emailController.text.trim(),
+        language: languageCode,
+      );
 
       if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
           message: localizations.passwordResetEmailSent,
           isSuccess: true,
         );
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                VerifyResetCodeScreen(email: _emailController.text.trim()),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -84,48 +97,56 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           bottom: false,
           child: Column(
             children: [
-              // Header with decorative shapes
+              // Header with decorative shapes (Modern Style)
               SizedBox(
-                height: 180,
+                height: 150 + MediaQuery.of(context).padding.top,
                 child: Stack(
                   children: [
-                    // Decorative shape in top right
+                    // Modern Abstract Shapes
+                    // Top Right - Large Faded Circle
                     Positioned(
-                      top: -50,
-                      right: -50,
+                      top: -80,
+                      right: -100,
                       child: Container(
-                        width: 200,
-                        height: 200,
+                        width: 300,
+                        height: 300,
                         decoration: BoxDecoration(
-                          color: AppTheme.lightOrange.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.1),
                         ),
                       ),
                     ),
-                    // Decorative shape on left side (rounded pill shape)
+                    // Top Right - Smaller brighter circle inside
                     Positioned(
-                      bottom: -20,
-                      left: -30,
+                      top: -20,
+                      right: -20,
                       child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryOrange,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(
-                              AppTheme.radiusXLarge * 2,
-                            ),
-                            bottomRight: Radius.circular(
-                              AppTheme.radiusXLarge * 2,
-                            ),
-                          ),
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.1),
                         ),
                       ),
                     ),
+                    // Middle Left - Medium Circle
+                    Positioned(
+                      top: 40,
+                      left: -40,
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+
                     // Back button
                     Positioned(
-                      top: AppTheme.spacingSmall,
-                      left: AppTheme.spacingSmall,
+                      top: MediaQuery.of(context).padding.top + 10,
+                      left: 10,
                       child: IconButton(
                         icon: const Icon(
                           Icons.arrow_back,
@@ -134,19 +155,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
-                    // Title - Centered
+
+                    // Title Content
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: AppTheme.spacingXLarge + AppTheme.spacingSmall,
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top,
                         ),
-                        child: Text(
-                          localizations.passwordReset,
-                          style: AppTheme.poppins(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textOnPrimary,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Logo Icon
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.lock_reset_outlined,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              localizations.passwordReset,
+                              style: AppTheme.poppins(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textOnPrimary,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -156,9 +198,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               // Main Content Card
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(
-                    top: AppTheme.spacingLarge - AppTheme.spacingXSmall,
-                  ),
                   decoration: const BoxDecoration(
                     color: AppTheme.cardColor,
                     borderRadius: BorderRadius.only(
@@ -210,15 +249,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               height: 1.5,
                             ),
                           ),
-                          AppTheme.verticalSpace(2.5),
-                          // Illustration
-                          Center(
-                            child: CustomPaint(
-                              size: const Size(200, 200),
-                              painter: _EmailIllustrationPainter(),
-                            ),
-                          ),
-                          AppTheme.verticalSpace(2.5),
+
                           // Email Input Field
                           Container(
                             decoration: BoxDecoration(
@@ -323,6 +354,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
+                            ),
+                          ),
+
+                          // Illustration
+                          Center(
+                            child: CustomPaint(
+                              size: const Size(250, 250),
+                              painter: _EmailIllustrationPainter(),
                             ),
                           ),
                         ],

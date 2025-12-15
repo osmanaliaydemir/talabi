@@ -198,20 +198,21 @@ public class AuthController : BaseController
                 if (lockoutExpiration.HasValue)
                 {
                     var minutesRemaining = (int)Math.Ceiling((lockoutExpiration.Value - DateTime.UtcNow).TotalMinutes);
-                    Logger.LogWarning("Verification attempt blocked for locked email: {Email}, Lockout expires in {Minutes} minutes", 
+                    Logger.LogWarning(
+                        "Verification attempt blocked for locked email: {Email}, Lockout expires in {Minutes} minutes",
                         dto.Email, minutesRemaining);
-                    
+
                     return BadRequest(new ApiResponse<object>(
-                        LocalizationService.GetLocalizedString(ResourceName, "TooManyFailedAttempts", CurrentCulture) 
-                            ?? $"Çok fazla başarısız deneme. Lütfen {minutesRemaining} dakika sonra tekrar deneyin.",
+                        LocalizationService.GetLocalizedString(ResourceName, "TooManyFailedAttempts", CurrentCulture)
+                        ?? $"Çok fazla başarısız deneme. Lütfen {minutesRemaining} dakika sonra tekrar deneyin.",
                         "TOO_MANY_FAILED_ATTEMPTS",
                         new List<string> { $"Lockout expires in {minutesRemaining} minutes" }
                     ));
                 }
 
                 return BadRequest(new ApiResponse<object>(
-                    LocalizationService.GetLocalizedString(ResourceName, "TooManyFailedAttempts", CurrentCulture) 
-                        ?? "Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.",
+                    LocalizationService.GetLocalizedString(ResourceName, "TooManyFailedAttempts", CurrentCulture)
+                    ?? "Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.",
                     "TOO_MANY_FAILED_ATTEMPTS"
                 ));
             }
@@ -221,29 +222,35 @@ public class AuthController : BaseController
             {
                 // Don't reveal user existence, but still record attempt to prevent enumeration
                 await _verificationSecurity.RecordFailedAttemptAsync(dto.Email);
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture), "INVALID_CODE"));
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture),
+                    "INVALID_CODE"));
             }
 
             // Check if email is already confirmed
             if (await _userManager.IsEmailConfirmedAsync(user))
             {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "EmailAlreadyConfirmed", CurrentCulture), "EMAIL_ALREADY_CONFIRMED"));
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailAlreadyConfirmed", CurrentCulture),
+                    "EMAIL_ALREADY_CONFIRMED"));
             }
 
             var cacheKey = $"verification_code_{dto.Email}";
             if (!_memoryCache.TryGetValue(cacheKey, out string? cachedCode))
             {
                 await _verificationSecurity.RecordFailedAttemptAsync(dto.Email);
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CodeExpired", CurrentCulture), "CODE_EXPIRED"));
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "CodeExpired", CurrentCulture),
+                    "CODE_EXPIRED"));
             }
 
             if (cachedCode != dto.Code)
             {
                 // Record failed attempt
                 await _verificationSecurity.RecordFailedAttemptAsync(dto.Email);
-                
+
                 var remainingAttempts = await _verificationSecurity.GetRemainingAttemptsAsync(dto.Email);
-                Logger.LogWarning("Invalid verification code attempt for {Email}, Remaining attempts: {Remaining}", 
+                Logger.LogWarning("Invalid verification code attempt for {Email}, Remaining attempts: {Remaining}",
                     dto.Email, remainingAttempts);
 
                 var errorMessage = LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture);
@@ -267,13 +274,14 @@ public class AuthController : BaseController
             {
                 // Remove code from cache
                 _memoryCache.Remove(cacheKey);
-                
+
                 // Record success and clear tracking
                 await _verificationSecurity.RecordSuccessAsync(dto.Email);
 
                 Logger.LogInformation("Email verified successfully for {Email}", dto.Email);
 
-                return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "EmailVerifiedSuccessfully", CurrentCulture)));
+                return Ok(new ApiResponse<object>(new { },
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailVerifiedSuccessfully", CurrentCulture)));
             }
 
             var errorMessages = result.Errors.Select(e => e.Description).ToList();
@@ -300,7 +308,8 @@ public class AuthController : BaseController
     /// <param name="dto">Yeniden gönderme bilgileri</param>
     /// <returns>Gönderme sonucu</returns>
     [HttpPost("resend-verification-code")]
-    public async Task<ActionResult<ApiResponse<object>>> ResendVerificationCode([FromBody] ResendVerificationCodeDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> ResendVerificationCode(
+        [FromBody] ResendVerificationCodeDto dto)
     {
         try
         {
@@ -326,19 +335,23 @@ public class AuthController : BaseController
             if (user == null)
             {
                 // Don't reveal if user exists or not for security
-                return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CodeResentMessage", culture)));
+                return Ok(new ApiResponse<object>(new { },
+                    LocalizationService.GetLocalizedString(ResourceName, "CodeResentMessage", culture)));
             }
 
             // Check if email is already confirmed
             if (await _userManager.IsEmailConfirmedAsync(user))
             {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "EmailAlreadyConfirmed", culture), "EMAIL_ALREADY_CONFIRMED"));
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailAlreadyConfirmed", culture),
+                    "EMAIL_ALREADY_CONFIRMED"));
             }
 
             // Send new verification code with language preference
             await _authService.SendVerificationCodeAsync(user.Email!, user.FullName, languageToUse);
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CodeResentSuccessfully", CurrentCulture)));
+            return Ok(new ApiResponse<object>(new { },
+                LocalizationService.GetLocalizedString(ResourceName, "CodeResentSuccessfully", CurrentCulture)));
         }
         catch (Exception ex)
         {
@@ -405,7 +418,8 @@ public class AuthController : BaseController
                 // Don't reveal if user exists or not for security
                 Logger.LogWarning("ConfirmEmail: User not found for email - {Email}", email);
                 return BadRequest(new ApiResponse<object>(
-                    LocalizationService.GetLocalizedString(ResourceName, "InvalidEmailConfirmationRequest", CurrentCulture),
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidEmailConfirmationRequest",
+                        CurrentCulture),
                     "INVALID_REQUEST"));
             }
 
@@ -423,18 +437,19 @@ public class AuthController : BaseController
 
             // Confirm email with token
             var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
-            
+
             if (result.Succeeded)
             {
                 Logger.LogInformation("Email confirmed successfully for - {Email}", email);
                 return Ok(new ApiResponse<object>(
                     new { },
-                    LocalizationService.GetLocalizedString(ResourceName, "EmailConfirmedSuccessfully", CurrentCulture)));
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailConfirmedSuccessfully",
+                        CurrentCulture)));
             }
 
             // Log specific errors
             var errorMessages = result.Errors.Select(e => e.Description).ToList();
-            Logger.LogWarning("ConfirmEmail: Email confirmation failed for - {Email}, Errors: {Errors}", 
+            Logger.LogWarning("ConfirmEmail: Email confirmation failed for - {Email}, Errors: {Errors}",
                 email, string.Join(", ", errorMessages));
 
             return BadRequest(new ApiResponse<object>(
@@ -453,7 +468,7 @@ public class AuthController : BaseController
     }
 
     /// <summary>
-    /// Şifre sıfırlama linki gönderir
+    /// Şifre sıfırlama kodu gönderir
     /// </summary>
     /// <param name="dto">Email bilgisi</param>
     /// <returns>Gönderme sonucu</returns>
@@ -463,32 +478,134 @@ public class AuthController : BaseController
         try
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
+            var lang = GetLanguageFromRequest(dto.Language);
+            var culture = GetCultureInfo(lang);
+
             if (user == null)
             {
-                // Don't reveal if user exists or not for security
-                return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "PasswordResetSent", CurrentCulture)));
+                // Güvenlik için kullanıcı bulunamasa bile başarılı dön
+                return Ok(new ApiResponse<object>(new { },
+                    LocalizationService.GetLocalizedString(ResourceName, "PasswordResetCodeSent", culture)));
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            // Random 6 haneli kod oluştur
+            var code = new Random().Next(100000, 999999).ToString();
+
+            // Kodu cache'e kaydet (15 dakika geçerli)
+            var cacheKey = $"reset_code_{dto.Email}";
+            _memoryCache.Set(cacheKey, code, TimeSpan.FromMinutes(15));
+
+            var subject = LocalizationService.GetLocalizedString(ResourceName, "ResetPasswordSubject", culture) ??
+                          "Parola Sıfırlama Kodu";
 
             await _emailSender.SendEmailAsync(new EmailTemplateRequest
             {
                 To = user.Email!,
-                Subject = "Parolayı sıfırla", // TODO: Localize this too
+                Subject = subject,
                 TemplateName = EmailTemplateNames.ResetPassword,
+                LanguageCode = lang,
                 Variables = new Dictionary<string, string>
                 {
                     ["fullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.Email! : user.FullName,
-                    ["resetToken"] = token
+                    ["resetToken"] = code // Şablonun {{resetToken}} değişkenine kod gönderiliyor
                 }
             });
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "PasswordResetSent", CurrentCulture)));
+            return Ok(new ApiResponse<object>(new { },
+                LocalizationService.GetLocalizedString(ResourceName, "PasswordResetCodeSent", culture)));
         }
         catch (Exception ex)
         {
             return StatusCode(500, new ApiResponse<object>(
                 LocalizationService.GetLocalizedString(ResourceName, "LoginError", CurrentCulture),
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Şifre sıfırlama kodunu doğrular
+    /// </summary>
+    /// <param name="dto">Email ve kod bilgisi</param>
+    /// <returns>Sıfırlama token'ı</returns>
+    [HttpPost("verify-reset-code")]
+    public async Task<ActionResult<ApiResponse<object>>> VerifyResetCode([FromBody] VerifyResetCodeDto dto)
+    {
+        try
+        {
+            var cacheKey = $"reset_code_{dto.Email}";
+            if (!_memoryCache.TryGetValue(cacheKey, out string? cachedCode) || cachedCode != dto.Code)
+            {
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidCode", CurrentCulture),
+                    "INVALID_CODE"));
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+            {
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "UserNotFound", CurrentCulture),
+                    "USER_NOT_FOUND"));
+            }
+
+            // Kod doğru ise asıl password reset token'ını oluştur ve dön
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Cache'deki kodu sil (tek kullanımlık olması için)
+            _memoryCache.Remove(cacheKey);
+
+            return Ok(new ApiResponse<object>(new { Token = token },
+                LocalizationService.GetLocalizedString(ResourceName, "CodeVerified", CurrentCulture)));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ApiResponse<object>(
+                "Doğrulama hatası",
+                "INTERNAL_ERROR",
+                new List<string> { ex.Message }
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Şifreyi yeniler
+    /// </summary>
+    /// <param name="dto">Email, token ve yeni şifre</param>
+    /// <returns>Sonuç</returns>
+    [HttpPost("reset-password")]
+    public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+            {
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "UserNotFound", CurrentCulture),
+                    "USER_NOT_FOUND"));
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new ApiResponse<object>(new { },
+                    LocalizationService.GetLocalizedString(ResourceName, "PasswordResetSuccess", CurrentCulture)));
+            }
+
+            var errorMessages = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new ApiResponse<object>(
+                "Şifre sıfırlama başarısız",
+                "RESET_FAILED",
+                errorMessages
+            ));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ApiResponse<object>(
+                "Şifre sıfırlama hatası",
                 "INTERNAL_ERROR",
                 new List<string> { ex.Message }
             ));
@@ -508,7 +625,8 @@ public class AuthController : BaseController
             // Pass current culture language code to service
             var languageCode = CurrentCulture.TwoLetterISOLanguageName;
             var loginResponse = await _authService.LoginAsync(dto, languageCode);
-            return Ok(new ApiResponse<LoginResponseDto>(loginResponse, LocalizationService.GetLocalizedString(ResourceName, "LoginSuccess", CurrentCulture)));
+            return Ok(new ApiResponse<LoginResponseDto>(loginResponse,
+                LocalizationService.GetLocalizedString(ResourceName, "LoginSuccess", CurrentCulture)));
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -537,23 +655,29 @@ public class AuthController : BaseController
     public async Task<ActionResult<ApiResponse<LoginResponseDto>>> RefreshToken(RefreshTokenDto dto)
     {
         if (dto is null)
-            return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
+            return BadRequest(new ApiResponse<LoginResponseDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture),
+                "INVALID_REQUEST"));
 
         string? accessToken = dto.Token;
         string? refreshToken = dto.RefreshToken;
 
         var principal = _authService.GetPrincipalFromExpiredToken(accessToken);
         if (principal == null)
-            return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));
+            return BadRequest(new ApiResponse<LoginResponseDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));
 
-        var email = principal.FindFirstValue(ClaimTypes.Email) ?? principal.FindFirstValue(JwtRegisteredClaimNames.Email);
+        var email = principal.FindFirstValue(ClaimTypes.Email) ??
+                    principal.FindFirstValue(JwtRegisteredClaimNames.Email);
         if (email == null)
-            return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));
+            return BadRequest(new ApiResponse<LoginResponseDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));
 
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));
+            return BadRequest(new ApiResponse<LoginResponseDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));
 
         var newAccessToken = await _authService.GenerateJwtTokenAsync(user);
         var newRefreshToken = _authService.GenerateRefreshToken();
@@ -571,7 +695,8 @@ public class AuthController : BaseController
             Role = user.Role.ToString()
         };
 
-        return Ok(new ApiResponse<LoginResponseDto>(loginResponse, LocalizationService.GetLocalizedString(ResourceName, "TokenRefreshSuccess", CurrentCulture)));
+        return Ok(new ApiResponse<LoginResponseDto>(loginResponse,
+            LocalizationService.GetLocalizedString(ResourceName, "TokenRefreshSuccess", CurrentCulture)));
     }
 
 
@@ -589,13 +714,17 @@ public class AuthController : BaseController
             if (string.IsNullOrEmpty(dto.Provider) ||
                 !new[] { "Google", "Apple", "Facebook" }.Contains(dto.Provider))
             {
-                return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidProvider", CurrentCulture), "INVALID_PROVIDER"));
+                return BadRequest(new ApiResponse<LoginResponseDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidProvider", CurrentCulture),
+                    "INVALID_PROVIDER"));
             }
 
             // Validate token
             if (string.IsNullOrEmpty(dto.IdToken))
             {
-                return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "TokenRequired", CurrentCulture), "TOKEN_REQUIRED"));
+                return BadRequest(new ApiResponse<LoginResponseDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "TokenRequired", CurrentCulture),
+                    "TOKEN_REQUIRED"));
             }
 
             // Verify token with external provider
@@ -604,7 +733,7 @@ public class AuthController : BaseController
             {
                 Logger.LogWarning("Invalid token for provider: {Provider}, Email: {Email}", dto.Provider, dto.Email);
                 return Unauthorized(new ApiResponse<LoginResponseDto>(
-                    LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), 
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture),
                     "INVALID_TOKEN"));
             }
 
@@ -617,7 +746,9 @@ public class AuthController : BaseController
 
             if (string.IsNullOrEmpty(verifiedEmail))
             {
-                return BadRequest(new ApiResponse<LoginResponseDto>(LocalizationService.GetLocalizedString(ResourceName, "EmailRequired", CurrentCulture), "EMAIL_REQUIRED"));
+                return BadRequest(new ApiResponse<LoginResponseDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "EmailRequired", CurrentCulture),
+                    "EMAIL_REQUIRED"));
             }
 
             // Check if user exists
@@ -684,7 +815,8 @@ public class AuthController : BaseController
                 Provider = dto.Provider
             };
 
-            return Ok(new ApiResponse<LoginResponseDto>(loginResponse, LocalizationService.GetLocalizedString(ResourceName, "LoginSuccess", CurrentCulture)));
+            return Ok(new ApiResponse<LoginResponseDto>(loginResponse,
+                LocalizationService.GetLocalizedString(ResourceName, "LoginSuccess", CurrentCulture)));
         }
         catch (Exception ex)
         {

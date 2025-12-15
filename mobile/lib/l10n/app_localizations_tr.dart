@@ -2420,4 +2420,26 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get selectCityDistrictWarning =>
       'Lütfen onaylamak için İl ve İlçe seçiniz.';
+
+  @override
+  String get passwordResetSuccess => 'Şifre başarıyla sıfırlandı';
+
+  @override
+  String get verificationCode => 'Doğrulama Kodu';
+
+  @override
+  String get verificationCodeSentDesc =>
+      'Lütfen şu adrese gönderilen doğrulama kodunu girin:';
+
+  @override
+  String get createPassword => 'Yeni Şifre Oluştur';
+
+  @override
+  String get createPasswordDesc => 'Lütfen hesabınız için yeni bir şifre girin';
+
+  @override
+  String get requiredField => 'Bu alan zorunludur';
+
+  @override
+  String get resetPassword => 'Şifreyi Sıfırla';
 }

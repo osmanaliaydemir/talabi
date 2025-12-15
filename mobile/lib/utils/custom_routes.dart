@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 class NoSlidePageRoute<T> extends PageRouteBuilder<T> {
-  final WidgetBuilder builder;
-
   NoSlidePageRoute({required this.builder, super.settings})
     : super(
         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -17,4 +15,5 @@ class NoSlidePageRoute<T> extends PageRouteBuilder<T> {
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       );
+  final WidgetBuilder builder;
 }

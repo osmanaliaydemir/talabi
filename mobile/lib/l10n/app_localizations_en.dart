@@ -2424,4 +2424,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get selectCityDistrictWarning =>
       'Please select City and District from dropdowns to confirm.';
+
+  @override
+  String get passwordResetSuccess => 'Password reset successfully';
+
+  @override
+  String get verificationCode => 'Verification Code';
+
+  @override
+  String get verificationCodeSentDesc =>
+      'Please enter the verification code sent to';
+
+  @override
+  String get createPassword => 'Create New Password';
+
+  @override
+  String get createPasswordDesc =>
+      'Please enter a new password for your account';
+
+  @override
+  String get requiredField => 'This field is required';
+
+  @override
+  String get resetPassword => 'Reset Password';
 }

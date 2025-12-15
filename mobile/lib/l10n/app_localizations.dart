@@ -4533,6 +4533,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select City and District from dropdowns to confirm.'**
   String get selectCityDistrictWarning;
+
+  /// No description provided for @passwordResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully'**
+  String get passwordResetSuccess;
+
+  /// No description provided for @verificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Code'**
+  String get verificationCode;
+
+  /// No description provided for @verificationCodeSentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the verification code sent to'**
+  String get verificationCodeSentDesc;
+
+  /// No description provided for @createPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Password'**
+  String get createPassword;
+
+  /// No description provided for @createPasswordDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a new password for your account'**
+  String get createPasswordDesc;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get requiredField;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
 }
 
 class _AppLocalizationsDelegate

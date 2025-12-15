@@ -199,5 +199,8 @@
   <data name="EmailVerificationSubject" xml:space="preserve">
     <value>Talabi - Email Doğrulama Kodu</value>
   </data>
+  <data name="ResetPasswordSubject" xml:space="preserve">
+    <value>Talabi - Şifre Sıfırlama</value>
+  </data>
 </root>
 

@@ -1063,5 +1063,12 @@
   "marketBannerTitle": "Market Alışverişin\nKapında",
   "selectCountry": "Ülke Seçiniz",
   "localityNeighborhood": "Mahalle",
-  "selectCityDistrictWarning": "Lütfen onaylamak için İl ve İlçe seçiniz."
+  "selectCityDistrictWarning": "Lütfen onaylamak için İl ve İlçe seçiniz.",
+  "passwordResetSuccess": "Şifre başarıyla sıfırlandı",
+  "verificationCode": "Doğrulama Kodu",
+  "verificationCodeSentDesc": "Lütfen şu adrese gönderilen doğrulama kodunu girin:",
+  "createPassword": "Yeni Şifre Oluştur",
+  "createPasswordDesc": "Lütfen hesabınız için yeni bir şifre girin",
+  "requiredField": "Bu alan zorunludur",
+  "resetPassword": "Şifreyi Sıfırla"
 }

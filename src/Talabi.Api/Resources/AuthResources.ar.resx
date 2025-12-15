@@ -199,5 +199,8 @@
   <data name="EmailVerificationSubject" xml:space="preserve">
     <value>Talabi - رمز التحقق من البريد الإلكتروني</value>
   </data>
+  <data name="ResetPasswordSubject" xml:space="preserve">
+    <value>Talabi - إعادة تعيين كلمة المرور</value>
+  </data>
 </root>
 

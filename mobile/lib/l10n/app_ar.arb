@@ -1055,5 +1055,17 @@
     "placeholders": {
       "error": {}
     }
-  }
+  },
+  "marketBannerTitle": "تبضّع من الماركت\nلباب بيتك",
+  "selectCountry": "اختر الدولة",
+  "localityNeighborhood": "المنطقة / الحي",
+  "selectCityDistrictWarning": "يرجى تحديد المدينة والمنطقة من القوائم للتأكيد.",
+  "passwordResetSuccess": "تم إعادة تعيين كلمة المرور بنجاح",
+  "verificationCode": "رمز التحقق",
+  "verificationCodeSentDesc": "يرجى إدخال رمز التحقق المرسل إلى",
+  "createPassword": "إنشاء كلمة مرور جديدة",
+  "createPasswordDesc": "رجأ إدخال كلمة مرور جديدة لحسابك",
+  "requiredField": "هذا الحقل مطلوب",
+  "resetPassword": "إعادة تعيين كلمة المرور"
 }
+
