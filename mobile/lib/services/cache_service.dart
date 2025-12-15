@@ -38,6 +38,7 @@ class CacheService {
 
   // Products Cache
   Future<void> cacheProducts(List<Product> products) async {
+    if (!_initialized) return;
     try {
       final box = await Hive.openBox(_productsBoxName);
       final jsonList = products
@@ -63,6 +64,7 @@ class CacheService {
   }
 
   Future<List<Product>?> getCachedProducts() async {
+    if (!_initialized) return null;
     try {
       final box = await Hive.openBox(_productsBoxName);
       final timestamp = box.get('timestamp') as int?;
@@ -98,6 +100,7 @@ class CacheService {
 
   // Categories Cache
   Future<void> cacheCategories(List<String> categories) async {
+    if (!_initialized) return;
     try {
       final box = await Hive.openBox(_categoriesBoxName);
       await box.put('categories', categories);
@@ -109,6 +112,7 @@ class CacheService {
   }
 
   Future<List<String>?> getCachedCategories() async {
+    if (!_initialized) return null;
     try {
       final box = await Hive.openBox(_categoriesBoxName);
       final timestamp = box.get('timestamp') as int?;
@@ -142,6 +146,7 @@ class CacheService {
 
   // Vendors Cache
   Future<void> cacheVendors(List<Vendor> vendors) async {
+    if (!_initialized) return;
     try {
       final box = await Hive.openBox(_vendorsBoxName);
       final jsonList = vendors
@@ -169,6 +174,7 @@ class CacheService {
   }
 
   Future<List<Vendor>?> getCachedVendors() async {
+    if (!_initialized) return null;
     try {
       final box = await Hive.openBox(_vendorsBoxName);
       final timestamp = box.get('timestamp') as int?;
@@ -204,6 +210,7 @@ class CacheService {
 
   // Profile Cache
   Future<void> cacheProfile(Map<String, dynamic> profile) async {
+    if (!_initialized) return;
     try {
       final box = await Hive.openBox(_profileBoxName);
       await box.put('profile', jsonEncode(profile));
@@ -215,6 +222,7 @@ class CacheService {
   }
 
   Future<Map<String, dynamic>?> getCachedProfile() async {
+    if (!_initialized) return null;
     try {
       final box = await Hive.openBox(_profileBoxName);
       final timestamp = box.get('timestamp') as int?;
@@ -248,6 +256,7 @@ class CacheService {
 
   // Clear all cache
   Future<void> clearAllCache() async {
+    if (!_initialized) return;
     try {
       await Hive.deleteBoxFromDisk(_productsBoxName);
       await Hive.deleteBoxFromDisk(_categoriesBoxName);
@@ -260,6 +269,7 @@ class CacheService {
 
   // Get cache size info
   Future<Map<String, dynamic>> getCacheInfo() async {
+    if (!_initialized) return {};
     try {
       final productsBox = await Hive.openBox(_productsBoxName);
       final categoriesBox = await Hive.openBox(_categoriesBoxName);
