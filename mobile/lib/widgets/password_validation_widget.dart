@@ -4,7 +4,6 @@ import 'package:mobile/l10n/app_localizations.dart';
 
 class PasswordValidationWidget extends StatelessWidget {
   const PasswordValidationWidget({super.key, required this.password});
-
   final String password;
 
   bool get _hasMinLength => password.length >= 6;
