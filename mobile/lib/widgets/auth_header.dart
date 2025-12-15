@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/providers/localization_provider.dart';
 
 class AuthHeader extends StatelessWidget {
   const AuthHeader({
@@ -86,6 +88,71 @@ class AuthHeader extends StatelessWidget {
                       ),
               ),
 
+            // Language Selector (Top Right)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 4,
+              right: AppTheme.spacingMedium,
+              child: Consumer<LocalizationProvider>(
+                builder: (context, provider, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: PopupMenuButton<String>(
+                      icon: Text(
+                        provider.locale.languageCode.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
+                      ),
+                      onSelected: (String code) {
+                        provider.setLanguage(code);
+                      },
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'tr',
+                              child: Row(
+                                children: [
+                                  Text('🇹🇷'),
+                                  SizedBox(width: 8),
+                                  Text('Türkçe'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'en',
+                              child: Row(
+                                children: [
+                                  Text('🇺🇸'),
+                                  SizedBox(width: 8),
+                                  Text('English'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'ar',
+                              child: Row(
+                                children: [
+                                  Text('🇸🇦'),
+                                  SizedBox(width: 8),
+                                  Text('العربية'),
+                                ],
+                              ),
+                            ),
+                          ],
+                    ),
+                  );
+                },
+              ),
+            ),
             // Title Content
             Center(
               child: Padding(

@@ -27,7 +27,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  int? _selectedVehicleType;
+  int _selectedVehicleType = 1;
 
   @override
   void dispose() {
@@ -49,19 +49,6 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
         'Courier Register',
         context: 'CourierRegisterScreen - Validation Failed',
       );
-      return;
-    }
-
-    if (_selectedVehicleType == null) {
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(localizations.vehicleTypeRequired),
-            backgroundColor: AppTheme.error,
-          ),
-        );
-      }
       return;
     }
 
@@ -99,7 +86,7 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
         password: password,
         fullName: fullName,
         phone: phone,
-        vehicleType: _selectedVehicleType!,
+        vehicleType: _selectedVehicleType,
         language: languageCode,
       );
 
