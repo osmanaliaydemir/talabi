@@ -8,7 +8,7 @@ import 'package:mobile/services/preferences_service.dart';
 import 'package:mobile/services/asset_preloader_service.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart';
+// import 'package:mobile/screens/shared/onboarding/language_selection_screen.dart';
 import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 import 'package:mobile/screens/courier/dashboard_screen.dart';
@@ -59,6 +59,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final prefs = await PreferencesService.instance;
+    // Language selection check removed as per new flow (Default AR, Selector in Onboarding)
+    /*
     final languageSelected =
         prefs.getBool('language_selection_completed') ?? false;
 
@@ -75,6 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
       return;
     }
+    */
 
     final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
     if (!onboardingCompleted) {

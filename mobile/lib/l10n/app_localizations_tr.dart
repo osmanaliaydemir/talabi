@@ -1235,25 +1235,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get getStarted => 'Hadi Başlayın!';
 
   @override
-  String get onboardingTitle1 => 'İhtiyacınız Olan Her Şey';
+  String get onboardingTitle1 =>
+      'Lezzetli Yemekler\nDakikalar İçinde Kapınızda';
 
   @override
   String get onboardingDesc1 =>
-      'Taze market ürünleri, günlük ihtiyaçlar ve daha fazlası—tek uygulamada';
+      'Favori restoranlarınızdan dilediğiniz yemeği sipariş verin, sıcak sıcak tadını çıkarın.';
 
   @override
-  String get onboardingTitle2 => 'Hızlı ve Güvenilir Teslimat';
+  String get onboardingTitle2 =>
+      'Market Alışverişiniz\nDakikalar İçinde Kapınızda';
 
   @override
   String get onboardingDesc2 =>
-      'Siparişinizi anlık takip edin ve hızlıca teslim alın';
+      'Taze sebze, meyve ve günlük ihtiyaçlarınız en hızlı şekilde kapınızda.';
 
   @override
-  String get onboardingTitle3 => 'En İyi Fiyatlar ve Kampanyalar';
+  String get onboardingTitle3 => 'Best Prices & Offers';
 
   @override
   String get onboardingDesc3 =>
-      'Her gün özel teklifler ve rekabetçi fiyatların keyfini çıkarın';
+      'Enjoy exclusive deals and competitive prices every day';
 
   @override
   String get pending => 'Bekleyen';

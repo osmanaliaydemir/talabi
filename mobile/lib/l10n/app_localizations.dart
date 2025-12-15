@@ -2413,25 +2413,25 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTitle1.
   ///
   /// In en, this message translates to:
-  /// **'Shop Everything You Need'**
+  /// **'Delicious Meals\nAt Your Door In Minutes'**
   String get onboardingTitle1;
 
   /// No description provided for @onboardingDesc1.
   ///
   /// In en, this message translates to:
-  /// **'Fresh groceries, daily essentials, and more—all in one app'**
+  /// **'Order your favorite meals from top restaurants and enjoy them warm.'**
   String get onboardingDesc1;
 
   /// No description provided for @onboardingTitle2.
   ///
   /// In en, this message translates to:
-  /// **'Fast & Reliable Delivery'**
+  /// **'Grocery Shopping\nAt Your Door In Minutes'**
   String get onboardingTitle2;
 
   /// No description provided for @onboardingDesc2.
   ///
   /// In en, this message translates to:
-  /// **'Track your order in real-time and get it delivered quickly'**
+  /// **'Fresh vegetables, fruits, and daily needs delivered fast.'**
   String get onboardingDesc2;
 
   /// No description provided for @onboardingTitle3.

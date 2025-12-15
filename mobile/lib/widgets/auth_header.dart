@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AuthHeader extends StatelessWidget {
   const AuthHeader({
@@ -99,55 +100,97 @@ class AuthHeader extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: PopupMenuButton<String>(
-                      icon: Text(
-                        provider.locale.languageCode.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        dividerTheme: DividerThemeData(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          space: 1,
+                          thickness: 1,
                         ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusMedium,
+                      child: PopupMenuButton<String>(
+                        constraints: const BoxConstraints.tightFor(
+                          width: 60, // Reduced width
                         ),
+                        elevation: 2,
+                        color: Colors.white.withValues(
+                          alpha: 0.90, // Glassy transparency
+                        ),
+                        surfaceTintColor: Colors.white,
+                        icon: Text(
+                          provider.locale.languageCode.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16, // Kept 16 for button as standard
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        onSelected: (String code) {
+                          provider.setLanguage(code);
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: 'tr',
+                                height: 35,
+                                padding: EdgeInsets.zero,
+                                child: Center(
+                                  child: Text(
+                                    'TR',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color:
+                                          provider.locale.languageCode == 'tr'
+                                          ? const Color(0xFFCE181B)
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const PopupMenuDivider(height: 1),
+                              PopupMenuItem<String>(
+                                value: 'en',
+                                height: 35,
+                                padding: EdgeInsets.zero,
+                                child: Center(
+                                  child: Text(
+                                    'EN',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color:
+                                          provider.locale.languageCode == 'en'
+                                          ? const Color(0xFFCE181B)
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const PopupMenuDivider(height: 1),
+                              PopupMenuItem<String>(
+                                value: 'ar',
+                                height: 35,
+                                padding: EdgeInsets.zero,
+                                child: Center(
+                                  child: Text(
+                                    'AR',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color:
+                                          provider.locale.languageCode == 'ar'
+                                          ? const Color(0xFFCE181B)
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                       ),
-                      onSelected: (String code) {
-                        provider.setLanguage(code);
-                      },
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
-                              value: 'tr',
-                              child: Row(
-                                children: [
-                                  Text('🇹🇷'),
-                                  SizedBox(width: 8),
-                                  Text('Türkçe'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'en',
-                              child: Row(
-                                children: [
-                                  Text('🇺🇸'),
-                                  SizedBox(width: 8),
-                                  Text('English'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'ar',
-                              child: Row(
-                                children: [
-                                  Text('🇸🇦'),
-                                  SizedBox(width: 8),
-                                  Text('العربية'),
-                                ],
-                              ),
-                            ),
-                          ],
                     ),
                   );
                 },

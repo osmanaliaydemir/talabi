@@ -7,7 +7,7 @@ class LocalizationProvider with ChangeNotifier {
   LocalizationProvider() {
     _loadPreferences();
   }
-  Locale _locale = const Locale('tr');
+  Locale _locale = const Locale('ar');
   String _currency = 'TRY';
   String? _timeZone;
   String? _dateFormat;

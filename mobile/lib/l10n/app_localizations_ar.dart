@@ -1222,17 +1222,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get getStarted => 'ابدأ';
 
   @override
-  String get onboardingTitle1 => 'تسوق كل ما تحتاجه';
+  String get onboardingTitle1 => 'وجبات لذيذة\nعند بابك في دقائق';
 
   @override
   String get onboardingDesc1 =>
-      'البقالة الطازجة والاحتياجات اليومية والمزيد—كل ذلك في تطبيق واحد';
+      'اطلب وجباتك المفضلة من أفضل المطاعم واستمتع بها ساخنة.';
 
   @override
-  String get onboardingTitle2 => 'توصيل سريع وموثوق';
+  String get onboardingTitle2 => 'تسوق البقالة\nعند بابك في دقائق';
 
   @override
-  String get onboardingDesc2 => 'تتبع طلبك في الوقت الفعلي واحصل عليه بسرعة';
+  String get onboardingDesc2 =>
+      'خضروات وفواكه طازجة واحتياجاتك اليومية تصلك بسرعة.';
 
   @override
   String get onboardingTitle3 => 'أفضل الأسعار والعروض';

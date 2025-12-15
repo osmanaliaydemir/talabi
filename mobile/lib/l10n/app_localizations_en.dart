@@ -1235,18 +1235,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get getStarted => 'Get Started';
 
   @override
-  String get onboardingTitle1 => 'Shop Everything You Need';
+  String get onboardingTitle1 => 'Delicious Meals\nAt Your Door In Minutes';
 
   @override
   String get onboardingDesc1 =>
-      'Fresh groceries, daily essentials, and more—all in one app';
+      'Order your favorite meals from top restaurants and enjoy them warm.';
 
   @override
-  String get onboardingTitle2 => 'Fast & Reliable Delivery';
+  String get onboardingTitle2 => 'Grocery Shopping\nAt Your Door In Minutes';
 
   @override
   String get onboardingDesc2 =>
-      'Track your order in real-time and get it delivered quickly';
+      'Fresh vegetables, fruits, and daily needs delivered fast.';
 
   @override
   String get onboardingTitle3 => 'Best Prices & Offers';
