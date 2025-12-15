@@ -134,11 +134,7 @@ public class CourierController : BaseController
                 return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidVehicleType", CurrentCulture), "INVALID_VEHICLE_TYPE"));
             }
 
-            courier.VehicleType = vehicleType.ToString();
-        }
-        else
-        {
-            courier.VehicleType = null;
+            courier.VehicleType = vehicleType;
         }
 
         courier.MaxActiveOrders = dto.MaxActiveOrders;

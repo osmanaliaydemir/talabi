@@ -5,19 +5,21 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/config/app_theme.dart';
-import 'package:mobile/screens/customer/auth/reset_password_screen.dart';
+import 'package:mobile/screens/vendor/auth/vendor_reset_password_screen.dart';
 import 'package:mobile/widgets/auth_header.dart';
 
-class VerifyResetCodeScreen extends StatefulWidget {
-  const VerifyResetCodeScreen({super.key, required this.email});
+class VendorVerifyResetCodeScreen extends StatefulWidget {
+  const VendorVerifyResetCodeScreen({super.key, required this.email});
 
   final String email;
 
   @override
-  State<VerifyResetCodeScreen> createState() => _VerifyResetCodeScreenState();
+  State<VendorVerifyResetCodeScreen> createState() =>
+      _VendorVerifyResetCodeScreenState();
 }
 
-class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
+class _VendorVerifyResetCodeScreenState
+    extends State<VendorVerifyResetCodeScreen> {
   final _apiService = ApiService();
   final List<TextEditingController> _controllers = List.generate(
     6,
@@ -78,12 +80,12 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
       final token = await _apiService.verifyResetCode(widget.email, code);
 
       if (mounted) {
-        // Navigate to Reset Password Screen
+        // Navigate to Vendor Reset Password Screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) =>
-                ResetPasswordScreen(email: widget.email, token: token),
+                VendorResetPasswordScreen(email: widget.email, token: token),
           ),
         );
       }
@@ -92,7 +94,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
         ToastMessage.show(
           context,
           message: e.toString().replaceAll('Exception: ', ''),
-          isSuccess: false, // Changed to isSuccess: false
+          isSuccess: false,
         );
       }
     } finally {
@@ -115,7 +117,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
         ToastMessage.show(
           context,
           message: localizations.verificationCodeResent,
-          isSuccess: true, // Specifically added
+          isSuccess: true,
         );
       }
     } catch (e) {
@@ -123,7 +125,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
         ToastMessage.show(
           context,
           message: e.toString().replaceAll('Exception: ', ''),
-          isSuccess: false, // Changed to isSuccess: false
+          isSuccess: false,
         );
       }
     } finally {
@@ -142,9 +144,9 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.lightOrange,
-              AppTheme.primaryOrange,
-              AppTheme.darkOrange,
+              AppTheme.vendorLight,
+              AppTheme.vendorPrimary,
+              AppTheme.vendorDark,
             ],
           ),
         ),
@@ -234,7 +236,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(
-                                    color: AppTheme.primaryOrange,
+                                    color: AppTheme.vendorPrimary,
                                     width: 2,
                                   ),
                                 ),
@@ -261,7 +263,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                         Text(
                           '${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
                           style: const TextStyle(
-                            color: AppTheme.primaryOrange,
+                            color: AppTheme.vendorPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -272,7 +274,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                           child: Text(
                             localizations.resendCode,
                             style: const TextStyle(
-                              color: AppTheme.primaryOrange,
+                              color: AppTheme.vendorPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -317,7 +319,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _verifyCode,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryOrange,
+                              backgroundColor: AppTheme.vendorPrimary,
                               foregroundColor: AppTheme.textOnPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(

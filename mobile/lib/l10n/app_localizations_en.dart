@@ -494,7 +494,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areYouVendor => 'Are you a vendor? ';
 
   @override
-  String get courierSignIn => 'Courier Sign In';
+  String get courierSignIn => 'Sign in';
 
   @override
   String get courierLoginLink => 'Courier Login';
@@ -2447,4 +2447,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resetPassword => 'Reset Password';
+
+  @override
+  String get codeExpired => 'The code has expired.';
+
+  @override
+  String get businessType => 'Business Type';
+
+  @override
+  String get businessTypeRequired => 'Business type is required';
+
+  @override
+  String get restaurant => 'Restaurant';
+
+  @override
+  String get market => 'Market';
+
+  @override
+  String get defaultError => 'An error occurred';
+
+  @override
+  String get passwordPlaceholder => '******';
+
+  @override
+  String get vehicleTypeRequired => 'Vehicle Type is required';
+
+  @override
+  String get errorLoginVendorToCustomer =>
+      'Cannot login to customer screens with a vendor account.';
+
+  @override
+  String get errorLoginCourierToCustomer =>
+      'Cannot login to customer screens with a courier account.';
+
+  @override
+  String get errorLoginCustomerToVendor =>
+      'Cannot login to vendor screens with a customer account.';
+
+  @override
+  String get errorLoginCourierToVendor =>
+      'Cannot login to vendor screens with a courier account.';
+
+  @override
+  String get errorLoginCustomerToCourier =>
+      'Cannot login to courier screens with a customer account.';
+
+  @override
+  String get errorLoginVendorToCourier =>
+      'Cannot login to courier screens with a vendor account.';
+
+  @override
+  String get keywordTokenExpired => 'expired';
 }

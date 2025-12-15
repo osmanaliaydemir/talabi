@@ -456,6 +456,7 @@ public class AuthService : IAuthService
                     UserId = user.Id,
                     Name = dto.FullName,
                     PhoneNumber = dto.Phone,
+                    VehicleType = dto.VehicleType,
                     IsActive = true,
                     Status = CourierStatus.Offline
                 };

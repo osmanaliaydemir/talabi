@@ -398,20 +398,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get duplicateEmail => 'يوجد بالفعل حساب بهذا البريد الإلكتروني';
 
   @override
-  String get passwordRuleChars => 'At least 6 characters';
+  String get passwordRuleChars => '6 أحرف على الأقل';
 
   @override
-  String get passwordRuleDigit => 'At least one digit (0-9)';
+  String get passwordRuleDigit => 'رقم واحد على الأقل (0-9)';
 
   @override
-  String get passwordRuleUpper => 'At least one uppercase letter (A-Z)';
+  String get passwordRuleUpper => 'حرف كبير واحد على الأقل (A-Z)';
 
   @override
-  String get passwordRuleLower => 'At least one lowercase letter (a-z)';
+  String get passwordRuleLower => 'حرف صغير واحد على الأقل (a-z)';
 
   @override
-  String get passwordRuleSpecial =>
-      'At least one special character (!@#\$%^&* etc.)';
+  String get passwordRuleSpecial => 'رمز خاص واحد على الأقل (!@#\$%^&* إلخ.)';
 
   @override
   String googleLoginFailed(Object error) {
@@ -868,7 +867,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get locationServicesDisabled => 'خدمات الموقع معطلة';
 
   @override
-  String get pleaseSelectLocation => 'يرجى تحديد موقع';
+  String get pleaseSelectLocation => 'الرجاء اختيار موقع';
 
   @override
   String get selectedLocation => 'الموقع المحدد';
@@ -1731,14 +1730,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectLocationOnMap => 'حدد الموقع على الخريطة';
 
   @override
-  String get useCurrentLocation => 'استخدام الموقع الحالي';
+  String get useCurrentLocation => 'استخدم الموقع الحالي';
 
   @override
   String get updateLocation => 'تحديث الموقع';
 
   @override
   String get locationSharingInfo =>
-      'مشاركة الموقع مطلوبة لتلقي الطلبات من المطاعم القريبة. يتم مشاركة موقعك تلقائياً عندما تكون حالتك \"متاح\".';
+      'مشاركة الموقع مطلوبة لتلقي الطلبات من المطاعم القريبة. تتم مشاركة موقعك تلقائيًا عندما تكون حالتك \"متاح\".';
 
   @override
   String get locationManagementDescription => 'عرض وتحديث موقعك الحالي';
@@ -2418,4 +2417,55 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get resetPassword => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get codeExpired => 'انتهت صلاحية الرمز.';
+
+  @override
+  String get businessType => 'نوع العمل';
+
+  @override
+  String get businessTypeRequired => 'نوع العمل مطلوب';
+
+  @override
+  String get restaurant => 'مطعم';
+
+  @override
+  String get market => 'سوق';
+
+  @override
+  String get defaultError => 'حدث خطأ';
+
+  @override
+  String get passwordPlaceholder => '******';
+
+  @override
+  String get vehicleTypeRequired => 'نوع المركبة مطلوب';
+
+  @override
+  String get errorLoginVendorToCustomer =>
+      'لا يمكن تسجيل الدخول إلى شاشات العملاء بحساب بائع.';
+
+  @override
+  String get errorLoginCourierToCustomer =>
+      'لا يمكن تسجيل الدخول إلى شاشات العملاء بحساب سائق.';
+
+  @override
+  String get errorLoginCustomerToVendor =>
+      'لا يمكن تسجيل الدخول إلى شاشات البائعين بحساب عميل.';
+
+  @override
+  String get errorLoginCourierToVendor =>
+      'لا يمكن تسجيل الدخول إلى شاشات البائعين بحساب سائق.';
+
+  @override
+  String get errorLoginCustomerToCourier =>
+      'لا يمكن تسجيل الدخول إلى شاشات السائقين بحساب عميل.';
+
+  @override
+  String get errorLoginVendorToCourier =>
+      'لا يمكن تسجيل الدخول إلى شاشات السائقين بحساب بائع.';
+
+  @override
+  String get keywordTokenExpired => 'expired';
 }

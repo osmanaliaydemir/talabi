@@ -1021,7 +1021,7 @@ abstract class AppLocalizations {
   /// No description provided for @courierSignIn.
   ///
   /// In en, this message translates to:
-  /// **'Courier Sign In'**
+  /// **'Sign in'**
   String get courierSignIn;
 
   /// No description provided for @courierLoginLink.
@@ -4575,6 +4575,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset Password'**
   String get resetPassword;
+
+  /// No description provided for @codeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired.'**
+  String get codeExpired;
+
+  /// No description provided for @businessType.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Type'**
+  String get businessType;
+
+  /// No description provided for @businessTypeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Business type is required'**
+  String get businessTypeRequired;
+
+  /// No description provided for @restaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurant'**
+  String get restaurant;
+
+  /// No description provided for @market.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get market;
+
+  /// No description provided for @defaultError.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get defaultError;
+
+  /// No description provided for @passwordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'******'**
+  String get passwordPlaceholder;
+
+  /// No description provided for @vehicleTypeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Type is required'**
+  String get vehicleTypeRequired;
+
+  /// No description provided for @errorLoginVendorToCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login to customer screens with a vendor account.'**
+  String get errorLoginVendorToCustomer;
+
+  /// No description provided for @errorLoginCourierToCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login to customer screens with a courier account.'**
+  String get errorLoginCourierToCustomer;
+
+  /// No description provided for @errorLoginCustomerToVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login to vendor screens with a customer account.'**
+  String get errorLoginCustomerToVendor;
+
+  /// No description provided for @errorLoginCourierToVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login to vendor screens with a courier account.'**
+  String get errorLoginCourierToVendor;
+
+  /// No description provided for @errorLoginCustomerToCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login to courier screens with a customer account.'**
+  String get errorLoginCustomerToCourier;
+
+  /// No description provided for @errorLoginVendorToCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login to courier screens with a vendor account.'**
+  String get errorLoginVendorToCourier;
+
+  /// No description provided for @keywordTokenExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'expired'**
+  String get keywordTokenExpired;
 }
 
 class _AppLocalizationsDelegate

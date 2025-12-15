@@ -3,17 +3,19 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
-import 'package:mobile/screens/customer/auth/verify_reset_code_screen.dart';
+import 'package:mobile/screens/courier/auth/courier_verify_reset_code_screen.dart';
 import 'package:mobile/widgets/auth_header.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+class CourierForgotPasswordScreen extends StatefulWidget {
+  const CourierForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<CourierForgotPasswordScreen> createState() =>
+      _CourierForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _CourierForgotPasswordScreenState
+    extends State<CourierForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final ApiService _apiService = ApiService();
@@ -54,8 +56,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                VerifyResetCodeScreen(email: _emailController.text.trim()),
+            builder: (context) => CourierVerifyResetCodeScreen(
+              email: _emailController.text.trim(),
+            ),
           ),
         );
       }
@@ -88,9 +91,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.lightOrange,
-              AppTheme.primaryOrange,
-              AppTheme.darkOrange,
+              AppTheme.courierLight,
+              AppTheme.courierPrimary,
+              AppTheme.courierDark,
             ],
           ),
         ),
@@ -187,6 +190,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.courierPrimary,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
@@ -207,7 +219,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _resetPassword,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryOrange,
+                              backgroundColor: AppTheme.courierPrimary,
                               foregroundColor: AppTheme.textOnPrimary,
                               padding: const EdgeInsets.symmetric(
                                 vertical: AppTheme.spacingMedium,
@@ -289,7 +301,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 }
 
-// Custom Painter for Email Illustration
+// Custom Painter for Email Illustration (Teal Version)
 class _EmailIllustrationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -331,7 +343,7 @@ class _EmailIllustrationPainter extends CustomPainter {
         size.height * 0.7,
       );
 
-    paint.color = Colors.pink[300]!;
+    paint.color = Colors.teal[300]!;
     canvas.drawPath(handPath, paint);
 
     // Envelope
@@ -346,12 +358,12 @@ class _EmailIllustrationPainter extends CustomPainter {
     );
 
     paint
-      ..color = Colors.orange
+      ..color = Colors.teal
       ..style = PaintingStyle.fill;
     canvas.drawRRect(envelopeRect, paint);
 
     paint
-      ..color = Colors.orange[800]!
+      ..color = Colors.teal[800]!
       ..style = PaintingStyle.stroke;
     canvas.drawRRect(envelopeRect, paint);
 
@@ -362,7 +374,7 @@ class _EmailIllustrationPainter extends CustomPainter {
       ..lineTo(size.width * 0.65, size.height * 0.5);
 
     paint
-      ..color = Colors.orange[800]!
+      ..color = Colors.teal[800]!
       ..style = PaintingStyle.stroke;
     canvas.drawPath(flapPath, paint);
 
@@ -407,7 +419,7 @@ class _EmailIllustrationPainter extends CustomPainter {
       ..close();
 
     paint
-      ..color = Colors.blue[400]!
+      ..color = Colors.teal[400]!
       ..style = PaintingStyle.fill;
     canvas.drawPath(airplanePath, paint);
   }

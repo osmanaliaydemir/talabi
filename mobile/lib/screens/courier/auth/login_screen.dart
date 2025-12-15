@@ -1,13 +1,16 @@
 import 'package:mobile/utils/custom_routes.dart';
+import 'package:mobile/widgets/auth_header.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/courier/dashboard_screen.dart';
-import 'package:mobile/screens/courier/register_screen.dart';
+import 'package:mobile/screens/courier/auth/register_screen.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/utils/role_mismatch_exception.dart';
+import 'package:mobile/widgets/toast_message.dart';
 
 class CourierLoginScreen extends StatefulWidget {
   const CourierLoginScreen({super.key});
@@ -46,6 +49,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
       await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
+        requiredRole: 'Courier',
       );
 
       if (mounted) {
@@ -55,16 +59,31 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
           ),
         );
       }
+    } on RoleMismatchException catch (e) {
+      if (mounted) {
+        final localizations = AppLocalizations.of(context);
+        if (localizations != null) {
+          String message = localizations.defaultError;
+          final actualRole = e.actualRole.toLowerCase();
+
+          if (actualRole.contains('vendor')) {
+            message = localizations.errorLoginVendorToCourier;
+          } else if (actualRole.contains('customer')) {
+            message = localizations.errorLoginCustomerToCourier;
+          } else {
+            message = "$message (${e.actualRole})";
+          }
+
+          ToastMessage.show(context, message: message, isSuccess: false);
+        }
+      }
     } catch (e) {
       if (mounted) {
         final localizations = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${localizations?.loginFailed ?? "Giriş başarısız"}: $e',
-            ),
-            backgroundColor: AppTheme.error,
-          ),
+        ToastMessage.show(
+          context,
+          message: '${localizations?.loginFailed ?? "Login Failed"}: $e',
+          isSuccess: false,
         );
       }
     } finally {
@@ -96,102 +115,16 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
         child: Column(
           children: [
             // Courier Header (Teal/Turkuaz)
-            SizedBox(
-              height: 180 + MediaQuery.of(context).padding.top,
-              child: Stack(
-                children: [
-                  // Modern Abstract Shapes
-                  Positioned(
-                    top: -100,
-                    right: -100,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 40,
-                    left: -40,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-
-                  // Back Button - Adjusted for Status Bar
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 4,
-                    left: AppTheme.spacingMedium,
-                    child: _buildCircleButton(
-                      icon: Icons.arrow_back,
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          NoSlidePageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Title - Centered with Icon
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.delivery_dining,
-                              size: 32,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            localizations?.courierLogin ?? 'Courier Login',
-                            style: AppTheme.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textOnPrimary,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            AuthHeader(
+              title: localizations?.courierLogin ?? 'Courier Login',
+              icon: Icons.delivery_dining,
+              useCircleBackButton: true,
+              onBack: () {
+                Navigator.pushReplacement(
+                  context,
+                  NoSlidePageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
             ),
             // White Card Content
             Expanded(
@@ -401,7 +334,10 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        // Forgot password for couriers
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/courier/forgot-password',
+                                        );
                                       },
                                       child: Text(
                                         localizations?.recoveryPassword ??
@@ -562,25 +498,6 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCircleButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    Color color = Colors.black,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

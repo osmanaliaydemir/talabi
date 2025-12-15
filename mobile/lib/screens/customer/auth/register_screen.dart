@@ -9,12 +9,14 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
-import 'package:mobile/screens/vendor/register_screen.dart';
+import 'package:mobile/screens/vendor/auth/register_screen.dart';
+import 'package:mobile/screens/courier/auth/register_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/widgets/auth_header.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -278,61 +280,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  Future<void> _signInWithApple() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final socialAuthService = SocialAuthService();
-      final response = await socialAuthService.signInWithApple();
-
-      if (response == null) {
-        // User cancelled
-        return;
-      }
-
-      // Save tokens
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      await prefs.setString('refreshToken', response['refreshToken']);
-      await prefs.setString('userId', response['userId']);
-      await prefs.setString('userRole', response['role']);
-
-      if (mounted) {
-        // Update auth provider
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.setAuthData(
-          response['token'],
-          response['refreshToken'],
-          response['userId'],
-          response['role'],
-        );
-
-        if (!mounted) return;
-
-        // Navigate based on role
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('🔴 [APPLE_LOGIN] Error', e, stackTrace);
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: localizations.appleLoginFailed(e.toString()),
-          isSuccess: false,
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   Future<void> _signInWithFacebook() async {
     setState(() {
       _isLoading = true;
@@ -408,89 +355,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           children: [
             // Header with modern decorative shapes
-            SizedBox(
-              height: 180 + MediaQuery.of(context).padding.top,
-              child: Stack(
-                children: [
-                  // Modern Abstract Shapes
-                  // Top Right - Large Faded Circle
-                  Positioned(
-                    top: -100,
-                    right: -100,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  // Top Right - Smaller brighter circle inside
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  // Middle Left - Medium Circle
-                  Positioned(
-                    top: 40,
-                    left: -40,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-
-                  // Title Content
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Logo Icon
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 32,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            localizations.signUp,
-                            style: AppTheme.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textOnPrimary,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            AuthHeader(
+              title: localizations.signUp,
+              icon: Icons.shopping_bag_outlined,
             ),
             // White Card Content
             Expanded(
@@ -809,14 +676,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: _buildSocialButton(
-                                        icon: Icons.apple,
-                                        label: localizations.apple,
-                                        onPressed: _signInWithApple,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _buildSocialButton(
                                         icon: Icons.facebook,
                                         label: localizations.facebook,
                                         onPressed: _signInWithFacebook,
@@ -842,6 +701,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           );
                                         },
                                         isVendor: true,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        icon: Icons.motorcycle,
+                                        label: localizations.roleCourier,
+                                        onPressed: () {
+                                          TapLogger.logButtonPress(
+                                            'Courier Register',
+                                            context: 'RegisterScreen',
+                                          );
+                                          Navigator.pushReplacement(
+                                            context,
+                                            NoSlidePageRoute(
+                                              builder: (context) =>
+                                                  const CourierRegisterScreen(),
+                                            ),
+                                          );
+                                        },
+                                        isCourier: true,
                                       ),
                                     ),
                                   ],
@@ -947,6 +827,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required VoidCallback onPressed,
     bool isFacebook = false,
     bool isVendor = false,
+    bool isCourier = false,
   }) {
     return OutlinedButton(
       onPressed: onPressed,
@@ -1000,6 +881,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const Icon(
                   Icons.store,
                   color: AppTheme.primaryOrange,
+                  size: 20,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: AppTheme.poppins(
+                    color: AppTheme.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
+          : isCourier
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon, // Icons.motorcycle passed in
+                  color: AppTheme.courierPrimary,
                   size: 20,
                 ),
                 const SizedBox(height: 4),

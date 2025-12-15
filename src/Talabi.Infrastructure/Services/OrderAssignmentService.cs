@@ -644,8 +644,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         // Vehicle type bonus
         decimal vehicleBonus = courier.VehicleType switch
         {
-            "Motosiklet" => 5.00m,
-            "Araba" => 10.00m,
+            CourierVehicleType.Motorcycle => 5.00m,
+            CourierVehicleType.Car => 10.00m,
             _ => 0
         };
 
@@ -710,8 +710,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         // Calculate vehicle bonus
         decimal vehicleBonus = courier.VehicleType switch
         {
-            "Motosiklet" => 5.00m,
-            "Araba" => 10.00m,
+            CourierVehicleType.Motorcycle => 5.00m,
+            CourierVehicleType.Car => 10.00m,
             _ => 0
         };
 

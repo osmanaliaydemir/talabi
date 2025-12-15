@@ -9,7 +9,7 @@ public class Courier : BaseEntity
     
     public string Name { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
-    public string? VehicleType { get; set; } // "Bisiklet", "Motosiklet", "Araba"
+    public CourierVehicleType VehicleType { get; set; } = CourierVehicleType.Motorcycle; // Default motorcycle
     public bool IsActive { get; set; } = true;
     
     // Status Management

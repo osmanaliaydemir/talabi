@@ -67,7 +67,7 @@ public class AdminCourierController : BaseController
                 UserId = c.UserId,
                 Name = c.Name,
                 PhoneNumber = c.PhoneNumber,
-                VehicleType = c.VehicleType,
+                VehicleType = c.VehicleType.ToString(),
                 IsActive = c.IsActive,
                 Status = c.Status.ToString(),
                 MaxActiveOrders = c.MaxActiveOrders,

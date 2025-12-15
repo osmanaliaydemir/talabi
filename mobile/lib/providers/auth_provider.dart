@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
@@ -21,8 +23,13 @@ class AuthProvider with ChangeNotifier {
   String? get fullName => _fullName;
   String? get role => _role;
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(
+    String email,
+    String password, {
+    String? requiredRole,
+  }) async {
     final apiService = ApiService();
+    apiService.resetLogout(); // Ensure we can make requests
     final response = await apiService.login(email, password);
 
     _token = response['token'];
@@ -30,7 +37,26 @@ class AuthProvider with ChangeNotifier {
     _userId = response['userId'];
     _email = response['email'];
     _fullName = response['fullName'];
-    _role = response['role'];
+
+    // Robust role extraction
+    _role = response['role'] ?? response['Role'];
+
+    // Fallback: Extract from token if missing
+    if (_role == null && _token != null) {
+      try {
+        _role = _getRoleFromToken(_token!);
+      } catch (e) {
+        LoggerService().error('Error extracting role from token', e);
+      }
+    }
+
+    // Check role requirement
+    if (requiredRole != null && _role != requiredRole) {
+      final detectedRole = _role;
+      // Clean up potentially partial state
+      await logout();
+      throw RoleMismatchException(detectedRole ?? 'Unknown', requiredRole);
+    }
 
     // Save to secure storage
     final secureStorage = SecureStorageService.instance;
@@ -67,6 +93,7 @@ class AuthProvider with ChangeNotifier {
       LoggerService().debug('🟡 [AUTH_PROVIDER] FullName: $fullName');
 
       final apiService = ApiService();
+      apiService.resetLogout(); // Ensure we can make requests
       final response = await apiService.register(email, password, fullName);
 
       LoggerService().debug('🟢 [AUTH_PROVIDER] Register response received');
@@ -135,6 +162,9 @@ class AuthProvider with ChangeNotifier {
     // Logout öncesi role bilgisini sakla
     final roleBeforeLogout = _role;
 
+    // Notify ApiService to stop processing requests immediately
+    ApiService().notifyLogout();
+
     _token = null;
     _refreshToken = null;
     _userId = null;
@@ -167,6 +197,9 @@ class AuthProvider with ChangeNotifier {
     if (storedToken == null) {
       return; // Fast exit if no token
     }
+
+    // Reset logout state for auto-login
+    ApiService().resetLogout();
 
     // Load token and user data from secure storage
     _token = storedToken;
@@ -220,5 +253,28 @@ class AuthProvider with ChangeNotifier {
     await prefs.setString('refreshToken', refreshToken);
 
     notifyListeners();
+  }
+
+  String? _getRoleFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        return null;
+      }
+
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final resp = utf8.decode(base64Url.decode(normalized));
+      final payloadMap = json.decode(resp);
+
+      if (payloadMap is Map<String, dynamic>) {
+        // Try standard role claim or Microsoft specific claim
+        return payloadMap['role'] ??
+            payloadMap['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      }
+    } catch (e) {
+      // Silent fail or log if needed
+    }
+    return null;
   }
 }

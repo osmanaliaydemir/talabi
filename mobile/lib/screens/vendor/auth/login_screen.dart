@@ -8,7 +8,10 @@ import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
-import 'package:mobile/screens/vendor/register_screen.dart';
+import 'package:mobile/screens/vendor/auth/register_screen.dart';
+import 'package:mobile/widgets/auth_header.dart';
+import 'package:mobile/utils/role_mismatch_exception.dart';
+import 'package:mobile/widgets/toast_message.dart';
 
 class VendorLoginScreen extends StatefulWidget {
   const VendorLoginScreen({super.key});
@@ -47,6 +50,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
       await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
+        requiredRole: 'Vendor',
       );
 
       if (mounted) {
@@ -54,23 +58,38 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
           NoSlidePageRoute(builder: (context) => const VendorDashboardScreen()),
         );
       }
+    } on RoleMismatchException catch (e) {
+      if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
+        String message = localizations.defaultError;
+        final actualRole = e.actualRole.toLowerCase();
+
+        if (actualRole.contains('customer')) {
+          message = localizations.errorLoginCustomerToVendor;
+        } else if (actualRole.contains('courier')) {
+          message = localizations.errorLoginCourierToVendor;
+        } else {
+          message = "$message (${e.actualRole})";
+        }
+
+        ToastMessage.show(context, message: message, isSuccess: false);
+      }
     } catch (e) {
       if (mounted) {
         String errorMessage = e.toString();
 
         // Hata mesajını temizle
+        final localizations = AppLocalizations.of(context);
         if (e is DioException) {
-          errorMessage = e.message ?? e.error?.toString() ?? 'Bir hata oluştu';
+          errorMessage =
+              e.message ??
+              e.error?.toString() ??
+              (localizations?.defaultError ?? 'Bir hata oluştu');
         } else if (errorMessage.startsWith('Exception: ')) {
           errorMessage = errorMessage.substring(11);
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage), // Direkt hatayı göster
-            backgroundColor: AppTheme.error,
-          ),
-        );
+        ToastMessage.show(context, message: errorMessage, isSuccess: false);
       }
     } finally {
       if (mounted) {
@@ -103,102 +122,16 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
         child: Column(
           children: [
             // Vendor Header (Purple/Mor)
-            SizedBox(
-              height: 180 + MediaQuery.of(context).padding.top,
-              child: Stack(
-                children: [
-                  // Modern Abstract Shapes
-                  Positioned(
-                    top: -100,
-                    right: -100,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 40,
-                    left: -40,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-
-                  // Back Button - Adjusted for Status Bar
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 4,
-                    left: AppTheme.spacingMedium,
-                    child: _buildCircleButton(
-                      icon: Icons.arrow_back,
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          NoSlidePageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Title - Centered with Icon
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.store,
-                              size: 32,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            localizations.vendorLogin,
-                            style: AppTheme.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textOnPrimary,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            AuthHeader(
+              title: localizations.vendorLogin,
+              icon: Icons.store,
+              useCircleBackButton: true,
+              onBack: () {
+                Navigator.pushReplacement(
+                  context,
+                  NoSlidePageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
             ),
             // White Card Content
             Expanded(
@@ -396,7 +329,10 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        // Forgot password for vendors
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/vendor/forgot-password',
+                                        );
                                       },
                                       child: Text(
                                         localizations.recoveryPassword,
@@ -553,25 +489,6 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCircleButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    Color color = Colors.black,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

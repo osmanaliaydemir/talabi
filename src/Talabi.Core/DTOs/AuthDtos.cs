@@ -98,7 +98,9 @@ public class CourierRegisterDto
 
     [Required] public string FullName { get; set; } = string.Empty;
 
-    [Phone] public string? Phone { get; set; }
+    [Required] [Phone] public string Phone { get; set; } = string.Empty;
+
+    [Required] public Core.Enums.CourierVehicleType VehicleType { get; set; }
 
     public string? Language { get; set; } // "tr", "en", "ar" - optional
 }

@@ -38,14 +38,14 @@ class _EmailCodeVerificationScreenState
   bool _isLoading = false;
   bool _isResending = false;
   Timer? _timer;
-  int _remainingSeconds = 180; // 3 dakika = 180 saniye
+  int _remainingSeconds = 180; // 3 minutes = 180 seconds
   bool _canResend = false;
 
   @override
   void initState() {
     super.initState();
     _startTimer();
-    // İlk input'a focus ver
+    // Focus on the first input
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNodes[0].requestFocus();
     });
@@ -89,16 +89,16 @@ class _EmailCodeVerificationScreenState
 
   void _onCodeChanged(int index, String value) {
     if (value.length == 1) {
-      // Bir sonraki input'a geç
+      // Move to next input
       if (index < 3) {
         _focusNodes[index + 1].requestFocus();
       } else {
-        // Son input'a geldiğinde klavyeyi kapat
+        // Unfocus keyboard when last input is reached
         _focusNodes[index].unfocus();
         _verifyCode();
       }
     } else if (value.isEmpty && index > 0) {
-      // Geri tuşuna basıldığında önceki input'a geç
+      // Move to previous input on backspace
       _focusNodes[index - 1].requestFocus();
     }
   }
@@ -133,7 +133,7 @@ class _EmailCodeVerificationScreenState
           isSuccess: true,
         );
 
-        // Eğer password varsa otomatik login yap ve Customer keşfet ekranına yönlendir
+        // If password is provided, auto-login and navigate to Customer discovery screen
         if (widget.password != null && widget.password!.isNotEmpty) {
           try {
             final authProvider = Provider.of<AuthProvider>(
@@ -143,7 +143,7 @@ class _EmailCodeVerificationScreenState
             await authProvider.login(widget.email, widget.password!);
 
             if (mounted) {
-              // Customer keşfet ekranına (MainNavigationScreen) yönlendir
+              // Navigate to Customer discovery screen (MainNavigationScreen)
               Navigator.of(context).pushAndRemoveUntil(
                 NoSlidePageRoute(
                   builder: (context) => const MainNavigationScreen(),
@@ -152,7 +152,7 @@ class _EmailCodeVerificationScreenState
               );
             }
           } catch (loginError) {
-            // Login başarısız olursa login ekranına yönlendir
+            // If login fails, navigate to login screen
             if (mounted) {
               ToastMessage.show(
                 context,
@@ -166,7 +166,7 @@ class _EmailCodeVerificationScreenState
             }
           }
         } else {
-          // Password yoksa login ekranına yönlendir
+          // If no password, navigate to login screen
           Navigator.of(context).pushAndRemoveUntil(
             NoSlidePageRoute(builder: (context) => const LoginScreen()),
             (route) => false,
@@ -185,7 +185,7 @@ class _EmailCodeVerificationScreenState
       if (mounted) {
         ToastMessage.show(context, message: errorMessage, isSuccess: false);
 
-        // Hatalı kodları temizle
+        // Clear invalid codes
         for (final controller in _controllers) {
           controller.clear();
         }
@@ -234,10 +234,10 @@ class _EmailCodeVerificationScreenState
           isSuccess: true,
         );
 
-        // Timer'ı yeniden başlat
+        // Restart timer
         _startTimer();
 
-        // Kod inputlarını temizle
+        // Clear code inputs
         for (final controller in _controllers) {
           controller.clear();
         }

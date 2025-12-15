@@ -7,13 +7,15 @@ import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/customer/auth/email_verification_screen.dart';
 import 'package:mobile/screens/customer/auth/forgot_password_screen.dart';
 import 'package:mobile/screens/customer/auth/register_screen.dart';
-import 'package:mobile/screens/courier/login_screen.dart';
-import 'package:mobile/screens/vendor/login_screen.dart';
+import 'package:mobile/screens/courier/auth/login_screen.dart';
+import 'package:mobile/screens/vendor/auth/login_screen.dart';
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/widgets/auth_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/utils/role_mismatch_exception.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -160,6 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
+        requiredRole: 'Customer',
       );
 
       // Login başarılı olduysa ana ekrana yönlendir
@@ -167,6 +170,22 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/customer/home', (route) => false);
+      }
+    } on RoleMismatchException catch (e) {
+      if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
+        String message = localizations.defaultError;
+        final actualRole = e.actualRole.toLowerCase();
+
+        if (actualRole.contains('vendor')) {
+          message = localizations.errorLoginVendorToCustomer;
+        } else if (actualRole.contains('courier')) {
+          message = localizations.errorLoginCourierToCustomer;
+        } else {
+          message = "$message (${e.actualRole})";
+        }
+
+        ToastMessage.show(context, message: message, isSuccess: false);
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -249,91 +268,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         child: Column(
           children: [
-            // Header with decorative shapes (Forgot Password Style)
-            SizedBox(
-              height: 180 + MediaQuery.of(context).padding.top,
-              child: Stack(
-                children: [
-                  // Modern Abstract Shapes
-                  // Top Right - Large Faded Circle
-                  Positioned(
-                    top: -100,
-                    right: -100,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  // Top Right - Smaller brighter circle inside
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  // Middle Left - Medium Circle
-                  Positioned(
-                    top: 40,
-                    left: -40,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  // Bottom Left - Small dots decoration - REMOVED
-
-                  // Title Content
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Logo Icon (Optional - adds brand feel)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 32,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            localizations.signIn,
-                            style: AppTheme.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textOnPrimary,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            // Header
+            AuthHeader(
+              title: localizations.signIn,
+              icon: Icons.shopping_bag_outlined,
             ),
             // White Card Content
             Expanded(

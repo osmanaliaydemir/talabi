@@ -497,8 +497,8 @@ namespace Talabi.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("VehicleType")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("VehicleType")
+                        .HasColumnType("int");
 
                     b.Property<TimeSpan?>("WorkingHoursEnd")
                         .HasColumnType("time");

@@ -356,7 +356,7 @@ public class OrderService : IOrderService
                     Id = x.Courier.Id,
                     FullName = x.Courier.Name,
                     PhoneNumber = x.Courier.PhoneNumber ?? string.Empty,
-                    VehicleType = x.Courier.VehicleType ?? "Unknown",
+                    VehicleType = x.Courier.VehicleType.ToString(),
                     AverageRating = x.Courier.AverageRating,
                     TotalDeliveries = x.Courier.TotalDeliveries,
                     CurrentActiveOrders = x.Courier.CurrentActiveOrders,

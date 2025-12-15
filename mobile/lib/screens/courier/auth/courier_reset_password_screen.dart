@@ -6,8 +6,8 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:mobile/widgets/auth_header.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({
+class CourierResetPasswordScreen extends StatefulWidget {
+  const CourierResetPasswordScreen({
     super.key,
     required this.email,
     required this.token,
@@ -17,10 +17,12 @@ class ResetPasswordScreen extends StatefulWidget {
   final String token;
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  State<CourierResetPasswordScreen> createState() =>
+      _CourierResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+class _CourierResetPasswordScreenState
+    extends State<CourierResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -78,19 +80,20 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           isSuccess: true,
         );
 
-        // Navigate to login screen and remove all previous routes
+        // Navigate to courier login screen and remove all previous routes
         Navigator.of(
           context,
-        ).pushNamedAndRemoveUntil('/login', (route) => false);
+        ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         final errorMsg = e.toString();
         // Check for expiration keywords
         if (errorMsg.toLowerCase().contains('expire') ||
             errorMsg.toLowerCase().contains(
-              'süresi',
-            ) || // Turkish 'duration/time' often used in 'expired' contexts
+              localizations.keywordTokenExpired,
+            ) ||
             errorMsg.contains('410') || // Gone
             errorMsg.toLowerCase().contains('invalid token')) {
           setState(() {
@@ -120,9 +123,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.lightOrange,
-              AppTheme.primaryOrange,
-              AppTheme.darkOrange,
+              AppTheme.courierLight,
+              AppTheme.courierPrimary,
+              AppTheme.courierDark,
             ],
           ),
         ),
@@ -226,6 +229,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.courierPrimary,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -290,6 +302,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 horizontal: AppTheme.spacingMedium,
                                 vertical: AppTheme.spacingMedium,
                               ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.courierPrimary,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -342,7 +363,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _resetPassword,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryOrange,
+                                backgroundColor: AppTheme.courierPrimary,
                                 foregroundColor: AppTheme.textOnPrimary,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,

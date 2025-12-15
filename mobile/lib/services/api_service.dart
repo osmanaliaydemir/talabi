@@ -58,6 +58,19 @@ class ApiService {
             options.headers['Authorization'] = 'Bearer $token';
           }
 
+          // If logging out, reject new requests to prevent race conditions
+          if (_isLoggingOut &&
+              !options.path.contains('login') &&
+              !options.path.contains('register')) {
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                error: 'Logout in progress',
+                type: DioExceptionType.cancel,
+              ),
+            );
+          }
+
           LoggerService().debug(
             '📤 [HTTP REQUEST] ${options.method} ${options.uri}',
           );
@@ -112,7 +125,8 @@ class ApiService {
           // Handle 401 Unauthorized - Refresh Token Logic
           if (error.response?.statusCode == 401 &&
               !error.requestOptions.path.contains('login') &&
-              !error.requestOptions.path.contains('refresh-token')) {
+              !error.requestOptions.path.contains('refresh-token') &&
+              !_isLoggingOut) {
             LoggerService().debug(
               '🔄 [REFRESH TOKEN] 401 detected. Attempting to refresh...',
             );
@@ -148,6 +162,9 @@ class ApiService {
 
                     _refreshCompleter!.complete(newTokens);
                   } catch (e, stackTrace) {
+                    // Refresh failed, ensure we handle redirect BEFORE waking up other listeners
+                    _handleAuthFailure();
+
                     _refreshCompleter!.completeError(
                       DioException(
                         requestOptions: error.requestOptions,
@@ -158,6 +175,7 @@ class ApiService {
                       ),
                       stackTrace,
                     );
+                    rethrow;
                   } finally {
                     _isRefreshing = false;
                     _refreshCompleter = null;
@@ -187,10 +205,7 @@ class ApiService {
               _refreshCompleter = null;
 
               // If refresh fails, redirect to login
-              NavigationService.navigateToRemoveUntil(
-                '/login',
-                (route) => false,
-              );
+              _handleAuthFailure();
             }
           } else if (error.response?.statusCode == 401) {
             // Sadece '/auth/login' path'inde (veya genel login endpointlerinde) 401 gelirse yönlendirme YAPMA.
@@ -201,10 +216,7 @@ class ApiService {
 
             if (!isLoginRequest) {
               // Normal bir istekte 401 geldiyse token geçersizdir, login'e at.
-              NavigationService.navigateToRemoveUntil(
-                '/login',
-                (route) => false,
-              );
+              _handleAuthFailure();
             }
           }
 
@@ -263,6 +275,8 @@ class ApiService {
 
   // Track refresh token operation to prevent concurrent calls
   bool _isRefreshing = false;
+  bool _isRedirectingToLogin = false;
+  bool _isLoggingOut = false;
   Completer<Map<String, String>>? _refreshCompleter;
 
   // Expose Dio instance for other services
@@ -270,6 +284,40 @@ class ApiService {
 
   void setConnectivityService(ConnectivityService connectivityService) {
     _connectivityService = connectivityService;
+  }
+
+  void notifyLogout() {
+    _isLoggingOut = true;
+    LoggerService().debug(
+      '🔒 [AUTH] Logout initiated. Blocking further requests.',
+    );
+    // Cancel any pending refresh
+    if (_isRefreshing &&
+        _refreshCompleter != null &&
+        !_refreshCompleter!.isCompleted) {
+      _refreshCompleter!.completeError('Logout initiated');
+      _refreshCompleter = null;
+      _isRefreshing = false;
+    }
+  }
+
+  void resetLogout() {
+    if (_isLoggingOut) {
+      _isLoggingOut = false;
+      LoggerService().debug('🔒 [AUTH] Logout state reset. Resuming requests.');
+    }
+  }
+
+  void _handleAuthFailure() {
+    if (!_isRedirectingToLogin) {
+      _isRedirectingToLogin = true;
+      LoggerService().debug('🔒 [AUTH] Initiating redirect to login...');
+      NavigationService.navigateToRemoveUntil('/login', (route) => false);
+      // Reset flag after a delay to allow future redirects if needed
+      Future.delayed(const Duration(seconds: 2), () {
+        _isRedirectingToLogin = false;
+      });
+    }
   }
 
   Future<Map<String, String>> _refreshToken(
@@ -1008,7 +1056,8 @@ class ApiService {
     required String email,
     required String password,
     required String fullName,
-    String? phone,
+    required String phone,
+    required int vehicleType,
     String? language,
   }) async {
     try {
@@ -1020,9 +1069,8 @@ class ApiService {
       );
       LoggerService().debug('🔵 [COURIER_REGISTER] Email: $email');
       LoggerService().debug('🔵 [COURIER_REGISTER] FullName: $fullName');
-      LoggerService().debug(
-        '🔵 [COURIER_REGISTER] Phone: ${phone ?? "not specified"}',
-      );
+      LoggerService().debug('🔵 [COURIER_REGISTER] Phone: $phone');
+      LoggerService().debug('🔵 [COURIER_REGISTER] VehicleType: $vehicleType');
       LoggerService().debug(
         '🔵 [COURIER_REGISTER] Language: ${language ?? "not specified"}',
       );
@@ -1031,7 +1079,8 @@ class ApiService {
         'email': email,
         'password': password,
         'fullName': fullName,
-        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        'phone': phone,
+        'vehicleType': vehicleType,
         if (language != null) 'language': language,
       };
       LoggerService().debug('🔵 [COURIER_REGISTER] Request data: $requestData');

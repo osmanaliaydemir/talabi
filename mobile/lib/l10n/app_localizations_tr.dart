@@ -495,7 +495,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get areYouVendor => 'Satıcı mısınız? ';
 
   @override
-  String get courierSignIn => 'Kurye Girişi';
+  String get courierSignIn => 'Giriş yap';
 
   @override
   String get courierLoginLink => 'Kurye Girişi';
@@ -2442,4 +2442,55 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get resetPassword => 'Şifreyi Sıfırla';
+
+  @override
+  String get codeExpired => 'Kodun süresi doldu.';
+
+  @override
+  String get businessType => 'İşletme Türü';
+
+  @override
+  String get businessTypeRequired => 'İşletme türü gerekli';
+
+  @override
+  String get restaurant => 'Restoran';
+
+  @override
+  String get market => 'Market';
+
+  @override
+  String get defaultError => 'Bir hata oluştu';
+
+  @override
+  String get passwordPlaceholder => '******';
+
+  @override
+  String get vehicleTypeRequired => 'Araç Tipi zorunludur';
+
+  @override
+  String get errorLoginVendorToCustomer =>
+      'Satıcı hesabıyla, müşteri ekranlarına giriş yapılamaz.';
+
+  @override
+  String get errorLoginCourierToCustomer =>
+      'Kurye hesabıyla, müşteri ekranlarına giriş yapılamaz.';
+
+  @override
+  String get errorLoginCustomerToVendor =>
+      'Müşteri hesabıyla, satıcı ekranlarına giriş yapılamaz.';
+
+  @override
+  String get errorLoginCourierToVendor =>
+      'Kurye hesabıyla, satıcı ekranlarına giriş yapılamaz.';
+
+  @override
+  String get errorLoginCustomerToCourier =>
+      'Müşteri hesabıyla, kurye ekranlarına giriş yapılamaz.';
+
+  @override
+  String get errorLoginVendorToCourier =>
+      'Satıcı hesabıyla, kurye ekranlarına giriş yapılamaz.';
+
+  @override
+  String get keywordTokenExpired => 'süresi';
 }

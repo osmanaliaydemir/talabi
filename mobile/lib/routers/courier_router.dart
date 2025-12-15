@@ -13,12 +13,34 @@ import 'package:mobile/screens/courier/earnings_screen.dart';
 import 'package:mobile/screens/courier/order_detail_screen.dart';
 import 'package:mobile/screens/courier/order_map_screen.dart';
 import 'package:mobile/services/logger_service.dart';
+import 'package:mobile/screens/courier/auth/courier_forgot_password_screen.dart';
+import 'package:mobile/screens/courier/auth/courier_verify_reset_code_screen.dart';
+import 'package:mobile/screens/courier/auth/courier_reset_password_screen.dart';
 
 /// Courier modülü için route yöneticisi
 class CourierRouter {
   /// Courier route'larını generate eder
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case '/courier/forgot-password':
+        return NoSlidePageRoute(
+          builder: (context) => const CourierForgotPasswordScreen(),
+        );
+
+      case '/courier/verify-reset-code':
+        final email = settings.arguments as String? ?? '';
+        return NoSlidePageRoute(
+          builder: (context) => CourierVerifyResetCodeScreen(email: email),
+        );
+
+      case '/courier/reset-password':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final email = args?['email'] as String? ?? '';
+        final token = args?['token'] as String? ?? '';
+        return NoSlidePageRoute(
+          builder: (context) =>
+              CourierResetPasswordScreen(email: email, token: token),
+        );
       case '/courier/order-detail':
         final orderId = settings.arguments as String?;
         if (orderId == null || orderId.isEmpty) {
