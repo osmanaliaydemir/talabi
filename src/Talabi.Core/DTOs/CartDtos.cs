@@ -15,6 +15,9 @@ public class CartItemDto
     public decimal ProductPrice { get; set; }
     public string? ProductImageUrl { get; set; }
     public int Quantity { get; set; }
+    public Guid VendorId { get; set; }
+    public string VendorName { get; set; } = string.Empty;
+    public int VendorType { get; set; } // 1 = Restaurant, 2 = Market
 }
 
 public class AddToCartDto

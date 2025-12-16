@@ -15,6 +15,7 @@ class Product {
     this.isAvailable = true,
     this.stock,
     this.preparationTime,
+    this.vendorType,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -34,6 +35,7 @@ class Product {
       isAvailable: json['isAvailable'] ?? true,
       stock: json['stock'],
       preparationTime: json['preparationTime'],
+      vendorType: json['vendorType'],
     );
   }
 
@@ -69,4 +71,5 @@ class Product {
   final bool isAvailable;
   final int? stock;
   final int? preparationTime;
+  final int? vendorType;
 }

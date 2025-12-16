@@ -84,6 +84,7 @@ class CartProvider with ChangeNotifier {
                 ? Currency.fromInt(item['currency'] as int?)
                 : Currency.fromString(item['currencyCode'] as String?),
             imageUrl: item['productImageUrl'],
+            vendorType: item['vendorType'],
           );
 
           _items[product.id] = CartItem(

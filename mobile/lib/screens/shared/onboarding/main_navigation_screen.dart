@@ -70,7 +70,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final auth = Provider.of<AuthProvider>(context, listen: false);
       if (auth.token != null && mounted) {
         // Load cart from backend
-        Provider.of<CartProvider>(context, listen: false).loadCart();
+        Provider.of<CartProvider>(context, listen: false).loadCart().then((_) {
+          if (mounted) {
+            final cartProvider = Provider.of<CartProvider>(
+              context,
+              listen: false,
+            );
+            if (cartProvider.items.isNotEmpty) {
+              final firstItem = cartProvider.items.values.first;
+              // VendorType: 1 = Restaurant, 2 = Market
+              final vendorType = firstItem.product.vendorType;
+              if (vendorType != null) {
+                final bottomNav = Provider.of<BottomNavProvider>(
+                  context,
+                  listen: false,
+                );
+                if (vendorType == 1 &&
+                    bottomNav.selectedCategory != MainCategory.restaurant) {
+                  bottomNav.setCategory(MainCategory.restaurant);
+                } else if (vendorType == 2 &&
+                    bottomNav.selectedCategory != MainCategory.market) {
+                  bottomNav.setCategory(MainCategory.market);
+                }
+              }
+            }
+          }
+        });
 
         // Load notifications
         Provider.of<NotificationProvider>(
