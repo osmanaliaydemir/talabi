@@ -19,6 +19,7 @@ public class LoginResponseDto
     public string? FullName { get; set; }
     public string Role { get; set; } = string.Empty;
     public string? Provider { get; set; }
+    public bool IsActive { get; set; } = true;
 }
 
 public class LoginDto

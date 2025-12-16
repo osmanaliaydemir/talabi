@@ -2497,5 +2497,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Cannot login to courier screens with a vendor account.';
 
   @override
-  String get keywordTokenExpired => 'expired';
+  String get keywordTokenExpired => 'token expired';
+
+  @override
+  String get accountPendingApprovalTitle => 'Account Pending Approval';
+
+  @override
+  String get accountPendingApprovalMessage =>
+      'Your account is currently under review. Access will be granted once your account is approved.';
 }

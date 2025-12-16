@@ -6,13 +6,14 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/screens/courier/auth/login_screen.dart';
 // Todo: Email verification screen OAA
-import 'package:mobile/screens/customer/auth/email_code_verification_screen.dart';
+import 'package:mobile/screens/shared/auth/email_code_verification_screen.dart';
 import 'package:mobile/screens/customer/auth/register_screen.dart';
 import 'package:mobile/screens/vendor/auth/login_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/widgets/auth_header.dart';
 
 class VendorRegisterScreen extends StatefulWidget {
   const VendorRegisterScreen({super.key});
@@ -99,8 +100,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         // Email kod doğrulama ekranına yönlendir
         Navigator.of(context).pushReplacement(
           NoSlidePageRoute(
-            builder: (context) =>
-                EmailCodeVerificationScreen(email: email, password: password),
+            builder: (context) => EmailCodeVerificationScreen(
+              email: email,
+              password: password,
+              userRole: 'Vendor',
+            ),
           ),
         );
       }
@@ -189,100 +193,18 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         child: Column(
           children: [
             // Purple Header for Vendor
-            SizedBox(
-              height: 180 + MediaQuery.of(context).padding.top,
-              child: Stack(
-                children: [
-                  // Modern Abstract Shapes
-                  Positioned(
-                    top: -100,
-                    right: -100,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
+            AuthHeader(
+              title: localizations.vendorRegister,
+              icon: Icons.store,
+              useCircleBackButton: true,
+              onBack: () {
+                Navigator.pushReplacement(
+                  context,
+                  NoSlidePageRoute(
+                    builder: (context) => const RegisterScreen(),
                   ),
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 40,
-                    left: -40,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 4,
-                    left: AppTheme.spacingMedium,
-                    child: _buildCircleButton(
-                      icon: Icons.arrow_back,
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          NoSlidePageRoute(
-                            builder: (context) => const RegisterScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Title Content
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.store,
-                              size: 32,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            localizations.vendorRegister,
-                            style: AppTheme.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textOnPrimary,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
             // White Card Content
             Expanded(
@@ -947,25 +869,6 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCircleButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    Color color = Colors.black,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

@@ -4663,8 +4663,20 @@ abstract class AppLocalizations {
   /// No description provided for @keywordTokenExpired.
   ///
   /// In en, this message translates to:
-  /// **'expired'**
+  /// **'token expired'**
   String get keywordTokenExpired;
+
+  /// No description provided for @accountPendingApprovalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Pending Approval'**
+  String get accountPendingApprovalTitle;
+
+  /// No description provided for @accountPendingApprovalMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is currently under review. Access will be granted once your account is approved.'**
+  String get accountPendingApprovalMessage;
 }
 
 class _AppLocalizationsDelegate

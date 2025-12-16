@@ -17,6 +17,8 @@ import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mobile/widgets/pending_approval_widget.dart';
+
 class CourierDashboardScreen extends StatefulWidget {
   const CourierDashboardScreen({super.key});
 
@@ -995,6 +997,10 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     final localizations = AppLocalizations.of(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
+    if (!authProvider.isActive) {
+      return const PendingApprovalWidget();
+    }
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
@@ -1604,11 +1610,13 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return CustomConfirmationDialog(
-            title: localizations?.rejectOrderTitle ??
+            title:
+                localizations?.rejectOrderTitle ??
                 localizations?.rejectOrder ??
                 'Reject Order',
             message: '',
-            confirmText: localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
+            confirmText:
+                localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
             cancelText: localizations?.cancel ?? 'Cancel',
             icon: Icons.cancel_outlined,
             iconColor: Colors.red,
@@ -1657,7 +1665,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
               ),
             ),
           );
-        }
+        },
       ),
     );
 
@@ -1679,9 +1687,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       context: context,
       builder: (context) => CustomConfirmationDialog(
         title: localizations?.acceptOrderTitle ?? 'Accept Order',
-        message: localizations?.acceptOrderConfirmation ??
+        message:
+            localizations?.acceptOrderConfirmation ??
             'Are you sure you want to accept this order?',
-        confirmText: localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
+        confirmText:
+            localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
         cancelText: localizations?.cancel ?? 'Cancel',
         icon: Icons.check_circle_outline,
         iconColor: Colors.teal,

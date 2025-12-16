@@ -2495,4 +2495,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get keywordTokenExpired => 'süresi';
+
+  @override
+  String get accountPendingApprovalTitle => 'Hesabınız Onay Bekliyor';
+
+  @override
+  String get accountPendingApprovalMessage =>
+      'Hesabınız şu anda incelenmektedir. Onaylandıktan sonra erişiminiz açılacaktır.';
 }

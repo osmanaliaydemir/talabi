@@ -2469,4 +2469,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get keywordTokenExpired => 'expired';
+
+  @override
+  String get accountPendingApprovalTitle => 'الحساب قيد المراجعة';
+
+  @override
+  String get accountPendingApprovalMessage =>
+      'حسابك قيد المراجعة حاليًا. سيتم منح الوصول بمجرد الموافقة على حسابك.';
 }

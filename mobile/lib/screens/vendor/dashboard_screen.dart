@@ -16,6 +16,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/widgets/pending_approval_widget.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
@@ -61,6 +62,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final localizations = AppLocalizations.of(context);
+
+    if (!auth.isActive) {
+      return const PendingApprovalWidget();
+    }
 
     // Use TRY as default currency for vendor dashboard revenue
     const Currency displayCurrency = Currency.try_;

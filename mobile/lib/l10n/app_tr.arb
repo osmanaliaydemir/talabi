@@ -1076,5 +1076,7 @@
   "errorLoginCourierToVendor": "Kurye hesabıyla, satıcı ekranlarına giriş yapılamaz.",
   "errorLoginCustomerToCourier": "Müşteri hesabıyla, kurye ekranlarına giriş yapılamaz.",
   "errorLoginVendorToCourier": "Satıcı hesabıyla, kurye ekranlarına giriş yapılamaz.",
-  "keywordTokenExpired": "süresi"
+  "keywordTokenExpired": "süresi",
+  "accountPendingApprovalTitle": "Hesabınız Onay Bekliyor",
+  "accountPendingApprovalMessage": "Hesabınız şu anda incelenmektedir. Onaylandıktan sonra erişiminiz açılacaktır."
 }

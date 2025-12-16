@@ -79,6 +79,21 @@ public class AuthService : IAuthService
             new Claim("role", user.Role.ToString())
         };
 
+        // Determine IsActive status
+        bool isActive = true; // Default for Customer and Admin
+        if (user.Role == UserRole.Vendor)
+        {
+            var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
+            if (vendor != null) isActive = vendor.IsActive;
+        }
+        else if (user.Role == UserRole.Courier)
+        {
+            var courier = await _unitOfWork.Couriers.Query().FirstOrDefaultAsync(c => c.UserId == user.Id);
+            if (courier != null) isActive = courier.IsActive;
+        }
+
+        claims.Add(new Claim("isActive", isActive.ToString().ToLowerInvariant()));
+
         // Add role claims
         foreach (var role in roles)
         {
@@ -212,15 +227,23 @@ public class AuthService : IAuthService
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _userManager.UpdateAsync(user);
 
-            return new LoginResponseDto
-            {
-                Token = token,
-                RefreshToken = refreshToken,
-                UserId = user.Id,
-                Email = user.Email!,
-                FullName = user.FullName,
-                Role = user.Role.ToString()
+                Role = user.Role.ToString(),
+                IsActive = true // Default
             };
+
+            // Check specific role active status
+            if (user.Role == UserRole.Vendor)
+            {
+                var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
+                if (vendor != null) response.IsActive = vendor.IsActive;
+            }
+            else if (user.Role == UserRole.Courier)
+            {
+                var courier = await _unitOfWork.Couriers.Query().FirstOrDefaultAsync(c => c.UserId == user.Id);
+                if (courier != null) response.IsActive = courier.IsActive;
+            }
+
+            return response;
         }
 
         // Handle locked out account

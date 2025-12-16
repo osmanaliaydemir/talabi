@@ -14,6 +14,7 @@ class AuthProvider with ChangeNotifier {
   String? _email;
   String? _fullName;
   String? _role;
+  bool _isActive = true;
 
   bool get isAuthenticated => _token != null;
   String? get token => _token;
@@ -22,6 +23,7 @@ class AuthProvider with ChangeNotifier {
   String? get email => _email;
   String? get fullName => _fullName;
   String? get role => _role;
+  bool get isActive => _isActive;
 
   Future<void> login(
     String email,
@@ -41,12 +43,21 @@ class AuthProvider with ChangeNotifier {
     // Robust role extraction
     _role = response['role'] ?? response['Role'];
 
+    // isActive extraction
+    _isActive = response['isActive'] ?? response['IsActive'] ?? true;
+
     // Fallback: Extract from token if missing
-    if (_role == null && _token != null) {
+    if ((_role == null || response['isActive'] == null) && _token != null) {
       try {
-        _role = _getRoleFromToken(_token!);
+        if (_role == null) {
+          _role = _getRoleFromToken(_token!);
+        }
+        // If isActive wasn't in response, try to get from token
+        if (response['isActive'] == null && response['IsActive'] == null) {
+          _isActive = _getIsActiveFromToken(_token!);
+        }
       } catch (e) {
-        LoggerService().error('Error extracting role from token', e);
+        LoggerService().error('Error extracting data from token', e);
       }
     }
 
@@ -109,6 +120,7 @@ class AuthProvider with ChangeNotifier {
         _userId = response['userId'];
         _email = response['email'];
         _fullName = response['fullName'];
+        _isActive = true; // Default for new registration if token is present
 
         if (response.containsKey('refreshToken')) {
           _refreshToken = response['refreshToken'];
@@ -171,6 +183,7 @@ class AuthProvider with ChangeNotifier {
     _email = null;
     _fullName = null;
     _role = null;
+    _isActive = true;
 
     // Clear secure storage
     final secureStorage = SecureStorageService.instance;
@@ -209,6 +222,11 @@ class AuthProvider with ChangeNotifier {
     _fullName = await secureStorage.getFullName();
     _role = await secureStorage.getRole();
 
+    // Try to get IsActive from token as it's not currently stored in SecureStorage separately
+    if (_token != null) {
+      _isActive = _getIsActiveFromToken(_token!);
+    }
+
     // Also save to SharedPreferences for ApiService interceptor
     // ApiService interceptor reads from SharedPreferences
     final prefs = await SharedPreferences.getInstance();
@@ -237,6 +255,7 @@ class AuthProvider with ChangeNotifier {
     _refreshToken = refreshToken;
     _userId = userId;
     _role = role;
+    _isActive = _getIsActiveFromToken(token); // Attempt to extract IsActive
 
     await AnalyticsService.setUserId(userId);
 
@@ -276,5 +295,31 @@ class AuthProvider with ChangeNotifier {
       // Silent fail or log if needed
     }
     return null;
+  }
+
+  bool _getIsActiveFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        return true; // Default to true on error
+      }
+
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final resp = utf8.decode(base64Url.decode(normalized));
+      final payloadMap = json.decode(resp);
+
+      if (payloadMap is Map<String, dynamic>) {
+        final isActiveClaim = payloadMap['isActive'];
+        if (isActiveClaim != null) {
+          if (isActiveClaim is bool) return isActiveClaim;
+          if (isActiveClaim is String)
+            return isActiveClaim.toLowerCase() == 'true';
+        }
+      }
+    } catch (e) {
+      LoggerService().error('Error extracting isActive from token', e);
+    }
+    return true; // Default to true
   }
 }
