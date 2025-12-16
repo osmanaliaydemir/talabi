@@ -227,6 +227,13 @@ public class AuthService : IAuthService
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _userManager.UpdateAsync(user);
 
+            var response = new LoginResponseDto
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                UserId = user.Id,
+                Email = user.Email!,
+                FullName = user.FullName,
                 Role = user.Role.ToString(),
                 IsActive = true // Default
             };
