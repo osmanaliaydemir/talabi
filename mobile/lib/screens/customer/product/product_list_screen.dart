@@ -12,6 +12,7 @@ import 'package:mobile/widgets/toast_message.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key, required this.vendor});
+
   final Vendor vendor;
 
   @override

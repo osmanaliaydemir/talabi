@@ -2,7 +2,7 @@
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/models/search_dtos.dart';
 import 'package:mobile/models/vendor.dart';
-import 'package:mobile/screens/customer/product/product_list_screen.dart';
+import 'package:mobile/screens/customer/vendor/vendor_detail_screen.dart';
 import 'package:mobile/screens/customer/product/product_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -11,7 +11,7 @@ import 'package:mobile/screens/customer/widgets/product_card.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
-import 'package:mobile/widgets/skeleton_loader.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -21,12 +21,10 @@ class SearchScreen extends StatefulWidget {
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen>
-    with SingleTickerProviderStateMixin {
+class _SearchScreenState extends State<SearchScreen> {
   final ApiService _apiService = ApiService();
   final TextEditingController _searchController = TextEditingController();
-
-  late TabController _tabController;
+  final ScrollController _scrollController = ScrollController();
 
   // Search state
   String _currentQuery = '';
@@ -40,16 +38,12 @@ class _SearchScreenState extends State<SearchScreen>
   bool _isLoadingProducts = false;
   bool _isLoadingMoreProducts = false;
   bool _hasMoreProducts = true;
-  ScrollController? _productScrollController;
 
   // Vendors search
   List<VendorDto> _vendorItems = [];
   int _vendorCurrentPage = 1;
   static const int _vendorPageSize = 20;
   bool _isLoadingVendors = false;
-  bool _isLoadingMoreVendors = false;
-  bool _hasMoreVendors = true;
-  ScrollController? _vendorScrollController;
 
   // Filters
   String? _selectedCategoryId;
@@ -73,11 +67,7 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _productScrollController = ScrollController();
-    _productScrollController!.addListener(_productScrollListener);
-    _vendorScrollController = ScrollController();
-    _vendorScrollController!.addListener(_vendorScrollListener);
+    _scrollController.addListener(_scrollListener);
     _loadSearchHistory();
     _searchController
       ..addListener(_onSearchChanged)
@@ -86,23 +76,13 @@ class _SearchScreenState extends State<SearchScreen>
       });
   }
 
-  void _productScrollListener() {
-    if (_productScrollController!.position.pixels >=
-            _productScrollController!.position.maxScrollExtent - 200 &&
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
         !_isLoadingMoreProducts &&
         _hasMoreProducts &&
         !_isLoadingProducts) {
       _loadMoreProducts();
-    }
-  }
-
-  void _vendorScrollListener() {
-    if (_vendorScrollController!.position.pixels >=
-            _vendorScrollController!.position.maxScrollExtent - 200 &&
-        !_isLoadingMoreVendors &&
-        _hasMoreVendors &&
-        !_isLoadingVendors) {
-      _loadMoreVendors();
     }
   }
 
@@ -121,12 +101,8 @@ class _SearchScreenState extends State<SearchScreen>
     _searchController
       ..removeListener(_onSearchChanged)
       ..dispose();
-    _tabController.dispose();
-    _productScrollController
-      ?..removeListener(_productScrollListener)
-      ..dispose();
-    _vendorScrollController
-      ?..removeListener(_vendorScrollListener)
+    _scrollController
+      ..removeListener(_scrollListener)
       ..dispose();
     super.dispose();
   }
@@ -147,7 +123,7 @@ class _SearchScreenState extends State<SearchScreen>
   Future<void> _loadFilterOptions() async {
     try {
       final categories = await _apiService.getCategories(
-        language: AppLocalizations.of(context)?.localeName,
+        language: AppLocalizations.of(context)?.localeName ?? 'en',
       );
       final cities = await _apiService.getCities();
       setState(() {
@@ -287,7 +263,7 @@ class _SearchScreenState extends State<SearchScreen>
       setState(() {
         _vendorItems = [];
         _vendorCurrentPage = 1;
-        _hasMoreVendors = false;
+        _isLoadingVendors = false;
       });
       return;
     }
@@ -296,13 +272,11 @@ class _SearchScreenState extends State<SearchScreen>
       setState(() {
         _isLoadingVendors = true;
         _vendorCurrentPage = 1;
-        _hasMoreVendors = true;
         _vendorItems = [];
       });
     } else {
-      setState(() {
-        _isLoadingMoreVendors = true;
-      });
+      // Pagination not supported in merged view for vendors yet
+      return;
     }
 
     try {
@@ -325,17 +299,12 @@ class _SearchScreenState extends State<SearchScreen>
             _vendorItems.addAll(results.items);
           }
           _isLoadingVendors = false;
-          _isLoadingMoreVendors = false;
-          _hasMoreVendors =
-              results.items.length >= _vendorPageSize &&
-              _vendorItems.length < results.totalCount;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoadingVendors = false;
-          _isLoadingMoreVendors = false;
         });
         final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
@@ -345,12 +314,6 @@ class _SearchScreenState extends State<SearchScreen>
         );
       }
     }
-  }
-
-  Future<void> _loadMoreVendors() async {
-    if (_isLoadingMoreVendors || !_hasMoreVendors) return;
-    _vendorCurrentPage++;
-    await _searchVendors(isRefresh: false);
   }
 
   void _onSearchSubmitted(String query) {
@@ -366,16 +329,37 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   void _onAutocompleteSelected(AutocompleteResultDto result) {
-    setState(() {
-      _searchController.text = result.name;
-      _currentQuery = result.name;
-      _showAutocomplete = false;
-    });
+    if (result.type == 'product') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailScreen(productId: result.id),
+        ),
+      );
+    } else if (result.type == 'vendor') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VendorDetailScreen(
+            vendorId: result.id,
+            vendorName: result.name,
+            vendorImageUrl: result.imageUrl,
+          ),
+        ),
+      );
+    } else {
+      // Fallback
+      setState(() {
+        _searchController.text = result.name;
+        _currentQuery = result.name;
+        _showAutocomplete = false;
+      });
 
-    _saveToSearchHistory(result.name);
-    AnalyticsService.logSearch(searchTerm: result.name);
-    _searchProducts();
-    _searchVendors();
+      _saveToSearchHistory(result.name);
+      AnalyticsService.logSearch(searchTerm: result.name);
+      _searchProducts();
+      _searchVendors();
+    }
   }
 
   void _showFilters() {
@@ -466,189 +450,182 @@ class _SearchScreenState extends State<SearchScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Category filter (for products)
-                  if (_tabController.index == 0) ...[
-                    Text(
-                      l10n.category,
-                      style: AppTheme.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
+                  Text(
+                    l10n.category,
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: AppTheme.spacingSmall),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedCategoryId,
-                      decoration: AppTheme.inputDecoration(
-                        hint: l10n.selectCategory,
-                      ),
-                      style: AppTheme.poppins(
-                        fontSize: 14,
-                        color: AppTheme.textPrimary,
-                      ),
-                      items: _categories.map((category) {
-                        return DropdownMenuItem(
-                          value: category['id'].toString(),
-                          child: Text(category['name'] as String),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCategoryId = value;
-                        });
-                      },
+                  ),
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedCategoryId,
+                    decoration: AppTheme.inputDecoration(
+                      hint: l10n.selectCategory,
                     ),
-                    const SizedBox(height: AppTheme.spacingLarge),
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: AppTheme.textPrimary,
+                    ),
+                    items: _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category['id'].toString(),
+                        child: Text(category['name'] as String),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategoryId = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: AppTheme.spacingLarge),
 
-                    // Price range
-                    Text(
-                      l10n.priceRange,
-                      style: AppTheme.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
+                  // Price range
+                  Text(
+                    l10n.priceRange,
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: AppTheme.spacingSmall),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: AppTheme.inputDecoration(
-                              hint: l10n.minPrice,
-                            ),
-                            style: AppTheme.poppins(
-                              fontSize: 14,
-                              color: AppTheme.textPrimary,
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              _minPrice = value.isEmpty
-                                  ? null
-                                  : double.tryParse(value);
-                            },
+                  ),
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: AppTheme.inputDecoration(
+                            hint: l10n.minPrice,
                           ),
+                          style: AppTheme.poppins(
+                            fontSize: 14,
+                            color: AppTheme.textPrimary,
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            _minPrice = value.isEmpty
+                                ? null
+                                : double.tryParse(value);
+                          },
                         ),
-                        const SizedBox(width: AppTheme.spacingSmall),
-                        Expanded(
-                          child: TextField(
-                            decoration: AppTheme.inputDecoration(
-                              hint: l10n.maxPrice,
-                            ),
-                            style: AppTheme.poppins(
-                              fontSize: 14,
-                              color: AppTheme.textPrimary,
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              _maxPrice = value.isEmpty
-                                  ? null
-                                  : double.tryParse(value);
-                            },
+                      ),
+                      const SizedBox(width: AppTheme.spacingSmall),
+                      Expanded(
+                        child: TextField(
+                          decoration: AppTheme.inputDecoration(
+                            hint: l10n.maxPrice,
+                          ),
+                          style: AppTheme.poppins(
+                            fontSize: 14,
+                            color: AppTheme.textPrimary,
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            _maxPrice = value.isEmpty
+                                ? null
+                                : double.tryParse(value);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.spacingLarge),
+
+                  // City and Rating filter (for vendors)
+                  Text(
+                    l10n.city,
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedCity,
+                    decoration: AppTheme.inputDecoration(hint: l10n.selectCity),
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: AppTheme.textPrimary,
+                    ),
+                    items: _cities.map((city) {
+                      return DropdownMenuItem(value: city, child: Text(city));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCity = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: AppTheme.spacingLarge),
+
+                  // Rating filter
+                  Text(
+                    l10n.minimumRating,
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingMedium,
+                    ),
+                    child: Column(
+                      children: [
+                        Slider(
+                          value: _minRating ?? 0.0,
+                          min: 0.0,
+                          max: 5.0,
+                          divisions: 10,
+                          activeColor: AppTheme.primaryOrange,
+                          label: _minRating?.toStringAsFixed(1) ?? '0.0',
+                          onChanged: (value) {
+                            setState(() {
+                              _minRating = value;
+                            });
+                          },
+                        ),
+                        Text(
+                          _minRating?.toStringAsFixed(1) ?? '0.0',
+                          style: AppTheme.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryOrange,
                           ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: AppTheme.spacingLarge),
 
-                  // City and Rating filter (for vendors)
-                  if (_tabController.index == 1) ...[
-                    Text(
-                      l10n.city,
-                      style: AppTheme.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
+                  // Distance filter
+                  Text(
+                    l10n.maximumDistance,
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: AppTheme.spacingSmall),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedCity,
-                      decoration: AppTheme.inputDecoration(
-                        hint: l10n.selectCity,
-                      ),
-                      style: AppTheme.poppins(
-                        fontSize: 14,
-                        color: AppTheme.textPrimary,
-                      ),
-                      items: _cities.map((city) {
-                        return DropdownMenuItem(value: city, child: Text(city));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCity = value;
-                        });
-                      },
+                  ),
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  TextField(
+                    decoration: AppTheme.inputDecoration(hint: l10n.distanceKm),
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: AppTheme.spacingLarge),
-
-                    // Rating filter
-                    Text(
-                      l10n.minimumRating,
-                      style: AppTheme.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.spacingSmall),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingMedium,
-                      ),
-                      child: Column(
-                        children: [
-                          Slider(
-                            value: _minRating ?? 0.0,
-                            min: 0.0,
-                            max: 5.0,
-                            divisions: 10,
-                            activeColor: AppTheme.primaryOrange,
-                            label: _minRating?.toStringAsFixed(1) ?? '0.0',
-                            onChanged: (value) {
-                              setState(() {
-                                _minRating = value;
-                              });
-                            },
-                          ),
-                          Text(
-                            _minRating?.toStringAsFixed(1) ?? '0.0',
-                            style: AppTheme.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.primaryOrange,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.spacingLarge),
-
-                    // Distance filter
-                    Text(
-                      l10n.maximumDistance,
-                      style: AppTheme.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.spacingSmall),
-                    TextField(
-                      decoration: AppTheme.inputDecoration(
-                        hint: l10n.distanceKm,
-                      ),
-                      style: AppTheme.poppins(
-                        fontSize: 14,
-                        color: AppTheme.textPrimary,
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        _maxDistance = value.isEmpty
-                            ? null
-                            : double.tryParse(value);
-                      },
-                    ),
-                  ],
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      _maxDistance = value.isEmpty
+                          ? null
+                          : double.tryParse(value);
+                    },
+                  ),
 
                   const SizedBox(height: AppTheme.spacingLarge),
 
@@ -671,47 +648,36 @@ class _SearchScreenState extends State<SearchScreen>
                       fontSize: 14,
                       color: AppTheme.textPrimary,
                     ),
-                    items: _tabController.index == 0
-                        ? [
-                            DropdownMenuItem(
-                              value: 'price_asc',
-                              child: Text(l10n.priceLowToHigh),
-                            ),
-                            DropdownMenuItem(
-                              value: 'price_desc',
-                              child: Text(l10n.priceHighToLow),
-                            ),
-                            DropdownMenuItem(
-                              value: 'name',
-                              child: Text(l10n.sortByName),
-                            ),
-                            DropdownMenuItem(
-                              value: 'newest',
-                              child: Text(l10n.newest),
-                            ),
-                          ]
-                        : [
-                            DropdownMenuItem(
-                              value: 'name',
-                              child: Text(l10n.sortByName),
-                            ),
-                            DropdownMenuItem(
-                              value: 'newest',
-                              child: Text(l10n.newest),
-                            ),
-                            DropdownMenuItem(
-                              value: 'rating_desc',
-                              child: Text(l10n.ratingHighToLow),
-                            ),
-                            DropdownMenuItem(
-                              value: 'popularity',
-                              child: Text(l10n.popularity),
-                            ),
-                            DropdownMenuItem(
-                              value: 'distance',
-                              child: Text(l10n.distance),
-                            ),
-                          ],
+                    items: [
+                      DropdownMenuItem(
+                        value: 'price_asc',
+                        child: Text(l10n.priceLowToHigh),
+                      ),
+                      DropdownMenuItem(
+                        value: 'price_desc',
+                        child: Text(l10n.priceHighToLow),
+                      ),
+                      DropdownMenuItem(
+                        value: 'name',
+                        child: Text(l10n.sortByName),
+                      ),
+                      DropdownMenuItem(
+                        value: 'newest',
+                        child: Text(l10n.newest),
+                      ),
+                      DropdownMenuItem(
+                        value: 'rating_desc',
+                        child: Text(l10n.ratingHighToLow),
+                      ),
+                      DropdownMenuItem(
+                        value: 'popularity',
+                        child: Text(l10n.popularity),
+                      ),
+                      DropdownMenuItem(
+                        value: 'distance',
+                        child: Text(l10n.distance),
+                      ),
+                    ],
                     onChanged: (value) {
                       setState(() {
                         _sortBy = value;
@@ -799,137 +765,301 @@ class _SearchScreenState extends State<SearchScreen>
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(70),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingMedium,
-              vertical: AppTheme.spacingSmall,
-            ),
-            child: _buildSearchBar(l10n),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          // Filter and Tabs Row
-          Container(
-            color: AppTheme.cardColor,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingMedium,
-              vertical: AppTheme.spacingSmall,
+            padding: const EdgeInsets.fromLTRB(
+              AppTheme.spacingMedium,
+              0,
+              AppTheme.spacingMedium,
+              AppTheme.spacingMedium,
             ),
             child: Row(
               children: [
+                Expanded(child: _buildSearchBar(l10n)),
+                const SizedBox(width: AppTheme.spacingSmall),
                 // Filter Button
                 Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                    border: Border.all(
-                      color: AppTheme.primaryOrange.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
+                    color: AppTheme.textOnPrimary,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                    boxShadow: [
+                      const BoxShadow(
+                        color: AppTheme.shadowColor,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: _showFilters,
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacingMedium,
-                          vertical: AppTheme.spacingSmall,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        width: 48,
+                        height: 48,
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
                             const Icon(
                               Icons.tune,
-                              size: 20,
+                              size: 24,
                               color: AppTheme.primaryOrange,
                             ),
-                            const SizedBox(width: AppTheme.spacingSmall),
-                            Text(
-                              l10n.filters,
-                              style: AppTheme.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.primaryOrange,
+                            if (_hasActiveFilters())
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),
                     ),
                   ),
                 ),
-                const Spacer(),
-                // Active Filters Count
-                if (_hasActiveFilters())
-                  Container(
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              if (_currentQuery.isEmpty &&
+                  !_hasActiveFilters() &&
+                  _productItems.isEmpty &&
+                  _vendorItems.isEmpty)
+                SliverFillRemaining(child: _buildEmptyState(l10n))
+              else ...[
+                // Vendors Section
+                if (_vendorItems.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.spacingMedium,
+                        AppTheme.spacingMedium,
+                        AppTheme.spacingMedium,
+                        AppTheme.spacingSmall,
+                      ),
+                      child: Text(
+                        l10n.vendors,
+                        style: AppTheme.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final vendor = _vendorItems[index].toVendor();
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMedium,
+                        ),
+                        child: _buildVendorCard(vendor, l10n),
+                      );
+                    }, childCount: _vendorItems.length),
+                  ),
+                ],
+
+                // Products Section
+                if (_productItems.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.spacingMedium,
+                        AppTheme.spacingMedium,
+                        AppTheme.spacingMedium,
+                        AppTheme.spacingSmall,
+                      ),
+                      child: Text(
+                        l10n.products,
+                        style: AppTheme.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingSmall,
-                      vertical: 4,
+                      horizontal: AppTheme.spacingMedium,
                     ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryOrange,
-                      borderRadius: BorderRadius.circular(12),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.8,
+                            crossAxisSpacing: AppTheme.spacingSmall,
+                            mainAxisSpacing: AppTheme.spacingSmall,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final product = _productItems[index].toProduct();
+                        return ProductCard(
+                          product: product,
+                          width: null,
+                          showRating: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailScreen(
+                                  productId: product.id,
+                                  product: product,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }, childCount: _productItems.length),
                     ),
-                    child: Text(
-                      _getActiveFiltersCount().toString(),
-                      style: AppTheme.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textOnPrimary,
+                  ),
+                ],
+
+                // Loading Indicators
+                if (_isLoadingProducts || _isLoadingVendors)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+
+                if (_productItems.isEmpty &&
+                    _vendorItems.isEmpty &&
+                    !_isLoadingProducts &&
+                    !_isLoadingVendors)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: AppTheme.textHint,
+                          ),
+                          const SizedBox(height: AppTheme.spacingMedium),
+                          Text(
+                            l10n.noResultsFound,
+                            style: AppTheme.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
               ],
-            ),
+            ],
           ),
-          // Tabs
-          Container(
-            color: AppTheme.cardColor,
-            child: TabBar(
-              controller: _tabController,
-              onTap: (index) {
-                _searchProducts();
-                _searchVendors();
-              },
-              indicatorColor: AppTheme.primaryOrange,
-              indicatorWeight: 3,
-              labelColor: AppTheme.primaryOrange,
-              unselectedLabelColor: AppTheme.textSecondary,
-              labelStyle: AppTheme.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: AppTheme.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.normal,
-              ),
-              tabs: [
-                Tab(text: l10n.products),
-                Tab(text: l10n.vendors),
-              ],
-            ),
-          ),
-          // Content
-          Expanded(
-            child: Stack(
-              children: [
-                TabBarView(
-                  controller: _tabController,
-                  children: [_buildProductsTab(), _buildVendorsTab()],
-                ),
-                if (_showAutocomplete && _searchController.text.isNotEmpty)
-                  _buildAutocompleteOverlay(),
-              ],
-            ),
-          ),
+          if (_showAutocomplete && _searchController.text.isNotEmpty)
+            _buildAutocompleteOverlay(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(AppLocalizations l10n) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacingXLarge),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacingLarge),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.search,
+                size: 64,
+                color: AppTheme.primaryOrange,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingLarge),
+            Text(
+              l10n.typeToSearch,
+              style: AppTheme.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSmall),
+            Text(
+              l10n.searchProductsOrVendors,
+              textAlign: TextAlign.center,
+              style: AppTheme.poppins(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            if (_searchHistory.isNotEmpty) ...[
+              const SizedBox(height: AppTheme.spacingXLarge),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardColor,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  boxShadow: [
+                    const BoxShadow(
+                      color: AppTheme.shadowColor,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.history,
+                          size: 20,
+                          color: AppTheme.primaryOrange,
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Text(
+                          l10n.recentSearches,
+                          style: AppTheme.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spacingMedium),
+                    ..._searchHistory.take(5).map((query) {
+                      return _buildHistoryChip(query);
+                    }),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -972,7 +1102,9 @@ class _SearchScreenState extends State<SearchScreen>
                       _productCurrentPage = 1;
                       _vendorCurrentPage = 1;
                       _hasMoreProducts = false;
-                      _hasMoreVendors = false;
+                      _isLoadingVendors = false;
+                      _selectedCategoryId =
+                          null; // Clear filters too or keep them? Keeping them for now.
                     });
                   },
                 )
@@ -996,18 +1128,6 @@ class _SearchScreenState extends State<SearchScreen>
         _minRating != null ||
         _maxDistance != null ||
         _sortBy != null;
-  }
-
-  int _getActiveFiltersCount() {
-    int count = 0;
-    if (_selectedCategoryId != null) count++;
-    if (_selectedCity != null) count++;
-    if (_minPrice != null) count++;
-    if (_maxPrice != null) count++;
-    if (_minRating != null) count++;
-    if (_maxDistance != null) count++;
-    if (_sortBy != null) count++;
-    return count;
   }
 
   Widget _buildAutocompleteOverlay() {
@@ -1217,189 +1337,8 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  Widget _buildProductsTab() {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (_isLoadingProducts) {
-      return GridView.builder(
-        padding: const EdgeInsets.all(AppTheme.spacingSmall),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.8,
-          crossAxisSpacing: AppTheme.spacingSmall,
-          mainAxisSpacing: AppTheme.spacingSmall,
-        ),
-        itemCount: 6,
-        itemBuilder: (context, index) {
-          return const ProductSkeletonItem();
-        },
-      );
-    }
-
-    if (_productItems.isEmpty && !_isLoadingProducts) {
-      return Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingXLarge),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppTheme.spacingLarge),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.search,
-                    size: 64,
-                    color: AppTheme.primaryOrange,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingLarge),
-                Text(
-                  l10n.typeToSearch,
-                  style: AppTheme.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingSmall),
-                Text(
-                  l10n.searchProductsOrVendors,
-                  textAlign: TextAlign.center,
-                  style: AppTheme.poppins(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                if (_searchHistory.isNotEmpty) ...[
-                  const SizedBox(height: AppTheme.spacingXLarge),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                      boxShadow: [
-                        const BoxShadow(
-                          color: AppTheme.shadowColor,
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.history,
-                              size: 20,
-                              color: AppTheme.primaryOrange,
-                            ),
-                            const SizedBox(width: AppTheme.spacingSmall),
-                            Text(
-                              l10n.recentSearches,
-                              style: AppTheme.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppTheme.spacingMedium),
-                        ..._searchHistory.take(5).map((query) {
-                          return _buildHistoryChip(query);
-                        }),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_productItems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, size: 64, color: AppTheme.textHint),
-            const SizedBox(height: AppTheme.spacingMedium),
-            Text(
-              l10n.noResultsFound,
-              style: AppTheme.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSmall),
-            Text(
-              l10n.searchProductsOrVendors,
-              style: AppTheme.poppins(
-                fontSize: 14,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GridView.builder(
-      controller: _productScrollController,
-      padding: const EdgeInsets.all(AppTheme.spacingSmall),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.8,
-        crossAxisSpacing: AppTheme.spacingSmall,
-        mainAxisSpacing: AppTheme.spacingSmall,
-      ),
-      cacheExtent: 500.0, // Optimize cache extent
-      addAutomaticKeepAlives: false, // Improve performance
-      addRepaintBoundaries: true, // Optimize repaints
-      itemCount: _productItems.length + (_isLoadingMoreProducts ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == _productItems.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final productDto = _productItems[index];
-        final product = productDto.toProduct();
-
-        return RepaintBoundary(
-          child: ProductCard(
-            product: product,
-            width: null,
-            showRating: false,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailScreen(
-                    productId: product.id,
-                    product: product,
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHistoryChip(String query) {
+  Widget _buildHistoryChip(String? query) {
+    if (query == null) return const SizedBox.shrink();
     return Container(
       margin: const EdgeInsets.only(bottom: AppTheme.spacingSmall),
       child: Material(
@@ -1447,146 +1386,6 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  Widget _buildVendorsTab() {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (_isLoadingVendors) {
-      return ListView.builder(
-        padding: const EdgeInsets.all(AppTheme.spacingSmall),
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkeletonLoader(
-                  width: double.infinity,
-                  height: 150,
-                  borderRadius: 0,
-                ),
-                Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonLoader(width: 150, height: 20),
-                      SizedBox(height: 8),
-                      SkeletonLoader(width: 100, height: 16),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
-
-    if (_vendorItems.isEmpty && !_isLoadingVendors) {
-      return Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingXLarge),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppTheme.spacingLarge),
-                  decoration: BoxDecoration(
-                    color: AppTheme.vendorPrimary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.store,
-                    size: 64,
-                    color: AppTheme.vendorPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingLarge),
-                Text(
-                  l10n.typeToSearch,
-                  style: AppTheme.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingSmall),
-                Text(
-                  l10n.searchProductsOrVendors,
-                  textAlign: TextAlign.center,
-                  style: AppTheme.poppins(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_vendorItems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.store_outlined,
-              size: 64,
-              color: AppTheme.textHint,
-            ),
-            const SizedBox(height: AppTheme.spacingMedium),
-            Text(
-              l10n.noResultsFound,
-              style: AppTheme.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSmall),
-            Text(
-              l10n.searchProductsOrVendors,
-              style: AppTheme.poppins(
-                fontSize: 14,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      controller: _vendorScrollController,
-      padding: const EdgeInsets.all(AppTheme.spacingSmall),
-      cacheExtent: 500.0, // Optimize cache extent
-      addAutomaticKeepAlives: false, // Improve performance
-      addRepaintBoundaries: true, // Optimize repaints
-      itemCount: _vendorItems.length + (_isLoadingMoreVendors ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == _vendorItems.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final vendorDto = _vendorItems[index];
-        final vendor = vendorDto.toVendor();
-
-        return RepaintBoundary(child: _buildVendorCard(vendor, l10n));
-      },
-    );
-  }
-
   Widget _buildVendorCard(Vendor vendor, AppLocalizations l10n) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
@@ -1597,185 +1396,108 @@ class _SearchScreenState extends State<SearchScreen>
         ),
         clipBehavior: Clip.antiAlias,
         child: Material(
-          color: Colors.transparent,
           child: InkWell(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductListScreen(vendor: vendor),
+                  builder: (context) => VendorDetailScreen(vendor: vendor),
                 ),
               );
             },
-            child: Padding(
-              padding: const EdgeInsets.all(AppTheme.spacingMedium),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Vendor Image
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    SizedBox(
+                      height: 150,
+                      width: double.infinity,
+                      child: CachedNetworkImageWidget(
+                        imageUrl: vendor.imageUrl ?? '',
+                        fit: BoxFit.cover,
                       ),
-                      color: AppTheme.backgroundColor,
                     ),
-                    child: vendor.imageUrl != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMedium,
-                            ),
-                            child: OptimizedCachedImage.vendorLogo(
-                              imageUrl: vendor.imageUrl!,
-                              width: 80,
-                              height: 80,
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusMedium,
-                              ),
-                            ),
-                          )
-                        : const Icon(
-                            Icons.store,
-                            size: 40,
-                            color: AppTheme.vendorPrimary,
-                          ),
-                  ),
-                  const SizedBox(width: AppTheme.spacingMedium),
-                  // Vendor Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          vendor.name,
-                          style: AppTheme.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        const SizedBox(height: 4),
-                        if (vendor.address.isNotEmpty)
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on,
-                                size: 14,
-                                color: AppTheme.textSecondary,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              size: 14,
+                              color: AppTheme.primaryOrange,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              (vendor.rating ?? 0.0).toStringAsFixed(1),
+                              style: AppTheme.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
                               ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  vendor.address,
-                                  style: AppTheme.poppins(
-                                    fontSize: 12,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        vendor.name,
+                        style: AppTheme.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 14,
+                            color: Colors.grey[600],
                           ),
-                        if (vendor.city != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.cityLabel(vendor.city!),
-                            style: AppTheme.poppins(
-                              fontSize: 12,
-                              color: AppTheme.textSecondary,
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              vendor.address,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTheme.poppins(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            if (vendor.rating != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.star,
-                                      size: 14,
-                                      color: Colors.amber[700],
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      vendor.rating!.toStringAsFixed(1),
-                                      style: AppTheme.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.amber[900],
-                                      ),
-                                    ),
-                                    if (vendor.ratingCount > 0) ...[
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '(${vendor.ratingCount})',
-                                        style: AppTheme.poppins(
-                                          fontSize: 11,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              if (vendor.distanceInKm != null)
-                                const SizedBox(width: AppTheme.spacingSmall),
-                            ],
-                            if (vendor.distanceInKm != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.info.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.navigation,
-                                      size: 14,
-                                      color: AppTheme.info,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      l10n.distanceLabel(
-                                        vendor.distanceInKm!.toStringAsFixed(1),
-                                      ),
-                                      style: AppTheme.poppins(
-                                        fontSize: 12,
-                                        color: AppTheme.info,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const Icon(Icons.chevron_right, color: AppTheme.textHint),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -14,9 +14,18 @@ import 'package:provider/provider.dart';
 import 'package:mobile/services/logger_service.dart';
 
 class VendorDetailScreen extends StatefulWidget {
-  const VendorDetailScreen({super.key, required this.vendor});
+  const VendorDetailScreen({
+    super.key,
+    this.vendor,
+    this.vendorId,
+    this.vendorName,
+    this.vendorImageUrl,
+  }) : assert(vendor != null || (vendorId != null && vendorName != null));
 
-  final Vendor vendor;
+  final Vendor? vendor;
+  final String? vendorId;
+  final String? vendorName;
+  final String? vendorImageUrl;
 
   @override
   State<VendorDetailScreen> createState() => _VendorDetailScreenState();
@@ -26,6 +35,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
   final ApiService _apiService = ApiService();
 
   // Data
+  late Vendor _vendor;
   List<Product> _products = [];
   final Map<String, bool> _favoriteStatus = {};
 
@@ -43,6 +53,20 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
+
+    if (widget.vendor != null) {
+      _vendor = widget.vendor!;
+    } else {
+      // Create a temporary/partial vendor object from available info
+      _vendor = Vendor(
+        id: widget.vendorId!,
+        name: widget.vendorName!,
+        imageUrl: widget.vendorImageUrl,
+        address: '', // Placeholder as address is required but unknown
+        rating: null,
+      );
+    }
+
     _loadProducts(isRefresh: true);
     _loadFavoriteStatus();
   }
@@ -74,7 +98,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
 
     try {
       final products = await _apiService.getProducts(
-        widget.vendor.id,
+        _vendor.id,
         page: _currentPage,
         pageSize: _pageSize,
       );
@@ -264,7 +288,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
             ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                widget.vendor.name,
+                _vendor.name,
                 style: AppTheme.poppins(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -274,9 +298,9 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  widget.vendor.imageUrl != null
+                  _vendor.imageUrl != null
                       ? OptimizedCachedImage.banner(
-                          imageUrl: widget.vendor.imageUrl!,
+                          imageUrl: _vendor.imageUrl!,
                           width: double.infinity,
                           height: double.infinity,
                           borderRadius: BorderRadius.zero,
@@ -312,57 +336,58 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        size: 16,
-                        color: AppTheme.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          widget.vendor.address,
-                          style: AppTheme.poppins(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
+                  if (_vendor.address.isNotEmpty)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: AppTheme.textSecondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            _vendor.address,
+                            style: AppTheme.poppins(
+                              color: AppTheme.textSecondary,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                      if (widget.vendor.rating != null) ...[
-                        const SizedBox(width: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withValues(
-                              alpha: 0.1,
+                        if (_vendor.rating != null) ...[
+                          const SizedBox(width: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                size: 16,
-                                color: AppTheme.primaryOrange,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryOrange.withValues(
+                                alpha: 0.1,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.vendor.rating!.toStringAsFixed(1),
-                                style: AppTheme.poppins(
-                                  fontWeight: FontWeight.bold,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  size: 16,
                                   color: AppTheme.primaryOrange,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  _vendor.rating!.toStringAsFixed(1),
+                                  style: AppTheme.poppins(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primaryOrange,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ],
-                    ],
-                  ),
+                    ),
                   const SizedBox(height: AppTheme.spacingMedium),
                   Text(
                     localizations.products,

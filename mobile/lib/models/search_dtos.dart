@@ -150,17 +150,20 @@ class AutocompleteResultDto {
     required this.id,
     required this.name,
     required this.type,
+    this.imageUrl,
   });
 
   factory AutocompleteResultDto.fromJson(Map<String, dynamic> json) {
     return AutocompleteResultDto(
       id: json['id'].toString(),
       name: json['name'],
+      imageUrl: json['imageUrl'],
       type: json['type'],
     );
   }
   final String id;
   final String name;
+  final String? imageUrl;
   final String type; // "product" or "vendor"
 }
 

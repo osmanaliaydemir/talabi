@@ -38,7 +38,7 @@ public class SearchController : BaseController
         if (string.IsNullOrWhiteSpace(query))
         {
             return Ok(new ApiResponse<List<AutocompleteResultDto>>(
-                new List<AutocompleteResultDto>(), 
+                new List<AutocompleteResultDto>(),
                 LocalizationService.GetLocalizedString(ResourceName, "EmptyQuery", CurrentCulture)));
         }
 
@@ -54,6 +54,7 @@ public class SearchController : BaseController
             {
                 Id = p.Id,
                 Name = p.Name,
+                ImageUrl = p.ImageUrl,
                 Type = "product"
             })
             .ToListAsync();
@@ -65,13 +66,14 @@ public class SearchController : BaseController
             {
                 Id = v.Id,
                 Name = v.Name,
+                ImageUrl = v.ImageUrl,
                 Type = "vendor"
             })
             .ToListAsync();
 
         var combined = productResults.Concat(vendorResults).ToList();
         return Ok(new ApiResponse<List<AutocompleteResultDto>>(
-            combined, 
+            combined,
             LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
     }
 }
