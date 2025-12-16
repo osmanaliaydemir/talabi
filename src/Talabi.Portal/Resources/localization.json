@@ -1220,5 +1220,80 @@
         "tr-TR": "Hazır Olarak İşaretle",
         "en-US": "Mark as Ready",
         "ar-SA": "تحديد كجاهز"
+    },
+    "CourierApplications": {
+        "tr-TR": "Kurye Başvuruları",
+        "en-US": "Courier Applications",
+        "ar-SA": "طلبات المندوبين"
+    },
+    "Phone": {
+        "tr-TR": "Telefon",
+        "en-US": "Phone",
+        "ar-SA": "هاتف"
+    },
+    "CourierDetails": {
+        "tr-TR": "Kurye Detayları",
+        "en-US": "Courier Details",
+        "ar-SA": "تفاصيل المندوب"
+    },
+    "VehicleType": {
+        "tr-TR": "Araç Tipi",
+        "en-US": "Vehicle Type",
+        "ar-SA": "نوع المركبة"
+    },
+    "Approve": {
+        "tr-TR": "Onayla",
+        "en-US": "Approve",
+        "ar-SA": "وافق"
+    },
+    "RegistrationDate": {
+        "tr-TR": "Kayıt Tarihi",
+        "en-US": "Registration Date",
+        "ar-SA": "تاريخ التسجيل"
+    },
+    "AreYouSureApprove": {
+        "tr-TR": "Bu kuryeyi onaylamak istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to approve this courier?",
+        "ar-SA": "هل أنت متأكد أنك تريد الموافقة على هذا المندوب؟"
+    },
+    "AreYouSureReject": {
+        "tr-TR": "Bu kuryeyi reddetmek (pasife almak) istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to reject (deactivate) this courier?",
+        "ar-SA": "هل أنت متأكد أنك تريد رفض (إلغاء تنشيط) هذا المندوب؟"
+    },
+    "VendorApplications": {
+        "tr-TR": "Restoran Başvuruları",
+        "en-US": "Vendor Applications",
+        "ar-SA": "طلبات المتاجر"
+    },
+    "VendorDetails": {
+        "tr-TR": "Restoran Detayları",
+        "en-US": "Vendor Details",
+        "ar-SA": "تفاصيل المتجر"
+    },
+    "Restaurant": {
+        "tr-TR": "Restoran",
+        "en-US": "Restaurant",
+        "ar-SA": "مطعم"
+    },
+    "Market": {
+        "tr-TR": "Market",
+        "en-US": "Market",
+        "ar-SA": "سوق"
+    },
+    "Type": {
+        "tr-TR": "Tip",
+        "en-US": "Type",
+        "ar-SA": "نوع"
+    },
+    "AreYouSureApproveVendor": {
+        "tr-TR": "Bu işletmeyi onaylamak istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to approve this vendor?",
+        "ar-SA": "هل أنت متأكد أنك تريد الموافقة على هذا المتجر؟"
+    },
+    "AreYouSureRejectVendor": {
+        "tr-TR": "Bu işletmeyi reddetmek (pasife almak) istediğinize emin misiniz?",
+        "en-US": "Are you sure you want to reject (deactivate) this vendor?",
+        "ar-SA": "هل أنت متأكد أنك تريد رفض (إلغاء تنشيط) هذا المتجر؟"
     }
 }

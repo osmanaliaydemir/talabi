@@ -237,7 +237,12 @@ class ApiService {
           // Update the error with the friendly message if available
           if (friendlyMessage != null) {
             // If not already handled by specific status codes above, show generic error
-            if (error.response?.statusCode != 409 &&
+            // Check if error snackbar should be skipped
+            final skipErrorSnackbar =
+                error.requestOptions.extra['skipErrorSnackbar'] == true;
+
+            if (!skipErrorSnackbar &&
+                error.response?.statusCode != 409 &&
                 error.response?.statusCode != 500 &&
                 error.response?.statusCode != 401) {
               NavigationService.showSnackBar(friendlyMessage, isError: true);
@@ -952,6 +957,7 @@ class ApiService {
       final response = await _dio.post(
         '/auth/vendor-register',
         data: requestData,
+        options: Options(extra: {'skipErrorSnackbar': true}),
       );
 
       LoggerService().debug(
@@ -1088,6 +1094,7 @@ class ApiService {
       final response = await _dio.post(
         '/auth/courier-register',
         data: requestData,
+        options: Options(extra: {'skipErrorSnackbar': true}),
       );
 
       LoggerService().debug(

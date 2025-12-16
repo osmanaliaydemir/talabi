@@ -1,0 +1,121 @@
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("VendorApplications");
+}
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("VendorApplications")</h1>
+            <p class="text-muted small">@LocalizationService.GetString("ViewIncomingOrdersDesc")</p> 
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="vendorsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@LocalizationService.GetString("Name")</th>
+                            <th>Email</th>
+                            <th>@LocalizationService.GetString("Type")</th>
+                            <th>@LocalizationService.GetString("Address")</th>
+                            <th>@LocalizationService.GetString("Status")</th>
+                            <th>@LocalizationService.GetString("RegistrationDate")</th>
+                            <th>@LocalizationService.GetString("Actions")</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+    <script>
+        let dataTable;
+
+        $(document).ready(function() {
+            initDataTable();
+        });
+
+        function initDataTable() {
+            dataTable = $('#vendorsTable').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '/Vendors/GetList',
+                    type: 'GET'
+                },
+                columns: [
+                    { data: 'name', name: 'name' },
+                    { 
+                        data: 'owner.email', 
+                        name: 'email',
+                        render: function(data) {
+                            return data || '-';
+                        }
+                    },
+                     { 
+                        data: 'type', 
+                        name: 'type',
+                         render: function(data) {
+                            // Enum values are returned as integers usually, need mapping or string handling from backend
+                            // Assuming backend returns string or we rely on simple display.
+                            // Ideally use a JS mapping or localize server-side.
+                            // For simplicity, showing raw value or basic mapping.
+                            // 0: Restaurant, 1: Market, 2: Shop
+                            if(data === 0) return '@LocalizationService.GetString("Restaurant")';
+                            if(data === 1) return '@LocalizationService.GetString("Market")';
+                            return data;
+                        }
+                    },
+                     { data: 'address', name: 'address' },
+                    { 
+                        data: 'isActive', 
+                        name: 'isActive',
+                        render: function(data) {
+                            if (data) {
+                                return '<span class="badge bg-success">@LocalizationService.GetString("Active")</span>';
+                            } else {
+                                return '<span class="badge bg-warning text-dark">@LocalizationService.GetString("PendingAction")</span>';
+                            }
+                        }
+                    },
+                    { 
+                        data: 'createdDate', 
+                        name: 'createdDate',
+                        render: function(data) {
+                            return data ? moment(data).format('DD/MM/YYYY HH:mm') : '-';
+                        }
+                    },
+                    {
+                        data: 'id',
+                        orderable: false,
+                        render: function(data) {
+                            return `
+                                <a href="/Vendors/Details/${data}" class="btn btn-sm btn-info text-white">
+                                    <i class="fas fa-eye"></i> @LocalizationService.GetString("Details")
+                                </a>
+                            `;
+                        }
+                    }
+                ],
+                order: [[5, 'desc']], 
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/' + ('@System.Globalization.CultureInfo.CurrentCulture.Name' === 'tr-TR' ? 'tr' : 'en-GB') + '.json'
+                }
+            });
+        }
+    </script>
+}

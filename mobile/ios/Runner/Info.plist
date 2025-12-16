@@ -59,17 +59,17 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to take photos for delivery proof and profile pictures</string>
+	<string>Talabi requires access to your camera to allow Couriers to take proof-of-delivery photos and for all users to update their profile pictures.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location to track deliveries in the background</string>
+	<string>Talabi requires background location access solely for Couriers to track and broadcast their real-time delivery progress to customers. This feature is not used for Customer accounts.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We need your location to track deliveries in the background</string>
+	<string>Talabi requires background location access solely for Couriers to track and broadcast their real-time delivery progress to customers.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to show nearby restaurants and track deliveries</string>
+	<string>Talabi uses your location to show nearby restaurants (for Customers) and to match you with delivery orders (for Couriers).</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to select images for delivery proof and profile pictures</string>
+	<string>Talabi needs access to your photo library to allow you to select images for delivery proof (Couriers) or profile pictures (all users).</string>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>We need to send you notifications about your orders and deliveries</string>
+	<string>Talabi sends notifications to keep you updated on your order status (Customers) or new delivery assignments (Couriers).</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

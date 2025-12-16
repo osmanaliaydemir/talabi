@@ -70,8 +70,9 @@ class _CourierLocationManagementScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            (localizations?.failedToLoadProfile as String?) ??
-                'Error loading profile: $e',
+            localizations != null
+                ? localizations.failedToLoadProfile(e.toString())
+                : 'Error loading profile: $e',
           ),
         ),
       );
@@ -120,13 +121,12 @@ class _CourierLocationManagementScreenState
       await _loadProfile();
       if (!mounted) return;
 
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _getLocalizedString(
-              'locationUpdatedSuccessfully',
-              'Location updated successfully',
-            ),
+            localizations?.locationUpdatedSuccessfully ??
+                'Location updated successfully',
           ),
           backgroundColor: Colors.green,
         ),
@@ -138,13 +138,12 @@ class _CourierLocationManagementScreenState
         stackTrace,
       );
       if (!mounted) return;
+      final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _getLocalizedString(
-              'failedToUpdateLocation',
-              'Failed to update location: $e',
-            ),
+            localizations?.failedToUpdateLocation ??
+                'Failed to update location: $e',
           ),
           backgroundColor: Colors.red,
         ),
@@ -174,30 +173,28 @@ class _CourierLocationManagementScreenState
     }
   }
 
-  String _getLocalizedString(String key, String fallback) {
-    try {
-      final localizations = AppLocalizations.of(context);
-      if (localizations == null) return fallback;
-
-      // Use reflection to get the property dynamically
-      final value = (localizations as dynamic)[key];
-      return value?.toString() ?? fallback;
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        'CourierLocationManagementScreen: Error getting localized string',
-        e,
-        stackTrace,
-      );
-      return fallback;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
+    // Fallback strings
+    const defaultTitle = 'Konum Yönetimi';
+    const defaultCurrentLocationInfo = 'Mevcut Konum Bilgisi';
+    const defaultLatitude = 'Enlem';
+    const defaultLongitude = 'Boylam';
+    const defaultLastLocationUpdate = 'Son Güncelleme';
+    const defaultNoLocationData = 'Henüz konum bilgisi yok';
+    const defaultSelectLocationOnMap = 'Haritada Konum Seç';
+    const defaultSelectedLocation = 'Seçilen Konum';
+    const defaultUseCurrentLocation = 'Mevcut Konumu Kullan';
+    const defaultUpdateLocation = 'Konumu Güncelle';
+    const defaultLocationSharingInfo =
+        'Konum paylaşımı, yakınındaki restoranlardan sipariş alabilmen için gereklidir. Durumun "Available" olduğunda konumun otomatik olarak paylaşılır.';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
-        title: _getLocalizedString('locationManagement', 'Konum Yönetimi'),
+        title: localizations?.locationManagement ?? defaultTitle,
         leadingIcon: Icons.location_on,
         showBackButton: true,
         onBack: () => Navigator.of(context).pop(),
@@ -230,10 +227,8 @@ class _CourierLocationManagementScreenState
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  _getLocalizedString(
-                                    'currentLocationInfo',
-                                    'Mevcut Konum Bilgisi',
-                                  ),
+                                  localizations?.currentLocationInfo ??
+                                      defaultCurrentLocationInfo,
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -248,14 +243,15 @@ class _CourierLocationManagementScreenState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _buildInfoRow(
-                                    _getLocalizedString('latitude', 'Enlem'),
+                                    localizations?.latitude ?? defaultLatitude,
                                     _courier!.currentLatitude!.toStringAsFixed(
                                       6,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoRow(
-                                    _getLocalizedString('longitude', 'Boylam'),
+                                    localizations?.longitude ??
+                                        defaultLongitude,
                                     _courier!.currentLongitude!.toStringAsFixed(
                                       6,
                                     ),
@@ -263,10 +259,8 @@ class _CourierLocationManagementScreenState
                                   if (_courier!.lastLocationUpdate != null) ...[
                                     const SizedBox(height: 8),
                                     _buildInfoRow(
-                                      _getLocalizedString(
-                                        'lastLocationUpdate',
-                                        'Son Güncelleme',
-                                      ),
+                                      localizations?.lastLocationUpdate ??
+                                          defaultLastLocationUpdate,
                                       DateFormat('dd MMM yyyy HH:mm').format(
                                         _courier!.lastLocationUpdate!.toLocal(),
                                       ),
@@ -276,10 +270,8 @@ class _CourierLocationManagementScreenState
                               )
                             else
                               Text(
-                                _getLocalizedString(
-                                  'noLocationData',
-                                  'Henüz konum bilgisi yok',
-                                ),
+                                localizations?.noLocationData ??
+                                    defaultNoLocationData,
                                 style: TextStyle(color: Colors.grey.shade600),
                               ),
                           ],
@@ -290,10 +282,8 @@ class _CourierLocationManagementScreenState
 
                     // Map Section
                     Text(
-                      _getLocalizedString(
-                        'selectLocationOnMap',
-                        'Haritada Konum Seç',
-                      ),
+                      localizations?.selectLocationOnMap ??
+                          defaultSelectLocationOnMap,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -324,10 +314,9 @@ class _CourierLocationManagementScreenState
                                     ),
                                     position: _selectedLocation!,
                                     infoWindow: InfoWindow(
-                                      title: _getLocalizedString(
-                                        'selectedLocation',
-                                        'Seçilen Konum',
-                                      ),
+                                      title:
+                                          localizations?.selectedLocation ??
+                                          defaultSelectedLocation,
                                     ),
                                   ),
                                 }
@@ -363,10 +352,8 @@ class _CourierLocationManagementScreenState
                                   },
                             icon: const Icon(Icons.my_location),
                             label: Text(
-                              _getLocalizedString(
-                                'useCurrentLocation',
-                                'Mevcut Konumu Kullan',
-                              ),
+                              localizations?.useCurrentLocation ??
+                                  defaultUseCurrentLocation,
                             ),
                           ),
                         ),
@@ -389,10 +376,8 @@ class _CourierLocationManagementScreenState
                                   )
                                 : const Icon(Icons.save),
                             label: Text(
-                              _getLocalizedString(
-                                'updateLocation',
-                                'Konumu Güncelle',
-                              ),
+                              localizations?.updateLocation ??
+                                  defaultUpdateLocation,
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal,
@@ -415,10 +400,8 @@ class _CourierLocationManagementScreenState
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                _getLocalizedString(
-                                  'locationSharingInfo',
-                                  'Konum paylaşımı, yakınındaki restoranlardan sipariş alabilmen için gereklidir. Durumun "Available" olduğunda konumun otomatik olarak paylaşılır.',
-                                ),
+                                localizations?.locationSharingInfo ??
+                                    defaultLocationSharingInfo,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.blue.shade900,

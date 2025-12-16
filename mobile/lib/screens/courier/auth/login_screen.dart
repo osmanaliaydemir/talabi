@@ -167,6 +167,8 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                           ),
                           child: Form(
                             key: _formKey,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -238,7 +240,10 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
                                         return localizations?.emailRequired ??
                                             'Email is required';
                                       }
-                                      if (!value.contains('@')) {
+                                      final emailRegex = RegExp(
+                                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                      );
+                                      if (!emailRegex.hasMatch(value)) {
                                         return localizations?.validEmail ??
                                             'Please enter a valid email';
                                       }

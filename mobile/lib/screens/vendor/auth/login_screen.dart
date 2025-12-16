@@ -174,6 +174,8 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                           ),
                           child: Form(
                             key: _formKey,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -240,7 +242,10 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
                                       if (value == null || value.isEmpty) {
                                         return localizations.emailRequired;
                                       }
-                                      if (!value.contains('@')) {
+                                      final emailRegex = RegExp(
+                                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                      );
+                                      if (!emailRegex.hasMatch(value)) {
                                         return localizations.validEmail;
                                       }
                                       return null;

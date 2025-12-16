@@ -994,8 +994,8 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
     final authProvider = Provider.of<AuthProvider>(context);
+    final localizations = AppLocalizations.of(context);
 
     if (!authProvider.isActive) {
       return const PendingApprovalWidget();

@@ -56,9 +56,22 @@ class PendingApprovalWidget extends StatelessWidget {
                     side: BorderSide(color: colorScheme.error),
                     foregroundColor: colorScheme.error,
                   ),
-                  onPressed: () {
-                    context.read<AuthProvider>().logout();
-                    // Assuming Router or MainWrapper watches AuthProvider and redirects
+                  onPressed: () async {
+                    final authProvider = context.read<AuthProvider>();
+                    final role = await authProvider.logout();
+
+                    if (context.mounted) {
+                      String targetRoute = '/login';
+                      if (role == 'Vendor') {
+                        targetRoute = '/vendor/login';
+                      } else if (role == 'Courier') {
+                        targetRoute = '/courier/login';
+                      }
+
+                      Navigator.of(
+                        context,
+                      ).pushNamedAndRemoveUntil(targetRoute, (route) => false);
+                    }
                   },
                   icon: const Icon(Icons.logout_rounded),
                   label: Text(localizations.logout),

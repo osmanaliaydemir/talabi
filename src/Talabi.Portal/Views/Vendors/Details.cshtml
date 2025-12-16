@@ -1,0 +1,147 @@
+@model Talabi.Portal.Models.VendorDetailDto
+@inject Talabi.Portal.Services.ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("VendorDetails");
+}
+
+<div class="container-fluid p-0">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                @Model.Name
+            </h1>
+        </div>
+        <div class="col-auto">
+            @if (!Model.IsActive)
+            {
+                <button onclick="approveVendor('@Model.Id')" class="btn btn-success">
+                    <i class="fas fa-check"></i> @LocalizationService.GetString("Approve")
+                </button>
+            }
+            <button onclick="rejectVendor('@Model.Id')" class="btn btn-danger ms-2">
+                <i class="fas fa-times"></i> @LocalizationService.GetString("Reject")
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Contact Info -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("VendorDetails")</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("Name")</label>
+                        <div class="h6">@Model.Name</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted">Email</label>
+                        <div class="h6">@(Model.Email)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("Phone")</label>
+                        <div class="h6">@Model.PhoneNumber</div>
+                    </div>
+                     <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("Type")</label>
+                        <div class="h6">@Model.Type</div>
+                    </div>
+                     <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("Address")</label>
+                        <div class="h6">@Model.Address @(Model.City != null ? $", {Model.City}" : "")</div>
+                    </div>
+                     <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("Description")</label>
+                        <div class="h6">@Model.Description</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Info -->
+        <div class="col-md-6 mb-4">
+             <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("Status")</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("Status")</label>
+                        <div>
+                             @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success fs-6">@LocalizationService.GetString("Active")</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark fs-6">@LocalizationService.GetString("PendingAction")</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("RegistrationDate")</label>
+                        <div class="h6">@Model.CreatedDate.ToLocalTime().ToString("g")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function approveVendor(id) {
+            Swal.fire({
+                title: '@LocalizationService.GetString("Approve")',
+                text: '@LocalizationService.GetString("AreYouSureApproveVendor")',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1cc88a',
+                confirmButtonText: '@LocalizationService.GetString("Approve")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Vendors/Approve', { id: id }, function(response) {
+                        if (response.success) {
+                            Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function rejectVendor(id) {
+            Swal.fire({
+                title: '@LocalizationService.GetString("Reject")',
+                text: '@LocalizationService.GetString("AreYouSureRejectVendor")',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                confirmButtonText: '@LocalizationService.GetString("Reject")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Vendors/Reject', { id: id }, function(response) {
+                        if (response.success) {
+                             Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

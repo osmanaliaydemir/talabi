@@ -488,7 +488,7 @@ public class AuthService : IAuthService
                     Name = dto.FullName,
                     PhoneNumber = dto.Phone,
                     VehicleType = dto.VehicleType,
-                    IsActive = true,
+                    IsActive = false,
                     Status = CourierStatus.Offline
                 };
                 await _unitOfWork.Couriers.AddAsync(courier);

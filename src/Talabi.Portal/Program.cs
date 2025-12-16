@@ -99,6 +99,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 
 // App Services
+builder.Services.AddScoped(typeof(Talabi.Core.Interfaces.IRepository<>), typeof(Talabi.Infrastructure.Repositories.Repository<>));
 builder.Services.AddScoped<Talabi.Core.Interfaces.IUnitOfWork, Talabi.Infrastructure.Repositories.UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
@@ -112,6 +113,8 @@ builder.Services.AddScoped<Talabi.Core.Interfaces.ILocationService, Talabi.Infra
 builder.Services.AddScoped<IDeliveryZoneService, DeliveryZoneService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.IUserContextService, Talabi.Infrastructure.Services.UserContextService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.IDashboardNotificationService, Talabi.Infrastructure.Services.DashboardNotificationService>();
+builder.Services.AddScoped<ICourierService, CourierService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
 
 var app = builder.Build();
 
@@ -128,7 +131,7 @@ using (var scope = app.Services.CreateScope())
 {
     var localizationService = scope.ServiceProvider.GetRequiredService<ILocalizationService>();
     await localizationService.LoadTranslationsAsync();
-    
+
     var dbContext = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
     await TalabiDbContextSeed.SeedAsync(dbContext);
 }

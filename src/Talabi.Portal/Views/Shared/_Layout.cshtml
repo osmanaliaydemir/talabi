@@ -368,6 +368,12 @@
                 <i class="fas fa-draw-polygon"></i> @LocalizationService.GetString("DeliveryZones")
             </a>
             <!-- Location Management (Admin only in real app) -->
+             <a href="@Url.Action("Index", "Couriers")">
+                <i class="fas fa-motorcycle"></i> @LocalizationService.GetString("CourierApplications")
+            </a>
+            <a href="@Url.Action("Index", "Vendors")">
+                <i class="fas fa-store-alt"></i> @LocalizationService.GetString("VendorApplications")
+            </a>
              <a href="@Url.Action("Index", "Locations")">
                 <i class="fas fa-globe"></i> @LocalizationService.GetString("Countries")
             </a>
