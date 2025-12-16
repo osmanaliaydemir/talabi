@@ -36,7 +36,6 @@ public class CartController : BaseController
     /// Kullanıcının sepetini getirir
     /// </summary>
     /// <returns>Sepet bilgileri</returns>
-    [HttpGet]
     /// <summary>
     /// Kullanıcının sepetini getirir
     /// </summary>
@@ -57,6 +56,7 @@ public class CartController : BaseController
         var cart = await UnitOfWork.Carts.Query()
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
+            .ThenInclude(p => p.Vendor)
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         CartDto cartDto;
@@ -266,7 +266,6 @@ public class CartController : BaseController
     /// Sepeti temizler
     /// </summary>
     /// <returns>İşlem sonucu</returns>
-    [HttpDelete]
     /// <summary>
     /// Sepeti temizler
     /// </summary>

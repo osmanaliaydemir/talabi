@@ -57,6 +57,9 @@ class CartProvider with ChangeNotifier {
               LoggerService().debug(
                 '🛒 [CART] Backend missing vendorId for product ${item['productId']}, fetching...',
               );
+              // Log the raw item to see what's missing
+              LoggerService().debug('🛒 [CART] Raw Item Data: $item');
+
               final productData = await _apiService.getProduct(
                 item['productId'],
               );
