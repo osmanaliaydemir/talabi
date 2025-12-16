@@ -12,6 +12,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Email;
 using Talabi.Core.Email;
 using Talabi.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
