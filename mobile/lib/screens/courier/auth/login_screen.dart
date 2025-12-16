@@ -71,7 +71,7 @@ class _CourierLoginScreenState extends State<CourierLoginScreen> {
           } else if (actualRole.contains('customer')) {
             message = localizations.errorLoginCustomerToCourier;
           } else {
-            message = "$message (${e.actualRole})";
+            message = '$message (${e.actualRole})';
           }
 
           ToastMessage.show(context, message: message, isSuccess: false);

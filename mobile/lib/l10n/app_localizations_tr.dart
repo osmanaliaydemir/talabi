@@ -1251,11 +1251,11 @@ class AppLocalizationsTr extends AppLocalizations {
       'Taze sebze, meyve ve günlük ihtiyaçlarınız en hızlı şekilde kapınızda.';
 
   @override
-  String get onboardingTitle3 => 'Best Prices & Offers';
+  String get onboardingTitle3 => 'En İyi Fiyatlar & Fırsatlar';
 
   @override
   String get onboardingDesc3 =>
-      'Enjoy exclusive deals and competitive prices every day';
+      'Her gün özel fırsatların ve rekabetçi fiyatların tadını çıkarın';
 
   @override
   String get pending => 'Bekleyen';

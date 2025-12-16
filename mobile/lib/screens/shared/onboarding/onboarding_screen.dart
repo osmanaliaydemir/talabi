@@ -122,11 +122,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       itemCount: onboardingData.length,
                       itemBuilder: (context, index) {
                         return OnboardingPage(
-                          image: onboardingData[index]["image"]! as String,
-                          title: onboardingData[index]["title"]! as String,
-                          description: onboardingData[index]["desc"]! as String,
+                          image: onboardingData[index]['image']! as String,
+                          title: onboardingData[index]['title']! as String,
+                          description: onboardingData[index]['desc']! as String,
                           circleColor:
-                              onboardingData[index]["bgColor"]! as Color,
+                              onboardingData[index]['bgColor']! as Color,
                         );
                       },
                     ),

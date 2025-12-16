@@ -69,7 +69,7 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
         } else if (actualRole.contains('courier')) {
           message = localizations.errorLoginCourierToVendor;
         } else {
-          message = "$message (${e.actualRole})";
+          message = '$message (${e.actualRole})';
         }
 
         ToastMessage.show(context, message: message, isSuccess: false);

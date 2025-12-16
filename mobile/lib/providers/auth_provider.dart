@@ -30,9 +30,9 @@ class AuthProvider with ChangeNotifier {
     String password, {
     String? requiredRole,
   }) async {
-    final apiService = ApiService();
-    apiService.resetLogout(); // Ensure we can make requests
-    final response = await apiService.login(email, password);
+    final response =
+        await (ApiService()..resetLogout()) // Ensure we can make requests
+            .login(email, password);
 
     _token = response['token'];
     _refreshToken = response['refreshToken'];
@@ -49,9 +49,7 @@ class AuthProvider with ChangeNotifier {
     // Fallback: Extract from token if missing
     if ((_role == null || response['isActive'] == null) && _token != null) {
       try {
-        if (_role == null) {
-          _role = _getRoleFromToken(_token!);
-        }
+        _role ??= _getRoleFromToken(_token!);
         // If isActive wasn't in response, try to get from token
         if (response['isActive'] == null && response['IsActive'] == null) {
           _isActive = _getIsActiveFromToken(_token!);
@@ -103,9 +101,9 @@ class AuthProvider with ChangeNotifier {
       LoggerService().debug('🟡 [AUTH_PROVIDER] Email: $email');
       LoggerService().debug('🟡 [AUTH_PROVIDER] FullName: $fullName');
 
-      final apiService = ApiService();
-      apiService.resetLogout(); // Ensure we can make requests
-      final response = await apiService.register(email, password, fullName);
+      final response =
+          await (ApiService()..resetLogout()) // Ensure we can make requests
+              .register(email, password, fullName);
 
       LoggerService().debug('🟢 [AUTH_PROVIDER] Register response received');
       LoggerService().debug(
@@ -313,8 +311,9 @@ class AuthProvider with ChangeNotifier {
         final isActiveClaim = payloadMap['isActive'];
         if (isActiveClaim != null) {
           if (isActiveClaim is bool) return isActiveClaim;
-          if (isActiveClaim is String)
+          if (isActiveClaim is String) {
             return isActiveClaim.toLowerCase() == 'true';
+          }
         }
       }
     } catch (e) {

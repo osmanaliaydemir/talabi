@@ -1,8 +1,7 @@
 class RoleMismatchException implements Exception {
+  RoleMismatchException(this.actualRole, this.expectedRole);
   final String actualRole;
   final String expectedRole;
-
-  RoleMismatchException(this.actualRole, this.expectedRole);
 
   @override
   String toString() =>
