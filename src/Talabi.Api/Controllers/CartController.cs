@@ -56,7 +56,7 @@ public class CartController : BaseController
         var cart = await UnitOfWork.Carts.Query()
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
-            .ThenInclude(p => p.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         CartDto cartDto;
