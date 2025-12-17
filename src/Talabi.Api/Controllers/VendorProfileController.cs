@@ -142,57 +142,81 @@ public class VendorProfileController : BaseController
             vendor.Description = dto.Description;
         }
 
-        if (dto.WorkingHours != null)
+        int maxRetries = 3;
+        for (int i = 0; i < maxRetries; i++)
         {
-            var existingHours = vendor.WorkingHours.ToList();
-            var incomingDays = dto.WorkingHours.Select(x => x.DayOfWeek).ToHashSet();
-
-            // 1. Update existing and Identify to Remove
-            foreach (var existing in existingHours)
+            try
             {
-                var incoming = dto.WorkingHours.FirstOrDefault(x => x.DayOfWeek == (int)existing.DayOfWeek);
-                if (incoming != null)
+                if (i > 0)
                 {
-                    // Update
-                    existing.StartTime = incoming.StartTime;
-                    existing.EndTime = incoming.EndTime;
-                    existing.IsClosed = incoming.IsClosed;
-                    // Ensure nulls if closed logic is consistent
-                    if (existing.IsClosed)
+                    // Reload vendor for retry
+                    var userId = UserContext.GetUserId();
+                    if (userId == null) return Unauthorized(new ApiResponse<object>(LocalizationService.GetLocalizedString("ErrorResources", "Unauthorized", CurrentCulture), "UNAUTHORIZED"));
+
+                    vendor = await UnitOfWork.Vendors.Query()
+                       .Include(v => v.WorkingHours)
+                       .FirstOrDefaultAsync(v => v.OwnerId == userId);
+
+                    if (vendor == null) return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
+                }
+
+                if (dto.WorkingHours != null)
+                {
+                    var existingHours = vendor.WorkingHours.ToList();
+                    var incomingDays = dto.WorkingHours.Select(x => x.DayOfWeek).ToHashSet();
+
+                    // 1. Update existing and Identify to Remove
+                    foreach (var existing in existingHours)
                     {
-                        existing.StartTime = null;
-                        existing.EndTime = null;
+                        var incoming = dto.WorkingHours.FirstOrDefault(x => x.DayOfWeek == (int)existing.DayOfWeek);
+                        if (incoming != null)
+                        {
+                            // Update
+                            existing.StartTime = incoming.StartTime;
+                            existing.EndTime = incoming.EndTime;
+                            existing.IsClosed = incoming.IsClosed;
+                            // Ensure nulls if closed logic is consistent
+                            if (existing.IsClosed)
+                            {
+                                existing.StartTime = null;
+                                existing.EndTime = null;
+                            }
+                        }
+                        else
+                        {
+                            // Remove if not in incoming
+                            UnitOfWork.VendorWorkingHours.Remove(existing);
+                        }
+                    }
+
+                    // 2. Add new
+                    foreach (var incoming in dto.WorkingHours)
+                    {
+                        if (!existingHours.Any(x => (int)x.DayOfWeek == incoming.DayOfWeek))
+                        {
+                            vendor.WorkingHours.Add(new VendorWorkingHour
+                            {
+                                VendorId = vendor.Id,
+                                DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
+                                StartTime = incoming.IsClosed ? null : incoming.StartTime,
+                                EndTime = incoming.IsClosed ? null : incoming.EndTime,
+                                IsClosed = incoming.IsClosed
+                            });
+                        }
                     }
                 }
-                else
-                {
-                    // Remove if not in incoming
-                    UnitOfWork.VendorWorkingHours.Remove(existing);
-                }
-            }
 
-            // 2. Add new
-            foreach (var incoming in dto.WorkingHours)
+                vendor.UpdatedAt = DateTime.UtcNow;
+                UnitOfWork.Vendors.Update(vendor);
+                await UnitOfWork.SaveChangesAsync();
+                break; // Success
+            }
+            catch (DbUpdateConcurrencyException)
             {
-                if (!existingHours.Any(x => (int)x.DayOfWeek == incoming.DayOfWeek))
-                {
-                    vendor.WorkingHours.Add(new VendorWorkingHour
-                    {
-                        VendorId = vendor.Id,
-                        DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
-                        StartTime = incoming.IsClosed ? null : incoming.StartTime,
-                        EndTime = incoming.IsClosed ? null : incoming.EndTime,
-                        IsClosed = incoming.IsClosed
-                    });
-                }
+                if (i == maxRetries - 1) throw;
+                await Task.Delay(100);
             }
         }
-
-
-        vendor.UpdatedAt = DateTime.UtcNow;
-
-        UnitOfWork.Vendors.Update(vendor);
-        await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileUpdatedSuccessfully", CurrentCulture)));
     }
