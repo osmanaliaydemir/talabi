@@ -38,7 +38,7 @@ public class VendorProductsController : BaseController
         {
             return null;
         }
-        
+
         var vendor = await UnitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor?.Id;
@@ -55,16 +55,16 @@ public class VendorProductsController : BaseController
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PagedResultDto<VendorProductDto>>>> GetProducts(
         [FromQuery] string? category = null,
-        [FromQuery] bool? isAvailable = null, 
-        [FromQuery] int page = 1, 
+        [FromQuery] bool? isAvailable = null,
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<PagedResultDto<VendorProductDto>>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -96,6 +96,7 @@ public class VendorProductsController : BaseController
                 ImageUrl = p.ImageUrl,
                 IsAvailable = p.IsAvailable,
                 Stock = p.Stock,
+                CategoryId = p.CategoryId,
                 PreparationTime = p.PreparationTime,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
@@ -114,7 +115,7 @@ public class VendorProductsController : BaseController
         };
 
         return Ok(new ApiResponse<PagedResultDto<VendorProductDto>>(
-            result, 
+            result,
             LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -126,12 +127,12 @@ public class VendorProductsController : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<VendorProductDto>>> GetProduct(Guid id)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<VendorProductDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -149,6 +150,7 @@ public class VendorProductsController : BaseController
                 ImageUrl = p.ImageUrl,
                 IsAvailable = p.IsAvailable,
                 Stock = p.Stock,
+                CategoryId = p.CategoryId,
                 PreparationTime = p.PreparationTime,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
@@ -158,12 +160,12 @@ public class VendorProductsController : BaseController
         if (product == null)
         {
             return NotFound(new ApiResponse<VendorProductDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoAccess", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoAccess", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
         return Ok(new ApiResponse<VendorProductDto>(
-            product, 
+            product,
             LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -175,12 +177,12 @@ public class VendorProductsController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<VendorProductDto>>> CreateProduct(CreateProductDto dto)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<VendorProductDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -214,6 +216,7 @@ public class VendorProductsController : BaseController
             ImageUrl = product.ImageUrl,
             IsAvailable = product.IsAvailable,
             Stock = product.Stock,
+            CategoryId = product.CategoryId,
             PreparationTime = product.PreparationTime,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
@@ -223,7 +226,7 @@ public class VendorProductsController : BaseController
             nameof(GetProduct),
             new { id = product.Id },
             new ApiResponse<VendorProductDto>(
-                result, 
+                result,
                 LocalizationService.GetLocalizedString(ResourceName, "ProductCreatedSuccessfully", CurrentCulture)));
     }
 
@@ -236,12 +239,12 @@ public class VendorProductsController : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProduct(Guid id, UpdateProductDto dto)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -251,7 +254,7 @@ public class VendorProductsController : BaseController
         if (product == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
@@ -283,7 +286,7 @@ public class VendorProductsController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "ProductUpdatedSuccessfully", CurrentCulture)));
     }
 
@@ -295,12 +298,12 @@ public class VendorProductsController : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(Guid id)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -310,7 +313,7 @@ public class VendorProductsController : BaseController
         if (product == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoDeleteAccess", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoDeleteAccess", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
@@ -318,7 +321,7 @@ public class VendorProductsController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "ProductDeletedSuccessfully", CurrentCulture)));
     }
 
@@ -331,12 +334,12 @@ public class VendorProductsController : BaseController
     [HttpPut("{id}/availability")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductAvailability(Guid id, UpdateProductAvailabilityDto dto)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -346,7 +349,7 @@ public class VendorProductsController : BaseController
         if (product == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
@@ -357,7 +360,7 @@ public class VendorProductsController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "ProductAvailabilityUpdatedSuccessfully", CurrentCulture)));
     }
 
@@ -370,12 +373,12 @@ public class VendorProductsController : BaseController
     [HttpPut("{id}/price")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -385,7 +388,7 @@ public class VendorProductsController : BaseController
         if (product == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
@@ -396,7 +399,7 @@ public class VendorProductsController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "ProductPriceUpdatedSuccessfully", CurrentCulture)));
     }
 
@@ -407,12 +410,12 @@ public class VendorProductsController : BaseController
     [HttpGet("categories")]
     public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
     {
-        
+
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
             return NotFound(new ApiResponse<List<string>>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -424,7 +427,7 @@ public class VendorProductsController : BaseController
             .ToListAsync();
 
         return Ok(new ApiResponse<List<string>>(
-            categories, 
+            categories,
             LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
     }
 }

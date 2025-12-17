@@ -56,6 +56,22 @@ class NotificationService {
     // 3. Get FCM Token (only if Firebase is available)
     if (_firebaseMessaging != null) {
       try {
+        if (Platform.isIOS) {
+          String? apnsToken = await _firebaseMessaging!.getAPNSToken();
+          int retry = 0;
+          while (apnsToken == null && retry < 3) {
+            await Future.delayed(const Duration(seconds: 1));
+            apnsToken = await _firebaseMessaging!.getAPNSToken();
+            retry++;
+          }
+          if (apnsToken == null) {
+            LoggerService().warning(
+              '⚠️ APNS Token not available (Running on Simulator?). Skipping FCM token request.',
+            );
+            return;
+          }
+        }
+
         // Add timeout to prevent app hang on startup if APNS is not ready
         final token = await _firebaseMessaging!.getToken().timeout(
           const Duration(seconds: 5),

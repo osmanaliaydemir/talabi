@@ -282,10 +282,12 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       appBar: AppBar(
         title: Text(
           isEdit
-              ? localizations.vendorProductFormEditTitle
+              ? (widget.product?.name ??
+                    localizations.vendorProductFormEditTitle)
               : localizations.vendorProductFormNewTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppTheme.primaryOrange,
+        backgroundColor: AppTheme.vendorPrimary,
         foregroundColor: Colors.white,
       ),
       body: Form(

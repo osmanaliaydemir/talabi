@@ -10,8 +10,6 @@ class AssetPreloaderService {
       // Preload critical images in parallel
       // Using eagerError: false to continue loading even if one fails
       await Future.wait([
-        // Logo and icon
-        _preloadImage('assets/icon/icon.png'),
         // Splash/onboarding images
         _preloadImage('assets/images/onboarding1.png'),
         // Other critical images

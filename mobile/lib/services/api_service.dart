@@ -3545,7 +3545,7 @@ class ApiService {
       final formData = FormData.fromMap({'file': file});
 
       final response = await _dio.post('/upload', data: formData);
-      return response.data['url'];
+      return response.data['data']['url'];
     } catch (e, stackTrace) {
       LoggerService().error('Error uploading product image', e, stackTrace);
       rethrow;

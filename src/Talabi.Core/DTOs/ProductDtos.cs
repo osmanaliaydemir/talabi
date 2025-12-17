@@ -24,6 +24,7 @@ public class VendorProductDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Category { get; set; }
+    public Guid? CategoryId { get; set; }
     public decimal Price { get; set; }
     public Currency Currency { get; set; } = Currency.TRY;
     public string? ImageUrl { get; set; }
