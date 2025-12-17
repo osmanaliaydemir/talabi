@@ -145,22 +145,46 @@ public class VendorProfileController : BaseController
         if (dto.WorkingHours != null)
         {
             var existingHours = vendor.WorkingHours.ToList();
-            foreach (var hour in existingHours)
-            {
-                UnitOfWork.VendorWorkingHours.Remove(hour);
-            }
-            vendor.WorkingHours.Clear();
+            var incomingDays = dto.WorkingHours.Select(x => x.DayOfWeek).ToHashSet();
 
-            foreach (var whDto in dto.WorkingHours)
+            // 1. Update existing and Identify to Remove
+            foreach (var existing in existingHours)
             {
-                vendor.WorkingHours.Add(new VendorWorkingHour
+                var incoming = dto.WorkingHours.FirstOrDefault(x => x.DayOfWeek == (int)existing.DayOfWeek);
+                if (incoming != null)
                 {
-                    VendorId = vendor.Id,
-                    DayOfWeek = (DayOfWeek)whDto.DayOfWeek,
-                    StartTime = whDto.StartTime,
-                    EndTime = whDto.EndTime,
-                    IsClosed = whDto.IsClosed
-                });
+                    // Update
+                    existing.StartTime = incoming.StartTime;
+                    existing.EndTime = incoming.EndTime;
+                    existing.IsClosed = incoming.IsClosed;
+                    // Ensure nulls if closed logic is consistent
+                    if (existing.IsClosed)
+                    {
+                        existing.StartTime = null;
+                        existing.EndTime = null;
+                    }
+                }
+                else
+                {
+                    // Remove if not in incoming
+                    UnitOfWork.VendorWorkingHours.Remove(existing);
+                }
+            }
+
+            // 2. Add new
+            foreach (var incoming in dto.WorkingHours)
+            {
+                if (!existingHours.Any(x => (int)x.DayOfWeek == incoming.DayOfWeek))
+                {
+                    vendor.WorkingHours.Add(new VendorWorkingHour
+                    {
+                        VendorId = vendor.Id,
+                        DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
+                        StartTime = incoming.IsClosed ? null : incoming.StartTime,
+                        EndTime = incoming.IsClosed ? null : incoming.EndTime,
+                        IsClosed = incoming.IsClosed
+                    });
+                }
             }
         }
 
