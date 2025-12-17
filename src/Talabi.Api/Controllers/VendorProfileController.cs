@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
+using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Controllers;
@@ -65,7 +66,8 @@ public class VendorProfileController : BaseController
             PhoneNumber = vendor.PhoneNumber,
             Description = vendor.Description,
             Rating = vendor.Rating,
-            RatingCount = vendor.RatingCount
+            RatingCount = vendor.RatingCount,
+            BusyStatus = vendor.BusyStatus
         };
 
         return Ok(new ApiResponse<VendorProfileDto>(profile, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileRetrievedSuccessfully", CurrentCulture)));
@@ -79,64 +81,64 @@ public class VendorProfileController : BaseController
     [HttpPut]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateVendorProfileDto dto)
     {
-            if (dto == null)
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
-            }
+        if (dto == null)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
+        }
 
-            var vendor = await GetCurrentVendorAsync();
-            if (vendor == null)
-            {
-                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
-            }
+        var vendor = await GetCurrentVendorAsync();
+        if (vendor == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
+        }
 
-            // Update fields if provided
-            if (!string.IsNullOrEmpty(dto.Name))
-            {
-                vendor.Name = dto.Name;
-            }
+        // Update fields if provided
+        if (!string.IsNullOrEmpty(dto.Name))
+        {
+            vendor.Name = dto.Name;
+        }
 
-            if (dto.ImageUrl != null)
-            {
-                vendor.ImageUrl = dto.ImageUrl;
-            }
+        if (dto.ImageUrl != null)
+        {
+            vendor.ImageUrl = dto.ImageUrl;
+        }
 
-            if (!string.IsNullOrEmpty(dto.Address))
-            {
-                vendor.Address = dto.Address;
-            }
+        if (!string.IsNullOrEmpty(dto.Address))
+        {
+            vendor.Address = dto.Address;
+        }
 
-            if (dto.City != null)
-            {
-                vendor.City = dto.City;
-            }
+        if (dto.City != null)
+        {
+            vendor.City = dto.City;
+        }
 
-            if (dto.Latitude.HasValue)
-            {
-                vendor.Latitude = dto.Latitude.Value;
-            }
+        if (dto.Latitude.HasValue)
+        {
+            vendor.Latitude = dto.Latitude.Value;
+        }
 
-            if (dto.Longitude.HasValue)
-            {
-                vendor.Longitude = dto.Longitude.Value;
-            }
+        if (dto.Longitude.HasValue)
+        {
+            vendor.Longitude = dto.Longitude.Value;
+        }
 
-            if (dto.PhoneNumber != null)
-            {
-                vendor.PhoneNumber = dto.PhoneNumber;
-            }
+        if (dto.PhoneNumber != null)
+        {
+            vendor.PhoneNumber = dto.PhoneNumber;
+        }
 
-            if (dto.Description != null)
-            {
-                vendor.Description = dto.Description;
-            }
+        if (dto.Description != null)
+        {
+            vendor.Description = dto.Description;
+        }
 
-            vendor.UpdatedAt = DateTime.UtcNow;
+        vendor.UpdatedAt = DateTime.UtcNow;
 
-            UnitOfWork.Vendors.Update(vendor);
-            await UnitOfWork.SaveChangesAsync();
+        UnitOfWork.Vendors.Update(vendor);
+        await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -147,24 +149,24 @@ public class VendorProfileController : BaseController
     [HttpPut("image")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateImage([FromBody] UpdateVendorImageDto dto)
     {
-            if (dto == null || string.IsNullOrEmpty(dto.ImageUrl))
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
-            }
+        if (dto == null || string.IsNullOrEmpty(dto.ImageUrl))
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
+        }
 
-            var vendor = await GetCurrentVendorAsync();
-            if (vendor == null)
-            {
-                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
-            }
+        var vendor = await GetCurrentVendorAsync();
+        if (vendor == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
+        }
 
-            vendor.ImageUrl = dto.ImageUrl;
-            vendor.UpdatedAt = DateTime.UtcNow;
+        vendor.ImageUrl = dto.ImageUrl;
+        vendor.UpdatedAt = DateTime.UtcNow;
 
-            UnitOfWork.Vendors.Update(vendor);
-            await UnitOfWork.SaveChangesAsync();
+        UnitOfWork.Vendors.Update(vendor);
+        await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorImageUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorImageUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -200,49 +202,49 @@ public class VendorProfileController : BaseController
     [HttpPut("settings")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateSettings([FromBody] UpdateVendorSettingsDto dto)
     {
-            if (dto == null)
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
-            }
+        if (dto == null)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
+        }
 
-            var vendor = await GetCurrentVendorAsync();
-            if (vendor == null)
-            {
-                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
-            }
+        var vendor = await GetCurrentVendorAsync();
+        if (vendor == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
+        }
 
-            // Update fields if provided
-            if (dto.MinimumOrderAmount.HasValue)
-            {
-                vendor.MinimumOrderAmount = dto.MinimumOrderAmount.Value;
-            }
+        // Update fields if provided
+        if (dto.MinimumOrderAmount.HasValue)
+        {
+            vendor.MinimumOrderAmount = dto.MinimumOrderAmount.Value;
+        }
 
-            if (dto.DeliveryFee.HasValue)
-            {
-                vendor.DeliveryFee = dto.DeliveryFee.Value;
-            }
+        if (dto.DeliveryFee.HasValue)
+        {
+            vendor.DeliveryFee = dto.DeliveryFee.Value;
+        }
 
-            if (dto.EstimatedDeliveryTime.HasValue)
-            {
-                vendor.EstimatedDeliveryTime = dto.EstimatedDeliveryTime.Value;
-            }
+        if (dto.EstimatedDeliveryTime.HasValue)
+        {
+            vendor.EstimatedDeliveryTime = dto.EstimatedDeliveryTime.Value;
+        }
 
-            if (dto.IsActive.HasValue)
-            {
-                vendor.IsActive = dto.IsActive.Value;
-            }
+        if (dto.IsActive.HasValue)
+        {
+            vendor.IsActive = dto.IsActive.Value;
+        }
 
-            if (dto.OpeningHours != null)
-            {
-                vendor.OpeningHours = dto.OpeningHours;
-            }
+        if (dto.OpeningHours != null)
+        {
+            vendor.OpeningHours = dto.OpeningHours;
+        }
 
-            vendor.UpdatedAt = DateTime.UtcNow;
+        vendor.UpdatedAt = DateTime.UtcNow;
 
-            UnitOfWork.Vendors.Update(vendor);
-            await UnitOfWork.SaveChangesAsync();
+        UnitOfWork.Vendors.Update(vendor);
+        await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorSettingsUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorSettingsUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -253,24 +255,52 @@ public class VendorProfileController : BaseController
     [HttpPut("settings/active")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateActiveStatus([FromBody] UpdateVendorActiveStatusDto dto)
     {
-            if (dto == null)
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
-            }
+        if (dto == null)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
+        }
 
-            var vendor = await GetCurrentVendorAsync();
-            if (vendor == null)
-            {
-                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
-            }
+        var vendor = await GetCurrentVendorAsync();
+        if (vendor == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
+        }
 
-            vendor.IsActive = dto.IsActive;
-            vendor.UpdatedAt = DateTime.UtcNow;
+        vendor.IsActive = dto.IsActive;
+        vendor.UpdatedAt = DateTime.UtcNow;
 
-            UnitOfWork.Vendors.Update(vendor);
-            await UnitOfWork.SaveChangesAsync();
+        UnitOfWork.Vendors.Update(vendor);
+        await UnitOfWork.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorActiveStatusUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorActiveStatusUpdatedSuccessfully", CurrentCulture)));
+    }
+
+    /// <summary>
+    /// Satıcı yoğunluk durumunu günceller
+    /// </summary>
+    /// <param name="dto">Yoğunluk durumu</param>
+    /// <returns>İşlem sonucu</returns>
+    [HttpPut("settings/status")]
+    public async Task<ActionResult<ApiResponse<object>>> UpdateBusyStatus([FromBody] UpdateVendorBusyStatusDto dto)
+    {
+        if (dto == null)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
+        }
+
+        var vendor = await GetCurrentVendorAsync();
+        if (vendor == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
+        }
+
+        vendor.BusyStatus = dto.BusyStatus;
+        vendor.UpdatedAt = DateTime.UtcNow;
+
+        UnitOfWork.Vendors.Update(vendor);
+        await UnitOfWork.SaveChangesAsync();
+
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "VendorBusyStatusUpdatedSuccessfully", CurrentCulture)));
     }
 }
 

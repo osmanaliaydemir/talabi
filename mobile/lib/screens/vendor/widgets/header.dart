@@ -76,6 +76,102 @@ class _VendorHeaderState extends State<VendorHeader> {
     }
   }
 
+  Future<void> _updateBusyStatus(int status) async {
+    try {
+      await ApiService().updateBusyStatus(status);
+      if (!mounted) return;
+
+      setState(() {
+        // Optimistic update handled by refreshing profile/finding current status logic
+        // For now, reload helps to sync state if we stored it locally
+      });
+
+      final localizations = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(localizations?.statusUpdated ?? 'Durum güncellendi'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final localizations = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations?.errorWithMessage(e.toString()) ?? 'Hata: $e',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showStatusDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Mağaza Durumu'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              _updateBusyStatus(0); // Normal
+            },
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                const Text('Normal'),
+                const Spacer(),
+                Text(
+                  'Standart süre',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              _updateBusyStatus(1); // Busy
+            },
+            child: Row(
+              children: [
+                const Icon(Icons.hourglass_bottom, color: Colors.amber),
+                const SizedBox(width: 8),
+                const Text('Yoğun'),
+                const Spacer(),
+                Text(
+                  '+15 dk',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              _updateBusyStatus(2); // Overloaded
+            },
+            child: Row(
+              children: [
+                const Icon(Icons.cancel, color: Colors.red),
+                const SizedBox(width: 8),
+                const Text('Çok Yoğun'),
+                const Spacer(),
+                Text(
+                  '+45 dk',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -122,16 +218,19 @@ class _VendorHeaderState extends State<VendorHeader> {
                   },
                 )
               else
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    widget.leadingIcon,
-                    color: Colors.white,
-                    size: 22,
+                GestureDetector(
+                  onTap: _showStatusDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      widget.leadingIcon,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                 ),
               const SizedBox(width: 12),
@@ -218,6 +317,7 @@ class _VendorHeaderState extends State<VendorHeader> {
   }
 
   Widget _buildOrderCountText(AppLocalizations? localizations) {
+    // ... existing implementation ...
     if (widget.orderCounts == null || localizations == null) {
       return const SizedBox.shrink();
     }

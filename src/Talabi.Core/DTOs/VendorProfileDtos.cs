@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Talabi.Core.Enums;
 
 namespace Talabi.Core.DTOs;
 
@@ -17,6 +18,7 @@ public class VendorProfileDto
     public string? Description { get; set; }
     public decimal? Rating { get; set; }
     public int RatingCount { get; set; }
+    public BusyStatus BusyStatus { get; set; }
 }
 
 public class UpdateVendorProfileDto
@@ -67,4 +69,10 @@ public class UpdateVendorActiveStatusDto
 {
     [JsonPropertyName("isActive")]
     public bool IsActive { get; set; }
+}
+
+public class UpdateVendorBusyStatusDto
+{
+    [JsonPropertyName("busyStatus")]
+    public BusyStatus BusyStatus { get; set; }
 }

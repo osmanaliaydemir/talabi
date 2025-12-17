@@ -3643,6 +3643,32 @@ class ApiService {
     }
   }
 
+  Future<void> updateBusyStatus(int status) async {
+    try {
+      final response = await _dio.put(
+        '/vendor/profile/settings/status',
+        data: {'busyStatus': status},
+      );
+
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>?,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Satıcı yoğunluk durumu güncellenemedi',
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating busy status', e, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> getVendorSettings() async {
     try {
       final response = await _dio.get('/vendor/profile/settings');
