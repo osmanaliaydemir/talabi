@@ -89,11 +89,14 @@ public class AuthService : IAuthService
             var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
             if (vendor != null)
             {
+                var hasWorkingHours = await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
+
                 isActive = vendor.IsActive;
                 isProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
                                     vendor.Latitude.HasValue &&
                                     vendor.Longitude.HasValue &&
-                                    !string.IsNullOrWhiteSpace(vendor.Name);
+                                    !string.IsNullOrWhiteSpace(vendor.Name) &&
+                                    hasWorkingHours;
             }
         }
         else if (user.Role == UserRole.Courier)
@@ -255,13 +258,16 @@ public class AuthService : IAuthService
                 var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
                 if (vendor != null)
                 {
+                    var hasWorkingHours = await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
+
                     response.IsActive = vendor.IsActive;
-                    // Check profile completeness (Address, Lat, Lng, Name required)
+                    // Check profile completeness (Address, Lat, Lng, Name required AND WorkingHours)
                     response.IsProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
                                                  vendor.Latitude.HasValue &&
                                                  vendor.Longitude.HasValue &&
                                                  !string.IsNullOrWhiteSpace(vendor.Name) &&
-                                                 !string.IsNullOrWhiteSpace(vendor.PhoneNumber);
+                                                 !string.IsNullOrWhiteSpace(vendor.PhoneNumber) &&
+                                                 hasWorkingHours;
                 }
             }
             else if (user.Role == UserRole.Courier)
