@@ -140,6 +140,16 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
             _showVehicleTypeBottomSheet();
           });
         }
+        // Check if working hours are not set
+        else if (courier.workingHoursStart == null ||
+            courier.workingHoursEnd == null) {
+          LoggerService().debug(
+            'CourierDashboardScreen: Working hours not set, showing working hours bottom sheet',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showWorkingHoursBottomSheet();
+          });
+        }
         // Check if location is not set (only if vehicle type is already selected)
         else if (courier.currentLatitude == null ||
             courier.currentLongitude == null) {
@@ -465,6 +475,299 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _showWorkingHoursBottomSheet() async {
+    TimeOfDay? startTime;
+    TimeOfDay? endTime;
+    String? errorMessage;
+
+    await showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            Future<void> selectTime(bool isStart) async {
+              final TimeOfDay? picked = await showTimePicker(
+                context: context,
+                initialTime: isStart
+                    ? (startTime ?? const TimeOfDay(hour: 9, minute: 0))
+                    : (endTime ?? const TimeOfDay(hour: 18, minute: 0)),
+              );
+              if (picked != null) {
+                setState(() {
+                  if (isStart) {
+                    startTime = picked;
+                  } else {
+                    endTime = picked;
+                  }
+                });
+              }
+            }
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _getLocalizedString(
+                      context,
+                      'workingHoursRequired',
+                      'Çalışma Saatleri Zorunludur',
+                    ),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _getLocalizedString(
+                      context,
+                      'workingHoursRequiredDescription',
+                      'Sipariş almaya başlamak için lütfen çalışma saatlerinizi belirleyin.',
+                    ),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getLocalizedString(
+                                context,
+                                'workingHoursStart',
+                                'Başlangıç Saati',
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () => selectTime(true),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      startTime?.format(context) ??
+                                          _getLocalizedString(
+                                            context,
+                                            'selectTime',
+                                            'Saat Seçin',
+                                          ),
+                                      style: TextStyle(
+                                        color: startTime != null
+                                            ? AppTheme.textPrimary
+                                            : AppTheme.textSecondary,
+                                        fontWeight: startTime != null
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.access_time,
+                                      color: AppTheme.courierPrimary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getLocalizedString(
+                                context,
+                                'workingHoursEnd',
+                                'Bitiş Saati',
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () => selectTime(false),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      endTime?.format(context) ??
+                                          _getLocalizedString(
+                                            context,
+                                            'selectTime',
+                                            'Saat Seçin',
+                                          ),
+                                      style: TextStyle(
+                                        color: endTime != null
+                                            ? AppTheme.textPrimary
+                                            : AppTheme.textSecondary,
+                                        fontWeight: endTime != null
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.access_time,
+                                      color: AppTheme.courierPrimary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: startTime != null && endTime != null
+                          ? () async {
+                              setState(() {
+                                errorMessage = null;
+                              });
+                              try {
+                                await _updateWorkingHours(startTime!, endTime!);
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
+                              } catch (e) {
+                                setState(() {
+                                  errorMessage = e.toString();
+                                });
+                              }
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.courierPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        disabledBackgroundColor: Colors.grey[300],
+                      ),
+                      child: Text(
+                        _getLocalizedString(context, 'save', 'Kaydet'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _updateWorkingHours(
+    TimeOfDay startTime,
+    TimeOfDay endTime,
+  ) async {
+    final startString =
+        '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+    final endString =
+        '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+
+    try {
+      await _courierService.updateProfile({
+        'workingHoursStart': startString,
+        'workingHoursEnd': endString,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _getLocalizedString(
+                context,
+                'workingHoursUpdatedSuccessfully',
+                'Çalışma saatleri başarıyla güncellendi',
+              ),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _loadData();
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'CourierDashboardScreen: ERROR updating working hours',
+        e,
+        stackTrace,
+      );
+      throw _getLocalizedString(
+        context,
+        'failedToUpdateWorkingHours',
+        'Çalışma saatleri güncellenemedi',
+      );
     }
   }
 

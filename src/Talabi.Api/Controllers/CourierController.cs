@@ -49,6 +49,7 @@ public class CourierController : BaseController
         }
         var courier = await UnitOfWork.Couriers.Query()
             .Include(c => c.User)
+            .Include(c => c.WorkingHours)
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         if (courier == null && createIfMissing)
@@ -99,6 +100,22 @@ public class CourierController : BaseController
 
         var profile = _mapper.Map<CourierProfileDto>(courier);
 
+        // Manually map WorkingHours
+        profile.WorkingHours = courier.WorkingHours.Select(wh => new WorkingHourDto
+        {
+            DayOfWeek = (int)wh.DayOfWeek,
+            DayName = LocalizationService.GetLocalizedString("CommonResources", wh.DayOfWeek.ToString(), CurrentCulture), // Assumes DayOfWeek Enum string keys exist or use generic logic
+            StartTime = wh.StartTime,
+            EndTime = wh.EndTime,
+            IsClosed = wh.IsClosed
+        }).ToList();
+
+        // Populate IsWithinWorkingHours based on current time and rules
+        // This logic might need to be consistent with what was there or updated
+        // For now, keeping legacy IsWithinWorkingHours property if used by mobile, but logic should be based on collection? 
+        // The DTOs still have IsWithinWorkingHours.
+
+
         return Ok(new ApiResponse<CourierProfileDto>(profile, LocalizationService.GetLocalizedString(ResourceName, "CourierProfileRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -138,9 +155,43 @@ public class CourierController : BaseController
         }
 
         courier.MaxActiveOrders = dto.MaxActiveOrders;
+        // Legacy fields update (optional, maybe keep sync for now)
         courier.WorkingHoursStart = dto.WorkingHoursStart;
         courier.WorkingHoursEnd = dto.WorkingHoursEnd;
+
         courier.IsWithinWorkingHours = dto.IsWithinWorkingHours;
+
+        // Update Working Hours Collection
+        if (dto.WorkingHours != null)
+        {
+            // Simple strategy: Remove all and re-add
+            // In production, we might want to update existing by DayOfWeek
+
+            // Check if context is tracked? Yes, courier comes from context. 
+            // We need to manage the collection.
+
+            // Remove existing
+            var existingHours = courier.WorkingHours.ToList();
+            foreach (var hour in existingHours)
+            {
+                UnitOfWork.CourierWorkingHours.Remove(hour);
+            }
+            courier.WorkingHours.Clear();
+
+            // Add new
+            foreach (var whDto in dto.WorkingHours)
+            {
+                courier.WorkingHours.Add(new CourierWorkingHour
+                {
+                    CourierId = courier.Id,
+                    DayOfWeek = (DayOfWeek)whDto.DayOfWeek,
+                    StartTime = whDto.StartTime,
+                    EndTime = whDto.EndTime,
+                    IsClosed = whDto.IsClosed
+                });
+            }
+        }
+
         courier.UpdatedAt = DateTime.UtcNow;
 
         UnitOfWork.Couriers.Update(courier);
@@ -485,7 +536,7 @@ public class CourierController : BaseController
                 .FirstOrDefault();
 
             var dto = _mapper.Map<CourierOrderDto>(o);
-            
+
             // OrderCourier bilgilerini ekle
             if (orderCourier != null)
             {
@@ -802,7 +853,7 @@ public class CourierController : BaseController
             .FirstOrDefault();
 
         var orderDto = _mapper.Map<CourierOrderDto>(order);
-        
+
         // OrderCourier bilgilerini ekle
         if (orderCourier != null)
         {

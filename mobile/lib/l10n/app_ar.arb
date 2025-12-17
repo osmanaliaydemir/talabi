@@ -1080,5 +1080,19 @@
   "passwordRuleSpecial": "رمز خاص واحد على الأقل (!@#$%^&* إلخ.)",
   "locationSharingInfo": "مشاركة الموقع مطلوبة لتلقي الطلبات من المطاعم القريبة. تتم مشاركة موقعك تلقائيًا عندما تكون حالتك \"متاح\".",
   "accountPendingApprovalTitle": "الحساب قيد المراجعة",
-  "accountPendingApprovalMessage": "حسابك قيد المراجعة حاليًا. سيتم منح الوصول بمجرد الموافقة على حسابك."
+  "accountPendingApprovalMessage": "حسابك قيد المراجعة حاليًا. سيتم منح الوصول بمجرد الموافقة على حسابك.",
+  "vendorStatusNormal": "عادي",
+  "vendorStatusBusy": "مشغول",
+  "vendorStatusOverloaded": "مزدحم جدا",
+  "vendorStatusNormalDesc": "الوقت القياسي",
+  "vendorStatusBusyDesc": "+15 دقيقة",
+  "vendorStatusOverloadedDesc": "+45 دقيقة",
+  "storeStatus": "حالة المتجر",
+  "workingHoursRequired": "ساعات العمل مطلوبة",
+  "workingHoursRequiredDescription": "يرجى تحديد ساعات العمل لبدء تلقي الطلبات.",
+  "workingHoursStart": "وقت البدء",
+  "workingHoursEnd": "وقت الانتهاء",
+  "selectTime": "اختر الوقت",
+  "workingHoursUpdatedSuccessfully": "تم تحديث ساعات العمل بنجاح",
+  "failedToUpdateWorkingHours": "فشل تحديث ساعات العمل"
 }

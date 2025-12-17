@@ -39,11 +39,29 @@ class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
 
 class _VendorHeaderState extends State<VendorHeader> {
   int _unreadNotifications = 0;
+  int _currentStatus = 0;
 
   @override
   void initState() {
     super.initState();
     _refreshNotificationCount();
+    _fetchCurrentStatus();
+  }
+
+  Future<void> _fetchCurrentStatus() async {
+    try {
+      final profileMap = await ApiService().getVendorProfile();
+      if (!mounted) return;
+
+      // Handle Map vs Object if API returns Map
+      final status = profileMap['busyStatus'] as int? ?? 0;
+
+      setState(() {
+        _currentStatus = status;
+      });
+    } catch (e) {
+      // Slient fail
+    }
   }
 
   Future<void> _refreshNotificationCount() async {
@@ -82,8 +100,7 @@ class _VendorHeaderState extends State<VendorHeader> {
       if (!mounted) return;
 
       setState(() {
-        // Optimistic update handled by refreshing profile/finding current status logic
-        // For now, reload helps to sync state if we stored it locally
+        _currentStatus = status;
       });
 
       final localizations = AppLocalizations.of(context);
@@ -108,10 +125,13 @@ class _VendorHeaderState extends State<VendorHeader> {
   }
 
   void _showStatusDialog() {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return;
+
     showDialog(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Mağaza Durumu'),
+        title: Text(localizations.storeStatus),
         children: [
           SimpleDialogOption(
             onPressed: () {
@@ -122,10 +142,10 @@ class _VendorHeaderState extends State<VendorHeader> {
               children: [
                 const Icon(Icons.check_circle, color: Colors.green),
                 const SizedBox(width: 8),
-                const Text('Normal'),
+                Text(localizations.vendorStatusNormal),
                 const Spacer(),
                 Text(
-                  'Standart süre',
+                  localizations.vendorStatusNormalDesc,
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
@@ -140,10 +160,10 @@ class _VendorHeaderState extends State<VendorHeader> {
               children: [
                 const Icon(Icons.hourglass_bottom, color: Colors.amber),
                 const SizedBox(width: 8),
-                const Text('Yoğun'),
+                Text(localizations.vendorStatusBusy),
                 const Spacer(),
                 Text(
-                  '+15 dk',
+                  localizations.vendorStatusBusyDesc,
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
@@ -158,16 +178,96 @@ class _VendorHeaderState extends State<VendorHeader> {
               children: [
                 const Icon(Icons.cancel, color: Colors.red),
                 const SizedBox(width: 8),
-                const Text('Çok Yoğun'),
+                Text(localizations.vendorStatusOverloaded),
                 const Spacer(),
                 Text(
-                  '+45 dk',
+                  localizations.vendorStatusOverloadedDesc,
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLeadingIcon() {
+    if (widget.showBackButton) {
+      return IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () {
+          LoggerService().debug('VendorHeader: Back button pressed');
+          if (widget.onBack != null) {
+            widget.onBack!();
+          } else {
+            Navigator.of(context).pop();
+          }
+        },
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(widget.leadingIcon, color: Colors.white, size: 22),
+    );
+  }
+
+  Widget _buildStatusIcon() {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return const SizedBox.shrink();
+
+    IconData icon;
+    Color color;
+    String tooltip;
+
+    switch (_currentStatus) {
+      case 1: // Busy
+        icon = Icons.hourglass_bottom;
+        color = Colors.amber;
+        tooltip = localizations.vendorStatusBusy;
+        break;
+      case 2: // Overloaded
+        icon = Icons.cancel;
+        color = Colors.red;
+        tooltip = localizations.vendorStatusOverloaded;
+        break;
+      case 0: // Normal
+      default:
+        icon = Icons.check_circle;
+        color = Colors.green;
+        tooltip = localizations.vendorStatusNormal;
+        break;
+    }
+
+    return GestureDetector(
+      onTap: _showStatusDialog,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              tooltip,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -205,34 +305,7 @@ class _VendorHeaderState extends State<VendorHeader> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
-              if (widget.showBackButton)
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    LoggerService().debug('VendorHeader: Back button pressed');
-                    if (widget.onBack != null) {
-                      widget.onBack!();
-                    } else {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                )
-              else
-                GestureDetector(
-                  onTap: _showStatusDialog,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      widget.leadingIcon,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                ),
+              _buildLeadingIcon(),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -254,6 +327,10 @@ class _VendorHeaderState extends State<VendorHeader> {
                   ],
                 ),
               ),
+              if (!widget.showBackButton) ...[
+                _buildStatusIcon(),
+                const SizedBox(width: 8),
+              ],
               if (widget.showNotifications)
                 IconButton(
                   icon: _buildNotificationIcon(),

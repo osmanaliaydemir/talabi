@@ -637,6 +637,40 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("CourierNotifications");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.CourierWorkingHour", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourierId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EndTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("StartTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourierId");
+
+                    b.ToTable("CourierWorkingHours");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1708,6 +1742,40 @@ namespace Talabi.Infrastructure.Migrations
                     b.ToTable("VendorNotifications");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.VendorWorkingHour", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EndTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("StartTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("VendorWorkingHours");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1875,6 +1943,17 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Courier");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.CourierWorkingHour", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.Courier", "Courier")
+                        .WithMany("WorkingHours")
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Courier");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.Customer", b =>
@@ -2191,6 +2270,17 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Vendor");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.VendorWorkingHour", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.Vendor", "Vendor")
+                        .WithMany("WorkingHours")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.Cart", b =>
                 {
                     b.Navigation("CartItems");
@@ -2218,6 +2308,8 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("OrderCouriers");
+
+                    b.Navigation("WorkingHours");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.District", b =>
@@ -2248,6 +2340,8 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Products");
+
+                    b.Navigation("WorkingHours");
                 });
 #pragma warning restore 612, 618
         }

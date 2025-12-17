@@ -5,6 +5,8 @@ import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
+import '../../models/working_hour.dart';
+import '../../widgets/working_days_selection_widget.dart';
 
 class CourierEditProfileScreen extends StatefulWidget {
   const CourierEditProfileScreen({super.key});
@@ -26,8 +28,8 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _useWorkingHours = false;
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
+  List<WorkingHour> _workingHours = [];
+
   List<VehicleTypeOption> _vehicleTypes = [];
   bool _isVehicleTypesLoading = true;
   String? _selectedVehicleKey;
@@ -93,28 +95,44 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     _maxOrdersController.text = courier.maxActiveOrders.toString();
     _selectedVehicleKey = courier.vehicleType;
 
-    if (courier.workingHoursStart != null &&
-        courier.workingHoursEnd != null &&
-        courier.isWithinWorkingHours == true) {
-      _useWorkingHours = true;
-      _startTime = _parseTimeOfDay(courier.workingHoursStart!);
-      _endTime = _parseTimeOfDay(courier.workingHoursEnd!);
+    if (courier.workingHours != null && courier.workingHours!.isNotEmpty) {
+      _workingHours = List.from(courier.workingHours!);
+    } else {
+      // Fallback or Legacy check
+      if (courier.workingHoursStart != null &&
+          courier.workingHoursEnd != null) {
+        _workingHours = _createDefaultWeek(
+          courier.workingHoursStart,
+          courier.workingHoursEnd,
+        );
+      } else {
+        // Default initialized
+        _workingHours = _createDefaultWeek(null, null);
+      }
     }
   }
 
-  TimeOfDay _parseTimeOfDay(String value) {
-    // Expecting "HH:mm" or "HH:mm:ss"
-    final parts = value.split(':');
-    if (parts.length < 2) return const TimeOfDay(hour: 9, minute: 0);
-    final hour = int.tryParse(parts[0]) ?? 9;
-    final minute = int.tryParse(parts[1]) ?? 0;
-    return TimeOfDay(hour: hour, minute: minute);
-  }
+  List<WorkingHour> _createDefaultWeek(String? start, String? end) {
+    final List<String> dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    // Assuming backend uses 0=Sunday
 
-  String _formatTimeOfDay(TimeOfDay time) {
-    final hh = time.hour.toString().padLeft(2, '0');
-    final mm = time.minute.toString().padLeft(2, '0');
-    return '$hh:$mm:00';
+    return List.generate(7, (index) {
+      return WorkingHour(
+        dayOfWeek: index,
+        dayName: dayNames[index],
+        startTime: start ?? "09:00",
+        endTime: end ?? "18:00",
+        isClosed: start == null,
+      );
+    });
   }
 
   Future<void> _loadVehicleTypes() async {
@@ -139,37 +157,13 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     }
   }
 
-  Future<void> _pickTime({required bool isStart}) async {
-    final initial = isStart
-        ? (_startTime ?? const TimeOfDay(hour: 9, minute: 0))
-        : (_endTime ?? const TimeOfDay(hour: 18, minute: 0));
-    final result = await showTimePicker(context: context, initialTime: initial);
-    if (result != null) {
-      setState(() {
-        if (isStart) {
-          _startTime = result;
-        } else {
-          _endTime = result;
-        }
-      });
-    }
-  }
-
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_useWorkingHours && (_startTime == null || _endTime == null)) {
-      final localizations = AppLocalizations.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            localizations?.mustSelectStartAndEndTime ??
-                'Çalışma saatleri için başlangıç ve bitiş seçmelisin.',
-          ),
-        ),
-      );
+    if (_useWorkingHours && _workingHours.isEmpty) {
+      // Should not happen if initialized correctly
       return;
     }
 
@@ -185,14 +179,28 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         'maxActiveOrders': int.tryParse(_maxOrdersController.text.trim()) ?? 3,
       };
 
-      if (_useWorkingHours && _startTime != null && _endTime != null) {
-        data['workingHoursStart'] = _formatTimeOfDay(_startTime!);
-        data['workingHoursEnd'] = _formatTimeOfDay(_endTime!);
+      if (_useWorkingHours) {
         data['isWithinWorkingHours'] = true;
+        data['workingHours'] = _workingHours.map((e) => e.toJson()).toList();
+
+        // Backward compatibility: set start/end from first open day
+        var openDay = _workingHours.firstWhere(
+          (w) => !w.isClosed,
+          orElse: () => _workingHours.first,
+        );
+        data['workingHoursStart'] =
+            openDay.startTime != null && openDay.startTime!.length == 5
+            ? "${openDay.startTime}:00"
+            : (openDay.startTime ?? "09:00:00");
+        data['workingHoursEnd'] =
+            openDay.endTime != null && openDay.endTime!.length == 5
+            ? "${openDay.endTime}:00"
+            : (openDay.endTime ?? "18:00:00");
       } else {
+        data['isWithinWorkingHours'] = false;
+        data['workingHours'] = [];
         data['workingHoursStart'] = null;
         data['workingHoursEnd'] = null;
-        data['isWithinWorkingHours'] = false;
       }
 
       LoggerService().debug('CourierEditProfileScreen: Saving profile $data');
@@ -399,51 +407,12 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                 },
                               ),
                               if (_useWorkingHours) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: () => _pickTime(isStart: true),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText:
-                                                localizations?.startTime ??
-                                                'Başlangıç Saati',
-                                            prefixIcon: const Icon(
-                                              Icons.schedule_outlined,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _startTime == null
-                                                ? '--:--'
-                                                : '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}',
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: () => _pickTime(isStart: false),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText:
-                                                localizations?.endTime ??
-                                                'Bitiş Saati',
-                                            prefixIcon: const Icon(
-                                              Icons.schedule_outlined,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _endTime == null
-                                                ? '--:--'
-                                                : '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 16),
+                                WorkingDaysSelectionWidget(
+                                  initialWorkingHours: _workingHours,
+                                  onWorkingHoursChanged: (updatedHours) {
+                                    _workingHours = updatedHours;
+                                  },
                                 ),
                               ],
                             ],

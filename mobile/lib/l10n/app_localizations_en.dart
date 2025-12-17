@@ -2505,4 +2505,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountPendingApprovalMessage =>
       'Your account is currently under review. Access will be granted once your account is approved.';
+
+  @override
+  String get vendorStatusNormal => 'Normal';
+
+  @override
+  String get vendorStatusBusy => 'Busy';
+
+  @override
+  String get vendorStatusOverloaded => 'Overloaded';
+
+  @override
+  String get vendorStatusNormalDesc => 'Standard time';
+
+  @override
+  String get vendorStatusBusyDesc => '+15 min';
+
+  @override
+  String get vendorStatusOverloadedDesc => '+45 min';
+
+  @override
+  String get storeStatus => 'Store Status';
+
+  @override
+  String get workingHoursRequired => 'Working Hours Required';
+
+  @override
+  String get workingHoursRequiredDescription =>
+      'Please set your working hours to start receiving orders.';
+
+  @override
+  String get workingHoursStart => 'Start Time';
+
+  @override
+  String get workingHoursEnd => 'End Time';
+
+  @override
+  String get selectTime => 'Select Time';
+
+  @override
+  String get workingHoursUpdatedSuccessfully =>
+      'Working hours updated successfully';
+
+  @override
+  String get failedToUpdateWorkingHours => 'Failed to update working hours';
+
+  @override
+  String get workingHours => 'Working Hours';
+
+  @override
+  String get workingDays => 'Working Days';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String get open24Hours => 'Open 24 Hours';
+
+  @override
+  String get hours => 'Hours';
 }

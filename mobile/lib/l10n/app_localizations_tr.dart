@@ -2502,4 +2502,63 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get accountPendingApprovalMessage =>
       'Hesabınız şu anda incelenmektedir. Onaylandıktan sonra erişiminiz açılacaktır.';
+
+  @override
+  String get vendorStatusNormal => 'Normal';
+
+  @override
+  String get vendorStatusBusy => 'Yoğun';
+
+  @override
+  String get vendorStatusOverloaded => 'Çok Yoğun';
+
+  @override
+  String get vendorStatusNormalDesc => 'Standart süre';
+
+  @override
+  String get vendorStatusBusyDesc => '+15 dk';
+
+  @override
+  String get vendorStatusOverloadedDesc => '+45 dk';
+
+  @override
+  String get storeStatus => 'Mağaza Durumu';
+
+  @override
+  String get workingHoursRequired => 'Çalışma Saatleri Zorunludur';
+
+  @override
+  String get workingHoursRequiredDescription =>
+      'Sipariş almaya başlamak için lütfen çalışma saatlerinizi belirleyin.';
+
+  @override
+  String get workingHoursStart => 'Başlangıç Saati';
+
+  @override
+  String get workingHoursEnd => 'Bitiş Saati';
+
+  @override
+  String get selectTime => 'Saat Seçin';
+
+  @override
+  String get workingHoursUpdatedSuccessfully =>
+      'Çalışma saatleri başarıyla güncellendi';
+
+  @override
+  String get failedToUpdateWorkingHours => 'Çalışma saatleri güncellenemedi';
+
+  @override
+  String get workingHours => 'Çalışma Saatleri';
+
+  @override
+  String get workingDays => 'Çalışma Günleri';
+
+  @override
+  String get closed => 'Kapalı';
+
+  @override
+  String get open24Hours => '24 Saat Açık';
+
+  @override
+  String get hours => 'Saat';
 }

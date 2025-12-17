@@ -152,6 +152,17 @@ public interface IUnitOfWork : IDisposable
     /// </summary>
     IRepository<VendorDeliveryZone> VendorDeliveryZones { get; }
 
+    /// <summary>
+    /// CourierWorkingHour entity'leri için repository
+    /// </summary>
+    IRepository<CourierWorkingHour> CourierWorkingHours { get; }
+
+    /// <summary>
+    /// VendorWorkingHour entity'leri için repository
+    /// </summary>
+    IRepository<VendorWorkingHour> VendorWorkingHours { get; }
+
+
 
     /// <summary>
     /// Tüm değişiklikleri asenkron olarak veritabanına kaydeder

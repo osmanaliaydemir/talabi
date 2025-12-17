@@ -19,6 +19,7 @@ public class VendorProfileDto
     public decimal? Rating { get; set; }
     public int RatingCount { get; set; }
     public BusyStatus BusyStatus { get; set; }
+    public List<WorkingHourDto> WorkingHours { get; set; } = new List<WorkingHourDto>();
 }
 
 public class UpdateVendorProfileDto
@@ -39,6 +40,8 @@ public class UpdateVendorProfileDto
     public string? PhoneNumber { get; set; }
     [JsonPropertyName("description")]
     public string? Description { get; set; }
+    [JsonPropertyName("workingHours")]
+    public List<WorkingHourDto>? WorkingHours { get; set; }
 }
 
 public class VendorSettingsDto

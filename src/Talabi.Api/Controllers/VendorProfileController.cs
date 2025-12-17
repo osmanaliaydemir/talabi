@@ -37,6 +37,7 @@ public class VendorProfileController : BaseController
         if (userId == null) return null;
 
         var vendor = await UnitOfWork.Vendors.Query()
+            .Include(v => v.WorkingHours)
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor;
     }
@@ -67,7 +68,15 @@ public class VendorProfileController : BaseController
             Description = vendor.Description,
             Rating = vendor.Rating,
             RatingCount = vendor.RatingCount,
-            BusyStatus = vendor.BusyStatus
+            BusyStatus = vendor.BusyStatus,
+            WorkingHours = vendor.WorkingHours.Select(wh => new WorkingHourDto
+            {
+                DayOfWeek = (int)wh.DayOfWeek,
+                DayName = LocalizationService.GetLocalizedString("CommonResources", wh.DayOfWeek.ToString(), CurrentCulture),
+                StartTime = wh.StartTime,
+                EndTime = wh.EndTime,
+                IsClosed = wh.IsClosed
+            }).ToList()
         };
 
         return Ok(new ApiResponse<VendorProfileDto>(profile, LocalizationService.GetLocalizedString(ResourceName, "VendorProfileRetrievedSuccessfully", CurrentCulture)));
@@ -132,6 +141,29 @@ public class VendorProfileController : BaseController
         {
             vendor.Description = dto.Description;
         }
+
+        if (dto.WorkingHours != null)
+        {
+            var existingHours = vendor.WorkingHours.ToList();
+            foreach (var hour in existingHours)
+            {
+                UnitOfWork.VendorWorkingHours.Remove(hour);
+            }
+            vendor.WorkingHours.Clear();
+
+            foreach (var whDto in dto.WorkingHours)
+            {
+                vendor.WorkingHours.Add(new VendorWorkingHour
+                {
+                    VendorId = vendor.Id,
+                    DayOfWeek = (DayOfWeek)whDto.DayOfWeek,
+                    StartTime = whDto.StartTime,
+                    EndTime = whDto.EndTime,
+                    IsClosed = whDto.IsClosed
+                });
+            }
+        }
+
 
         vendor.UpdatedAt = DateTime.UtcNow;
 

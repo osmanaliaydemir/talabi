@@ -44,6 +44,9 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<City> Cities { get; set; }
     public DbSet<District> Districts { get; set; }
     public DbSet<Locality> Localities { get; set; }
+    public DbSet<VendorWorkingHour> VendorWorkingHours { get; set; }
+    public DbSet<CourierWorkingHour> CourierWorkingHours { get; set; }
+
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

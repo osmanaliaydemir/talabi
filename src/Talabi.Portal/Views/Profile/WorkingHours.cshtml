@@ -1,0 +1,116 @@
+@model List<Talabi.Core.DTOs.WorkingHourDto>
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Talabi.Portal.SharedResource> Localizer
+@{
+    ViewData["Title"] = "Working Hours";
+    Layout = "_Layout";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">@Localizer["SetWorkingHours"]</h4>
+                <p class="text-muted mb-0">@Localizer["SetWorkingHoursDesc"]</p>
+            </div>
+            <div class="card-body">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                    </div>
+                }
+
+                <form asp-action="SaveWorkingHours" method="post">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%">@Localizer["Day"]</th>
+                                    <th style="width: 20%">@Localizer["Status"]</th>
+                                    <th style="width: 30%">@Localizer["StartTime"]</th>
+                                    <th style="width: 30%">@Localizer["EndTime"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" asp-for="@Model[i].DayOfWeek" />
+                                            <input type="hidden" asp-for="@Model[i].DayName" />
+                                            <strong>@Model[i].DayName</strong>
+                                        </td>
+                                        <td>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input is-closed-toggle" type="checkbox"
+                                                    asp-for="@Model[i].IsClosed" data-index="@i" id="isClosed_@i">
+                                                <label class="form-check-label"
+                                                    for="isClosed_@i">@Localizer["Closed"]</label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="time" class="form-control time-input start-time"
+                                                asp-for="@Model[i].StartTime" data-index="@i" />
+                                        </td>
+                                        <td>
+                                            <input type="time" class="form-control time-input end-time"
+                                                asp-for="@Model[i].EndTime" data-index="@i" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary d-grid">
+                            <span class="d-flex align-items-center justify-content-center">
+                                <i class="bx bx-save me-2"></i> @Localizer["SaveAndContinue"]
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Function to toggle inputs based on checkbox
+            function updateInputs(index) {
+                var isClosed = $('#isClosed_' + index).is(':checked');
+                var inputs = $('.time-input[data-index="' + index + '"]');
+
+                if (isClosed) {
+                    inputs.prop('disabled', true);
+                    inputs.val(''); // Clear value if closed
+                } else {
+                    inputs.prop('disabled', false);
+                    // If empty and opened, maybe set defaults? 
+                    // Let's leave it to user or browser default
+                    var startInput = $('.start-time[data-index="' + index + '"]');
+                    var endInput = $('.end-time[data-index="' + index + '"]');
+
+                    if (!startInput.val()) startInput.val('09:00');
+                    if (!endInput.val()) endInput.val('18:00');
+                }
+            }
+
+            // Initial check
+            $('.is-closed-toggle').each(function () {
+                var index = $(this).data('index');
+                updateInputs(index);
+            });
+
+            // On change
+            $('.is-closed-toggle').change(function () {
+                var index = $(this).data('index');
+                updateInputs(index);
+            });
+        });
+    </script>
+}

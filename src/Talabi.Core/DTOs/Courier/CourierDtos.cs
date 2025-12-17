@@ -26,6 +26,7 @@ public class CourierProfileDto
     public TimeSpan? WorkingHoursStart { get; set; }
     public TimeSpan? WorkingHoursEnd { get; set; }
     public bool IsWithinWorkingHours { get; set; }
+    public List<WorkingHourDto> WorkingHours { get; set; } = new List<WorkingHourDto>();
 }
 
 public class UpdateCourierProfileDto
@@ -37,6 +38,7 @@ public class UpdateCourierProfileDto
     public TimeSpan? WorkingHoursStart { get; set; }
     public TimeSpan? WorkingHoursEnd { get; set; }
     public bool IsWithinWorkingHours { get; set; } = true;
+    public List<WorkingHourDto>? WorkingHours { get; set; }
 }
 
 public class UpdateCourierStatusDto

@@ -11,6 +11,9 @@ import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
 import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+// Added imports
+import '../../models/working_hour.dart';
+import '../../widgets/working_days_selection_widget.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
   const VendorEditProfileScreen({super.key, this.isOnboarding = false});
@@ -42,6 +45,9 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
   double? _latitude;
   double? _longitude;
   bool _isLocationSelected = false;
+
+  // Working Hours
+  List<WorkingHour> _workingHours = [];
 
   @override
   void initState() {
@@ -81,6 +87,16 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             ? (profile['longitude'] as num).toDouble()
             : null;
         _isLocationSelected = _latitude != null && _longitude != null;
+
+        if (profile['workingHours'] != null &&
+            (profile['workingHours'] as List).isNotEmpty) {
+          _workingHours = (profile['workingHours'] as List)
+              .map((e) => WorkingHour.fromJson(e))
+              .toList();
+        } else {
+          _workingHours = _createDefaultWeek();
+        }
+
         _isLoading = false;
       });
     } catch (e) {
@@ -89,15 +105,12 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
           _isLoading = false;
         });
 
-        // 404 hatasını yut ve login ekranına yönlendir
         if (e is DioException && e.response?.statusCode == 404) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Profil bulunamadı, lütfen tekrar giriş yapın.'),
             ),
           );
-          // Opsiyonel: Giriş sayfasına yönlendir
-          // Navigator.of(context).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
           return;
         }
 
@@ -112,6 +125,28 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         );
       }
     }
+  }
+
+  List<WorkingHour> _createDefaultWeek() {
+    final List<String> dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    return List.generate(7, (index) {
+      return WorkingHour(
+        dayOfWeek: index,
+        dayName: dayNames[index],
+        startTime: "09:00",
+        endTime: "18:00",
+        isClosed: false,
+      );
+    });
   }
 
   Future<void> _pickImage() async {
@@ -187,6 +222,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             : _descriptionController.text,
         'latitude': _latitude,
         'longitude': _longitude,
+        'workingHours': _workingHours.map((e) => e.toJson()).toList(),
       };
 
       await _apiService.updateVendorProfile(data);
@@ -212,6 +248,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         }
       }
     } catch (e) {
+      LoggerService().error('VendorEditProfileScreen: Error saving profile', e);
       setState(() {
         _isSaving = false;
       });
@@ -523,6 +560,27 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                       prefixIcon: const Icon(Icons.description),
                     ),
                     maxLines: 3,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Working Hours Section
+                  Text(
+                    localizations?.workingHours ?? 'Çalışma Saatleri',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: WorkingDaysSelectionWidget(
+                        initialWorkingHours: _workingHours,
+                        onWorkingHoursChanged: (updatedHours) {
+                          _workingHours = updatedHours;
+                        },
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
 

@@ -43,6 +43,9 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<PromotionalBannerTranslation>? _promotionalBannerTranslations;
     private IRepository<ErrorLog>? _errorLogs;
     private IRepository<VendorDeliveryZone>? _vendorDeliveryZones;
+    private IRepository<CourierWorkingHour>? _courierWorkingHours;
+    private IRepository<VendorWorkingHour>? _vendorWorkingHours;
+
 
     /// <summary>
     /// UnitOfWork constructor
@@ -197,6 +200,17 @@ public class UnitOfWork : IUnitOfWork
     /// VendorDeliveryZone entity'leri için repository
     /// </summary>
     public IRepository<VendorDeliveryZone> VendorDeliveryZones => _vendorDeliveryZones ??= new Repository<VendorDeliveryZone>(_context);
+
+    /// <summary>
+    /// CourierWorkingHour entity'leri için repository
+    /// </summary>
+    public IRepository<CourierWorkingHour> CourierWorkingHours => _courierWorkingHours ??= new Repository<CourierWorkingHour>(_context);
+
+    /// <summary>
+    /// VendorWorkingHour entity'leri için repository
+    /// </summary>
+    public IRepository<VendorWorkingHour> VendorWorkingHours => _vendorWorkingHours ??= new Repository<VendorWorkingHour>(_context);
+
 
     /// <summary>
     /// Tüm değişiklikleri asenkron olarak veritabanına kaydeder

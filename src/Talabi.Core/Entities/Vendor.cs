@@ -35,4 +35,5 @@ public class Vendor : BaseEntity
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
     public ICollection<Order> Orders { get; set; } = new List<Order>();
+    public ICollection<VendorWorkingHour> WorkingHours { get; set; } = new List<VendorWorkingHour>();
 }

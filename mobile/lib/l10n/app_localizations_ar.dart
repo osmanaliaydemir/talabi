@@ -2476,4 +2476,62 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get accountPendingApprovalMessage =>
       'حسابك قيد المراجعة حاليًا. سيتم منح الوصول بمجرد الموافقة على حسابك.';
+
+  @override
+  String get vendorStatusNormal => 'عادي';
+
+  @override
+  String get vendorStatusBusy => 'مشغول';
+
+  @override
+  String get vendorStatusOverloaded => 'مزدحم جدا';
+
+  @override
+  String get vendorStatusNormalDesc => 'الوقت القياسي';
+
+  @override
+  String get vendorStatusBusyDesc => '+15 دقيقة';
+
+  @override
+  String get vendorStatusOverloadedDesc => '+45 دقيقة';
+
+  @override
+  String get storeStatus => 'حالة المتجر';
+
+  @override
+  String get workingHoursRequired => 'ساعات العمل مطلوبة';
+
+  @override
+  String get workingHoursRequiredDescription =>
+      'يرجى تحديد ساعات العمل لبدء تلقي الطلبات.';
+
+  @override
+  String get workingHoursStart => 'وقت البدء';
+
+  @override
+  String get workingHoursEnd => 'وقت الانتهاء';
+
+  @override
+  String get selectTime => 'اختر الوقت';
+
+  @override
+  String get workingHoursUpdatedSuccessfully => 'تم تحديث ساعات العمل بنجاح';
+
+  @override
+  String get failedToUpdateWorkingHours => 'فشل تحديث ساعات العمل';
+
+  @override
+  String get workingHours => 'Working Hours';
+
+  @override
+  String get workingDays => 'Working Days';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String get open24Hours => 'Open 24 Hours';
+
+  @override
+  String get hours => 'Hours';
 }

@@ -4677,6 +4677,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account is currently under review. Access will be granted once your account is approved.'**
   String get accountPendingApprovalMessage;
+
+  /// No description provided for @vendorStatusNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get vendorStatusNormal;
+
+  /// No description provided for @vendorStatusBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Busy'**
+  String get vendorStatusBusy;
+
+  /// No description provided for @vendorStatusOverloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Overloaded'**
+  String get vendorStatusOverloaded;
+
+  /// No description provided for @vendorStatusNormalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard time'**
+  String get vendorStatusNormalDesc;
+
+  /// No description provided for @vendorStatusBusyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 min'**
+  String get vendorStatusBusyDesc;
+
+  /// No description provided for @vendorStatusOverloadedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'+45 min'**
+  String get vendorStatusOverloadedDesc;
+
+  /// No description provided for @storeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Status'**
+  String get storeStatus;
+
+  /// No description provided for @workingHoursRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Working Hours Required'**
+  String get workingHoursRequired;
+
+  /// No description provided for @workingHoursRequiredDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set your working hours to start receiving orders.'**
+  String get workingHoursRequiredDescription;
+
+  /// No description provided for @workingHoursStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Time'**
+  String get workingHoursStart;
+
+  /// No description provided for @workingHoursEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End Time'**
+  String get workingHoursEnd;
+
+  /// No description provided for @selectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Time'**
+  String get selectTime;
+
+  /// No description provided for @workingHoursUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours updated successfully'**
+  String get workingHoursUpdatedSuccessfully;
+
+  /// No description provided for @failedToUpdateWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update working hours'**
+  String get failedToUpdateWorkingHours;
+
+  /// No description provided for @workingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Working Hours'**
+  String get workingHours;
+
+  /// No description provided for @workingDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Working Days'**
+  String get workingDays;
+
+  /// No description provided for @closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get closed;
+
+  /// No description provided for @open24Hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Open 24 Hours'**
+  String get open24Hours;
+
+  /// No description provided for @hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get hours;
 }
 
 class _AppLocalizationsDelegate

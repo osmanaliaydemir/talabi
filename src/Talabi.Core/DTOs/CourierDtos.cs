@@ -10,6 +10,7 @@ public class CourierDto
     public double? CurrentLongitude { get; set; }
     public DateTime? LastLocationUpdate { get; set; }
     public bool IsActive { get; set; }
+    public List<WorkingHourDto> WorkingHours { get; set; } = new List<WorkingHourDto>();
 }
 
 public class UpdateCourierLocationDto

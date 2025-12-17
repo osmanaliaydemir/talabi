@@ -1,3 +1,5 @@
+import 'package:mobile/models/working_hour.dart';
+
 class Courier {
   Courier({
     required this.id,
@@ -19,6 +21,7 @@ class Courier {
     this.workingHoursStart,
     this.workingHoursEnd,
     required this.isWithinWorkingHours,
+    this.workingHours,
   });
 
   factory Courier.fromJson(Map<String, dynamic> json) {
@@ -74,6 +77,11 @@ class Courier {
       workingHoursStart: json['workingHoursStart']?.toString(),
       workingHoursEnd: json['workingHoursEnd']?.toString(),
       isWithinWorkingHours: json['isWithinWorkingHours'] ?? true,
+      workingHours: json['workingHours'] != null
+          ? (json['workingHours'] as List)
+                .map((e) => WorkingHour.fromJson(e as Map<String, dynamic>))
+                .toList()
+          : null,
     );
   }
 
@@ -96,6 +104,7 @@ class Courier {
   final String? workingHoursStart;
   final String? workingHoursEnd;
   final bool isWithinWorkingHours;
+  final List<WorkingHour>? workingHours;
 }
 
 class CourierStatistics {
