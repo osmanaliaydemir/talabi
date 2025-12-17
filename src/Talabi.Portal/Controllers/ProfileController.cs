@@ -9,6 +9,7 @@ using CoreInterfaces = Talabi.Core.Interfaces;
 namespace Talabi.Portal.Controllers;
 
 [Authorize]
+[Route("[controller]")]
 public class ProfileController : Controller
 {
     private readonly CoreInterfaces.IUnitOfWork _unitOfWork;
@@ -25,7 +26,7 @@ public class ProfileController : Controller
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpGet("Complete")]
     public async Task<IActionResult> Complete()
     {
         var vendorIdStr = HttpContext.Session.GetString("VendorId");
@@ -66,7 +67,7 @@ public class ProfileController : Controller
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("Complete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Complete(Models.VendorProfileDto model)
     {
@@ -113,7 +114,7 @@ public class ProfileController : Controller
 
         return RedirectToAction("Index", "Home");
     }
-    [HttpGet]
+    [HttpGet("WorkingHours")]
     public async Task<IActionResult> WorkingHours()
     {
         var vendorIdStr = HttpContext.Session.GetString("VendorId");
@@ -167,7 +168,7 @@ public class ProfileController : Controller
         return View(workingHours);
     }
 
-    [HttpPost]
+    [HttpPost("SaveWorkingHours")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveWorkingHours(List<WorkingHourDto> model)
     {
