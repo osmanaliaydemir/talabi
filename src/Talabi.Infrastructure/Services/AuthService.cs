@@ -260,7 +260,8 @@ public class AuthService : IAuthService
                     response.IsProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
                                                  vendor.Latitude.HasValue &&
                                                  vendor.Longitude.HasValue &&
-                                                 !string.IsNullOrWhiteSpace(vendor.Name);
+                                                 !string.IsNullOrWhiteSpace(vendor.Name) &&
+                                                 !string.IsNullOrWhiteSpace(vendor.PhoneNumber);
                 }
             }
             else if (user.Role == UserRole.Courier)

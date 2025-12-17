@@ -6,12 +6,15 @@ import UserNotifications
 import GoogleSignIn
 import FBSDKCoreKit
 
+import GoogleMaps
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    GMSServices.provideAPIKey("AIzaSyD16-TRK-OlZwz3wgZCJ8c5_CEWQ-zGkQU")
     // Firebase'i başlat (GoogleService-Info.plist varsa)
     // Not: GoogleService-Info.plist yoksa bu satır hata verebilir
     // Firebase Console'dan dosyayı indirip ekleyin

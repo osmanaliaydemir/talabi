@@ -13,9 +13,8 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
-  final bool isOnboarding;
-
   const VendorEditProfileScreen({super.key, this.isOnboarding = false});
+  final bool isOnboarding;
 
   @override
   State<VendorEditProfileScreen> createState() =>
@@ -500,11 +499,18 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   TextFormField(
                     controller: _phoneController,
                     decoration: InputDecoration(
-                      labelText: localizations?.phoneNumber ?? 'Telefon',
+                      labelText: '${localizations?.phoneNumber ?? 'Telefon'} *',
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.phone),
                     ),
                     keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return localizations?.phoneNumberRequired ??
+                            'Telefon numarası gerekli';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
 
