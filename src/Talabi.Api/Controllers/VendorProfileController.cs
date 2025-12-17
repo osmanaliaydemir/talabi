@@ -162,47 +162,24 @@ public class VendorProfileController : BaseController
 
                 if (dto.WorkingHours != null)
                 {
-                    var existingHours = vendor.WorkingHours.ToList();
-                    var incomingDays = dto.WorkingHours.Select(x => x.DayOfWeek).ToHashSet();
+                    // 1. DELETE ALL existing working hours for this vendor DIRECTLY on DB (Bypassing EF Tracking/Concurrency)
+                    // This is the "Nuclear Option" requested to handle list replacement robustly
+                    await UnitOfWork.VendorWorkingHours.ExecuteDeleteAsync(x => x.VendorId == vendor.Id);
 
-                    // 1. Update existing and Identify to Remove
-                    foreach (var existing in existingHours)
-                    {
-                        var incoming = dto.WorkingHours.FirstOrDefault(x => x.DayOfWeek == (int)existing.DayOfWeek);
-                        if (incoming != null)
-                        {
-                            // Update
-                            existing.StartTime = incoming.StartTime;
-                            existing.EndTime = incoming.EndTime;
-                            existing.IsClosed = incoming.IsClosed;
-                            // Ensure nulls if closed logic is consistent
-                            if (existing.IsClosed)
-                            {
-                                existing.StartTime = null;
-                                existing.EndTime = null;
-                            }
-                        }
-                        else
-                        {
-                            // Remove if not in incoming
-                            UnitOfWork.VendorWorkingHours.Remove(existing);
-                        }
-                    }
+                    // 2. Clear in-memory collection to avoid EF trying to sync changes/double-delete
+                    vendor.WorkingHours?.Clear();
 
-                    // 2. Add new
+                    // 3. Insert NEW list
                     foreach (var incoming in dto.WorkingHours)
                     {
-                        if (!existingHours.Any(x => (int)x.DayOfWeek == incoming.DayOfWeek))
+                        vendor.WorkingHours.Add(new VendorWorkingHour
                         {
-                            vendor.WorkingHours.Add(new VendorWorkingHour
-                            {
-                                VendorId = vendor.Id,
-                                DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
-                                StartTime = incoming.IsClosed ? null : incoming.StartTime,
-                                EndTime = incoming.IsClosed ? null : incoming.EndTime,
-                                IsClosed = incoming.IsClosed
-                            });
-                        }
+                            VendorId = vendor.Id,
+                            DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
+                            StartTime = incoming.IsClosed ? null : incoming.StartTime,
+                            EndTime = incoming.IsClosed ? null : incoming.EndTime,
+                            IsClosed = incoming.IsClosed
+                        });
                     }
                 }
 

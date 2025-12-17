@@ -142,5 +142,15 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
         return await _dbSet.AnyAsync(predicate, cancellationToken);
     }
+    /// <summary>
+    /// Predicate ile eşleşen entity'leri doğrudan veritabanından siler (Bulk Delete)
+    /// </summary>
+    public virtual async Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null)
+            throw new ArgumentNullException(nameof(predicate));
+
+        return await _dbSet.Where(predicate).ExecuteDeleteAsync(cancellationToken);
+    }
 }
 

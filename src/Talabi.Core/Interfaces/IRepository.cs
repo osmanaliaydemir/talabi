@@ -94,5 +94,12 @@ public interface IRepository<T> where T : BaseEntity
     /// <param name="cancellationToken">İptal token'ı</param>
     /// <returns>Eşleşme varsa true, yoksa false</returns>
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Predicate ile eşleşen entity'leri doğrudan veritabanından siler (Bulk Delete)
+    /// </summary>
+    /// <param name="predicate">Filtreleme koşulu</param>
+    /// <param name="cancellationToken">İptal token'ı</param>
+    /// <returns>Silinen kayıt sayısı</returns>
+    Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
 }
 
