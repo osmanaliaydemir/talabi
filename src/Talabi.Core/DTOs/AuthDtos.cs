@@ -20,6 +20,7 @@ public class LoginResponseDto
     public string Role { get; set; } = string.Empty;
     public string? Provider { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsProfileComplete { get; set; } = true;
 }
 
 public class LoginDto
@@ -30,24 +31,24 @@ public class LoginDto
 
 public class ForgotPasswordDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
     public string? Language { get; set; } // "tr", "en", "ar" - optional
 }
 
 public class VerifyResetCodeDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
 
     [Required] public string Code { get; set; } = string.Empty;
 }
 
 public class ResetPasswordDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
 
     [Required] public string Token { get; set; } = string.Empty;
 
-    [Required] [MinLength(6)] public string NewPassword { get; set; } = string.Empty;
+    [Required][MinLength(6)] public string NewPassword { get; set; } = string.Empty;
 }
 
 public class RefreshTokenDto
@@ -58,7 +59,7 @@ public class RefreshTokenDto
 
 public class VerifyEmailCodeDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
 
     [Required]
     [StringLength(4, MinimumLength = 4)]
@@ -67,13 +68,13 @@ public class VerifyEmailCodeDto
 
 public class ResendVerificationCodeDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
     public string? Language { get; set; } // "tr", "en", "ar" - optional
 }
 
 public class VendorRegisterDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
 
     [Required] public string Password { get; set; } = string.Empty;
 
@@ -81,7 +82,7 @@ public class VendorRegisterDto
 
     [Required] public string BusinessName { get; set; } = string.Empty;
 
-    [Required] [Phone] public string Phone { get; set; } = string.Empty;
+    [Required][Phone] public string Phone { get; set; } = string.Empty;
 
     public string? Address { get; set; }
     public string? City { get; set; }
@@ -93,13 +94,13 @@ public class VendorRegisterDto
 
 public class CourierRegisterDto
 {
-    [Required] [EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; set; } = string.Empty;
 
     [Required] public string Password { get; set; } = string.Empty;
 
     [Required] public string FullName { get; set; } = string.Empty;
 
-    [Required] [Phone] public string Phone { get; set; } = string.Empty;
+    [Required][Phone] public string Phone { get; set; } = string.Empty;
 
     [Required] public Core.Enums.CourierVehicleType VehicleType { get; set; }
 

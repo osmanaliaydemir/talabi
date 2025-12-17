@@ -13,6 +13,7 @@ import 'package:mobile/screens/shared/onboarding/onboarding_screen.dart';
 import 'package:mobile/screens/shared/onboarding/main_navigation_screen.dart';
 import 'package:mobile/screens/courier/dashboard_screen.dart';
 import 'package:mobile/screens/vendor/dashboard_screen.dart';
+import 'package:mobile/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -102,9 +103,19 @@ class _SplashScreenState extends State<SplashScreen> {
             NoSlidePageRoute(builder: (_) => const CourierDashboardScreen()),
           );
         } else if (role == 'vendor') {
-          Navigator.of(context).pushReplacement(
-            NoSlidePageRoute(builder: (_) => const VendorDashboardScreen()),
-          );
+          // Check if profile is complete
+          if (!authProvider.isProfileComplete) {
+            Navigator.of(context).pushReplacement(
+              NoSlidePageRoute(
+                builder: (_) =>
+                    const VendorEditProfileScreen(isOnboarding: true),
+              ),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              NoSlidePageRoute(builder: (_) => const VendorDashboardScreen()),
+            );
+          }
         } else {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const MainNavigationScreen()),

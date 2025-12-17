@@ -9,6 +9,7 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/screens/vendor/auth/register_screen.dart';
+import 'package:mobile/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/widgets/auth_header.dart';
 import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/widgets/toast_message.dart';
@@ -54,9 +55,20 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
       );
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          NoSlidePageRoute(builder: (context) => const VendorDashboardScreen()),
-        );
+        if (!authProvider.isProfileComplete) {
+          Navigator.of(context).pushReplacement(
+            NoSlidePageRoute(
+              builder: (context) =>
+                  const VendorEditProfileScreen(isOnboarding: true),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            NoSlidePageRoute(
+              builder: (context) => const VendorDashboardScreen(),
+            ),
+          );
+        }
       }
     } on RoleMismatchException catch (e) {
       if (mounted) {

@@ -88,7 +88,10 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 // Services
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<Talabi.Portal.Filters.VendorProfileCompletionFilter>();
+});
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(12);

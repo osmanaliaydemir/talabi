@@ -8,11 +8,14 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
+import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
-  const VendorEditProfileScreen({super.key});
+  final bool isOnboarding;
+
+  const VendorEditProfileScreen({super.key, this.isOnboarding = false});
 
   @override
   State<VendorEditProfileScreen> createState() =>
@@ -198,7 +201,16 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             ),
           ),
         );
-        Navigator.pop(context, true);
+
+        if (widget.isOnboarding) {
+          Navigator.of(context).pushReplacement(
+            NoSlidePageRoute(
+              builder: (context) => const VendorDashboardScreen(),
+            ),
+          );
+        } else {
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       setState(() {
@@ -224,9 +236,11 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: VendorHeader(
-        title: localizations?.editProfile ?? 'Profili Düzenle',
+        title: widget.isOnboarding
+            ? 'Profili Tamamla'
+            : (localizations?.editProfile ?? 'Profili Düzenle'),
         leadingIcon: Icons.edit_outlined,
-        showBackButton: true,
+        showBackButton: !widget.isOnboarding,
         onBack: () => Navigator.of(context).pop(),
         onRefresh: _loadProfile,
       ),
@@ -239,6 +253,36 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  if (widget.isOnboarding)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.orange.shade800,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Satış yapmaya başlamadan önce lütfen işletme profilinizi ve adresinizi tamamlayın.',
+                                style: TextStyle(
+                                  color: Colors.orange.shade900,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // Logo
                   Center(
                     child: GestureDetector(
@@ -509,7 +553,9 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                 ],
               ),
             ),
-      bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
+      bottomNavigationBar: widget.isOnboarding
+          ? null
+          : const VendorBottomNav(currentIndex: 3),
     );
   }
 }

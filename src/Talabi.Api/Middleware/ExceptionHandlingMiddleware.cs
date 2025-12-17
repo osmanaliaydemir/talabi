@@ -48,6 +48,13 @@ public class ExceptionHandlingMiddleware
                 response.ErrorCode = "UNAUTHORIZED";
                 break;
 
+            case ArgumentException:
+            case InvalidOperationException:
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Message = exception.Message;
+                response.ErrorCode = "BAD_REQUEST";
+                break;
+
             case KeyNotFoundException:
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 response.Message = _localizer["NotFound"];

@@ -82,10 +82,19 @@ public class AuthService : IAuthService
 
         // Determine IsActive status
         bool isActive = true; // Default for Customer and Admin
+        bool isProfileComplete = true; // Default
+
         if (user.Role == UserRole.Vendor)
         {
             var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
-            if (vendor != null) isActive = vendor.IsActive;
+            if (vendor != null)
+            {
+                isActive = vendor.IsActive;
+                isProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
+                                    vendor.Latitude.HasValue &&
+                                    vendor.Longitude.HasValue &&
+                                    !string.IsNullOrWhiteSpace(vendor.Name);
+            }
         }
         else if (user.Role == UserRole.Courier)
         {
@@ -94,6 +103,7 @@ public class AuthService : IAuthService
         }
 
         claims.Add(new Claim("isActive", isActive.ToString().ToLowerInvariant()));
+        claims.Add(new Claim("isProfileComplete", isProfileComplete.ToString().ToLowerInvariant()));
 
         // Add role claims
         foreach (var role in roles)
@@ -243,7 +253,15 @@ public class AuthService : IAuthService
             if (user.Role == UserRole.Vendor)
             {
                 var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
-                if (vendor != null) response.IsActive = vendor.IsActive;
+                if (vendor != null)
+                {
+                    response.IsActive = vendor.IsActive;
+                    // Check profile completeness (Address, Lat, Lng, Name required)
+                    response.IsProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
+                                                 vendor.Latitude.HasValue &&
+                                                 vendor.Longitude.HasValue &&
+                                                 !string.IsNullOrWhiteSpace(vendor.Name);
+                }
             }
             else if (user.Role == UserRole.Courier)
             {
@@ -322,10 +340,10 @@ public class AuthService : IAuthService
             catch (Exception dbEx)
             {
                 _logger.LogError(dbEx, "Kullanıcı oluşturuldu ancak Customer entity veya role ataması başarısız. UserId: {UserId}", user.Id);
-                
+
                 // Rollback - delete user
                 await _userManager.DeleteAsync(user);
-                
+
                 // Clear verification code cache
                 var cacheKey = $"verification_code_{dto.Email}";
                 _memoryCache.Remove(cacheKey);
@@ -411,10 +429,10 @@ public class AuthService : IAuthService
             catch (Exception dbEx)
             {
                 _logger.LogError(dbEx, "Vendor oluşturulurken hata. UserId: {UserId}", user.Id);
-                
+
                 // Rollback - delete user
                 await _userManager.DeleteAsync(user);
-                
+
                 // Clear verification code cache
                 var cacheKey = $"verification_code_{dto.Email}";
                 _memoryCache.Remove(cacheKey);
@@ -499,10 +517,10 @@ public class AuthService : IAuthService
             catch (Exception dbEx)
             {
                 _logger.LogError(dbEx, "Courier oluşturulurken hata. UserId: {UserId}", user.Id);
-                
+
                 // Rollback - delete user
                 await _userManager.DeleteAsync(user);
-                
+
                 // Clear verification code cache
                 var cacheKey = $"verification_code_{dto.Email}";
                 _memoryCache.Remove(cacheKey);

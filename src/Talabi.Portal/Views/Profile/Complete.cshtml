@@ -1,0 +1,167 @@
+@model Talabi.Portal.Models.VendorProfileDto
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["CompleteProfileTitle"];
+    Layout = "_AuthLayout"; // Use AuthLayout for a cleaner look without full nav
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-lg mt-5">
+            <div class="card-header bg-primary text-white">
+                <h3 class="text-center font-weight-light my-4">@Localizer["CompleteProfileHeader"]</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    @Localizer["CompleteProfileInfo"]
+                </div>
+                
+                <form asp-action="Complete" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="Latitude" id="Latitude" />
+                    <input type="hidden" asp-for="Longitude" id="Longitude" />
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Name" class="form-control" placeholder="@Localizer["StoreName"]" required />
+                        <label asp-for="Name">@Localizer["StoreName"]</label>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <textarea asp-for="Description" class="form-control" placeholder="@Localizer["Description"]" style="height: 100px"></textarea>
+                        <label asp-for="Description">@Localizer["Description"]</label>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="@Localizer["PhoneNumber"]" />
+                        <label asp-for="PhoneNumber">@Localizer["PhoneNumber"]</label>
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Address" class="form-label">@Localizer["Address"]</label>
+                         <div class="input-group">
+                            <input asp-for="Address" class="form-control" id="AddressInput" placeholder="@Localizer["AddressPlaceholder"]" required />
+                             <button type="button" class="btn btn-outline-secondary" id="btnLocateMe">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">@Localizer["Location"]</label>
+                        <div id="map" style="height: 300px; width: 100%; border-radius: 4px;"></div>
+                        <small class="text-muted">@Localizer["DragMarkerHint"]</small>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">@Localizer["SaveAndContinue"]</button>
+                    </div>
+                </form>
+            </div>
+             <div class="card-footer text-center py-3">
+                <div class="small">
+                    <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                         <button type="submit" class="btn btn-link p-0">@Localizer["Logout"]</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <!-- Google Maps or OpenStreetMap (Leaflet) check -->
+    <!-- Assuming Leaflet for now since it is free and easiest to setup quickly without API key -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        $(document).ready(function () {
+            // Default center (Istanbul)
+            var defaultLat = 41.0082;
+            var defaultLng = 28.9784;
+            
+            var existingLat = $('#Latitude').val();
+            var existingLng = $('#Longitude').val();
+
+            if (existingLat && existingLng) {
+                defaultLat = parseFloat(existingLat);
+                defaultLng = parseFloat(existingLng);
+            }
+
+            var map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var marker = L.marker([defaultLat, defaultLng], {
+                draggable: true
+            }).addTo(map);
+
+            // Update inputs on drag
+            marker.on('dragend', function (e) {
+                var position = marker.getLatLng();
+                updateLocation(position.lat, position.lng);
+            });
+
+            // Update markers on map click
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateLocation(e.latlng.lat, e.latlng.lng);
+            });
+            
+            function updateLocation(lat, lng) {
+                $('#Latitude').val(lat);
+                $('#Longitude').val(lng);
+                
+                // Optional: Reverse Geocode to get address
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data && data.display_name) {
+                             $('#AddressInput').val(data.display_name);
+                        }
+                    });
+            }
+
+            // Locate Me
+            $('#btnLocateMe').click(function() {
+                 if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+                        
+                        map.setView([lat, lng], 15);
+                        marker.setLatLng([lat, lng]);
+                        updateLocation(lat, lng);
+                    });
+                }
+            });
+            
+            // Initial set if needed
+            if (!existingLat) {
+                 // Try to locate
+                 if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+                        map.setView([lat, lng], 13);
+                         marker.setLatLng([lat, lng]);
+                        updateLocation(lat, lng);
+                    });
+                } else {
+                     updateLocation(defaultLat, defaultLng);
+                }
+            }
+        });
+    </script>
+}

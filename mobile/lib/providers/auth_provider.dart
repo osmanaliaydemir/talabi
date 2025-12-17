@@ -15,6 +15,7 @@ class AuthProvider with ChangeNotifier {
   String? _fullName;
   String? _role;
   bool _isActive = true;
+  bool _isProfileComplete = true;
 
   bool get isAuthenticated => _token != null;
   String? get token => _token;
@@ -24,6 +25,7 @@ class AuthProvider with ChangeNotifier {
   String? get fullName => _fullName;
   String? get role => _role;
   bool get isActive => _isActive;
+  bool get isProfileComplete => _isProfileComplete;
 
   Future<void> login(
     String email,
@@ -45,6 +47,8 @@ class AuthProvider with ChangeNotifier {
 
     // isActive extraction
     _isActive = response['isActive'] ?? response['IsActive'] ?? true;
+    _isProfileComplete =
+        response['isProfileComplete'] ?? response['IsProfileComplete'] ?? true;
 
     // Fallback: Extract from token if missing
     if ((_role == null || response['isActive'] == null) && _token != null) {
@@ -53,6 +57,10 @@ class AuthProvider with ChangeNotifier {
         // If isActive wasn't in response, try to get from token
         if (response['isActive'] == null && response['IsActive'] == null) {
           _isActive = _getIsActiveFromToken(_token!);
+        }
+        if (response['isProfileComplete'] == null &&
+            response['IsProfileComplete'] == null) {
+          _isProfileComplete = _getIsProfileCompleteFromToken(_token!);
         }
       } catch (e) {
         LoggerService().error('Error extracting data from token', e);
@@ -119,6 +127,7 @@ class AuthProvider with ChangeNotifier {
         _email = response['email'];
         _fullName = response['fullName'];
         _isActive = true; // Default for new registration if token is present
+        _isProfileComplete = true; // Default
 
         if (response.containsKey('refreshToken')) {
           _refreshToken = response['refreshToken'];
@@ -182,6 +191,7 @@ class AuthProvider with ChangeNotifier {
     _fullName = null;
     _role = null;
     _isActive = true;
+    _isProfileComplete = true;
 
     // Clear secure storage
     final secureStorage = SecureStorageService.instance;
@@ -223,6 +233,7 @@ class AuthProvider with ChangeNotifier {
     // Try to get IsActive from token as it's not currently stored in SecureStorage separately
     if (_token != null) {
       _isActive = _getIsActiveFromToken(_token!);
+      _isProfileComplete = _getIsProfileCompleteFromToken(_token!);
     }
 
     // Also save to SharedPreferences for ApiService interceptor
@@ -254,6 +265,7 @@ class AuthProvider with ChangeNotifier {
     _userId = userId;
     _role = role;
     _isActive = _getIsActiveFromToken(token); // Attempt to extract IsActive
+    _isProfileComplete = _getIsProfileCompleteFromToken(token);
 
     await AnalyticsService.setUserId(userId);
 
@@ -318,6 +330,33 @@ class AuthProvider with ChangeNotifier {
       }
     } catch (e) {
       LoggerService().error('Error extracting isActive from token', e);
+    }
+    return true; // Default to true
+  }
+
+  bool _getIsProfileCompleteFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        return true; // Default to true on error
+      }
+
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final resp = utf8.decode(base64Url.decode(normalized));
+      final payloadMap = json.decode(resp);
+
+      if (payloadMap is Map<String, dynamic>) {
+        final claim = payloadMap['isProfileComplete'];
+        if (claim != null) {
+          if (claim is bool) return claim;
+          if (claim is String) {
+            return claim.toLowerCase() == 'true';
+          }
+        }
+      }
+    } catch (e) {
+      LoggerService().error('Error extracting isProfileComplete from token', e);
     }
     return true; // Default to true
   }
