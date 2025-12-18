@@ -12,6 +12,7 @@ import 'package:mobile/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/screens/vendor/settings_screen.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
+import 'package:mobile/screens/vendor/delivery_zones_screen.dart';
 import 'package:provider/provider.dart';
 
 class VendorProfileScreen extends StatefulWidget {
@@ -254,6 +255,20 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             Navigator.of(context).push(
               NoSlidePageRoute(
                 builder: (context) => const VendorSettingsScreen(),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.map_outlined),
+          title: Text(localizations.deliveryZones),
+          subtitle: Text(localizations.deliveryZonesDescription),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            LoggerService().debug('VendorProfileScreen: Delivery Zones tapped');
+            Navigator.of(context).push(
+              NoSlidePageRoute(
+                builder: (context) => const DeliveryZonesScreen(),
               ),
             );
           },

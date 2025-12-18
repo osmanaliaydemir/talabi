@@ -14,6 +14,8 @@ import 'package:mobile/models/customer_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/models/api_response.dart';
 import 'package:mobile/services/navigation_service.dart';
+import 'package:mobile/models/delivery_zone_models.dart';
+import 'package:mobile/models/location_item.dart';
 
 const String _requestPermitKey = '_apiRequestPermit';
 
@@ -3904,6 +3906,64 @@ class ApiService {
         e,
         stackTrace,
       );
+      rethrow;
+    }
+  }
+
+  // Delivery Zones
+  Future<dynamic> getDeliveryZones({String? cityId}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (cityId != null) {
+        queryParams['cityId'] = cityId;
+      }
+
+      final response = await _dio.get(
+        '/vendor/delivery-zones',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json, // Data is dynamic (List or Object)
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Failed to load zones');
+      }
+
+      // If cityId is null, we expect List<LocationItem>
+      // If cityId is set, we expect CityZoneDto
+      if (cityId == null) {
+        return (apiResponse.data as List)
+            .map((e) => LocationItem.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        return CityZoneDto.fromJson(apiResponse.data as Map<String, dynamic>);
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching delivery zones', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> syncDeliveryZones(DeliveryZoneSyncDto dto) async {
+    try {
+      final response = await _dio.put(
+        '/vendor/delivery-zones',
+        data: dto.toJson(),
+      );
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Failed to sync zones');
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error syncing delivery zones', e, stackTrace);
       rethrow;
     }
   }

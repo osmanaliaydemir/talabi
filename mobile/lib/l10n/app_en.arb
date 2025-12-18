@@ -798,6 +798,9 @@
       "distance": {}
     }
   },
+  "deliveryZones": "Delivery Zones",
+  "deliveryZonesDescription": "Manage cities and districts you deliver to",
+  "deliveryZonesUpdated": "Delivery zones updated successfully",
   "removedFromFavorites": "{productName} removed from favorites",
   "@removedFromFavorites": {
     "placeholders": {

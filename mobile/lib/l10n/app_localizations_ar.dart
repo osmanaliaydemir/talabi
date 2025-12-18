@@ -1857,6 +1857,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get deliveryZones => 'Delivery Zones';
+
+  @override
+  String get deliveryZonesDescription =>
+      'Manage cities and districts you deliver to';
+
+  @override
+  String get deliveryZonesUpdated => 'Delivery zones updated successfully';
+
+  @override
   String removedFromFavorites(Object productName) {
     return 'تمت إزالة $productName من المفضلة';
   }

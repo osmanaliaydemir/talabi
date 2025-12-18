@@ -1880,6 +1880,16 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get deliveryZones => 'Teslimat Bölgeleri';
+
+  @override
+  String get deliveryZonesDescription =>
+      'Teslimat yaptığınız şehir ve ilçeleri yönetin';
+
+  @override
+  String get deliveryZonesUpdated => 'Teslimat bölgeleri başarıyla güncellendi';
+
+  @override
   String removedFromFavorites(Object productName) {
     return '$productName favorilerden çıkarıldı';
   }

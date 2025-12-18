@@ -3568,6 +3568,24 @@ abstract class AppLocalizations {
   /// **'Distance: {distance} km'**
   String distanceLabel(Object distance);
 
+  /// No description provided for @deliveryZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Zones'**
+  String get deliveryZones;
+
+  /// No description provided for @deliveryZonesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage cities and districts you deliver to'**
+  String get deliveryZonesDescription;
+
+  /// No description provided for @deliveryZonesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery zones updated successfully'**
+  String get deliveryZonesUpdated;
+
   /// No description provided for @removedFromFavorites.
   ///
   /// In en, this message translates to:

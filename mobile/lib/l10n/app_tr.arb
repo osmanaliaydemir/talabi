@@ -800,6 +800,9 @@
       "productName": {}
     }
   },
+  "deliveryZones": "Teslimat Bölgeleri",
+  "deliveryZonesDescription": "Teslimat yaptığınız şehir ve ilçeleri yönetin",
+  "deliveryZonesUpdated": "Teslimat bölgeleri başarıyla güncellendi",
   "addedToFavorites": "{productName} favorilere eklendi",
   "@addedToFavorites": {
     "placeholders": {
