@@ -7,8 +7,8 @@ import 'package:mobile/services/api_service.dart';
 //Todo: remove this import OAA
 import 'package:mobile/screens/customer/profile/address_picker_screen.dart';
 import 'package:mobile/screens/vendor/widgets/header.dart';
+import 'package:mobile/screens/vendor/delivery_zones_screen.dart';
 import 'package:mobile/screens/vendor/widgets/bottom_nav.dart';
-import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 // Added imports
@@ -238,9 +238,11 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         );
 
         if (widget.isOnboarding) {
+          // Profile completed, now enforce Delivery Zones
           Navigator.of(context).pushReplacement(
             NoSlidePageRoute(
-              builder: (context) => const VendorDashboardScreen(),
+              builder: (context) =>
+                  const DeliveryZonesScreen(showWarning: true),
             ),
           );
         } else {

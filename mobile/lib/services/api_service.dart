@@ -63,7 +63,9 @@ class ApiService {
           // If logging out, reject new requests to prevent race conditions
           if (_isLoggingOut &&
               !options.path.contains('login') &&
-              !options.path.contains('register')) {
+              !options.path.contains('register') &&
+              !options.path.contains('resend-verification-code') &&
+              !options.path.contains('verify-email')) {
             return handler.reject(
               DioException(
                 requestOptions: options,
