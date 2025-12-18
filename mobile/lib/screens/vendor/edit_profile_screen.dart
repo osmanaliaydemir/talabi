@@ -12,8 +12,8 @@ import 'package:mobile/screens/vendor/dashboard_screen.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 // Added imports
-import '../../models/working_hour.dart';
-import '../../widgets/working_days_selection_widget.dart';
+import 'package:mobile/models/working_hour.dart';
+import 'package:mobile/widgets/working_days_selection_widget.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
   const VendorEditProfileScreen({super.key, this.isOnboarding = false});
@@ -129,21 +129,21 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
 
   List<WorkingHour> _createDefaultWeek() {
     final List<String> dayNames = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ];
 
     return List.generate(7, (index) {
       return WorkingHour(
         dayOfWeek: index,
         dayName: dayNames[index],
-        startTime: "09:00",
-        endTime: "18:00",
+        startTime: '09:00',
+        endTime: '18:00',
         isClosed: false,
       );
     });

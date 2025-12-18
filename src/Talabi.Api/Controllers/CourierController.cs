@@ -83,10 +83,6 @@ public class CourierController : BaseController
     /// Kurye profil bilgilerini getirir
     /// </summary>
     /// <returns>Kurye profil bilgileri</returns>
-    /// <summary>
-    /// Kurye profil bilgilerini getirir
-    /// </summary>
-    /// <returns>Kurye profil bilgileri</returns>
     [HttpGet("profile")]
     public async Task<ActionResult<ApiResponse<CourierProfileDto>>> GetProfile()
     {
@@ -124,11 +120,6 @@ public class CourierController : BaseController
     /// </summary>
     /// <param name="dto">Güncellenecek profil bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    /// <summary>
-    /// Kurye profil bilgilerini günceller
-    /// </summary>
-    /// <param name="dto">Güncellenecek profil bilgileri</param>
-    /// <returns>İşlem sonucu</returns>
     [HttpPut("profile")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateCourierProfileDto dto)
     {
@@ -156,8 +147,10 @@ public class CourierController : BaseController
 
         courier.MaxActiveOrders = dto.MaxActiveOrders;
         // Legacy fields update (optional, maybe keep sync for now)
+#pragma warning disable CS0618 // Type or member is obsolete
         courier.WorkingHoursStart = dto.WorkingHoursStart;
         courier.WorkingHoursEnd = dto.WorkingHoursEnd;
+#pragma warning restore CS0618 // Type or member is obsolete
 
         courier.IsWithinWorkingHours = dto.IsWithinWorkingHours;
 
@@ -204,10 +197,6 @@ public class CourierController : BaseController
     /// Mevcut araç tiplerini getirir
     /// </summary>
     /// <returns>Araç tipi listesi</returns>
-    /// <summary>
-    /// Mevcut araç tiplerini getirir
-    /// </summary>
-    /// <returns>Araç tipi listesi</returns>
     [HttpGet("vehicle-types")]
     public ActionResult<ApiResponse<List<object>>> GetVehicleTypes()
     {
@@ -224,11 +213,6 @@ public class CourierController : BaseController
         return Ok(new ApiResponse<List<object>>(types, LocalizationService.GetLocalizedString(ResourceName, "VehicleTypesRetrievedSuccessfully", CurrentCulture)));
     }
 
-    /// <summary>
-    /// Kurye durumunu günceller
-    /// </summary>
-    /// <param name="dto">Yeni durum bilgisi</param>
-    /// <returns>İşlem sonucu</returns>
     /// <summary>
     /// Kurye durumunu günceller
     /// </summary>
@@ -254,6 +238,7 @@ public class CourierController : BaseController
         if (newStatus == CourierStatus.Available && courier.IsWithinWorkingHours)
         {
             var now = DateTime.Now.TimeOfDay;
+#pragma warning disable CS0618 // Type or member is obsolete
             if (courier.WorkingHoursStart.HasValue && courier.WorkingHoursEnd.HasValue)
             {
                 if (now < courier.WorkingHoursStart.Value || now > courier.WorkingHoursEnd.Value)
@@ -261,6 +246,7 @@ public class CourierController : BaseController
                     return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CannotGoAvailableOutsideWorkingHours", CurrentCulture), "OUTSIDE_WORKING_HOURS"));
                 }
             }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         // Aktif siparişi varsa Offline olamaz
@@ -281,11 +267,6 @@ public class CourierController : BaseController
         return Ok(new ApiResponse<object>(new { Status = newStatus.ToString() }, LocalizationService.GetLocalizedString(ResourceName, "StatusUpdated", CurrentCulture, newStatus.ToString())));
     }
 
-    /// <summary>
-    /// Kurye konumunu günceller
-    /// </summary>
-    /// <param name="dto">Yeni konum bilgisi</param>
-    /// <returns>İşlem sonucu</returns>
     /// <summary>
     /// Kurye konumunu günceller
     /// </summary>
@@ -323,10 +304,6 @@ public class CourierController : BaseController
         return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "LocationUpdatedSuccessfully", CurrentCulture)));
     }
 
-    /// <summary>
-    /// Kurye istatistiklerini getirir
-    /// </summary>
-    /// <returns>Kurye istatistikleri</returns>
     /// <summary>
     /// Kurye istatistiklerini getirir
     /// </summary>
@@ -380,10 +357,6 @@ public class CourierController : BaseController
     /// Kurye müsaitlik durumunu kontrol eder
     /// </summary>
     /// <returns>Müsaitlik durumu ve nedenleri</returns>
-    /// <summary>
-    /// Kurye müsaitlik durumunu kontrol eder
-    /// </summary>
-    /// <returns>Müsaitlik durumu ve nedenleri</returns>
     [HttpGet("check-availability")]
     public async Task<ActionResult<ApiResponse<object>>> CheckAvailability()
     {
@@ -416,12 +389,6 @@ public class CourierController : BaseController
         return Ok(new ApiResponse<object>(result, LocalizationService.GetLocalizedString(ResourceName, "AvailabilityCheckedSuccessfully", CurrentCulture)));
     }
 
-    /// <summary>
-    /// Kurye konumunu günceller (Legacy endpoint - geriye dönük uyumluluk için)
-    /// </summary>
-    /// <param name="courierId">Kurye ID'si</param>
-    /// <param name="dto">Yeni konum bilgisi</param>
-    /// <returns>İşlem sonucu</returns>
     /// <summary>
     /// Kurye konumunu günceller (Legacy endpoint - geriye dönük uyumluluk için)
     /// </summary>
@@ -753,13 +720,13 @@ public class CourierController : BaseController
         // Get orders through OrderCouriers
         var orderCouriers = await UnitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Order)
-                .ThenInclude(o => o.Vendor)
+                .ThenInclude(o => o!.Vendor)
             .Include(oc => oc.Order)
-                .ThenInclude(o => o.Customer)
+                .ThenInclude(o => o!.Customer)
             .Include(oc => oc.Order)
-                .ThenInclude(o => o.DeliveryAddress)
+                .ThenInclude(o => o!.DeliveryAddress)
             .Include(oc => oc.Order)
-                .ThenInclude(o => o.OrderItems)
+                .ThenInclude(o => o!.OrderItems)
                     .ThenInclude(oi => oi.Product)
             .Where(oc => oc.CourierId == courier.Id
                 && oc.Order != null

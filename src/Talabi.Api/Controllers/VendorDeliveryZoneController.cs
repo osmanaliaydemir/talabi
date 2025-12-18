@@ -61,7 +61,7 @@ public class VendorDeliveryZoneController : BaseController
         // If not, we might need to filter by District.CityId via Join, but Entity has CityId.
         var activeLocalityIds = await UnitOfWork.VendorDeliveryZones.Query()
             .Where(z => z.VendorId == vendor.Id && z.CityId == cityId.Value && z.IsActive && z.LocalityId.HasValue)
-            .Select(z => z.LocalityId.Value)
+            .Select(z => z.LocalityId!.Value)
             .ToListAsync();
 
         var activeLocalitySet = new HashSet<Guid>(activeLocalityIds);

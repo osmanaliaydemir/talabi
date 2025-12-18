@@ -21,6 +21,7 @@ public class LoginResponseDto
     public string? Provider { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsProfileComplete { get; set; } = true;
+    public bool HasDeliveryZones { get; set; } = false;
 }
 
 public class LoginDto
