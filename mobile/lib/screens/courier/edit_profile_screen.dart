@@ -5,8 +5,8 @@ import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/screens/courier/widgets/bottom_nav.dart';
 import 'package:mobile/screens/courier/widgets/header.dart';
-import '../../models/working_hour.dart';
-import '../../widgets/working_days_selection_widget.dart';
+import 'package:mobile/models/working_hour.dart';
+import 'package:mobile/widgets/working_days_selection_widget.dart';
 
 class CourierEditProfileScreen extends StatefulWidget {
   const CourierEditProfileScreen({super.key});
@@ -114,13 +114,13 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
 
   List<WorkingHour> _createDefaultWeek(String? start, String? end) {
     final List<String> dayNames = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ];
     // Assuming backend uses 0=Sunday
 
@@ -128,8 +128,8 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
       return WorkingHour(
         dayOfWeek: index,
         dayName: dayNames[index],
-        startTime: start ?? "09:00",
-        endTime: end ?? "18:00",
+        startTime: start ?? '09:00',
+        endTime: end ?? '18:00',
         isClosed: start == null,
       );
     });
@@ -184,18 +184,18 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         data['workingHours'] = _workingHours.map((e) => e.toJson()).toList();
 
         // Backward compatibility: set start/end from first open day
-        var openDay = _workingHours.firstWhere(
+        final openDay = _workingHours.firstWhere(
           (w) => !w.isClosed,
           orElse: () => _workingHours.first,
         );
         data['workingHoursStart'] =
             openDay.startTime != null && openDay.startTime!.length == 5
-            ? "${openDay.startTime}:00"
-            : (openDay.startTime ?? "09:00:00");
+            ? '${openDay.startTime}:00'
+            : (openDay.startTime ?? '09:00:00');
         data['workingHoursEnd'] =
             openDay.endTime != null && openDay.endTime!.length == 5
-            ? "${openDay.endTime}:00"
-            : (openDay.endTime ?? "18:00:00");
+            ? '${openDay.endTime}:00'
+            : (openDay.endTime ?? '18:00:00');
       } else {
         data['isWithinWorkingHours'] = false;
         data['workingHours'] = [];

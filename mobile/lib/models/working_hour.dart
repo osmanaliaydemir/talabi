@@ -1,11 +1,5 @@
 class WorkingHour {
-  final int dayOfWeek;
-  final String dayName;
-  final String? startTime;
-  final String? endTime;
-  final bool isClosed;
-
-  WorkingHour({
+  const WorkingHour({
     required this.dayOfWeek,
     required this.dayName,
     this.startTime,
@@ -22,6 +16,12 @@ class WorkingHour {
       isClosed: json['isClosed'] as bool? ?? false,
     );
   }
+
+  final int dayOfWeek;
+  final String dayName;
+  final String? startTime;
+  final String? endTime;
+  final bool isClosed;
 
   Map<String, dynamic> toJson() {
     return {

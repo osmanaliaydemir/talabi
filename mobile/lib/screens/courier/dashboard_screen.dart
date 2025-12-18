@@ -764,6 +764,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         stackTrace,
       );
       throw _getLocalizedString(
+        // ignore: use_build_context_synchronously
         context,
         'failedToUpdateWorkingHours',
         'Çalışma saatleri güncellenemedi',

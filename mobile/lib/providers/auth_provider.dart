@@ -16,6 +16,8 @@ class AuthProvider with ChangeNotifier {
   String? _role;
   bool _isActive = true;
   bool _isProfileComplete = true;
+  bool _hasDeliveryZones =
+      false; // Default false until proven otherwise for vendors
 
   bool get isAuthenticated => _token != null;
   String? get token => _token;
@@ -26,6 +28,12 @@ class AuthProvider with ChangeNotifier {
   String? get role => _role;
   bool get isActive => _isActive;
   bool get isProfileComplete => _isProfileComplete;
+  bool get hasDeliveryZones => _hasDeliveryZones;
+
+  void updateHasDeliveryZones(bool value) {
+    _hasDeliveryZones = value;
+    notifyListeners();
+  }
 
   Future<void> login(
     String email,
@@ -47,8 +55,10 @@ class AuthProvider with ChangeNotifier {
 
     // isActive extraction
     _isActive = response['isActive'] ?? response['IsActive'] ?? true;
-    _isProfileComplete =
+    _isProfileComplete = _isProfileComplete =
         response['isProfileComplete'] ?? response['IsProfileComplete'] ?? true;
+    _hasDeliveryZones =
+        response['hasDeliveryZones'] ?? response['HasDeliveryZones'] ?? false;
 
     // Fallback: Extract from token if missing
     if ((_role == null || response['isActive'] == null) && _token != null) {
@@ -61,6 +71,10 @@ class AuthProvider with ChangeNotifier {
         if (response['isProfileComplete'] == null &&
             response['IsProfileComplete'] == null) {
           _isProfileComplete = _getIsProfileCompleteFromToken(_token!);
+        }
+        if (response['hasDeliveryZones'] == null &&
+            response['HasDeliveryZones'] == null) {
+          _hasDeliveryZones = _getHasDeliveryZonesFromToken(_token!);
         }
       } catch (e) {
         LoggerService().error('Error extracting data from token', e);
@@ -359,5 +373,32 @@ class AuthProvider with ChangeNotifier {
       LoggerService().error('Error extracting isProfileComplete from token', e);
     }
     return true; // Default to true
+  }
+
+  bool _getHasDeliveryZonesFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        return false; // Default false
+      }
+
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final resp = utf8.decode(base64Url.decode(normalized));
+      final payloadMap = json.decode(resp);
+
+      if (payloadMap is Map<String, dynamic>) {
+        final claim = payloadMap['hasDeliveryZones'];
+        if (claim != null) {
+          if (claim is bool) return claim;
+          if (claim is String) {
+            return claim.toLowerCase() == 'true';
+          }
+        }
+      }
+    } catch (e) {
+      LoggerService().error('Error extracting hasDeliveryZones from token', e);
+    }
+    return false; // Default false
   }
 }

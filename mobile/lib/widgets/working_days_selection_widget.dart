@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import '../models/working_hour.dart';
-import '../../l10n/app_localizations.dart';
+import 'package:mobile/models/working_hour.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class WorkingDaysSelectionWidget extends StatefulWidget {
+  const WorkingDaysSelectionWidget({
+    super.key,
+    required this.initialWorkingHours,
+    required this.onWorkingHoursChanged,
+  });
+
   final List<WorkingHour> initialWorkingHours;
   final ValueChanged<List<WorkingHour>> onWorkingHoursChanged;
 
-  const WorkingDaysSelectionWidget({
-    Key? key,
-    required this.initialWorkingHours,
-    required this.onWorkingHoursChanged,
-  }) : super(key: key);
-
   @override
-  _WorkingDaysSelectionWidgetState createState() =>
+  State<WorkingDaysSelectionWidget> createState() =>
       _WorkingDaysSelectionWidgetState();
 }
 
@@ -37,19 +37,19 @@ class _WorkingDaysSelectionWidgetState
     // This assumes specific DayOfWeek mapping (0=Sunday, 1=Monday, etc.) matching backend.
 
     // Create a map for easy lookup
-    final existingMap = {for (var h in _workingHours) h.dayOfWeek: h};
+    final existingMap = {for (final h in _workingHours) h.dayOfWeek: h};
     // Default English names if localization not available in model
     final List<String> defaultDayNames = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ];
 
-    List<WorkingHour> completeList = [];
+    final List<WorkingHour> completeList = [];
     for (int i = 0; i < 7; i++) {
       if (existingMap.containsKey(i)) {
         completeList.add(existingMap[i]!);
@@ -59,8 +59,8 @@ class _WorkingDaysSelectionWidgetState
             dayOfWeek: i,
             dayName: defaultDayNames[i],
             isClosed: true,
-            startTime: "09:00",
-            endTime: "18:00",
+            startTime: '09:00',
+            endTime: '18:00',
           ),
         );
       }
@@ -176,7 +176,7 @@ class _WorkingDaysSelectionWidgetState
                 child: Text(
                   hour.dayName.isNotEmpty
                       ? hour.dayName.substring(0, 1).toUpperCase()
-                      : "?",
+                      : '?',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isClosed
@@ -194,10 +194,10 @@ class _WorkingDaysSelectionWidgetState
               ),
               subtitle: Text(
                 isClosed
-                    ? (AppLocalizations.of(context)?.closed ?? "Closed")
+                    ? (AppLocalizations.of(context)?.closed ?? 'Closed')
                     : is24Hours
                     ? "24 ${AppLocalizations.of(context)?.hours ?? 'Hours'}"
-                    : "${hour.startTime} - ${hour.endTime}",
+                    : '${hour.startTime} - ${hour.endTime}',
                 style: TextStyle(
                   color: isClosed ? Colors.red : Colors.green,
                   fontSize: 13,
@@ -260,8 +260,8 @@ class _WorkingDaysSelectionWidgetState
                                   _updateHour(
                                     index,
                                     hour.copyWith(
-                                      startTime: "09:00",
-                                      endTime: "18:00",
+                                      startTime: '09:00',
+                                      endTime: '18:00',
                                     ),
                                   );
                                 }
@@ -279,8 +279,8 @@ class _WorkingDaysSelectionWidgetState
                                   AppLocalizations.of(
                                         context,
                                       )?.workingHoursStart ??
-                                      "Start",
-                                  hour.startTime ?? "09:00",
+                                      'Start',
+                                  hour.startTime ?? '09:00',
                                   () => _selectTime(context, index, true),
                                 ),
                               ),
@@ -291,8 +291,8 @@ class _WorkingDaysSelectionWidgetState
                                   AppLocalizations.of(
                                         context,
                                       )?.workingHoursEnd ??
-                                      "End",
-                                  hour.endTime ?? "18:00",
+                                      'End',
+                                  hour.endTime ?? '18:00',
                                   () => _selectTime(context, index, false),
                                 ),
                               ),

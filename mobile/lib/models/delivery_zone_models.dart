@@ -2,13 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'delivery_zone_models.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 class DeliveryZoneSyncDto {
-  final String cityId;
-  final List<String> localityIds;
-  final double? deliveryFee;
-  final double? minimumOrderAmount;
-
   DeliveryZoneSyncDto({
     required this.cityId,
     required this.localityIds,
@@ -16,31 +11,28 @@ class DeliveryZoneSyncDto {
     this.minimumOrderAmount,
   });
 
+  final String cityId;
+  final List<String> localityIds;
+  final double? deliveryFee;
+  final double? minimumOrderAmount;
+
   Map<String, dynamic> toJson() => _$DeliveryZoneSyncDtoToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class CityZoneDto {
-  final String id;
-  final String name;
-  final List<DistrictZoneDto> districts;
-
   CityZoneDto({required this.id, required this.name, required this.districts});
 
   factory CityZoneDto.fromJson(Map<String, dynamic> json) =>
       _$CityZoneDtoFromJson(json);
-}
 
-@JsonSerializable()
-class DistrictZoneDto {
   final String id;
   final String name;
-  final List<LocalityZoneDto> localities;
+  final List<DistrictZoneDto> districts;
+}
 
-  // Helper for UI expansion state
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  bool isExpanded;
-
+@JsonSerializable(createToJson: false)
+class DistrictZoneDto {
   DistrictZoneDto({
     required this.id,
     required this.name,
@@ -50,14 +42,18 @@ class DistrictZoneDto {
 
   factory DistrictZoneDto.fromJson(Map<String, dynamic> json) =>
       _$DistrictZoneDtoFromJson(json);
-}
 
-@JsonSerializable()
-class LocalityZoneDto {
   final String id;
   final String name;
-  bool isSelected;
+  final List<LocalityZoneDto> localities;
 
+  // Helper for UI expansion state
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool isExpanded;
+}
+
+@JsonSerializable(createToJson: false)
+class LocalityZoneDto {
   LocalityZoneDto({
     required this.id,
     required this.name,
@@ -66,4 +62,8 @@ class LocalityZoneDto {
 
   factory LocalityZoneDto.fromJson(Map<String, dynamic> json) =>
       _$LocalityZoneDtoFromJson(json);
+
+  final String id;
+  final String name;
+  bool isSelected;
 }

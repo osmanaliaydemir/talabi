@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../models/delivery_zone_models.dart';
-import '../../models/location_item.dart';
-import '../../services/api_service.dart';
-import '../../config/app_theme.dart';
+import 'package:mobile/models/delivery_zone_models.dart';
+import 'package:mobile/models/location_item.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
+import 'package:provider/provider.dart';
+import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/screens/vendor/dashboard_screen.dart';
+
 class DeliveryZonesScreen extends StatefulWidget {
-  const DeliveryZonesScreen({super.key});
+  const DeliveryZonesScreen({super.key, this.showWarning = false});
+
+  final bool showWarning;
 
   @override
   State<DeliveryZonesScreen> createState() => _DeliveryZonesScreenState();
@@ -27,6 +33,30 @@ class _DeliveryZonesScreenState extends State<DeliveryZonesScreen> {
   void initState() {
     super.initState();
     _loadCities();
+    if (widget.showWarning) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showMandatoryZoneSelectionDialog();
+      });
+    }
+  }
+
+  void _showMandatoryZoneSelectionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ Teslimat Bölgesi Zorunlu'),
+        content: const Text(
+          'Sipariş alabilmek için lütfen en az bir teslimat bölgesi seçiniz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tamam'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadCities() async {
@@ -81,8 +111,8 @@ class _DeliveryZonesScreenState extends State<DeliveryZonesScreen> {
     try {
       final selectedLocalities = <String>[];
 
-      for (var district in _cityZoneData!.districts) {
-        for (var locality in district.localities) {
+      for (final district in _cityZoneData!.districts) {
+        for (final locality in district.localities) {
           if (locality.isSelected) {
             selectedLocalities.add(locality.id);
           }
@@ -97,10 +127,21 @@ class _DeliveryZonesScreenState extends State<DeliveryZonesScreen> {
       await _apiService.syncDeliveryZones(dto);
 
       if (mounted) {
+        // Update local state to reflect that zones are now selected
+        Provider.of<AuthProvider>(
+          context,
+          listen: false,
+        ).updateHasDeliveryZones(true);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.deliveryZonesUpdated),
           ),
+        );
+
+        // Navigate to Dashboard
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const VendorDashboardScreen()),
         );
       }
     } catch (e) {
@@ -118,39 +159,62 @@ class _DeliveryZonesScreenState extends State<DeliveryZonesScreen> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.deliveryZones),
-        actions: [
-          if (_selectedCity != null)
-            IconButton(
-              icon: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
+    return PopScope(
+      canPop: !widget.showWarning,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(localizations.deliveryZones),
+          backgroundColor: AppTheme.vendorPrimary,
+        ),
+        body: _isLoading && _cities.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  _buildCitySelector(localizations),
+                  if (_isLoading)
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
                     )
-                  : const Icon(Icons.save),
-              onPressed: _isSaving ? null : _saveZones,
+                  else if (_cityZoneData != null)
+                    Expanded(child: _buildZonesList()),
+                ],
+              ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.vendorPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _isSaving ? null : _saveZones,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        localizations.save,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
             ),
-        ],
+          ),
+        ),
       ),
-      body: _isLoading && _cities.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                _buildCitySelector(localizations),
-                if (_isLoading)
-                  const Expanded(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_cityZoneData != null)
-                  Expanded(child: _buildZonesList()),
-              ],
-            ),
     );
   }
 
@@ -167,7 +231,7 @@ class _DeliveryZonesScreenState extends State<DeliveryZonesScreen> {
             vertical: 8,
           ),
         ),
-        value: _selectedCity,
+        initialValue: _selectedCity,
         items: _cities.map((city) {
           return DropdownMenuItem(value: city, child: Text(city.name));
         }).toList(),

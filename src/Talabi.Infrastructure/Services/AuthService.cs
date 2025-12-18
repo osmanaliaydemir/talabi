@@ -83,6 +83,7 @@ public class AuthService : IAuthService
         // Determine IsActive status
         bool isActive = true; // Default for Customer and Admin
         bool isProfileComplete = true; // Default
+        bool hasDeliveryZones = false; // Default
 
         if (user.Role == UserRole.Vendor)
         {
@@ -90,6 +91,7 @@ public class AuthService : IAuthService
             if (vendor != null)
             {
                 var hasWorkingHours = await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
+                hasDeliveryZones = await _unitOfWork.VendorDeliveryZones.ExistsAsync(z => z.VendorId == vendor.Id && z.IsActive);
 
                 isActive = vendor.IsActive;
                 isProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
@@ -107,6 +109,7 @@ public class AuthService : IAuthService
 
         claims.Add(new Claim("isActive", isActive.ToString().ToLowerInvariant()));
         claims.Add(new Claim("isProfileComplete", isProfileComplete.ToString().ToLowerInvariant()));
+        claims.Add(new Claim("hasDeliveryZones", hasDeliveryZones.ToString().ToLowerInvariant()));
 
         // Add role claims
         foreach (var role in roles)
@@ -259,6 +262,7 @@ public class AuthService : IAuthService
                 if (vendor != null)
                 {
                     var hasWorkingHours = await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
+                    var hasDeliveryZones = await _unitOfWork.VendorDeliveryZones.ExistsAsync(z => z.VendorId == vendor.Id && z.IsActive);
 
                     response.IsActive = vendor.IsActive;
                     // Check profile completeness (Address, Lat, Lng, Name required AND WorkingHours)
@@ -268,6 +272,7 @@ public class AuthService : IAuthService
                                                  !string.IsNullOrWhiteSpace(vendor.Name) &&
                                                  !string.IsNullOrWhiteSpace(vendor.PhoneNumber) &&
                                                  hasWorkingHours;
+                    response.HasDeliveryZones = hasDeliveryZones;
                 }
             }
             else if (user.Role == UserRole.Courier)
