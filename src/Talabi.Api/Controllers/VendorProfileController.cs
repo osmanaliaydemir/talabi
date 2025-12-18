@@ -37,7 +37,6 @@ public class VendorProfileController : BaseController
         if (userId == null) return null;
 
         var vendor = await UnitOfWork.Vendors.Query()
-            .Include(v => v.WorkingHours)
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor;
     }
@@ -95,103 +94,70 @@ public class VendorProfileController : BaseController
             return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRequest", CurrentCulture), "INVALID_REQUEST"));
         }
 
-        var vendor = await GetCurrentVendorAsync();
-        if (vendor == null)
-        {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
-        }
-
-        // Update fields if provided
-        if (!string.IsNullOrEmpty(dto.Name))
-        {
-            vendor.Name = dto.Name;
-        }
-
-        if (dto.ImageUrl != null)
-        {
-            vendor.ImageUrl = dto.ImageUrl;
-        }
-
-        if (!string.IsNullOrEmpty(dto.Address))
-        {
-            vendor.Address = dto.Address;
-        }
-
-        if (dto.City != null)
-        {
-            vendor.City = dto.City;
-        }
-
-        if (dto.Latitude.HasValue)
-        {
-            vendor.Latitude = dto.Latitude.Value;
-        }
-
-        if (dto.Longitude.HasValue)
-        {
-            vendor.Longitude = dto.Longitude.Value;
-        }
-
-        if (dto.PhoneNumber != null)
-        {
-            vendor.PhoneNumber = dto.PhoneNumber;
-        }
-
-        if (dto.Description != null)
-        {
-            vendor.Description = dto.Description;
-        }
+        var userId = UserContext.GetUserId();
+        if (userId == null) return Unauthorized(new ApiResponse<object>(LocalizationService.GetLocalizedString("ErrorResources", "Unauthorized", CurrentCulture), "UNAUTHORIZED"));
 
         int maxRetries = 3;
         for (int i = 0; i < maxRetries; i++)
         {
+            // Use explicit transaction to ensure atomic Delete + Insert + Update
+            await UnitOfWork.BeginTransactionAsync();
             try
             {
-                if (i > 0)
-                {
-                    // Reload vendor for retry
-                    var userId = UserContext.GetUserId();
-                    if (userId == null) return Unauthorized(new ApiResponse<object>(LocalizationService.GetLocalizedString("ErrorResources", "Unauthorized", CurrentCulture), "UNAUTHORIZED"));
+                // 1. Load fresh vendor on every attempt (Optimistic Concurrency)
+                var vendor = await UnitOfWork.Vendors.Query()
+                   .FirstOrDefaultAsync(v => v.OwnerId == userId);
 
-                    vendor = await UnitOfWork.Vendors.Query()
-                       .Include(v => v.WorkingHours)
-                       .FirstOrDefaultAsync(v => v.OwnerId == userId);
+                if (vendor == null) return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
 
-                    if (vendor == null) return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), "VENDOR_PROFILE_NOT_FOUND"));
-                }
+                // 2. Apply Property Updates (Last Write Wins strategy on Retry)
+                if (!string.IsNullOrEmpty(dto.Name)) vendor.Name = dto.Name;
+                if (dto.ImageUrl != null) vendor.ImageUrl = dto.ImageUrl;
+                if (!string.IsNullOrEmpty(dto.Address)) vendor.Address = dto.Address;
+                if (dto.City != null) vendor.City = dto.City;
+                if (dto.Latitude.HasValue) vendor.Latitude = dto.Latitude.Value;
+                if (dto.Longitude.HasValue) vendor.Longitude = dto.Longitude.Value;
+                if (dto.PhoneNumber != null) vendor.PhoneNumber = dto.PhoneNumber;
+                if (dto.Description != null) vendor.Description = dto.Description;
 
+                // 3. Handle Working Hours (Nuclear Option)
                 if (dto.WorkingHours != null)
                 {
-                    // 1. DELETE ALL existing working hours for this vendor DIRECTLY on DB (Bypassing EF Tracking/Concurrency)
-                    // This is the "Nuclear Option" requested to handle list replacement robustly
+                    // Clean slate for working hours
                     await UnitOfWork.VendorWorkingHours.ExecuteDeleteAsync(x => x.VendorId == vendor.Id);
 
-                    // 2. Clear in-memory collection to avoid EF trying to sync changes/double-delete
-                    vendor.WorkingHours?.Clear();
-
-                    // 3. Insert NEW list
-                    foreach (var incoming in dto.WorkingHours)
+                    // Insert new list
+                    var newForInsert = dto.WorkingHours.Select(incoming => new VendorWorkingHour
                     {
-                        vendor.WorkingHours.Add(new VendorWorkingHour
-                        {
-                            VendorId = vendor.Id,
-                            DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
-                            StartTime = incoming.IsClosed ? null : incoming.StartTime,
-                            EndTime = incoming.IsClosed ? null : incoming.EndTime,
-                            IsClosed = incoming.IsClosed
-                        });
-                    }
+                        VendorId = vendor.Id,
+                        DayOfWeek = (DayOfWeek)incoming.DayOfWeek,
+                        StartTime = incoming.IsClosed ? null : incoming.StartTime,
+                        EndTime = incoming.IsClosed ? null : incoming.EndTime,
+                        IsClosed = incoming.IsClosed
+                    }).ToList();
+
+                    await UnitOfWork.VendorWorkingHours.AddRangeAsync(newForInsert);
                 }
 
+                // 4. Update Vendor & Commit
                 vendor.UpdatedAt = DateTime.UtcNow;
                 UnitOfWork.Vendors.Update(vendor);
+
                 await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.CommitTransactionAsync();
+
                 break; // Success
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex) // Catches DbUpdateConcurrencyException and others
             {
-                if (i == maxRetries - 1) throw;
-                await Task.Delay(100);
+                await UnitOfWork.RollbackTransactionAsync();
+
+                if (ex is DbUpdateConcurrencyException && i < maxRetries - 1)
+                {
+                    await Task.Delay(100);
+                    continue; // Retry
+                }
+                throw; // Re-throw if not concurrency or max retries reached
             }
         }
 
