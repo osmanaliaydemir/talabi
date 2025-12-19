@@ -12,28 +12,33 @@ import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/models/customer_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mobile/models/api_response.dart';
 import 'package:mobile/services/navigation_service.dart';
+import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart' hide Order;
+import 'package:mobile/models/api_response.dart';
 import 'package:mobile/models/delivery_zone_models.dart';
 import 'package:mobile/models/location_item.dart';
 
 const String _requestPermitKey = '_apiRequestPermit';
 
+@lazySingleton
 class ApiService {
-  // Singleton pattern
-  factory ApiService() {
-    _instance ??= ApiService._internal();
-    return _instance!;
-  }
+  // Backwards compatibility factory
+  factory ApiService() => GetIt.instance<ApiService>();
 
-  ApiService._internal() {
+  @factoryMethod
+  ApiService.init(
+    this._connectivityService,
+    this._cacheService,
+    this._requestScheduler,
+  ) {
     // Add logging interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Check connectivity before making request
-          if (_connectivityService != null && !_connectivityService!.isOnline) {
-            final isOnline = await _connectivityService!.checkConnectivity();
+          if (!_connectivityService.isOnline) {
+            final isOnline = await _connectivityService.checkConnectivity();
             if (!isOnline) {
               return handler.reject(
                 DioException(
@@ -269,7 +274,6 @@ class ApiService {
   }
 
   static const String baseUrl = 'https://talabi.runasp.net/api';
-  static ApiService? _instance;
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: baseUrl,
@@ -278,9 +282,9 @@ class ApiService {
     ),
   );
 
-  final CacheService _cacheService = CacheService();
-  final ApiRequestScheduler _requestScheduler = ApiRequestScheduler();
-  ConnectivityService? _connectivityService;
+  final CacheService _cacheService;
+  final ApiRequestScheduler _requestScheduler;
+  final ConnectivityService _connectivityService;
 
   // Track refresh token operation to prevent concurrent calls
   bool _isRefreshing = false;
@@ -288,12 +292,7 @@ class ApiService {
   bool _isLoggingOut = false;
   Completer<Map<String, String>>? _refreshCompleter;
 
-  // Expose Dio instance for other services
   Dio get dio => _dio;
-
-  void setConnectivityService(ConnectivityService connectivityService) {
-    _connectivityService = connectivityService;
-  }
 
   void notifyLogout() {
     _isLoggingOut = true;

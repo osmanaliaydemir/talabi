@@ -15,7 +15,7 @@ import 'package:mobile/providers/notification_provider.dart';
 import 'package:mobile/screens/customer/auth/login_screen.dart';
 import 'package:mobile/screens/shared/splash_screen.dart';
 import 'package:mobile/routers/app_router.dart';
-import 'package:mobile/services/api_service.dart';
+
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/services/navigation_service.dart';
 import 'package:mobile/services/preferences_service.dart';
@@ -27,8 +27,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:mobile/firebase_options.dart';
 
+import 'package:mobile/config/injection.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Dependency Injection
+  configureDependencies();
 
   // Initialize SharedPreferences first (singleton pattern)
   await PreferencesService.init();
@@ -80,9 +85,6 @@ Future<void> main() async {
   // Initialize connectivity and sync services
   final connectivityService = ConnectivityService();
   final syncService = SyncService(connectivityService);
-
-  // Initialize API service with connectivity
-  ApiService().setConnectivityService(connectivityService);
 
   // Initialize Logger Service (will be fully initialized after providers)
   // Logger will be initialized after AuthProvider is available

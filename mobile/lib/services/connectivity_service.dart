@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:injectable/injectable.dart';
 import 'package:mobile/services/logger_service.dart';
 
+@lazySingleton
 class ConnectivityService {
   ConnectivityService() {
     _init();

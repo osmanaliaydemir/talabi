@@ -78,6 +78,8 @@ dependencies:
   logger: ^2.0.2+1
   device_info_plus: ^10.1.0
   package_info_plus: ^8.0.0
+  get_it: ^9.2.0
+  injectable: ^2.7.1+2
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +95,9 @@ dev_dependencies:
   json_serializable: ^6.7.1
   build_runner: ^2.4.0
   flutter_launcher_icons: ^0.13.1
+  mockito: ^5.4.4
+  injectable_generator: ^2.6.2
+  http_mock_adapter: ^0.6.1
 
 flutter_launcher_icons:
   android: "launcher_icon"

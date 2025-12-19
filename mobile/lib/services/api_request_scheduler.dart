@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:injectable/injectable.dart';
+
+@lazySingleton
 class ApiRequestScheduler {
-  ApiRequestScheduler._internal();
-
-  factory ApiRequestScheduler() => _instance;
-
-  static final ApiRequestScheduler _instance = ApiRequestScheduler._internal();
+  ApiRequestScheduler();
 
   static const int _maxRequestsPerMinute = 50;
   static const int _maxConcurrentRequests = 4;

@@ -4,7 +4,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mobile/models/product.dart';
 import 'package:mobile/models/vendor.dart';
 import 'package:mobile/services/logger_service.dart';
+import 'package:injectable/injectable.dart';
 
+@lazySingleton
 class CacheService {
   static const String _productsBoxName = 'products_cache';
   static const String _categoriesBoxName = 'categories_cache';
