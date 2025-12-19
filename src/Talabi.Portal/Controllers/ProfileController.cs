@@ -183,80 +183,51 @@ public class ProfileController : Controller
             return View("WorkingHours", model);
         }
 
-        var vendor = await _unitOfWork.Vendors.GetByIdAsync(vendorId);
-        if (vendor == null) return NotFound();
-
-        // Remove existing
-        // We need access to write to collection. 
-        // If collection isn't loaded, we might have issues with strict EF Core tracking.
-        // But assuming we can modify the collection if included.
-
-        // Strategy: Clear and Re-add via direct repository manipulation if possible, 
-        // OR rely on API/Service logic.
-        // Since we are in Portal (likely Server Side), we can use the context directly via UnitOfWork.
-
-        // Ideally we should use a specific method in Repository or Service.
-        // Let's implement the "Remove All / Add All" pattern manually here if needed, 
-        // OR assuming Entity Framework Core behavior.
-
-        // 1. Remove old
-        // We need to fetch existing to remove them first
-        // If not loaded in 'vendor', we can't remove them easily via navigation property logic without fetching.
-        // Let's assume we can remove by VendorId directly if we had immediate access to DbSet, 
-        // but we only have IUnitOfWork.
-
-        // Let's try to update the collection on the vendor entity.
-        // If 'vendor.WorkingHours' is null, we can't remove from it.
-
-        // Safe approach: 
-        // _unitOfWork.VendorWorkingHours.RemoveRange(vendor.WorkingHours) // if we had this暴露
-        // Since we exposed VendorWorkingHours in UnitOfWork for API, we can use it here!
-
-        // Retrieve current hours to delete
-        // We don't have a direct "GetByVendorId" on generic repo easily exposed, 
-        // so we might need to rely on 'vendor.WorkingHours' being populated.
-
-        // Since we are not 100% sure if GetByIdAsync includes it, let's skip the "Remove" safely 
-        // by assuming we might just be ADDING if it's empty, 
-        // BUT if it's an update, we must remove.
-        // Hack for now: Logic should reside in a Service ideally. 
-        // But for direct controller implementation:
-
-        // TODO: Refactor to Service to share logic with API
-
-        if (vendor.WorkingHours != null)
+        await _unitOfWork.BeginTransactionAsync();
+        try
         {
-            foreach (var wh in vendor.WorkingHours.ToList())
+            var vendor = await _unitOfWork.Vendors.GetByIdAsync(vendorId);
+            if (vendor == null)
             {
-                // _unitOfWork.VendorWorkingHours.Remove(wh); 
-                // We need to make sure we have access to this repository in UnitOfWork interface
-                // Checked previous convo: we ADDED VendorWorkingHours to UnitOfWork.
+                // Handle not found
+                await _unitOfWork.RollbackTransactionAsync();
+                return NotFound();
             }
-            vendor.WorkingHours.Clear();
-        }
 
-        // Just in case it wasn't loaded and we add new ones -> duplicate key error?
-        // We will trust the filter check that it was likely empty/null.
-        // But for UPDAting, this is risky.
+            // 1. Delete existing
+            await _unitOfWork.VendorWorkingHours.ExecuteDeleteAsync(x => x.VendorId == vendorId);
 
-        // Re-map and Add
-        if (vendor.WorkingHours == null) vendor.WorkingHours = new List<VendorWorkingHour>();
-
-        foreach (var item in model)
-        {
-            vendor.WorkingHours.Add(new VendorWorkingHour
+            // 2. Add new
+            if (model != null && model.Any())
             {
-                VendorId = vendorId,
-                DayOfWeek = (DayOfWeek)item.DayOfWeek,
-                StartTime = item.IsClosed ? null : item.StartTime, // Ensure null if closed
-                EndTime = item.IsClosed ? null : item.EndTime,
-                IsClosed = item.IsClosed
-            });
+                var newHours = model.Select(item => new VendorWorkingHour
+                {
+                    VendorId = vendorId,
+                    DayOfWeek = (DayOfWeek)item.DayOfWeek,
+                    StartTime = item.IsClosed ? null : item.StartTime,
+                    EndTime = item.IsClosed ? null : item.EndTime,
+                    IsClosed = item.IsClosed
+                }).ToList();
+
+                await _unitOfWork.VendorWorkingHours.AddRangeAsync(newHours);
+            }
+
+            // 3. Update vendor timestamp
+            vendor.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Vendors.Update(vendor);
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+
+            TempData["SuccessMessage"] = _localizationService.GetString("Success"); // Or a specific message
+            return RedirectToAction("Index", "Home");
         }
-
-        _unitOfWork.Vendors.Update(vendor);
-        await _unitOfWork.SaveChangesAsync();
-
-        return RedirectToAction("Index", "Home");
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving working hours");
+            await _unitOfWork.RollbackTransactionAsync();
+            ModelState.AddModelError("", _localizationService.GetString("AnErrorOccurred"));
+            return View("WorkingHours", model);
+        }
     }
 }

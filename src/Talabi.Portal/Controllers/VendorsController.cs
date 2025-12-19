@@ -5,7 +5,7 @@ using Talabi.Portal.Services;
 
 namespace Talabi.Portal.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class VendorsController : Controller
 {
     private readonly IVendorService _vendorService;
@@ -13,7 +13,7 @@ public class VendorsController : Controller
     private readonly ILocalizationService _localizationService;
 
     public VendorsController(
-        IVendorService vendorService, 
+        IVendorService vendorService,
         ILogger<VendorsController> logger,
         ILocalizationService localizationService)
     {
@@ -76,7 +76,7 @@ public class VendorsController : Controller
         var success = await _vendorService.ApproveVendorAsync(id);
         if (success)
             return Json(new { success = true, message = _localizationService.GetString("Success") });
-        
+
         return Json(new { success = false, message = _localizationService.GetString("Error") });
     }
 
@@ -85,7 +85,7 @@ public class VendorsController : Controller
     {
         var success = await _vendorService.RejectVendorAsync(id);
         if (success)
-             return Json(new { success = true, message = _localizationService.GetString("Success") });
+            return Json(new { success = true, message = _localizationService.GetString("Success") });
 
         return Json(new { success = false, message = _localizationService.GetString("Error") });
     }

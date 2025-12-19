@@ -6,7 +6,7 @@ using Talabi.Infrastructure.Data;
 
 namespace Talabi.Portal.Controllers;
 
-[Authorize] // Should be [Authorize(Roles = "Admin")] but simplified for now per instructions
+[Authorize(Roles = "Admin")] // Should be [Authorize(Roles = "Admin")] but simplified for now per instructions
 public class LocationsController : Controller
 {
     private readonly TalabiDbContext _context;
@@ -75,7 +75,7 @@ public class LocationsController : Controller
         var country = await _context.Countries
             .Include(c => c.Cities)
             .FirstOrDefaultAsync(c => c.Id == id);
-            
+
         if (country == null) return NotFound();
         return View(country);
     }
@@ -162,7 +162,7 @@ public class LocationsController : Controller
             existing.NameEn = district.NameEn;
             existing.NameAr = district.NameAr;
             await _context.SaveChangesAsync();
-             return RedirectToAction(nameof(CityDetails), new { id = existing.CityId });
+            return RedirectToAction(nameof(CityDetails), new { id = existing.CityId });
         }
         return RedirectToAction(nameof(Index));
     }
@@ -184,7 +184,7 @@ public class LocationsController : Controller
     public async Task<IActionResult> DistrictDetails(Guid id)
     {
         var district = await _context.Districts
-            .Include(d => d.City).ThenInclude(c => c.Country) 
+            .Include(d => d.City).ThenInclude(c => c.Country)
             .Include(d => d.Localities)
             .FirstOrDefaultAsync(d => d.Id == id);
 
@@ -208,13 +208,13 @@ public class LocationsController : Controller
         return RedirectToAction(nameof(DistrictDetails), new { id = locality.DistrictId });
     }
 
-     [HttpPost]
+    [HttpPost]
     public async Task<IActionResult> EditLocality(Locality locality)
     {
         var existing = await _context.Localities.FindAsync(locality.Id);
         if (existing != null)
         {
-             existing.NameTr = locality.NameTr;
+            existing.NameTr = locality.NameTr;
             existing.NameEn = locality.NameEn;
             existing.NameAr = locality.NameAr;
             await _context.SaveChangesAsync();

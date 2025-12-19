@@ -1295,5 +1295,100 @@
         "tr-TR": "Bu işletmeyi reddetmek (pasife almak) istediğinize emin misiniz?",
         "en-US": "Are you sure you want to reject (deactivate) this vendor?",
         "ar-SA": "هل أنت متأكد أنك تريد رفض (إلغاء تنشيط) هذا المتجر؟"
+    },
+    "Orders": {
+        "tr-TR": "Siparişler",
+        "en-US": "Orders",
+        "ar-SA": "الطلبات"
+    },
+    "Settings": {
+        "tr-TR": "Ayarlar",
+        "en-US": "Settings",
+        "ar-SA": "الإعدادات"
+    },
+    "Loading": {
+        "tr-TR": "Yükleniyor...",
+        "en-US": "Loading...",
+        "ar-SA": "جار التحميل..."
+    },
+    "SetWorkingHours": {
+        "tr-TR": "Çalışma Saatlerini Ayarla",
+        "en-US": "Set Working Hours",
+        "ar-SA": "ضبط ساعات العمل"
+    },
+    "SetWorkingHoursDesc": {
+        "tr-TR": "İşletmenizin açık olduğu gün ve saatleri buradan düzenleyebilirsiniz.",
+        "en-US": "You can manage your business opening days and hours here.",
+        "ar-SA": "يمكنك إدارة أيام وساعات العمل الخاصة بعملك هنا."
+    },
+    "Day": {
+        "tr-TR": "Gün",
+        "en-US": "Day",
+        "ar-SA": "اليوم"
+    },
+    "StartTime": {
+        "tr-TR": "Başlangıç Saati",
+        "en-US": "Start Time",
+        "ar-SA": "وقت البدء"
+    },
+    "EndTime": {
+        "tr-TR": "Bitiş Saati",
+        "en-US": "End Time",
+        "ar-SA": "وقت الانتهاء"
+    },
+    "Closed": {
+        "tr-TR": "Kapalı",
+        "en-US": "Closed",
+        "ar-SA": "مغلق"
+    },
+    "SaveAndContinue": {
+        "tr-TR": "Kaydet ve Devam Et",
+        "en-US": "Save and Continue",
+        "ar-SA": "حفظ ومتابعة"
+    },
+    "Payments": {
+        "tr-TR": "Ödemeler",
+        "en-US": "Payments",
+        "ar-SA": "المدفوعات"
+    },
+    "DailyEarnings": {
+        "tr-TR": "Günlük Kazanç",
+        "en-US": "Daily Earnings",
+        "ar-SA": "الأرباح اليومية"
+    },
+    "WeeklyEarnings": {
+        "tr-TR": "Haftalık Kazanç",
+        "en-US": "Weekly Earnings",
+        "ar-SA": "الأرباح الأسبوعية"
+    },
+    "MonthlyEarnings": {
+        "tr-TR": "Aylık Kazanç",
+        "en-US": "Monthly Earnings",
+        "ar-SA": "الأرباح الشهرية"
+    },
+    "TotalEarnings": {
+        "tr-TR": "Toplam Kazanç",
+        "en-US": "Total Earnings",
+        "ar-SA": "إجمالي الأرباح"
+    },
+    "TransactionHistory": {
+        "tr-TR": "İşlem Geçmişi",
+        "en-US": "Transaction History",
+        "ar-SA": "سجل المعاملات"
+    },
+    "OrderId": {
+        "tr-TR": "Sipariş No",
+        "en-US": "Order ID",
+        "ar-SA": "رقم الطلب"
+    },
+    "Amount": {
+        "tr-TR": "Tutar",
+        "en-US": "Amount",
+        "ar-SA": "المبلغ"
+    },
+    "Date": {
+        "tr-TR": "Tarih",
+        "en-US": "Date",
+        "ar-SA": "التاريخ"
     }
 }

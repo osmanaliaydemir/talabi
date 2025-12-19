@@ -5,7 +5,7 @@ using Talabi.Portal.Services;
 
 namespace Talabi.Portal.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class CategoriesController : Controller
 {
     private readonly ICategoryService _categoryService;
@@ -49,13 +49,13 @@ public class CategoriesController : Controller
 
             if (result == null)
             {
-                 return Json(new 
-                 { 
-                     draw = draw, 
-                     recordsTotal = 0, 
-                     recordsFiltered = 0, 
-                     data = Array.Empty<object>() 
-                 });
+                return Json(new
+                {
+                    draw = draw,
+                    recordsTotal = 0,
+                    recordsFiltered = 0,
+                    data = Array.Empty<object>()
+                });
             }
 
             return Json(new
@@ -91,7 +91,7 @@ public class CategoriesController : Controller
         var success = await _categoryService.DeleteCategoryAsync(name);
         if (success)
             return Json(new { success = true });
-        
+
         return Json(new { success = false, message = "Kategori silinemedi." });
     }
 }

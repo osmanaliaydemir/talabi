@@ -5,7 +5,7 @@ using Talabi.Portal.Services;
 
 namespace Talabi.Portal.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class CouriersController : Controller
 {
     private readonly ICourierService _courierService;
@@ -13,7 +13,7 @@ public class CouriersController : Controller
     private readonly ILocalizationService _localizationService;
 
     public CouriersController(
-        ICourierService courierService, 
+        ICourierService courierService,
         ILogger<CouriersController> logger,
         ILocalizationService localizationService)
     {
@@ -76,7 +76,7 @@ public class CouriersController : Controller
         var success = await _courierService.ApproveCourierAsync(id);
         if (success)
             return Json(new { success = true, message = _localizationService.GetString("Success") });
-        
+
         return Json(new { success = false, message = _localizationService.GetString("Error") });
     }
 
@@ -85,7 +85,7 @@ public class CouriersController : Controller
     {
         var success = await _courierService.RejectCourierAsync(id);
         if (success)
-             return Json(new { success = true, message = _localizationService.GetString("Success") });
+            return Json(new { success = true, message = _localizationService.GetString("Success") });
 
         return Json(new { success = false, message = _localizationService.GetString("Error") });
     }

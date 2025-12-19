@@ -1,0 +1,128 @@
+@model Talabi.Portal.Models.PaymentsViewModel
+@using Talabi.Portal.Services
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("Payments");
+    Layout = "_Layout";
+}
+
+<div class="row">
+    <!-- Daily Earnings -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            @LocalizationService.GetString("DailyEarnings")</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DailyEarnings.ToString("C2")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Earnings -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            @LocalizationService.GetString("WeeklyEarnings")</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.WeeklyEarnings.ToString("C2")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Earnings -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            @LocalizationService.GetString("MonthlyEarnings")
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.MonthlyEarnings.ToString("C2")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Earnings -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            @LocalizationService.GetString("TotalEarnings")</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalEarnings.ToString("C2")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("TransactionHistory")</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>@LocalizationService.GetString("OrderId")</th>
+                        <th>@LocalizationService.GetString("Date")</th>
+                        <th>@LocalizationService.GetString("Amount")</th>
+                        <th>@LocalizationService.GetString("Status")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Transactions)
+                    {
+                        <tr>
+                            <td>#@item.CustomerOrderId</td>
+                            <td>@item.CreatedAt.ToLocalTime().ToString("g")</td>
+                            <td>@item.TotalAmount.ToString("C2")</td>
+                            <td>
+                                <span class="badge bg-success">@LocalizationService.GetString("Delivered")</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#dataTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json" // Need to handle dynamic language
+                },
+                "order": [[1, "desc"]] // Sort by Date desc
+            });
+        });
+    </script>
+}

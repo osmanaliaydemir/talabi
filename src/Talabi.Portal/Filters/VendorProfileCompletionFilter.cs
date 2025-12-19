@@ -24,6 +24,13 @@ public class VendorProfileCompletionFilter : IAsyncActionFilter
             return;
         }
 
+        // Skip validation for Admins - they can browse freely without setting up profile
+        if (user.IsInRole("Admin"))
+        {
+            await next();
+            return;
+        }
+
         // Check if user has VendorId in session
         var vendorIdStr = context.HttpContext.Session.GetString("VendorId");
 
