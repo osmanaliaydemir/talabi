@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 
 class PendingApprovalWidget extends StatelessWidget {
   const PendingApprovalWidget({super.key});

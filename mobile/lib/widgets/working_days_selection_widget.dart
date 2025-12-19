@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/models/working_hour.dart';
+import 'package:mobile/features/vendors/data/models/working_hour.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class WorkingDaysSelectionWidget extends StatefulWidget {

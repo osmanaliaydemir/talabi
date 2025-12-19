@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'package:mobile/models/product.dart';
-import 'package:mobile/models/vendor.dart';
+import 'package:mobile/features/products/data/models/product.dart';
+import 'package:mobile/features/vendors/data/models/vendor.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:injectable/injectable.dart';
 

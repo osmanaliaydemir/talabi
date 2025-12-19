@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:mobile/models/order.dart';
+import 'package:mobile/features/orders/data/models/order.dart';
 import 'package:mobile/services/logger_service.dart';
-import 'package:mobile/models/product.dart';
-import 'package:mobile/models/vendor.dart';
-import 'package:mobile/models/search_dtos.dart';
-import 'package:mobile/models/review.dart';
-import 'package:mobile/models/promotional_banner.dart';
+import 'package:mobile/features/products/data/models/product.dart';
+import 'package:mobile/features/vendors/data/models/vendor.dart';
+import 'package:mobile/features/search/data/models/search_dtos.dart';
+import 'package:mobile/features/reviews/data/models/review.dart';
+import 'package:mobile/features/home/data/models/promotional_banner.dart';
 import 'package:mobile/services/api_request_scheduler.dart';
 import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
-import 'package:mobile/models/customer_notification.dart';
+import 'package:mobile/features/notifications/data/models/customer_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/services/navigation_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart' hide Order;
-import 'package:mobile/models/api_response.dart';
-import 'package:mobile/models/delivery_zone_models.dart';
-import 'package:mobile/models/location_item.dart';
+import 'package:mobile/core/models/api_response.dart';
+import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart';
+import 'package:mobile/core/models/location_item.dart';
 
 const String _requestPermitKey = '_apiRequestPermit';
 

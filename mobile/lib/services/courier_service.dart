@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:mobile/models/api_response.dart';
-import 'package:mobile/models/courier.dart';
-import 'package:mobile/models/courier_order.dart';
-import 'package:mobile/models/courier_earning.dart';
-import 'package:mobile/models/courier_notification.dart';
+import 'package:mobile/core/models/api_response.dart';
+import 'package:mobile/features/profile/data/models/courier.dart';
+import 'package:mobile/features/orders/data/models/courier_order.dart';
+import 'package:mobile/features/wallet/data/models/courier_earning.dart';
+import 'package:mobile/features/notifications/data/models/courier_notification.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/utils/custom_routes.dart';
-import 'package:mobile/screens/vendor/edit_profile_screen.dart';
-import 'package:mobile/screens/vendor/notifications_screen.dart';
-import 'package:mobile/screens/vendor/orders_screen.dart';
-import 'package:mobile/screens/vendor/products_screen.dart';
-import 'package:mobile/screens/vendor/profile_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/vendor/edit_profile_screen.dart';
+import 'package:mobile/features/notifications/presentation/screens/vendor/notifications_screen.dart';
+import 'package:mobile/features/orders/presentation/screens/vendor/orders_screen.dart';
+import 'package:mobile/features/products/presentation/screens/vendor/products_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/vendor/profile_screen.dart';
 
-import 'package:mobile/screens/vendor/auth/vendor_forgot_password_screen.dart';
-import 'package:mobile/screens/vendor/auth/vendor_verify_reset_code_screen.dart';
-import 'package:mobile/screens/vendor/auth/vendor_reset_password_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/vendor/vendor_forgot_password_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/vendor/vendor_verify_reset_code_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/vendor/vendor_reset_password_screen.dart';
 
 /// Vendor modülü için route yöneticisi
 class VendorRouter {

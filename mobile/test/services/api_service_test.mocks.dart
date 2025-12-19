@@ -5,8 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:mobile/models/product.dart' as _i6;
-import 'package:mobile/models/vendor.dart' as _i7;
+import 'package:mobile/features/products/data/models/product.dart' as _i6;
+import 'package:mobile/features/vendors/data/models/vendor.dart' as _i7;
 import 'package:mobile/services/api_request_scheduler.dart' as _i2;
 import 'package:mobile/services/cache_service.dart' as _i5;
 import 'package:mobile/services/connectivity_service.dart' as _i3;

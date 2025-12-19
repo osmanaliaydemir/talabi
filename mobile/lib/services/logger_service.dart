@@ -5,7 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
-import 'package:mobile/providers/auth_provider.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:hive_flutter/hive_flutter.dart';

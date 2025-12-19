@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/models/currency.dart' as currency_model;
+import 'package:mobile/features/settings/data/models/currency.dart' as currency_model;
 
 class CurrencyFormatter {
   static String format(double amount, currency_model.Currency currency) {

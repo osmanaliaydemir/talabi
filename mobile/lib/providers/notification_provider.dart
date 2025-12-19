@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/models/customer_notification.dart';
+import 'package:mobile/features/notifications/data/models/customer_notification.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 

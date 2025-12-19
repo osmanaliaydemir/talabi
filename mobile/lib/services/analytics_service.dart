@@ -1,7 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:mobile/models/cart_item.dart';
-import 'package:mobile/models/product.dart';
+import 'package:mobile/features/cart/data/models/cart_item.dart';
+import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/services/logger_service.dart';
 
 class AnalyticsService {

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/utils/custom_routes.dart';
-import 'package:mobile/models/courier_order.dart';
-import 'package:mobile/screens/courier/active_deliveries_screen.dart';
-import 'package:mobile/screens/courier/availability_screen.dart';
-import 'package:mobile/screens/courier/edit_profile_screen.dart';
-import 'package:mobile/screens/courier/location_management_screen.dart';
-import 'package:mobile/screens/courier/navigation_settings_screen.dart';
-import 'package:mobile/screens/courier/notifications_screen.dart';
-import 'package:mobile/screens/courier/profile_screen.dart';
-import 'package:mobile/screens/courier/delivery_proof_screen.dart';
-import 'package:mobile/screens/courier/earnings_screen.dart';
-import 'package:mobile/screens/courier/order_detail_screen.dart';
-import 'package:mobile/screens/courier/order_map_screen.dart';
+import 'package:mobile/features/orders/data/models/courier_order.dart';
+import 'package:mobile/features/orders/presentation/screens/courier/active_deliveries_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/courier/availability_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/courier/edit_profile_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/courier/location_management_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/courier/navigation_settings_screen.dart';
+import 'package:mobile/features/notifications/presentation/screens/courier/notifications_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/courier/profile_screen.dart';
+import 'package:mobile/features/orders/presentation/screens/courier/delivery_proof_screen.dart';
+import 'package:mobile/features/wallet/presentation/screens/courier/earnings_screen.dart';
+import 'package:mobile/features/orders/presentation/screens/courier/order_detail_screen.dart';
+import 'package:mobile/features/orders/presentation/screens/courier/order_map_screen.dart';
 import 'package:mobile/services/logger_service.dart';
-import 'package:mobile/screens/courier/auth/courier_forgot_password_screen.dart';
-import 'package:mobile/screens/courier/auth/courier_verify_reset_code_screen.dart';
-import 'package:mobile/screens/courier/auth/courier_reset_password_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/courier/courier_forgot_password_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/courier/courier_verify_reset_code_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/courier/courier_reset_password_screen.dart';
 
 /// Courier modülü için route yöneticisi
 class CourierRouter {
