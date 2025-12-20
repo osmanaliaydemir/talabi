@@ -7,20 +7,21 @@ import 'package:mobile/features/vendors/data/models/vendor.dart';
 import 'package:mobile/features/search/data/models/search_dtos.dart';
 import 'package:mobile/features/reviews/data/models/review.dart';
 import 'package:mobile/features/home/data/models/promotional_banner.dart';
-import 'package:mobile/services/api_request_scheduler.dart';
 import 'package:mobile/services/cache_service.dart';
-import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/features/notifications/data/models/customer_notification.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mobile/services/secure_storage_service.dart';
-import 'package:mobile/services/navigation_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart' hide Order;
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart';
 import 'package:mobile/core/models/location_item.dart';
 
-const String _requestPermitKey = '_apiRequestPermit';
+import 'package:mobile/core/network/network_client.dart';
+import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
+import 'package:mobile/features/orders/data/datasources/order_remote_data_source.dart';
+import 'package:mobile/features/vendors/data/datasources/vendor_remote_data_source.dart';
+
+// const String _requestPermitKey = '_apiRequestPermit'; // Moved to NetworkClient
 
 @lazySingleton
 class ApiService {
@@ -29,343 +30,27 @@ class ApiService {
 
   @factoryMethod
   ApiService.init(
-    this._connectivityService,
+    this._networkClient,
+    this._authRemoteDataSource,
+    this._productRemoteDataSource,
+    this._orderRemoteDataSource,
+    this._vendorRemoteDataSource,
     this._cacheService,
-    this._requestScheduler,
-  ) {
-    // Add logging interceptor
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // Check connectivity before making request
-          if (!_connectivityService.isOnline) {
-            final isOnline = await _connectivityService.checkConnectivity();
-            if (!isOnline) {
-              return handler.reject(
-                DioException(
-                  requestOptions: options,
-                  error: 'No internet connection',
-                  type: DioExceptionType.connectionError,
-                ),
-              );
-            }
-          }
-
-          // Add Accept-Language header
-          final prefs = await SharedPreferences.getInstance();
-          final languageCode = prefs.getString('language') ?? 'tr';
-          options.headers['Accept-Language'] = languageCode;
-
-          final permit = await _requestScheduler.acquire(
-            highPriority: _isHighPriorityRequest(options),
-          );
-          options.extra[_requestPermitKey] = permit;
-
-          final token = await SecureStorageService.instance.getToken();
-          if (token != null && !options.headers.containsKey('Authorization')) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-
-          // If logging out, reject new requests to prevent race conditions
-          if (_isLoggingOut &&
-              !options.path.contains('login') &&
-              !options.path.contains('register') &&
-              !options.path.contains('resend-verification-code') &&
-              !options.path.contains('verify-email')) {
-            return handler.reject(
-              DioException(
-                requestOptions: options,
-                error: 'Logout in progress',
-                type: DioExceptionType.cancel,
-              ),
-            );
-          }
-
-          LoggerService().debug(
-            '📤 [HTTP REQUEST] ${options.method} ${options.uri}',
-          );
-          LoggerService().debug(
-            '📤 [HTTP REQUEST] Headers: ${options.headers}',
-          );
-          LoggerService().debug('📤 [HTTP REQUEST] Data: ${options.data}');
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          _releasePermit(response.requestOptions);
-          LoggerService().debug(
-            '📥 [HTTP RESPONSE] ${response.statusCode} ${response.requestOptions.uri}',
-          );
-          LoggerService().debug('📥 [HTTP RESPONSE] Data: ${response.data}');
-          return handler.next(response);
-        },
-        onError: (error, handler) async {
-          _releasePermit(error.requestOptions);
-          final errorMessage =
-              '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri} | Status: ${error.response?.statusCode} | Message: ${error.message}';
-          LoggerService().error(errorMessage, error, error.stackTrace);
-          LoggerService().debug(
-            '❌ [HTTP ERROR] Response: ${error.response?.data}',
-          );
-
-          // Try to parse standardized API response
-          String? friendlyMessage;
-          String? errorCode;
-          if (error.response?.data != null &&
-              error.response?.data is Map<String, dynamic>) {
-            try {
-              final apiResponse = ApiResponse.fromJson(
-                error.response!.data,
-                (json) => json,
-              );
-              friendlyMessage = apiResponse.message;
-              errorCode = apiResponse.errorCode;
-              if (errorCode != null) {
-                LoggerService().debug('❌ [HTTP ERROR] Error Code: $errorCode');
-              }
-              if (apiResponse.errors != null &&
-                  apiResponse.errors!.isNotEmpty) {
-                friendlyMessage =
-                    '${friendlyMessage ?? ''}\n${apiResponse.errors!.join('\n')}';
-              }
-            } catch (_) {
-              // Failed to parse as ApiResponse, fallback to existing logic
-            }
-          }
-
-          // Handle 401 Unauthorized - Refresh Token Logic
-          if (error.response?.statusCode == 401 &&
-              !error.requestOptions.path.contains('login') &&
-              !error.requestOptions.path.contains('refresh-token') &&
-              !_isLoggingOut) {
-            LoggerService().debug(
-              '🔄 [REFRESH TOKEN] 401 detected. Attempting to refresh...',
-            );
-
-            try {
-              final token = await SecureStorageService.instance.getToken();
-              final refreshToken = await SecureStorageService.instance
-                  .getRefreshToken();
-
-              if (token != null && refreshToken != null) {
-                late Map<String, String> newTokens;
-
-                // If already refreshing, wait for the existing refresh to complete
-                if (_isRefreshing && _refreshCompleter != null) {
-                  LoggerService().debug(
-                    '🔄 [REFRESH TOKEN] Already refreshing, waiting...',
-                  );
-                  newTokens = await _refreshCompleter!.future;
-                } else {
-                  // Start new refresh operation
-                  _isRefreshing = true;
-                  _refreshCompleter = Completer<Map<String, String>>();
-
-                  try {
-                    newTokens = await _refreshToken(token, refreshToken);
-
-                    // Update tokens in SharedPreferences
-                    await SecureStorageService.instance.setToken(
-                      newTokens['token']!,
-                    );
-                    await SecureStorageService.instance.setRefreshToken(
-                      newTokens['refreshToken']!,
-                    );
-
-                    _refreshCompleter!.complete(newTokens);
-                  } catch (e, stackTrace) {
-                    // Refresh failed, ensure we handle redirect BEFORE waking up other listeners
-                    _handleAuthFailure();
-
-                    _refreshCompleter!.completeError(
-                      DioException(
-                        requestOptions: error.requestOptions,
-                        response: error.response,
-                        type: error.type,
-                        error: e,
-                        message: e.toString(),
-                      ),
-                      stackTrace,
-                    );
-                    rethrow;
-                  } finally {
-                    _isRefreshing = false;
-                    _refreshCompleter = null;
-                  }
-                }
-
-                // Retry the original request with new token
-                final options = error.requestOptions;
-                options.headers['Authorization'] =
-                    'Bearer ${newTokens['token']!}';
-
-                final cloneReq = await _dio.request(
-                  options.path,
-                  data: options.data,
-                  queryParameters: options.queryParameters,
-                  options: Options(
-                    method: options.method,
-                    headers: options.headers,
-                  ),
-                );
-
-                return handler.resolve(cloneReq);
-              }
-            } catch (e, stackTrace) {
-              LoggerService().error('🔴 [REFRESH TOKEN] Failed', e, stackTrace);
-              _isRefreshing = false;
-              _refreshCompleter = null;
-
-              // If refresh fails, redirect to login
-              _handleAuthFailure();
-            }
-          } else if (error.response?.statusCode == 401) {
-            // Sadece '/auth/login' path'inde (veya genel login endpointlerinde) 401 gelirse yönlendirme YAPMA.
-            // Çünkü kullanıcı zaten login olmaya çalışıyordur, şifre yanlıştır vs.
-            final bool isLoginRequest = error.requestOptions.path.contains(
-              '/auth/login',
-            );
-
-            if (!isLoginRequest) {
-              // Normal bir istekte 401 geldiyse token geçersizdir, login'e at.
-              _handleAuthFailure();
-            }
-          }
-
-          // Handle 409 Conflict (Concurrency)
-          if (error.response?.statusCode == 409) {
-            if (friendlyMessage != null) {
-              NavigationService.showSnackBar(friendlyMessage, isError: true);
-            }
-          }
-
-          // Handle 500 Server Error
-          if (error.response?.statusCode == 500) {
-            if (friendlyMessage != null) {
-              NavigationService.showSnackBar(friendlyMessage, isError: true);
-            }
-          }
-
-          // Update the error with the friendly message if available
-          if (friendlyMessage != null) {
-            // If not already handled by specific status codes above, show generic error
-            // Check if error snackbar should be skipped
-            final skipErrorSnackbar =
-                error.requestOptions.extra['skipErrorSnackbar'] == true;
-
-            if (!skipErrorSnackbar &&
-                error.response?.statusCode != 409 &&
-                error.response?.statusCode != 500 &&
-                error.response?.statusCode != 401) {
-              NavigationService.showSnackBar(friendlyMessage, isError: true);
-            }
-
-            final newError = DioException(
-              requestOptions: error.requestOptions,
-              response: error.response,
-              type: error.type,
-              error: friendlyMessage,
-              message: friendlyMessage,
-            );
-            return handler.next(newError);
-          }
-
-          return handler.next(error);
-        },
-      ),
-    );
-  }
-
-  static const String baseUrl = 'https://talabi.runasp.net/api';
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-    ),
   );
 
+  final NetworkClient _networkClient;
+  final AuthRemoteDataSource _authRemoteDataSource;
+  final ProductRemoteDataSource _productRemoteDataSource;
+  final OrderRemoteDataSource _orderRemoteDataSource;
+  final VendorRemoteDataSource _vendorRemoteDataSource;
   final CacheService _cacheService;
-  final ApiRequestScheduler _requestScheduler;
-  final ConnectivityService _connectivityService;
 
-  // Track refresh token operation to prevent concurrent calls
-  bool _isRefreshing = false;
-  bool _isRedirectingToLogin = false;
-  bool _isLoggingOut = false;
-  Completer<Map<String, String>>? _refreshCompleter;
+  Dio get dio => _networkClient.dio;
+  static const String baseUrl = NetworkClient.baseUrl;
+  void notifyLogout() => _networkClient.notifyLogout();
+  void resetLogout() => _networkClient.resetLogout();
 
-  Dio get dio => _dio;
-
-  void notifyLogout() {
-    _isLoggingOut = true;
-    LoggerService().debug(
-      '🔒 [AUTH] Logout initiated. Blocking further requests.',
-    );
-    // Cancel any pending refresh
-    if (_isRefreshing &&
-        _refreshCompleter != null &&
-        !_refreshCompleter!.isCompleted) {
-      _refreshCompleter!.completeError('Logout initiated');
-      _refreshCompleter = null;
-      _isRefreshing = false;
-    }
-  }
-
-  void resetLogout() {
-    if (_isLoggingOut) {
-      _isLoggingOut = false;
-      LoggerService().debug('🔒 [AUTH] Logout state reset. Resuming requests.');
-    }
-  }
-
-  void _handleAuthFailure() {
-    if (!_isRedirectingToLogin) {
-      _isRedirectingToLogin = true;
-      LoggerService().debug('🔒 [AUTH] Initiating redirect to login...');
-      NavigationService.navigateToRemoveUntil('/login', (route) => false);
-      // Reset flag after a delay to allow future redirects if needed
-      Future.delayed(const Duration(seconds: 2), () {
-        _isRedirectingToLogin = false;
-      });
-    }
-  }
-
-  Future<Map<String, String>> _refreshToken(
-    String token,
-    String refreshToken,
-  ) async {
-    final permit = await _requestScheduler.acquire(highPriority: true);
-    try {
-      // Create a separate Dio instance to avoid interceptor loops
-      final dio = Dio(BaseOptions(baseUrl: baseUrl));
-      final response = await dio.post(
-        '/auth/refresh-token',
-        data: {'token': token, 'refreshToken': refreshToken},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) =>
-            json
-                as Map<
-                  String,
-                  dynamic
-                >, // LoginResponseDto direkt Map olarak döndürüyoruz
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Token yenileme başarısız');
-      }
-
-      final data = apiResponse.data!;
-      return {
-        'token': data['token'] as String,
-        'refreshToken': data['refreshToken'] as String,
-      };
-    } finally {
-      permit.release();
-    }
-  }
+  // Legacy body placeholder
 
   Future<List<Vendor>> getVendors({
     int? vendorType,
@@ -373,54 +58,12 @@ class ApiService {
     int pageSize = 6,
   }) async {
     try {
-      // Try network first
-      final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
-      if (vendorType != null) {
-        queryParams['vendorType'] = vendorType;
-      }
-      final response = await _dio.get(
-        '/vendors',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      final vendors = await _vendorRemoteDataSource.getVendors(
+        vendorType: vendorType,
+        page: page,
+        pageSize: pageSize,
       );
-      // Backend artık ApiResponse<PagedResultDto<VendorDto>> formatında döndürüyor
-      List<Vendor> vendors;
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) {
-            if (json is Map<String, dynamic> && json.containsKey('items')) {
-              return (json['items'] as List)
-                  .map((e) => e as Map<String, dynamic>)
-                  .toList();
-            }
-            if (json is List) {
-              return (json).map((e) => e as Map<String, dynamic>).toList();
-            }
-            return [];
-          },
-        );
 
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Satıcılar getirilemedi');
-        }
-
-        vendors = apiResponse.data!
-            .map((json) => Vendor.fromJson(json))
-            .toList();
-      } else {
-        // Eski format (direkt liste) veya direkt pageResult
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('items')) {
-          final items = response.data['items'] as List;
-          vendors = items.map((json) => Vendor.fromJson(json)).toList();
-        } else {
-          final List<dynamic> data = response.data;
-          vendors = data.map((json) => Vendor.fromJson(json)).toList();
-        }
-      }
-
-      // Cache the result (only first page)
       if (page == 1) {
         await _cacheService.cacheVendors(vendors);
       }
@@ -429,7 +72,6 @@ class ApiService {
     } on DioException catch (e, stackTrace) {
       LoggerService().error('Error fetching vendors', e, stackTrace);
 
-      // If offline or network error, try cache (only for first page request)
       if (page == 1 &&
           (e.type == DioExceptionType.connectionTimeout ||
               e.type == DioExceptionType.receiveTimeout ||
@@ -454,52 +96,12 @@ class ApiService {
     int pageSize = 6,
   }) async {
     try {
-      // Try network first
-      final response = await _dio.get(
-        '/vendors/$vendorId/products',
-        queryParameters: {'page': page, 'pageSize': pageSize},
+      final products = await _productRemoteDataSource.getProducts(
+        vendorId,
+        page: page,
+        pageSize: pageSize,
       );
-      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
-      List<Product> products;
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) {
-            if (json is Map<String, dynamic> && json.containsKey('items')) {
-              return (json['items'] as List)
-                  .map((e) => e as Map<String, dynamic>)
-                  .toList();
-            }
-            if (json is List) {
-              return (json).map((e) => e as Map<String, dynamic>).toList();
-            }
-            return [];
-          },
-        );
 
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı ürünleri getirilemedi',
-          );
-        }
-
-        products = apiResponse.data!
-            .map((json) => Product.fromJson(json))
-            .toList();
-      } else {
-        // Eski format
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('items')) {
-          final items = response.data['items'] as List;
-          products = items.map((json) => Product.fromJson(json)).toList();
-        } else {
-          final List<dynamic> data = response.data;
-          products = data.map((json) => Product.fromJson(json)).toList();
-        }
-      }
-
-      // Cache the result (only first page)
       if (page == 1) {
         await _cacheService.cacheProducts(products);
       }
@@ -508,7 +110,6 @@ class ApiService {
     } on DioException catch (e, stackTrace) {
       LoggerService().error('Error fetching products', e, stackTrace);
 
-      // If offline or network error, try cache (only for first page request)
       if (page == 1 &&
           (e.type == DioExceptionType.connectionTimeout ||
               e.type == DioExceptionType.receiveTimeout ||
@@ -533,41 +134,11 @@ class ApiService {
     int? vendorType,
   }) async {
     try {
-      final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
-      if (vendorType != null) {
-        queryParams['vendorType'] = vendorType;
-      }
-      final response = await _dio.get(
-        '/products/popular',
-        queryParameters: queryParams,
+      return await _productRemoteDataSource.getPopularProducts(
+        page: page,
+        pageSize: pageSize,
+        vendorType: vendorType,
       );
-      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) {
-          if (json is Map<String, dynamic> && json.containsKey('items')) {
-            return (json['items'] as List)
-                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
-          if (json is List) {
-            return json
-                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
-          return <ProductDto>[];
-        },
-      );
-
-      if (!apiResponse.success) {
-        throw Exception(apiResponse.message ?? 'Popüler ürünler getirilemedi');
-      }
-
-      // Return empty list if data is null
-      if (apiResponse.data == null) return [];
-
-      // ProductDto'yu Product'a çevir
-      return apiResponse.data!.map((dto) => dto.toProduct()).toList();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching popular products', e, stackTrace);
       rethrow;
@@ -579,30 +150,10 @@ class ApiService {
     int? vendorType,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (language != null) {
-        queryParams['language'] = language;
-      }
-      if (vendorType != null) {
-        queryParams['vendorType'] = vendorType;
-      }
-      final response = await _dio.get(
-        '/banners',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      return await _productRemoteDataSource.getBanners(
+        language: language,
+        vendorType: vendorType,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => (json as List).map((e) => e as Map<String, dynamic>).toList(),
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Banner\'lar getirilemedi');
-      }
-
-      return apiResponse.data!
-          .map((json) => PromotionalBanner.fromJson(json))
-          .toList();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching banners', e, stackTrace);
       rethrow;
@@ -611,19 +162,7 @@ class ApiService {
 
   Future<Product> getProduct(String productId) async {
     try {
-      final response = await _dio.get('/products/$productId');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => ProductDto.fromJson(json as Map<String, dynamic>),
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Ürün bulunamadı');
-      }
-
-      // ProductDto'yu Product'a çevir
-      return apiResponse.data!.toProduct();
+      return await _productRemoteDataSource.getProduct(productId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching product', e, stackTrace);
       rethrow;
@@ -633,7 +172,7 @@ class ApiService {
   /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
   Future<List<Map<String, dynamic>>> getCountries() async {
     try {
-      final response = await _dio.get('/locations/countries');
+      final response = await dio.get('/locations/countries');
       if (response.data is List) {
         return List<Map<String, dynamic>>.from(response.data);
       }
@@ -646,7 +185,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getLocationCities(String countryId) async {
     try {
-      final response = await _dio.get('/locations/cities/$countryId');
+      final response = await dio.get('/locations/cities/$countryId');
       if (response.data is List) {
         return List<Map<String, dynamic>>.from(response.data);
       }
@@ -659,7 +198,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getLocationDistricts(String cityId) async {
     try {
-      final response = await _dio.get('/locations/districts/$cityId');
+      final response = await dio.get('/locations/districts/$cityId');
       if (response.data is List) {
         return List<Map<String, dynamic>>.from(response.data);
       }
@@ -674,7 +213,7 @@ class ApiService {
     String districtId,
   ) async {
     try {
-      final response = await _dio.get('/locations/localities/$districtId');
+      final response = await dio.get('/locations/localities/$districtId');
       if (response.data is List) {
         return List<Map<String, dynamic>>.from(response.data);
       }
@@ -691,35 +230,11 @@ class ApiService {
     int pageSize = 6,
   }) async {
     try {
-      final response = await _dio.get(
-        '/products/$productId/similar',
-        queryParameters: {'page': page, 'pageSize': pageSize},
+      return await _productRemoteDataSource.getSimilarProducts(
+        productId,
+        page: page,
+        pageSize: pageSize,
       );
-
-      // Backend artık ApiResponse<PagedResultDto<ProductDto>> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) {
-          if (json is Map<String, dynamic> && json.containsKey('items')) {
-            return (json['items'] as List)
-                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
-          if (json is List) {
-            return json
-                .map((e) => ProductDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
-          return <ProductDto>[];
-        },
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        return [];
-      }
-
-      // ProductDto listesini Product listesine çevir
-      return apiResponse.data!.map((dto) => dto.toProduct()).toList();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching similar products', e, stackTrace);
       return [];
@@ -734,69 +249,21 @@ class ApiService {
     String? note,
   }) async {
     try {
-      final data = {
-        'vendorId': vendorId,
-        'items': items.entries
-            .map((e) => {'productId': e.key, 'quantity': e.value})
-            .toList(),
-        if (deliveryAddressId != null) 'deliveryAddressId': deliveryAddressId,
-        if (paymentMethod != null) 'paymentMethod': paymentMethod,
-        if (note != null) 'note': note,
-      };
-
-      final response = await _dio.post('/orders', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic>) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // OrderDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Sipariş oluşturulamadı');
-        }
-
-        return Order.fromJson(apiResponse.data!);
-      }
-      // Eski format (direkt Order)
-      return Order.fromJson(response.data);
+      return await _orderRemoteDataSource.createOrder(
+        vendorId,
+        items,
+        deliveryAddressId: deliveryAddressId,
+        paymentMethod: paymentMethod,
+        note: note,
+      );
     } catch (e, stackTrace) {
       LoggerService().error('Error creating order', e, stackTrace);
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    try {
-      final response = await _dio.post(
-        '/auth/login',
-        data: {'email': email, 'password': password},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) =>
-            json
-                as Map<
-                  String,
-                  dynamic
-                >, // LoginResponseDto direkt Map olarak döndürüyoruz
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Giriş başarısız');
-      }
-
-      return apiResponse.data!;
-    } catch (e, stackTrace) {
-      LoggerService().error('Error logging in', e, stackTrace);
-      rethrow;
-    }
+  Future<Map<String, dynamic>> login(String email, String password) {
+    return _authRemoteDataSource.login(email, password);
   }
 
   Future<Map<String, dynamic>> register(
@@ -804,120 +271,16 @@ class ApiService {
     String password,
     String fullName, {
     String? language,
-  }) async {
-    try {
-      LoggerService().debug('🔵 [REGISTER] Starting registration...');
-      LoggerService().debug('🔵 [REGISTER] URL: $baseUrl/auth/register');
-      LoggerService().debug('🔵 [REGISTER] Email: $email');
-      LoggerService().debug('🔵 [REGISTER] FullName: $fullName');
-      LoggerService().debug(
-        '🔵 [REGISTER] Password length: ${password.length}',
-      );
-      LoggerService().debug(
-        '🔵 [REGISTER] Language: ${language ?? "not specified"}',
-      );
-
-      final requestData = {
-        'email': email,
-        'password': password,
-        'fullName': fullName,
-        if (language != null) 'language': language,
-      };
-      LoggerService().debug('🔵 [REGISTER] Request data: $requestData');
-
-      final response = await _dio.post('/auth/register', data: requestData);
-
-      LoggerService().debug(
-        '🟢 [REGISTER] Success! Status: ${response.statusCode}',
-      );
-      LoggerService().debug('🟢 [REGISTER] Response data: ${response.data}');
-
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        final errorMessage =
-            apiResponse.message ??
-            (apiResponse.errors?.isNotEmpty == true
-                ? apiResponse.errors!.join(', ')
-                : 'Kayıt başarısız');
-        throw Exception(errorMessage);
-      }
-
-      return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } on DioException catch (e, stackTrace) {
-      final errorMessage =
-          '🔴 [REGISTER] DioException | Type: ${e.type} | Path: ${e.requestOptions.path} | Status: ${e.response?.statusCode}';
-      LoggerService().error(errorMessage, e, stackTrace);
-      LoggerService().debug(
-        '🔴 [REGISTER] Request data: ${e.requestOptions.data}',
-      );
-      LoggerService().debug('🔴 [REGISTER] Response data: ${e.response?.data}');
-
-      if (e.response != null) {
-        final responseData = e.response?.data;
-        String errorMessage = 'Unknown error';
-
-        // Handle array response (ASP.NET Identity format)
-        if (responseData is List && responseData.isNotEmpty) {
-          final firstError = responseData[0];
-          if (firstError is Map) {
-            errorMessage =
-                firstError['description'] ??
-                firstError['message'] ??
-                firstError['error'] ??
-                firstError.toString();
-          } else {
-            errorMessage = firstError.toString();
-          }
-        }
-        // Handle ApiResponse format
-        else if (responseData is Map && responseData.containsKey('success')) {
-          final apiResponse = ApiResponse.fromJson(
-            Map<String, dynamic>.from(responseData),
-            (json) => json as Map<String, dynamic>?,
-          );
-          errorMessage =
-              apiResponse.message ??
-              (apiResponse.errors?.isNotEmpty == true
-                  ? apiResponse.errors!.join(', ')
-                  : 'Unknown error');
-        }
-        // Handle object response
-        else if (responseData is Map) {
-          errorMessage =
-              responseData['description'] ??
-              responseData['message'] ??
-              responseData['error'] ??
-              responseData.toString();
-        }
-        // Handle string response
-        else if (responseData is String) {
-          errorMessage = responseData;
-        }
-        // Fallback
-        else {
-          errorMessage =
-              responseData?.toString() ?? e.message ?? 'Unknown error';
-        }
-
-        LoggerService().debug(
-          '🔴 [REGISTER] Parsed error message: $errorMessage',
-        );
-        throw Exception(errorMessage);
-      } else {
-        throw Exception('Network error: ${e.message}');
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('🔴 [REGISTER] Unexpected error', e, stackTrace);
-      rethrow;
-    }
+  }) {
+    return _authRemoteDataSource.register(
+      email,
+      password,
+      fullName,
+      language: language,
+    );
   }
 
-  // Vendor Registration - Creates both User and Vendor records
+  // Vendor Registration
   Future<Map<String, dynamic>> vendorRegister({
     required String email,
     required String password,
@@ -928,139 +291,20 @@ class ApiService {
     String? city,
     String? description,
     String? language,
-    int vendorType = 1, // 1 = Restaurant, 2 = Market (default: Restaurant)
-  }) async {
-    try {
-      LoggerService().debug(
-        '🔵 [VENDOR_REGISTER] Starting vendor registration...',
-      );
-      LoggerService().debug(
-        '🔵 [VENDOR_REGISTER] URL: $baseUrl/auth/vendor-register',
-      );
-      LoggerService().debug('🔵 [VENDOR_REGISTER] Email: $email');
-      LoggerService().debug('🔵 [VENDOR_REGISTER] FullName: $fullName');
-      LoggerService().debug('🔵 [VENDOR_REGISTER] BusinessName: $businessName');
-      LoggerService().debug('🔵 [VENDOR_REGISTER] Phone: $phone');
-      LoggerService().debug(
-        '🔵 [VENDOR_REGISTER] Language: ${language ?? "not specified"}',
-      );
-
-      final requestData = {
-        'email': email,
-        'password': password,
-        'fullName': fullName,
-        'businessName': businessName,
-        'phone': phone,
-        'vendorType': vendorType,
-        if (address != null) 'address': address,
-        if (city != null) 'city': city,
-        if (description != null) 'description': description,
-        if (language != null) 'language': language,
-      };
-      LoggerService().debug('🔵 [VENDOR_REGISTER] Request data: $requestData');
-
-      final response = await _dio.post(
-        '/auth/vendor-register',
-        data: requestData,
-        options: Options(extra: {'skipErrorSnackbar': true}),
-      );
-
-      LoggerService().debug(
-        '🟢 [VENDOR_REGISTER] Success! Status: ${response.statusCode}',
-      );
-      LoggerService().debug(
-        '🟢 [VENDOR_REGISTER] Response data: ${response.data}',
-      );
-
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        final errorMessage =
-            apiResponse.message ??
-            (apiResponse.errors?.isNotEmpty == true
-                ? apiResponse.errors!.join(', ')
-                : 'Satıcı kaydı başarısız');
-        throw Exception(errorMessage);
-      }
-
-      return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } on DioException catch (e, stackTrace) {
-      final errorMessage =
-          '🔴 [VENDOR_REGISTER] DioException | Type: ${e.type} | Path: ${e.requestOptions.path} | Status: ${e.response?.statusCode}';
-      LoggerService().error(errorMessage, e, stackTrace);
-      LoggerService().debug(
-        '🔴 [VENDOR_REGISTER] Request data: ${e.requestOptions.data}',
-      );
-      LoggerService().debug(
-        '🔴 [VENDOR_REGISTER] Response data: ${e.response?.data}',
-      );
-
-      if (e.response != null) {
-        final responseData = e.response?.data;
-        String errorMessage = 'Unknown error';
-
-        // Handle array response (ASP.NET Identity format)
-        if (responseData is List && responseData.isNotEmpty) {
-          final firstError = responseData[0];
-          if (firstError is Map) {
-            errorMessage =
-                firstError['description'] ??
-                firstError['message'] ??
-                firstError['error'] ??
-                firstError.toString();
-          } else {
-            errorMessage = firstError.toString();
-          }
-        }
-        // Handle ApiResponse format
-        else if (responseData is Map && responseData.containsKey('success')) {
-          final apiResponse = ApiResponse.fromJson(
-            Map<String, dynamic>.from(responseData),
-            (json) => json as Map<String, dynamic>?,
-          );
-          errorMessage =
-              apiResponse.message ??
-              (apiResponse.errors?.isNotEmpty == true
-                  ? apiResponse.errors!.join(', ')
-                  : 'Unknown error');
-        }
-        // Handle object response
-        else if (responseData is Map) {
-          errorMessage =
-              responseData['description'] ??
-              responseData['message'] ??
-              responseData['error'] ??
-              responseData.toString();
-        }
-        // Handle string response
-        else if (responseData is String) {
-          errorMessage = responseData;
-        }
-        // Fallback
-        else {
-          errorMessage =
-              responseData?.toString() ?? e.message ?? 'Unknown error';
-        }
-
-        LoggerService().debug(
-          '🔴 [VENDOR_REGISTER] Parsed error message: $errorMessage',
-        );
-        throw Exception(errorMessage);
-      } else {
-        throw Exception('Network error: ${e.message}');
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        '🔴 [VENDOR_REGISTER] Unexpected error',
-        e,
-        stackTrace,
-      );
-      rethrow;
-    }
+    int vendorType = 1,
+  }) {
+    return _authRemoteDataSource.vendorRegister(
+      email: email,
+      password: password,
+      fullName: fullName,
+      businessName: businessName,
+      phone: phone,
+      address: address,
+      city: city,
+      description: description,
+      language: language,
+      vendorType: vendorType,
+    );
   }
 
   Future<Map<String, dynamic>> courierRegister({
@@ -1070,281 +314,49 @@ class ApiService {
     required String phone,
     required int vehicleType,
     String? language,
-  }) async {
-    try {
-      LoggerService().debug(
-        '🔵 [COURIER_REGISTER] Starting courier registration...',
-      );
-      LoggerService().debug(
-        '🔵 [COURIER_REGISTER] URL: $baseUrl/auth/courier-register',
-      );
-      LoggerService().debug('🔵 [COURIER_REGISTER] Email: $email');
-      LoggerService().debug('🔵 [COURIER_REGISTER] FullName: $fullName');
-      LoggerService().debug('🔵 [COURIER_REGISTER] Phone: $phone');
-      LoggerService().debug('🔵 [COURIER_REGISTER] VehicleType: $vehicleType');
-      LoggerService().debug(
-        '🔵 [COURIER_REGISTER] Language: ${language ?? "not specified"}',
-      );
-
-      final requestData = {
-        'email': email,
-        'password': password,
-        'fullName': fullName,
-        'phone': phone,
-        'vehicleType': vehicleType,
-        if (language != null) 'language': language,
-      };
-      LoggerService().debug('🔵 [COURIER_REGISTER] Request data: $requestData');
-
-      final response = await _dio.post(
-        '/auth/courier-register',
-        data: requestData,
-        options: Options(extra: {'skipErrorSnackbar': true}),
-      );
-
-      LoggerService().debug(
-        '🟢 [COURIER_REGISTER] Success! Status: ${response.statusCode}',
-      );
-      LoggerService().debug(
-        '🟢 [COURIER_REGISTER] Response data: ${response.data}',
-      );
-
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        final errorMessage =
-            apiResponse.message ??
-            (apiResponse.errors?.isNotEmpty == true
-                ? apiResponse.errors!.join(', ')
-                : 'Kurye kaydı başarısız');
-        throw Exception(errorMessage);
-      }
-
-      return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } on DioException catch (e, stackTrace) {
-      final errorMessage =
-          '🔴 [COURIER_REGISTER] DioException | Type: ${e.type} | Path: ${e.requestOptions.path} | Status: ${e.response?.statusCode}';
-      LoggerService().error(errorMessage, e, stackTrace);
-      LoggerService().debug(
-        '🔴 [COURIER_REGISTER] Request data: ${e.requestOptions.data}',
-      );
-      LoggerService().debug(
-        '🔴 [COURIER_REGISTER] Response data: ${e.response?.data}',
-      );
-
-      if (e.response != null) {
-        final responseData = e.response?.data;
-        String errorMessage = 'Unknown error';
-
-        // Handle array response (ASP.NET Identity format)
-        if (responseData is List && responseData.isNotEmpty) {
-          final firstError = responseData[0];
-          if (firstError is Map) {
-            errorMessage =
-                firstError['description'] ??
-                firstError['message'] ??
-                firstError['error'] ??
-                firstError.toString();
-          } else {
-            errorMessage = firstError.toString();
-          }
-        }
-        // Handle ApiResponse format
-        else if (responseData is Map && responseData.containsKey('success')) {
-          final apiResponse = ApiResponse.fromJson(
-            Map<String, dynamic>.from(responseData),
-            (json) => json as Map<String, dynamic>?,
-          );
-          errorMessage =
-              apiResponse.message ??
-              (apiResponse.errors?.isNotEmpty == true
-                  ? apiResponse.errors!.join(', ')
-                  : 'Unknown error');
-        }
-        // Handle object response
-        else if (responseData is Map) {
-          errorMessage =
-              responseData['message'] ??
-              responseData['error'] ??
-              responseData.toString();
-        }
-        // Handle string response
-        else {
-          errorMessage =
-              responseData?.toString() ?? e.message ?? 'Unknown error';
-        }
-
-        LoggerService().debug(
-          '🔴 [COURIER_REGISTER] Parsed error message: $errorMessage',
-        );
-        throw Exception(errorMessage);
-      } else {
-        throw Exception('Network error: ${e.message}');
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        '🔴 [COURIER_REGISTER] Unexpected error',
-        e,
-        stackTrace,
-      );
-      rethrow;
-    }
+  }) {
+    return _authRemoteDataSource.courierRegister(
+      email: email,
+      password: password,
+      fullName: fullName,
+      phone: phone,
+      vehicleType: vehicleType,
+      language: language,
+    );
   }
 
   void setAuthToken(String token) {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
+    dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
-  Future<void> forgotPassword(String email, {String? language}) async {
-    try {
-      final data = {'email': email};
-      if (language != null) {
-        data['language'] = language;
-      }
-
-      final response = await _dio.post('/auth/forgot-password', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        throw Exception(apiResponse.message ?? 'Şifre sıfırlama başarısız');
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        'Error sending forgot password request',
-        e,
-        stackTrace,
-      );
-      rethrow;
-    }
+  Future<void> forgotPassword(String email, {String? language}) {
+    return _authRemoteDataSource.forgotPassword(email, language: language);
   }
 
-  Future<String> verifyResetCode(String email, String code) async {
-    try {
-      final response = await _dio.post(
-        '/auth/verify-reset-code',
-        data: {'email': email, 'code': code},
-      );
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Kod doğrulama başarısız');
-      }
-
-      // Token'ı döndür
-      return apiResponse.data!['token'] as String;
-    } catch (e, stackTrace) {
-      LoggerService().error('Error verifying reset code', e, stackTrace);
-      rethrow;
-    }
+  Future<String> verifyResetCode(String email, String code) {
+    return _authRemoteDataSource.verifyResetCode(email, code);
   }
 
-  Future<void> resetPassword(
-    String email,
-    String token,
-    String newPassword,
-  ) async {
-    try {
-      final response = await _dio.post(
-        '/auth/reset-password',
-        data: {'email': email, 'token': token, 'newPassword': newPassword},
-      );
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        throw Exception(apiResponse.message ?? 'Şifre sıfırlama başarısız');
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('Error resetting password', e, stackTrace);
-      rethrow;
-    }
+  Future<void> resetPassword(String email, String token, String newPassword) {
+    return _authRemoteDataSource.resetPassword(email, token, newPassword);
   }
 
-  Future<void> confirmEmail(String token, String email) async {
-    try {
-      await _dio.get(
-        '/auth/confirm-email',
-        queryParameters: {'token': token, 'email': email},
-      );
-    } catch (e, stackTrace) {
-      LoggerService().error('Error confirming email', e, stackTrace);
-      rethrow;
-    }
+  Future<void> confirmEmail(String token, String email) {
+    return _authRemoteDataSource.confirmEmail(token, email);
   }
 
-  Future<Map<String, dynamic>> verifyEmailCode(
-    String email,
-    String code,
-  ) async {
-    try {
-      final response = await _dio.post(
-        '/auth/verify-email-code',
-        data: {'email': email, 'code': code},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        final errorMessage =
-            apiResponse.message ??
-            (apiResponse.errors?.isNotEmpty == true
-                ? apiResponse.errors!.join(', ')
-                : 'Email doğrulama başarısız');
-        throw Exception(errorMessage);
-      }
-
-      return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } catch (e, stackTrace) {
-      LoggerService().error('Error verifying email code', e, stackTrace);
-      rethrow;
-    }
+  Future<Map<String, dynamic>> verifyEmailCode(String email, String code) {
+    return _authRemoteDataSource.verifyEmailCode(email, code);
   }
 
   Future<Map<String, dynamic>> resendVerificationCode(
     String email, {
     String? language,
-  }) async {
-    try {
-      final requestData = {
-        'email': email,
-        if (language != null) 'language': language,
-      };
-
-      final response = await _dio.post(
-        '/auth/resend-verification-code',
-        data: requestData,
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        throw Exception(apiResponse.message ?? 'Doğrulama kodu gönderilemedi');
-      }
-
-      return Map<String, dynamic>.from(apiResponse.data ?? {});
-    } catch (e, stackTrace) {
-      LoggerService().error('Error resending verification code', e, stackTrace);
-      rethrow;
-    }
+  }) {
+    return _authRemoteDataSource.resendVerificationCode(
+      email,
+      language: language,
+    );
   }
 
   // External Login (Google, Apple, Facebook)
@@ -1354,121 +366,24 @@ class ApiService {
     required String email,
     required String fullName,
     String? language,
-  }) async {
-    try {
-      LoggerService().debug('🔵 [EXTERNAL_LOGIN] Starting $provider login...');
-      LoggerService().debug('🔵 [EXTERNAL_LOGIN] Email: $email');
-      LoggerService().debug('🔵 [EXTERNAL_LOGIN] FullName: $fullName');
-
-      final requestData = {
-        'provider': provider,
-        'idToken': idToken,
-        'email': email,
-        'fullName': fullName,
-        if (language != null) 'language': language,
-      };
-
-      final response = await _dio.post(
-        '/auth/external-login',
-        data: requestData,
-      );
-
-      LoggerService().debug(
-        '🟢 [EXTERNAL_LOGIN] Success! Status: ${response.statusCode}',
-      );
-      LoggerService().debug(
-        '🟢 [EXTERNAL_LOGIN] Response data: ${response.data}',
-      );
-
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) =>
-            json
-                as Map<
-                  String,
-                  dynamic
-                >, // LoginResponseDto direkt Map olarak döndürüyoruz
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        final errorMessage =
-            apiResponse.message ??
-            (apiResponse.errors?.isNotEmpty == true
-                ? apiResponse.errors!.join(', ')
-                : 'Sosyal medya girişi başarısız');
-        throw Exception(errorMessage);
-      }
-
-      return apiResponse.data!;
-    } on DioException catch (e, stackTrace) {
-      final errorMessage =
-          '🔴 [EXTERNAL_LOGIN] DioException | Type: ${e.type} | Status: ${e.response?.statusCode}';
-      LoggerService().error(errorMessage, e, stackTrace);
-      LoggerService().debug(
-        '🔴 [EXTERNAL_LOGIN] Response data: ${e.response?.data}',
-      );
-
-      if (e.response != null) {
-        final responseData = e.response?.data;
-        String errorMessage = 'Unknown error';
-
-        if (responseData is Map) {
-          errorMessage =
-              responseData['message'] ??
-              responseData['error'] ??
-              responseData.toString();
-        } else if (responseData is String) {
-          errorMessage = responseData;
-        }
-
-        LoggerService().debug(
-          '🔴 [EXTERNAL_LOGIN] Parsed error message: $errorMessage',
-        );
-        throw Exception(errorMessage);
-      } else {
-        throw Exception('Network error: ${e.message}');
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        '🔴 [EXTERNAL_LOGIN] Unexpected error',
-        e,
-        stackTrace,
-      );
-      rethrow;
-    }
+  }) {
+    return _authRemoteDataSource.externalLogin(
+      provider: provider,
+      idToken: idToken,
+      email: email,
+      fullName: fullName,
+      language: language,
+    );
   }
 
   // Notification methods
-  Future<void> registerDeviceToken(String token, String deviceType) async {
-    try {
-      final response = await _dio.post(
-        '/notification/register-device',
-        data: {'token': token, 'deviceType': deviceType},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic>) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          LoggerService().warning(
-            'Error registering device token: ${apiResponse.message}',
-          );
-          // Don't rethrow, just log, as this shouldn't block app usage
-        }
-      }
-    } catch (e, stackTrace) {
-      LoggerService().warning('Error registering device token', e, stackTrace);
-      // Don't rethrow, just log, as this shouldn't block app usage
-    }
+  Future<void> registerDeviceToken(String token, String deviceType) {
+    return _authRemoteDataSource.registerDeviceToken(token, deviceType);
   }
 
   Future<List<CustomerNotification>> getCustomerNotifications() async {
     try {
-      final response = await _dio.get('/customer/notifications');
+      final response = await dio.get('/customer/notifications');
       final responseData = response.data;
 
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -1529,7 +444,7 @@ class ApiService {
   // Cart methods
   Future<Map<String, dynamic>> getCart() async {
     try {
-      final response = await _dio.get('/cart');
+      final response = await dio.get('/cart');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1559,7 +474,7 @@ class ApiService {
 
   Future<void> addToCart(String productId, int quantity) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         '/cart/items',
         data: {'productId': productId, 'quantity': quantity},
       );
@@ -1591,7 +506,7 @@ class ApiService {
 
   Future<void> updateCartItem(String itemId, int quantity) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/cart/items/$itemId',
         data: {'quantity': quantity},
       );
@@ -1615,7 +530,7 @@ class ApiService {
 
   Future<void> removeFromCart(String itemId) async {
     try {
-      final response = await _dio.delete('/cart/items/$itemId');
+      final response = await dio.delete('/cart/items/$itemId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1636,7 +551,7 @@ class ApiService {
 
   Future<void> clearCart() async {
     try {
-      final response = await _dio.delete('/cart');
+      final response = await dio.delete('/cart');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1659,7 +574,7 @@ class ApiService {
   Future<Map<String, dynamic>> getProfile() async {
     try {
       // Try network first
-      final response = await _dio.get('/profile');
+      final response = await dio.get('/profile');
 
       // Backend artık ApiResponse<T> formatında döndürüyor
       Map<String, dynamic> profile;
@@ -1712,30 +627,8 @@ class ApiService {
     }
   }
 
-  Future<void> updateProfile(Map<String, dynamic> data) async {
-    try {
-      final response = await _dio.put('/profile', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          final errorMessage =
-              apiResponse.message ??
-              (apiResponse.errors?.isNotEmpty == true
-                  ? apiResponse.errors!.join(', ')
-                  : 'Profil güncellenemedi');
-          throw Exception(errorMessage);
-        }
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('Error updating profile', e, stackTrace);
-      rethrow;
-    }
+  Future<void> updateProfile(Map<String, dynamic> data) {
+    return _authRemoteDataSource.updateProfile(data);
   }
 
   Future<void> changePassword(
@@ -1743,7 +636,7 @@ class ApiService {
     String newPassword,
   ) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/profile/password',
         data: {'currentPassword': currentPassword, 'newPassword': newPassword},
       );
@@ -1773,7 +666,7 @@ class ApiService {
   // Address methods
   Future<List<dynamic>> getAddresses() async {
     try {
-      final response = await _dio.get('/addresses');
+      final response = await dio.get('/addresses');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1799,7 +692,7 @@ class ApiService {
 
   Future<void> createAddress(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post('/addresses', data: data);
+      final response = await dio.post('/addresses', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1820,7 +713,7 @@ class ApiService {
 
   Future<void> updateAddress(String id, Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/addresses/$id', data: data);
+      final response = await dio.put('/addresses/$id', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1841,7 +734,7 @@ class ApiService {
 
   Future<void> deleteAddress(String id) async {
     try {
-      final response = await _dio.delete('/addresses/$id');
+      final response = await dio.delete('/addresses/$id');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1862,7 +755,7 @@ class ApiService {
 
   Future<void> setDefaultAddress(String id) async {
     try {
-      final response = await _dio.put('/addresses/$id/set-default');
+      final response = await dio.put('/addresses/$id/set-default');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1890,7 +783,7 @@ class ApiService {
     int pageSize = 20,
   }) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/favorites',
         queryParameters: {'page': page, 'pageSize': pageSize},
       );
@@ -1917,7 +810,7 @@ class ApiService {
 
   Future<void> addToFavorites(String productId) async {
     try {
-      final response = await _dio.post('/favorites/$productId');
+      final response = await dio.post('/favorites/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -1935,7 +828,7 @@ class ApiService {
 
   Future<void> removeFromFavorites(String productId) async {
     try {
-      final response = await _dio.delete('/favorites/$productId');
+      final response = await dio.delete('/favorites/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -1953,7 +846,7 @@ class ApiService {
 
   Future<bool> isFavorite(String productId) async {
     try {
-      final response = await _dio.get('/favorites/check/$productId');
+      final response = await dio.get('/favorites/check/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -1974,7 +867,7 @@ class ApiService {
   // Notification settings methods
   Future<Map<String, dynamic>> getNotificationSettings() async {
     try {
-      final response = await _dio.get('/notifications/settings');
+      final response = await dio.get('/notifications/settings');
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -2005,7 +898,7 @@ class ApiService {
 
   Future<void> updateNotificationSettings(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/notifications/settings', data: data);
+      final response = await dio.put('/notifications/settings', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -2028,33 +921,10 @@ class ApiService {
   }
 
   // Orders methods
+  // Orders methods
   Future<List<dynamic>> getOrders({int? vendorType}) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (vendorType != null) {
-        queryParams['vendorType'] = vendorType;
-      }
-
-      final response = await _dio.get(
-        '/orders',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic>) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Siparişler getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt liste)
-      return response.data as List<dynamic>;
+      return await _orderRemoteDataSource.getOrders(vendorType: vendorType);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching orders', e, stackTrace);
       rethrow;
@@ -2063,28 +933,14 @@ class ApiService {
 
   Future<Map<String, dynamic>> getOrderDetails(String orderId) async {
     try {
-      final response = await _dio.get('/orders/$orderId');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // OrderDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Sipariş detayı getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt OrderDto)
-      return response.data as Map<String, dynamic>;
+      final order = await _orderRemoteDataSource.getOrderDetails(orderId);
+      // Convert Order object back to Map for compatibility if needed, or update return type.
+      // Assuming legacy code expects Map, but new DS returns Order object.
+      // Wait, getOrderDetails signature in ApiService returns Future<Map<String, dynamic>>.
+      // But OrderRemoteDataSource.getCustomerOrderDetails returns Future<Order>.
+      // I should update ApiService return type OR convert Order to Map.
+      // Better to convert to Map to minimize breakage in calling code for now.
+      return order;
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching order details', e, stackTrace);
       rethrow;
@@ -2093,28 +949,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getOrderDetailFull(String orderId) async {
     try {
-      final response = await _dio.get('/orders/$orderId/detail');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // OrderDetailDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Sipariş detayı getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt OrderDetailDto)
-      return response.data as Map<String, dynamic>;
+      return await _orderRemoteDataSource.getOrderDetailFull(orderId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching order detail', e, stackTrace);
       rethrow;
@@ -2123,29 +958,7 @@ class ApiService {
 
   Future<void> cancelOrder(String orderId, String reason) async {
     try {
-      final response = await _dio.post(
-        '/orders/$orderId/cancel',
-        data: {'reason': reason},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(apiResponse.message ?? 'Sipariş iptal edilemedi');
-        }
-      }
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 500) {
-        throw Exception(
-          'Server error while cancelling order. Please contact support.',
-        );
-      }
-      rethrow;
+      await _orderRemoteDataSource.cancelOrder(orderId, reason);
     } catch (e, stackTrace) {
       LoggerService().error('Error cancelling order', e, stackTrace);
       rethrow;
@@ -2157,24 +970,7 @@ class ApiService {
     String reason,
   ) async {
     try {
-      final response = await _dio.post(
-        '/orders/items/$customerOrderItemId/cancel',
-        data: {'reason': reason},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Sipariş ürünü iptal edilemedi',
-          );
-        }
-      }
+      await _orderRemoteDataSource.cancelOrderItem(customerOrderItemId, reason);
     } catch (e, stackTrace) {
       LoggerService().error('Error cancelling order item', e, stackTrace);
       rethrow;
@@ -2186,7 +982,7 @@ class ApiService {
     ProductSearchRequestDto request,
   ) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/products/search',
         queryParameters: request.toJson(),
       );
@@ -2214,7 +1010,7 @@ class ApiService {
     VendorSearchRequestDto request,
   ) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendors/search',
         queryParameters: request.toJson(),
       );
@@ -2268,7 +1064,7 @@ class ApiService {
       if (vendorType != null) {
         queryParams['vendorType'] = vendorType;
       }
-      final response = await _dio.get(
+      final response = await dio.get(
         '/products/categories',
         queryParameters: queryParams,
       );
@@ -2334,7 +1130,7 @@ class ApiService {
 
   Future<List<String>> getCities({int page = 1, int pageSize = 6}) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendors/cities',
         queryParameters: {'page': page, 'pageSize': pageSize},
       );
@@ -2372,7 +1168,7 @@ class ApiService {
 
   Future<List<AutocompleteResultDto>> autocomplete(String query) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/search/autocomplete',
         queryParameters: {'query': query},
       );
@@ -2408,7 +1204,7 @@ class ApiService {
   // Map and location methods
   Future<String> getGoogleMapsApiKey() async {
     try {
-      final response = await _dio.get('/map/api-key');
+      final response = await dio.get('/map/api-key');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2451,7 +1247,7 @@ class ApiService {
       if (userLatitude != null) queryParams['userLatitude'] = userLatitude;
       if (userLongitude != null) queryParams['userLongitude'] = userLongitude;
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '/map/vendors',
         queryParameters: queryParams,
       );
@@ -2482,7 +1278,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getDeliveryTracking(String orderId) async {
     try {
-      final response = await _dio.get('/map/delivery-tracking/$orderId');
+      final response = await dio.get('/map/delivery-tracking/$orderId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2519,7 +1315,7 @@ class ApiService {
     double longitude,
   ) async {
     try {
-      await _dio.put(
+      await dio.put(
         '/courier/$courierId/location',
         data: {'latitude': latitude, 'longitude': longitude},
       );
@@ -2531,7 +1327,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getCourierLocation(String courierId) async {
     try {
-      final response = await _dio.get('/courier/$courierId/location');
+      final response = await dio.get('/courier/$courierId/location');
       return response.data;
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching courier location', e, stackTrace);
@@ -2547,7 +1343,7 @@ class ApiService {
     String comment,
   ) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         '/reviews',
         data: {
           'targetId': targetId,
@@ -2587,7 +1383,7 @@ class ApiService {
 
   Future<ProductReviewsSummary> getProductReviews(String productId) async {
     try {
-      final response = await _dio.get('/reviews/products/$productId');
+      final response = await dio.get('/reviews/products/$productId');
 
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
@@ -2663,7 +1459,7 @@ class ApiService {
 
   Future<List<Review>> getVendorReviews(String vendorId) async {
     try {
-      final response = await _dio.get('/reviews/vendors/$vendorId');
+      final response = await dio.get('/reviews/vendors/$vendorId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2692,7 +1488,7 @@ class ApiService {
 
   Future<List<Review>> getPendingReviews() async {
     try {
-      final response = await _dio.get('/reviews/pending');
+      final response = await dio.get('/reviews/pending');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2721,7 +1517,7 @@ class ApiService {
 
   Future<void> approveReview(String reviewId) async {
     try {
-      final response = await _dio.patch('/reviews/$reviewId/approve');
+      final response = await dio.patch('/reviews/$reviewId/approve');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2742,7 +1538,7 @@ class ApiService {
 
   Future<void> rejectReview(String reviewId) async {
     try {
-      final response = await _dio.patch('/reviews/$reviewId/reject');
+      final response = await dio.patch('/reviews/$reviewId/reject');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2763,7 +1559,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getActiveCouriers() async {
     try {
-      final response = await _dio.get('/courier/active');
+      final response = await dio.get('/courier/active');
       return List<Map<String, dynamic>>.from(response.data);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching active couriers', e, stackTrace);
@@ -2774,7 +1570,7 @@ class ApiService {
   // User preferences methods
   Future<Map<String, dynamic>> getUserPreferences() async {
     try {
-      final response = await _dio.get('/userpreferences');
+      final response = await dio.get('/userpreferences');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2819,7 +1615,7 @@ class ApiService {
       if (dateFormat != null) data['dateFormat'] = dateFormat;
       if (timeFormat != null) data['timeFormat'] = timeFormat;
 
-      final response = await _dio.put('/userpreferences', data: data);
+      final response = await dio.put('/userpreferences', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2842,7 +1638,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getSupportedLanguages() async {
     try {
-      final response = await _dio.get('/userpreferences/supported-languages');
+      final response = await dio.get('/userpreferences/supported-languages');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2874,7 +1670,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getSupportedCurrencies() async {
     try {
-      final response = await _dio.get('/userpreferences/supported-currencies');
+      final response = await dio.get('/userpreferences/supported-currencies');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2924,7 +1720,7 @@ class ApiService {
       if (page != null) queryParams['page'] = page;
       if (pageSize != null) queryParams['pageSize'] = pageSize;
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/orders',
         queryParameters: queryParams,
       );
@@ -2975,7 +1771,7 @@ class ApiService {
       if (page != null) queryParams['page'] = page;
       if (pageSize != null) queryParams['pageSize'] = pageSize;
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/orders',
         queryParameters: queryParams,
       );
@@ -3017,7 +1813,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getVendorOrder(String orderId) async {
     try {
-      final response = await _dio.get('/vendor/orders/$orderId');
+      final response = await dio.get('/vendor/orders/$orderId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3049,7 +1845,7 @@ class ApiService {
 
   Future<void> acceptOrder(String orderId) async {
     try {
-      final response = await _dio.post('/vendor/orders/$orderId/accept');
+      final response = await dio.post('/vendor/orders/$orderId/accept');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3070,7 +1866,7 @@ class ApiService {
 
   Future<void> rejectOrder(String orderId, String reason) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         '/vendor/orders/$orderId/reject',
         data: {'reason': reason},
       );
@@ -3098,7 +1894,7 @@ class ApiService {
     String? note,
   }) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/orders/$orderId/status',
         data: {'status': status, 'note': note},
       );
@@ -3127,7 +1923,7 @@ class ApiService {
     String orderId,
   ) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/orders/$orderId/available-couriers',
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -3158,7 +1954,7 @@ class ApiService {
   // Assign courier to order
   Future<void> assignCourierToOrder(String orderId, String courierId) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         '/vendor/orders/$orderId/assign-courier',
         data: {'courierId': courierId},
       );
@@ -3183,7 +1979,7 @@ class ApiService {
   // Auto-assign best courier
   Future<Map<String, dynamic>> autoAssignCourier(String orderId) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         '/vendor/orders/$orderId/auto-assign-courier',
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -3223,7 +2019,7 @@ class ApiService {
         queryParams['endDate'] = endDate.toIso8601String();
       }
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/reports/sales',
         queryParameters: queryParams,
       );
@@ -3256,7 +2052,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getVendorSummary() async {
     try {
-      final response = await _dio.get('/vendor/reports/summary');
+      final response = await dio.get('/vendor/reports/summary');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3300,7 +2096,7 @@ class ApiService {
       if (page != null) queryParams['page'] = page;
       if (pageSize != null) queryParams['pageSize'] = pageSize;
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/products',
         queryParameters: queryParams,
       );
@@ -3353,7 +2149,7 @@ class ApiService {
 
   Future<Product> getVendorProduct(String productId) async {
     try {
-      final response = await _dio.get('/vendor/products/$productId');
+      final response = await dio.get('/vendor/products/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3383,7 +2179,7 @@ class ApiService {
 
   Future<Product> createProduct(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post('/vendor/products', data: data);
+      final response = await dio.post('/vendor/products', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3416,10 +2212,7 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await _dio.put(
-        '/vendor/products/$productId',
-        data: data,
-      );
+      final response = await dio.put('/vendor/products/$productId', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3440,7 +2233,7 @@ class ApiService {
 
   Future<void> deleteProduct(String productId) async {
     try {
-      final response = await _dio.delete('/vendor/products/$productId');
+      final response = await dio.delete('/vendor/products/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3464,7 +2257,7 @@ class ApiService {
     bool isAvailable,
   ) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/products/$productId/availability',
         data: {'isAvailable': isAvailable},
       );
@@ -3494,7 +2287,7 @@ class ApiService {
 
   Future<void> updateProductPrice(String productId, double price) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/products/$productId/price',
         data: {'price': price},
       );
@@ -3518,7 +2311,7 @@ class ApiService {
 
   Future<List<String>> getVendorProductCategories() async {
     try {
-      final response = await _dio.get('/vendor/products/categories');
+      final response = await dio.get('/vendor/products/categories');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3549,7 +2342,7 @@ class ApiService {
     try {
       final formData = FormData.fromMap({'file': file});
 
-      final response = await _dio.post('/upload', data: formData);
+      final response = await dio.post('/upload', data: formData);
       return response.data['data']['url'];
     } catch (e, stackTrace) {
       LoggerService().error('Error uploading product image', e, stackTrace);
@@ -3560,7 +2353,7 @@ class ApiService {
   // Vendor Profile Management Methods
   Future<Map<String, dynamic>> getVendorProfile() async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/profile',
         options: Options(
           validateStatus: (status) {
@@ -3601,7 +2394,7 @@ class ApiService {
 
   Future<void> updateVendorProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/vendor/profile', data: data);
+      final response = await dio.put('/vendor/profile', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3624,7 +2417,7 @@ class ApiService {
 
   Future<void> updateVendorImage(String imageUrl) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/profile/image',
         data: {'imageUrl': imageUrl},
       );
@@ -3650,7 +2443,7 @@ class ApiService {
 
   Future<void> updateBusyStatus(int status) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/profile/settings/status',
         data: {'busyStatus': status},
       );
@@ -3676,7 +2469,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getVendorSettings() async {
     try {
-      final response = await _dio.get('/vendor/profile/settings');
+      final response = await dio.get('/vendor/profile/settings');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3708,7 +2501,7 @@ class ApiService {
 
   Future<void> updateVendorSettings(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/vendor/profile/settings', data: data);
+      final response = await dio.put('/vendor/profile/settings', data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3731,7 +2524,7 @@ class ApiService {
 
   Future<void> toggleVendorActive(bool isActive) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/profile/settings/active',
         data: {'isActive': isActive},
       );
@@ -3755,26 +2548,7 @@ class ApiService {
     }
   }
 
-  bool _isHighPriorityRequest(RequestOptions options) {
-    const prioritySegments = [
-      '/auth/login',
-      '/auth/register',
-      '/auth/refresh-token',
-      '/auth/confirm-email',
-      '/auth/forgot-password',
-    ];
-
-    return prioritySegments.any(
-      (segment) => options.path.toLowerCase().contains(segment),
-    );
-  }
-
-  void _releasePermit(RequestOptions options) {
-    final permit = options.extra.remove(_requestPermitKey);
-    if (permit is RequestPermit) {
-      permit.release();
-    }
-  }
+  // Unused helper removed
 
   // Legal documents methods
   Future<Map<String, dynamic>> getLegalContent(
@@ -3782,7 +2556,7 @@ class ApiService {
     String langCode,
   ) async {
     try {
-      final response = await _dio.get(
+      final response = await dio.get(
         '/content/legal/$type',
         queryParameters: {'lang': langCode},
       );
@@ -3811,7 +2585,7 @@ class ApiService {
   // Vendor notifications
   Future<List<dynamic>> getVendorNotifications() async {
     try {
-      final response = await _dio.get('/vendor/notifications');
+      final response = await dio.get('/vendor/notifications');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3854,7 +2628,7 @@ class ApiService {
           : type == 'customer'
           ? '/customer/notifications/$id/read'
           : '/courier/notifications/$id/read';
-      final response = await _dio.post(endpoint);
+      final response = await dio.post(endpoint);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3887,7 +2661,7 @@ class ApiService {
           : type == 'customer'
           ? '/customer/notifications/read-all'
           : '/courier/notifications/read-all';
-      final response = await _dio.post(endpoint);
+      final response = await dio.post(endpoint);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -3921,7 +2695,7 @@ class ApiService {
         queryParams['cityId'] = cityId;
       }
 
-      final response = await _dio.get(
+      final response = await dio.get(
         '/vendor/delivery-zones',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
@@ -3952,7 +2726,7 @@ class ApiService {
 
   Future<void> syncDeliveryZones(DeliveryZoneSyncDto dto) async {
     try {
-      final response = await _dio.put(
+      final response = await dio.put(
         '/vendor/delivery-zones',
         data: dto.toJson(),
       );

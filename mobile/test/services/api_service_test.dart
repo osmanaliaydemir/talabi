@@ -17,6 +17,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:mobile/core/network/network_client.dart';
+import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
+import 'package:mobile/features/orders/data/datasources/order_remote_data_source.dart';
+import 'package:mobile/features/vendors/data/datasources/vendor_remote_data_source.dart';
+
 @GenerateNiceMocks([
   MockSpec<ConnectivityService>(),
   MockSpec<CacheService>(),
@@ -50,11 +56,23 @@ void main() {
       mockScheduler.acquire(highPriority: anyNamed('highPriority')),
     ).thenAnswer((_) async => RequestPermit(() {}));
 
+    // Initialize NetworkClient
+    final networkClient = NetworkClient(mockConnectivityService, mockScheduler);
+
+    // Initialize AuthRemoteDataSource
+    final authRemoteDataSource = AuthRemoteDataSource(networkClient);
+    final productRemoteDataSource = ProductRemoteDataSource(networkClient);
+    final orderRemoteDataSource = OrderRemoteDataSource(networkClient);
+    final vendorRemoteDataSource = VendorRemoteDataSource(networkClient);
+
     // Initialize ApiService
     apiService = ApiService.init(
-      mockConnectivityService,
+      networkClient,
+      authRemoteDataSource,
+      productRemoteDataSource,
+      orderRemoteDataSource,
+      vendorRemoteDataSource,
       mockCacheService,
-      mockScheduler,
     );
 
     // Setup Dio Adapter
