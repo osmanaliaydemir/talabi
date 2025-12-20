@@ -1,6 +1,8 @@
 import 'package:injectable/injectable.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
+import 'package:dio/dio.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 
 import 'package:mobile/features/search/data/models/search_dtos.dart';
@@ -17,8 +19,12 @@ class ProductRemoteDataSource {
     int page = 1,
     int pageSize = 6,
   }) async {
+    // Note: This endpoint '/vendors/$vendorId/products' is dynamic.
+    // We can keep it as string interpolation or add a method in ApiEndpoints to generate it.
+    // For now, I will stick to string interpolation for path param based URLs if not strictly defined as base + param.
+    // But `ApiEndpoints.vendors` is `/vendors`. So usage: '${ApiEndpoints.vendors}/$vendorId/products'
     final response = await _networkClient.dio.get(
-      '/vendors/$vendorId/products',
+      '${ApiEndpoints.vendors}/$vendorId/products',
       queryParameters: {'page': page, 'pageSize': pageSize},
     );
 
@@ -67,7 +73,7 @@ class ProductRemoteDataSource {
       queryParams['vendorType'] = vendorType;
     }
     final response = await _networkClient.dio.get(
-      '/products/popular',
+      ApiEndpoints.popularProducts,
       queryParameters: queryParams,
     );
 
@@ -98,7 +104,9 @@ class ProductRemoteDataSource {
   }
 
   Future<Product> getProduct(String productId) async {
-    final response = await _networkClient.dio.get('/products/$productId');
+    final response = await _networkClient.dio.get(
+      '${ApiEndpoints.products}/$productId',
+    );
 
     final apiResponse = ApiResponse.fromJson(
       response.data as Map<String, dynamic>,
@@ -118,7 +126,7 @@ class ProductRemoteDataSource {
     int pageSize = 6,
   }) async {
     final response = await _networkClient.dio.get(
-      '/products/$productId/similar',
+      '${ApiEndpoints.products}/$productId/similar',
       queryParameters: {'page': page, 'pageSize': pageSize},
     );
 
@@ -155,7 +163,7 @@ class ProductRemoteDataSource {
     if (vendorType != null) queryParams['vendorType'] = vendorType;
 
     final response = await _networkClient.dio.get(
-      '/banners',
+      ApiEndpoints.banners,
       queryParameters: queryParams,
     );
 
@@ -171,5 +179,101 @@ class ProductRemoteDataSource {
     }
 
     return apiResponse.data!;
+  }
+
+  Future<Product> createProduct(Map<String, dynamic> data) async {
+    final response = await _networkClient.dio.post(
+      ApiEndpoints.vendorProducts,
+      data: data,
+    );
+
+    final apiResponse = ApiResponse.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => Product.fromJson(json as Map<String, dynamic>),
+    );
+
+    if (!apiResponse.success || apiResponse.data == null) {
+      throw Exception(apiResponse.message ?? 'Ürün oluşturulamadı');
+    }
+
+    return apiResponse.data!;
+  }
+
+  Future<void> updateProductPrice(String productId, double price) async {
+    final response = await _networkClient.dio.put(
+      '${ApiEndpoints.vendorProducts}/$productId/price',
+      data: {'price': price},
+    );
+
+    final apiResponse = ApiResponse.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => json,
+    );
+
+    if (!apiResponse.success) {
+      throw Exception(apiResponse.message ?? 'Ürün fiyatı güncellenemedi');
+    }
+  }
+
+  Future<void> updateProductAvailability(
+    String productId,
+    bool isAvailable,
+  ) async {
+    final response = await _networkClient.dio.put(
+      '${ApiEndpoints.vendorProducts}/$productId/availability',
+      data: {'isAvailable': isAvailable},
+    );
+
+    final apiResponse = ApiResponse.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => json,
+    );
+
+    if (!apiResponse.success) {
+      throw Exception(
+        apiResponse.message ?? 'Ürün müsaitlik durumu güncellenemedi',
+      );
+    }
+  }
+
+  Future<void> deleteProduct(String productId) async {
+    final response = await _networkClient.dio.delete(
+      '${ApiEndpoints.vendorProducts}/$productId',
+    );
+
+    final apiResponse = ApiResponse.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => json,
+    );
+
+    if (!apiResponse.success) {
+      throw Exception(apiResponse.message ?? 'Ürün silinemedi');
+    }
+  }
+
+  Future<String> uploadProductImage(dynamic file) async {
+    final formData = FormData.fromMap({'file': file});
+
+    final response = await _networkClient.dio.post(
+      ApiEndpoints.upload,
+      data: formData,
+    );
+    // Assuming existing response structure from ApiService: response.data['data']['url']
+    if (response.data is Map<String, dynamic> &&
+        response.data['data'] != null) {
+      return response.data['data']['url'];
+    }
+    // Handle ApiResponse structure if migrated
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+      if (apiResponse.success && apiResponse.data != null) {
+        return apiResponse.data!['url'];
+      }
+    }
+    return response.data['data']['url'];
   }
 }

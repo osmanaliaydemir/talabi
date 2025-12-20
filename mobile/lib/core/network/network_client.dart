@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/services/api_request_scheduler.dart';
 import 'package:mobile/services/connectivity_service.dart';
@@ -178,7 +179,7 @@ class NetworkClient {
       // Create separate Dio to avoid loops
       final tempDio = Dio(BaseOptions(baseUrl: baseUrl));
       final response = await tempDio.post(
-        '/auth/refresh-token',
+        ApiEndpoints.refreshToken,
         data: {'token': token, 'refreshToken': refreshToken},
       );
 

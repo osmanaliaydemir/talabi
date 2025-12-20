@@ -2,7 +2,7 @@ name: mobile
 description: "Talâbî application"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -79,6 +79,7 @@ dependencies:
   package_info_plus: ^8.0.0
   get_it: ^9.2.0
   injectable: ^2.7.1+2
+  flutter_gen: 5.4.0
 
 dev_dependencies:
   flutter_test:
@@ -97,6 +98,13 @@ dev_dependencies:
   mockito: ^5.4.4
   injectable_generator: ^2.6.2
   http_mock_adapter: ^0.6.1
+  flutter_gen_runner: 5.4.0
+
+flutter_gen:
+  output: lib/gen/
+  line_length: 80
+  integrations:
+    flutter_svg: true
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -109,7 +117,6 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -122,7 +129,7 @@ flutter:
   #   - assets/images/onboarding_1.png
   #   - assets/images/onboarding_2.png
   #   - assets/images/onboarding_3.png
-  
+
   # Localization
   generate: true
 

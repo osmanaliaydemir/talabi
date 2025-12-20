@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/vendors/data/models/vendor.dart';
@@ -22,7 +23,7 @@ class VendorRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      '/vendors',
+      ApiEndpoints.vendors,
       queryParameters: queryParams.isNotEmpty ? queryParams : null,
     );
 
@@ -61,8 +62,53 @@ class VendorRemoteDataSource {
     }
   }
 
+  Future<List<dynamic>> getVendorOrders({
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? page,
+    int? pageSize,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (status != null) queryParams['status'] = status;
+    if (startDate != null) {
+      queryParams['startDate'] = startDate.toIso8601String();
+    }
+    if (endDate != null) {
+      queryParams['endDate'] = endDate.toIso8601String();
+    }
+    if (page != null) queryParams['page'] = page;
+    if (pageSize != null) queryParams['pageSize'] = pageSize;
+
+    final response = await _networkClient.dio.get(
+      ApiEndpoints.vendorOrders,
+      queryParameters: queryParams,
+    );
+    // Backend artık ApiResponse<PagedResultDto> formatında döndürüyor
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(
+          apiResponse.message ?? 'Satıcı siparişleri getirilemedi',
+        );
+      }
+
+      // PagedResultDto'dan items listesini çıkar
+      final pagedResult = apiResponse.data!;
+      final items = pagedResult['items'] as List<dynamic>?;
+      return items ?? [];
+    }
+    // Eski format (direkt liste)
+    return response.data;
+  }
+
   Future<Map<String, dynamic>> getVendorProfile() async {
-    final response = await _networkClient.dio.get('/vendor/profile');
+    final response = await _networkClient.dio.get(ApiEndpoints.vendorProfile);
 
     // Ideally map to VendorProfileDto
     return response.data as Map<String, dynamic>;
@@ -70,7 +116,7 @@ class VendorRemoteDataSource {
 
   Future<void> updateVendorBusyStatus(bool isBusy) async {
     final response = await _networkClient.dio.put(
-      '/vendor/profile/status',
+      ApiEndpoints.vendorSettingsStatus,
       data: {'isBusy': isBusy},
     );
 
@@ -92,7 +138,7 @@ class VendorRemoteDataSource {
     // If ApiService handled file upload, we might need to look closer.
 
     final response = await _networkClient.dio.put(
-      '/vendor/profile',
+      ApiEndpoints.vendorProfile,
       data: data,
     );
 
@@ -108,7 +154,7 @@ class VendorRemoteDataSource {
 
   Future<void> updateVendorSettings(Map<String, dynamic> settings) async {
     final response = await _networkClient.dio.put(
-      '/vendor/profile/settings',
+      ApiEndpoints.vendorSettings,
       data: settings,
     );
 
@@ -122,9 +168,29 @@ class VendorRemoteDataSource {
     }
   }
 
+  Future<Map<String, dynamic>> getVendorSettings() async {
+    final response = await _networkClient.dio.get(ApiEndpoints.vendorSettings);
+
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Satıcı ayarları getirilemedi');
+      }
+
+      return apiResponse.data!;
+    }
+    // Legacy format
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<void> toggleVendorActive(bool isActive) async {
     final response = await _networkClient.dio.put(
-      '/vendor/profile/settings/active',
+      ApiEndpoints.vendorSettingsActive,
       data: {'isActive': isActive},
     );
 
@@ -141,7 +207,9 @@ class VendorRemoteDataSource {
   }
 
   Future<List<dynamic>> getVendorNotifications() async {
-    final response = await _networkClient.dio.get('/vendor/notifications');
+    final response = await _networkClient.dio.get(
+      ApiEndpoints.vendorNotifications,
+    );
 
     if (response.data is Map<String, dynamic> &&
         response.data.containsKey('success')) {
@@ -157,6 +225,9 @@ class VendorRemoteDataSource {
         : type == 'customer'
         ? '/customer/notifications/$id/read'
         : '/courier/notifications/$id/read';
+
+    // Note: This dynamic endpoint building is fine, ApiEndpoints doesn't need to cover every dynamic permuration if logic is here.
+    // Or we could have ApiEndpoints.markRead(type, id) method. Keeping existing logic.
 
     final response = await _networkClient.dio.post(endpoint);
 
@@ -200,7 +271,7 @@ class VendorRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      '/vendor/delivery-zones',
+      ApiEndpoints.vendorDeliveryZones,
       queryParameters: queryParams.isNotEmpty ? queryParams : null,
     );
 
@@ -224,7 +295,7 @@ class VendorRemoteDataSource {
 
   Future<void> syncDeliveryZones(DeliveryZoneSyncDto dto) async {
     final response = await _networkClient.dio.put(
-      '/vendor/delivery-zones',
+      ApiEndpoints.vendorDeliveryZones,
       data: dto.toJson(),
     );
 
@@ -236,5 +307,77 @@ class VendorRemoteDataSource {
     if (!apiResponse.success) {
       throw Exception(apiResponse.message ?? 'Failed to sync zones');
     }
+  }
+
+  Future<List<String>> getVendorProductCategories() async {
+    final response = await _networkClient.dio.get(
+      ApiEndpoints.vendorCategories,
+    );
+
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List).map((e) => e as String).toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Kategoriler getirilemedi');
+      }
+
+      return apiResponse.data!;
+    }
+    // Legacy support
+    return List<String>.from(response.data);
+  }
+
+  Future<void> updateVendorImage(String imageUrl) async {
+    final response = await _networkClient.dio.put(
+      ApiEndpoints.vendorProfileImage,
+      data: {'imageUrl': imageUrl},
+    );
+
+    final apiResponse = ApiResponse.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => json,
+    );
+
+    if (!apiResponse.success) {
+      throw Exception(
+        apiResponse.message ?? 'Satıcı profil resmi güncellenemedi',
+      );
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getVendorsForMap({
+    double? userLatitude,
+    double? userLongitude,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (userLatitude != null) queryParams['userLatitude'] = userLatitude;
+    if (userLongitude != null) queryParams['userLongitude'] = userLongitude;
+
+    final response = await _networkClient.dio.get(
+      ApiEndpoints.mapVendors,
+      queryParameters: queryParams,
+    );
+
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List).map((e) => e as Map<String, dynamic>).toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(
+          apiResponse.message ?? 'Satıcı harita bilgileri getirilemedi',
+        );
+      }
+
+      return apiResponse.data!;
+    }
+    // Legacy support
+    return List<Map<String, dynamic>>.from(response.data);
   }
 }

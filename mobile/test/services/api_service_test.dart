@@ -22,12 +22,26 @@ import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.da
 import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
 import 'package:mobile/features/orders/data/datasources/order_remote_data_source.dart';
 import 'package:mobile/features/vendors/data/datasources/vendor_remote_data_source.dart';
+import 'package:mobile/features/cart/data/datasources/cart_remote_data_source.dart';
+import 'package:mobile/features/common/data/datasources/location_remote_data_source.dart';
+import 'package:mobile/features/reviews/data/datasources/review_remote_data_source.dart';
+import 'package:mobile/features/notifications/data/datasources/notification_remote_data_source.dart';
+import 'package:mobile/features/profile/data/datasources/user_remote_data_source.dart';
 
 @GenerateNiceMocks([
   MockSpec<ConnectivityService>(),
   MockSpec<CacheService>(),
   MockSpec<ApiRequestScheduler>(),
   MockSpec<LoggerService>(),
+  MockSpec<AuthRemoteDataSource>(),
+  MockSpec<ProductRemoteDataSource>(),
+  MockSpec<OrderRemoteDataSource>(),
+  MockSpec<VendorRemoteDataSource>(),
+  MockSpec<CartRemoteDataSource>(),
+  MockSpec<LocationRemoteDataSource>(),
+  MockSpec<ReviewRemoteDataSource>(),
+  MockSpec<NotificationRemoteDataSource>(),
+  MockSpec<UserRemoteDataSource>(),
 ])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +51,15 @@ void main() {
   late MockApiRequestScheduler mockScheduler;
   late MockLoggerService mockLoggerService;
   late DioAdapter dioAdapter;
+  late MockAuthRemoteDataSource mockAuthRemoteDataSource;
+  late MockProductRemoteDataSource mockProductRemoteDataSource;
+  late MockOrderRemoteDataSource mockOrderRemoteDataSource;
+  late MockVendorRemoteDataSource mockVendorRemoteDataSource;
+  late MockCartRemoteDataSource mockCartRemoteDataSource;
+  late MockLocationRemoteDataSource mockLocationRemoteDataSource;
+  late MockReviewRemoteDataSource mockReviewRemoteDataSource;
+  late MockNotificationRemoteDataSource mockNotificationRemoteDataSource;
+  late MockUserRemoteDataSource mockUserRemoteDataSource;
 
   setUp(() async {
     await GetIt.instance.reset();
@@ -47,6 +70,15 @@ void main() {
     mockCacheService = MockCacheService();
     mockScheduler = MockApiRequestScheduler();
     mockLoggerService = MockLoggerService();
+    mockAuthRemoteDataSource = MockAuthRemoteDataSource();
+    mockProductRemoteDataSource = MockProductRemoteDataSource();
+    mockOrderRemoteDataSource = MockOrderRemoteDataSource();
+    mockVendorRemoteDataSource = MockVendorRemoteDataSource();
+    mockCartRemoteDataSource = MockCartRemoteDataSource();
+    mockLocationRemoteDataSource = MockLocationRemoteDataSource();
+    mockReviewRemoteDataSource = MockReviewRemoteDataSource();
+    mockNotificationRemoteDataSource = MockNotificationRemoteDataSource();
+    mockUserRemoteDataSource = MockUserRemoteDataSource();
 
     GetIt.instance.registerSingleton<LoggerService>(mockLoggerService);
 
@@ -59,19 +91,18 @@ void main() {
     // Initialize NetworkClient
     final networkClient = NetworkClient(mockConnectivityService, mockScheduler);
 
-    // Initialize AuthRemoteDataSource
-    final authRemoteDataSource = AuthRemoteDataSource(networkClient);
-    final productRemoteDataSource = ProductRemoteDataSource(networkClient);
-    final orderRemoteDataSource = OrderRemoteDataSource(networkClient);
-    final vendorRemoteDataSource = VendorRemoteDataSource(networkClient);
-
     // Initialize ApiService
     apiService = ApiService.init(
       networkClient,
-      authRemoteDataSource,
-      productRemoteDataSource,
-      orderRemoteDataSource,
-      vendorRemoteDataSource,
+      mockAuthRemoteDataSource,
+      mockProductRemoteDataSource,
+      mockOrderRemoteDataSource,
+      mockVendorRemoteDataSource,
+      mockCartRemoteDataSource,
+      mockLocationRemoteDataSource,
+      mockReviewRemoteDataSource,
+      mockNotificationRemoteDataSource,
+      mockUserRemoteDataSource,
       mockCacheService,
     );
 

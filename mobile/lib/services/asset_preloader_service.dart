@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/gen/assets.gen.dart';
 import 'package:mobile/services/logger_service.dart';
 
 /// Service for preloading critical assets to improve app startup performance
@@ -19,9 +20,9 @@ class AssetPreloaderService {
         // _preloadImage('assets/images/onboarding1.png'),
         // _preloadImage('assets/images/banner_image.png'),
         // _preloadImage('assets/images/location.png'),
-        _preloadImage(context, 'assets/images/onboarding1.png'),
-        _preloadImage(context, 'assets/images/banner_image.png'),
-        _preloadImage(context, 'assets/images/location.png'),
+        _preloadImage(context, Assets.images.onboarding1.path),
+        _preloadImage(context, Assets.images.bannerImage.path),
+        _preloadImage(context, Assets.images.location.path),
       ], eagerError: false);
 
       LoggerService().info(

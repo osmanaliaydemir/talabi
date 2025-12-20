@@ -3,17 +3,44 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i7;
 
+import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart'
+    as _i12;
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart'
-    as _i9;
-import 'package:mobile/features/products/data/models/product.dart' as _i6;
-import 'package:mobile/features/vendors/data/models/vendor.dart' as _i7;
+    as _i11;
+import 'package:mobile/features/cart/data/datasources/cart_remote_data_source.dart'
+    as _i19;
+import 'package:mobile/features/common/data/datasources/location_remote_data_source.dart'
+    as _i20;
+import 'package:mobile/features/home/data/models/promotional_banner.dart'
+    as _i15;
+import 'package:mobile/features/notifications/data/datasources/notification_remote_data_source.dart'
+    as _i22;
+import 'package:mobile/features/notifications/data/models/customer_notification.dart'
+    as _i23;
+import 'package:mobile/features/orders/data/datasources/order_remote_data_source.dart'
+    as _i16;
+import 'package:mobile/features/orders/data/models/order.dart' as _i4;
+import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart'
+    as _i14;
+import 'package:mobile/features/products/data/models/product.dart' as _i3;
+import 'package:mobile/features/profile/data/datasources/user_remote_data_source.dart'
+    as _i24;
+import 'package:mobile/features/reviews/data/datasources/review_remote_data_source.dart'
+    as _i21;
+import 'package:mobile/features/reviews/data/models/review.dart' as _i5;
+import 'package:mobile/features/vendors/data/datasources/vendor_remote_data_source.dart'
+    as _i17;
+import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart'
+    as _i18;
+import 'package:mobile/features/vendors/data/models/vendor.dart' as _i9;
 import 'package:mobile/services/api_request_scheduler.dart' as _i2;
-import 'package:mobile/services/cache_service.dart' as _i5;
-import 'package:mobile/services/connectivity_service.dart' as _i3;
-import 'package:mobile/services/logger_service.dart' as _i8;
+import 'package:mobile/services/cache_service.dart' as _i8;
+import 'package:mobile/services/connectivity_service.dart' as _i6;
+import 'package:mobile/services/logger_service.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -38,17 +65,47 @@ class _FakeRequestPermit_0 extends _i1.SmartFake implements _i2.RequestPermit {
         );
 }
 
+class _FakeProduct_1 extends _i1.SmartFake implements _i3.Product {
+  _FakeProduct_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeOrder_2 extends _i1.SmartFake implements _i4.Order {
+  _FakeOrder_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeReview_3 extends _i1.SmartFake implements _i5.Review {
+  _FakeReview_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [ConnectivityService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockConnectivityService extends _i1.Mock
-    implements _i3.ConnectivityService {
+    implements _i6.ConnectivityService {
   @override
-  _i4.Stream<bool> get connectivityStream => (super.noSuchMethod(
+  _i7.Stream<bool> get connectivityStream => (super.noSuchMethod(
         Invocation.getter(#connectivityStream),
-        returnValue: _i4.Stream<bool>.empty(),
-        returnValueForMissingStub: _i4.Stream<bool>.empty(),
-      ) as _i4.Stream<bool>);
+        returnValue: _i7.Stream<bool>.empty(),
+        returnValueForMissingStub: _i7.Stream<bool>.empty(),
+      ) as _i7.Stream<bool>);
 
   @override
   bool get isOnline => (super.noSuchMethod(
@@ -58,14 +115,14 @@ class MockConnectivityService extends _i1.Mock
       ) as bool);
 
   @override
-  _i4.Future<bool> checkConnectivity() => (super.noSuchMethod(
+  _i7.Future<bool> checkConnectivity() => (super.noSuchMethod(
         Invocation.method(
           #checkConnectivity,
           [],
         ),
-        returnValue: _i4.Future<bool>.value(false),
-        returnValueForMissingStub: _i4.Future<bool>.value(false),
-      ) as _i4.Future<bool>);
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
 
   @override
   void dispose() => super.noSuchMethod(
@@ -80,112 +137,112 @@ class MockConnectivityService extends _i1.Mock
 /// A class which mocks [CacheService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCacheService extends _i1.Mock implements _i5.CacheService {
+class MockCacheService extends _i1.Mock implements _i8.CacheService {
   @override
-  _i4.Future<void> cacheProducts(List<_i6.Product>? products) =>
+  _i7.Future<void> cacheProducts(List<_i3.Product>? products) =>
       (super.noSuchMethod(
         Invocation.method(
           #cacheProducts,
           [products],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<List<_i6.Product>?> getCachedProducts() => (super.noSuchMethod(
+  _i7.Future<List<_i3.Product>?> getCachedProducts() => (super.noSuchMethod(
         Invocation.method(
           #getCachedProducts,
           [],
         ),
-        returnValue: _i4.Future<List<_i6.Product>?>.value(),
-        returnValueForMissingStub: _i4.Future<List<_i6.Product>?>.value(),
-      ) as _i4.Future<List<_i6.Product>?>);
+        returnValue: _i7.Future<List<_i3.Product>?>.value(),
+        returnValueForMissingStub: _i7.Future<List<_i3.Product>?>.value(),
+      ) as _i7.Future<List<_i3.Product>?>);
 
   @override
-  _i4.Future<void> cacheCategories(List<String>? categories) =>
+  _i7.Future<void> cacheCategories(List<String>? categories) =>
       (super.noSuchMethod(
         Invocation.method(
           #cacheCategories,
           [categories],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<List<String>?> getCachedCategories() => (super.noSuchMethod(
+  _i7.Future<List<String>?> getCachedCategories() => (super.noSuchMethod(
         Invocation.method(
           #getCachedCategories,
           [],
         ),
-        returnValue: _i4.Future<List<String>?>.value(),
-        returnValueForMissingStub: _i4.Future<List<String>?>.value(),
-      ) as _i4.Future<List<String>?>);
+        returnValue: _i7.Future<List<String>?>.value(),
+        returnValueForMissingStub: _i7.Future<List<String>?>.value(),
+      ) as _i7.Future<List<String>?>);
 
   @override
-  _i4.Future<void> cacheVendors(List<_i7.Vendor>? vendors) =>
+  _i7.Future<void> cacheVendors(List<_i9.Vendor>? vendors) =>
       (super.noSuchMethod(
         Invocation.method(
           #cacheVendors,
           [vendors],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<List<_i7.Vendor>?> getCachedVendors() => (super.noSuchMethod(
+  _i7.Future<List<_i9.Vendor>?> getCachedVendors() => (super.noSuchMethod(
         Invocation.method(
           #getCachedVendors,
           [],
         ),
-        returnValue: _i4.Future<List<_i7.Vendor>?>.value(),
-        returnValueForMissingStub: _i4.Future<List<_i7.Vendor>?>.value(),
-      ) as _i4.Future<List<_i7.Vendor>?>);
+        returnValue: _i7.Future<List<_i9.Vendor>?>.value(),
+        returnValueForMissingStub: _i7.Future<List<_i9.Vendor>?>.value(),
+      ) as _i7.Future<List<_i9.Vendor>?>);
 
   @override
-  _i4.Future<void> cacheProfile(Map<String, dynamic>? profile) =>
+  _i7.Future<void> cacheProfile(Map<String, dynamic>? profile) =>
       (super.noSuchMethod(
         Invocation.method(
           #cacheProfile,
           [profile],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<Map<String, dynamic>?> getCachedProfile() => (super.noSuchMethod(
+  _i7.Future<Map<String, dynamic>?> getCachedProfile() => (super.noSuchMethod(
         Invocation.method(
           #getCachedProfile,
           [],
         ),
-        returnValue: _i4.Future<Map<String, dynamic>?>.value(),
-        returnValueForMissingStub: _i4.Future<Map<String, dynamic>?>.value(),
-      ) as _i4.Future<Map<String, dynamic>?>);
+        returnValue: _i7.Future<Map<String, dynamic>?>.value(),
+        returnValueForMissingStub: _i7.Future<Map<String, dynamic>?>.value(),
+      ) as _i7.Future<Map<String, dynamic>?>);
 
   @override
-  _i4.Future<void> clearAllCache() => (super.noSuchMethod(
+  _i7.Future<void> clearAllCache() => (super.noSuchMethod(
         Invocation.method(
           #clearAllCache,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<Map<String, dynamic>> getCacheInfo() => (super.noSuchMethod(
+  _i7.Future<Map<String, dynamic>> getCacheInfo() => (super.noSuchMethod(
         Invocation.method(
           #getCacheInfo,
           [],
         ),
         returnValue:
-            _i4.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
         returnValueForMissingStub:
-            _i4.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i4.Future<Map<String, dynamic>>);
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
 }
 
 /// A class which mocks [ApiRequestScheduler].
@@ -194,14 +251,14 @@ class MockCacheService extends _i1.Mock implements _i5.CacheService {
 class MockApiRequestScheduler extends _i1.Mock
     implements _i2.ApiRequestScheduler {
   @override
-  _i4.Future<_i2.RequestPermit> acquire({bool? highPriority = false}) =>
+  _i7.Future<_i2.RequestPermit> acquire({bool? highPriority = false}) =>
       (super.noSuchMethod(
         Invocation.method(
           #acquire,
           [],
           {#highPriority: highPriority},
         ),
-        returnValue: _i4.Future<_i2.RequestPermit>.value(_FakeRequestPermit_0(
+        returnValue: _i7.Future<_i2.RequestPermit>.value(_FakeRequestPermit_0(
           this,
           Invocation.method(
             #acquire,
@@ -210,7 +267,7 @@ class MockApiRequestScheduler extends _i1.Mock
           ),
         )),
         returnValueForMissingStub:
-            _i4.Future<_i2.RequestPermit>.value(_FakeRequestPermit_0(
+            _i7.Future<_i2.RequestPermit>.value(_FakeRequestPermit_0(
           this,
           Invocation.method(
             #acquire,
@@ -218,24 +275,24 @@ class MockApiRequestScheduler extends _i1.Mock
             {#highPriority: highPriority},
           ),
         )),
-      ) as _i4.Future<_i2.RequestPermit>);
+      ) as _i7.Future<_i2.RequestPermit>);
 }
 
 /// A class which mocks [LoggerService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLoggerService extends _i1.Mock implements _i8.LoggerService {
+class MockLoggerService extends _i1.Mock implements _i10.LoggerService {
   @override
-  _i4.Future<void> init({_i9.AuthProvider? authProvider}) =>
+  _i7.Future<void> init({_i11.AuthProvider? authProvider}) =>
       (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
           {#authProvider: authProvider},
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void debug(
@@ -319,12 +376,1426 @@ class MockLoggerService extends _i1.Mock implements _i8.LoggerService {
       );
 
   @override
-  _i4.Future<void> dispose() => (super.noSuchMethod(
+  _i7.Future<void> dispose() => (super.noSuchMethod(
         Invocation.method(
           #dispose,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [AuthRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthRemoteDataSource extends _i1.Mock
+    implements _i12.AuthRemoteDataSource {
+  @override
+  _i7.Future<Map<String, dynamic>> login(
+    String? email,
+    String? password,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #login,
+          [
+            email,
+            password,
+          ],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> register(
+    String? email,
+    String? password,
+    String? fullName, {
+    String? language,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #register,
+          [
+            email,
+            password,
+            fullName,
+          ],
+          {#language: language},
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> vendorRegister({
+    required String? email,
+    required String? password,
+    required String? fullName,
+    required String? businessName,
+    required String? phone,
+    String? address,
+    String? city,
+    String? description,
+    String? language,
+    int? vendorType = 1,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #vendorRegister,
+          [],
+          {
+            #email: email,
+            #password: password,
+            #fullName: fullName,
+            #businessName: businessName,
+            #phone: phone,
+            #address: address,
+            #city: city,
+            #description: description,
+            #language: language,
+            #vendorType: vendorType,
+          },
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> forgotPassword(
+    String? email, {
+    String? language,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #forgotPassword,
+          [email],
+          {#language: language},
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<String> verifyResetCode(
+    String? email,
+    String? code,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyResetCode,
+          [
+            email,
+            code,
+          ],
+        ),
+        returnValue: _i7.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #verifyResetCode,
+            [
+              email,
+              code,
+            ],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i7.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #verifyResetCode,
+            [
+              email,
+              code,
+            ],
+          ),
+        )),
+      ) as _i7.Future<String>);
+
+  @override
+  _i7.Future<void> resetPassword(
+    String? email,
+    String? token,
+    String? newPassword,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #resetPassword,
+          [
+            email,
+            token,
+            newPassword,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> confirmEmail(
+    String? token,
+    String? email,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #confirmEmail,
+          [
+            token,
+            email,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> verifyEmailCode(
+    String? email,
+    String? code,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyEmailCode,
+          [
+            email,
+            code,
+          ],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> resendVerificationCode(
+    String? email, {
+    String? language,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #resendVerificationCode,
+          [email],
+          {#language: language},
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> courierRegister({
+    required String? email,
+    required String? password,
+    required String? fullName,
+    required String? phone,
+    required int? vehicleType,
+    String? language,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #courierRegister,
+          [],
+          {
+            #email: email,
+            #password: password,
+            #fullName: fullName,
+            #phone: phone,
+            #vehicleType: vehicleType,
+            #language: language,
+          },
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> externalLogin({
+    required String? provider,
+    required String? idToken,
+    required String? email,
+    required String? fullName,
+    String? language,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #externalLogin,
+          [],
+          {
+            #provider: provider,
+            #idToken: idToken,
+            #email: email,
+            #fullName: fullName,
+            #language: language,
+          },
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> registerDeviceToken(
+    String? token,
+    String? deviceType,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #registerDeviceToken,
+          [
+            token,
+            deviceType,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateProfile(Map<String, dynamic>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateProfile,
+          [data],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [ProductRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockProductRemoteDataSource extends _i1.Mock
+    implements _i14.ProductRemoteDataSource {
+  @override
+  _i7.Future<List<_i3.Product>> getProducts(
+    String? vendorId, {
+    int? page = 1,
+    int? pageSize = 6,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getProducts,
+          [vendorId],
+          {
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i7.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+      ) as _i7.Future<List<_i3.Product>>);
+
+  @override
+  _i7.Future<List<_i3.Product>> getPopularProducts({
+    int? page = 1,
+    int? pageSize = 6,
+    int? vendorType,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getPopularProducts,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+            #vendorType: vendorType,
+          },
+        ),
+        returnValue: _i7.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+      ) as _i7.Future<List<_i3.Product>>);
+
+  @override
+  _i7.Future<_i3.Product> getProduct(String? productId) => (super.noSuchMethod(
+        Invocation.method(
+          #getProduct,
+          [productId],
+        ),
+        returnValue: _i7.Future<_i3.Product>.value(_FakeProduct_1(
+          this,
+          Invocation.method(
+            #getProduct,
+            [productId],
+          ),
+        )),
+        returnValueForMissingStub: _i7.Future<_i3.Product>.value(_FakeProduct_1(
+          this,
+          Invocation.method(
+            #getProduct,
+            [productId],
+          ),
+        )),
+      ) as _i7.Future<_i3.Product>);
+
+  @override
+  _i7.Future<List<_i3.Product>> getSimilarProducts(
+    String? productId, {
+    int? page = 1,
+    int? pageSize = 6,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSimilarProducts,
+          [productId],
+          {
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i7.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+      ) as _i7.Future<List<_i3.Product>>);
+
+  @override
+  _i7.Future<List<_i15.PromotionalBanner>> getBanners({
+    String? language,
+    int? vendorType,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getBanners,
+          [],
+          {
+            #language: language,
+            #vendorType: vendorType,
+          },
+        ),
+        returnValue: _i7.Future<List<_i15.PromotionalBanner>>.value(
+            <_i15.PromotionalBanner>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i15.PromotionalBanner>>.value(
+                <_i15.PromotionalBanner>[]),
+      ) as _i7.Future<List<_i15.PromotionalBanner>>);
+
+  @override
+  _i7.Future<_i3.Product> createProduct(Map<String, dynamic>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createProduct,
+          [data],
+        ),
+        returnValue: _i7.Future<_i3.Product>.value(_FakeProduct_1(
+          this,
+          Invocation.method(
+            #createProduct,
+            [data],
+          ),
+        )),
+        returnValueForMissingStub: _i7.Future<_i3.Product>.value(_FakeProduct_1(
+          this,
+          Invocation.method(
+            #createProduct,
+            [data],
+          ),
+        )),
+      ) as _i7.Future<_i3.Product>);
+
+  @override
+  _i7.Future<void> updateProductPrice(
+    String? productId,
+    double? price,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateProductPrice,
+          [
+            productId,
+            price,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateProductAvailability(
+    String? productId,
+    bool? isAvailable,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateProductAvailability,
+          [
+            productId,
+            isAvailable,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> deleteProduct(String? productId) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteProduct,
+          [productId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<String> uploadProductImage(dynamic file) => (super.noSuchMethod(
+        Invocation.method(
+          #uploadProductImage,
+          [file],
+        ),
+        returnValue: _i7.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #uploadProductImage,
+            [file],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i7.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #uploadProductImage,
+            [file],
+          ),
+        )),
+      ) as _i7.Future<String>);
+}
+
+/// A class which mocks [OrderRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockOrderRemoteDataSource extends _i1.Mock
+    implements _i16.OrderRemoteDataSource {
+  @override
+  _i7.Future<_i4.Order> createOrder(
+    String? vendorId,
+    Map<String, int>? items, {
+    String? deliveryAddressId,
+    String? paymentMethod,
+    String? note,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createOrder,
+          [
+            vendorId,
+            items,
+          ],
+          {
+            #deliveryAddressId: deliveryAddressId,
+            #paymentMethod: paymentMethod,
+            #note: note,
+          },
+        ),
+        returnValue: _i7.Future<_i4.Order>.value(_FakeOrder_2(
+          this,
+          Invocation.method(
+            #createOrder,
+            [
+              vendorId,
+              items,
+            ],
+            {
+              #deliveryAddressId: deliveryAddressId,
+              #paymentMethod: paymentMethod,
+              #note: note,
+            },
+          ),
+        )),
+        returnValueForMissingStub: _i7.Future<_i4.Order>.value(_FakeOrder_2(
+          this,
+          Invocation.method(
+            #createOrder,
+            [
+              vendorId,
+              items,
+            ],
+            {
+              #deliveryAddressId: deliveryAddressId,
+              #paymentMethod: paymentMethod,
+              #note: note,
+            },
+          ),
+        )),
+      ) as _i7.Future<_i4.Order>);
+
+  @override
+  _i7.Future<List<dynamic>> getOrders({int? vendorType}) => (super.noSuchMethod(
+        Invocation.method(
+          #getOrders,
+          [],
+          {#vendorType: vendorType},
+        ),
+        returnValue: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+        returnValueForMissingStub: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+      ) as _i7.Future<List<dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getOrderDetails(String? orderId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOrderDetails,
+          [orderId],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getOrderDetailFull(String? orderId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOrderDetailFull,
+          [orderId],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> cancelOrder(
+    String? orderId,
+    String? reason,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #cancelOrder,
+          [
+            orderId,
+            reason,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> cancelOrderItem(
+    String? customerOrderItemId,
+    String? reason,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #cancelOrderItem,
+          [
+            customerOrderItemId,
+            reason,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getDeliveryTracking(String? orderId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getDeliveryTracking,
+          [orderId],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<List<dynamic>> getVendorOrders({
+    int? page = 1,
+    int? pageSize = 20,
+    String? status,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendorOrders,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+            #status: status,
+          },
+        ),
+        returnValue: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+        returnValueForMissingStub: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+      ) as _i7.Future<List<dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getVendorOrdersWithCount({
+    int? page = 1,
+    int? pageSize = 20,
+    String? status,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendorOrdersWithCount,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+            #status: status,
+          },
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getVendorOrder(String? orderId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendorOrder,
+          [orderId],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> acceptOrder(String? orderId) => (super.noSuchMethod(
+        Invocation.method(
+          #acceptOrder,
+          [orderId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> rejectOrder(
+    String? orderId,
+    String? reason,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #rejectOrder,
+          [
+            orderId,
+            reason,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateOrderStatus(
+    String? orderId,
+    String? status, {
+    String? note,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateOrderStatus,
+          [
+            orderId,
+            status,
+          ],
+          {#note: note},
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [VendorRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockVendorRemoteDataSource extends _i1.Mock
+    implements _i17.VendorRemoteDataSource {
+  @override
+  _i7.Future<List<_i9.Vendor>> getVendors({
+    int? vendorType,
+    int? page = 1,
+    int? pageSize = 6,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendors,
+          [],
+          {
+            #vendorType: vendorType,
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i7.Future<List<_i9.Vendor>>.value(<_i9.Vendor>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i9.Vendor>>.value(<_i9.Vendor>[]),
+      ) as _i7.Future<List<_i9.Vendor>>);
+
+  @override
+  _i7.Future<List<dynamic>> getVendorOrders({
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? page,
+    int? pageSize,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendorOrders,
+          [],
+          {
+            #status: status,
+            #startDate: startDate,
+            #endDate: endDate,
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+        returnValueForMissingStub: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+      ) as _i7.Future<List<dynamic>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getVendorProfile() => (super.noSuchMethod(
+        Invocation.method(
+          #getVendorProfile,
+          [],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> updateVendorBusyStatus(bool? isBusy) => (super.noSuchMethod(
+        Invocation.method(
+          #updateVendorBusyStatus,
+          [isBusy],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateVendorProfile(Map<String, dynamic>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateVendorProfile,
+          [data],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateVendorSettings(Map<String, dynamic>? settings) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateVendorSettings,
+          [settings],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getVendorSettings() => (super.noSuchMethod(
+        Invocation.method(
+          #getVendorSettings,
+          [],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> toggleVendorActive(bool? isActive) => (super.noSuchMethod(
+        Invocation.method(
+          #toggleVendorActive,
+          [isActive],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<List<dynamic>> getVendorNotifications() => (super.noSuchMethod(
+        Invocation.method(
+          #getVendorNotifications,
+          [],
+        ),
+        returnValue: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+        returnValueForMissingStub: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+      ) as _i7.Future<List<dynamic>>);
+
+  @override
+  _i7.Future<void> markNotificationAsRead(
+    String? type,
+    String? id,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #markNotificationAsRead,
+          [
+            type,
+            id,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> markAllNotificationsAsRead(String? type) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #markAllNotificationsAsRead,
+          [type],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<dynamic> getDeliveryZones({String? cityId}) => (super.noSuchMethod(
+        Invocation.method(
+          #getDeliveryZones,
+          [],
+          {#cityId: cityId},
+        ),
+        returnValue: _i7.Future<dynamic>.value(),
+        returnValueForMissingStub: _i7.Future<dynamic>.value(),
+      ) as _i7.Future<dynamic>);
+
+  @override
+  _i7.Future<void> syncDeliveryZones(_i18.DeliveryZoneSyncDto? dto) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #syncDeliveryZones,
+          [dto],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<List<String>> getVendorProductCategories() => (super.noSuchMethod(
+        Invocation.method(
+          #getVendorProductCategories,
+          [],
+        ),
+        returnValue: _i7.Future<List<String>>.value(<String>[]),
+        returnValueForMissingStub: _i7.Future<List<String>>.value(<String>[]),
+      ) as _i7.Future<List<String>>);
+
+  @override
+  _i7.Future<void> updateVendorImage(String? imageUrl) => (super.noSuchMethod(
+        Invocation.method(
+          #updateVendorImage,
+          [imageUrl],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getVendorsForMap({
+    double? userLatitude,
+    double? userLongitude,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendorsForMap,
+          [],
+          {
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
+          },
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+}
+
+/// A class which mocks [CartRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCartRemoteDataSource extends _i1.Mock
+    implements _i19.CartRemoteDataSource {
+  @override
+  _i7.Future<Map<String, dynamic>> getCart() => (super.noSuchMethod(
+        Invocation.method(
+          #getCart,
+          [],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> addToCart(
+    String? productId,
+    int? quantity,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addToCart,
+          [
+            productId,
+            quantity,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateCartItem(
+    String? itemId,
+    int? quantity,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCartItem,
+          [
+            itemId,
+            quantity,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> removeFromCart(String? itemId) => (super.noSuchMethod(
+        Invocation.method(
+          #removeFromCart,
+          [itemId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> clearCart() => (super.noSuchMethod(
+        Invocation.method(
+          #clearCart,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [LocationRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockLocationRemoteDataSource extends _i1.Mock
+    implements _i20.LocationRemoteDataSource {
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getCountries() => (super.noSuchMethod(
+        Invocation.method(
+          #getCountries,
+          [],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getLocationCities(String? countryId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLocationCities,
+          [countryId],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getLocationDistricts(String? cityId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLocationDistricts,
+          [cityId],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getLocationLocalities(
+          String? districtId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLocationLocalities,
+          [districtId],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<void> updateCourierLocation(
+    String? courierId,
+    double? latitude,
+    double? longitude,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCourierLocation,
+          [
+            courierId,
+            latitude,
+            longitude,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getCourierLocation(String? courierId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCourierLocation,
+          [courierId],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<String> getGoogleMapsApiKey() => (super.noSuchMethod(
+        Invocation.method(
+          #getGoogleMapsApiKey,
+          [],
+        ),
+        returnValue: _i7.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getGoogleMapsApiKey,
+            [],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i7.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getGoogleMapsApiKey,
+            [],
+          ),
+        )),
+      ) as _i7.Future<String>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getLegalContent(
+    String? type,
+    String? langCode,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLegalContent,
+          [
+            type,
+            langCode,
+          ],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<List<String>> getCities({
+    int? page = 1,
+    int? pageSize = 6,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCities,
+          [],
+          {
+            #page: page,
+            #pageSize: pageSize,
+          },
+        ),
+        returnValue: _i7.Future<List<String>>.value(<String>[]),
+        returnValueForMissingStub: _i7.Future<List<String>>.value(<String>[]),
+      ) as _i7.Future<List<String>>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> autocomplete(String? query) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #autocomplete,
+          [query],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getDeliveryTracking(String? orderId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getDeliveryTracking,
+          [orderId],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+}
+
+/// A class which mocks [ReviewRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockReviewRemoteDataSource extends _i1.Mock
+    implements _i21.ReviewRemoteDataSource {
+  @override
+  _i7.Future<_i5.Review> createReview(
+    String? targetId,
+    String? targetType,
+    int? rating,
+    String? comment,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createReview,
+          [
+            targetId,
+            targetType,
+            rating,
+            comment,
+          ],
+        ),
+        returnValue: _i7.Future<_i5.Review>.value(_FakeReview_3(
+          this,
+          Invocation.method(
+            #createReview,
+            [
+              targetId,
+              targetType,
+              rating,
+              comment,
+            ],
+          ),
+        )),
+        returnValueForMissingStub: _i7.Future<_i5.Review>.value(_FakeReview_3(
+          this,
+          Invocation.method(
+            #createReview,
+            [
+              targetId,
+              targetType,
+              rating,
+              comment,
+            ],
+          ),
+        )),
+      ) as _i7.Future<_i5.Review>);
+
+  @override
+  _i7.Future<List<_i5.Review>> getProductReviews(String? productId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getProductReviews,
+          [productId],
+        ),
+        returnValue: _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+      ) as _i7.Future<List<_i5.Review>>);
+
+  @override
+  _i7.Future<List<_i5.Review>> getVendorReviews(String? vendorId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getVendorReviews,
+          [vendorId],
+        ),
+        returnValue: _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+      ) as _i7.Future<List<_i5.Review>>);
+
+  @override
+  _i7.Future<List<_i5.Review>> getPendingReviews() => (super.noSuchMethod(
+        Invocation.method(
+          #getPendingReviews,
+          [],
+        ),
+        returnValue: _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+      ) as _i7.Future<List<_i5.Review>>);
+
+  @override
+  _i7.Future<void> approveReview(String? reviewId) => (super.noSuchMethod(
+        Invocation.method(
+          #approveReview,
+          [reviewId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> rejectReview(String? reviewId) => (super.noSuchMethod(
+        Invocation.method(
+          #rejectReview,
+          [reviewId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [NotificationRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockNotificationRemoteDataSource extends _i1.Mock
+    implements _i22.NotificationRemoteDataSource {
+  @override
+  _i7.Future<List<_i23.CustomerNotification>> getCustomerNotifications() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCustomerNotifications,
+          [],
+        ),
+        returnValue: _i7.Future<List<_i23.CustomerNotification>>.value(
+            <_i23.CustomerNotification>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i23.CustomerNotification>>.value(
+                <_i23.CustomerNotification>[]),
+      ) as _i7.Future<List<_i23.CustomerNotification>>);
+
+  @override
+  _i7.Future<Map<String, dynamic>> getNotificationSettings() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getNotificationSettings,
+          [],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> updateNotificationSettings(Map<String, dynamic>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateNotificationSettings,
+          [data],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [UserRemoteDataSource].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUserRemoteDataSource extends _i1.Mock
+    implements _i24.UserRemoteDataSource {
+  @override
+  _i7.Future<Map<String, dynamic>> getUserPreferences() => (super.noSuchMethod(
+        Invocation.method(
+          #getUserPreferences,
+          [],
+        ),
+        returnValue:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i7.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> updateUserPreferences({
+    String? language,
+    String? currency,
+    String? timeZone,
+    String? dateFormat,
+    String? timeFormat,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateUserPreferences,
+          [],
+          {
+            #language: language,
+            #currency: currency,
+            #timeZone: timeZone,
+            #dateFormat: dateFormat,
+            #timeFormat: timeFormat,
+          },
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getSupportedCurrencies() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSupportedCurrencies,
+          [],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getSupportedLanguages() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSupportedLanguages,
+          [],
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
 }

@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart' hide Order;
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/orders/data/models/order.dart';
@@ -24,7 +25,10 @@ class OrderRemoteDataSource {
       'note': note,
     };
 
-    final response = await _networkClient.dio.post('/orders', data: data);
+    final response = await _networkClient.dio.post(
+      ApiEndpoints.createOrder,
+      data: data,
+    );
 
     final apiResponse = ApiResponse.fromJson(
       response.data as Map<String, dynamic>,
@@ -45,7 +49,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      '/orders',
+      ApiEndpoints.orders,
       queryParameters: queryParams.isNotEmpty ? queryParams : null,
     );
 
@@ -70,7 +74,9 @@ class OrderRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getOrderDetails(String orderId) async {
-    final response = await _networkClient.dio.get('/orders/$orderId');
+    final response = await _networkClient.dio.get(
+      '${ApiEndpoints.orders}/$orderId',
+    );
 
     // Backend Response format: ApiResponse<OrderDto>
     // We return Map for now to match current ApiService signature,
@@ -85,13 +91,15 @@ class OrderRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getOrderDetailFull(String orderId) async {
-    final response = await _networkClient.dio.get('/orders/$orderId/detail');
+    final response = await _networkClient.dio.get(
+      '${ApiEndpoints.orders}/$orderId/detail',
+    );
     return response.data as Map<String, dynamic>;
   }
 
   Future<void> cancelOrder(String orderId, String reason) async {
     final response = await _networkClient.dio.post(
-      '/orders/$orderId/cancel',
+      '${ApiEndpoints.orders}/$orderId/cancel',
       data: {'reason': reason},
     );
 
@@ -113,7 +121,7 @@ class OrderRemoteDataSource {
     String reason,
   ) async {
     final response = await _networkClient.dio.post(
-      '/orders/items/$customerOrderItemId/cancel',
+      '${ApiEndpoints.orders}/items/$customerOrderItemId/cancel', // Assuming path logic matches existing
       data: {'reason': reason},
     );
 
@@ -129,7 +137,7 @@ class OrderRemoteDataSource {
 
   Future<Map<String, dynamic>> getDeliveryTracking(String orderId) async {
     final response = await _networkClient.dio.get(
-      '/map/delivery-tracking/$orderId',
+      '${ApiEndpoints.deliveryTracking}/$orderId',
     );
     return response.data as Map<String, dynamic>;
   }
@@ -147,7 +155,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      '/vendor/orders',
+      ApiEndpoints.vendorOrders,
       queryParameters: queryParams,
     );
 
@@ -166,7 +174,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      '/vendor/orders',
+      ApiEndpoints.vendorOrders,
       queryParameters: queryParams,
     );
 
@@ -185,13 +193,15 @@ class OrderRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getVendorOrder(String orderId) async {
-    final response = await _networkClient.dio.get('/vendor/orders/$orderId');
+    final response = await _networkClient.dio.get(
+      '${ApiEndpoints.vendorOrders}/$orderId',
+    );
     return response.data as Map<String, dynamic>;
   }
 
   Future<void> acceptOrder(String orderId) async {
     final response = await _networkClient.dio.post(
-      '/vendor/orders/$orderId/accept',
+      '${ApiEndpoints.vendorOrders}/$orderId/accept',
     );
 
     final apiResponse = ApiResponse.fromJson(
@@ -206,7 +216,7 @@ class OrderRemoteDataSource {
 
   Future<void> rejectOrder(String orderId, String reason) async {
     final response = await _networkClient.dio.post(
-      '/vendor/orders/$orderId/reject',
+      '${ApiEndpoints.vendorOrders}/$orderId/reject',
       data: {'reason': reason},
     );
 
@@ -231,7 +241,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.put(
-      '/vendor/orders/$orderId/status',
+      '${ApiEndpoints.vendorOrders}/$orderId/status',
       data: data,
     );
 

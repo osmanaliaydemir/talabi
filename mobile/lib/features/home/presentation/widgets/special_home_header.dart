@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/gen/assets.gen.dart';
 import 'package:mobile/features/search/presentation/screens/search_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -63,8 +64,8 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                 height: isMarket ? 280 : 243,
                 child: Image.asset(
                   isMarket
-                      ? 'assets/images/market_banner.png'
-                      : 'assets/images/banner_image.png',
+                      ? Assets.images.marketBanner.path
+                      : Assets.images.bannerImage.path,
                   fit: BoxFit.contain,
                 ),
               );

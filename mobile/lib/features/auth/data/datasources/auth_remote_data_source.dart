@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/services/logger_service.dart';
@@ -12,7 +13,7 @@ class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       return await _networkClient.post<Map<String, dynamic>>(
-        '/auth/login',
+        ApiEndpoints.login,
         data: {'email': email, 'password': password},
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -37,7 +38,7 @@ class AuthRemoteDataSource {
       };
 
       final response = await _networkClient.post<Map<String, dynamic>>(
-        '/auth/register',
+        ApiEndpoints.register,
         data: requestData,
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -76,7 +77,7 @@ class AuthRemoteDataSource {
       };
 
       return await _networkClient.post<Map<String, dynamic>>(
-        '/auth/vendor-register',
+        ApiEndpoints.vendorRegister,
         data: requestData,
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -92,10 +93,9 @@ class AuthRemoteDataSource {
       if (language != null) {
         data['language'] = language;
       }
-      // Note: Endpoint returns success/failure within ApiResponse.
-      // NetworkClient post wrapper checks ApiResponse.success -> throws generic message.
+
       await _networkClient.post<Map<String, dynamic>>(
-        '/auth/forgot-password',
+        ApiEndpoints.forgotPassword,
         data: data,
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -108,7 +108,7 @@ class AuthRemoteDataSource {
   Future<String> verifyResetCode(String email, String code) async {
     try {
       final result = await _networkClient.post<Map<String, dynamic>>(
-        '/auth/verify-reset-code',
+        ApiEndpoints.verifyResetCode,
         data: {'email': email, 'code': code},
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -126,7 +126,7 @@ class AuthRemoteDataSource {
   ) async {
     try {
       await _networkClient.post<Map<String, dynamic>>(
-        '/auth/reset-password',
+        ApiEndpoints.resetPassword,
         data: {'email': email, 'token': token, 'newPassword': newPassword},
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -139,7 +139,7 @@ class AuthRemoteDataSource {
   Future<void> confirmEmail(String token, String email) async {
     try {
       await _networkClient.get(
-        '/auth/confirm-email',
+        ApiEndpoints.confirmEmail,
         queryParameters: {'token': token, 'email': email},
       );
     } catch (e, stackTrace) {
@@ -154,7 +154,7 @@ class AuthRemoteDataSource {
   ) async {
     try {
       final response = await _networkClient.post<Map<String, dynamic>>(
-        '/auth/verify-email-code',
+        ApiEndpoints.verifyEmailCode,
         data: {'email': email, 'code': code},
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -177,7 +177,7 @@ class AuthRemoteDataSource {
       };
 
       final response = await _networkClient.post<Map<String, dynamic>>(
-        '/auth/resend-verification-code',
+        ApiEndpoints.resendVerificationCode,
         data: requestData,
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -208,7 +208,7 @@ class AuthRemoteDataSource {
       };
 
       return await _networkClient.post<Map<String, dynamic>>(
-        '/auth/courier-register',
+        ApiEndpoints.courierRegister,
         data: requestData,
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -235,7 +235,7 @@ class AuthRemoteDataSource {
       };
 
       return await _networkClient.post<Map<String, dynamic>>(
-        '/auth/external-login',
+        ApiEndpoints.externalLogin,
         data: requestData,
         fromJson: (json) => json as Map<String, dynamic>,
       );
@@ -252,13 +252,9 @@ class AuthRemoteDataSource {
   Future<void> registerDeviceToken(String token, String deviceType) async {
     try {
       await _networkClient.post(
-        '/notification/register-device',
+        ApiEndpoints.registerDeviceToken,
         data: {'token': token, 'deviceType': deviceType},
-        // We don't care about return data here, success check is inside post wrapper if we provided fromJson.
-        // But post without fromJson returns raw data.
-        // So we should verify success manually if we don't provide fromJson, or provide dummy fromJson.
-        // Actually NetworkClient post implementation: if fromJson is null, it just returns data.
-        // So we should check ApiResponse manually or use fromJson to enforce check.
+
         fromJson: (json) =>
             json, // This will trigger ApiResponse check inside NetworkClient
       );
@@ -270,7 +266,10 @@ class AuthRemoteDataSource {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _networkClient.dio.put('/profile', data: data);
+      final response = await _networkClient.dio.put(
+        ApiEndpoints.userProfile,
+        data: data,
+      );
 
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,

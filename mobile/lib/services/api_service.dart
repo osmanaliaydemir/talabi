@@ -13,13 +13,18 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart' hide Order;
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart';
-import 'package:mobile/core/models/location_item.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
 import 'package:mobile/features/orders/data/datasources/order_remote_data_source.dart';
 import 'package:mobile/features/vendors/data/datasources/vendor_remote_data_source.dart';
+import 'package:mobile/features/cart/data/datasources/cart_remote_data_source.dart';
+import 'package:mobile/features/common/data/datasources/location_remote_data_source.dart';
+import 'package:mobile/features/reviews/data/datasources/review_remote_data_source.dart';
+import 'package:mobile/features/notifications/data/datasources/notification_remote_data_source.dart';
+import 'package:mobile/features/profile/data/datasources/user_remote_data_source.dart';
 
 // const String _requestPermitKey = '_apiRequestPermit'; // Moved to NetworkClient
 
@@ -35,6 +40,11 @@ class ApiService {
     this._productRemoteDataSource,
     this._orderRemoteDataSource,
     this._vendorRemoteDataSource,
+    this._cartRemoteDataSource,
+    this._locationRemoteDataSource,
+    this._reviewRemoteDataSource,
+    this._notificationRemoteDataSource,
+    this._userRemoteDataSource,
     this._cacheService,
   );
 
@@ -43,6 +53,11 @@ class ApiService {
   final ProductRemoteDataSource _productRemoteDataSource;
   final OrderRemoteDataSource _orderRemoteDataSource;
   final VendorRemoteDataSource _vendorRemoteDataSource;
+  final CartRemoteDataSource _cartRemoteDataSource;
+  final LocationRemoteDataSource _locationRemoteDataSource;
+  final ReviewRemoteDataSource _reviewRemoteDataSource;
+  final NotificationRemoteDataSource _notificationRemoteDataSource;
+  final UserRemoteDataSource _userRemoteDataSource;
   final CacheService _cacheService;
 
   Dio get dio => _networkClient.dio;
@@ -172,11 +187,7 @@ class ApiService {
   /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
   Future<List<Map<String, dynamic>>> getCountries() async {
     try {
-      final response = await dio.get('/locations/countries');
-      if (response.data is List) {
-        return List<Map<String, dynamic>>.from(response.data);
-      }
-      return [];
+      return await _locationRemoteDataSource.getCountries();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching countries', e, stackTrace);
       return [];
@@ -185,11 +196,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getLocationCities(String countryId) async {
     try {
-      final response = await dio.get('/locations/cities/$countryId');
-      if (response.data is List) {
-        return List<Map<String, dynamic>>.from(response.data);
-      }
-      return [];
+      return await _locationRemoteDataSource.getLocationCities(countryId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching cities', e, stackTrace);
       return [];
@@ -198,11 +205,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getLocationDistricts(String cityId) async {
     try {
-      final response = await dio.get('/locations/districts/$cityId');
-      if (response.data is List) {
-        return List<Map<String, dynamic>>.from(response.data);
-      }
-      return [];
+      return await _locationRemoteDataSource.getLocationDistricts(cityId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching districts', e, stackTrace);
       return [];
@@ -213,11 +216,7 @@ class ApiService {
     String districtId,
   ) async {
     try {
-      final response = await dio.get('/locations/localities/$districtId');
-      if (response.data is List) {
-        return List<Map<String, dynamic>>.from(response.data);
-      }
-      return [];
+      return await _locationRemoteDataSource.getLocationLocalities(districtId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching localities', e, stackTrace);
       return [];
@@ -383,54 +382,7 @@ class ApiService {
 
   Future<List<CustomerNotification>> getCustomerNotifications() async {
     try {
-      final response = await dio.get('/customer/notifications');
-      final responseData = response.data;
-
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          responseData,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Müşteri bildirimleri getirilemedi',
-          );
-        }
-
-        // ApiResponse.data içinde CustomerNotificationResponseDto var
-        final data = apiResponse.data as Map<String, dynamic>;
-        final items = data['items'] as List<dynamic>? ?? [];
-        return items
-            .map(
-              (json) =>
-                  CustomerNotification.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
-      }
-
-      // Eski format (direkt CustomerNotificationResponseDto veya liste)
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('items')) {
-        final items = responseData['items'] as List<dynamic>? ?? [];
-        return items
-            .map(
-              (json) =>
-                  CustomerNotification.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
-      } else if (responseData is List) {
-        return responseData
-            .map(
-              (json) =>
-                  CustomerNotification.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
-      } else {
-        return [];
-      }
+      return await _notificationRemoteDataSource.getCustomerNotifications();
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error fetching customer notifications',
@@ -442,30 +394,10 @@ class ApiService {
   }
 
   // Cart methods
+  // Cart methods
   Future<Map<String, dynamic>> getCart() async {
     try {
-      final response = await dio.get('/cart');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // CartDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Sepet getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt CartDto)
-      return response.data as Map<String, dynamic>;
+      return await _cartRemoteDataSource.getCart();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching cart', e, stackTrace);
       rethrow;
@@ -474,30 +406,7 @@ class ApiService {
 
   Future<void> addToCart(String productId, int quantity) async {
     try {
-      final response = await dio.post(
-        '/cart/items',
-        data: {'productId': productId, 'quantity': quantity},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          // ADDRESS_REQUIRED hatası için özel kontrol
-          if (apiResponse.errorCode == 'ADDRESS_REQUIRED' &&
-              apiResponse.data != null) {
-            final data = apiResponse.data as Map<String, dynamic>;
-            if (data['requiresAddress'] == true) {
-              throw Exception(apiResponse.message ?? 'Adres gerekli');
-            }
-          }
-          throw Exception(apiResponse.message ?? 'Ürün sepete eklenemedi');
-        }
-      }
+      await _cartRemoteDataSource.addToCart(productId, quantity);
     } catch (e, stackTrace) {
       LoggerService().error('Error adding to cart', e, stackTrace);
       rethrow;
@@ -506,66 +415,27 @@ class ApiService {
 
   Future<void> updateCartItem(String itemId, int quantity) async {
     try {
-      final response = await dio.put(
-        '/cart/items/$itemId',
-        data: {'quantity': quantity},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(apiResponse.message ?? 'Sepet öğesi güncellenemedi');
-        }
-      }
+      await _cartRemoteDataSource.updateCartItem(itemId, quantity);
     } catch (e, stackTrace) {
       LoggerService().error('Error updating cart item', e, stackTrace);
       rethrow;
     }
   }
 
-  Future<void> removeFromCart(String itemId) async {
+  Future<void> clearCart() async {
     try {
-      final response = await dio.delete('/cart/items/$itemId');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(apiResponse.message ?? 'Ürün sepetten çıkarılamadı');
-        }
-      }
+      await _cartRemoteDataSource.clearCart();
     } catch (e, stackTrace) {
-      LoggerService().error('Error removing from cart', e, stackTrace);
+      LoggerService().error('Error clearing cart', e, stackTrace);
       rethrow;
     }
   }
 
-  Future<void> clearCart() async {
+  Future<void> removeFromCart(String itemId) async {
     try {
-      final response = await dio.delete('/cart');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(apiResponse.message ?? 'Sepet temizlenemedi');
-        }
-      }
+      await _cartRemoteDataSource.removeFromCart(itemId);
     } catch (e, stackTrace) {
-      LoggerService().error('Error clearing cart', e, stackTrace);
+      LoggerService().error('Error removing from cart', e, stackTrace);
       rethrow;
     }
   }
@@ -784,7 +654,7 @@ class ApiService {
   }) async {
     try {
       final response = await dio.get(
-        '/favorites',
+        ApiEndpoints.favorites,
         queryParameters: {'page': page, 'pageSize': pageSize},
       );
 
@@ -808,9 +678,36 @@ class ApiService {
     }
   }
 
+  // Notification settings methods
+  Future<Map<String, dynamic>> getNotificationSettings() async {
+    try {
+      return await _notificationRemoteDataSource.getNotificationSettings();
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching notification settings',
+        e,
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> updateNotificationSettings(Map<String, dynamic> data) async {
+    try {
+      await _notificationRemoteDataSource.updateNotificationSettings(data);
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error updating notification settings',
+        e,
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> addToFavorites(String productId) async {
     try {
-      final response = await dio.post('/favorites/$productId');
+      final response = await dio.post('${ApiEndpoints.favorites}/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -828,7 +725,7 @@ class ApiService {
 
   Future<void> removeFromFavorites(String productId) async {
     try {
-      final response = await dio.delete('/favorites/$productId');
+      final response = await dio.delete('${ApiEndpoints.favorites}/$productId');
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -846,7 +743,9 @@ class ApiService {
 
   Future<bool> isFavorite(String productId) async {
     try {
-      final response = await dio.get('/favorites/check/$productId');
+      final response = await dio.get(
+        '${ApiEndpoints.favoriteCheck}/$productId',
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -864,63 +763,6 @@ class ApiService {
     }
   }
 
-  // Notification settings methods
-  Future<Map<String, dynamic>> getNotificationSettings() async {
-    try {
-      final response = await dio.get('/notifications/settings');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) =>
-            json
-                as Map<
-                  String,
-                  dynamic
-                >, // NotificationSettingsDto direkt Map olarak döndürüyoruz
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(
-          apiResponse.message ?? 'Bildirim ayarları getirilemedi',
-        );
-      }
-
-      return apiResponse.data!;
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        'Error fetching notification settings',
-        e,
-        stackTrace,
-      );
-      rethrow;
-    }
-  }
-
-  Future<void> updateNotificationSettings(Map<String, dynamic> data) async {
-    try {
-      final response = await dio.put('/notifications/settings', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>?,
-      );
-
-      if (!apiResponse.success) {
-        throw Exception(
-          apiResponse.message ?? 'Bildirim ayarları güncellenemedi',
-        );
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        'Error updating notification settings',
-        e,
-        stackTrace,
-      );
-      rethrow;
-    }
-  }
-
-  // Orders methods
   // Orders methods
   Future<List<dynamic>> getOrders({int? vendorType}) async {
     try {
@@ -938,7 +780,6 @@ class ApiService {
       // Assuming legacy code expects Map, but new DS returns Order object.
       // Wait, getOrderDetails signature in ApiService returns Future<Map<String, dynamic>>.
       // But OrderRemoteDataSource.getCustomerOrderDetails returns Future<Order>.
-      // I should update ApiService return type OR convert Order to Map.
       // Better to convert to Map to minimize breakage in calling code for now.
       return order;
     } catch (e, stackTrace) {
@@ -983,7 +824,7 @@ class ApiService {
   ) async {
     try {
       final response = await dio.get(
-        '/products/search',
+        ApiEndpoints.productSearch,
         queryParameters: request.toJson(),
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -1130,36 +971,10 @@ class ApiService {
 
   Future<List<String>> getCities({int page = 1, int pageSize = 6}) async {
     try {
-      final response = await dio.get(
-        '/vendors/cities',
-        queryParameters: {'page': page, 'pageSize': pageSize},
+      return await _locationRemoteDataSource.getCities(
+        page: page,
+        pageSize: pageSize,
       );
-      // Backend artık ApiResponse<PagedResultDto<string>> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) {
-            // Check if pagination wrapper exists (data: { items: [...] })
-            if (json is Map<String, dynamic> && json.containsKey('items')) {
-              return (json['items'] as List).map((e) => e as String).toList();
-            }
-            // Fallback for direct list (data: [...])
-            if (json is List) {
-              return (json).map((e) => e as String).toList();
-            }
-            return <String>[];
-          },
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Şehirler getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt liste)
-      return List<String>.from(response.data);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching cities', e, stackTrace);
       rethrow;
@@ -1168,33 +983,8 @@ class ApiService {
 
   Future<List<AutocompleteResultDto>> autocomplete(String query) async {
     try {
-      final response = await dio.get(
-        '/search/autocomplete',
-        queryParameters: {'query': query},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Otomatik tamamlama sonuçları getirilemedi',
-          );
-        }
-
-        return apiResponse.data!
-            .map((e) => AutocompleteResultDto.fromJson(e))
-            .toList();
-      }
-      // Eski format (direkt liste)
-      return (response.data as List)
-          .map((e) => AutocompleteResultDto.fromJson(e))
-          .toList();
+      final results = await _locationRemoteDataSource.autocomplete(query);
+      return results.map((e) => AutocompleteResultDto.fromJson(e)).toList();
     } catch (e, stackTrace) {
       LoggerService().error('Error during autocomplete', e, stackTrace);
       rethrow;
@@ -1204,30 +994,7 @@ class ApiService {
   // Map and location methods
   Future<String> getGoogleMapsApiKey() async {
     try {
-      final response = await dio.get('/map/api-key');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // ApiKey objesi direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Google Maps API anahtarı getirilemedi',
-          );
-        }
-
-        return apiResponse.data!['apiKey'] as String;
-      }
-      // Eski format (direkt { apiKey: "..." })
-      return response.data['apiKey'] as String;
+      return await _locationRemoteDataSource.getGoogleMapsApiKey();
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error fetching Google Maps API key',
@@ -1243,33 +1010,10 @@ class ApiService {
     double? userLongitude,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (userLatitude != null) queryParams['userLatitude'] = userLatitude;
-      if (userLongitude != null) queryParams['userLongitude'] = userLongitude;
-
-      final response = await dio.get(
-        '/map/vendors',
-        queryParameters: queryParams,
+      return await _vendorRemoteDataSource.getVendorsForMap(
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı harita bilgileri getirilemedi',
-          );
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt liste)
-      return List<Map<String, dynamic>>.from(response.data);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching vendors for map', e, stackTrace);
       rethrow;
@@ -1278,30 +1022,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getDeliveryTracking(String orderId) async {
     try {
-      final response = await dio.get('/map/delivery-tracking/$orderId');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // DeliveryTrackingDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Teslimat takip bilgileri getirilemedi',
-          );
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt DeliveryTrackingDto)
-      return response.data as Map<String, dynamic>;
+      return await _locationRemoteDataSource.getDeliveryTracking(orderId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching delivery tracking', e, stackTrace);
       rethrow;
@@ -1315,9 +1036,10 @@ class ApiService {
     double longitude,
   ) async {
     try {
-      await dio.put(
-        '/courier/$courierId/location',
-        data: {'latitude': latitude, 'longitude': longitude},
+      await _locationRemoteDataSource.updateCourierLocation(
+        courierId,
+        latitude,
+        longitude,
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error updating courier location', e, stackTrace);
@@ -1327,8 +1049,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getCourierLocation(String courierId) async {
     try {
-      final response = await dio.get('/courier/$courierId/location');
-      return response.data;
+      return await _locationRemoteDataSource.getCourierLocation(courierId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching courier location', e, stackTrace);
       rethrow;
@@ -1343,38 +1064,12 @@ class ApiService {
     String comment,
   ) async {
     try {
-      final response = await dio.post(
-        '/reviews',
-        data: {
-          'targetId': targetId,
-          'targetType': targetType,
-          'rating': rating,
-          'comment': comment,
-        },
+      return await _reviewRemoteDataSource.createReview(
+        targetId,
+        targetType,
+        rating,
+        comment,
       );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // ReviewDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Değerlendirme oluşturulamadı',
-          );
-        }
-
-        return Review.fromJson(apiResponse.data!);
-      }
-      // Eski format (direkt ReviewDto)
-      return Review.fromJson(response.data);
     } catch (e, stackTrace) {
       LoggerService().error('Error creating review', e, stackTrace);
       rethrow;
@@ -1383,103 +1078,42 @@ class ApiService {
 
   Future<ProductReviewsSummary> getProductReviews(String productId) async {
     try {
-      final response = await dio.get('/reviews/products/$productId');
+      final reviews = await _reviewRemoteDataSource.getProductReviews(
+        productId,
+      );
 
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) {
-            // Eğer data bir Map ise (yeni format - ProductReviewsSummaryDto)
-            if (json is Map<String, dynamic>) {
-              return json;
-            }
-            // Eğer data bir List ise (eski format)
-            return null;
-          },
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Ürün değerlendirmeleri getirilemedi',
-          );
-        }
-
-        // Yeni format: ProductReviewsSummaryDto (Map)
-        if (apiResponse.data is Map<String, dynamic>) {
-          return ProductReviewsSummary.fromJson(
-            apiResponse.data as Map<String, dynamic>,
-          );
-        }
-
-        // Eski format: Direkt List<ReviewDto>
-        if (apiResponse.data is List) {
-          final List<dynamic> data = apiResponse.data as List;
-          final reviews = data
-              .map((json) => Review.fromJson(json as Map<String, dynamic>))
-              .toList();
-          final avgRating = reviews.isNotEmpty
-              ? reviews.map((r) => r.rating).reduce((a, b) => a + b) /
-                    reviews.length
-              : 0.0;
-          return ProductReviewsSummary(
-            averageRating: avgRating,
-            totalRatings: reviews.length,
-            totalComments: reviews.where((r) => r.comment.isNotEmpty).length,
-            reviews: reviews,
-          );
-        }
-      }
-
-      // Eski format (direkt liste) - geriye dönük uyumluluk
-      if (response.data is List) {
-        final List<dynamic> data = response.data as List;
-        final reviews = data
-            .map((json) => Review.fromJson(json as Map<String, dynamic>))
-            .toList();
-        final avgRating = reviews.isNotEmpty
-            ? reviews.map((r) => r.rating).reduce((a, b) => a + b) /
-                  reviews.length
-            : 0.0;
+      if (reviews.isEmpty) {
         return ProductReviewsSummary(
-          averageRating: avgRating,
-          totalRatings: reviews.length,
-          totalComments: reviews.where((r) => r.comment.isNotEmpty).length,
-          reviews: reviews,
+          averageRating: 0.0,
+          totalRatings: 0,
+          totalComments: 0,
+          reviews: [],
         );
       }
 
-      throw Exception('Beklenmeyen response formatı');
+      final avgRating =
+          reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length;
+
+      return ProductReviewsSummary(
+        averageRating: avgRating,
+        totalRatings: reviews.length,
+        totalComments: reviews.where((r) => r.comment.isNotEmpty).length,
+        reviews: reviews,
+      );
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching product reviews', e, stackTrace);
-      rethrow;
+      return ProductReviewsSummary(
+        averageRating: 0.0,
+        totalRatings: 0,
+        totalComments: 0,
+        reviews: [],
+      );
     }
   }
 
   Future<List<Review>> getVendorReviews(String vendorId) async {
     try {
-      final response = await dio.get('/reviews/vendors/$vendorId');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı değerlendirmeleri getirilemedi',
-          );
-        }
-
-        return apiResponse.data!.map((json) => Review.fromJson(json)).toList();
-      }
-      // Eski format (direkt liste)
-      final List<dynamic> data = response.data;
-      return data.map((json) => Review.fromJson(json)).toList();
+      return await _reviewRemoteDataSource.getVendorReviews(vendorId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching vendor reviews', e, stackTrace);
       rethrow;
@@ -1488,27 +1122,7 @@ class ApiService {
 
   Future<List<Review>> getPendingReviews() async {
     try {
-      final response = await dio.get('/reviews/pending');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              (json as List).map((e) => e as Map<String, dynamic>).toList(),
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Bekleyen değerlendirmeler getirilemedi',
-          );
-        }
-
-        return apiResponse.data!.map((json) => Review.fromJson(json)).toList();
-      }
-      // Eski format (direkt liste)
-      final List<dynamic> data = response.data;
-      return data.map((json) => Review.fromJson(json)).toList();
+      return await _reviewRemoteDataSource.getPendingReviews();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching pending reviews', e, stackTrace);
       rethrow;
@@ -1517,19 +1131,7 @@ class ApiService {
 
   Future<void> approveReview(String reviewId) async {
     try {
-      final response = await dio.patch('/reviews/$reviewId/approve');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(apiResponse.message ?? 'Değerlendirme onaylanamadı');
-        }
-      }
+      await _reviewRemoteDataSource.approveReview(reviewId);
     } catch (e, stackTrace) {
       LoggerService().error('Error approving review', e, stackTrace);
       rethrow;
@@ -1538,19 +1140,7 @@ class ApiService {
 
   Future<void> rejectReview(String reviewId) async {
     try {
-      final response = await dio.patch('/reviews/$reviewId/reject');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(apiResponse.message ?? 'Değerlendirme reddedilemedi');
-        }
-      }
+      await _reviewRemoteDataSource.rejectReview(reviewId);
     } catch (e, stackTrace) {
       LoggerService().error('Error rejecting review', e, stackTrace);
       rethrow;
@@ -1570,30 +1160,7 @@ class ApiService {
   // User preferences methods
   Future<Map<String, dynamic>> getUserPreferences() async {
     try {
-      final response = await dio.get('/userpreferences');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // UserPreferencesDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Kullanıcı tercihleri getirilemedi',
-          );
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt UserPreferencesDto)
-      return response.data as Map<String, dynamic>;
+      return await _userRemoteDataSource.getUserPreferences();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching user preferences', e, stackTrace);
       rethrow;
@@ -1608,28 +1175,13 @@ class ApiService {
     String? timeFormat,
   }) async {
     try {
-      final data = <String, dynamic>{};
-      if (language != null) data['language'] = language;
-      if (currency != null) data['currency'] = currency;
-      if (timeZone != null) data['timeZone'] = timeZone;
-      if (dateFormat != null) data['dateFormat'] = dateFormat;
-      if (timeFormat != null) data['timeFormat'] = timeFormat;
-
-      final response = await dio.put('/userpreferences', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Kullanıcı tercihleri güncellenemedi',
-          );
-        }
-      }
+      await _userRemoteDataSource.updateUserPreferences(
+        language: language,
+        currency: currency,
+        timeZone: timeZone,
+        dateFormat: dateFormat,
+        timeFormat: timeFormat,
+      );
     } catch (e, stackTrace) {
       LoggerService().error('Error updating user preferences', e, stackTrace);
       rethrow;
@@ -1709,42 +1261,12 @@ class ApiService {
     int? pageSize,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (status != null) queryParams['status'] = status;
-      if (startDate != null) {
-        queryParams['startDate'] = startDate.toIso8601String();
-      }
-      if (endDate != null) {
-        queryParams['endDate'] = endDate.toIso8601String();
-      }
-      if (page != null) queryParams['page'] = page;
-      if (pageSize != null) queryParams['pageSize'] = pageSize;
-
-      final response = await dio.get(
-        '/vendor/orders',
-        queryParameters: queryParams,
+      return await _vendorRemoteDataSource.getVendorOrders(
+        // Note: VendorRemoteDataSource needs update to support search params if missing
+        status: status,
+        page: page ?? 1,
+        pageSize: pageSize ?? 20,
       );
-      // Backend artık ApiResponse<PagedResultDto> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı siparişleri getirilemedi',
-          );
-        }
-
-        // PagedResultDto'dan items listesini çıkar
-        final pagedResult = apiResponse.data!;
-        final items = pagedResult['items'] as List<dynamic>?;
-        return items ?? [];
-      }
-      // Eski format (direkt liste)
-      return response.data;
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching vendor orders', e, stackTrace);
       rethrow;
@@ -1760,47 +1282,11 @@ class ApiService {
     int? pageSize,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (status != null) queryParams['status'] = status;
-      if (startDate != null) {
-        queryParams['startDate'] = startDate.toIso8601String();
-      }
-      if (endDate != null) {
-        queryParams['endDate'] = endDate.toIso8601String();
-      }
-      if (page != null) queryParams['page'] = page;
-      if (pageSize != null) queryParams['pageSize'] = pageSize;
-
-      final response = await dio.get(
-        '/vendor/orders',
-        queryParameters: queryParams,
+      return await _orderRemoteDataSource.getVendorOrdersWithCount(
+        status: status,
+        page: page ?? 1,
+        pageSize: pageSize ?? 20,
       );
-      // Backend artık ApiResponse<PagedResultDto> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı siparişleri getirilemedi',
-          );
-        }
-
-        // PagedResultDto'dan hem items hem de totalCount'u döndür
-        final pagedResult = apiResponse.data!;
-        return {
-          'items': pagedResult['items'] as List<dynamic>? ?? [],
-          'totalCount': pagedResult['totalCount'] as int? ?? 0,
-        };
-      }
-      // Eski format (direkt liste)
-      return {
-        'items': response.data ?? [],
-        'totalCount': (response.data as List?)?.length ?? 0,
-      };
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error fetching vendor orders with count',
@@ -1813,30 +1299,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getVendorOrder(String orderId) async {
     try {
-      final response = await dio.get('/vendor/orders/$orderId');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // VendorOrderDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı siparişi getirilemedi',
-          );
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt VendorOrderDto)
-      return response.data;
+      return await _orderRemoteDataSource.getVendorOrder(orderId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching vendor order', e, stackTrace);
       rethrow;
@@ -2311,23 +1774,7 @@ class ApiService {
 
   Future<List<String>> getVendorProductCategories() async {
     try {
-      final response = await dio.get('/vendor/products/categories');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => (json as List).map((e) => e as String).toList(),
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Kategoriler getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt liste)
-      return List<String>.from(response.data);
+      return await _vendorRemoteDataSource.getVendorProductCategories();
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error fetching vendor product categories',
@@ -2353,39 +1800,7 @@ class ApiService {
   // Vendor Profile Management Methods
   Future<Map<String, dynamic>> getVendorProfile() async {
     try {
-      final response = await dio.get(
-        '/vendor/profile',
-        options: Options(
-          validateStatus: (status) {
-            return status! < 500; // 404 dahil tüm 500 altı kodları kabul et
-          },
-        ),
-      );
-
-      if (response.statusCode == 404) {
-        return {}; // Profil yoksa boş map dön
-      }
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // VendorProfileDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(apiResponse.message ?? 'Satıcı profili getirilemedi');
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt VendorProfileDto)
-      return response.data;
+      return await _vendorRemoteDataSource.getVendorProfile();
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching vendor profile', e, stackTrace);
       rethrow;
@@ -2394,21 +1809,7 @@ class ApiService {
 
   Future<void> updateVendorProfile(Map<String, dynamic> data) async {
     try {
-      final response = await dio.put('/vendor/profile', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı profili güncellenemedi',
-          );
-        }
-      }
+      await _vendorRemoteDataSource.updateVendorProfile(data);
     } catch (e, stackTrace) {
       LoggerService().error('Error updating vendor profile', e, stackTrace);
       rethrow;
@@ -2417,24 +1818,7 @@ class ApiService {
 
   Future<void> updateVendorImage(String imageUrl) async {
     try {
-      final response = await dio.put(
-        '/vendor/profile/image',
-        data: {'imageUrl': imageUrl},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı profil resmi güncellenemedi',
-          );
-        }
-      }
+      await _vendorRemoteDataSource.updateVendorImage(imageUrl);
     } catch (e, stackTrace) {
       LoggerService().error('Error updating vendor image', e, stackTrace);
       rethrow;
@@ -2443,79 +1827,17 @@ class ApiService {
 
   Future<void> updateBusyStatus(int status) async {
     try {
-      final response = await dio.put(
-        '/vendor/profile/settings/status',
-        data: {'busyStatus': status},
-      );
-
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı yoğunluk durumu güncellenemedi',
-          );
-        }
-      }
+      // API expects bool for isBusy, checks status == 1
+      await _vendorRemoteDataSource.updateVendorBusyStatus(status == 1);
     } catch (e, stackTrace) {
       LoggerService().error('Error updating busy status', e, stackTrace);
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> getVendorSettings() async {
-    try {
-      final response = await dio.get('/vendor/profile/settings');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // VendorSettingsDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı ayarları getirilemedi',
-          );
-        }
-
-        return apiResponse.data!;
-      }
-      // Eski format (direkt VendorSettingsDto)
-      return response.data;
-    } catch (e, stackTrace) {
-      LoggerService().error('Error fetching vendor settings', e, stackTrace);
-      rethrow;
-    }
-  }
-
   Future<void> updateVendorSettings(Map<String, dynamic> data) async {
     try {
-      final response = await dio.put('/vendor/profile/settings', data: data);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı ayarları güncellenemedi',
-          );
-        }
-      }
+      await _vendorRemoteDataSource.updateVendorSettings(data);
     } catch (e, stackTrace) {
       LoggerService().error('Error updating vendor settings', e, stackTrace);
       rethrow;
@@ -2524,31 +1846,21 @@ class ApiService {
 
   Future<void> toggleVendorActive(bool isActive) async {
     try {
-      final response = await dio.put(
-        '/vendor/profile/settings/active',
-        data: {'isActive': isActive},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı aktiflik durumu güncellenemedi',
-          );
-        }
-      }
+      await _vendorRemoteDataSource.toggleVendorActive(isActive);
     } catch (e, stackTrace) {
       LoggerService().error('Error toggling vendor active', e, stackTrace);
       rethrow;
     }
   }
 
-  // Unused helper removed
+  Future<Map<String, dynamic>> getVendorSettings() async {
+    try {
+      return await _vendorRemoteDataSource.getVendorSettings();
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching vendor settings', e, stackTrace);
+      rethrow;
+    }
+  }
 
   // Legal documents methods
   Future<Map<String, dynamic>> getLegalContent(
@@ -2556,26 +1868,7 @@ class ApiService {
     String langCode,
   ) async {
     try {
-      final response = await dio.get(
-        '/content/legal/$type',
-        queryParameters: {'lang': langCode},
-      );
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) =>
-            json
-                as Map<
-                  String,
-                  dynamic
-                >, // Legal document direkt Map olarak döndürüyoruz
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Yasal belge getirilemedi');
-      }
-
-      return apiResponse.data!;
+      return await _locationRemoteDataSource.getLegalContent(type, langCode);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching legal content', e, stackTrace);
       rethrow;
@@ -2585,31 +1878,7 @@ class ApiService {
   // Vendor notifications
   Future<List<dynamic>> getVendorNotifications() async {
     try {
-      final response = await dio.get('/vendor/notifications');
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) =>
-              json
-                  as Map<
-                    String,
-                    dynamic
-                  >, // VendorNotificationResponseDto direkt Map olarak döndürüyoruz
-        );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          throw Exception(
-            apiResponse.message ?? 'Satıcı bildirimleri getirilemedi',
-          );
-        }
-
-        // VendorNotificationResponseDto içindeki 'items' alanını döndür
-        return apiResponse.data!['items'] ?? [];
-      }
-      // Eski format (direkt VendorNotificationResponseDto)
-      return response.data['items'] ?? [];
+      return await _vendorRemoteDataSource.getVendorNotifications();
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error fetching vendor notifications',
@@ -2623,26 +1892,7 @@ class ApiService {
   // Mark notification as read
   Future<void> markNotificationAsRead(String type, String id) async {
     try {
-      final endpoint = type == 'vendor'
-          ? '/vendor/notifications/$id/read'
-          : type == 'customer'
-          ? '/customer/notifications/$id/read'
-          : '/courier/notifications/$id/read';
-      final response = await dio.post(endpoint);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ?? 'Bildirim okundu olarak işaretlenemedi',
-          );
-        }
-      }
+      await _vendorRemoteDataSource.markNotificationAsRead(type, id);
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error marking notification as read',
@@ -2656,27 +1906,7 @@ class ApiService {
   // Mark all notifications as read
   Future<void> markAllNotificationsAsRead(String type) async {
     try {
-      final endpoint = type == 'vendor'
-          ? '/vendor/notifications/read-all'
-          : type == 'customer'
-          ? '/customer/notifications/read-all'
-          : '/courier/notifications/read-all';
-      final response = await dio.post(endpoint);
-      // Backend artık ApiResponse<T> formatında döndürüyor
-      if (response.data is Map<String, dynamic> &&
-          response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
-          response.data as Map<String, dynamic>,
-          (json) => json as Map<String, dynamic>?,
-        );
-
-        if (!apiResponse.success) {
-          throw Exception(
-            apiResponse.message ??
-                'Tüm bildirimler okundu olarak işaretlenemedi',
-          );
-        }
-      }
+      await _vendorRemoteDataSource.markAllNotificationsAsRead(type);
     } catch (e, stackTrace) {
       LoggerService().error(
         'Error marking all notifications as read',
@@ -2690,34 +1920,7 @@ class ApiService {
   // Delivery Zones
   Future<dynamic> getDeliveryZones({String? cityId}) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (cityId != null) {
-        queryParams['cityId'] = cityId;
-      }
-
-      final response = await dio.get(
-        '/vendor/delivery-zones',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
-      );
-
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json, // Data is dynamic (List or Object)
-      );
-
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Failed to load zones');
-      }
-
-      // If cityId is null, we expect List<LocationItem>
-      // If cityId is set, we expect CityZoneDto
-      if (cityId == null) {
-        return (apiResponse.data as List)
-            .map((e) => LocationItem.fromJson(e as Map<String, dynamic>))
-            .toList();
-      } else {
-        return CityZoneDto.fromJson(apiResponse.data as Map<String, dynamic>);
-      }
+      return await _vendorRemoteDataSource.getDeliveryZones(cityId: cityId);
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching delivery zones', e, stackTrace);
       rethrow;
@@ -2726,19 +1929,7 @@ class ApiService {
 
   Future<void> syncDeliveryZones(DeliveryZoneSyncDto dto) async {
     try {
-      final response = await dio.put(
-        '/vendor/delivery-zones',
-        data: dto.toJson(),
-      );
-
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json,
-      );
-
-      if (!apiResponse.success) {
-        throw Exception(apiResponse.message ?? 'Failed to sync zones');
-      }
+      await _vendorRemoteDataSource.syncDeliveryZones(dto);
     } catch (e, stackTrace) {
       LoggerService().error('Error syncing delivery zones', e, stackTrace);
       rethrow;
