@@ -13,24 +13,31 @@ import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:get_it/get_it.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  const OrderDetailScreen({super.key, required this.orderId});
+  const OrderDetailScreen({
+    super.key,
+    required this.orderId,
+    ApiService? apiService,
+  }) : _apiService = apiService;
 
   final String orderId;
+  final ApiService? _apiService;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  final ApiService _apiService = ApiService();
+  late final ApiService _apiService;
   OrderDetail? _orderDetail;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _apiService = widget._apiService ?? GetIt.instance<ApiService>();
     _loadOrderDetail();
   }
 
@@ -96,7 +103,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ],
             ),
           );
-        }
+        },
       ),
     );
 
@@ -171,7 +178,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ],
             ),
           );
-        }
+        },
       ),
     );
 

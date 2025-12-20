@@ -112,6 +112,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     try {
       // Prepare order items
+      // Prepare order items
       final orderItems = <String, int>{};
       for (final item in widget.cartItems.values) {
         orderItems[item.product.id] = item.quantity;
@@ -171,7 +172,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             cancelText: '', // Not shown when onCancel is null
             icon: Icons.error_outline,
             iconColor: Colors.red,
-            confirmButtonColor: AppTheme.primaryOrange, // Or red? Keeping consistent with action or error? The original had TextButton 'OK'. Let's use Red for error.
+            confirmButtonColor: AppTheme
+                .primaryOrange, // Or red? Keeping consistent with action or error? The original had TextButton 'OK'. Let's use Red for error.
             // Original had TextButton for OK. CustomConfirmationDialog uses ElevatedButton for confirm.
             // Let's use primaryOrange for 'OK' as it is a safe action (dismiss), or Red because it's an error state?
             // The icon is red.
@@ -247,23 +249,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     Icons.payment,
                   ),
                   const SizedBox(height: 12),
-                  _buildPaymentMethods(localizations),
+                  Semantics(
+                    label: localizations.paymentMethod,
+                    explicitChildNodes: true,
+                    child: _buildPaymentMethods(localizations),
+                  ),
                   const SizedBox(height: 24),
 
                   // Order Note Section
                   _buildSectionTitle(localizations.orderNote, Icons.note),
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: _noteController,
-                    decoration: InputDecoration(
-                      hintText: localizations.orderNotePlaceholder,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Semantics(
+                    label: localizations.orderNote,
+                    textField: true,
+                    child: TextField(
+                      controller: _noteController,
+                      decoration: InputDecoration(
+                        hintText: localizations.orderNotePlaceholder,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
+                      maxLines: 3,
                     ),
-                    maxLines: 3,
                   ),
                   const SizedBox(height: 24),
 
@@ -273,51 +283,58 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _buildOrderSummary(localizations, displayCurrency),
                   const SizedBox(height: 24),
 
-                  // Confirm Order Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _createOrder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryOrange,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Semantics(
+                    label:
+                        '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(widget.subtotal + widget.deliveryFee, displayCurrency)}',
+                    button: true,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _createOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryOrange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      localizations.confirmOrder,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      CurrencyFormatter.format(
+                                        widget.subtotal + widget.deliveryFee,
+                                        displayCurrency,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  localizations.confirmOrder,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  CurrencyFormatter.format(
-                                    widget.subtotal + widget.deliveryFee,
-                                    displayCurrency,
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                      ),
                     ),
                   ),
                 ],
@@ -331,9 +348,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       children: [
         Icon(icon, color: AppTheme.primaryOrange, size: 24),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -481,59 +501,71 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        localizations.deliveryAddress,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
+                  child: Semantics(
+                    label: '${localizations.deliveryAddress}: $displayTitle',
+                    explicitChildNodes: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          localizations.deliveryAddress,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        displayTitle,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                        const SizedBox(height: 2),
+                        Text(
+                          displayTitle,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () => _showAddressSelector(localizations),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                const SizedBox(width: 8),
+                Semantics(
+                  label: localizations.changeAddress,
+                  button: true,
+                  child: TextButton(
+                    onPressed: () => _showAddressSelector(localizations),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.edit_outlined,
-                        size: 16,
-                        color: AppTheme.primaryOrange,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        localizations.changeAddress,
-                        style: const TextStyle(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.edit_outlined,
+                          size: 16,
                           color: AppTheme.primaryOrange,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            localizations.changeAddress,
+                            style: const TextStyle(
+                              color: AppTheme.primaryOrange,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -574,16 +606,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     color: Colors.grey[600],
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    district.isNotEmpty && city.isNotEmpty
-                        ? '$district / $city'
-                        : district.isNotEmpty
-                        ? district
-                        : city,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Text(
+                      district.isNotEmpty && city.isNotEmpty
+                          ? '$district / $city'
+                          : district.isNotEmpty
+                          ? district
+                          : city,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -1128,8 +1163,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       child: Text(
                         '${item.product.name} x${item.quantity}',
                         style: const TextStyle(fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       CurrencyFormatter.format(
                         item.totalPrice,
@@ -1146,7 +1183,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(localizations.cartSubtotalLabel),
+                Expanded(child: Text(localizations.cartSubtotalLabel)),
                 Text(
                   CurrencyFormatter.format(widget.subtotal, displayCurrency),
                 ),
@@ -1157,7 +1194,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(localizations.cartDeliveryFeeLabel),
+                Expanded(child: Text(localizations.cartDeliveryFeeLabel)),
                 Text(
                   CurrencyFormatter.format(widget.deliveryFee, displayCurrency),
                 ),
@@ -1168,11 +1205,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  localizations.cartTotalAmountLabel,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    localizations.cartTotalAmountLabel,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Text(

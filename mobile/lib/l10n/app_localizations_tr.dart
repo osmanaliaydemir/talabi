@@ -54,6 +54,56 @@ class AppLocalizationsTr extends AppLocalizations {
   String get save => 'Kaydet';
 
   @override
+  String get productResmi => 'Ürün resmi';
+
+  @override
+  String get yildiz => 'yıldız';
+
+  @override
+  String get favorilereEkle => 'Favorilere ekle';
+
+  @override
+  String get favorilerdenCikar => 'Favorilerden çıkar';
+
+  @override
+  String get menu => 'Menü';
+
+  @override
+  String get fiyat => 'Fiyat';
+
+  @override
+  String get adediAzalt => 'Adedi azalt';
+
+  @override
+  String get miktar => 'Miktar';
+
+  @override
+  String get adediArtir => 'Adedi artır';
+
+  @override
+  String get sepeteEkle => 'Sepete ekle';
+
+  @override
+  String get cart => 'Sepet';
+
+  @override
+  String get share => 'Paylaş';
+
+  @override
+  String get back => 'Geri dön';
+
+  @override
+  String get degerlendirme => 'değerlendirme';
+
+  @override
+  String get totalAmount => 'Toplam tutar';
+
+  @override
+  String degerlendirmeSayisi(Object count) {
+    return '$count değerlendirme';
+  }
+
+  @override
   String get cancel => 'İptal';
 
   @override
@@ -61,9 +111,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get vendors => 'Satıcılar';
-
-  @override
-  String get cart => 'Sepet';
 
   @override
   String get orders => 'Siparişler';

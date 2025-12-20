@@ -10,20 +10,33 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 
+import 'package:get_it/get_it.dart';
+
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({super.key, this.showBackButton = true});
+  const OrderHistoryScreen({
+    super.key,
+    this.showBackButton = true,
+    ApiService? apiService,
+  }) : _apiService = apiService;
 
   final bool showBackButton;
+  final ApiService? _apiService;
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  final ApiService _apiService = ApiService();
+  late final ApiService _apiService;
   List<dynamic> _orders = [];
   bool _isLoading = true;
   int? _selectedVendorType;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiService = widget._apiService ?? GetIt.instance<ApiService>();
+  }
 
   @override
   void didChangeDependencies() {

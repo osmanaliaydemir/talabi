@@ -190,6 +190,102 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
+  /// No description provided for @productResmi.
+  ///
+  /// In en, this message translates to:
+  /// **'Product image'**
+  String get productResmi;
+
+  /// No description provided for @yildiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars'**
+  String get yildiz;
+
+  /// No description provided for @favorilereEkle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get favorilereEkle;
+
+  /// No description provided for @favorilerdenCikar.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get favorilerdenCikar;
+
+  /// No description provided for @menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get menu;
+
+  /// No description provided for @fiyat.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get fiyat;
+
+  /// No description provided for @adediAzalt.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease quantity'**
+  String get adediAzalt;
+
+  /// No description provided for @miktar.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get miktar;
+
+  /// No description provided for @adediArtir.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase quantity'**
+  String get adediArtir;
+
+  /// No description provided for @sepeteEkle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to cart'**
+  String get sepeteEkle;
+
+  /// No description provided for @cart.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart'**
+  String get cart;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get back;
+
+  /// No description provided for @degerlendirme.
+  ///
+  /// In en, this message translates to:
+  /// **'review'**
+  String get degerlendirme;
+
+  /// No description provided for @totalAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Total amount'**
+  String get totalAmount;
+
+  /// No description provided for @degerlendirmeSayisi.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String degerlendirmeSayisi(Object count);
+
   /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
@@ -207,12 +303,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Vendors'**
   String get vendors;
-
-  /// No description provided for @cart.
-  ///
-  /// In en, this message translates to:
-  /// **'Cart'**
-  String get cart;
 
   /// No description provided for @orders.
   ///

@@ -18,6 +18,27 @@
   "turkishLira": "Turkish Lira",
   "tether": "Tether",
   "save": "Save",
+  "productResmi": "Product image",
+  "yildiz": "Stars",
+  "favorilereEkle": "Add to favorites",
+  "favorilerdenCikar": "Remove from favorites",
+  "menu": "Menu",
+  "fiyat": "Price",
+  "adediAzalt": "Decrease quantity",
+  "miktar": "Quantity",
+  "adediArtir": "Increase quantity",
+  "sepeteEkle": "Add to cart",
+  "cart": "Cart",
+  "share": "Share",
+  "back": "Go back",
+  "degerlendirme": "review",
+  "totalAmount": "Total amount",
+  "degerlendirmeSayisi": "{count} reviews",
+  "@degerlendirmeSayisi": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "cancel": "Cancel",
   "products": "Products",
   "vendors": "Vendors",

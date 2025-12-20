@@ -60,52 +60,61 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Animated Icon Container
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: Container(
-                    padding: const EdgeInsets.all(30),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(
-                        alpha: 0.1 * _fadeAnimation.value,
+            Semantics(
+              label: widget.message,
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Container(
+                      padding: const EdgeInsets.all(30),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withValues(
+                          alpha: 0.1 * _fadeAnimation.value,
+                        ),
+                        shape: BoxShape.circle,
                       ),
-                      shape: BoxShape.circle,
+                      child: Icon(
+                        widget.iconData,
+                        size: 80,
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: _fadeAnimation.value),
+                      ),
                     ),
-                    child: Icon(
-                      widget.iconData,
-                      size: 80,
-                      color: Theme.of(
-                        context,
-                      ).primaryColor.withValues(alpha: _fadeAnimation.value),
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 32),
-            Text(
-              widget.message,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+            ExcludeSemantics(
+              child: Column(
+                children: [
+                  Text(
+                    widget.message,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (widget.subMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.subMessage!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF6B7280),
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
-            if (widget.subMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                widget.subMessage!,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF6B7280),
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
             if (widget.actionLabel != null && widget.onAction != null) ...[
               const SizedBox(height: 32),
               SizedBox(

@@ -7,6 +7,12 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
 
 class AuthProvider with ChangeNotifier {
+  AuthProvider({ApiService? apiService, SecureStorageService? secureStorage})
+    : _apiService = apiService ?? ApiService(),
+      _secureStorage = secureStorage ?? SecureStorageService.instance;
+
+  final ApiService _apiService;
+  final SecureStorageService _secureStorage;
   String? _token;
   String? _refreshToken;
   String? _userId;
@@ -40,7 +46,7 @@ class AuthProvider with ChangeNotifier {
     String? requiredRole,
   }) async {
     final response =
-        await (ApiService()..resetLogout()) // Ensure we can make requests
+        await (_apiService..resetLogout()) // Ensure we can make requests
             .login(email, password);
 
     _token = response['token'];
@@ -89,16 +95,15 @@ class AuthProvider with ChangeNotifier {
     }
 
     // Save to secure storage
-    final secureStorage = SecureStorageService.instance;
-    await secureStorage.setToken(_token!);
+    await _secureStorage.setToken(_token!);
     if (_refreshToken != null) {
-      await secureStorage.setRefreshToken(_refreshToken!);
+      await _secureStorage.setRefreshToken(_refreshToken!);
     }
-    await secureStorage.setUserId(_userId!);
-    await secureStorage.setEmail(_email!);
-    await secureStorage.setFullName(_fullName!);
+    await _secureStorage.setUserId(_userId!);
+    await _secureStorage.setEmail(_email!);
+    await _secureStorage.setFullName(_fullName!);
     if (_role != null) {
-      await secureStorage.setRole(_role!);
+      await _secureStorage.setRole(_role!);
     }
 
     // Analytics
@@ -115,7 +120,7 @@ class AuthProvider with ChangeNotifier {
       LoggerService().debug('🟡 [AUTH_PROVIDER] FullName: $fullName');
 
       final response =
-          await (ApiService()..resetLogout()) // Ensure we can make requests
+          await (_apiService..resetLogout()) // Ensure we can make requests
               .register(email, password, fullName);
 
       LoggerService().debug('🟢 [AUTH_PROVIDER] Register response received');
@@ -146,14 +151,13 @@ class AuthProvider with ChangeNotifier {
         LoggerService().debug('🟢 [AUTH_PROVIDER] FullName: $_fullName');
 
         // Save to secure storage
-        final secureStorage = SecureStorageService.instance;
-        await secureStorage.setToken(_token!);
+        await _secureStorage.setToken(_token!);
         if (_refreshToken != null) {
-          await secureStorage.setRefreshToken(_refreshToken!);
+          await _secureStorage.setRefreshToken(_refreshToken!);
         }
-        await secureStorage.setUserId(_userId!);
-        await secureStorage.setEmail(_email!);
-        await secureStorage.setFullName(_fullName!);
+        await _secureStorage.setUserId(_userId!);
+        await _secureStorage.setEmail(_email!);
+        await _secureStorage.setFullName(_fullName!);
 
         LoggerService().debug(
           '🟢 [AUTH_PROVIDER] Data saved to Secure Storage',
@@ -180,7 +184,7 @@ class AuthProvider with ChangeNotifier {
     final roleBeforeLogout = _role;
 
     // Notify ApiService to stop processing requests immediately
-    ApiService().notifyLogout();
+    _apiService.notifyLogout();
 
     _token = null;
     _refreshToken = null;
@@ -192,8 +196,7 @@ class AuthProvider with ChangeNotifier {
     _isProfileComplete = true;
 
     // Clear secure storage
-    final secureStorage = SecureStorageService.instance;
-    await secureStorage.clearAll();
+    await _secureStorage.clearAll();
 
     // Clear SharedPreferences (ApiService interceptor reads from here)
     // Removed as part of secure storage migration
@@ -211,23 +214,22 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    final secureStorage = SecureStorageService.instance;
-    final storedToken = await secureStorage.getToken();
+    final storedToken = await _secureStorage.getToken();
 
     if (storedToken == null) {
       return; // Fast exit if no token
     }
 
     // Reset logout state for auto-login
-    ApiService().resetLogout();
+    _apiService.resetLogout();
 
     // Load token and user data from secure storage
     _token = storedToken;
-    _refreshToken = await secureStorage.getRefreshToken();
-    _userId = await secureStorage.getUserId();
-    _email = await secureStorage.getEmail();
-    _fullName = await secureStorage.getFullName();
-    _role = await secureStorage.getRole();
+    _refreshToken = await _secureStorage.getRefreshToken();
+    _userId = await _secureStorage.getUserId();
+    _email = await _secureStorage.getEmail();
+    _fullName = await _secureStorage.getFullName();
+    _role = await _secureStorage.getRole();
 
     // Try to get IsActive from token as it's not currently stored in SecureStorage separately
     if (_token != null) {
@@ -261,11 +263,10 @@ class AuthProvider with ChangeNotifier {
     await AnalyticsService.setUserId(userId);
 
     // Also likely update storage here if this method is used to persist external auth updates
-    final secureStorage = SecureStorageService.instance;
-    await secureStorage.setToken(token);
-    await secureStorage.setRefreshToken(refreshToken);
-    await secureStorage.setUserId(userId);
-    await secureStorage.setRole(role);
+    await _secureStorage.setToken(token);
+    await _secureStorage.setRefreshToken(refreshToken);
+    await _secureStorage.setUserId(userId);
+    await _secureStorage.setRole(role);
 
     notifyListeners();
   }

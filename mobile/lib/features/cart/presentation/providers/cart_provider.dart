@@ -14,13 +14,15 @@ import 'package:uuid/uuid.dart';
 
 class CartProvider with ChangeNotifier {
   CartProvider({
+    ApiService? apiService,
     SyncService? syncService,
     ConnectivityProvider? connectivityProvider,
-  }) : _syncService = syncService,
+  }) : _apiService = apiService ?? ApiService(),
+       _syncService = syncService,
        _connectivityProvider = connectivityProvider;
 
   final Map<String, CartItem> _items = {};
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
   final SyncService? _syncService;
   final ConnectivityProvider? _connectivityProvider;
   final _uuid = const Uuid();

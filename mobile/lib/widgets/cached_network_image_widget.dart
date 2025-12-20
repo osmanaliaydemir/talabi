@@ -30,6 +30,7 @@ class CachedNetworkImageWidget extends StatelessWidget {
     this.useOldImageOnUrlChange = true,
     // Daha yumuşak geçiş için curve (easeOut daha doğal görünür)
     this.fadeInCurve = Curves.easeOut,
+    this.semanticsLabel,
   });
 
   final String imageUrl;
@@ -47,6 +48,7 @@ class CachedNetworkImageWidget extends StatelessWidget {
   final Duration fadeOutDuration;
   final bool useOldImageOnUrlChange;
   final Curve fadeInCurve;
+  final String? semanticsLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +75,11 @@ class CachedNetworkImageWidget extends StatelessWidget {
       imageWidget = ClipRRect(borderRadius: borderRadius!, child: imageWidget);
     }
 
-    return imageWidget;
+    return Semantics(
+      label: semanticsLabel,
+      image: semanticsLabel != null,
+      child: imageWidget,
+    );
   }
 
   Widget _buildDefaultPlaceholder() {
@@ -135,6 +141,7 @@ class OptimizedCachedImage {
     double? width,
     double? height,
     BorderRadius? borderRadius,
+    String? semanticsLabel,
   }) {
     return CachedNetworkImageWidget(
       imageUrl: imageUrl,
@@ -148,6 +155,7 @@ class OptimizedCachedImage {
       errorColor: Colors.grey[300],
       // Flash önlemek için çok kısa fade-in (cache'den yüklenen image'ler için bile)
       fadeInDuration: const Duration(milliseconds: 50),
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -157,6 +165,7 @@ class OptimizedCachedImage {
     double? width,
     double? height,
     BorderRadius? borderRadius,
+    String? semanticsLabel,
   }) {
     return CachedNetworkImageWidget(
       imageUrl: imageUrl,
@@ -170,6 +179,7 @@ class OptimizedCachedImage {
       errorColor: Colors.grey[300],
       // Flash önlemek için çok kısa fade-in (cache'den yüklenen image'ler için bile)
       fadeInDuration: const Duration(milliseconds: 50),
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -179,6 +189,7 @@ class OptimizedCachedImage {
     double? width,
     double? height,
     BorderRadius? borderRadius,
+    String? semanticsLabel,
   }) {
     return CachedNetworkImageWidget(
       imageUrl: imageUrl,
@@ -192,6 +203,7 @@ class OptimizedCachedImage {
       errorColor: Colors.grey[300],
       // Flash önlemek için çok kısa fade-in (cache'den yüklenen image'ler için bile)
       fadeInDuration: const Duration(milliseconds: 50),
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -201,6 +213,7 @@ class OptimizedCachedImage {
     double? width,
     double? height,
     BorderRadius? borderRadius,
+    String? semanticsLabel,
   }) {
     return CachedNetworkImageWidget(
       imageUrl: imageUrl,
@@ -214,6 +227,7 @@ class OptimizedCachedImage {
       errorColor: Colors.grey[300],
       // Flash önlemek için çok kısa fade-in (cache'den yüklenen image'ler için bile)
       fadeInDuration: const Duration(milliseconds: 50),
+      semanticsLabel: semanticsLabel,
     );
   }
 }

@@ -451,39 +451,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 children: [
                                   GestureDetector(
                                     onTap: _scrollToReviews,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: _buildInfoItem(
-                                        icon: Icons.star,
-                                        iconColor: Colors.orange,
-                                        text: _reviewsSummary != null
-                                            ? _reviewsSummary!.averageRating
-                                                  .toStringAsFixed(1)
-                                            : '0.0',
-                                        subText: _reviewsSummary != null
-                                            ? '(${_reviewsSummary!.totalRatings}+)'
-                                            : '(0+)',
+                                    child: Semantics(
+                                      label:
+                                          '${_reviewsSummary != null ? _reviewsSummary!.averageRating.toStringAsFixed(1) : '0.0'} ${l10n.yildiz}, ${_reviewsSummary != null ? _reviewsSummary!.totalRatings : 0} ${l10n.degerlendirme}',
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: _buildInfoItem(
+                                          icon: Icons.star,
+                                          iconColor: Colors.orange,
+                                          text: _reviewsSummary != null
+                                              ? _reviewsSummary!.averageRating
+                                                    .toStringAsFixed(1)
+                                              : '0.0',
+                                          subText: _reviewsSummary != null
+                                              ? '(${_reviewsSummary!.totalRatings}+)'
+                                              : '(0+)',
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  _buildInfoItem(
-                                    icon: Icons.access_time_filled,
-                                    iconColor: colorScheme.primary,
-                                    text: '10 - 20 min',
-                                    subText: l10n.deliveryTime,
+                                  Semantics(
+                                    label: '${l10n.deliveryTime}: 10 - 20 min',
+                                    child: _buildInfoItem(
+                                      icon: Icons.access_time_filled,
+                                      iconColor: colorScheme.primary,
+                                      text: '10 - 20 min',
+                                      subText: l10n.deliveryTime,
+                                    ),
                                   ),
-                                  _buildInfoItem(
-                                    icon: Icons.delivery_dining,
-                                    iconColor: Colors.green,
-                                    text: l10n.talabi,
-                                    subText: l10n.delivery,
+                                  Semantics(
+                                    label: '${l10n.delivery}: ${l10n.talabi}',
+                                    child: _buildInfoItem(
+                                      icon: Icons.delivery_dining,
+                                      iconColor: Colors.green,
+                                      text: l10n.talabi,
+                                      subText: l10n.delivery,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -798,39 +810,85 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildCircleButton(
-                      icon: Icons.arrow_back,
-                      onTap: () => Navigator.pop(context),
+                    Semantics(
+                      label: l10n.back,
+                      button: true,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.arrow_back, size: 20),
+                        ),
+                      ),
                     ),
                     Row(
                       children: [
-                        _buildCircleButton(
-                          icon: _isFavorite
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: _isFavorite ? Colors.red : Colors.black,
-                          onTap: _toggleFavorite,
+                        Semantics(
+                          label: _isFavorite
+                              ? l10n.favorilerdenCikar
+                              : l10n.favorilereEkle,
+                          button: true,
+                          child: GestureDetector(
+                            onTap: _toggleFavorite,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                _isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: _isFavorite ? Colors.red : Colors.black,
+                                size: 20,
+                              ),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
-                        _buildCircleButton(
-                          icon: Icons.share,
-                          onTap: _shareProduct,
+                        Semantics(
+                          label: l10n.share,
+                          button: true,
+                          child: GestureDetector(
+                            onTap: _shareProduct,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.share, size: 20),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            _buildCircleButton(
-                              icon: Icons.shopping_cart_outlined,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CartScreen(showBackButton: true),
-                                  ),
-                                );
-                              },
+                            Semantics(
+                              label: l10n.cart,
+                              button: true,
+                              child: _buildCircleButton(
+                                icon: Icons.shopping_cart_outlined,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const CartScreen(
+                                        showBackButton: true,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                             if (cart.itemCount > 0)
                               Positioned(
@@ -893,30 +951,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            l10n.totalPrice,
-                            style: AppTheme.poppins(
-                              fontSize: 14,
-                              color: Colors.grey[500],
+                      child: Semantics(
+                        label:
+                            '${l10n.totalPrice}: ${CurrencyFormatter.format(_product!.price, _product!.currency)}',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              l10n.totalPrice,
+                              style: AppTheme.poppins(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            CurrencyFormatter.format(
-                              _product!.price,
-                              _product!.currency,
+                            const SizedBox(height: 4),
+                            Text(
+                              CurrencyFormatter.format(
+                                _product!.price,
+                                _product!.currency,
+                              ),
+                              style: AppTheme.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1A1A1A),
+                              ),
                             ),
-                            style: AppTheme.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A1A1A),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -1000,39 +1062,50 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(Icons.remove, color: Colors.white, size: 20),
-              onPressed: () async {
-                try {
-                  await cart.decreaseQuantity(_product!.id);
-                } catch (e) {
-                  // Handle error
-                }
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              '$quantity',
-              style: AppTheme.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Semantics(
+              label: l10n.adediAzalt,
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.remove, color: Colors.white, size: 20),
+                onPressed: () async {
+                  try {
+                    await cart.decreaseQuantity(_product!.id);
+                  } catch (e) {
+                    // Handle error
+                  }
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ),
             const SizedBox(width: 16),
-            IconButton(
-              icon: const Icon(Icons.add, color: Colors.white, size: 20),
-              onPressed: () async {
-                try {
-                  await cart.increaseQuantity(_product!.id);
-                } catch (e) {
-                  // Handle error
-                }
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+            Semantics(
+              label: '${l10n.miktar}: $quantity',
+              child: Text(
+                '$quantity',
+                style: AppTheme.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Semantics(
+              label: l10n.adediArtir,
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.add, color: Colors.white, size: 20),
+                onPressed: () async {
+                  try {
+                    await cart.increaseQuantity(_product!.id);
+                  } catch (e) {
+                    // Handle error
+                  }
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
             ),
           ],
         ),
@@ -1058,31 +1131,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Builder(
           builder: (context) {
             final addToCartColorScheme = Theme.of(context).colorScheme;
-            return Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              decoration: BoxDecoration(
-                color: addToCartColorScheme.primary,
-                borderRadius: BorderRadius.circular(100),
-              ),
-              alignment: Alignment.center,
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.shopping_bag_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.addToCart,
-                    style: AppTheme.poppins(
+            return Semantics(
+              label: l10n.sepeteEkle,
+              button: true,
+              child: Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                decoration: BoxDecoration(
+                  color: addToCartColorScheme.primary,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.shopping_bag_outlined,
                       color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      size: 20,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.addToCart,
+                      style: AppTheme.poppins(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
