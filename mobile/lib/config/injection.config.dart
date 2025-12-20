@@ -15,6 +15,8 @@ import '../services/api_request_scheduler.dart' as _i630;
 import '../services/api_service.dart' as _i137;
 import '../services/cache_service.dart' as _i717;
 import '../services/connectivity_service.dart' as _i47;
+import '../services/logger_service.dart' as _i141;
+import '../services/sync_service.dart' as _i979;
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -37,6 +39,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i717.CacheService>(),
           gh<_i630.ApiRequestScheduler>(),
         ));
+    gh.lazySingleton<_i979.SyncService>(
+        () => _i979.SyncService(gh<_i47.ConnectivityService>()));
+    gh.lazySingleton<_i141.LoggerService>(
+        () => _i141.LoggerService.create(gh<_i47.ConnectivityService>()));
     return this;
   }
 }

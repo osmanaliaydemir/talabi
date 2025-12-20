@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:mobile/config/injection.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
@@ -55,16 +57,28 @@ class LogEntry {
   }
 }
 
+@lazySingleton
 class LoggerService {
-  LoggerService._internal();
+  // Allow manual instantiation via DI or factory for backward compatibility
+  factory LoggerService() => getIt<LoggerService>();
 
-  factory LoggerService() => _instance;
-  static final LoggerService _instance = LoggerService._internal();
+  // Constructor for DI
+  LoggerService._(this._connectivityService);
+
+  @factoryMethod
+  static LoggerService create(ConnectivityService connectivityService) {
+    return LoggerService._(connectivityService);
+  }
 
   Logger? _logger;
   final List<LogEntry> _errorQueue = [];
-  ConnectivityService? _connectivityService;
+  final ConnectivityService _connectivityService;
+  // AuthProvider will be set later
   AuthProvider? _authProvider;
+
+  // ignore: unused_field
+  static final LoggerService _instance =
+      LoggerService(); // For backward compat if needed, but getIt handles it.
 
   bool _isInitialized = false;
   bool _isSending = false;
@@ -79,13 +93,9 @@ class LoggerService {
   String? _appVersion;
 
   /// Logger servisini başlat
-  Future<void> init({
-    ConnectivityService? connectivityService,
-    AuthProvider? authProvider,
-  }) async {
+  Future<void> init({AuthProvider? authProvider}) async {
     if (_isInitialized) return;
 
-    _connectivityService = connectivityService;
     _authProvider = authProvider;
 
     // Logger'ı başlat (sadece henüz initialize edilmemişse)
@@ -327,9 +337,7 @@ class LoggerService {
     if (_errorQueue.isEmpty) return;
 
     // Offline ise bekle (fatal hariç)
-    if (_connectivityService != null &&
-        !_connectivityService!.isOnline &&
-        !immediate) {
+    if (!_connectivityService.isOnline && !immediate) {
       return;
     }
 

@@ -1,20 +1,27 @@
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile/services/logger_service.dart';
 
 /// Service for preloading critical assets to improve app startup performance
 class AssetPreloaderService {
   /// Preload critical assets (logo, splash images, etc.)
   /// Should be called during app initialization
-  static Future<void> preloadCriticalAssets() async {
+  static Future<void> preloadCriticalAssets(BuildContext context) async {
     try {
       // Preload critical images in parallel
       // Using eagerError: false to continue loading even if one fails
       await Future.wait([
         // Splash/onboarding images
-        _preloadImage('assets/images/onboarding1.png'),
-        // Other critical images
-        _preloadImage('assets/images/banner_image.png'),
-        _preloadImage('assets/images/location.png'),
+        _preloadImage(context, 'assets/images/logo.png'),
+
+        // Note: Assuming 'assets/images/logo.png' exists based on SplashScreen icon usage,
+        // but if not, we should stick to known assets or generic ones.
+        // The original code had:
+        // _preloadImage('assets/images/onboarding1.png'),
+        // _preloadImage('assets/images/banner_image.png'),
+        // _preloadImage('assets/images/location.png'),
+        _preloadImage(context, 'assets/images/onboarding1.png'),
+        _preloadImage(context, 'assets/images/banner_image.png'),
+        _preloadImage(context, 'assets/images/location.png'),
       ], eagerError: false);
 
       LoggerService().info(
@@ -31,10 +38,13 @@ class AssetPreloaderService {
   }
 
   /// Preload a single image asset
-  static Future<void> _preloadImage(String assetPath) async {
+  static Future<void> _preloadImage(
+    BuildContext context,
+    String assetPath,
+  ) async {
     try {
-      // Load asset into memory cache
-      await rootBundle.load(assetPath);
+      // Load asset into Flutter's ImageCache (decoded)
+      await precacheImage(AssetImage(assetPath), context);
       LoggerService().debug('✅ [ASSET_PRELOADER] Preloaded: $assetPath');
     } catch (e, stackTrace) {
       // Individual asset failures shouldn't block preloading

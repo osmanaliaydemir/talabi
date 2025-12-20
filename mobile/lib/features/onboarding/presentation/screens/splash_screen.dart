@@ -38,7 +38,9 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.wait([
         CacheService.init(), // Independent
         NotificationService().initialize(), // Independent
-        AssetPreloaderService.preloadCriticalAssets(), // Preload critical assets
+        AssetPreloaderService.preloadCriticalAssets(
+          context,
+        ), // Preload critical assets
       ]);
 
       // Check app state

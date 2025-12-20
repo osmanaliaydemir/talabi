@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -15,84 +14,7 @@ class PersistentBottomNavBar extends StatefulWidget {
   State<PersistentBottomNavBar> createState() => _PersistentBottomNavBarState();
 }
 
-class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
-    with SingleTickerProviderStateMixin {
-  bool _hasPlayedAnimation = false;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _rotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    // Scale animation: 1.0 -> 1.5 -> 1.0 -> 1.2 -> 1.0
-    _scaleAnimation =
-        TweenSequence<double>([
-          TweenSequenceItem(
-            tween: Tween<double>(begin: 1.0, end: 1.5),
-            weight: 1,
-          ),
-          TweenSequenceItem(
-            tween: Tween<double>(begin: 1.5, end: 1.0),
-            weight: 1,
-          ),
-          TweenSequenceItem(
-            tween: Tween<double>(begin: 1.0, end: 1.2),
-            weight: 1,
-          ),
-          TweenSequenceItem(
-            tween: Tween<double>(begin: 1.2, end: 1.0),
-            weight: 1,
-          ),
-        ]).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeInOut,
-          ),
-        );
-
-    // Rotation animation: 0 -> 360 degrees
-    _rotationAnimation =
-        Tween<double>(
-          begin: 0.0,
-          end: 1.0, // 1.0 = 360 degrees in radians (2 * pi)
-        ).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeInOut,
-          ),
-        );
-
-    _checkAndPlayAnimation();
-  }
-
-  Future<void> _checkAndPlayAnimation() async {
-    if (_hasPlayedAnimation) return;
-
-    // Delay to ensure UI is ready
-    Future.delayed(const Duration(milliseconds: 800), () async {
-      if (mounted) {
-        await _animationController.forward();
-        if (mounted) {
-          setState(() {
-            _hasPlayedAnimation = true;
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
+class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -134,7 +56,7 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
                 isSelected: bottomNav.currentIndex == 0,
                 onTap: () => _onItemTapped(context, 0, bottomNav, screenNames),
               ),
-              _buildAnimatedCategoryNavItem(
+              _buildCategoryNavItem(
                 context,
                 bottomNav: bottomNav,
                 localizations: localizations,
@@ -312,7 +234,7 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
     );
   }
 
-  Widget _buildAnimatedCategoryNavItem(
+  Widget _buildCategoryNavItem(
     BuildContext context, {
     required BottomNavProvider bottomNav,
     required AppLocalizations localizations,
@@ -321,9 +243,10 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
     final isCurrentRestaurant =
         bottomNav.selectedCategory == MainCategory.restaurant;
 
-    // We show the icon/label of the TARGET category (what we will switch TO)
-    // If current is Restaurant, we show Market icon/label
-    // If current is Market, we show Restaurant icon/label
+    final targetCategory = isCurrentRestaurant
+        ? MainCategory.market
+        : MainCategory.restaurant;
+
     final icon = isCurrentRestaurant
         ? Icons.storefront_outlined
         : Icons.restaurant_outlined;
@@ -331,76 +254,44 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar>
         ? Icons.storefront
         : Icons.restaurant;
 
-    // Using hardcoded strings as per current codebase patterns in CategorySelectionBottomSheet
-    // In a full implementation, these should be localized keys
     final label = isCurrentRestaurant ? 'Market' : 'Restoran';
-
     final isSelected = bottomNav.currentIndex == 1;
 
     return GestureDetector(
       onTap: () => _handleCategoryToggle(context, bottomNav),
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          // Only apply animation if it hasn't been played or is currently playing
-          final shouldAnimate =
-              !_hasPlayedAnimation || _animationController.isAnimating;
-
-          return Transform.scale(
-            scale: shouldAnimate ? _scaleAnimation.value : 1.0,
-            child: Transform.rotate(
-              angle: shouldAnimate
-                  ? _rotationAnimation.value * 2 * 3.14159
-                  : 0.0,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).primaryColor
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? selectedIcon : icon,
+              size: 24,
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+            ),
+            const SizedBox(height: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: AppTheme.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : AppTheme.textSecondary,
                 ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(
-                          isSelected ? selectedIcon : icon,
-                          size: 24,
-                          color: isSelected
-                              ? Colors.white
-                              : AppTheme.textSecondary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Flexible(
-                      child: Text(
-                        label,
-                        style: AppTheme.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? Colors.white
-                              : AppTheme.textSecondary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

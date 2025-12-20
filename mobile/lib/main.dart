@@ -20,6 +20,7 @@ import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/config/injection.dart';
 import 'package:mobile/bootstrap.dart';
 
 Future<void> main() async {
@@ -53,10 +54,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     _initializeFirebaseAnalytics();
 
-    // Initialize connectivity and sync services
-    final connectivityService = ConnectivityService();
-    final syncService = SyncService(connectivityService);
-
     return MultiProvider(
       providers: [
         // Critical providers (initialize immediately)
@@ -64,12 +61,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => LocalizationProvider()),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(
-          create: (context) => ConnectivityProvider(connectivityService),
+          create: (context) =>
+              ConnectivityProvider(getIt<ConnectivityService>()),
         ),
         // Lazy providers (initialize on first use - using lazy factory pattern)
         ChangeNotifierProvider(
           create: (context) => CartProvider(
-            syncService: syncService,
+            syncService: getIt<SyncService>(),
             connectivityProvider: context.read<ConnectivityProvider>(),
           ),
           lazy: true,
@@ -85,11 +83,8 @@ class MyApp extends StatelessWidget {
           // Initialize Logger Service after providers are available
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             final authProvider = context.read<AuthProvider>();
-            final connectivityService = ConnectivityService();
-            await LoggerService().init(
-              connectivityService: connectivityService,
-              authProvider: authProvider,
-            );
+            // LoggerService already has ConnectivityService via DI
+            await LoggerService().init(authProvider: authProvider);
           });
 
           // BottomNavProvider'dan kategori değişikliğini ThemeProvider'a bildir

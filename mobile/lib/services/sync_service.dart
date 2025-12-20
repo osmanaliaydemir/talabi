@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:injectable/injectable.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/services/logger_service.dart';
@@ -45,6 +46,7 @@ class SyncAction {
   };
 }
 
+@lazySingleton
 class SyncService {
   SyncService(this._connectivityService) {
     _init();
