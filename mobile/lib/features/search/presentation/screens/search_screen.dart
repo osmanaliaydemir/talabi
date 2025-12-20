@@ -1057,6 +1057,61 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                 ),
               ),
+            ] else ...[
+              // Popular Searches Section (Fallback when history is empty)
+              const SizedBox(height: AppTheme.spacingXLarge),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardColor,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  boxShadow: [
+                    const BoxShadow(
+                      color: AppTheme.shadowColor,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.trending_up,
+                          size: 20,
+                          color: AppTheme.primaryOrange,
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Text(
+                          l10n.popularSearches,
+                          style: AppTheme.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spacingMedium),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        'Pizza',
+                        'Burger',
+                        'Kebap',
+                        'Lahmacun',
+                        'Market',
+                        'Su',
+                        'Tatlı',
+                      ].map((query) => _buildHistoryChip(query)).toList(),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ],
         ),
@@ -1132,6 +1187,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildAutocompleteOverlay() {
     final l10n = AppLocalizations.of(context)!;
+    final query = _searchController.text.toLowerCase();
+    final historyMatches = _searchHistory
+        .where((item) => item.toLowerCase().contains(query))
+        .take(5)
+        .toList();
     return Positioned.fill(
       child: Container(
         color: AppTheme.overlayColor.withValues(alpha: 0.3),
@@ -1150,85 +1210,85 @@ class _SearchScreenState extends State<SearchScreen> {
                 bottomRight: Radius.circular(AppTheme.radiusLarge),
               ),
             ),
-            child: _autocompleteResults.isEmpty && _searchHistory.isEmpty
-                ? const SizedBox.shrink()
-                : ListView(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    children: [
-                      if (_autocompleteResults.isNotEmpty) ...[
-                        Container(
-                          padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.backgroundColor,
-                            border: Border(
-                              bottom: BorderSide(
-                                color: AppTheme.dividerColor,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.auto_awesome,
-                                size: 20,
-                                color: AppTheme.primaryOrange,
-                              ),
-                              const SizedBox(width: AppTheme.spacingSmall),
-                              Text(
-                                l10n.suggestions,
-                                style: AppTheme.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                            ],
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              children: [
+                // 1. Matching History Items
+                if (historyMatches.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.backgroundColor,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: AppTheme.dividerColor,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.history,
+                          size: 20,
+                          color: AppTheme.textSecondary,
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Text(
+                          l10n.recentSearches,
+                          style: AppTheme.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
-                        ..._autocompleteResults.map((result) {
-                          return _buildAutocompleteItem(result);
-                        }),
                       ],
-                      if (_searchHistory.isNotEmpty &&
-                          _autocompleteResults.isEmpty) ...[
-                        Container(
-                          padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.backgroundColor,
-                            border: Border(
-                              bottom: BorderSide(
-                                color: AppTheme.dividerColor,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.history,
-                                size: 20,
-                                color: AppTheme.textSecondary,
-                              ),
-                              const SizedBox(width: AppTheme.spacingSmall),
-                              Text(
-                                l10n.searchHistory,
-                                style: AppTheme.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ..._searchHistory.take(5).map((query) {
-                          return _buildHistoryItem(query);
-                        }),
-                      ],
-                    ],
+                    ),
                   ),
+                  ...historyMatches.map((query) {
+                    return _buildHistoryItem(query);
+                  }),
+                ],
+
+                // 2. API Suggestions
+                if (_autocompleteResults.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.backgroundColor,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: AppTheme.dividerColor,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome,
+                          size: 20,
+                          color: AppTheme.primaryOrange,
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Text(
+                          l10n.suggestions,
+                          style: AppTheme.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ..._autocompleteResults.map((result) {
+                    return _buildAutocompleteItem(result);
+                  }),
+                ],
+              ],
+            ),
           ),
         ),
       ),

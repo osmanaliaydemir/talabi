@@ -8,6 +8,7 @@ import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/features/profile/presentation/screens/customer/profile_screen.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -117,11 +118,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       setState(() {
         _favorites.removeWhere((p) => p.id == productId);
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Favorilerden kaldırıldı')),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -190,25 +186,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     },
                   )
                 : _favorites.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.favorite_border,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Henüz favori ürününüz yok',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
+                ? EmptyStateWidget(
+                    message: localizations.noFavoritesFound,
+                    subMessage: localizations.favoritesEmptyMessage,
+                    iconData: Icons.favorite_border,
                   )
                 : GridView.builder(
                     controller: _scrollController,

@@ -3568,6 +3568,12 @@ abstract class AppLocalizations {
   /// **'Distance: {distance} km'**
   String distanceLabel(Object distance);
 
+  /// No description provided for @popularSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Searches'**
+  String get popularSearches;
+
   /// No description provided for @deliveryZones.
   ///
   /// In en, this message translates to:
@@ -3591,6 +3597,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{productName} removed from favorites'**
   String removedFromFavorites(Object productName);
+
+  /// No description provided for @noFavoritesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite products found'**
+  String get noFavoritesFound;
+
+  /// No description provided for @favoritesEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You can view your favorite products here by adding them to favorites.'**
+  String get favoritesEmptyMessage;
 
   /// No description provided for @addedToFavorites.
   ///

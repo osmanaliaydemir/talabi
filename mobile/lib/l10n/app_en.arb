@@ -798,6 +798,7 @@
       "distance": {}
     }
   },
+  "popularSearches": "Popular Searches",
   "deliveryZones": "Delivery Zones",
   "deliveryZonesDescription": "Manage cities and districts you deliver to",
   "deliveryZonesUpdated": "Delivery zones updated successfully",
@@ -807,6 +808,8 @@
       "productName": {}
     }
   },
+  "noFavoritesFound": "No favorite products found",
+  "favoritesEmptyMessage": "You can view your favorite products here by adding them to favorites.",
   "addedToFavorites": "{productName} added to favorites",
   "@addedToFavorites": {
     "placeholders": {

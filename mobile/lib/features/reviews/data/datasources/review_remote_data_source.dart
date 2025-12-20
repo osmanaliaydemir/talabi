@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
@@ -7,7 +8,6 @@ import 'package:mobile/services/logger_service.dart';
 
 @lazySingleton
 class ReviewRemoteDataSource {
-
   ReviewRemoteDataSource(this._networkClient);
   final NetworkClient _networkClient;
 
@@ -60,7 +60,17 @@ class ReviewRemoteDataSource {
     try {
       final response = await _networkClient.dio.get(
         '${ApiEndpoints.reviewsProduct}/$productId',
+        options: Options(
+          validateStatus: (status) {
+            return status != null &&
+                (status >= 200 && status < 300 || status == 404);
+          },
+        ),
       );
+
+      if (response.statusCode == 404) {
+        return [];
+      }
 
       List<dynamic>? data;
 

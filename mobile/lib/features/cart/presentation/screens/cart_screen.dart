@@ -11,6 +11,7 @@ import 'package:mobile/features/orders/presentation/screens/customer/checkout_sc
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -93,26 +94,7 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   )
                 : cart.itemCount == 0
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.shopping_cart_outlined,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          localizations.cartEmptyMessage,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
+                ? EmptyStateWidget(message: localizations.cartEmptyMessage)
                 : Column(
                     children: [
                       Expanded(
@@ -615,9 +597,7 @@ class _CartScreenState extends State<CartScreen> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      localizations.errorWithMessage('$e'),
-                    ),
+                    content: Text(localizations.errorWithMessage('$e')),
                     backgroundColor: Colors.red,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(

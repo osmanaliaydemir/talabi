@@ -380,25 +380,11 @@ class HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         _favoriteStatus[product.id] = false;
                       });
-                      if (!context.mounted) return;
-                      ToastMessage.show(
-                        context,
-                        message: localizations.removedFromFavorites(
-                          product.name,
-                        ),
-                        isSuccess: true,
-                      );
                     } else {
                       await _apiService.addToFavorites(product.id);
                       setState(() {
                         _favoriteStatus[product.id] = true;
                       });
-                      if (!context.mounted) return;
-                      ToastMessage.show(
-                        context,
-                        message: localizations.addedToFavorites(product.name),
-                        isSuccess: true,
-                      );
                     }
                   } catch (e) {
                     if (!context.mounted) return;

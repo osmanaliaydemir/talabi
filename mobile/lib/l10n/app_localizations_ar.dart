@@ -1857,6 +1857,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get popularSearches => 'Popular Searches';
+
+  @override
   String get deliveryZones => 'Delivery Zones';
 
   @override
@@ -1870,6 +1873,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String removedFromFavorites(Object productName) {
     return 'تمت إزالة $productName من المفضلة';
   }
+
+  @override
+  String get noFavoritesFound => 'No favorite products found';
+
+  @override
+  String get favoritesEmptyMessage =>
+      'You can view your favorite products here by adding them to favorites.';
 
   @override
   String addedToFavorites(Object productName) {

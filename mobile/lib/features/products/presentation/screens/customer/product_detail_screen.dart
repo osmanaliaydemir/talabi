@@ -12,6 +12,7 @@ import 'package:mobile/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -73,6 +74,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Future<void> _loadProduct() async {
     try {
       final product = await _apiService.getProduct(widget.productId);
+      if (!mounted) return;
       setState(() {
         _product = product;
         _isLoading = false;
@@ -83,23 +85,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // Log view_item
       AnalyticsService.logViewItem(product: product);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: l10n.productLoadFailed(e.toString()),
-          isSuccess: false,
-        );
-      }
+      final l10n = AppLocalizations.of(context)!;
+      ToastMessage.show(
+        context,
+        message: l10n.productLoadFailed(e.toString()),
+        isSuccess: false,
+      );
     }
   }
 
   Future<void> _checkFavorite() async {
     try {
       final favoritesResult = await _apiService.getFavorites();
+      if (!mounted) return;
       setState(() {
         _isFavorite = favoritesResult.items.any((f) => f.id == _product?.id);
       });
@@ -117,18 +119,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       } else {
         await _apiService.addToFavorites(_product!.id);
       }
+      if (!mounted) return;
       setState(() {
         _isFavorite = !_isFavorite;
       });
     } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: '${l10n.error}: $e',
-          isSuccess: false,
-        );
-      }
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ToastMessage.show(
+        context,
+        message: '${l10n.error}: $e',
+        isSuccess: false,
+      );
     }
   }
 
@@ -139,16 +141,138 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
     try {
       final summary = await _apiService.getProductReviews(_product!.id);
+      if (!mounted) return;
       setState(() {
         _reviewsSummary = summary;
         _isLoadingReviews = false;
       });
     } catch (e) {
-      LoggerService().error('Error loading reviews: $e', e);
+      // 404 is expected for products without reviews, treated as empty
+      if (!mounted) return;
       setState(() {
         _isLoadingReviews = false;
       });
+      // Only log non-404 errors to avoid noise
+      if (!e.toString().contains('404')) {
+        LoggerService().error('Error loading reviews: $e', e);
+      }
     }
+  }
+
+  Widget _buildSkeleton(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFFF5F5F5),
+      body: Stack(
+        children: [
+          // Header Image Skeleton
+          SkeletonLoader(width: double.infinity, height: 300, borderRadius: 0),
+
+          // Content Skeleton
+          Padding(
+            padding: EdgeInsets.only(top: 220),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Floating Card
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x0D000000), // 5% opacity black
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SkeletonLoader(width: 150, height: 24),
+                                  SizedBox(height: 8),
+                                  SkeletonLoader(width: 100, height: 16),
+                                ],
+                              ),
+                              SkeletonLoader(
+                                width: 40,
+                                height: 40,
+                                borderRadius: 20,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          SkeletonLoader(width: double.infinity, height: 1),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SkeletonLoader(width: 60, height: 20),
+                              SkeletonLoader(width: 80, height: 20),
+                              SkeletonLoader(width: 60, height: 20),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 24),
+
+                // Description Skeleton
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonLoader(width: 120, height: 20),
+                      SizedBox(height: 12),
+                      SkeletonLoader(width: double.infinity, height: 14),
+                      SizedBox(height: 8),
+                      SkeletonLoader(width: double.infinity, height: 14),
+                      SizedBox(height: 8),
+                      SkeletonLoader(width: 200, height: 14),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Back Button
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(child: Icon(Icons.arrow_back)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadSimilarProducts() async {
@@ -163,11 +287,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         pageSize: 5,
       );
 
+      if (!mounted) return;
       setState(() {
         _similarProducts = similar;
         _isLoadingSimilarProducts = false;
       });
     } catch (e) {
+      if (!mounted) return;
       LoggerService().error('Error loading similar products: $e', e);
       setState(() {
         _similarProducts = [];
@@ -184,14 +310,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final colorScheme = theme.colorScheme;
 
     if (_isLoading) {
-      return Scaffold(
-        body: Container(
-          color: AppTheme.backgroundColor,
-          child: Center(
-            child: CircularProgressIndicator(color: colorScheme.primary),
-          ),
-        ),
-      );
+      return _buildSkeleton(context);
     }
 
     if (_product == null) {
@@ -218,11 +337,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     height: 300,
                     width: double.infinity,
                     child: _product!.imageUrl != null
-                        ? OptimizedCachedImage.productImage(
-                            imageUrl: _product!.imageUrl!,
-                            width: double.infinity,
-                            height: 300,
-                            borderRadius: BorderRadius.zero,
+                        ? Hero(
+                            tag: 'product_image_${_product!.id}',
+                            child: OptimizedCachedImage.productImage(
+                              imageUrl: _product!.imageUrl!,
+                              width: double.infinity,
+                              height: 300,
+                              borderRadius: BorderRadius.zero,
+                            ),
                           )
                         : Container(
                             color: Colors.grey[300],

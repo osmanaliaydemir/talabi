@@ -98,11 +98,14 @@ class _ProductCardState extends State<ProductCard> {
                   child: Stack(
                     children: [
                       widget.product.imageUrl != null
-                          ? OptimizedCachedImage.productThumbnail(
-                              imageUrl: widget.product.imageUrl!,
-                              width: double.infinity,
-                              height: double.infinity,
-                              borderRadius: BorderRadius.circular(12),
+                          ? Hero(
+                              tag: 'product_image_${widget.product.id}',
+                              child: OptimizedCachedImage.productThumbnail(
+                                imageUrl: widget.product.imageUrl!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             )
                           : Container(
                               color: Colors.grey[200],
