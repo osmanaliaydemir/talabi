@@ -14,7 +14,6 @@ import 'package:mobile/features/auth/presentation/screens/courier/register_scree
 import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/auth_header.dart';
 
@@ -240,13 +239,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // Save tokens
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      await prefs.setString('refreshToken', response['refreshToken']);
-      await prefs.setString('userId', response['userId']);
-      await prefs.setString('userRole', response['role']);
-
       if (mounted) {
         // Update auth provider
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -294,13 +286,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // User cancelled
         return;
       }
-
-      // Save tokens
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      await prefs.setString('refreshToken', response['refreshToken']);
-      await prefs.setString('userId', response['userId']);
-      await prefs.setString('userRole', response['role']);
 
       if (mounted) {
         // Update auth provider

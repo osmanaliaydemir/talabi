@@ -12,6 +12,7 @@ import 'package:mobile/services/cache_service.dart';
 import 'package:mobile/services/connectivity_service.dart';
 import 'package:mobile/features/notifications/data/models/customer_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/services/secure_storage_service.dart';
 import 'package:mobile/services/navigation_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart' hide Order;
@@ -60,7 +61,7 @@ class ApiService {
           );
           options.extra[_requestPermitKey] = permit;
 
-          final token = prefs.getString('token');
+          final token = await SecureStorageService.instance.getToken();
           if (token != null && !options.headers.containsKey('Authorization')) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -141,9 +142,9 @@ class ApiService {
             );
 
             try {
-              final prefs = await SharedPreferences.getInstance();
-              final token = prefs.getString('token');
-              final refreshToken = prefs.getString('refreshToken');
+              final token = await SecureStorageService.instance.getToken();
+              final refreshToken = await SecureStorageService.instance
+                  .getRefreshToken();
 
               if (token != null && refreshToken != null) {
                 late Map<String, String> newTokens;
@@ -163,9 +164,10 @@ class ApiService {
                     newTokens = await _refreshToken(token, refreshToken);
 
                     // Update tokens in SharedPreferences
-                    await prefs.setString('token', newTokens['token']!);
-                    await prefs.setString(
-                      'refreshToken',
+                    await SecureStorageService.instance.setToken(
+                      newTokens['token']!,
+                    );
+                    await SecureStorageService.instance.setRefreshToken(
                       newTokens['refreshToken']!,
                     );
 

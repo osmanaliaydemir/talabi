@@ -12,23 +12,37 @@ import 'api_service_test.mocks.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'package:mobile/services/logger_service.dart';
+import 'package:get_it/get_it.dart';
+
 @GenerateNiceMocks([
   MockSpec<ConnectivityService>(),
   MockSpec<CacheService>(),
   MockSpec<ApiRequestScheduler>(),
+  MockSpec<LoggerService>(),
 ])
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late ApiService apiService;
   late MockConnectivityService mockConnectivityService;
   late MockCacheService mockCacheService;
   late MockApiRequestScheduler mockScheduler;
+  late MockLoggerService mockLoggerService;
   late DioAdapter dioAdapter;
 
   setUp(() async {
+    await GetIt.instance.reset();
     SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
+
     mockConnectivityService = MockConnectivityService();
     mockCacheService = MockCacheService();
     mockScheduler = MockApiRequestScheduler();
+    mockLoggerService = MockLoggerService();
+
+    GetIt.instance.registerSingleton<LoggerService>(mockLoggerService);
 
     // Default behaviors
     when(mockConnectivityService.isOnline).thenReturn(true);

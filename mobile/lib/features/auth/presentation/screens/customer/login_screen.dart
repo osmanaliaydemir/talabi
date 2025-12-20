@@ -14,7 +14,6 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/auth_header.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/utils/role_mismatch_exception.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -51,12 +50,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response == null) {
         return;
       }
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      await prefs.setString('refreshToken', response['refreshToken']);
-      await prefs.setString('userId', response['userId']);
-      await prefs.setString('userRole', response['role']);
 
       if (mounted) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -101,12 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response == null) {
         return;
       }
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      await prefs.setString('refreshToken', response['refreshToken']);
-      await prefs.setString('userId', response['userId']);
-      await prefs.setString('userRole', response['role']);
 
       if (mounted) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);

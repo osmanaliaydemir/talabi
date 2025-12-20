@@ -5,11 +5,14 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart'
+    as _i9;
 import 'package:mobile/features/products/data/models/product.dart' as _i6;
 import 'package:mobile/features/vendors/data/models/vendor.dart' as _i7;
 import 'package:mobile/services/api_request_scheduler.dart' as _i2;
 import 'package:mobile/services/cache_service.dart' as _i5;
 import 'package:mobile/services/connectivity_service.dart' as _i3;
+import 'package:mobile/services/logger_service.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -216,4 +219,112 @@ class MockApiRequestScheduler extends _i1.Mock
           ),
         )),
       ) as _i4.Future<_i2.RequestPermit>);
+}
+
+/// A class which mocks [LoggerService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockLoggerService extends _i1.Mock implements _i8.LoggerService {
+  @override
+  _i4.Future<void> init({_i9.AuthProvider? authProvider}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+          {#authProvider: authProvider},
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void debug(
+    String? message, [
+    dynamic error,
+    StackTrace? stackTrace,
+  ]) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #debug,
+          [
+            message,
+            error,
+            stackTrace,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void info(String? message) => super.noSuchMethod(
+        Invocation.method(
+          #info,
+          [message],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void warning(
+    String? message, [
+    dynamic error,
+    StackTrace? stackTrace,
+  ]) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #warning,
+          [
+            message,
+            error,
+            stackTrace,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void error(
+    String? message, [
+    dynamic error,
+    StackTrace? stackTrace,
+  ]) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #error,
+          [
+            message,
+            error,
+            stackTrace,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void fatal(
+    String? message, [
+    dynamic error,
+    StackTrace? stackTrace,
+  ]) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #fatal,
+          [
+            message,
+            error,
+            stackTrace,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

@@ -5,7 +5,6 @@ import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _token;
@@ -102,14 +101,6 @@ class AuthProvider with ChangeNotifier {
       await secureStorage.setRole(_role!);
     }
 
-    // Also save to SharedPreferences for ApiService interceptor
-    // ApiService interceptor reads from SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', _token!);
-    if (_refreshToken != null) {
-      await prefs.setString('refreshToken', _refreshToken!);
-    }
-
     // Analytics
     await AnalyticsService.setUserId(_userId!);
     await AnalyticsService.logLogin(method: 'email');
@@ -164,13 +155,6 @@ class AuthProvider with ChangeNotifier {
         await secureStorage.setEmail(_email!);
         await secureStorage.setFullName(_fullName!);
 
-        // Also save to SharedPreferences for ApiService interceptor
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', _token!);
-        if (_refreshToken != null) {
-          await prefs.setString('refreshToken', _refreshToken!);
-        }
-
         LoggerService().debug(
           '🟢 [AUTH_PROVIDER] Data saved to Secure Storage',
         );
@@ -212,9 +196,10 @@ class AuthProvider with ChangeNotifier {
     await secureStorage.clearAll();
 
     // Clear SharedPreferences (ApiService interceptor reads from here)
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('refreshToken');
+    // Removed as part of secure storage migration
+    // final prefs = await SharedPreferences.getInstance();
+    // await prefs.remove('token');
+    // await prefs.remove('refreshToken');
 
     // Analytics - clear user id
     await AnalyticsService.setUserId('');
@@ -250,14 +235,6 @@ class AuthProvider with ChangeNotifier {
       _isProfileComplete = _getIsProfileCompleteFromToken(_token!);
     }
 
-    // Also save to SharedPreferences for ApiService interceptor
-    // ApiService interceptor reads from SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', _token!);
-    if (_refreshToken != null) {
-      await prefs.setString('refreshToken', _refreshToken!);
-    }
-
     // Token validation could be added here (JWT decode, expiry check)
     // For now, we trust the cached token and validate on first API call
 
@@ -289,11 +266,6 @@ class AuthProvider with ChangeNotifier {
     await secureStorage.setRefreshToken(refreshToken);
     await secureStorage.setUserId(userId);
     await secureStorage.setRole(role);
-
-    // Also save to SharedPreferences for ApiService interceptor
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-    await prefs.setString('refreshToken', refreshToken);
 
     notifyListeners();
   }
