@@ -243,10 +243,6 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> {
     final isCurrentRestaurant =
         bottomNav.selectedCategory == MainCategory.restaurant;
 
-    final targetCategory = isCurrentRestaurant
-        ? MainCategory.market
-        : MainCategory.restaurant;
-
     final icon = isCurrentRestaurant
         ? Icons.storefront_outlined
         : Icons.restaurant_outlined;
