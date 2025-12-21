@@ -11,6 +11,8 @@ import 'package:mobile/services/sync_service.dart';
 import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
+import 'package:mobile/features/coupons/data/models/coupon.dart';
+import 'package:mobile/features/coupons/services/coupon_service.dart';
 
 class CartProvider with ChangeNotifier {
   CartProvider({
@@ -32,12 +34,75 @@ class CartProvider with ChangeNotifier {
   int get itemCount => _items.length;
   bool get isLoading => _isLoading;
 
-  double get totalAmount {
+  // Coupon handling
+  final CouponService _couponService = CouponService();
+  Coupon? _appliedCoupon;
+  Coupon? get appliedCoupon => _appliedCoupon;
+
+  double get subtotalAmount {
     double total = 0.0;
     _items.forEach((key, cartItem) {
       total += cartItem.totalPrice;
     });
     return total;
+  }
+
+  double get discountAmount {
+    if (_appliedCoupon == null) return 0.0;
+
+    // Check min amount requirement again to be safe
+    if (subtotalAmount < _appliedCoupon!.minCartAmount) {
+      return 0.0;
+    }
+
+    if (_appliedCoupon!.discountType == DiscountType.percentage) {
+      return subtotalAmount * (_appliedCoupon!.discountValue / 100);
+    } else {
+      return _appliedCoupon!.discountValue;
+    }
+  }
+
+  double get totalAmount {
+    return subtotalAmount - discountAmount;
+  }
+
+  Future<void> applyCoupon(String code) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final coupon = await _couponService.validateCoupon(code);
+      if (coupon == null) {
+        throw Exception('Geçersiz kupon kodu');
+      }
+
+      if (subtotalAmount < coupon.minCartAmount) {
+        throw Exception(
+          'Kupon için sepet tutarı en az ${coupon.minCartAmount} TL olmalıdır.',
+        );
+      }
+
+      _appliedCoupon = coupon;
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void removeCoupon() {
+    _appliedCoupon = null;
+    notifyListeners();
+  }
+
+  void _checkCouponValidity() {
+    if (_appliedCoupon != null) {
+      if (subtotalAmount < _appliedCoupon!.minCartAmount) {
+        _appliedCoupon = null;
+        // Notify listener is called by caller or if needed we can add it here if isolated
+      }
+    }
   }
 
   Future<void> loadCart() async {
@@ -99,6 +164,7 @@ class CartProvider with ChangeNotifier {
           );
         }
       }
+      _checkCouponValidity();
     } catch (e, stackTrace) {
       LoggerService().error('Error loading cart', e, stackTrace);
     } finally {
@@ -153,6 +219,7 @@ class CartProvider with ChangeNotifier {
           } else {
             _items[product.id] = CartItem(product: product);
           }
+          _checkCouponValidity();
           notifyListeners();
 
           final action = SyncAction(
@@ -174,6 +241,7 @@ class CartProvider with ChangeNotifier {
       } else {
         _items[product.id] = CartItem(product: product);
       }
+      _checkCouponValidity();
       notifyListeners();
 
       if (_syncService != null) {
@@ -278,6 +346,7 @@ class CartProvider with ChangeNotifier {
 
     // Update local state immediately
     _items.remove(productId);
+    _checkCouponValidity();
     notifyListeners();
 
     if (isOnline && cartItem != null && cartItem.backendId != null) {
@@ -326,6 +395,7 @@ class CartProvider with ChangeNotifier {
 
     // Update local state immediately
     cartItem.quantity++;
+    _checkCouponValidity();
     notifyListeners();
 
     if (isOnline && cartItem.backendId != null) {
@@ -375,6 +445,7 @@ class CartProvider with ChangeNotifier {
     if (cartItem.quantity > 1) {
       // Update local state immediately
       cartItem.quantity--;
+      _checkCouponValidity();
       notifyListeners();
 
       if (isOnline && cartItem.backendId != null) {
@@ -425,6 +496,7 @@ class CartProvider with ChangeNotifier {
     try {
       await _apiService.clearCart();
       _items.clear();
+      _appliedCoupon = null;
       notifyListeners();
     } catch (e, stackTrace) {
       LoggerService().error('Error clearing cart', e, stackTrace);

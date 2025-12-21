@@ -27,6 +27,11 @@ public class Order : BaseEntity
 
     // Financials - Müşteriden alınan delivery fee (Order'da kalıyor)
     public decimal DeliveryFee { get; set; } = 0;
+    
+    // Discount Information
+    public Guid? CouponId { get; set; }
+    public Guid? CampaignId { get; set; }
+    public decimal DiscountAmount { get; set; } = 0;
 
     // Navigation - OrderCouriers
     public OrderCourier? ActiveOrderCourier { get; set; }

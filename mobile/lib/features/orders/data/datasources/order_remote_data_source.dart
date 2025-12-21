@@ -16,6 +16,7 @@ class OrderRemoteDataSource {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
+    String? couponCode,
   }) async {
     final data = {
       'vendorId': vendorId,
@@ -23,6 +24,7 @@ class OrderRemoteDataSource {
       'deliveryAddressId': deliveryAddressId,
       'paymentMethod': paymentMethod,
       'note': note,
+      'couponCode': couponCode,
     };
 
     final response = await _networkClient.dio.post(

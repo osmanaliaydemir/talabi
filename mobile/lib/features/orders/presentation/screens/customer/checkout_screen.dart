@@ -122,6 +122,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final addressId = _selectedAddress!['id'];
       final addressIdString = addressId?.toString();
 
+      // Get coupon code from CartProvider
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final couponCode = cartProvider.appliedCoupon?.code;
+
       // Create order
       final order = await _apiService.createOrder(
         widget.vendorId,
@@ -131,6 +135,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
+        couponCode: couponCode,
       );
 
       // Log purchase

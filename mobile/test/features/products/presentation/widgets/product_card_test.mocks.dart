@@ -52,6 +52,20 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as bool);
 
   @override
+  double get subtotalAmount => (super.noSuchMethod(
+        Invocation.getter(#subtotalAmount),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get discountAmount => (super.noSuchMethod(
+        Invocation.getter(#discountAmount),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get totalAmount => (super.noSuchMethod(
         Invocation.getter(#totalAmount),
         returnValue: 0.0,
@@ -64,6 +78,25 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
+
+  @override
+  _i4.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
+        Invocation.method(
+          #applyCoupon,
+          [code],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void removeCoupon() => super.noSuchMethod(
+        Invocation.method(
+          #removeCoupon,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i4.Future<void> loadCart() => (super.noSuchMethod(

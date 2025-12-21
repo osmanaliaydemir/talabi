@@ -28,8 +28,8 @@ import 'performance_test.mocks.dart';
 
 @GenerateNiceMocks([MockSpec<ApiService>(), MockSpec<LoggerService>()])
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
+      LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
   late MockApiService mockApiService;
   late MockLoggerService mockLoggerService;

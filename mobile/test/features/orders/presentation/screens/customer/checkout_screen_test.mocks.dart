@@ -4,15 +4,17 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:ui' as _i17;
+import 'dart:ui' as _i19;
 
 import 'package:dio/dio.dart' as _i2;
-import 'package:flutter/material.dart' as _i16;
+import 'package:flutter/material.dart' as _i18;
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart'
-    as _i19;
-import 'package:mobile/features/cart/data/models/cart_item.dart' as _i15;
+    as _i21;
+import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i13;
+import 'package:mobile/features/cart/data/models/cart_item.dart' as _i17;
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart'
-    as _i14;
+    as _i16;
+import 'package:mobile/features/coupons/data/models/coupon.dart' as _i14;
 import 'package:mobile/features/home/data/models/promotional_banner.dart'
     as _i10;
 import 'package:mobile/features/notifications/data/models/customer_notification.dart'
@@ -22,11 +24,11 @@ import 'package:mobile/features/products/data/models/product.dart' as _i3;
 import 'package:mobile/features/reviews/data/models/review.dart' as _i6;
 import 'package:mobile/features/search/data/models/search_dtos.dart' as _i5;
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart'
-    as _i13;
+    as _i15;
 import 'package:mobile/features/vendors/data/models/vendor.dart' as _i9;
-import 'package:mobile/providers/bottom_nav_provider.dart' as _i20;
+import 'package:mobile/providers/bottom_nav_provider.dart' as _i22;
 import 'package:mobile/services/api_service.dart' as _i7;
-import 'package:mobile/services/logger_service.dart' as _i18;
+import 'package:mobile/services/logger_service.dart' as _i20;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i11;
 
@@ -324,6 +326,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
+    String? couponCode,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -336,6 +339,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
             #deliveryAddressId: deliveryAddressId,
             #paymentMethod: paymentMethod,
             #note: note,
+            #couponCode: couponCode,
           },
         ),
         returnValue: _i8.Future<_i4.Order>.value(_FakeOrder_2(
@@ -350,6 +354,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
               #deliveryAddressId: deliveryAddressId,
               #paymentMethod: paymentMethod,
               #note: note,
+              #couponCode: couponCode,
             },
           ),
         )),
@@ -365,6 +370,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
               #deliveryAddressId: deliveryAddressId,
               #paymentMethod: paymentMethod,
               #note: note,
+              #couponCode: couponCode,
             },
           ),
         )),
@@ -978,6 +984,57 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
         returnValue: _i8.Future<void>.value(),
         returnValueForMissingStub: _i8.Future<void>.value(),
       ) as _i8.Future<void>);
+
+  @override
+  _i8.Future<List<_i13.Campaign>> getCampaigns({
+    int? vendorType,
+    String? cityId,
+    String? districtId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCampaigns,
+          [],
+          {
+            #vendorType: vendorType,
+            #cityId: cityId,
+            #districtId: districtId,
+          },
+        ),
+        returnValue: _i8.Future<List<_i13.Campaign>>.value(<_i13.Campaign>[]),
+        returnValueForMissingStub:
+            _i8.Future<List<_i13.Campaign>>.value(<_i13.Campaign>[]),
+      ) as _i8.Future<List<_i13.Campaign>>);
+
+  @override
+  _i8.Future<List<_i14.Coupon>> getCoupons() => (super.noSuchMethod(
+        Invocation.method(
+          #getCoupons,
+          [],
+        ),
+        returnValue: _i8.Future<List<_i14.Coupon>>.value(<_i14.Coupon>[]),
+        returnValueForMissingStub:
+            _i8.Future<List<_i14.Coupon>>.value(<_i14.Coupon>[]),
+      ) as _i8.Future<List<_i14.Coupon>>);
+
+  @override
+  _i8.Future<_i14.Coupon?> validateCoupon(
+    String? code, {
+    String? cityId,
+    String? districtId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #validateCoupon,
+          [code],
+          {
+            #cityId: cityId,
+            #districtId: districtId,
+          },
+        ),
+        returnValue: _i8.Future<_i14.Coupon?>.value(),
+        returnValueForMissingStub: _i8.Future<_i14.Coupon?>.value(),
+      ) as _i8.Future<_i14.Coupon?>);
 
   @override
   _i8.Future<void> cancelOrderItem(
@@ -1875,7 +1932,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
       ) as _i8.Future<dynamic>);
 
   @override
-  _i8.Future<void> syncDeliveryZones(_i13.DeliveryZoneSyncDto? dto) =>
+  _i8.Future<void> syncDeliveryZones(_i15.DeliveryZoneSyncDto? dto) =>
       (super.noSuchMethod(
         Invocation.method(
           #syncDeliveryZones,
@@ -1889,13 +1946,13 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
 /// A class which mocks [CartProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
+class MockCartProvider extends _i1.Mock implements _i16.CartProvider {
   @override
-  Map<String, _i15.CartItem> get items => (super.noSuchMethod(
+  Map<String, _i17.CartItem> get items => (super.noSuchMethod(
         Invocation.getter(#items),
-        returnValue: <String, _i15.CartItem>{},
-        returnValueForMissingStub: <String, _i15.CartItem>{},
-      ) as Map<String, _i15.CartItem>);
+        returnValue: <String, _i17.CartItem>{},
+        returnValueForMissingStub: <String, _i17.CartItem>{},
+      ) as Map<String, _i17.CartItem>);
 
   @override
   int get itemCount => (super.noSuchMethod(
@@ -1912,6 +1969,20 @@ class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
       ) as bool);
 
   @override
+  double get subtotalAmount => (super.noSuchMethod(
+        Invocation.getter(#subtotalAmount),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get discountAmount => (super.noSuchMethod(
+        Invocation.getter(#discountAmount),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get totalAmount => (super.noSuchMethod(
         Invocation.getter(#totalAmount),
         returnValue: 0.0,
@@ -1926,6 +1997,25 @@ class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
       ) as bool);
 
   @override
+  _i8.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
+        Invocation.method(
+          #applyCoupon,
+          [code],
+        ),
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
+
+  @override
+  void removeCoupon() => super.noSuchMethod(
+        Invocation.method(
+          #removeCoupon,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i8.Future<void> loadCart() => (super.noSuchMethod(
         Invocation.method(
           #loadCart,
@@ -1938,7 +2028,7 @@ class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
   @override
   _i8.Future<void> addItem(
     _i3.Product? product,
-    _i16.BuildContext? context,
+    _i18.BuildContext? context,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1993,7 +2083,7 @@ class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
       ) as _i8.Future<void>);
 
   @override
-  void addListener(_i17.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i19.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -2002,7 +2092,7 @@ class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
       );
 
   @override
-  void removeListener(_i17.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i19.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -2032,9 +2122,9 @@ class MockCartProvider extends _i1.Mock implements _i14.CartProvider {
 /// A class which mocks [LoggerService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLoggerService extends _i1.Mock implements _i18.LoggerService {
+class MockLoggerService extends _i1.Mock implements _i20.LoggerService {
   @override
-  _i8.Future<void> init({_i19.AuthProvider? authProvider}) =>
+  _i8.Future<void> init({_i21.AuthProvider? authProvider}) =>
       (super.noSuchMethod(
         Invocation.method(
           #init,
@@ -2140,7 +2230,7 @@ class MockLoggerService extends _i1.Mock implements _i18.LoggerService {
 /// A class which mocks [BottomNavProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockBottomNavProvider extends _i1.Mock implements _i20.BottomNavProvider {
+class MockBottomNavProvider extends _i1.Mock implements _i22.BottomNavProvider {
   @override
   int get currentIndex => (super.noSuchMethod(
         Invocation.getter(#currentIndex),
@@ -2149,11 +2239,11 @@ class MockBottomNavProvider extends _i1.Mock implements _i20.BottomNavProvider {
       ) as int);
 
   @override
-  _i20.MainCategory get selectedCategory => (super.noSuchMethod(
+  _i22.MainCategory get selectedCategory => (super.noSuchMethod(
         Invocation.getter(#selectedCategory),
-        returnValue: _i20.MainCategory.restaurant,
-        returnValueForMissingStub: _i20.MainCategory.restaurant,
-      ) as _i20.MainCategory);
+        returnValue: _i22.MainCategory.restaurant,
+        returnValueForMissingStub: _i22.MainCategory.restaurant,
+      ) as _i22.MainCategory);
 
   @override
   bool get hasListeners => (super.noSuchMethod(
@@ -2172,7 +2262,7 @@ class MockBottomNavProvider extends _i1.Mock implements _i20.BottomNavProvider {
       );
 
   @override
-  void setCategory(_i20.MainCategory? category) => super.noSuchMethod(
+  void setCategory(_i22.MainCategory? category) => super.noSuchMethod(
         Invocation.method(
           #setCategory,
           [category],
@@ -2190,7 +2280,7 @@ class MockBottomNavProvider extends _i1.Mock implements _i20.BottomNavProvider {
       );
 
   @override
-  void addListener(_i17.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i19.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -2199,7 +2289,7 @@ class MockBottomNavProvider extends _i1.Mock implements _i20.BottomNavProvider {
       );
 
   @override
-  void removeListener(_i17.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i19.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

@@ -1346,11 +1346,6 @@
         "en-US": "Save and Continue",
         "ar-SA": "حفظ ومتابعة"
     },
-    "Payments": {
-        "tr-TR": "Ödemeler",
-        "en-US": "Payments",
-        "ar-SA": "المدفوعات"
-    },
     "DailyEarnings": {
         "tr-TR": "Günlük Kazanç",
         "en-US": "Daily Earnings",
@@ -1376,19 +1371,179 @@
         "en-US": "Transaction History",
         "ar-SA": "سجل المعاملات"
     },
-    "OrderId": {
-        "tr-TR": "Sipariş No",
-        "en-US": "Order ID",
-        "ar-SA": "رقم الطلب"
-    },
     "Amount": {
         "tr-TR": "Tutar",
         "en-US": "Amount",
         "ar-SA": "المبلغ"
     },
-    "Date": {
-        "tr-TR": "Tarih",
-        "en-US": "Date",
-        "ar-SA": "التاريخ"
+    "Coupons": {
+        "tr-TR": "Kuponlar",
+        "en-US": "Coupons",
+        "ar-SA": "كوبونات"
+    },
+    "Campaigns": {
+        "tr-TR": "Kampanyalar",
+        "en-US": "Campaigns",
+        "ar-SA": "حملات"
+    },
+    "NewCampaign": {
+        "tr-TR": "Yeni Kampanya",
+        "en-US": "New Campaign",
+        "ar-SA": "حملة جديدة"
+    },
+    "TypeAction": {
+        "tr-TR": "Tip/İşlem",
+        "en-US": "Type/Action",
+        "ar-SA": "النوع / الإجراء"
+    },
+    "DateRange": {
+        "tr-TR": "Tarih Aralığı",
+        "en-US": "Date Range",
+        "ar-SA": "نطاق التاريخ"
+    },
+    "Ended": {
+        "tr-TR": "Sona Erdi",
+        "en-US": "Ended",
+        "ar-SA": "انتهت"
+    },
+    "NotStarted": {
+        "tr-TR": "Başlamadı",
+        "en-US": "Not Started",
+        "ar-SA": "لم تبدأ"
+    },
+    "Published": {
+        "tr-TR": "Yayında",
+        "en-US": "Published",
+        "ar-SA": "منشورة"
+    },
+    "CreateNewCampaign": {
+        "tr-TR": "Yeni Kampanya Oluştur",
+        "en-US": "Create New Campaign",
+        "ar-SA": "إنشاء حملة جديدة"
+    },
+    "BackToList": {
+        "tr-TR": "Listeye Dön",
+        "en-US": "Back to List",
+        "ar-SA": "العودة للقائمة"
+    },
+    "GeneralInfo": {
+        "tr-TR": "Genel Bilgiler",
+        "en-US": "General Info",
+        "ar-SA": "معلومات عامة"
+    },
+    "AdvancedRules": {
+        "tr-TR": "Gelişmiş Kurallar",
+        "en-US": "Advanced Rules",
+        "ar-SA": "قواعد متقدمة"
+    },
+    "ScopeLocationCategory": {
+        "tr-TR": "Kapsam (Konum/Kategori)",
+        "en-US": "Scope (Location/Category)",
+        "ar-SA": "النطاق (الموقع / الفئة)"
+    },
+    "CampaignTitle": {
+        "tr-TR": "Kampanya Başlığı",
+        "en-US": "Campaign Title",
+        "ar-SA": "عنوان الحملة"
+    },
+    "ExampleCampaignTitle": {
+        "tr-TR": "Örn: %20 İndirim",
+        "en-US": "Ex: 20% Discount",
+        "ar-SA": "مثال: خصم 20٪"
+    },
+    "ImageUrl": {
+        "tr-TR": "Resim URL",
+        "en-US": "Image URL",
+        "ar-SA": "رابط الصورة"
+    },
+    "ActionUrl": {
+        "tr-TR": "Aksiyon URL",
+        "en-US": "Action URL",
+        "ar-SA": "رابط الإجراء"
+    },
+    "ExampleActionUrl": {
+        "tr-TR": "Örn: /products/123",
+        "en-US": "Ex: /products/123",
+        "ar-SA": "مثال: /products/123"
+    },
+    "ActionUrlInfo": {
+        "tr-TR": "Tıklandığında gidilecek sayfa",
+        "en-US": "Page to go when clicked",
+        "ar-SA": "الصفحة عند النقر"
+    },
+    "Priority": {
+        "tr-TR": "Öncelik Sırası",
+        "en-US": "Priority",
+        "ar-SA": "الأولوية"
+    },
+    "PriorityInfo": {
+        "tr-TR": "Düşük sayı daha üstte görünür",
+        "en-US": "Lower number appears on top",
+        "ar-SA": "الرقم الأقل يظهر في الأعلى"
+    },
+    "IsActive": {
+        "tr-TR": "Aktif mi?",
+        "en-US": "Is Active?",
+        "ar-SA": "هل هو نشط؟"
+    },
+    "VendorTypeRestriction": {
+        "tr-TR": "Satıcı Tipi Kısıtlaması",
+        "en-US": "Vendor Type Restriction",
+        "ar-SA": "تقييد نوع البائع"
+    },
+    "MinCartAmount": {
+        "tr-TR": "Min. Sepet Tutarı",
+        "en-US": "Min. Cart Amount",
+        "ar-SA": "الحد الأدنى لمبلغ السلة"
+    },
+    "DailyStartTime": {
+        "tr-TR": "Günlük Başlangıç Saati",
+        "en-US": "Daily Start Time",
+        "ar-SA": "وقت البدء اليومي"
+    },
+    "DailyEndTime": {
+        "tr-TR": "Günlük Bitiş Saati",
+        "en-US": "Daily End Time",
+        "ar-SA": "وقت الانتهاء اليومي"
+    },
+    "ValidCities": {
+        "tr-TR": "Geçerli Şehirler",
+        "en-US": "Valid Cities",
+        "ar-SA": "المدن الصالحة"
+    },
+    "MultiSelectInfo": {
+        "tr-TR": "Birden fazla seçebilirsiniz",
+        "en-US": "You can select multiple",
+        "ar-SA": "يمكنك اختيار متعدد"
+    },
+    "ValidDistricts": {
+        "tr-TR": "Geçerli İlçeler",
+        "en-US": "Valid Districts",
+        "ar-SA": "الأحياء الصالحة"
+    },
+    "ValidCategories": {
+        "tr-TR": "Geçerli Kategoriler",
+        "en-US": "Valid Categories",
+        "ar-SA": "الفئات الصالحة"
+    },
+    "ValidProducts": {
+        "tr-TR": "Geçerli Ürünler",
+        "en-US": "Valid Products",
+        "ar-SA": "المنتجات الصالحة"
+    },
+    "SaveChanges": {
+        "tr-TR": "Değişiklikleri Kaydet",
+        "en-US": "Save Changes",
+        "ar-SA": "حفظ التغييرات"
+    },
+    "EditCampaign": {
+        "tr-TR": "Kampanyayı Düzenle",
+        "en-US": "Edit Campaign",
+        "ar-SA": "تعديل الحملة"
+    },
+    "Title": {
+        "tr-TR": "Başlık",
+        "en-US": "Title",
+        "ar-SA": "العنوان"
     }
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/features/home/data/models/promotional_banner.dart';
-import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/bouncing_circle.dart';
 import 'package:mobile/features/campaigns/presentation/screens/campaign_detail_screen.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 
 class CampaignsScreen extends StatefulWidget {
   const CampaignsScreen({super.key});
@@ -19,34 +19,66 @@ class CampaignsScreen extends StatefulWidget {
 
 class _CampaignsScreenState extends State<CampaignsScreen> {
   final ApiService _apiService = ApiService();
-  late Future<List<PromotionalBanner>> _bannersFuture;
+  late Future<List<Campaign>> _campaignsFuture;
 
   int? _campaignCount;
 
-  MainCategory? _lastCategory;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadBanners();
+  void initState() {
+    super.initState();
+    _loadCampaigns();
   }
 
-  void _loadBanners() {
-    final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
-        ? 1
-        : 2;
-    final locale = AppLocalizations.of(context)?.localeName ?? 'tr';
-    _bannersFuture = _apiService
-        .getBanners(language: locale, vendorType: vendorType)
-        .then((banners) {
-          if (mounted) {
-            setState(() {
-              _campaignCount = banners.length;
-            });
-          }
-          return banners;
-        });
+  void _loadCampaigns() {
+    _campaignsFuture = _fetchCampaignsWithContext();
+  }
+
+  Future<List<Campaign>> _fetchCampaignsWithContext() async {
+    int? vendorType;
+    String? cityId;
+    String? districtId;
+
+    if (mounted) {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
+    }
+
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (addresses.isNotEmpty) {
+        final defaultAddr =
+            addresses.firstWhere(
+                  (a) => a['isDefault'] == true,
+                  orElse: () => addresses.first,
+                )
+                as Map<String, dynamic>;
+
+        if (defaultAddr['cityId'] != null) {
+          cityId = defaultAddr['cityId'].toString();
+        }
+        if (defaultAddr['districtId'] != null) {
+          districtId = defaultAddr['districtId'].toString();
+        }
+      }
+    } catch (_) {
+      // Ignore address errors
+    }
+
+    final campaigns = await _apiService.getCampaigns(
+      vendorType: vendorType,
+      cityId: cityId,
+      districtId: districtId,
+    );
+
+    if (mounted) {
+      setState(() {
+        _campaignCount = campaigns.length;
+      });
+    }
+
+    return campaigns;
   }
 
   @override
@@ -55,80 +87,61 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Consumer<BottomNavProvider>(
-      builder: (context, bottomNav, _) {
-        // Kategori değiştiğinde verileri yeniden yükle
-        final currentCategory = bottomNav.selectedCategory;
-        if (_lastCategory != null && _lastCategory != currentCategory) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              _loadBanners();
-              _lastCategory = currentCategory;
-            }
-          });
-        } else {
-          _lastCategory ??= currentCategory;
-        }
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      body: Column(
+        children: [
+          SharedHeader(
+            title: localizations.campaigns,
+            subtitle: _campaignCount != null
+                ? localizations.campaignsCount(_campaignCount!)
+                : null,
+            showBackButton: true,
+            onBack: () => Navigator.of(context).pop(),
+            icon: Icons.local_offer_outlined,
+          ),
+          Expanded(
+            child: FutureBuilder<List<Campaign>>(
+              future: _campaignsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: colorScheme.primary,
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('${localizations.error}: ${snapshot.error}'),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text(localizations.noResultsFound));
+                }
 
-        return Scaffold(
-          backgroundColor: AppTheme.backgroundColor,
-          body: Column(
-            children: [
-              SharedHeader(
-                title: localizations.campaigns,
-                subtitle: _campaignCount != null
-                    ? localizations.campaignsCount(_campaignCount!)
-                    : null,
-                showBackButton: true,
-                onBack: () => Navigator.of(context).pop(),
-                icon: Icons.local_offer_outlined,
-              ),
-              Expanded(
-                child: FutureBuilder<List<PromotionalBanner>>(
-                  future: _bannersFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: colorScheme.primary,
-                        ),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          '${localizations.error}: ${snapshot.error}',
-                        ),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text(localizations.noResultsFound));
-                    }
-
-                    final banners = snapshot.data!;
-                    return ListView.separated(
-                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                      itemCount: banners.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: AppTheme.spacingMedium),
-                      itemBuilder: (context, index) {
-                        return _buildBannerCard(
-                          banners[index],
-                          index,
-                          colorScheme: colorScheme,
-                        );
-                      },
+                final campaigns = snapshot.data!;
+                return ListView.separated(
+                  padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                  itemCount: campaigns.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: AppTheme.spacingMedium),
+                  itemBuilder: (context, index) {
+                    return _buildCampaignCard(
+                      campaigns[index],
+                      index,
+                      colorScheme: colorScheme,
                     );
                   },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
-  Widget _buildBannerCard(
-    PromotionalBanner banner,
+  Widget _buildCampaignCard(
+    Campaign campaign,
     int index, {
     required ColorScheme colorScheme,
   }) {
@@ -159,7 +172,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CampaignDetailScreen(banner: banner),
+            builder: (context) => CampaignDetailScreen(campaign: campaign),
           ),
         );
       },
@@ -189,7 +202,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    banner.title,
+                    campaign.title,
                     style: AppTheme.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -200,7 +213,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    banner.subtitle,
+                    campaign.description,
                     style: AppTheme.poppins(
                       fontSize: 13,
                       color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
@@ -208,16 +221,16 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (banner.buttonText != null) ...[
+                  if (campaign.actionUrl != null &&
+                      campaign.actionUrl!.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle button action
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                CampaignDetailScreen(banner: banner),
+                                CampaignDetailScreen(campaign: campaign),
                           ),
                         );
                       },
@@ -236,7 +249,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                         ),
                       ),
                       child: Text(
-                        banner.buttonText!,
+                        'Detaylar', // Localized "Details"
                         style: AppTheme.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -266,10 +279,10 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                         BouncingCircle(
                           color: Colors.white.withValues(alpha: 0.2),
                         ),
-                        if (banner.imageUrl != null)
+                        if (campaign.imageUrl.isNotEmpty)
                           ClipOval(
                             child: CachedNetworkImageWidget(
-                              imageUrl: banner.imageUrl!,
+                              imageUrl: campaign.imageUrl,
                               width: 80,
                               height: 80,
                               fit: BoxFit.cover,

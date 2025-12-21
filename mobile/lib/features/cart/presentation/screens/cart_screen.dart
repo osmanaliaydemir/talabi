@@ -12,6 +12,7 @@ import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/features/coupons/presentation/screens/coupon_list_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -23,6 +24,14 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  final TextEditingController _couponController = TextEditingController();
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -150,36 +159,100 @@ class _CartScreenState extends State<CartScreen> {
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
+                          border: cart.appliedCoupon != null
+                              ? Border.all(color: Colors.green, width: 1)
+                              : null,
                         ),
-                        child: Semantics(
-                          label: localizations.cartVoucherPlaceholder,
-                          textField: true,
-                          child: Row(
-                            children: [
-                              Icon(
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
                                 Icons.local_offer,
-                                color: Colors.grey[700],
+                                color: cart.appliedCoupon != null
+                                    ? Colors.green
+                                    : AppTheme.primaryOrange,
                                 size: 20,
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        localizations.cartVoucherPlaceholder,
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey[500],
-                                    ),
-                                    border: InputBorder.none,
+                              onPressed: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CouponListScreen(
+                                          isSelectionMode: true,
+                                        ),
                                   ),
+                                );
+                                if (result != null && result is String) {
+                                  _couponController.text = result;
+                                  if (context.mounted) {
+                                    _applyCoupon(context, cart, result);
+                                  }
+                                }
+                              },
+                              tooltip: 'Kupon Seç',
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: TextField(
+                                controller: _couponController,
+                                enabled: cart.appliedCoupon == null,
+                                decoration: InputDecoration(
+                                  hintText: cart.appliedCoupon != null
+                                      ? cart.appliedCoupon!.code
+                                      : localizations.cartVoucherPlaceholder,
+                                  hintStyle: TextStyle(
+                                    color: cart.appliedCoupon != null
+                                        ? Colors.black87
+                                        : Colors.grey[500],
+                                    fontWeight: cart.appliedCoupon != null
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                  border: InputBorder.none,
                                 ),
+                                onSubmitted: (value) {
+                                  if (value.isNotEmpty) {
+                                    _applyCoupon(context, cart, value);
+                                  }
+                                },
                               ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey[600],
+                            ),
+                            if (cart.appliedCoupon != null)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  cart.removeCoupon();
+                                  _couponController.clear();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Kupon kaldırıldı'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                },
+                              )
+                            else
+                              IconButton(
+                                icon: Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.grey[600],
+                                ),
+                                onPressed: () {
+                                  if (_couponController.text.isNotEmpty) {
+                                    _applyCoupon(
+                                      context,
+                                      cart,
+                                      _couponController.text,
+                                    );
+                                  }
+                                },
                               ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -213,6 +286,19 @@ class _CartScreenState extends State<CartScreen> {
                                 isBold: false,
                               ),
                             ),
+                            if (cart.discountAmount > 0) ...[
+                              const SizedBox(height: 8),
+                              Semantics(
+                                label:
+                                    'İndirim: -${CurrencyFormatter.format(cart.discountAmount, displayCurrency)}',
+                                child: _buildSummaryRow(
+                                  'İndirim:',
+                                  '-${CurrencyFormatter.format(cart.discountAmount, displayCurrency)}',
+                                  isBold: false,
+                                  valueColor: Colors.green,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             Divider(color: Colors.grey[300], height: 1),
                             const SizedBox(height: 8),
@@ -608,7 +694,12 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
+  Widget _buildSummaryRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? valueColor,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -625,11 +716,41 @@ class _CartScreenState extends State<CartScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: Colors.black,
+            color: valueColor ?? Colors.black,
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _applyCoupon(
+    BuildContext context,
+    CartProvider cart,
+    String code,
+  ) async {
+    // FocusScope.of(context).unfocus(); // Close keyboard
+    try {
+      await cart.applyCoupon(code);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kupon başarıyla uygulandı!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _showClearCartDialog(BuildContext context, CartProvider cart) {

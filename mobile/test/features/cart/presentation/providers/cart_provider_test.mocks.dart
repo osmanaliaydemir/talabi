@@ -4,11 +4,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:ui' as _i16;
+import 'dart:ui' as _i18;
 
 import 'package:dio/dio.dart' as _i2;
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart'
-    as _i18;
+    as _i20;
+import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i13;
+import 'package:mobile/features/coupons/data/models/coupon.dart' as _i14;
 import 'package:mobile/features/home/data/models/promotional_banner.dart'
     as _i10;
 import 'package:mobile/features/notifications/data/models/customer_notification.dart'
@@ -18,12 +20,12 @@ import 'package:mobile/features/products/data/models/product.dart' as _i3;
 import 'package:mobile/features/reviews/data/models/review.dart' as _i6;
 import 'package:mobile/features/search/data/models/search_dtos.dart' as _i5;
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart'
-    as _i13;
+    as _i15;
 import 'package:mobile/features/vendors/data/models/vendor.dart' as _i9;
-import 'package:mobile/providers/connectivity_provider.dart' as _i15;
+import 'package:mobile/providers/connectivity_provider.dart' as _i17;
 import 'package:mobile/services/api_service.dart' as _i7;
-import 'package:mobile/services/logger_service.dart' as _i17;
-import 'package:mobile/services/sync_service.dart' as _i14;
+import 'package:mobile/services/logger_service.dart' as _i19;
+import 'package:mobile/services/sync_service.dart' as _i16;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i11;
 
@@ -321,6 +323,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
+    String? couponCode,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -333,6 +336,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
             #deliveryAddressId: deliveryAddressId,
             #paymentMethod: paymentMethod,
             #note: note,
+            #couponCode: couponCode,
           },
         ),
         returnValue: _i8.Future<_i4.Order>.value(_FakeOrder_2(
@@ -347,6 +351,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
               #deliveryAddressId: deliveryAddressId,
               #paymentMethod: paymentMethod,
               #note: note,
+              #couponCode: couponCode,
             },
           ),
         )),
@@ -362,6 +367,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
               #deliveryAddressId: deliveryAddressId,
               #paymentMethod: paymentMethod,
               #note: note,
+              #couponCode: couponCode,
             },
           ),
         )),
@@ -975,6 +981,57 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
         returnValue: _i8.Future<void>.value(),
         returnValueForMissingStub: _i8.Future<void>.value(),
       ) as _i8.Future<void>);
+
+  @override
+  _i8.Future<List<_i13.Campaign>> getCampaigns({
+    int? vendorType,
+    String? cityId,
+    String? districtId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCampaigns,
+          [],
+          {
+            #vendorType: vendorType,
+            #cityId: cityId,
+            #districtId: districtId,
+          },
+        ),
+        returnValue: _i8.Future<List<_i13.Campaign>>.value(<_i13.Campaign>[]),
+        returnValueForMissingStub:
+            _i8.Future<List<_i13.Campaign>>.value(<_i13.Campaign>[]),
+      ) as _i8.Future<List<_i13.Campaign>>);
+
+  @override
+  _i8.Future<List<_i14.Coupon>> getCoupons() => (super.noSuchMethod(
+        Invocation.method(
+          #getCoupons,
+          [],
+        ),
+        returnValue: _i8.Future<List<_i14.Coupon>>.value(<_i14.Coupon>[]),
+        returnValueForMissingStub:
+            _i8.Future<List<_i14.Coupon>>.value(<_i14.Coupon>[]),
+      ) as _i8.Future<List<_i14.Coupon>>);
+
+  @override
+  _i8.Future<_i14.Coupon?> validateCoupon(
+    String? code, {
+    String? cityId,
+    String? districtId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #validateCoupon,
+          [code],
+          {
+            #cityId: cityId,
+            #districtId: districtId,
+          },
+        ),
+        returnValue: _i8.Future<_i14.Coupon?>.value(),
+        returnValueForMissingStub: _i8.Future<_i14.Coupon?>.value(),
+      ) as _i8.Future<_i14.Coupon?>);
 
   @override
   _i8.Future<void> cancelOrderItem(
@@ -1872,7 +1929,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
       ) as _i8.Future<dynamic>);
 
   @override
-  _i8.Future<void> syncDeliveryZones(_i13.DeliveryZoneSyncDto? dto) =>
+  _i8.Future<void> syncDeliveryZones(_i15.DeliveryZoneSyncDto? dto) =>
       (super.noSuchMethod(
         Invocation.method(
           #syncDeliveryZones,
@@ -1886,9 +1943,9 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
 /// A class which mocks [SyncService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSyncService extends _i1.Mock implements _i14.SyncService {
+class MockSyncService extends _i1.Mock implements _i16.SyncService {
   @override
-  _i8.Future<void> addToQueue(_i14.SyncAction? action) => (super.noSuchMethod(
+  _i8.Future<void> addToQueue(_i16.SyncAction? action) => (super.noSuchMethod(
         Invocation.method(
           #addToQueue,
           [action],
@@ -1908,16 +1965,16 @@ class MockSyncService extends _i1.Mock implements _i14.SyncService {
       ) as _i8.Future<void>);
 
   @override
-  _i8.Future<List<_i14.SyncAction>> getQueuedActions() => (super.noSuchMethod(
+  _i8.Future<List<_i16.SyncAction>> getQueuedActions() => (super.noSuchMethod(
         Invocation.method(
           #getQueuedActions,
           [],
         ),
         returnValue:
-            _i8.Future<List<_i14.SyncAction>>.value(<_i14.SyncAction>[]),
+            _i8.Future<List<_i16.SyncAction>>.value(<_i16.SyncAction>[]),
         returnValueForMissingStub:
-            _i8.Future<List<_i14.SyncAction>>.value(<_i14.SyncAction>[]),
-      ) as _i8.Future<List<_i14.SyncAction>>);
+            _i8.Future<List<_i16.SyncAction>>.value(<_i16.SyncAction>[]),
+      ) as _i8.Future<List<_i16.SyncAction>>);
 
   @override
   _i8.Future<void> processQueue() => (super.noSuchMethod(
@@ -1954,7 +2011,7 @@ class MockSyncService extends _i1.Mock implements _i14.SyncService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockConnectivityProvider extends _i1.Mock
-    implements _i15.ConnectivityProvider {
+    implements _i17.ConnectivityProvider {
   @override
   bool get isOnline => (super.noSuchMethod(
         Invocation.getter(#isOnline),
@@ -1989,7 +2046,7 @@ class MockConnectivityProvider extends _i1.Mock
       );
 
   @override
-  void addListener(_i16.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i18.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -1998,7 +2055,7 @@ class MockConnectivityProvider extends _i1.Mock
       );
 
   @override
-  void removeListener(_i16.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i18.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -2019,9 +2076,9 @@ class MockConnectivityProvider extends _i1.Mock
 /// A class which mocks [LoggerService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLoggerService extends _i1.Mock implements _i17.LoggerService {
+class MockLoggerService extends _i1.Mock implements _i19.LoggerService {
   @override
-  _i8.Future<void> init({_i18.AuthProvider? authProvider}) =>
+  _i8.Future<void> init({_i20.AuthProvider? authProvider}) =>
       (super.noSuchMethod(
         Invocation.method(
           #init,

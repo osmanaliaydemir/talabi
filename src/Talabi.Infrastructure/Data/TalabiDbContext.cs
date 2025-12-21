@@ -46,6 +46,18 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<Locality> Localities { get; set; }
     public DbSet<VendorWorkingHour> VendorWorkingHours { get; set; }
     public DbSet<CourierWorkingHour> CourierWorkingHours { get; set; }
+    public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<Campaign> Campaigns { get; set; }
+
+    // Advanced Rules Relations
+    public DbSet<CampaignCity> CampaignCities { get; set; }
+    public DbSet<CampaignDistrict> CampaignDistricts { get; set; }
+    public DbSet<CampaignCategory> CampaignCategories { get; set; }
+    public DbSet<CampaignProduct> CampaignProducts { get; set; }
+    public DbSet<CouponCity> CouponCities { get; set; }
+    public DbSet<CouponDistrict> CouponDistricts { get; set; }
+    public DbSet<CouponCategory> CouponCategories { get; set; }
+    public DbSet<CouponProduct> CouponProducts { get; set; }
 
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -432,5 +444,141 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<VendorDeliveryZone>()
             .Property(v => v.MinimumOrderAmount)
             .HasColumnType("decimal(18,2)");
+
+        // Coupon configuration
+        builder.Entity<Coupon>()
+            .Property(c => c.DiscountValue)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Coupon>()
+            .Property(c => c.MinCartAmount)
+            .HasColumnType("decimal(18,2)");
+
+        // Campaign Configuration
+        builder.Entity<Campaign>()
+            .Property(c => c.MinCartAmount)
+            .HasColumnType("decimal(18,2)");
+
+        // Campaign Relations Configuration
+        builder.Entity<CampaignCity>()
+            .HasKey(cc => new { cc.CampaignId, cc.CityId });
+
+        builder.Entity<CampaignCity>()
+            .HasOne(cc => cc.Campaign)
+            .WithMany(c => c.CampaignCities)
+            .HasForeignKey(cc => cc.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CampaignCity>()
+            .HasOne(cc => cc.City)
+            .WithMany()
+            .HasForeignKey(cc => cc.CityId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CampaignDistrict>()
+            .HasKey(cd => new { cd.CampaignId, cd.DistrictId });
+
+        builder.Entity<CampaignDistrict>()
+            .HasOne(cd => cd.Campaign)
+            .WithMany(c => c.CampaignDistricts)
+            .HasForeignKey(cd => cd.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        builder.Entity<CampaignDistrict>()
+            .HasOne(cd => cd.District)
+            .WithMany()
+            .HasForeignKey(cd => cd.DistrictId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CampaignCategory>()
+            .HasKey(cc => new { cc.CampaignId, cc.CategoryId });
+
+        builder.Entity<CampaignCategory>()
+            .HasOne(cc => cc.Campaign)
+            .WithMany(c => c.CampaignCategories)
+            .HasForeignKey(cc => cc.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CampaignCategory>()
+            .HasOne(cc => cc.Category)
+            .WithMany()
+            .HasForeignKey(cc => cc.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CampaignProduct>()
+            .HasKey(cp => new { cp.CampaignId, cp.ProductId });
+
+        builder.Entity<CampaignProduct>()
+            .HasOne(cp => cp.Campaign)
+            .WithMany(c => c.CampaignProducts)
+            .HasForeignKey(cp => cp.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CampaignProduct>()
+            .HasOne(cp => cp.Product)
+            .WithMany()
+            .HasForeignKey(cp => cp.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Coupon Relations Configuration
+        builder.Entity<CouponCity>()
+            .HasKey(cc => new { cc.CouponId, cc.CityId });
+
+        builder.Entity<CouponCity>()
+            .HasOne(cc => cc.Coupon)
+            .WithMany(c => c.CouponCities)
+            .HasForeignKey(cc => cc.CouponId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponCity>()
+            .HasOne(cc => cc.City)
+            .WithMany()
+            .HasForeignKey(cc => cc.CityId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponDistrict>()
+            .HasKey(cd => new { cd.CouponId, cd.DistrictId });
+        
+        builder.Entity<CouponDistrict>()
+            .HasOne(cd => cd.Coupon)
+            .WithMany(c => c.CouponDistricts)
+            .HasForeignKey(cd => cd.CouponId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponDistrict>()
+            .HasOne(cd => cd.District)
+            .WithMany()
+            .HasForeignKey(cd => cd.DistrictId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponCategory>()
+            .HasKey(cc => new { cc.CouponId, cc.CategoryId });
+        
+        builder.Entity<CouponCategory>()
+            .HasOne(cc => cc.Coupon)
+            .WithMany(c => c.CouponCategories)
+            .HasForeignKey(cc => cc.CouponId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponCategory>()
+            .HasOne(cc => cc.Category)
+            .WithMany()
+            .HasForeignKey(cc => cc.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponProduct>()
+            .HasKey(cp => new { cp.CouponId, cp.ProductId });
+
+        builder.Entity<CouponProduct>()
+            .HasOne(cp => cp.Coupon)
+            .WithMany(c => c.CouponProducts)
+            .HasForeignKey(cp => cp.CouponId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponProduct>()
+            .HasOne(cp => cp.Product)
+            .WithMany()
+            .HasForeignKey(cp => cp.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

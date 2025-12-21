@@ -14,6 +14,8 @@ import 'package:injectable/injectable.dart' hide Order;
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart';
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/features/coupons/data/models/coupon.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -246,6 +248,7 @@ class ApiService {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
+    String? couponCode,
   }) async {
     try {
       return await _orderRemoteDataSource.createOrder(
@@ -254,6 +257,7 @@ class ApiService {
         deliveryAddressId: deliveryAddressId,
         paymentMethod: paymentMethod,
         note: note,
+        couponCode: couponCode,
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error creating order', e, stackTrace);
@@ -802,6 +806,79 @@ class ApiService {
       await _orderRemoteDataSource.cancelOrder(orderId, reason);
     } catch (e, stackTrace) {
       LoggerService().error('Error cancelling order', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  // Coupons & Campaigns
+  Future<List<Campaign>> getCampaigns({
+    int? vendorType,
+    String? cityId,
+    String? districtId,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (vendorType != null) queryParams['vendorType'] = vendorType;
+      if (cityId != null) queryParams['cityId'] = cityId;
+      if (districtId != null) queryParams['districtId'] = districtId;
+
+      final response = await dio.get(
+        '/campaigns',
+        queryParameters: queryParams,
+      );
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => Campaign.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching campaigns', e, stackTrace);
+      return [];
+    }
+  }
+
+  Future<List<Coupon>> getCoupons() async {
+    try {
+      final response = await dio.get('/coupons');
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => Coupon.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching coupons', e, stackTrace);
+      return [];
+    }
+  }
+
+  Future<Coupon?> validateCoupon(
+    String code, {
+    String? cityId,
+    String? districtId,
+  }) async {
+    try {
+      final data = <String, dynamic>{'code': code};
+      if (cityId != null) data['cityId'] = cityId;
+      if (districtId != null) data['districtId'] = districtId;
+
+      final response = await dio.post(
+        '/coupons/validate',
+        data: data,
+        options: Options(contentType: Headers.jsonContentType),
+      );
+      if (response.data != null) {
+        return Coupon.fromJson(response.data as Map<String, dynamic>);
+      }
+      return null;
+    } on DioException catch (e, stackTrace) {
+      LoggerService().error('Error validating coupon', e, stackTrace);
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 404) {
+        // Return null or throw specific error message from backend
+        final msg = e.response?.data['message'] ?? 'Geçersiz kupon';
+        throw Exception(msg);
+      }
       rethrow;
     }
   }

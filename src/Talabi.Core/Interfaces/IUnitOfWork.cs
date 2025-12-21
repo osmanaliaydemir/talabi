@@ -162,6 +162,26 @@ public interface IUnitOfWork : IDisposable
     /// </summary>
     IRepository<VendorWorkingHour> VendorWorkingHours { get; }
 
+    /// <summary>
+    /// Coupon entity'leri için repository
+    /// </summary>
+    IRepository<Coupon> Coupons { get; }
+
+    /// <summary>
+    /// Campaign entity'leri için repository
+    /// </summary>
+    IRepository<Campaign> Campaigns { get; }
+
+    /// <summary>
+    /// City entity'leri için repository
+    /// </summary>
+    IRepository<City> Cities { get; }
+
+    /// <summary>
+    /// District entity'leri için repository
+    /// </summary>
+    IRepository<District> Districts { get; }
+
 
 
     /// <summary>

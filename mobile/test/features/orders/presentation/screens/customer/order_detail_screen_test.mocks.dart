@@ -6,6 +6,8 @@
 import 'dart:async' as _i8;
 
 import 'package:dio/dio.dart' as _i2;
+import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i13;
+import 'package:mobile/features/coupons/data/models/coupon.dart' as _i14;
 import 'package:mobile/features/home/data/models/promotional_banner.dart'
     as _i10;
 import 'package:mobile/features/notifications/data/models/customer_notification.dart'
@@ -15,7 +17,7 @@ import 'package:mobile/features/products/data/models/product.dart' as _i3;
 import 'package:mobile/features/reviews/data/models/review.dart' as _i6;
 import 'package:mobile/features/search/data/models/search_dtos.dart' as _i5;
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart'
-    as _i13;
+    as _i15;
 import 'package:mobile/features/vendors/data/models/vendor.dart' as _i9;
 import 'package:mobile/services/api_service.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
@@ -289,6 +291,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
+    String? couponCode,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -301,6 +304,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
             #deliveryAddressId: deliveryAddressId,
             #paymentMethod: paymentMethod,
             #note: note,
+            #couponCode: couponCode,
           },
         ),
         returnValue: _i8.Future<_i4.Order>.value(_FakeOrder_2(
@@ -315,6 +319,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
               #deliveryAddressId: deliveryAddressId,
               #paymentMethod: paymentMethod,
               #note: note,
+              #couponCode: couponCode,
             },
           ),
         )),
@@ -874,6 +879,52 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
         returnValue: _i8.Future<void>.value(),
         returnValueForMissingStub: _i8.Future<void>.value(),
       ) as _i8.Future<void>);
+
+  @override
+  _i8.Future<List<_i13.Campaign>> getCampaigns({
+    int? vendorType,
+    String? cityId,
+    String? districtId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCampaigns,
+          [],
+          {
+            #vendorType: vendorType,
+            #cityId: cityId,
+            #districtId: districtId,
+          },
+        ),
+        returnValue: _i8.Future<List<_i13.Campaign>>.value(<_i13.Campaign>[]),
+      ) as _i8.Future<List<_i13.Campaign>>);
+
+  @override
+  _i8.Future<List<_i14.Coupon>> getCoupons() => (super.noSuchMethod(
+        Invocation.method(
+          #getCoupons,
+          [],
+        ),
+        returnValue: _i8.Future<List<_i14.Coupon>>.value(<_i14.Coupon>[]),
+      ) as _i8.Future<List<_i14.Coupon>>);
+
+  @override
+  _i8.Future<_i14.Coupon?> validateCoupon(
+    String? code, {
+    String? cityId,
+    String? districtId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #validateCoupon,
+          [code],
+          {
+            #cityId: cityId,
+            #districtId: districtId,
+          },
+        ),
+        returnValue: _i8.Future<_i14.Coupon?>.value(),
+      ) as _i8.Future<_i14.Coupon?>);
 
   @override
   _i8.Future<void> cancelOrderItem(
@@ -1655,7 +1706,7 @@ class MockApiService extends _i1.Mock implements _i7.ApiService {
       ) as _i8.Future<dynamic>);
 
   @override
-  _i8.Future<void> syncDeliveryZones(_i13.DeliveryZoneSyncDto? dto) =>
+  _i8.Future<void> syncDeliveryZones(_i15.DeliveryZoneSyncDto? dto) =>
       (super.noSuchMethod(
         Invocation.method(
           #syncDeliveryZones,
