@@ -123,7 +123,7 @@ class _AddressesScreenState extends State<AddressesScreen>
     if (confirm == true) {
       try {
         await _apiService.deleteAddress(id);
-        _loadAddresses();
+        await _loadAddresses();
         if (mounted) {
           ToastMessage.show(
             context,

@@ -47,47 +47,61 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(
-                context,
-                index: 0,
-                icon: Icons.explore_outlined,
-                selectedIcon: Icons.explore,
-                label: localizations.discover,
-                isSelected: bottomNav.currentIndex == 0,
-                onTap: () => _onItemTapped(context, 0, bottomNav, screenNames),
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  index: 0,
+                  icon: Icons.explore_outlined,
+                  selectedIcon: Icons.explore,
+                  label: localizations.discover,
+                  isSelected: bottomNav.currentIndex == 0,
+                  onTap: () =>
+                      _onItemTapped(context, 0, bottomNav, screenNames),
+                ),
               ),
-              _buildCategoryNavItem(
-                context,
-                bottomNav: bottomNav,
-                localizations: localizations,
+              Expanded(
+                child: _buildCategoryNavItem(
+                  context,
+                  bottomNav: bottomNav,
+                  localizations: localizations,
+                ),
               ),
-              _buildNavItem(
-                context,
-                index: 2,
-                icon: Icons.shopping_cart_outlined,
-                selectedIcon: Icons.shopping_cart,
-                label: localizations.myCart,
-                isSelected: bottomNav.currentIndex == 2,
-                onTap: () => _onItemTapped(context, 2, bottomNav, screenNames),
-                badge: cart.itemCount > 0 ? cart.itemCount : null,
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  index: 2,
+                  icon: Icons.shopping_cart_outlined,
+                  selectedIcon: Icons.shopping_cart,
+                  label: localizations.myCart,
+                  isSelected: bottomNav.currentIndex == 2,
+                  onTap: () =>
+                      _onItemTapped(context, 2, bottomNav, screenNames),
+                  badge: cart.itemCount > 0 ? cart.itemCount : null,
+                ),
               ),
-              _buildNavItem(
-                context,
-                index: 3,
-                icon: Icons.receipt_long_outlined,
-                selectedIcon: Icons.receipt_long,
-                label: localizations.myOrders,
-                isSelected: bottomNav.currentIndex == 3,
-                onTap: () => _onItemTapped(context, 3, bottomNav, screenNames),
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  index: 3,
+                  icon: Icons.receipt_long_outlined,
+                  selectedIcon: Icons.receipt_long,
+                  label: localizations.myOrders,
+                  isSelected: bottomNav.currentIndex == 3,
+                  onTap: () =>
+                      _onItemTapped(context, 3, bottomNav, screenNames),
+                ),
               ),
-              _buildNavItem(
-                context,
-                index: 4,
-                icon: Icons.person_outline,
-                selectedIcon: Icons.person,
-                label: localizations.myAccount,
-                isSelected: bottomNav.currentIndex == 4,
-                onTap: () => _onItemTapped(context, 4, bottomNav, screenNames),
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  index: 4,
+                  icon: Icons.person_outline,
+                  selectedIcon: Icons.person,
+                  label: localizations.myAccount,
+                  isSelected: bottomNav.currentIndex == 4,
+                  onTap: () =>
+                      _onItemTapped(context, 4, bottomNav, screenNames),
+                ),
               ),
             ],
           ),

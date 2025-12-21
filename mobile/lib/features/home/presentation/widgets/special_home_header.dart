@@ -282,14 +282,18 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                       size: 20,
                     ),
                     const SizedBox(width: 16),
-                    Text(
-                      l10n.searchProductsOrVendors,
-                      style: const TextStyle(
-                        color: Color(0xFF8A8A8A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Plus Jakarta Sans',
-                        letterSpacing: -0.02,
+                    Expanded(
+                      child: Text(
+                        l10n.searchProductsOrVendors,
+                        style: const TextStyle(
+                          color: Color(0xFF8A8A8A),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Plus Jakarta Sans',
+                          letterSpacing: -0.02,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

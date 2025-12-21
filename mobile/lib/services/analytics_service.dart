@@ -7,8 +7,10 @@ import 'package:mobile/services/logger_service.dart';
 class AnalyticsService {
   static FirebaseAnalytics? _analytics;
   static bool _initialized = false;
+  static bool isTestMode = false;
 
   static void _initializeAnalytics() {
+    if (isTestMode) return;
     if (_initialized) return;
     _initialized = true;
 

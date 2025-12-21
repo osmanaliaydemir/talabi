@@ -29,8 +29,6 @@ class ToastMessage {
 
     overlay.insert(overlayEntry);
 
-    overlay.insert(overlayEntry);
-
     if (!isTestMode) {
       Future.delayed(duration, () {
         overlayEntry.remove();
@@ -94,11 +92,13 @@ class _ToastWidgetState extends State<_ToastWidget>
 
     _controller.forward();
 
-    Future.delayed(widget.duration - const Duration(milliseconds: 300), () {
-      if (mounted) {
-        _controller.reverse();
-      }
-    });
+    if (!ToastMessage.isTestMode) {
+      Future.delayed(widget.duration - const Duration(milliseconds: 300), () {
+        if (mounted) {
+          _controller.reverse();
+        }
+      });
+    }
   }
 
   @override

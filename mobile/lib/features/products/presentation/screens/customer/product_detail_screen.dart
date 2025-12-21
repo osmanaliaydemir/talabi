@@ -449,52 +449,59 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  GestureDetector(
-                                    onTap: _scrollToReviews,
-                                    child: Semantics(
-                                      label:
-                                          '${_reviewsSummary != null ? _reviewsSummary!.averageRating.toStringAsFixed(1) : '0.0'} ${l10n.yildiz}, ${_reviewsSummary != null ? _reviewsSummary!.totalRatings : 0} ${l10n.degerlendirme}',
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: _scrollToReviews,
+                                      child: Semantics(
+                                        label:
+                                            '${_reviewsSummary != null ? _reviewsSummary!.averageRating.toStringAsFixed(1) : '0.0'} ${l10n.yildiz}, ${_reviewsSummary != null ? _reviewsSummary!.totalRatings : 0} ${l10n.degerlendirme}',
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
                                           ),
-                                        ),
-                                        child: _buildInfoItem(
-                                          icon: Icons.star,
-                                          iconColor: Colors.orange,
-                                          text: _reviewsSummary != null
-                                              ? _reviewsSummary!.averageRating
-                                                    .toStringAsFixed(1)
-                                              : '0.0',
-                                          subText: _reviewsSummary != null
-                                              ? '(${_reviewsSummary!.totalRatings}+)'
-                                              : '(0+)',
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: _buildInfoItem(
+                                            icon: Icons.star,
+                                            iconColor: Colors.orange,
+                                            text: _reviewsSummary != null
+                                                ? _reviewsSummary!.averageRating
+                                                      .toStringAsFixed(1)
+                                                : '0.0',
+                                            subText: _reviewsSummary != null
+                                                ? '(${_reviewsSummary!.totalRatings}+)'
+                                                : '(0+)',
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  Semantics(
-                                    label: '${l10n.deliveryTime}: 10 - 20 min',
-                                    child: _buildInfoItem(
-                                      icon: Icons.access_time_filled,
-                                      iconColor: colorScheme.primary,
-                                      text: '10 - 20 min',
-                                      subText: l10n.deliveryTime,
+                                  Expanded(
+                                    child: Semantics(
+                                      label:
+                                          '${l10n.deliveryTime}: 10 - 20 min',
+                                      child: _buildInfoItem(
+                                        icon: Icons.access_time_filled,
+                                        iconColor: colorScheme.primary,
+                                        text: '10 - 20 min',
+                                        subText: l10n.deliveryTime,
+                                      ),
                                     ),
                                   ),
-                                  Semantics(
-                                    label: '${l10n.delivery}: ${l10n.talabi}',
-                                    child: _buildInfoItem(
-                                      icon: Icons.delivery_dining,
-                                      iconColor: Colors.green,
-                                      text: l10n.talabi,
-                                      subText: l10n.delivery,
+                                  Expanded(
+                                    child: Semantics(
+                                      label: '${l10n.delivery}: ${l10n.talabi}',
+                                      child: _buildInfoItem(
+                                        icon: Icons.delivery_dining,
+                                        iconColor: Colors.green,
+                                        text: l10n.talabi,
+                                        subText: l10n.delivery,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1002,17 +1009,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     required String subText,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 18, color: iconColor),
             const SizedBox(width: 4),
-            Text(
-              text,
-              style: AppTheme.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1A1A1A),
+            Flexible(
+              child: Text(
+                text,
+                style: AppTheme.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1A1A1A),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -1021,6 +1033,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         Text(
           subText,
           style: AppTheme.poppins(fontSize: 12, color: Colors.grey[500]),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
       ],
     );
