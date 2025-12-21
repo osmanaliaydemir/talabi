@@ -84,9 +84,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sepeteEkle => 'Sepete ekle';
 
   @override
-  String get cart => 'Sepet';
-
-  @override
   String get share => 'Paylaş';
 
   @override
@@ -111,6 +108,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get vendors => 'Satıcılar';
+
+  @override
+  String get cart => 'Sepet';
 
   @override
   String get orders => 'Siparişler';
@@ -422,6 +422,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cartSubtotalLabel => 'Ara Toplam';
+
+  @override
+  String get discountTitle => 'İndirim';
 
   @override
   String get cartDeliveryFeeLabel => 'Teslimat Ücreti';

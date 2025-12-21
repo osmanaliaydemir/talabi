@@ -19,11 +19,13 @@ class CheckoutScreen extends StatefulWidget {
     required this.vendorId,
     required this.subtotal,
     required this.deliveryFee,
+    this.discountAmount = 0.0,
   });
   final Map<String, CartItem> cartItems;
   final String vendorId;
   final double subtotal;
   final double deliveryFee;
+  final double discountAmount;
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -141,7 +143,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       // Log purchase
       await AnalyticsService.logPurchase(
         orderId: order.customerOrderId,
-        totalAmount: widget.subtotal + widget.deliveryFee,
+        totalAmount:
+            widget.subtotal - widget.discountAmount + widget.deliveryFee,
         currency: widget.cartItems.values.first.product.currency.code,
         cartItems: widget.cartItems.values.toList(),
         shippingAddress:
@@ -1196,6 +1199,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 8),
             // Delivery Fee
+            // Delivery Fee
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1205,6 +1209,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ],
             ),
+            // Discount
+            if (widget.discountAmount > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      localizations.discountTitle,
+                      style: const TextStyle(color: Colors.green),
+                    ),
+                  ),
+                  Text(
+                    '-${CurrencyFormatter.format(widget.discountAmount, displayCurrency)}',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const Divider(height: 24),
             // Total
             Row(
@@ -1221,7 +1247,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 Text(
                   CurrencyFormatter.format(
-                    widget.subtotal + widget.deliveryFee,
+                    widget.subtotal -
+                        widget.discountAmount +
+                        widget.deliveryFee,
                     displayCurrency,
                   ),
                   style: const TextStyle(

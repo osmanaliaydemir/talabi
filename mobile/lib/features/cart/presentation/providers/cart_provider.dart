@@ -13,6 +13,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 import 'package:mobile/features/coupons/data/models/coupon.dart';
 import 'package:mobile/features/coupons/services/coupon_service.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 
 class CartProvider with ChangeNotifier {
   CartProvider({
@@ -39,6 +40,10 @@ class CartProvider with ChangeNotifier {
   Coupon? _appliedCoupon;
   Coupon? get appliedCoupon => _appliedCoupon;
 
+  // Campaign handling
+  Campaign? _selectedCampaign;
+  Campaign? get selectedCampaign => _selectedCampaign;
+
   double get subtotalAmount {
     double total = 0.0;
     _items.forEach((key, cartItem) {
@@ -48,6 +53,21 @@ class CartProvider with ChangeNotifier {
   }
 
   double get discountAmount {
+    // 1. Check Campaign Discount
+    if (_selectedCampaign != null) {
+      if (_selectedCampaign!.minCartAmount != null &&
+          subtotalAmount < _selectedCampaign!.minCartAmount!) {
+        return 0.0;
+      }
+
+      if (_selectedCampaign!.discountType == DiscountType.percentage) {
+        return subtotalAmount * (_selectedCampaign!.discountValue / 100);
+      } else {
+        return _selectedCampaign!.discountValue;
+      }
+    }
+
+    // 2. Check Coupon Discount (fallback if no campaign)
     if (_appliedCoupon == null) return 0.0;
 
     // Check min amount requirement again to be safe
@@ -63,7 +83,36 @@ class CartProvider with ChangeNotifier {
   }
 
   double get totalAmount {
-    return subtotalAmount - discountAmount;
+    final total = subtotalAmount - discountAmount;
+    return total < 0 ? 0 : total;
+  }
+
+  Future<void> selectCampaign(Campaign campaign) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (campaign.minCartAmount != null &&
+          subtotalAmount < campaign.minCartAmount!) {
+        throw Exception(
+          'Kampanya için sepet tutarı en az ${campaign.minCartAmount} TL olmalıdır.',
+        );
+      }
+
+      // Remove coupon if selecting campaign (Mutually Exclusive)
+      _appliedCoupon = null;
+      _selectedCampaign = campaign;
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void removeCampaign() {
+    _selectedCampaign = null;
+    notifyListeners();
   }
 
   Future<void> applyCoupon(String code) async {
@@ -82,6 +131,8 @@ class CartProvider with ChangeNotifier {
         );
       }
 
+      // Remove campaign if applying coupon (Mutually Exclusive)
+      _selectedCampaign = null;
       _appliedCoupon = coupon;
     } catch (e) {
       rethrow;
@@ -100,7 +151,13 @@ class CartProvider with ChangeNotifier {
     if (_appliedCoupon != null) {
       if (subtotalAmount < _appliedCoupon!.minCartAmount) {
         _appliedCoupon = null;
-        // Notify listener is called by caller or if needed we can add it here if isolated
+      }
+    }
+
+    if (_selectedCampaign != null) {
+      if (_selectedCampaign!.minCartAmount != null &&
+          subtotalAmount < _selectedCampaign!.minCartAmount!) {
+        _selectedCampaign = null;
       }
     }
   }

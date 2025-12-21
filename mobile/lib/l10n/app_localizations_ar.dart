@@ -84,9 +84,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sepeteEkle => 'أضف إلى السلة';
 
   @override
-  String get cart => 'السلة';
-
-  @override
   String get share => 'مشاركة';
 
   @override
@@ -111,6 +108,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get vendors => 'البائعون';
+
+  @override
+  String get cart => 'السلة';
 
   @override
   String get orders => 'الطلبات';
@@ -419,6 +419,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cartSubtotalLabel => 'المجموع الفرعي';
+
+  @override
+  String get discountTitle => 'خصم';
 
   @override
   String get cartDeliveryFeeLabel => 'رسوم التوصيل';

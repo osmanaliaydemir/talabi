@@ -84,9 +84,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sepeteEkle => 'Add to cart';
 
   @override
-  String get cart => 'Cart';
-
-  @override
   String get share => 'Share';
 
   @override
@@ -111,6 +108,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vendors => 'Vendors';
+
+  @override
+  String get cart => 'Cart';
 
   @override
   String get orders => 'Orders';
@@ -419,6 +419,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cartSubtotalLabel => 'Subtotal';
+
+  @override
+  String get discountTitle => 'Discount';
 
   @override
   String get cartDeliveryFeeLabel => 'Delivery Fee';

@@ -250,12 +250,6 @@ abstract class AppLocalizations {
   /// **'Add to cart'**
   String get sepeteEkle;
 
-  /// No description provided for @cart.
-  ///
-  /// In en, this message translates to:
-  /// **'Cart'**
-  String get cart;
-
   /// No description provided for @share.
   ///
   /// In en, this message translates to:
@@ -303,6 +297,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Vendors'**
   String get vendors;
+
+  /// No description provided for @cart.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart'**
+  String get cart;
 
   /// No description provided for @orders.
   ///
@@ -903,6 +903,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subtotal'**
   String get cartSubtotalLabel;
+
+  /// No description provided for @discountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discountTitle;
 
   /// No description provided for @cartDeliveryFeeLabel.
   ///

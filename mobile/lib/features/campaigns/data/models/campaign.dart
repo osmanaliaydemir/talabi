@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/features/coupons/data/models/coupon.dart';
 
 class Campaign {
   Campaign({
@@ -14,6 +15,8 @@ class Campaign {
     this.minCartAmount,
     this.startTime,
     this.endTime,
+    this.discountType = DiscountType.percentage,
+    this.discountValue = 0.0,
   });
 
   factory Campaign.fromJson(Map<String, dynamic> json) {
@@ -30,6 +33,13 @@ class Campaign {
       minCartAmount: (json['minCartAmount'] as num?)?.toDouble(),
       startTime: _parseTime(json['startTime'] as String?),
       endTime: _parseTime(json['endTime'] as String?),
+      discountType: json['discountType'] != null
+          ? DiscountType.values.firstWhere(
+              (e) => e.toString().split('.').last == json['discountType'],
+              orElse: () => DiscountType.percentage,
+            )
+          : DiscountType.percentage,
+      discountValue: (json['discountValue'] as num?)?.toDouble() ?? 0.0,
     );
   }
   final String id;
@@ -44,6 +54,8 @@ class Campaign {
   final double? minCartAmount;
   final TimeOfDay? startTime;
   final TimeOfDay? endTime;
+  final DiscountType discountType;
+  final double discountValue;
 
   static TimeOfDay? _parseTime(String? timeStr) {
     if (timeStr == null || timeStr.isEmpty) return null;

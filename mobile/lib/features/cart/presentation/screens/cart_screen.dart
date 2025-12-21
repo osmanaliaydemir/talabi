@@ -13,6 +13,7 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:mobile/features/coupons/presentation/screens/coupon_list_screen.dart';
+import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -152,6 +153,123 @@ class _CartScreenState extends State<CartScreen> {
                           },
                         ),
                       ),
+                      // Campaign Selection Section
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: cart.selectedCampaign != null
+                                ? Colors.green
+                                : Colors.grey[300]!,
+                            width: cart.selectedCampaign != null ? 1.5 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) =>
+                                  const CampaignSelectionBottomSheet(),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: cart.selectedCampaign != null
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : AppTheme.primaryOrange.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.campaign,
+                                  color: cart.selectedCampaign != null
+                                      ? Colors.green
+                                      : AppTheme.primaryOrange,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      localizations.campaigns,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    if (cart.selectedCampaign != null)
+                                      Text(
+                                        cart.selectedCampaign!.title,
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    else
+                                      Text(
+                                        'Mevcut kampanyaları gör',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              if (cart.selectedCampaign != null)
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    cart.removeCampaign();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Kampanya kaldırıldı'),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  },
+                                )
+                              else
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.grey,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+
                       // Voucher Code Section
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -409,8 +527,11 @@ class _CartScreenState extends State<CartScreen> {
                                                   CheckoutScreen(
                                                     cartItems: cart.items,
                                                     vendorId: vendorId,
-                                                    subtotal: cart.totalAmount,
+                                                    subtotal:
+                                                        cart.subtotalAmount,
                                                     deliveryFee: 2.0,
+                                                    discountAmount:
+                                                        cart.discountAmount,
                                                   ),
                                             ),
                                           );
