@@ -136,8 +136,12 @@ class AuthProvider with ChangeNotifier {
         _userId = response['userId'];
         _email = response['email'];
         _fullName = response['fullName'];
-        _isActive = true; // Default for new registration if token is present
-        _isProfileComplete = true; // Default
+        _role = response['role'] ?? response['Role']; // Extract role
+        _isActive = response['isActive'] ?? response['IsActive'] ?? true;
+        _isProfileComplete =
+            response['isProfileComplete'] ??
+            response['IsProfileComplete'] ??
+            true;
 
         if (response.containsKey('refreshToken')) {
           _refreshToken = response['refreshToken'];
@@ -149,6 +153,7 @@ class AuthProvider with ChangeNotifier {
         LoggerService().debug('🟢 [AUTH_PROVIDER] UserId: $_userId');
         LoggerService().debug('🟢 [AUTH_PROVIDER] Email: $_email');
         LoggerService().debug('🟢 [AUTH_PROVIDER] FullName: $_fullName');
+        LoggerService().debug('🟢 [AUTH_PROVIDER] Role: $_role');
 
         // Save to secure storage
         await _secureStorage.setToken(_token!);
@@ -158,6 +163,9 @@ class AuthProvider with ChangeNotifier {
         await _secureStorage.setUserId(_userId!);
         await _secureStorage.setEmail(_email!);
         await _secureStorage.setFullName(_fullName!);
+        if (_role != null) {
+          await _secureStorage.setRole(_role!);
+        }
 
         LoggerService().debug(
           '🟢 [AUTH_PROVIDER] Data saved to Secure Storage',

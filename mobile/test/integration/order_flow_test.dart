@@ -489,29 +489,43 @@ void main() {
       await tester.pumpAndSettle();
 
       // 7. On Checkout Screen
-      // Tap 'Siparişi Onayla' (confirmOrder)
-      final confirmOrderBtn = find.text('Siparişi Onayla');
-      if (confirmOrderBtn.evaluate().isNotEmpty) {
-        await tester.tap(confirmOrderBtn);
-      } else {
-        final elevBtns = find.byType(ElevatedButton);
-        if (elevBtns.evaluate().isNotEmpty) {
-          await tester.tap(elevBtns.last);
-        }
-      }
-      await tester.pump(const Duration(seconds: 2));
-
-      // 8. Verify Success
+      // Wait for addresses to load if needed
       await tester.pumpAndSettle();
 
+      // Tap 'Siparişi Onayla' (confirmOrder)
+      final confirmOrderBtn = find.text('Siparişi Onayla');
+      expect(
+        confirmOrderBtn,
+        findsOneWidget,
+        reason: 'Confirm Order button should be visible',
+      );
+
+      await tester.ensureVisible(confirmOrderBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(confirmOrderBtn);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+
+      // Verify createOrder was called
+      verify(
+        mockApiService.createOrder(
+          any,
+          any,
+          deliveryAddressId: anyNamed('deliveryAddressId'),
+          paymentMethod: anyNamed('paymentMethod'),
+          note: anyNamed('note'),
+        ),
+      ).called(1);
+
+      // 8. Verify Success
       if (find.byType(OrderSuccessScreen).evaluate().isEmpty) {
         debugPrint('DEBUG: Not on OrderSuccessScreen!');
+        // Print all visible text to help identify current screen
         debugDumpApp();
       }
-      expect(find.byType(OrderSuccessScreen), findsOneWidget);
-      // app_tr.arb: "orderCreatedSuccess": "Siparişiniz başarıyla oluşturuldu!"
+      // app_tr.arb: "orderCreatedSuccessfully": "Siparişiniz Başarıyla Oluşturuldu!"
       expect(
-        find.textContaining('Siparişiniz başarıyla oluşturuldu'),
+        find.textContaining('Siparişiniz Başarıyla Oluşturuldu'),
         findsOneWidget,
       );
     });
