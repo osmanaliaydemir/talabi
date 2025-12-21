@@ -48,7 +48,7 @@ class ProductSkeletonItem extends StatelessWidget {
         children: [
           SkeletonLoader(width: double.infinity, height: 120, borderRadius: 16),
           Padding(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

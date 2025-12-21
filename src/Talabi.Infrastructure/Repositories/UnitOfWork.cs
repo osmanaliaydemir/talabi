@@ -45,6 +45,10 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<VendorDeliveryZone>? _vendorDeliveryZones;
     private IRepository<CourierWorkingHour>? _courierWorkingHours;
     private IRepository<VendorWorkingHour>? _vendorWorkingHours;
+    private IRepository<Coupon>? _coupons;
+    private IRepository<Campaign>? _campaigns;
+    private IRepository<City>? _cities;
+    private IRepository<District>? _districts;
 
 
     /// <summary>
@@ -210,6 +214,26 @@ public class UnitOfWork : IUnitOfWork
     /// VendorWorkingHour entity'leri için repository
     /// </summary>
     public IRepository<VendorWorkingHour> VendorWorkingHours => _vendorWorkingHours ??= new Repository<VendorWorkingHour>(_context);
+
+    /// <summary>
+    /// Coupon entity'leri için repository
+    /// </summary>
+    public IRepository<Coupon> Coupons => _coupons ??= new Repository<Coupon>(_context);
+
+    /// <summary>
+    /// Campaign entity'leri için repository
+    /// </summary>
+    public IRepository<Campaign> Campaigns => _campaigns ??= new Repository<Campaign>(_context);
+
+    /// <summary>
+    /// City entity'leri için repository
+    /// </summary>
+    public IRepository<City> Cities => _cities ??= new Repository<City>(_context);
+
+    /// <summary>
+    /// District entity'leri için repository
+    /// </summary>
+    public IRepository<District> Districts => _districts ??= new Repository<District>(_context);
 
 
     /// <summary>

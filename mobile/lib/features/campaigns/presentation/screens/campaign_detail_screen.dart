@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
-import 'package:mobile/features/home/data/models/promotional_banner.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/widgets/bouncing_circle.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CampaignDetailScreen extends StatelessWidget {
-  const CampaignDetailScreen({super.key, required this.banner});
-  final PromotionalBanner banner;
+  const CampaignDetailScreen({super.key, required this.campaign});
+  final Campaign campaign;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class CampaignDetailScreen extends StatelessWidget {
             backgroundColor: colorScheme.primary,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                banner.title,
+                campaign.title,
                 style: AppTheme.poppins(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -54,11 +55,11 @@ class CampaignDetailScreen extends StatelessWidget {
                       size: 200,
                     ),
                   ),
-                  if (banner.imageUrl != null)
+                  if (campaign.imageUrl.isNotEmpty)
                     Center(
                       child: ClipOval(
                         child: CachedNetworkImageWidget(
-                          imageUrl: banner.imageUrl!,
+                          imageUrl: campaign.imageUrl,
                           width: 120,
                           height: 120,
                           fit: BoxFit.cover,
@@ -91,7 +92,7 @@ class CampaignDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    banner.title,
+                    campaign.title,
                     style: AppTheme.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -100,19 +101,23 @@ class CampaignDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppTheme.spacingMedium),
                   Text(
-                    banner.subtitle,
+                    campaign.description,
                     style: AppTheme.poppins(
                       fontSize: 16,
                       color: AppTheme.textSecondary,
                     ),
                   ),
                   const SizedBox(height: AppTheme.spacingLarge),
-                  if (banner.buttonText != null)
+                  if (campaign.actionUrl != null &&
+                      campaign.actionUrl!.isNotEmpty)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle button action
+                        onPressed: () async {
+                          final uri = Uri.tryParse(campaign.actionUrl!);
+                          if (uri != null && await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorScheme.primary,
@@ -127,7 +132,7 @@ class CampaignDetailScreen extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          banner.buttonText!,
+                          'Detaylar', // Or localized "Details"
                           style: AppTheme.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

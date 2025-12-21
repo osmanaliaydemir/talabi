@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
+import 'package:mobile/services/secure_storage_service.dart';
 
 class LocalizationProvider with ChangeNotifier {
   LocalizationProvider() {
@@ -48,7 +49,7 @@ class LocalizationProvider with ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('language', languageCode);
 
-      final token = prefs.getString('token');
+      final token = await SecureStorageService.instance.getToken();
       if (token != null) {
         await _apiService.updateUserPreferences(language: languageCode);
       }
@@ -67,7 +68,7 @@ class LocalizationProvider with ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('currency', currencyCode);
 
-      final token = prefs.getString('token');
+      final token = await SecureStorageService.instance.getToken();
       if (token != null) {
         await _apiService.updateUserPreferences(currency: currencyCode);
       }
@@ -88,7 +89,7 @@ class LocalizationProvider with ChangeNotifier {
         await prefs.remove('timeZone');
       }
 
-      final token = prefs.getString('token');
+      final token = await SecureStorageService.instance.getToken();
       if (token != null) {
         await _apiService.updateUserPreferences(timeZone: timeZone);
       }
@@ -105,7 +106,7 @@ class LocalizationProvider with ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('dateFormat', _dateFormat!);
 
-      final token = prefs.getString('token');
+      final token = await SecureStorageService.instance.getToken();
       if (token != null) {
         await _apiService.updateUserPreferences(dateFormat: _dateFormat);
       }
@@ -122,7 +123,7 @@ class LocalizationProvider with ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('timeFormat', _timeFormat!);
 
-      final token = prefs.getString('token');
+      final token = await SecureStorageService.instance.getToken();
       if (token != null) {
         await _apiService.updateUserPreferences(timeFormat: _timeFormat);
       }

@@ -19,9 +19,10 @@ using Talabi.Infrastructure.Data;
 using AutoMapper;
 using Talabi.Infrastructure.Repositories;
 using Talabi.Infrastructure.Services;
-using Hangfire;
+using Microsoft.Extensions.FileProviders;
 using Talabi.Core.Options;
 using Scalar.AspNetCore;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,6 +114,7 @@ builder.Services.AddScoped<IOrderAssignmentService, OrderAssignmentService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IRuleValidatorService, RuleValidatorService>();
 builder.Services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<ILocationService, LocationService>();

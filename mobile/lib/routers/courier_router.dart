@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/utils/custom_routes.dart';
 import 'package:mobile/features/orders/data/models/courier_order.dart';
 import 'package:mobile/features/orders/presentation/screens/courier/active_deliveries_screen.dart';
@@ -62,7 +63,7 @@ class CourierRouter {
           builder: (context) => OrderMapScreen(order: order),
         );
 
-      case '/courier/profile':
+      case ApiEndpoints.courierProfile:
         return NoSlidePageRoute(
           builder: (context) => const CourierProfileScreen(),
         );
@@ -72,7 +73,7 @@ class CourierRouter {
           builder: (context) => const CourierEditProfileScreen(),
         );
 
-      case '/courier/notifications':
+      case ApiEndpoints.courierNotifications:
         return NoSlidePageRoute(
           builder: (context) => const CourierNotificationsScreen(),
         );

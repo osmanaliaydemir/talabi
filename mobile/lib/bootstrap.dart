@@ -15,19 +15,23 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   // Initialize Dependency Injection
   configureDependencies();
 
-  // Initialize SharedPreferences
-  await PreferencesService.init();
+  // Parallelize independent initializations
+  await Future.wait([
+    // Initialize SharedPreferences
+    PreferencesService.init(),
+    // Initialize Hive
+    Future(() async {
+      try {
+        await Hive.initFlutter();
+      } catch (e, stackTrace) {
+        if (kDebugMode) {
+          LoggerService().error('Hive initialization failed', e, stackTrace);
+        }
+      }
+    }),
+  ]);
 
-  // Initialize Hive
-  try {
-    await Hive.initFlutter();
-  } catch (e, stackTrace) {
-    if (kDebugMode) {
-      LoggerService().error('Hive initialization failed', e, stackTrace);
-    }
-  }
-
-  // Initialize Firebase
+  // Initialize Firebase (Keep separate due to critical error handling setup)
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,

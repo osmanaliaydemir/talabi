@@ -1,8 +1,7 @@
 ﻿@using Talabi.Portal.Services
 @inject ILocalizationService LocalizationService
-@using System.Globalization
 @{
-    var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+    var currentCulture = Thread.CurrentThread.CurrentUICulture;
     var isRtl = currentCulture.Name.StartsWith("ar");
     var langCode = currentCulture.TwoLetterISOLanguageName;
 }
@@ -26,7 +25,7 @@
     <link rel="stylesheet" href="~/css/rtl-support.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/modules/language-switcher.css" asp-append-version="true" />
 
-    @RenderSection("Styles", required: false)
+    @await RenderSectionAsync("Styles", required: false)
     <style>
         :root {
             --getir-purple: #5D3EBC;
@@ -371,6 +370,18 @@
                         </li>
                     </ul>
                 </div> *@
+    @if (User.IsInRole("Admin") || User.IsInRole("Vendor"))
+                {
+                    <a href="@Url.Action("Index", "Coupons")"
+                        class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Coupons" ? "active" : "")">
+                        <i class="fas fa-ticket-alt"></i> @LocalizationService.GetString("Coupons")
+                    </a>
+                    <a href="@Url.Action("Index", "Campaigns")"
+                        class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Campaigns" ? "active" : "")">
+                        <i class="fas fa-bullhorn"></i> @LocalizationService.GetString("Campaigns")
+                    </a>
+                }
+
     @if (User.IsInRole("Admin"))
                 {
                     <a href="@Url.Action("Index", "DeliveryZones")">
@@ -387,51 +398,10 @@
                         <i class="fas fa-globe"></i> @LocalizationService.GetString("Countries")
                     </a>
                 }
-                <!-- <div class="dropdown-menu-item">
-                                                                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                    <i class="fas fa-route"></i> @LocalizationService.GetString("Delivery Optimization")
-                                                                    <i class="fas fa-chevron-down ms-auto"></i>
-                                                                </a>
-                                                                <ul class="dropdown-menu dropdown-menu-dark">
-                                                                    <li>
-                                                                        <a href="@Url.Action("Capacity", "DeliveryOptimization")" class="dropdown-item">
-                                                                            <i class="fas fa-gauge me-2"></i> @LocalizationService.GetString("Capacity")
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a href="@Url.Action("Routes", "DeliveryOptimization")" class="dropdown-item">
-                                                                            <i class="fas fa-location-arrow me-2"></i> @LocalizationService.GetString("Routes")
-                                                                        </a>
-                                                                    </li>
-                                                                </ul>
-                                                            </div> -->
                 <a href="@Url.Action("Index", "Notifications")">
                     <i class="fas fa-bell"></i> @LocalizationService.GetString("Notifications")
                 </a>
-                <!-- <a href="@Url.Action("Index", "Documents")">
-                                                                <i class="fas fa-file-alt"></i> @LocalizationService.GetString("Documents")
-                                                            </a>
-                                                            <a href="@Url.Action("Index", "FileManager")">
-                                                                <i class="fas fa-cloud-upload-alt"></i> @LocalizationService.GetString("FileManager")
-                                                            </a>
-                                                            <a href="@Url.Action("Index", "RealtimeTracking")">
-                                                                <i class="fas fa-map-marker-alt"></i> @LocalizationService.GetString("RealtimeTracking")
-                                                            </a>
-                                                            <a href="@Url.Action("Index", "UserSelfService")">
-                                                                <i class="fas fa-user-circle"></i> @LocalizationService.GetString("UserSelfService")
-                                                            </a>
-                                                            <a href="@Url.Action("Index", "AuditLoggingAdmin")">
-                                                                <i class="fas fa-shield-alt"></i> @LocalizationService.GetString("AuditLoggingCenter")
-                                                            </a>
-                                                            <a href="@Url.Action("Index", "PlatformAdmin")">
-                                                                <i class="fas fa-tachometer-alt"></i> @LocalizationService.GetString("PlatformAdminCenter")
-                                                            </a>
-                                                            <a href="@Url.Action("Index", "GeoAnalytics")">
-                                                                <i class="fas fa-globe-europe"></i> @LocalizationService.GetString("GeoAnalytics")
-                                                            </a>
-                                                          <a href="@Url.Action("Index", "Onboarding")">
-                                                                <i class="fas fa-list-check"></i> @LocalizationService.GetString("Onboarding")
-                                                            </a> -->
+
                 <a href="@Url.Action("Index", "Settings")">
                     <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
                 </a>

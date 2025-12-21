@@ -165,27 +165,11 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
         setState(() {
           _favoriteStatus[product.id] = false;
         });
-        if (mounted) {
-          final localizations = AppLocalizations.of(context)!;
-          ToastMessage.show(
-            context,
-            message: localizations.removedFromFavorites(product.name),
-            isSuccess: true,
-          );
-        }
       } else {
         await _apiService.addToFavorites(product.id);
         setState(() {
           _favoriteStatus[product.id] = true;
         });
-        if (mounted) {
-          final localizations = AppLocalizations.of(context)!;
-          ToastMessage.show(
-            context,
-            message: localizations.addedToFavorites(product.name),
-            isSuccess: true,
-          );
-        }
       }
     } catch (e) {
       if (mounted) {

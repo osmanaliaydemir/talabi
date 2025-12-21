@@ -54,6 +54,56 @@ class AppLocalizationsAr extends AppLocalizations {
   String get save => 'حفظ';
 
   @override
+  String get productResmi => 'صورة المنتج';
+
+  @override
+  String get yildiz => 'نجمة';
+
+  @override
+  String get favorilereEkle => 'إضافة إلى المفضلة';
+
+  @override
+  String get favorilerdenCikar => 'إزالة من المفضلة';
+
+  @override
+  String get menu => 'قائمة';
+
+  @override
+  String get fiyat => 'السعر';
+
+  @override
+  String get adediAzalt => 'تقليل الكمية';
+
+  @override
+  String get miktar => 'الكمية';
+
+  @override
+  String get adediArtir => 'زيادة الكمية';
+
+  @override
+  String get sepeteEkle => 'أضف إلى السلة';
+
+  @override
+  String get cart => 'السلة';
+
+  @override
+  String get share => 'مشاركة';
+
+  @override
+  String get back => 'رجوع';
+
+  @override
+  String get degerlendirme => 'تقييم';
+
+  @override
+  String get totalAmount => 'المبلغ الإجمالي';
+
+  @override
+  String degerlendirmeSayisi(Object count) {
+    return '$count تقييمات';
+  }
+
+  @override
   String get cancel => 'إلغاء';
 
   @override
@@ -61,9 +111,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get vendors => 'البائعون';
-
-  @override
-  String get cart => 'السلة';
 
   @override
   String get orders => 'الطلبات';
@@ -1857,6 +1904,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get popularSearches => 'Popular Searches';
+
+  @override
   String get deliveryZones => 'Delivery Zones';
 
   @override
@@ -1870,6 +1920,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String removedFromFavorites(Object productName) {
     return 'تمت إزالة $productName من المفضلة';
   }
+
+  @override
+  String get noFavoritesFound => 'No favorite products found';
+
+  @override
+  String get favoritesEmptyMessage =>
+      'You can view your favorite products here by adding them to favorites.';
 
   @override
   String addedToFavorites(Object productName) {

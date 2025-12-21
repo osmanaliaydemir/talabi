@@ -18,6 +18,22 @@
   "turkishLira": "Türk Lirası",
   "tether": "Tether",
   "save": "Kaydet",
+  "productResmi": "Ürün resmi",
+  "yildiz": "yıldız",
+  "favorilereEkle": "Favorilere ekle",
+  "favorilerdenCikar": "Favorilerden çıkar",
+  "menu": "Menü",
+  "fiyat": "Fiyat",
+  "adediAzalt": "Adedi azalt",
+  "miktar": "Miktar",
+  "adediArtir": "Adedi artır",
+  "sepeteEkle": "Sepete ekle",
+  "cart": "Sepet",
+  "share": "Paylaş",
+  "back": "Geri dön",
+  "degerlendirme": "değerlendirme",
+  "totalAmount": "Toplam tutar",
+  "degerlendirmeSayisi": "{count} değerlendirme",
   "cancel": "İptal",
   "products": "Ürünler",
   "vendors": "Satıcılar",
@@ -794,6 +810,7 @@
       "distance": {}
     }
   },
+  "popularSearches": "Popüler Aramalar",
   "removedFromFavorites": "{productName} favorilerden çıkarıldı",
   "@removedFromFavorites": {
     "placeholders": {
@@ -1102,5 +1119,7 @@
   "workingDays": "Çalışma Günleri",
   "closed": "Kapalı",
   "open24Hours": "24 Saat Açık",
-  "hours": "Saat"
+  "hours": "Saat",
+  "noFavoritesFound": "Henüz favori ürününüz yok",
+  "favoritesEmptyMessage": "Beğendiğiniz ürünleri favorilere ekleyerek burada görüntüleyebilirsiniz."
 }

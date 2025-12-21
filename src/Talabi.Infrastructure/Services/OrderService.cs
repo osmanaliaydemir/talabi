@@ -5,6 +5,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Models;
 
 namespace Talabi.Infrastructure.Services;
 
@@ -17,18 +18,21 @@ public class OrderService : IOrderService
     private readonly ILogger<OrderService> _logger;
     private readonly ILocalizationService _localizationService;
     private readonly INotificationService _notificationService;
+    private readonly IRuleValidatorService _ruleValidatorService;
     private const string ResourceName = "OrderResources";
 
     public OrderService(
         IUnitOfWork unitOfWork,
         ILogger<OrderService> logger,
         ILocalizationService localizationService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IRuleValidatorService ruleValidatorService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _localizationService = localizationService;
         _notificationService = notificationService;
+        _ruleValidatorService = ruleValidatorService;
     }
 
     /// <summary>
@@ -72,16 +76,18 @@ public class OrderService : IOrderService
     /// </summary>
     public async Task<Order> CreateOrderAsync(CreateOrderDto dto, string customerId, CultureInfo culture)
     {
-        // Validate vendor exists
+        // 1. Validate vendor exists
         var vendor = await _unitOfWork.Vendors.GetByIdAsync(dto.VendorId);
         if (vendor == null)
         {
             throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "VendorNotFound", culture));
         }
 
-        // Calculate total and create order items
+        // 2. Calculate total and create order items
         decimal totalAmount = 0;
         var orderItems = new List<OrderItem>();
+        // Keep track of RuleCartItems for validation
+        var ruleCartItems = new List<RuleValidationContext.RuleCartItem>();
 
         foreach (var item in dto.Items)
         {
@@ -100,9 +106,19 @@ public class OrderService : IOrderService
                 UnitPrice = product.Price,
                 CustomerOrderItemId = customerOrderItemId
             });
+
+            ruleCartItems.Add(new RuleValidationContext.RuleCartItem
+            {
+                ProductId = product.Id,
+                CategoryId = product.CategoryId,
+                VendorId = product.VendorId,
+                Quantity = item.Quantity,
+                Price = product.Price,
+                VendorType = (int)(product.VendorType ?? VendorType.Market) // Default to Market if null
+            });
         }
 
-        // Validate Delivery Address and Zone
+        // 3. Validate Delivery Address and Zone
         if (!dto.DeliveryAddressId.HasValue)
         {
             throw new ArgumentException(_localizationService.GetLocalizedString(ResourceName, "AddressRequired", culture));
@@ -128,7 +144,61 @@ public class OrderService : IOrderService
              throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "MinimumOrderAmountNotMet", culture, deliveryZone.MinimumOrderAmount));
         }
 
-        // Create order
+        // 4. Validate and Apply Coupon (if provided)
+        decimal discountAmount = 0;
+        Coupon? appliedCoupon = null;
+
+        if (!string.IsNullOrEmpty(dto.CouponCode))
+        {
+            var coupon = await _unitOfWork.Coupons.Query()
+                .AsNoTracking() // Just reading logic
+                .Include(c => c.CouponCities)
+                .Include(c => c.CouponDistricts)
+                .Include(c => c.CouponCategories)
+                .Include(c => c.CouponProducts)
+                .FirstOrDefaultAsync(c => c.Code == dto.CouponCode && c.IsActive);
+
+            if (coupon != null)
+            {
+                Guid.TryParse(customerId, out var userIdGuid);
+
+                var validationContext = new RuleValidationContext
+                {
+                    UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
+                    CityId = userAddress.CityId,
+                    DistrictId = userAddress.DistrictId,
+                    RequestTime = DateTime.UtcNow,
+                    Items = ruleCartItems,
+                    CartTotal = totalAmount
+                };
+
+                if (_ruleValidatorService.ValidateCoupon(coupon, validationContext, out var _))
+                {
+                    // Calculate discount
+                     if (coupon.DiscountType == DiscountType.Percentage)
+                    {
+                        discountAmount = totalAmount * (coupon.DiscountValue / 100);
+                    }
+                    else
+                    {
+                        discountAmount = coupon.DiscountValue;
+                    }
+
+                    // Max discount check? (If needed based on business rules)
+                    // Ensure discount doesn't exceed total
+                    if (discountAmount > totalAmount) discountAmount = totalAmount;
+
+                    appliedCoupon = coupon;
+                }
+            }
+        }
+
+        // Apply discount to total (before delivery fee)
+        var finalAmount = totalAmount - discountAmount;
+        if (finalAmount < 0) finalAmount = 0;
+
+
+        // 5. Create order
         var customerOrderId = await GenerateUniqueCustomerOrderIdAsync();
 
         var order = new Order
@@ -136,13 +206,21 @@ public class OrderService : IOrderService
             VendorId = dto.VendorId,
             CustomerId = customerId,
             CustomerOrderId = customerOrderId,
-            TotalAmount = totalAmount + deliveryZone.DeliveryFee.GetValueOrDefault(), // Add Delivery Fee
+            TotalAmount = finalAmount + deliveryZone.DeliveryFee.GetValueOrDefault(), // Add Delivery Fee to FINAL amount
             DeliveryFee = deliveryZone.DeliveryFee.GetValueOrDefault(),
             Status = OrderStatus.Pending,
             OrderItems = orderItems,
             CreatedAt = DateTime.UtcNow,
             DeliveryAddressId = dto.DeliveryAddressId,
+            // New Fields
+            CouponId = appliedCoupon?.Id,
+            DiscountAmount = discountAmount
         };
+
+        if (appliedCoupon != null)
+        {
+            // Optional: Increment usage count for coupon if we tracked it
+        }
 
         await _unitOfWork.Orders.AddAsync(order);
         await _unitOfWork.SaveChangesAsync();
@@ -151,7 +229,7 @@ public class OrderService : IOrderService
         await AddVendorNotificationAsync(
             order.VendorId,
             _localizationService.GetLocalizedString(ResourceName, "NewOrderTitle", culture),
-            _localizationService.GetLocalizedString(ResourceName, "NewOrderMessage", culture, order.CustomerOrderId, totalAmount.ToString("N2")),
+            _localizationService.GetLocalizedString(ResourceName, "NewOrderMessage", culture, order.CustomerOrderId, order.TotalAmount.ToString("N2")),
             "NewOrder",
             order.Id);
 
@@ -168,7 +246,7 @@ public class OrderService : IOrderService
             await AddCustomerNotificationAsync(
                 customerId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderCreatedTitle", culture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderCreatedMessage", culture, order.CustomerOrderId, totalAmount.ToString("N2")),
+                _localizationService.GetLocalizedString(ResourceName, "OrderCreatedMessage", culture, order.CustomerOrderId, order.TotalAmount.ToString("N2")),
                 "OrderCreated",
                 order.Id);
 

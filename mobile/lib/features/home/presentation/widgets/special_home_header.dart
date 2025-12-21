@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/gen/assets.gen.dart';
 import 'package:mobile/features/search/presentation/screens/search_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -63,8 +64,8 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                 height: isMarket ? 280 : 243,
                 child: Image.asset(
                   isMarket
-                      ? 'assets/images/market_banner.png'
-                      : 'assets/images/banner_image.png',
+                      ? Assets.images.marketBanner.path
+                      : Assets.images.bannerImage.path,
                   fit: BoxFit.contain,
                 ),
               );
@@ -281,14 +282,18 @@ class SpecialHomeHeader extends StatelessWidget implements PreferredSizeWidget {
                       size: 20,
                     ),
                     const SizedBox(width: 16),
-                    Text(
-                      l10n.searchProductsOrVendors,
-                      style: const TextStyle(
-                        color: Color(0xFF8A8A8A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Plus Jakarta Sans',
-                        letterSpacing: -0.02,
+                    Expanded(
+                      child: Text(
+                        l10n.searchProductsOrVendors,
+                        style: const TextStyle(
+                          color: Color(0xFF8A8A8A),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Plus Jakarta Sans',
+                          letterSpacing: -0.02,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

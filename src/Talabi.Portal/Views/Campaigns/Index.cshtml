@@ -1,0 +1,96 @@
+@using Talabi.Core.Entities
+@using Talabi.Portal.Services
+@inject ILocalizationService LocalizationService
+@model IEnumerable<Campaign>
+
+@{
+    ViewData["Title"] = LocalizationService.GetString("Campaigns");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>@LocalizationService.GetString("Campaigns")</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> @LocalizationService.GetString("NewCampaign")
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>@LocalizationService.GetString("Image")</th>
+                        <th>@LocalizationService.GetString("Title")</th>
+                        <th>@LocalizationService.GetString("TypeAction")</th>
+                        <th>@LocalizationService.GetString("DateRange")</th>
+                        <th>@LocalizationService.GetString("Status")</th>
+                        <th>@LocalizationService.GetString("Actions")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="width: 100px;">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="img-thumbnail" style="max-height: 50px;" />
+                                }
+                                else
+                                {
+                                    <span class="text-muted"><i class="fas fa-image fa-2x"></i></span>
+                                }
+                            </td>
+                            <td>
+                                <strong>@item.Title</strong>
+                            </td>
+                            <td>
+                                <small class="text-muted text-break">@item.ActionUrl</small>
+                            </td>
+                            <td>
+                                <small>
+                                    @item.StartDate.ToString("dd.MM.yyyy") - @item.EndDate.ToString("dd.MM.yyyy")
+                                </small>
+                                @if(DateTime.UtcNow > item.EndDate)
+                                {
+                                    <span class="badge bg-danger d-block w-auto mt-1">@LocalizationService.GetString("Ended")</span>
+                                }
+                                else if(DateTime.UtcNow < item.StartDate)
+                                {
+                                    <span class="badge bg-warning text-dark d-block w-auto mt-1">@LocalizationService.GetString("NotStarted")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success d-block w-auto mt-1">@LocalizationService.GetString("Published")</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">@LocalizationService.GetString("Active")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@LocalizationService.GetString("Passive")</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form asp-action="ToggleStatus" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="@LocalizationService.GetString("ChangeStatus")">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

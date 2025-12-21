@@ -54,6 +54,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get productResmi => 'Product image';
+
+  @override
+  String get yildiz => 'Stars';
+
+  @override
+  String get favorilereEkle => 'Add to favorites';
+
+  @override
+  String get favorilerdenCikar => 'Remove from favorites';
+
+  @override
+  String get menu => 'Menu';
+
+  @override
+  String get fiyat => 'Price';
+
+  @override
+  String get adediAzalt => 'Decrease quantity';
+
+  @override
+  String get miktar => 'Quantity';
+
+  @override
+  String get adediArtir => 'Increase quantity';
+
+  @override
+  String get sepeteEkle => 'Add to cart';
+
+  @override
+  String get cart => 'Cart';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get back => 'Go back';
+
+  @override
+  String get degerlendirme => 'review';
+
+  @override
+  String get totalAmount => 'Total amount';
+
+  @override
+  String degerlendirmeSayisi(Object count) {
+    return '$count reviews';
+  }
+
+  @override
   String get cancel => 'Cancel';
 
   @override
@@ -61,9 +111,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vendors => 'Vendors';
-
-  @override
-  String get cart => 'Cart';
 
   @override
   String get orders => 'Orders';
@@ -1880,6 +1927,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get popularSearches => 'Popular Searches';
+
+  @override
   String get deliveryZones => 'Delivery Zones';
 
   @override
@@ -1893,6 +1943,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String removedFromFavorites(Object productName) {
     return '$productName removed from favorites';
   }
+
+  @override
+  String get noFavoritesFound => 'No favorite products found';
+
+  @override
+  String get favoritesEmptyMessage =>
+      'You can view your favorite products here by adding them to favorites.';
 
   @override
   String addedToFavorites(Object productName) {

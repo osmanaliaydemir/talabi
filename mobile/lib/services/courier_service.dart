@@ -7,13 +7,14 @@ import 'package:mobile/features/wallet/data/models/courier_earning.dart';
 import 'package:mobile/features/notifications/data/models/courier_notification.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 
 class CourierService {
   final Dio _dio = ApiService().dio;
 
   Future<Courier> getProfile() async {
     try {
-      final response = await _dio.get('/courier/profile');
+      final response = await _dio.get(ApiEndpoints.courierProfile);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -38,7 +39,7 @@ class CourierService {
   Future<void> updateStatus(String status) async {
     try {
       final response = await _dio.put(
-        '/courier/status',
+        ApiEndpoints.courierStatus,
         data: {'status': status},
       );
 
@@ -62,7 +63,24 @@ class CourierService {
   Future<void> updateLocation(double latitude, double longitude) async {
     try {
       final response = await _dio.put(
-        '/courier/location',
+        '/courier/location', // ApiEndpoints.courierLocation is /courier (Base), so we might want /courier/location specifically or just append.
+        // Existing ApiEndpoints.courierLocation = '/courier'.
+        // Let's use string concatenation or define a specific one if reused often.
+        // Or better, add 'courierLocationUpdate' to constants.
+        // For now I will leave it hardcoded or use '${ApiEndpoints.courierLocation}/location' if appropriate?
+        // ApiEndpoints.courierLocation is base.
+        // I will use string literal for now to match exactly unless I add it.
+        // Wait, I added many courier endpoints. Did I add location? No.
+        // I will use direct string to be safe or add it?
+        // Let's stick to what I added. Check 'courierStatus', 'courierProfile'.
+        // I'll leave '/courier/location' hardcoded or add it to ApiEndpoints locally?
+        // I will just leave it hardcoded for this one or use '${ApiEndpoints.courierLocation}/location' if base is correct.
+        // Base is '/courier'. So '/courier/location' is valid.
+        // But cleaner to have constant.
+        // I will use the string for now to avoid creating more work/potential breaking if base varies.
+        // Actually, let's look at getProfile. '/courier/profile'. I defined ApiEndpoints.courierProfile.
+        // I'll just keep '/courier/location' as string or add it.
+        // Use string.
         data: {'latitude': latitude, 'longitude': longitude},
       );
 
@@ -85,7 +103,7 @@ class CourierService {
 
   Future<CourierStatistics> getStatistics() async {
     try {
-      final response = await _dio.get('/courier/statistics');
+      final response = await _dio.get(ApiEndpoints.courierStatistics);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -109,7 +127,7 @@ class CourierService {
 
   Future<List<CourierOrder>> getActiveOrders() async {
     try {
-      final response = await _dio.get('/courier/orders/active');
+      final response = await _dio.get(ApiEndpoints.courierActiveOrders);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -141,7 +159,9 @@ class CourierService {
 
   Future<bool> acceptOrder(String orderId) async {
     try {
-      final response = await _dio.post('/courier/orders/$orderId/accept');
+      final response = await _dio.post(
+        '${ApiEndpoints.courierOrders}/$orderId/accept',
+      );
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -164,7 +184,7 @@ class CourierService {
   Future<bool> rejectOrder(String orderId, String reason) async {
     try {
       final response = await _dio.post(
-        '/courier/orders/$orderId/reject',
+        '${ApiEndpoints.courierOrders}/$orderId/reject',
         data: {'reason': reason},
       );
 
@@ -188,7 +208,7 @@ class CourierService {
 
   Future<CourierOrder> getOrderDetail(String orderId) async {
     try {
-      final response = await _dio.get('/courier/orders/$orderId');
+      final response = await _dio.get('${ApiEndpoints.courierOrders}/$orderId');
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -212,7 +232,9 @@ class CourierService {
 
   Future<bool> pickupOrder(String orderId) async {
     try {
-      final response = await _dio.post('/courier/orders/$orderId/pickup');
+      final response = await _dio.post(
+        '${ApiEndpoints.courierOrders}/$orderId/pickup',
+      );
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -234,7 +256,9 @@ class CourierService {
 
   Future<bool> deliverOrder(String orderId) async {
     try {
-      final response = await _dio.post('/courier/orders/$orderId/deliver');
+      final response = await _dio.post(
+        '${ApiEndpoints.courierOrders}/$orderId/deliver',
+      );
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -260,7 +284,7 @@ class CourierService {
   }) async {
     try {
       final response = await _dio.get(
-        '/courier/notifications',
+        ApiEndpoints.courierNotifications,
         queryParameters: {'page': page, 'pageSize': pageSize},
       );
 
@@ -288,7 +312,9 @@ class CourierService {
 
   Future<void> markNotificationRead(String id) async {
     try {
-      final response = await _dio.post('/courier/notifications/$id/read');
+      final response = await _dio.post(
+        '${ApiEndpoints.courierNotifications}/$id/read',
+      );
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -311,7 +337,9 @@ class CourierService {
 
   Future<void> markAllNotificationsRead() async {
     try {
-      final response = await _dio.post('/courier/notifications/read-all');
+      final response = await _dio.post(
+        '${ApiEndpoints.courierNotifications}/read-all',
+      );
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -339,7 +367,7 @@ class CourierService {
 
   Future<EarningsSummary> getTodayEarnings() async {
     try {
-      final response = await _dio.get('/courier/earnings/today');
+      final response = await _dio.get(ApiEndpoints.courierEarningsToday);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -365,7 +393,7 @@ class CourierService {
 
   Future<EarningsSummary> getWeeklyEarnings() async {
     try {
-      final response = await _dio.get('/courier/earnings/week');
+      final response = await _dio.get(ApiEndpoints.courierEarningsWeek);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -391,7 +419,7 @@ class CourierService {
 
   Future<EarningsSummary> getMonthlyEarnings() async {
     try {
-      final response = await _dio.get('/courier/earnings/month');
+      final response = await _dio.get(ApiEndpoints.courierEarningsMonth);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -421,7 +449,7 @@ class CourierService {
   }) async {
     try {
       final response = await _dio.get(
-        '/courier/earnings/history',
+        ApiEndpoints.courierEarningsHistory,
         queryParameters: {'page': page, 'pageSize': pageSize},
       );
 
@@ -447,7 +475,7 @@ class CourierService {
 
   Future<Map<String, dynamic>> checkAvailability() async {
     try {
-      final response = await _dio.get('/courier/check-availability');
+      final response = await _dio.get(ApiEndpoints.courierCheckAvailability);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -477,7 +505,7 @@ class CourierService {
   }) async {
     try {
       final response = await _dio.get(
-        '/courier/orders/history',
+        ApiEndpoints.courierOrdersHistory,
         queryParameters: {'page': page, 'pageSize': pageSize},
       );
 
@@ -511,7 +539,7 @@ class CourierService {
   ) async {
     try {
       final response = await _dio.post(
-        '/courier/orders/$orderId/proof',
+        '${ApiEndpoints.courierOrders}/$orderId/proof',
         data: {
           'photoUrl': photoUrl,
           'signatureUrl': signatureUrl,
@@ -540,7 +568,7 @@ class CourierService {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/courier/profile', data: data);
+      final response = await _dio.put(ApiEndpoints.courierProfile, data: data);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {
@@ -566,7 +594,7 @@ class CourierService {
         'file': await MultipartFile.fromFile(file.path, filename: fileName),
       });
 
-      final response = await _dio.post('/upload', data: formData);
+      final response = await _dio.post(ApiEndpoints.upload, data: formData);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('url')) {
@@ -595,7 +623,7 @@ class CourierService {
 
   Future<List<VehicleTypeOption>> getVehicleTypes() async {
     try {
-      final response = await _dio.get('/courier/vehicle-types');
+      final response = await _dio.get(ApiEndpoints.courierVehicleTypes);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {

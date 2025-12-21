@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/services/courier_service.dart';
@@ -60,7 +61,7 @@ class _CourierHeaderState extends State<CourierHeader> {
 
   Future<void> _openNotifications() async {
     LoggerService().debug('CourierHeader: Notifications icon tapped');
-    await Navigator.of(context).pushNamed('/courier/notifications');
+    await Navigator.of(context).pushNamed(ApiEndpoints.courierNotifications);
     if (mounted) {
       await _refreshNotificationCount();
     }

@@ -5,9 +5,14 @@ import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
+  AuthProvider({ApiService? apiService, SecureStorageService? secureStorage})
+    : _apiService = apiService ?? ApiService(),
+      _secureStorage = secureStorage ?? SecureStorageService.instance;
+
+  final ApiService _apiService;
+  final SecureStorageService _secureStorage;
   String? _token;
   String? _refreshToken;
   String? _userId;
@@ -41,7 +46,7 @@ class AuthProvider with ChangeNotifier {
     String? requiredRole,
   }) async {
     final response =
-        await (ApiService()..resetLogout()) // Ensure we can make requests
+        await (_apiService..resetLogout()) // Ensure we can make requests
             .login(email, password);
 
     _token = response['token'];
@@ -90,24 +95,15 @@ class AuthProvider with ChangeNotifier {
     }
 
     // Save to secure storage
-    final secureStorage = SecureStorageService.instance;
-    await secureStorage.setToken(_token!);
+    await _secureStorage.setToken(_token!);
     if (_refreshToken != null) {
-      await secureStorage.setRefreshToken(_refreshToken!);
+      await _secureStorage.setRefreshToken(_refreshToken!);
     }
-    await secureStorage.setUserId(_userId!);
-    await secureStorage.setEmail(_email!);
-    await secureStorage.setFullName(_fullName!);
+    await _secureStorage.setUserId(_userId!);
+    await _secureStorage.setEmail(_email!);
+    await _secureStorage.setFullName(_fullName!);
     if (_role != null) {
-      await secureStorage.setRole(_role!);
-    }
-
-    // Also save to SharedPreferences for ApiService interceptor
-    // ApiService interceptor reads from SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', _token!);
-    if (_refreshToken != null) {
-      await prefs.setString('refreshToken', _refreshToken!);
+      await _secureStorage.setRole(_role!);
     }
 
     // Analytics
@@ -124,7 +120,7 @@ class AuthProvider with ChangeNotifier {
       LoggerService().debug('🟡 [AUTH_PROVIDER] FullName: $fullName');
 
       final response =
-          await (ApiService()..resetLogout()) // Ensure we can make requests
+          await (_apiService..resetLogout()) // Ensure we can make requests
               .register(email, password, fullName);
 
       LoggerService().debug('🟢 [AUTH_PROVIDER] Register response received');
@@ -140,8 +136,12 @@ class AuthProvider with ChangeNotifier {
         _userId = response['userId'];
         _email = response['email'];
         _fullName = response['fullName'];
-        _isActive = true; // Default for new registration if token is present
-        _isProfileComplete = true; // Default
+        _role = response['role'] ?? response['Role']; // Extract role
+        _isActive = response['isActive'] ?? response['IsActive'] ?? true;
+        _isProfileComplete =
+            response['isProfileComplete'] ??
+            response['IsProfileComplete'] ??
+            true;
 
         if (response.containsKey('refreshToken')) {
           _refreshToken = response['refreshToken'];
@@ -153,22 +153,18 @@ class AuthProvider with ChangeNotifier {
         LoggerService().debug('🟢 [AUTH_PROVIDER] UserId: $_userId');
         LoggerService().debug('🟢 [AUTH_PROVIDER] Email: $_email');
         LoggerService().debug('🟢 [AUTH_PROVIDER] FullName: $_fullName');
+        LoggerService().debug('🟢 [AUTH_PROVIDER] Role: $_role');
 
         // Save to secure storage
-        final secureStorage = SecureStorageService.instance;
-        await secureStorage.setToken(_token!);
+        await _secureStorage.setToken(_token!);
         if (_refreshToken != null) {
-          await secureStorage.setRefreshToken(_refreshToken!);
+          await _secureStorage.setRefreshToken(_refreshToken!);
         }
-        await secureStorage.setUserId(_userId!);
-        await secureStorage.setEmail(_email!);
-        await secureStorage.setFullName(_fullName!);
-
-        // Also save to SharedPreferences for ApiService interceptor
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', _token!);
-        if (_refreshToken != null) {
-          await prefs.setString('refreshToken', _refreshToken!);
+        await _secureStorage.setUserId(_userId!);
+        await _secureStorage.setEmail(_email!);
+        await _secureStorage.setFullName(_fullName!);
+        if (_role != null) {
+          await _secureStorage.setRole(_role!);
         }
 
         LoggerService().debug(
@@ -196,7 +192,7 @@ class AuthProvider with ChangeNotifier {
     final roleBeforeLogout = _role;
 
     // Notify ApiService to stop processing requests immediately
-    ApiService().notifyLogout();
+    _apiService.notifyLogout();
 
     _token = null;
     _refreshToken = null;
@@ -208,13 +204,13 @@ class AuthProvider with ChangeNotifier {
     _isProfileComplete = true;
 
     // Clear secure storage
-    final secureStorage = SecureStorageService.instance;
-    await secureStorage.clearAll();
+    await _secureStorage.clearAll();
 
     // Clear SharedPreferences (ApiService interceptor reads from here)
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('refreshToken');
+    // Removed as part of secure storage migration
+    // final prefs = await SharedPreferences.getInstance();
+    // await prefs.remove('token');
+    // await prefs.remove('refreshToken');
 
     // Analytics - clear user id
     await AnalyticsService.setUserId('');
@@ -226,36 +222,27 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    final secureStorage = SecureStorageService.instance;
-    final storedToken = await secureStorage.getToken();
+    final storedToken = await _secureStorage.getToken();
 
     if (storedToken == null) {
       return; // Fast exit if no token
     }
 
     // Reset logout state for auto-login
-    ApiService().resetLogout();
+    _apiService.resetLogout();
 
     // Load token and user data from secure storage
     _token = storedToken;
-    _refreshToken = await secureStorage.getRefreshToken();
-    _userId = await secureStorage.getUserId();
-    _email = await secureStorage.getEmail();
-    _fullName = await secureStorage.getFullName();
-    _role = await secureStorage.getRole();
+    _refreshToken = await _secureStorage.getRefreshToken();
+    _userId = await _secureStorage.getUserId();
+    _email = await _secureStorage.getEmail();
+    _fullName = await _secureStorage.getFullName();
+    _role = await _secureStorage.getRole();
 
     // Try to get IsActive from token as it's not currently stored in SecureStorage separately
     if (_token != null) {
       _isActive = _getIsActiveFromToken(_token!);
       _isProfileComplete = _getIsProfileCompleteFromToken(_token!);
-    }
-
-    // Also save to SharedPreferences for ApiService interceptor
-    // ApiService interceptor reads from SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', _token!);
-    if (_refreshToken != null) {
-      await prefs.setString('refreshToken', _refreshToken!);
     }
 
     // Token validation could be added here (JWT decode, expiry check)
@@ -284,16 +271,10 @@ class AuthProvider with ChangeNotifier {
     await AnalyticsService.setUserId(userId);
 
     // Also likely update storage here if this method is used to persist external auth updates
-    final secureStorage = SecureStorageService.instance;
-    await secureStorage.setToken(token);
-    await secureStorage.setRefreshToken(refreshToken);
-    await secureStorage.setUserId(userId);
-    await secureStorage.setRole(role);
-
-    // Also save to SharedPreferences for ApiService interceptor
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-    await prefs.setString('refreshToken', refreshToken);
+    await _secureStorage.setToken(token);
+    await _secureStorage.setRefreshToken(refreshToken);
+    await _secureStorage.setUserId(userId);
+    await _secureStorage.setRole(role);
 
     notifyListeners();
   }

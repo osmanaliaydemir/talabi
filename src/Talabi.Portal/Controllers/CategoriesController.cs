@@ -6,26 +6,11 @@ using Talabi.Portal.Services;
 namespace Talabi.Portal.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class CategoriesController : Controller
+public class CategoriesController(
+    ICategoryService categoryService,
+    ILogger<CategoriesController> logger) : Controller
 {
-    private readonly ICategoryService _categoryService;
-    private readonly ILocalizationService _localizationService;
-    private readonly ILogger<CategoriesController> _logger;
-
-    public CategoriesController(
-        ICategoryService categoryService,
-        ILocalizationService localizationService,
-        ILogger<CategoriesController> logger)
-    {
-        _categoryService = categoryService;
-        _localizationService = localizationService;
-        _logger = logger;
-    }
-
-    public IActionResult Index()
-    {
-        return View();
-    }
+    public IActionResult Index() => View();
 
     [HttpGet]
     public async Task<IActionResult> GetList(int start = 0, int length = 10, int draw = 1)
@@ -45,13 +30,13 @@ public class CategoriesController : Controller
 
             int page = (start / length) + 1;
 
-            var result = await _categoryService.GetCategoriesAsync(page, length, searchValue, sortBy, sortDirection);
+            var result = await categoryService.GetCategoriesAsync(page, length, searchValue, sortBy, sortDirection);
 
             if (result == null)
             {
                 return Json(new
                 {
-                    draw = draw,
+                    draw,
                     recordsTotal = 0,
                     recordsFiltered = 0,
                     data = Array.Empty<object>()
@@ -60,7 +45,7 @@ public class CategoriesController : Controller
 
             return Json(new
             {
-                draw = draw,
+                draw,
                 recordsTotal = result.TotalCount,
                 recordsFiltered = result.TotalCount,
                 data = result.Items
@@ -68,8 +53,8 @@ public class CategoriesController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching category list");
-            return Json(new { draw = draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
+            logger.LogError(ex, "Error fetching category list");
+            return Json(new { draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
         }
     }
 
@@ -78,7 +63,7 @@ public class CategoriesController : Controller
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var success = await _categoryService.UpdateCategoryAsync(dto.OldName, dto.NewName);
+        var success = await categoryService.UpdateCategoryAsync(dto.OldName, dto.NewName);
         if (success)
             return Json(new { success = true });
 
@@ -88,7 +73,7 @@ public class CategoriesController : Controller
     [HttpPost]
     public async Task<IActionResult> Delete(string name)
     {
-        var success = await _categoryService.DeleteCategoryAsync(name);
+        var success = await categoryService.DeleteCategoryAsync(name);
         if (success)
             return Json(new { success = true });
 

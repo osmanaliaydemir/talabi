@@ -1,31 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Talabi.Portal.Models;
 using Talabi.Portal.Services;
 
 namespace Talabi.Portal.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class CouriersController : Controller
+public class CouriersController(
+    ICourierService courierService,
+    ILogger<CouriersController> logger,
+    ILocalizationService localizationService) : Controller
 {
-    private readonly ICourierService _courierService;
-    private readonly ILogger<CouriersController> _logger;
-    private readonly ILocalizationService _localizationService;
-
-    public CouriersController(
-        ICourierService courierService,
-        ILogger<CouriersController> logger,
-        ILocalizationService localizationService)
-    {
-        _courierService = courierService;
-        _logger = logger;
-        _localizationService = localizationService;
-    }
-
-    public IActionResult Index()
-    {
-        return View();
-    }
+    private readonly ICourierService _courierService = courierService;
+    private readonly ILogger<CouriersController> _logger = logger;
+    private readonly ILocalizationService _localizationService = localizationService;
+    public IActionResult Index() => View();
 
     [HttpGet]
     public async Task<IActionResult> GetList(int start = 0, int length = 10, int draw = 1)
@@ -49,7 +37,7 @@ public class CouriersController : Controller
 
             return Json(new
             {
-                draw = draw,
+                draw,
                 recordsTotal = result.TotalCount,
                 recordsFiltered = result.TotalCount,
                 data = result.Items
@@ -58,7 +46,7 @@ public class CouriersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching courier list");
-            return Json(new { draw = draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
+            return Json(new { draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
         }
     }
 

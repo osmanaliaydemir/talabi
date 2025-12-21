@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:mobile/gen/assets.gen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -90,13 +91,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       {
         'title': l10n.onboardingTitle1,
         'desc': l10n.onboardingDesc1,
-        'image': 'assets/images/banner_image.png',
+        'image': Assets.images.bannerImage.path,
         'bgColor': const Color(0xFFCE181B).withValues(alpha: 1), // Darker Red
       },
       {
         'title': l10n.onboardingTitle2,
         'desc': l10n.onboardingDesc2,
-        'image': 'assets/images/market_banner.png',
+        'image': Assets.images.marketBanner.path,
         'bgColor': const Color(0xFF4CAF50).withValues(alpha: 1), // Market Green
       },
     ];
