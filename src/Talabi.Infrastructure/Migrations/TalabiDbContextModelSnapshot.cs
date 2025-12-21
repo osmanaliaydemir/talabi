@@ -269,6 +269,9 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsFirstOrderOnly")
+                        .HasColumnType("bit");
+
                     b.Property<decimal?>("MinCartAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -608,6 +611,9 @@ namespace Talabi.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFirstOrderOnly")
                         .HasColumnType("bit");
 
                     b.Property<decimal>("MinCartAmount")

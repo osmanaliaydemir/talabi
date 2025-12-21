@@ -1545,5 +1545,10 @@
         "tr-TR": "Başlık",
         "en-US": "Title",
         "ar-SA": "العنوان"
+    },
+    "FirstOrderOnly": {
+        "tr-TR": "Sadece İlk Sipariş",
+        "en-US": "First Order Only",
+        "ar-SA": "للطلب الأول فقط"
     }
 }

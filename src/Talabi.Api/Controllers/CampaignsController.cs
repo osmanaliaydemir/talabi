@@ -1,32 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Entities;
-using Talabi.Infrastructure.Data;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Models;
+using System.Security.Claims;
 
 namespace Talabi.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CampaignsController : ControllerBase
+public class CampaignsController(IUnitOfWork unitOfWork, IRuleValidatorService ruleValidator) : ControllerBase
 {
-    private readonly TalabiDbContext _context;
-    private readonly IRuleValidatorService _ruleValidator;
-
-    public CampaignsController(TalabiDbContext context, IRuleValidatorService ruleValidator)
-    {
-        _context = context;
-        _ruleValidator = ruleValidator;
-    }
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Campaign>>> GetCampaigns(
         [FromQuery] Guid? cityId, 
         [FromQuery] Guid? districtId, 
         [FromQuery] int? vendorType)
     {
-        var campaigns = await _context.Campaigns
+        var campaigns = await unitOfWork.Campaigns.Query()
             .Include(c => c.CampaignCities)
             .Include(c => c.CampaignDistricts)
             .Include(c => c.CampaignCategories)
@@ -41,6 +32,20 @@ public class CampaignsController : ControllerBase
             DistrictId = districtId
         };
 
+        // Check for authenticated user to determine First Order status
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString != null && Guid.TryParse(userIdString, out var userId))
+        {
+            context.UserId = userId;
+            context.IsFirstOrder = !await unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == userIdString);
+        }
+        else
+        {
+            // Anonymous user -> assume First Order for display purposes?
+            // Usually yes, to entice them.
+            context.IsFirstOrder = true;
+        }
+
         var validCampaigns = new List<Campaign>();
 
         foreach (var campaign in campaigns)
@@ -51,7 +56,7 @@ public class CampaignsController : ControllerBase
                 continue;
             }
 
-            if (_ruleValidator.ValidateCampaign(campaign, context, out _))
+            if (ruleValidator.ValidateCampaign(campaign, context, out _))
             {
                 validCampaigns.Add(campaign);
             }

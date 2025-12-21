@@ -13,6 +13,9 @@ public class Campaign : BaseEntity
     // Priority for sorting
     public int Priority { get; set; } = 0;
 
+    // Rules
+    public bool IsFirstOrderOnly { get; set; } = false;
+
     // --- Advanced Rules ---
 
     // Vendor & Product Rules

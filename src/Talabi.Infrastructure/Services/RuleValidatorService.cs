@@ -16,6 +16,12 @@ public class RuleValidatorService : IRuleValidatorService
             return false;
         }
 
+        if (campaign.IsFirstOrderOnly && !context.IsFirstOrder)
+        {
+            failureReason = "This campaign is only for first orders.";
+            return false;
+        }
+
         // Date Range
         if (context.RequestTime < campaign.StartDate || context.RequestTime > campaign.EndDate)
         {
@@ -101,6 +107,12 @@ public class RuleValidatorService : IRuleValidatorService
         if (!coupon.IsActive)
         {
             failureReason = "Coupon is not active.";
+            return false;
+        }
+
+        if (coupon.IsFirstOrderOnly && !context.IsFirstOrder)
+        {
+            failureReason = "This coupon is only for first orders.";
             return false;
         }
 

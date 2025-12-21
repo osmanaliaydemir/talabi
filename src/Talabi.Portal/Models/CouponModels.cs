@@ -12,6 +12,7 @@ public class CouponFormViewModel
     public decimal MinCartAmount { get; set; }
     public DateTime ExpirationDate { get; set; } = DateTime.Now.AddDays(30);
     public bool IsActive { get; set; } = true;
+    public bool IsFirstOrderOnly { get; set; } = false;
     public string? Description { get; set; }
     public string? Title { get; set; }
 

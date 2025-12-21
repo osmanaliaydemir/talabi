@@ -169,7 +169,8 @@ public class OrderService : IOrderService
                     DistrictId = userAddress.DistrictId,
                     RequestTime = DateTime.UtcNow,
                     Items = ruleCartItems,
-                    CartTotal = totalAmount
+                    CartTotal = totalAmount,
+                    IsFirstOrder = !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == customerId)
                 };
 
                 if (_ruleValidatorService.ValidateCoupon(coupon, validationContext, out var _))

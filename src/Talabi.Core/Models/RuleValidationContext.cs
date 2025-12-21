@@ -5,6 +5,7 @@ namespace Talabi.Core.Models;
 public class RuleValidationContext
 {
     public Guid? UserId { get; set; }
+    public bool IsFirstOrder { get; set; } = false;
     
     // Location
     public Guid? CityId { get; set; }

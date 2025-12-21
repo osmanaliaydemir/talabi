@@ -56,6 +56,7 @@ public class CouponsController(IUnitOfWork unitOfWork, IRuleValidatorService rul
             if(Guid.TryParse(userIdString, out var userId))
             {
                 context.UserId = userId;
+                context.IsFirstOrder = !await unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == userIdString);
             }
 
             // Fetch Cart using string ID

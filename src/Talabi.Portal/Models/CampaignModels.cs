@@ -13,6 +13,8 @@ public class CampaignFormViewModel
     public bool IsActive { get; set; } = true;
     public string? ActionUrl { get; set; }
     public int Priority { get; set; } = 0;
+    
+    public bool IsFirstOrderOnly { get; set; } = false;
 
     // Advanced Rules
     public int? VendorType { get; set; }
