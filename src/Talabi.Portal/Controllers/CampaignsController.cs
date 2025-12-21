@@ -44,6 +44,8 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
                 ActionUrl = model.ActionUrl,
                 Priority = model.Priority,
                 VendorType = model.VendorType,
+                DiscountType = (DiscountType)model.DiscountType,
+                DiscountValue = model.DiscountValue,
                 StartTime = model.StartTime,
                 EndTime = model.EndTime,
                 MinCartAmount = model.MinCartAmount,
@@ -114,6 +116,8 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
             ActionUrl = campaign.ActionUrl,
             Priority = campaign.Priority,
             VendorType = campaign.VendorType,
+            DiscountType = (int)campaign.DiscountType,
+            DiscountValue = campaign.DiscountValue,
             StartTime = campaign.StartTime,
             EndTime = campaign.EndTime,
             MinCartAmount = campaign.MinCartAmount,
@@ -157,6 +161,8 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
                 campaign.ActionUrl = model.ActionUrl;
                 campaign.Priority = model.Priority;
                 campaign.VendorType = model.VendorType;
+                campaign.DiscountType = (DiscountType)model.DiscountType;
+                campaign.DiscountValue = model.DiscountValue;
                 campaign.StartTime = model.StartTime;
                 campaign.EndTime = model.EndTime;
                 campaign.MinCartAmount = model.MinCartAmount;

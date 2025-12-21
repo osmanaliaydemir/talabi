@@ -12,8 +12,6 @@ import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
-import 'package:mobile/features/coupons/presentation/screens/coupon_list_screen.dart';
-import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -25,14 +23,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final TextEditingController _couponController = TextEditingController();
-
-  @override
-  void dispose() {
-    _couponController.dispose();
-    super.dispose();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -153,226 +143,7 @@ class _CartScreenState extends State<CartScreen> {
                           },
                         ),
                       ),
-                      // Campaign Selection Section
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: cart.selectedCampaign != null
-                                ? Colors.green
-                                : Colors.grey[300]!,
-                            width: cart.selectedCampaign != null ? 1.5 : 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) =>
-                                  const CampaignSelectionBottomSheet(),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: cart.selectedCampaign != null
-                                      ? Colors.green.withValues(alpha: 0.1)
-                                      : AppTheme.primaryOrange.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.campaign,
-                                  color: cart.selectedCampaign != null
-                                      ? Colors.green
-                                      : AppTheme.primaryOrange,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      localizations.campaigns,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    if (cart.selectedCampaign != null)
-                                      Text(
-                                        cart.selectedCampaign!.title,
-                                        style: const TextStyle(
-                                          color: Colors.green,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                    else
-                                      Text(
-                                        'Mevcut kampanyaları gör',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              if (cart.selectedCampaign != null)
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () {
-                                    cart.removeCampaign();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Kampanya kaldırıldı'),
-                                        backgroundColor: Colors.orange,
-                                      ),
-                                    );
-                                  },
-                                )
-                              else
-                                const Icon(
-                                  Icons.chevron_right,
-                                  color: Colors.grey,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
 
-                      // Voucher Code Section
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                          border: cart.appliedCoupon != null
-                              ? Border.all(color: Colors.green, width: 1)
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.local_offer,
-                                color: cart.appliedCoupon != null
-                                    ? Colors.green
-                                    : AppTheme.primaryOrange,
-                                size: 20,
-                              ),
-                              onPressed: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CouponListScreen(
-                                          isSelectionMode: true,
-                                        ),
-                                  ),
-                                );
-                                if (result != null && result is String) {
-                                  _couponController.text = result;
-                                  if (context.mounted) {
-                                    _applyCoupon(context, cart, result);
-                                  }
-                                }
-                              },
-                              tooltip: 'Kupon Seç',
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: TextField(
-                                controller: _couponController,
-                                enabled: cart.appliedCoupon == null,
-                                decoration: InputDecoration(
-                                  hintText: cart.appliedCoupon != null
-                                      ? cart.appliedCoupon!.code
-                                      : localizations.cartVoucherPlaceholder,
-                                  hintStyle: TextStyle(
-                                    color: cart.appliedCoupon != null
-                                        ? Colors.black87
-                                        : Colors.grey[500],
-                                    fontWeight: cart.appliedCoupon != null
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
-                                  border: InputBorder.none,
-                                ),
-                                onSubmitted: (value) {
-                                  if (value.isNotEmpty) {
-                                    _applyCoupon(context, cart, value);
-                                  }
-                                },
-                              ),
-                            ),
-                            if (cart.appliedCoupon != null)
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  cart.removeCoupon();
-                                  _couponController.clear();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Kupon kaldırıldı'),
-                                      backgroundColor: Colors.orange,
-                                    ),
-                                  );
-                                },
-                              )
-                            else
-                              IconButton(
-                                icon: Icon(
-                                  Icons.chevron_right,
-                                  color: Colors.grey[600],
-                                ),
-                                onPressed: () {
-                                  if (_couponController.text.isNotEmpty) {
-                                    _applyCoupon(
-                                      context,
-                                      cart,
-                                      _couponController.text,
-                                    );
-                                  }
-                                },
-                              ),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 16),
                       // Order Summary
                       Container(
@@ -842,36 +613,6 @@ class _CartScreenState extends State<CartScreen> {
         ),
       ],
     );
-  }
-
-  Future<void> _applyCoupon(
-    BuildContext context,
-    CartProvider cart,
-    String code,
-  ) async {
-    // FocusScope.of(context).unfocus(); // Close keyboard
-    try {
-      await cart.applyCoupon(code);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kupon başarıyla uygulandı!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
   }
 
   void _showClearCartDialog(BuildContext context, CartProvider cart) {

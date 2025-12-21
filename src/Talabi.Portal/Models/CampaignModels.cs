@@ -14,6 +14,10 @@ public class CampaignFormViewModel
     public string? ActionUrl { get; set; }
     public int Priority { get; set; } = 0;
     
+    // Discount
+    public int DiscountType { get; set; } // 0: Percentage, 1: FixedAmount
+    public decimal DiscountValue { get; set; } = 0;
+    
     public bool IsFirstOrderOnly { get; set; } = false;
 
     // Advanced Rules

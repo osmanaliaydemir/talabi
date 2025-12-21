@@ -257,6 +257,12 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 

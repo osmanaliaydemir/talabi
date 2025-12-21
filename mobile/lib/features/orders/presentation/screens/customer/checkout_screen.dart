@@ -10,6 +10,8 @@ import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
+import 'package:mobile/features/coupons/presentation/screens/coupon_list_screen.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -34,6 +36,7 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final ApiService _apiService = ApiService();
   final TextEditingController _noteController = TextEditingController();
+  final TextEditingController _couponController = TextEditingController();
 
   Map<String, dynamic>? _selectedAddress;
   String _selectedPaymentMethod = 'Cash';
@@ -50,6 +53,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void dispose() {
     _noteController.dispose();
+    _couponController.dispose();
     super.dispose();
   }
 
@@ -60,6 +64,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     try {
       final addresses = await _apiService.getAddresses();
+      if (!mounted) return;
       setState(() {
         _addresses = addresses;
         // Auto-select default address if available
@@ -143,8 +148,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       // Log purchase
       await AnalyticsService.logPurchase(
         orderId: order.customerOrderId,
-        totalAmount:
-            widget.subtotal - widget.discountAmount + widget.deliveryFee,
+        totalAmount: cartProvider.totalAmount + widget.deliveryFee,
         currency: widget.cartItems.values.first.product.currency.code,
         cartItems: widget.cartItems.values.toList(),
         shippingAddress:
@@ -218,6 +222,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final cart = Provider.of<CartProvider>(context);
 
     // Get currency from first item, or default to TRY
     final Currency displayCurrency = widget.cartItems.isNotEmpty
@@ -247,8 +252,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildAddressCard(localizations),
-                  const SizedBox(height: 12),
-                  _buildEstimatedDeliveryCard(localizations),
                   const SizedBox(height: 24),
 
                   // Payment Method Section
@@ -262,6 +265,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     explicitChildNodes: true,
                     child: _buildPaymentMethods(localizations),
                   ),
+                  const SizedBox(height: 24),
+
+                  // Campaign & Coupon Section
+                  _buildCampaignAndCouponSection(localizations),
                   const SizedBox(height: 24),
 
                   // Order Note Section
@@ -288,12 +295,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   // Order Summary Section
                   _buildSectionTitle(localizations.orderSummary, Icons.receipt),
                   const SizedBox(height: 12),
-                  _buildOrderSummary(localizations, displayCurrency),
+                  _buildOrderSummary(localizations, displayCurrency, cart),
                   const SizedBox(height: 24),
 
                   Semantics(
                     label:
-                        '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(widget.subtotal + widget.deliveryFee, displayCurrency)}',
+                        '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(cart.totalAmount + widget.deliveryFee, displayCurrency)}',
                     button: true,
                     child: SizedBox(
                       width: double.infinity,
@@ -331,7 +338,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       CurrencyFormatter.format(
-                                        widget.subtotal + widget.deliveryFee,
+                                        cart.totalAmount + widget.deliveryFee,
                                         displayCurrency,
                                       ),
                                       style: const TextStyle(
@@ -365,6 +372,237 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildCampaignAndCouponSection(AppLocalizations localizations) {
+    final cart = Provider.of<CartProvider>(context);
+
+    return Column(
+      children: [
+        // Campaign Selection
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: cart.selectedCampaign != null
+                  ? Colors.green
+                  : Colors.grey[300]!,
+              width: cart.selectedCampaign != null ? 1.5 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const CampaignSelectionBottomSheet(),
+              );
+            },
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cart.selectedCampaign != null
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : AppTheme.primaryOrange.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.campaign,
+                    color: cart.selectedCampaign != null
+                        ? Colors.green
+                        : AppTheme.primaryOrange,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localizations.campaigns,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      if (cart.selectedCampaign != null)
+                        Text(
+                          cart.selectedCampaign!.title,
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      else
+                        Text(
+                          'Mevcut kampanyaları gör',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (cart.selectedCampaign != null)
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    onPressed: () {
+                      cart.removeCampaign();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kampanya kaldırıldı'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    },
+                  )
+                else
+                  const Icon(Icons.chevron_right, color: Colors.grey),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Coupon Selection
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: cart.appliedCoupon != null
+                ? Border.all(color: Colors.green, width: 1)
+                : Border.all(color: Colors.grey[200]!),
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.local_offer,
+                  color: cart.appliedCoupon != null
+                      ? Colors.green
+                      : AppTheme.primaryOrange,
+                  size: 20,
+                ),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const CouponListScreen(isSelectionMode: true),
+                    ),
+                  );
+                  if (result != null && result is String) {
+                    _couponController.text = result;
+                    if (mounted) {
+                      _applyCoupon(cart, result);
+                    }
+                  }
+                },
+                tooltip: 'Kupon Seç',
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: TextField(
+                  controller: _couponController,
+                  enabled: cart.appliedCoupon == null,
+                  decoration: InputDecoration(
+                    hintText: cart.appliedCoupon != null
+                        ? cart.appliedCoupon!.code
+                        : localizations.cartVoucherPlaceholder,
+                    hintStyle: TextStyle(
+                      color: cart.appliedCoupon != null
+                          ? Colors.black87
+                          : Colors.grey[500],
+                      fontWeight: cart.appliedCoupon != null
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onSubmitted: (value) {
+                    if (value.isNotEmpty) {
+                      _applyCoupon(cart, value);
+                    }
+                  },
+                ),
+              ),
+              if (cart.appliedCoupon != null)
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red, size: 20),
+                  onPressed: () {
+                    cart.removeCoupon();
+                    _couponController.clear();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Kupon kaldırıldı'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  },
+                )
+              else
+                TextButton(
+                  onPressed: () {
+                    if (_couponController.text.isNotEmpty) {
+                      _applyCoupon(cart, _couponController.text);
+                    }
+                  },
+                  child: const Text(
+                    'Uygula',
+                    style: TextStyle(
+                      color: AppTheme.primaryOrange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _applyCoupon(CartProvider cart, String code) async {
+    try {
+      await cart.applyCoupon(code);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kupon başarıyla uygulandı!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildAddressCard(AppLocalizations localizations) {
@@ -515,13 +753,48 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          localizations.deliveryAddress,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              localizations.deliveryAddress,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            // Minimal Estimated Delivery info
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.timer_outlined,
+                                    size: 12,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '30-45dk',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -542,38 +815,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Semantics(
                   label: localizations.changeAddress,
                   button: true,
-                  child: TextButton(
+                  child: IconButton(
                     onPressed: () => _showAddressSelector(localizations),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      size: 20,
+                      color: AppTheme.primaryOrange,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.edit_outlined,
-                          size: 16,
-                          color: AppTheme.primaryOrange,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            localizations.changeAddress,
-                            style: const TextStyle(
-                              color: AppTheme.primaryOrange,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ),
               ],
@@ -1088,70 +1338,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildEstimatedDeliveryCard(AppLocalizations localizations) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.access_time,
-                color: AppTheme.primaryOrange,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    localizations.estimatedDelivery,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '30-40 ${localizations.minutes}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildOrderSummary(
     AppLocalizations localizations,
     Currency displayCurrency,
+    CartProvider cart,
   ) {
     return Card(
       elevation: 2,
@@ -1193,12 +1383,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               children: [
                 Expanded(child: Text(localizations.cartSubtotalLabel)),
                 Text(
-                  CurrencyFormatter.format(widget.subtotal, displayCurrency),
+                  CurrencyFormatter.format(
+                    cart.subtotalAmount,
+                    displayCurrency,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            // Delivery Fee
             // Delivery Fee
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1210,19 +1402,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ],
             ),
             // Discount
-            if (widget.discountAmount > 0) ...[
+            if (cart.discountAmount > 0 ||
+                cart.selectedCampaign != null ||
+                cart.appliedCoupon != null) ...[
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
-                      localizations.discountTitle,
+                      cart.selectedCampaign != null
+                          ? cart.selectedCampaign!.title
+                          : (cart.appliedCoupon != null
+                                ? '${localizations.discountTitle} (${cart.appliedCoupon!.code})'
+                                : localizations.discountTitle),
                       style: const TextStyle(color: Colors.green),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
-                    '-${CurrencyFormatter.format(widget.discountAmount, displayCurrency)}',
+                    '-${CurrencyFormatter.format(cart.discountAmount, displayCurrency)}',
                     style: const TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,
@@ -1247,9 +1446,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 Text(
                   CurrencyFormatter.format(
-                    widget.subtotal -
-                        widget.discountAmount +
-                        widget.deliveryFee,
+                    cart.totalAmount + widget.deliveryFee,
                     displayCurrency,
                   ),
                   style: const TextStyle(

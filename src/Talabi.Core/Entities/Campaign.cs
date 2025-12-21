@@ -11,7 +11,12 @@ public class Campaign : BaseEntity
     public string? ActionUrl { get; set; }
     
     // Priority for sorting
+    // Priority for sorting
     public int Priority { get; set; } = 0;
+
+    // Discount
+    public DiscountType DiscountType { get; set; } = DiscountType.Percentage;
+    public decimal DiscountValue { get; set; } = 0;
 
     // Rules
     public bool IsFirstOrderOnly { get; set; } = false;
