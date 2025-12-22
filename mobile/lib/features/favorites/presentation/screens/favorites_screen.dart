@@ -220,6 +220,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         child: ProductCard(
                           product: product,
                           width: null,
+                          heroTagPrefix: 'favorite_product_',
                           isFavorite: true,
                           rating: '4.7',
                           ratingCount: '2.3k',

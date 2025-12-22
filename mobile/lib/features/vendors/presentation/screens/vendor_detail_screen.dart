@@ -428,6 +428,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                   return ProductCard(
                     product: product,
                     width: null,
+                    heroTagPrefix: 'vendor_detail_product_',
                     isFavorite: isFavorite,
                     rating:
                         '4.7', // Placeholder as Product doesn't have rating yet

@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile/config/app_theme.dart';
-import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/features/cart/data/models/cart_item.dart';
-import 'package:mobile/features/settings/data/models/currency.dart';
-import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
-import 'package:mobile/features/orders/presentation/screens/customer/order_success_screen.dart';
-import 'package:mobile/services/api_service.dart';
-import 'package:mobile/services/analytics_service.dart';
-import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
+import 'package:mobile/features/cart/data/models/cart_item.dart';
+import 'package:mobile/features/orders/data/models/order_calculation_models.dart';
+import 'package:mobile/features/orders/presentation/screens/customer/order_success_screen.dart';
 import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
-import 'package:provider/provider.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
+import 'package:mobile/services/analytics_service.dart';
+import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/features/settings/data/models/currency.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({
     super.key,
     required this.cartItems,
     required this.vendorId,
-    required this.subtotal,
-    required this.deliveryFee,
+    this.subtotal = 0,
+    this.deliveryFee = 0,
     this.discountAmount = 0.0,
   });
+
   final Map<String, CartItem> cartItems;
   final String vendorId;
   final double subtotal;
@@ -43,16 +45,80 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   List<dynamic> _addresses = [];
   bool _isLoadingAddresses = true;
 
+  // Calculation State
+  bool _isCalculating = false;
+  OrderCalculationResult? _calculationResult;
+  String? _calculationError;
+
   @override
   void initState() {
     super.initState();
     _loadAddresses();
+    // Listen to cart changes for coupon/campaign updates
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(
+        context,
+        listen: false,
+      ).addListener(_onCartChanged);
+    });
   }
 
   @override
   void dispose() {
+    Provider.of<CartProvider>(
+      context,
+      listen: false,
+    ).removeListener(_onCartChanged);
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _onCartChanged() {
+    // Trigger calculation when cart changes (e.g. coupon added/removed)
+    if (mounted) {
+      _calculateOrder();
+    }
+  }
+
+  Future<void> _calculateOrder() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isCalculating = true;
+      _calculationError = null;
+    });
+
+    try {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+      final items = widget.cartItems.entries
+          .map(
+            (e) => OrderItemDto(productId: e.key, quantity: e.value.quantity),
+          )
+          .toList();
+
+      final request = CalculateOrderRequest(
+        vendorId: widget.vendorId,
+        items: items,
+        deliveryAddressId: _selectedAddress?['id']?.toString(),
+        couponCode: cartProvider.appliedCoupon?.code,
+      );
+
+      final result = await _apiService.calculateOrder(request);
+
+      if (!mounted) return;
+      setState(() {
+        _calculationResult = result;
+        _isCalculating = false;
+      });
+    } catch (e) {
+      LoggerService().error('Order calculation failed', e);
+      if (!mounted) return;
+      setState(() {
+        _calculationError = e.toString().replaceAll('Exception: ', '');
+        _isCalculating = false;
+      });
+    }
   }
 
   Future<void> _loadAddresses() async {
@@ -69,7 +135,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Map<String, dynamic>? defaultAddress;
         if (addresses.isNotEmpty) {
           try {
-            // Try to find default address (check both lowercase and uppercase)
             final found = addresses.firstWhere(
               (addr) =>
                   addr['isDefault'] == true ||
@@ -79,7 +144,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             );
             defaultAddress = found as Map<String, dynamic>;
           } catch (e) {
-            // No default address found, use first address
             defaultAddress = addresses.first as Map<String, dynamic>;
           }
         }
@@ -89,6 +153,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'Selected address: ${_selectedAddress?['title'] ?? 'null'}',
         );
       });
+
+      // Calculate after loading addresses
+      _calculateOrder();
     } catch (e) {
       LoggerService().error('Error loading addresses: $e', e);
       setState(() {
@@ -111,27 +178,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Prevent ordering if calculation failed mechanism
+    if (_calculationResult == null && !_isCalculating) {
+      // If no calculation result but we are not calculating, try calculating again or warn
+      // But if items are empty or other issue, we should handle it.
+      // Assuming items not empty since passed in.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen fiyat hesaplamasının tamamlanmasını bekleyin.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      _calculateOrder();
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Prepare order items
-      // Prepare order items
       final orderItems = <String, int>{};
       for (final item in widget.cartItems.values) {
         orderItems[item.product.id] = item.quantity;
       }
 
-      // Get delivery address ID as String (GUID)
       final addressId = _selectedAddress!['id'];
       final addressIdString = addressId?.toString();
 
-      // Get coupon code from CartProvider
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       final couponCode = cartProvider.appliedCoupon?.code;
 
-      // Create order
       final order = await _apiService.createOrder(
         widget.vendorId,
         orderItems,
@@ -143,23 +220,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         couponCode: couponCode,
       );
 
-      // Log purchase
       await AnalyticsService.logPurchase(
         orderId: order.customerOrderId,
-        totalAmount: cartProvider.totalAmount + widget.deliveryFee,
+        totalAmount:
+            _calculationResult?.totalAmount ??
+            (cartProvider.totalAmount + widget.deliveryFee),
         currency: widget.cartItems.values.first.product.currency.code,
         cartItems: widget.cartItems.values.toList(),
         shippingAddress:
             '${_selectedAddress!['city']} / ${_selectedAddress!['district']}',
       );
 
-      // Clear cart
       if (mounted) {
         final cart = Provider.of<CartProvider>(context, listen: false);
         await cart.clear();
       }
 
-      // Navigate to success screen
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -172,39 +248,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     } catch (e) {
       LoggerService().error('Error creating order: $e', e);
       if (mounted) {
-        // Show error dialog
         showDialog(
           context: context,
           builder: (context) => CustomConfirmationDialog(
             title: 'Sipariş Oluşturulamadı',
-            message: 'Lütfen bilgilerinizi kontrol edip tekrar deneyin.',
+            message:
+                'Lütfen bilgilerinizi kontrol edip tekrar deneyin.\nHata: ${e.toString().replaceAll('Exception: ', '')}',
             confirmText: localizations.ok,
-            cancelText: '', // Not shown when onCancel is null
+            cancelText: '',
             icon: Icons.error_outline,
             iconColor: Colors.red,
-            confirmButtonColor: AppTheme
-                .primaryOrange, // Or red? Keeping consistent with action or error? The original had TextButton 'OK'. Let's use Red for error.
-            // Original had TextButton for OK. CustomConfirmationDialog uses ElevatedButton for confirm.
-            // Let's use primaryOrange for 'OK' as it is a safe action (dismiss), or Red because it's an error state?
-            // The icon is red.
-            // Let's use primaryOrange for the button to acknowledge.
+            confirmButtonColor: AppTheme.primaryOrange,
             onConfirm: () => Navigator.pop(context),
-            content: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                e.toString().replaceAll('Exception: ', ''),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.red.shade900,
-                  height: 1.4,
-                ),
-              ),
-            ),
+            content: null,
           ),
         );
       }
@@ -222,10 +278,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final localizations = AppLocalizations.of(context)!;
     final cart = Provider.of<CartProvider>(context);
 
-    // Get currency from first item, or default to TRY
     final Currency displayCurrency = widget.cartItems.isNotEmpty
         ? widget.cartItems.values.first.product.currency
         : Currency.try_;
+
+    final double? totalAmount = _calculationResult?.totalAmount;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -260,18 +317,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Order Information Section Header
                         _buildSectionTitle(
                           localizations.orderInformation,
                           Icons.list_alt,
                         ),
                         const SizedBox(height: 12),
 
-                        // Delivery Address Section
                         _buildAddressCard(localizations),
                         const SizedBox(height: 24),
 
-                        // Payment Method Section
                         Semantics(
                           label: localizations.paymentMethod,
                           explicitChildNodes: true,
@@ -279,36 +333,62 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Campaign & Coupon Section
                         _buildDiscountSection(localizations),
                         const SizedBox(height: 24),
 
-                        // Order Note Section
                         _buildOrderNoteSection(localizations),
                         const SizedBox(height: 24),
 
-                        // Order Summary Section
                         _buildSectionTitle(
                           localizations.orderSummary,
                           Icons.receipt,
                         ),
                         const SizedBox(height: 12),
+
+                        // Error handling for calculation
+                        if (_calculationError != null)
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            color: Colors.red.shade50,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.error, color: Colors.red),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Fiyat hesaplanamadı: $_calculationError',
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.refresh),
+                                  onPressed: _calculateOrder,
+                                ),
+                              ],
+                            ),
+                          ),
+
                         _buildOrderSummary(
                           localizations,
                           displayCurrency,
                           cart,
+                          _calculationResult,
                         ),
                         const SizedBox(height: 24),
 
                         Semantics(
                           label:
-                              '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(cart.totalAmount + widget.deliveryFee, displayCurrency)}',
+                              '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(totalAmount ?? 0, displayCurrency)}',
                           button: true,
                           child: SizedBox(
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _createOrder,
+                              onPressed:
+                                  (_isLoading ||
+                                      _isCalculating ||
+                                      _calculationResult == null)
+                                  ? null
+                                  : _createOrder,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryOrange,
                                 foregroundColor: Colors.white,
@@ -316,7 +396,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: _isLoading
+                              child: (_isLoading || _isCalculating)
                                   ? const SizedBox(
                                       height: 24,
                                       width: 24,
@@ -341,8 +421,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                           const SizedBox(width: 8),
                                           Text(
                                             CurrencyFormatter.format(
-                                              cart.totalAmount +
-                                                  widget.deliveryFee,
+                                              totalAmount ?? 0,
                                               displayCurrency,
                                             ),
                                             style: const TextStyle(
@@ -410,7 +489,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
             builder: (context) => const CampaignSelectionBottomSheet(),
-          );
+          ).then((_) => _calculateOrder());
         },
         child: Row(
           children: [
@@ -434,7 +513,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    localizations.campaigns, // Or "Discounts" if available
+                    localizations.campaigns,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -485,6 +564,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       backgroundColor: Colors.orange,
                     ),
                   );
+                  _calculateOrder();
                 },
               )
             else
@@ -513,7 +593,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () async {
-                  // Navigate to add address screen
                   await Navigator.pushNamed(context, '/customer/add-address');
                   _loadAddresses();
                 },
@@ -530,14 +609,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
     }
 
-    // Eğer adres seçilmemişse ve adres listesi varsa, ilk adresi seç
     if (_selectedAddress == null && _addresses.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _selectedAddress = _addresses.first;
         });
+        _calculateOrder();
       });
-      // Geçici olarak ilk adresi göster
       final tempAddress = _addresses.first;
       final fullAddress =
           tempAddress['fullAddress']?.toString() ??
@@ -572,7 +650,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _selectedAddress?['fullAddress']?.toString() ??
         _selectedAddress?['FullAddress']?.toString() ??
         '';
-    // Başlık için title kullan
     final displayTitle =
         _selectedAddress?['title']?.toString() ??
         _selectedAddress?['Title']?.toString() ??
@@ -769,7 +846,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          // AddressesScreen'e yönlendir (eğer route varsa)
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryOrange,
@@ -809,7 +885,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           address['fullAddress']?.toString() ??
                           address['FullAddress']?.toString() ??
                           '';
-                      // Başlık için title kullan
                       final addrDisplayTitle =
                           address['title']?.toString() ??
                           address['Title']?.toString() ??
@@ -829,6 +904,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             _selectedAddress = address;
                           });
                           Navigator.pop(context);
+                          _calculateOrder();
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
@@ -1163,6 +1239,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     AppLocalizations localizations,
     Currency displayCurrency,
     CartProvider cart,
+    OrderCalculationResult? calculationResult,
   ) {
     return Card(
       elevation: 2,
@@ -1205,7 +1282,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Expanded(child: Text(localizations.cartSubtotalLabel)),
                 Text(
                   CurrencyFormatter.format(
-                    cart.subtotalAmount,
+                    calculationResult?.subtotal ?? cart.subtotalAmount,
                     displayCurrency,
                   ),
                 ),
@@ -1214,6 +1291,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 8),
             // Discount
             if (cart.discountAmount > 0 ||
+                (calculationResult?.discountAmount ?? 0) > 0 ||
                 cart.selectedCampaign != null ||
                 cart.appliedCoupon != null) ...[
               const SizedBox(height: 8),
@@ -1232,7 +1310,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                   ),
                   Text(
-                    '-${CurrencyFormatter.format(cart.discountAmount, displayCurrency)}',
+                    '-${CurrencyFormatter.format(calculationResult?.discountAmount ?? cart.discountAmount, displayCurrency)}',
                     style: const TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,
@@ -1248,7 +1326,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               children: [
                 Expanded(child: Text(localizations.cartDeliveryFeeLabel)),
                 Text(
-                  CurrencyFormatter.format(widget.deliveryFee, displayCurrency),
+                  (calculationResult?.deliveryFee ?? widget.deliveryFee) == 0
+                      ? localizations.free
+                      : CurrencyFormatter.format(
+                          calculationResult?.deliveryFee ?? widget.deliveryFee,
+                          displayCurrency,
+                        ),
+                  style:
+                      (calculationResult?.deliveryFee ?? widget.deliveryFee) ==
+                          0
+                      ? const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        )
+                      : null,
                 ),
               ],
             ),
@@ -1268,7 +1359,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 Text(
                   CurrencyFormatter.format(
-                    cart.totalAmount + widget.deliveryFee,
+                    calculationResult?.totalAmount ??
+                        (cart.totalAmount + widget.deliveryFee),
                     displayCurrency,
                   ),
                   style: const TextStyle(

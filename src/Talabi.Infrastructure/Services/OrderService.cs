@@ -533,3 +533,175 @@ public class OrderService : IOrderService
     }
 }
 
+
+    /// <summary>
+    /// Sipariş tutarlarını hesaplar
+    /// </summary>
+    public async Task<OrderCalculationResultDto> CalculateOrderAsync(CalculateOrderDto dto, string? userId, CultureInfo culture)
+    {
+        // 1. Validate vendor exists
+        var vendor = await _unitOfWork.Vendors.GetByIdAsync(dto.VendorId);
+        if (vendor == null)
+        {
+            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "VendorNotFound", culture));
+        }
+
+        // 2. Calculate total and create item details
+        decimal subtotal = 0;
+        var calculationItems = new List<OrderItemCalculationDto>();
+        // Keep track of RuleCartItems for validation context
+        var ruleCartItems = new List<RuleValidationContext.RuleCartItem>();
+
+        foreach (var item in dto.Items)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+            if (product == null)
+            {
+                // If product not found, we could throw or skip. Throwing ensures integrity.
+                throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "ProductNotFound", culture, item.ProductId));
+            }
+
+            var lineTotal = product.Price * item.Quantity;
+            subtotal += lineTotal;
+
+            calculationItems.Add(new OrderItemCalculationDto
+            {
+                ProductId = item.ProductId,
+                ProductName = product.Name,
+                UnitPrice = product.Price,
+                Quantity = item.Quantity,
+                TotalPrice = lineTotal
+            });
+
+            ruleCartItems.Add(new RuleValidationContext.RuleCartItem
+            {
+                ProductId = product.Id,
+                CategoryId = product.CategoryId,
+                VendorId = product.VendorId,
+                Quantity = item.Quantity,
+                Price = product.Price,
+                VendorType = (int)(product.VendorType ?? VendorType.Market)
+            });
+        }
+
+        // 3. Calculate Delivery Fee
+        decimal deliveryFee = 0;
+        
+        // Only calculate delivery fee if address is provided (or use default logic if needed)
+        // If no address, we might assume base fee or 0 depending on requirement. 
+        // Current create order logic requires address. 
+        if (dto.DeliveryAddressId.HasValue)
+        {
+             var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
+             // If address invalid, we might throw or return 0? Throwing is safer if ID provided.
+             if (userAddress == null)
+             {
+                 throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
+             }
+             
+             // Fetch Delivery Fee logic - same as CreateOrder
+             var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
+             if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
+             {
+                 deliveryFee = parsedFee;
+             }
+        }
+        else 
+        {
+             // Fallback if no address selected yet (e.g. cart view) -> currently system wide fee
+             var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
+             if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
+             {
+                 deliveryFee = parsedFee;
+             }
+        }
+
+        // 4. Validate and Apply Coupon
+        decimal discountAmount = 0;
+        CouponDto? appliedCouponDto = null;
+
+        if (!string.IsNullOrEmpty(dto.CouponCode))
+        {
+            var coupon = await _unitOfWork.Coupons.Query()
+                .AsNoTracking()
+                .Include(c => c.CouponCities)
+                .Include(c => c.CouponDistricts)
+                .Include(c => c.CouponCategories)
+                .Include(c => c.CouponProducts)
+                .FirstOrDefaultAsync(c => c.Code == dto.CouponCode && c.IsActive);
+
+            if (coupon != null)
+            {
+                // Build Validation Context
+                Guid? userCityId = null;
+                Guid? userDistrictId = null;
+
+                if (dto.DeliveryAddressId.HasValue)
+                {
+                    var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
+                    if (userAddress != null)
+                    {
+                        userCityId = userAddress.CityId;
+                        userDistrictId = userAddress.DistrictId;
+                    }
+                }
+
+                Guid.TryParse(userId, out var userIdGuid);
+
+                var validationContext = new RuleValidationContext
+                {
+                    UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
+                    CityId = userCityId,
+                    DistrictId = userDistrictId,
+                    RequestTime = DateTime.UtcNow,
+                    Items = ruleCartItems,
+                    CartTotal = subtotal,
+                    IsFirstOrder = userId != null && !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == userId)
+                };
+
+                // Validate
+                if (_ruleValidatorService.ValidateCoupon(coupon, validationContext, out var _))
+                {
+                    // Calculate discount
+                    if (coupon.DiscountType == DiscountType.Percentage)
+                    {
+                        discountAmount = subtotal * (coupon.DiscountValue / 100);
+                    }
+                    else
+                    {
+                        discountAmount = coupon.DiscountValue;
+                    }
+
+                    if (discountAmount > subtotal) discountAmount = subtotal;
+
+                    // Manual Mapping to CouponDto if needed, or stick to simple object
+                    appliedCouponDto = new CouponDto
+                    {
+                         Id = coupon.Id,
+                         Code = coupon.Code,
+                         DiscountType = (int)coupon.DiscountType,
+                         DiscountValue = coupon.DiscountValue
+                         // Add other fields if CouponDto has them and they are critical
+                    };
+                }
+            }
+        }
+
+        // Final Totals
+        // Discount is applied to subtotal
+        var finalSubtotal = subtotal - discountAmount;
+        if (finalSubtotal < 0) finalSubtotal = 0;
+
+        var totalAmount = finalSubtotal + deliveryFee;
+
+        return new OrderCalculationResultDto
+        {
+            Subtotal = subtotal,
+            DeliveryFee = deliveryFee,
+            DiscountAmount = discountAmount,
+            TotalAmount = totalAmount,
+            AppliedCoupon = appliedCouponDto,
+            Items = calculationItems
+        };
+    }
+}

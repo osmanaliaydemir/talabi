@@ -17,10 +17,16 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  const ProductDetailScreen({super.key, required this.productId, this.product});
+  const ProductDetailScreen({
+    super.key,
+    required this.productId,
+    this.product,
+    this.heroTag,
+  });
 
   final String productId;
   final Product? product;
+  final String? heroTag;
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -338,7 +344,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     width: double.infinity,
                     child: _product!.imageUrl != null
                         ? Hero(
-                            tag: 'product_image_${_product!.id}',
+                            tag:
+                                widget.heroTag ??
+                                'product_image_${_product!.id}',
                             child: OptimizedCachedImage.productImage(
                               imageUrl: _product!.imageUrl!,
                               width: double.infinity,
@@ -606,17 +614,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   child: ProductCard(
                                     product: _similarProducts[index],
                                     width: 180,
+                                    heroTagPrefix: 'similar_product_',
                                     onTap: () {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProductDetailScreen(
-                                                productId:
-                                                    _similarProducts[index].id,
-                                                product:
-                                                    _similarProducts[index],
-                                              ),
+                                          builder: (context) => ProductDetailScreen(
+                                            productId:
+                                                _similarProducts[index].id,
+                                            product: _similarProducts[index],
+                                            heroTag:
+                                                'similar_product_${_similarProducts[index].id}',
+                                          ),
                                         ),
                                       );
                                     },

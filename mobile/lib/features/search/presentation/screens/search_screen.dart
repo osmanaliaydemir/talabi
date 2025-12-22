@@ -912,6 +912,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         return ProductCard(
                           product: product,
                           width: null,
+                          heroTagPrefix: 'search_product_',
                           showRating: false,
                           onTap: () {
                             Navigator.push(

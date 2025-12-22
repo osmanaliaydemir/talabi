@@ -12,10 +12,13 @@ class VersionCheckService {
   final ApiService _apiService = GetIt.I<ApiService>();
   final LoggerService _logger = LoggerService();
 
-  Future<void> checkVersion(BuildContext context) async {
+  Future<bool> checkVersion(
+    BuildContext context, {
+    bool allowDismissal = false,
+  }) async {
     try {
       final settings = await _apiService.getVersionSettings();
-      if (settings == null) return;
+      if (settings == null) return true;
 
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
@@ -29,11 +32,20 @@ class VersionCheckService {
 
       if (_isVersionLower(currentVersion, minVersion)) {
         if (context.mounted) {
-          await _showUpdateDialog(context, settings, settings.forceUpdate);
+          final result = await _showUpdateDialog(
+            context,
+            settings,
+            settings.forceUpdate,
+            allowDismissal: allowDismissal,
+          );
+          return result ?? false;
         }
+        return false;
       }
+      return true;
     } catch (e) {
       _logger.error('Version check failed', e);
+      return true; // Fail safe
     }
   }
 
@@ -54,11 +66,12 @@ class VersionCheckService {
     }
   }
 
-  Future<void> _showUpdateDialog(
+  Future<bool?> _showUpdateDialog(
     BuildContext context,
     dynamic settings,
-    bool force,
-  ) async {
+    bool force, {
+    bool allowDismissal = false,
+  }) async {
     // Determine language from context or system?
     // Using simple fallback for now or context locale if possible.
     // Assuming 'tr' as default or checking locale.
@@ -78,22 +91,34 @@ class VersionCheckService {
     if (title.isEmpty) title = 'Update Available';
     if (body.isEmpty) body = 'A new version is available. Please update.';
 
-    final String? cancelText = !force
-        ? (locale == 'tr'
-              ? 'Daha Sonra'
-              : (locale == 'ar' ? 'لاحقاً' : 'Later'))
-        : null;
+    // Logic:
+    // If NOT force -> Show "Later" (returns true)
+    // If Force AND allowDismissal -> Show "Close" (returns false)
+    // If Force AND !allowDismissal -> No Cancel button (returns nothing, blocks)
+
+    final canDismiss = !force || allowDismissal;
+
+    String? cancelText;
+    if (!force) {
+      cancelText = locale == 'tr'
+          ? 'Daha Sonra'
+          : (locale == 'ar' ? 'لاحقاً' : 'Later');
+    } else if (allowDismissal) {
+      cancelText = locale == 'tr'
+          ? 'Kapat'
+          : (locale == 'ar' ? 'إغلاق' : 'Close');
+    }
 
     final String confirmText = locale == 'tr'
         ? 'Güncelle'
         : (locale == 'ar' ? 'تحديث' : 'Update');
 
-    return showDialog(
+    return showDialog<bool>(
       context: context,
-      barrierDismissible: !force,
+      barrierDismissible: canDismiss,
       builder: (BuildContext context) {
         return PopScope(
-          canPop: !force,
+          canPop: canDismiss,
           onPopInvokedWithResult: (bool didPop, dynamic result) async {
             if (didPop) return;
           },
@@ -105,9 +130,11 @@ class VersionCheckService {
             onConfirm: () {
               _launchStore();
             },
-            onCancel: !force
+            onCancel: canDismiss
                 ? () {
-                    Navigator.of(context).pop();
+                    // If not forced (optional), returning 'true' allows proceeding (Later)
+                    // If forced but allowed dismissal, returning 'false' blocks proceeding
+                    Navigator.of(context).pop(!force);
                   }
                 : null,
             icon: Icons.system_update,

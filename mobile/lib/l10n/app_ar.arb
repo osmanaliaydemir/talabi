@@ -1,5 +1,9 @@
 {
   "@@locale": "ar",
+  "free": "مجاني",
+  "@free": {
+    "description": "Free"
+  },
   "appTitle": "Talabi",
   "@appTitle": {
     "description": "عنوان التطبيق"

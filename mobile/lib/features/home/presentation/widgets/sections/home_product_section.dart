@@ -113,6 +113,7 @@ class HomeProductSection extends StatelessWidget {
                   return ProductCard(
                     product: product,
                     width: 200,
+                    heroTagPrefix: 'home_picks_',
                     isFavorite: favoriteStatus[product.id] ?? false,
                     rating: '4.7',
                     ratingCount: '2.3k',

@@ -17,6 +17,7 @@ import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/features/coupons/data/models/coupon.dart';
 import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/features/settings/data/models/version_settings_model.dart';
+import 'package:mobile/features/orders/data/models/order_calculation_models.dart';
 
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -262,6 +263,31 @@ class ApiService {
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error creating order', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<OrderCalculationResult> calculateOrder(
+    CalculateOrderRequest request,
+  ) async {
+    try {
+      final response = await dio.post(
+        '/orders/calculate',
+        data: request.toJson(),
+      );
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => OrderCalculationResult.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Hesaplama yapılamadı');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error calculating order', e, stackTrace);
       rethrow;
     }
   }

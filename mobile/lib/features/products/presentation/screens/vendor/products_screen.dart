@@ -367,6 +367,7 @@ class _VendorProductsScreenState extends State<VendorProductsScreen> {
                               final product = displayProducts[index];
                               return ProductCard(
                                 product: product,
+                                heroTagPrefix: 'vendor_product_',
                                 onTap: () async {
                                   TapLogger.logTap(
                                     'Product #${product.id}',

@@ -46,5 +46,14 @@ public interface IOrderService
     /// <param name="culture">Kültür bilgisi (localization için)</param>
     /// <returns>İşlem başarılı mı</returns>
     Task<bool> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto dto, string? userId, System.Globalization.CultureInfo culture);
+
+    /// <summary>
+    /// Sipariş tutarlarını hesaplar
+    /// </summary>
+    /// <param name="dto">Hesaplama kriterleri</param>
+    /// <param name="userId">Kullanıcı ID'si (opsiyonel)</param>
+    /// <param name="culture">Kültür bilgisi</param>
+    /// <returns>Hesaplama sonucu</returns>
+    Task<OrderCalculationResultDto> CalculateOrderAsync(CalculateOrderDto dto, string? userId, System.Globalization.CultureInfo culture);
 }
 

@@ -22,6 +22,7 @@ class ProductCard extends StatefulWidget {
     this.showRating = true,
     this.rating,
     this.ratingCount,
+    this.heroTagPrefix,
   });
 
   final Product product;
@@ -34,6 +35,7 @@ class ProductCard extends StatefulWidget {
   final bool showRating;
   final String? rating;
   final String? ratingCount;
+  final String? heroTagPrefix;
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -50,6 +52,8 @@ class _ProductCardState extends State<ProductCard> {
     final quantity = cartItem?.quantity ?? 0;
     final bool isVendorCard =
         widget.onToggleAvailability != null || widget.onDelete != null;
+    final heroTag =
+        '${widget.heroTagPrefix ?? 'product_image_'}${widget.product.id}';
 
     return MergeSemantics(
       child: GestureDetector(
@@ -62,6 +66,7 @@ class _ProductCardState extends State<ProductCard> {
                   builder: (context) => ProductDetailScreen(
                     productId: widget.product.id,
                     product: widget.product,
+                    heroTag: heroTag,
                   ),
                 ),
               );
@@ -100,7 +105,7 @@ class _ProductCardState extends State<ProductCard> {
                       children: [
                         widget.product.imageUrl != null
                             ? Hero(
-                                tag: 'product_image_${widget.product.id}',
+                                tag: heroTag,
                                 child: OptimizedCachedImage.productThumbnail(
                                   imageUrl: widget.product.imageUrl!,
                                   width: double.infinity,

@@ -81,12 +81,26 @@ public class OrdersController : BaseController
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new ApiResponse<OrderDto>(
                 orderDto,
                 LocalizationService.GetLocalizedString(ResourceName, "OrderCreatedSuccessfully", CurrentCulture)));
-        }
-        catch
-        {
             await UnitOfWork.RollbackTransactionAsync();
             throw; // Let ExceptionHandlingMiddleware handle it
         }
+    }
+
+    /// <summary>
+    /// Sipariş tutarlarını hesaplar
+    /// </summary>
+    /// <param name="dto">Hesaplama kriterleri</param>
+    /// <returns>Hesaplama sonucu</returns>
+    [HttpPost("calculate")]
+    public async Task<ActionResult<ApiResponse<OrderCalculationResultDto>>> CalculateOrder(CalculateOrderDto dto)
+    {
+        var userId = UserContext.GetUserId() ?? "anonymous"; // Or null if strictly required
+        
+        var result = await _orderService.CalculateOrderAsync(dto, userId, CurrentCulture);
+
+        return Ok(new ApiResponse<OrderCalculationResultDto>(
+            result,
+            LocalizationService.GetLocalizedString(ResourceName, "OrderCalculatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>

@@ -1,5 +1,9 @@
 {
   "@@locale": "tr",
+  "free": "Ücretsiz",
+  "@free": {
+    "description": "Ücretsiz"
+  },
   "appTitle": "Talabi",
   "@appTitle": {
     "description": "Uygulama başlığı"

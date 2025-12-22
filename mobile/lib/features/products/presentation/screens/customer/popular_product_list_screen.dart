@@ -299,6 +299,7 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                               return ProductCard(
                                 product: product,
                                 width: null, // Full width in grid
+                                heroTagPrefix: 'popular_product_',
                                 isFavorite: isFavorite,
                                 rating: '4.7', // Placeholder rating
                                 ratingCount: '2.3k', // Placeholder count

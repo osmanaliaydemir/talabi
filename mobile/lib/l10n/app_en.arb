@@ -1,5 +1,9 @@
 {
   "@@locale": "en",
+  "free": "Free",
+  "@free": {
+    "description": "Free"
+  },
   "appTitle": "Talabi",
   "@appTitle": {
     "description": "The application title"

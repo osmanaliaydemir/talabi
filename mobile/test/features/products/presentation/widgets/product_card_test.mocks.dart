@@ -4,13 +4,14 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
-import 'dart:ui' as _i7;
+import 'dart:ui' as _i8;
 
-import 'package:flutter/material.dart' as _i6;
+import 'package:flutter/material.dart' as _i7;
+import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i5;
 import 'package:mobile/features/cart/data/models/cart_item.dart' as _i3;
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart'
     as _i2;
-import 'package:mobile/features/products/data/models/product.dart' as _i5;
+import 'package:mobile/features/products/data/models/product.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -52,6 +53,13 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as bool);
 
   @override
+  double get deliveryFee => (super.noSuchMethod(
+        Invocation.getter(#deliveryFee),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get subtotalAmount => (super.noSuchMethod(
         Invocation.getter(#subtotalAmount),
         returnValue: 0.0,
@@ -78,6 +86,26 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
+
+  @override
+  _i4.Future<void> selectCampaign(_i5.Campaign? campaign) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #selectCampaign,
+          [campaign],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void removeCampaign() => super.noSuchMethod(
+        Invocation.method(
+          #removeCampaign,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i4.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
@@ -110,8 +138,8 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
 
   @override
   _i4.Future<void> addItem(
-    _i5.Product? product,
-    _i6.BuildContext? context,
+    _i6.Product? product,
+    _i7.BuildContext? context,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -166,7 +194,7 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as _i4.Future<void>);
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -175,7 +203,7 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

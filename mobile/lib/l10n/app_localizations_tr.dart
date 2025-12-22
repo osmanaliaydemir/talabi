@@ -9,6 +9,9 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get free => 'Ücretsiz';
+
+  @override
   String get appTitle => 'Talabi';
 
   @override

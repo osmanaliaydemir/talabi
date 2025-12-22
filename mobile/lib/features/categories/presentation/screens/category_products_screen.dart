@@ -322,6 +322,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         return ProductCard(
                           product: product,
                           width: null,
+                          heroTagPrefix: 'category_product_',
                           isFavorite: isFavorite,
                           rating: '4.7', // Placeholder
                           ratingCount: '2.3k', // Placeholder

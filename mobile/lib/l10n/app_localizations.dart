@@ -100,6 +100,12 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// Free
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
   /// The application title
   ///
   /// In en, this message translates to:

@@ -12,6 +12,7 @@ import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/services/version_check_service.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -162,19 +163,7 @@ class _CartScreenState extends State<CartScreen> {
                                 isBold: false,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Semantics(
-                              label:
-                                  '${localizations.cartDeliveryFeeLabel}: ${CurrencyFormatter.format(cart.deliveryFee, displayCurrency)}',
-                              child: _buildSummaryRow(
-                                '${localizations.cartDeliveryFeeLabel}:',
-                                CurrencyFormatter.format(
-                                  cart.deliveryFee,
-                                  displayCurrency,
-                                ),
-                                isBold: false,
-                              ),
-                            ),
+
                             if (cart.discountAmount > 0) ...[
                               const SizedBox(height: 8),
                               Semantics(
@@ -193,11 +182,11 @@ class _CartScreenState extends State<CartScreen> {
                             const SizedBox(height: 8),
                             Semantics(
                               label:
-                                  '${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount + cart.deliveryFee, displayCurrency)}',
+                                  '${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount, displayCurrency)}',
                               child: _buildSummaryRow(
                                 '${localizations.cartTotalAmountLabel}:',
                                 CurrencyFormatter.format(
-                                  cart.totalAmount + cart.deliveryFee,
+                                  cart.totalAmount,
                                   displayCurrency,
                                 ),
                                 isBold: true,
@@ -216,7 +205,7 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                         child: Semantics(
                           label:
-                              '${localizations.placeOrder}, ${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount + cart.deliveryFee, displayCurrency)}',
+                              '${localizations.placeOrder}, ${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount, displayCurrency)}',
                           button: true,
                           child: Row(
                             children: [
@@ -225,7 +214,7 @@ class _CartScreenState extends State<CartScreen> {
                                   padding: const EdgeInsets.only(left: 16),
                                   child: Text(
                                     CurrencyFormatter.format(
-                                      cart.totalAmount + cart.deliveryFee,
+                                      cart.totalAmount,
                                       displayCurrency,
                                     ),
                                     style: const TextStyle(
@@ -249,6 +238,17 @@ class _CartScreenState extends State<CartScreen> {
                                   onPressed: cart.itemCount == 0
                                       ? null
                                       : () async {
+                                          if (!context.mounted) return;
+                                          // Check for updates before proceeding
+                                          final isVersionValid =
+                                              await VersionCheckService()
+                                                  .checkVersion(
+                                                    context,
+                                                    allowDismissal: true,
+                                                  );
+                                          if (!isVersionValid) return;
+                                          if (!context.mounted) return;
+
                                           // Get vendor ID from first item
                                           final firstItem =
                                               cart.items.values.first;
@@ -282,9 +282,7 @@ class _CartScreenState extends State<CartScreen> {
 
                                           // Log begin_checkout
                                           await AnalyticsService.logBeginCheckout(
-                                            totalAmount:
-                                                cart.totalAmount +
-                                                cart.deliveryFee,
+                                            totalAmount: cart.totalAmount,
                                             currency: displayCurrency.code,
                                             cartItems: cart.items.values
                                                 .toList(),
