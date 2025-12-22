@@ -1550,5 +1550,80 @@
         "tr-TR": "Sadece İlk Sipariş",
         "en-US": "First Order Only",
         "ar-SA": "للطلب الأول فقط"
+    },
+    "SystemSettingsDescription": {
+        "tr-TR": "Sistemin genel ayarlarını buradan yönetebilirsiniz.",
+        "en-US": "Manage system general settings here.",
+        "ar-SA": "إدارة الإعدادات العامة للنظام هنا."
+    },
+    "SettingsList": {
+        "tr-TR": "Ayarlar Listesi",
+        "en-US": "Settings List",
+        "ar-SA": "قائمة الإعدادات"
+    },
+    "AddNewSetting": {
+        "tr-TR": "Yeni Ayar Ekle",
+        "en-US": "Add New Setting",
+        "ar-SA": "إضافة إعداد جديد"
+    },
+    "Key": {
+        "tr-TR": "Anahtar",
+        "en-US": "Key",
+        "ar-SA": "المفتاح"
+    },
+    "Value": {
+        "tr-TR": "Değer",
+        "en-US": "Value",
+        "ar-SA": "القيمة"
+    },
+    "ExampleKey": {
+        "tr-TR": "Örn: DeliveryFee",
+        "en-US": "Ex: DeliveryFee",
+        "ar-SA": "مثال: رسوم التوصيل"
+    },
+    "EnterUniqueKey": {
+        "tr-TR": "Benzersiz bir anahtar girin.",
+        "en-US": "Enter a unique key.",
+        "ar-SA": "أدخل مفتاحًا فريدًا."
+    },
+    "ExampleValue": {
+        "tr-TR": "Örn: 25.50",
+        "en-US": "Ex: 25.50",
+        "ar-SA": "مثال: 25.50"
+    },
+    "Group": {
+        "tr-TR": "Grup",
+        "en-US": "Group",
+        "ar-SA": "مجموعة"
+    },
+    "CreateNew": {
+        "tr-TR": "Yeni Oluştur",
+        "en-US": "Create New",
+        "ar-SA": "إنشاء جديد"
+    },
+    "EditSetting": {
+        "tr-TR": "Ayarı Düzenle",
+        "en-US": "Edit Setting",
+        "ar-SA": "تعديل الإعداد"
+    },
+    "AreYouSure": {
+        "tr-TR": "Emin misiniz?",
+        "en-US": "Are you sure?",
+        "ar-SA": "هل أنت متأكد؟"
+    },
+    "DeleteConfirm": {
+        "tr-TR": "Bunu geri alamazsınız!",
+        "en-US": "You won't be able to revert this!",
+        "ar-SA": "لن تتمكن من التراجع عن هذا!"
+    },
+    "YesDelete": {
+        "tr-TR": "Evet, sil!",
+        "en-US": "Yes, delete it!",
+        "ar-SA": "نعم ، احذفها!"
+    },
+    "DeletedSuccess": {
+        "tr-TR": "Dosyanız silindi.",
+        "en-US": "Your file has been deleted.",
+        "ar-SA": "تم حذف الملف."
     }
 }

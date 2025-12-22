@@ -15,6 +15,7 @@ import 'package:mobile/features/dashboard/presentation/screens/courier_dashboard
 import 'package:mobile/features/dashboard/presentation/screens/vendor_dashboard_screen.dart';
 import 'package:mobile/features/profile/presentation/screens/vendor/edit_profile_screen.dart';
 
+import 'package:mobile/services/version_check_service.dart';
 import 'package:mobile/features/auth/presentation/screens/customer/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -60,6 +61,10 @@ class _SplashScreenState extends State<SplashScreen> {
     // Artificial delay removed for faster startup
     // Minimum splash duration handled by initialization time
 
+    if (!mounted) return;
+
+    // Version Check
+    await VersionCheckService().checkVersion(context);
     if (!mounted) return;
 
     final prefs = await PreferencesService.instance;

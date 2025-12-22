@@ -35,6 +35,10 @@ class CartProvider with ChangeNotifier {
   int get itemCount => _items.length;
   bool get isLoading => _isLoading;
 
+  // System Settings
+  double _deliveryFee = 0.0;
+  double get deliveryFee => _deliveryFee;
+
   // Coupon handling
   final CouponService _couponService = CouponService();
   Coupon? _appliedCoupon;
@@ -222,6 +226,20 @@ class CartProvider with ChangeNotifier {
         }
       }
       _checkCouponValidity();
+
+      // Fetch System Settings (Delivery Fee)
+      try {
+        final settings = await _apiService.getSystemSettings();
+        if (settings.containsKey('DeliveryFee')) {
+          final fee = double.tryParse(settings['DeliveryFee']!);
+          if (fee != null) {
+            _deliveryFee = fee;
+          }
+        }
+      } catch (e) {
+        LoggerService().warning('Error loading system settings for cart', e);
+        // Default to 0 or keep previous
+      }
     } catch (e, stackTrace) {
       LoggerService().error('Error loading cart', e, stackTrace);
     } finally {

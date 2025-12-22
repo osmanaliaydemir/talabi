@@ -436,7 +436,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cartTotalAmountLabel => 'المبلغ الإجمالي';
 
   @override
-  String get checkoutTitle => 'Checkout';
+  String get checkoutTitle => 'الدفع';
 
   @override
   String get addOrderNote => 'إضافة ملاحظة الطلب';
@@ -1938,17 +1938,17 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get popularSearches => 'Popular Searches';
+  String get popularSearches => 'عمليات البحث الشائعة';
 
   @override
-  String get deliveryZones => 'Delivery Zones';
+  String get deliveryZones => 'مناطق التوصيل';
 
   @override
   String get deliveryZonesDescription =>
-      'Manage cities and districts you deliver to';
+      'إدارة المدن والمناطق التي تقوم بالتوصيل إليها';
 
   @override
-  String get deliveryZonesUpdated => 'Delivery zones updated successfully';
+  String get deliveryZonesUpdated => 'تم تحديث مناطق التوصيل بنجاح';
 
   @override
   String removedFromFavorites(Object productName) {
@@ -1956,11 +1956,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get noFavoritesFound => 'No favorite products found';
+  String get noFavoritesFound => 'لا توجد منتجات مفضلة';
 
   @override
   String get favoritesEmptyMessage =>
-      'You can view your favorite products here by adding them to favorites.';
+      'يمكنك عرض منتجاتك المفضلة هنا عن طريق إضافتها إلى المفضلة.';
 
   @override
   String addedToFavorites(Object productName) {
@@ -2622,27 +2622,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedToUpdateWorkingHours => 'فشل تحديث ساعات العمل';
 
   @override
-  String get workingHours => 'Working Hours';
+  String get workingHours => 'ساعات العمل';
 
   @override
-  String get workingDays => 'Working Days';
+  String get workingDays => 'أيام العمل';
 
   @override
-  String get closed => 'Closed';
+  String get closed => 'مغلق';
 
   @override
-  String get open24Hours => 'Open 24 Hours';
+  String get open24Hours => 'مفتوح على مدار 24 ساعة';
 
   @override
-  String get hours => 'Hours';
+  String get hours => 'ساعات';
 
   @override
-  String get workingHoursDescription =>
-      'Manage your business opening days and hours here.';
+  String get workingHoursDescription => 'إدارة أيام وساعات عمل متجرك هنا.';
 
   @override
   String workingHoursSaveError(Object error) {
-    return 'Error saving working hours: $error';
+    return 'خطأ في حفظ ساعات العمل: $error';
   }
 
   @override

@@ -58,6 +58,8 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<CouponDistrict> CouponDistricts { get; set; }
     public DbSet<CouponCategory> CouponCategories { get; set; }
     public DbSet<CouponProduct> CouponProducts { get; set; }
+    public DbSet<SystemSetting> SystemSettings { get; set; }
+
 
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

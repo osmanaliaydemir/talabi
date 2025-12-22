@@ -165,11 +165,11 @@ class _CartScreenState extends State<CartScreen> {
                             const SizedBox(height: 8),
                             Semantics(
                               label:
-                                  '${localizations.cartDeliveryFeeLabel}: ${CurrencyFormatter.format(2.0, displayCurrency)}',
+                                  '${localizations.cartDeliveryFeeLabel}: ${CurrencyFormatter.format(cart.deliveryFee, displayCurrency)}',
                               child: _buildSummaryRow(
                                 '${localizations.cartDeliveryFeeLabel}:',
                                 CurrencyFormatter.format(
-                                  2.0, // Fixed delivery fee
+                                  cart.deliveryFee,
                                   displayCurrency,
                                 ),
                                 isBold: false,
@@ -193,11 +193,11 @@ class _CartScreenState extends State<CartScreen> {
                             const SizedBox(height: 8),
                             Semantics(
                               label:
-                                  '${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount + 2.0, displayCurrency)}',
+                                  '${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount + cart.deliveryFee, displayCurrency)}',
                               child: _buildSummaryRow(
                                 '${localizations.cartTotalAmountLabel}:',
                                 CurrencyFormatter.format(
-                                  cart.totalAmount + 2.0,
+                                  cart.totalAmount + cart.deliveryFee,
                                   displayCurrency,
                                 ),
                                 isBold: true,
@@ -216,7 +216,7 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                         child: Semantics(
                           label:
-                              '${localizations.placeOrder}, ${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount + 2.0, displayCurrency)}',
+                              '${localizations.placeOrder}, ${localizations.cartTotalAmountLabel}: ${CurrencyFormatter.format(cart.totalAmount + cart.deliveryFee, displayCurrency)}',
                           button: true,
                           child: Row(
                             children: [
@@ -225,7 +225,7 @@ class _CartScreenState extends State<CartScreen> {
                                   padding: const EdgeInsets.only(left: 16),
                                   child: Text(
                                     CurrencyFormatter.format(
-                                      cart.totalAmount + 2.0,
+                                      cart.totalAmount + cart.deliveryFee,
                                       displayCurrency,
                                     ),
                                     style: const TextStyle(
@@ -282,7 +282,9 @@ class _CartScreenState extends State<CartScreen> {
 
                                           // Log begin_checkout
                                           await AnalyticsService.logBeginCheckout(
-                                            totalAmount: cart.totalAmount + 2.0,
+                                            totalAmount:
+                                                cart.totalAmount +
+                                                cart.deliveryFee,
                                             currency: displayCurrency.code,
                                             cartItems: cart.items.values
                                                 .toList(),
@@ -300,7 +302,8 @@ class _CartScreenState extends State<CartScreen> {
                                                     vendorId: vendorId,
                                                     subtotal:
                                                         cart.subtotalAmount,
-                                                    deliveryFee: 2.0,
+                                                    deliveryFee:
+                                                        cart.deliveryFee,
                                                     discountAmount:
                                                         cart.discountAmount,
                                                   ),

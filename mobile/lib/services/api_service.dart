@@ -16,6 +16,7 @@ import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/features/coupons/data/models/coupon.dart';
 import 'package:mobile/features/campaigns/data/models/campaign.dart';
+import 'package:mobile/features/settings/data/models/version_settings_model.dart';
 
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -764,6 +765,48 @@ class ApiService {
     } catch (e, stackTrace) {
       LoggerService().error('Error checking favorite', e, stackTrace);
       return false;
+    }
+  }
+
+  // System Settings
+  Future<Map<String, String>> getSystemSettings() async {
+    try {
+      final response = await dio.get('/system-settings');
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        // Check if wrapped in ApiResponse (just in case future changes)
+        if (data.containsKey('success') && data.containsKey('data')) {
+          final apiData = data['data'];
+          if (apiData is Map<String, dynamic>) {
+            return Map<String, String>.from(
+              apiData.map((key, value) => MapEntry(key, value.toString())),
+            );
+          }
+        }
+        // Assume raw map
+        return Map<String, String>.from(
+          data.map((key, value) => MapEntry(key, value.toString())),
+        );
+      }
+      return {};
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching system settings', e, stackTrace);
+      return {};
+    }
+  }
+
+  Future<VersionSettingsModel?> getVersionSettings() async {
+    try {
+      final response = await _networkClient.get(
+        '/system-settings/version-check',
+      );
+      if (response.data != null) {
+        return VersionSettingsModel.fromJson(response.data);
+      }
+      return null;
+    } catch (e) {
+      LoggerService().error('Failed to fetch version settings', e);
+      return null;
     }
   }
 

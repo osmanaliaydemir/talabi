@@ -19,6 +19,7 @@ public class OrderService : IOrderService
     private readonly ILocalizationService _localizationService;
     private readonly INotificationService _notificationService;
     private readonly IRuleValidatorService _ruleValidatorService;
+    private readonly ISystemSettingsService _systemSettingsService;
     private const string ResourceName = "OrderResources";
 
     public OrderService(
@@ -26,13 +27,15 @@ public class OrderService : IOrderService
         ILogger<OrderService> logger,
         ILocalizationService localizationService,
         INotificationService notificationService,
-        IRuleValidatorService ruleValidatorService)
+        IRuleValidatorService ruleValidatorService,
+        ISystemSettingsService systemSettingsService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _localizationService = localizationService;
         _notificationService = notificationService;
         _ruleValidatorService = ruleValidatorService;
+        _systemSettingsService = systemSettingsService;
     }
 
     /// <summary>
@@ -130,8 +133,14 @@ public class OrderService : IOrderService
             throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
         }
 
-        // Check Delivery Zone
-        // Check Delivery Zone
+        // Fetch Delivery Fee from System Settings
+        decimal deliveryFee = 0;
+        var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
+        if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
+        {
+            deliveryFee = parsedFee;
+        }
+
         // Delivery Zone checks disabled - allow all addresses
         /*
         var deliveryZone = await _unitOfWork.VendorDeliveryZones.Query()
@@ -147,9 +156,6 @@ public class OrderService : IOrderService
              throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "MinimumOrderAmountNotMet", culture, deliveryZone.MinimumOrderAmount));
         }
         */
-
-        // Use dummy delivery zone data
-        var deliveryZone = new { DeliveryFee = (decimal?)0, MinimumOrderAmount = (decimal)0 };
 
         // 4. Validate and Apply Coupon (if provided)
         decimal discountAmount = 0;
@@ -214,8 +220,8 @@ public class OrderService : IOrderService
             VendorId = dto.VendorId,
             CustomerId = customerId,
             CustomerOrderId = customerOrderId,
-            TotalAmount = finalAmount + deliveryZone.DeliveryFee.GetValueOrDefault(), // Add Delivery Fee to FINAL amount
-            DeliveryFee = deliveryZone.DeliveryFee.GetValueOrDefault(),
+            TotalAmount = finalAmount + deliveryFee, // Add Delivery Fee to FINAL amount
+            DeliveryFee = deliveryFee,
             Status = OrderStatus.Pending,
             OrderItems = orderItems,
             CreatedAt = DateTime.UtcNow,

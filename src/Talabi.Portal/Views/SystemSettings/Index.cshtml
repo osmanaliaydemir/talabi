@@ -1,0 +1,242 @@
+@using Talabi.Portal.Services
+@inject ILocalizationService LocalizationService
+@{
+    ViewData["Title"] = LocalizationService.GetString("SystemSettings");
+}
+
+@section Styles {
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+        <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+            <i class="fas fa-plus"></i> @LocalizationService.GetString("CreateNew", "Create New")
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("SettingsList", "Settings List")</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="settingsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@LocalizationService.GetString("Key")</th>
+                            <th>@LocalizationService.GetString("Value")</th>
+                            <th>@LocalizationService.GetString("Group")</th>
+                            <th>@LocalizationService.GetString("Description")</th>
+                            <th>@LocalizationService.GetString("Actions")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">@LocalizationService.GetString("SystemSetting")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="settingsForm">
+                    <input type="hidden" id="settingId" name="Id" value="0" />
+                    <div class="mb-3">
+                        <label for="settingKey" class="form-label">@LocalizationService.GetString("Key")</label>
+                        <input type="text" class="form-control" id="settingKey" name="Key" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingValue" class="form-label">@LocalizationService.GetString("Value")</label>
+                        <input type="text" class="form-control" id="settingValue" name="Value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingGroup" class="form-label">@LocalizationService.GetString("Group")</label>
+                        <input type="text" class="form-control" id="settingGroup" name="Group">
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingDescription" class="form-label">@LocalizationService.GetString("Description")</label>
+                        <textarea class="form-control" id="settingDescription" name="Description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                <button type="button" class="btn btn-primary" onclick="saveSetting()">@LocalizationService.GetString("Save")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        var table;
+        var modal;
+
+        $(document).ready(function() {
+            modal = new bootstrap.Modal(document.getElementById('settingsModal'));
+
+            table = $('#settingsTable').DataTable({
+                ajax: {
+                    url: '@Url.Action("GetAll")',
+                    type: 'GET'
+                },
+                columns: [
+                    { data: 'key' },
+                    { data: 'value' },
+                    { data: 'group' },
+                    { data: 'description' },
+                    {
+                        data: 'id',
+                        render: function(data, type, row) {
+                            return `
+                                <button class="btn btn-sm btn-info" onclick="editSetting('${data}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteSetting('${data}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `;
+                        },
+                        orderable: false
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/' + 
+                         ('@Thread.CurrentThread.CurrentUICulture.Name' === 'tr-TR' ? 'tr' : 'en-GB') + '.json'
+                }
+            });
+        });
+
+        function openCreateModal() {
+            $('#settingsForm')[0].reset();
+            $('#settingId').val('00000000-0000-0000-0000-000000000000');
+            $('#settingsModalLabel').text('@Html.Raw(LocalizationService.GetString("CreateNew", "Create New"))');
+            modal.show();
+        }
+
+        function editSetting(id) {
+            $.get('@Url.Action("GetById")?id=' + id, function(response) {
+                if (response.success) {
+                    var data = response.data;
+                    $('#settingId').val(data.id);
+                    $('#settingKey').val(data.key);
+                    $('#settingValue').val(data.value);
+                    $('#settingGroup').val(data.group);
+                    $('#settingDescription').val(data.description);
+                    $('#settingsModalLabel').text('@Html.Raw(LocalizationService.GetString("EditSetting", "Edit Setting"))');
+                    modal.show();
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            });
+        }
+
+        function saveSetting() {
+            var form = $('#settingsForm')[0];
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            var idVal = $('#settingId').val();
+            // Handle empty or null ID
+            if (!idVal) {
+                idVal = '00000000-0000-0000-0000-000000000000';
+            }
+
+            var formData = {
+                Id: idVal,
+                Key: $('#settingKey').val(),
+                Value: $('#settingValue').val(),
+                Group: $('#settingGroup').val(),
+                Description: $('#settingDescription').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("Save")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    if (response.success) {
+                        modal.hide();
+                        table.ajax.reload();
+                        Swal.fire({
+                            icon: 'success',
+                            title: '@Html.Raw(LocalizationService.GetString("Success"))',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    var msg = 'An error occurred';
+                    if(xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                         // Check if response is JSON
+                         try {
+                              var json = JSON.parse(xhr.responseText);
+                              if(json.message) msg = json.message;
+                         } catch(e) {}
+                    }
+                    Swal.fire('Error', msg, 'error');
+                }
+            });
+        }
+
+        function deleteSetting(id) {
+            Swal.fire({
+                title: '@Html.Raw(LocalizationService.GetString("AreYouSure", "Are you sure?"))',
+                text: '@Html.Raw(LocalizationService.GetString("DeleteConfirm", "You wont be able to revert this!"))',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '@Html.Raw(LocalizationService.GetString("YesDelete", "Yes, delete it!"))',
+                cancelButtonText: '@Html.Raw(LocalizationService.GetString("Cancel"))'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("Delete")?id=' + id,
+                        type: 'POST',
+                        success: function(response) {
+                            if (response.success) {
+                                table.ajax.reload();
+                                Swal.fire(
+                                    '@Html.Raw(LocalizationService.GetString("Deleted"))',
+                                    '@Html.Raw(LocalizationService.GetString("DeletedSuccess", "Your file has been deleted."))',
+                                    'success'
+                                );
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

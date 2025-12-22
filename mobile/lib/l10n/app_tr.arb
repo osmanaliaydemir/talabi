@@ -5,156 +5,612 @@
     "description": "Uygulama başlığı"
   },
   "welcome": "Hoş Geldiniz",
+  "@welcome": {
+    "description": "Hoş Geldiniz"
+  },
   "login": "Giriş Yap",
+  "@login": {
+    "description": "Giriş Yap"
+  },
   "register": "Kayıt Ol",
+  "@register": {
+    "description": "Kayıt Ol"
+  },
   "logout": "Çıkış Yap",
+  "@logout": {
+    "description": "Çıkış Yap"
+  },
   "profile": "Profil",
+  "@profile": {
+    "description": "Profil"
+  },
   "settings": "Ayarlar",
+  "@settings": {
+    "description": "Ayarlar"
+  },
   "language": "Dil",
+  "@language": {
+    "description": "Dil"
+  },
   "currency": "Para Birimi",
+  "@currency": {
+    "description": "Para Birimi"
+  },
   "turkish": "Türkçe",
+  "@turkish": {
+    "description": "Türkçe"
+  },
   "english": "İngilizce",
+  "@english": {
+    "description": "İngilizce"
+  },
   "arabic": "Arapça",
+  "@arabic": {
+    "description": "Arapça"
+  },
   "turkishLira": "Türk Lirası",
+  "@turkishLira": {
+    "description": "Türk Lirası"
+  },
   "tether": "Tether",
+  "@tether": {
+    "description": "Tether"
+  },
   "save": "Kaydet",
+  "@save": {
+    "description": "Kaydet"
+  },
   "productResmi": "Ürün resmi",
+  "@productResmi": {
+    "description": "Ürün resmi"
+  },
   "yildiz": "yıldız",
+  "@yildiz": {
+    "description": "yıldız"
+  },
   "favorilereEkle": "Favorilere ekle",
+  "@favorilereEkle": {
+    "description": "Favorilere ekle"
+  },
   "favorilerdenCikar": "Favorilerden çıkar",
+  "@favorilerdenCikar": {
+    "description": "Favorilerden çıkar"
+  },
   "menu": "Menü",
+  "@menu": {
+    "description": "Menü"
+  },
   "fiyat": "Fiyat",
+  "@fiyat": {
+    "description": "Fiyat"
+  },
   "adediAzalt": "Adedi azalt",
+  "@adediAzalt": {
+    "description": "Adedi azalt"
+  },
   "miktar": "Miktar",
+  "@miktar": {
+    "description": "Miktar"
+  },
   "adediArtir": "Adedi artır",
+  "@adediArtir": {
+    "description": "Adedi artır"
+  },
   "sepeteEkle": "Sepete ekle",
+  "@sepeteEkle": {
+    "description": "Sepete ekle"
+  },
   "share": "Paylaş",
+  "@share": {
+    "description": "Paylaş"
+  },
   "back": "Geri dön",
+  "@back": {
+    "description": "Geri dön"
+  },
   "degerlendirme": "değerlendirme",
+  "@degerlendirme": {
+    "description": "değerlendirme"
+  },
   "totalAmount": "Toplam tutar",
+  "@totalAmount": {
+    "description": "Toplam tutar"
+  },
   "degerlendirmeSayisi": "{count} değerlendirme",
+  "@degerlendirmeSayisi": {
+    "description": "{count} değerlendirme",
+    "placeholders": {
+      "count": {}
+    }
+  },
   "cancel": "İptal",
+  "@cancel": {
+    "description": "İptal"
+  },
   "products": "Ürünler",
+  "@products": {
+    "description": "Ürünler"
+  },
   "vendors": "Satıcılar",
+  "@vendors": {
+    "description": "Satıcılar"
+  },
   "cart": "Sepet",
+  "@cart": {
+    "description": "Sepet"
+  },
   "orders": "Siparişler",
+  "@orders": {
+    "description": "Siparişler"
+  },
   "favorites": "Favoriler",
+  "@favorites": {
+    "description": "Favoriler"
+  },
   "addresses": "Adresler",
+  "@addresses": {
+    "description": "Adresler"
+  },
   "search": "Ara",
+  "@search": {
+    "description": "Ara"
+  },
   "price": "Fiyat",
+  "@price": {
+    "description": "Fiyat"
+  },
   "addToCart": "Sepete Ekle",
+  "@addToCart": {
+    "description": "Sepete Ekle"
+  },
   "total": "Toplam",
+  "@total": {
+    "description": "Toplam"
+  },
   "totalPrice": "Toplam Fiyat",
+  "@totalPrice": {
+    "description": "Toplam Fiyat"
+  },
   "checkout": "Ödeme",
+  "@checkout": {
+    "description": "Ödeme"
+  },
   "checkoutSubtitle": "Güvenli Ödeme",
+  "@checkoutSubtitle": {
+    "description": "Güvenli Ödeme"
+  },
   "orderInformation": "Sipariş Bilgileri",
+  "@orderInformation": {
+    "description": "Sipariş Bilgileri"
+  },
   "orderHistory": "Sipariş Geçmişi",
+  "@orderHistory": {
+    "description": "Sipariş Geçmişi"
+  },
   "orderDetail": "Sipariş Detayı",
+  "@orderDetail": {
+    "description": "Sipariş Detayı"
+  },
   "deliveryTracking": "Teslimat Takibi",
+  "@deliveryTracking": {
+    "description": "Teslimat Takibi"
+  },
   "selectLanguage": "Dil Seç",
+  "@selectLanguage": {
+    "description": "Dil Seç"
+  },
   "selectCurrency": "Para Birimi Seç",
+  "@selectCurrency": {
+    "description": "Para Birimi Seç"
+  },
   "selectCurrencyDescription": "Para birimi seçimi",
+  "@selectCurrencyDescription": {
+    "description": "Para birimi seçimi"
+  },
   "regionalSettings": "Bölgesel Ayarlar",
+  "@regionalSettings": {
+    "description": "Bölgesel Ayarlar"
+  },
   "dateFormat": "Tarih Formatı",
+  "@dateFormat": {
+    "description": "Tarih Formatı"
+  },
   "timeFormat": "Saat Formatı",
+  "@timeFormat": {
+    "description": "Saat Formatı"
+  },
   "timeZone": "Saat Dilimi",
+  "@timeZone": {
+    "description": "Saat Dilimi"
+  },
   "hour24": "24 Saat",
+  "@hour24": {
+    "description": "24 Saat"
+  },
   "hour12": "12 Saat",
+  "@hour12": {
+    "description": "12 Saat"
+  },
   "discover": "Keşfet",
+  "@discover": {
+    "description": "Keşfet"
+  },
   "myFavorites": "Favorilerim",
+  "@myFavorites": {
+    "description": "Favorilerim"
+  },
   "myCart": "Sepetim",
+  "@myCart": {
+    "description": "Sepetim"
+  },
   "myOrders": "Siparişlerim",
+  "@myOrders": {
+    "description": "Siparişlerim"
+  },
   "myAccount": "Hesabım",
+  "@myAccount": {
+    "description": "Hesabım"
+  },
   "myProfile": "Profilim",
+  "@myProfile": {
+    "description": "Profilim"
+  },
   "user": "Kullanıcı",
+  "@user": {
+    "description": "Kullanıcı"
+  },
   "editProfile": "Profili Düzenle",
+  "@editProfile": {
+    "description": "Profili Düzenle"
+  },
   "editProfileDescription": "İşletme adı, adres ve iletişim bilgilerini düzenle",
+  "@editProfileDescription": {
+    "description": "İşletme adı, adres ve iletişim bilgilerini düzenle"
+  },
   "editCourierProfileDescription": "Ad, telefon, araç bilgisi ve çalışma saatlerini düzenle",
+  "@editCourierProfileDescription": {
+    "description": "Ad, telefon, araç bilgisi ve çalışma saatlerini..."
+  },
   "changePassword": "Şifre Değiştir",
+  "@changePassword": {
+    "description": "Şifre Değiştir"
+  },
   "notificationSettings": "Bildirim Ayarları",
+  "@notificationSettings": {
+    "description": "Bildirim Ayarları"
+  },
   "myAddresses": "Adreslerim",
+  "@myAddresses": {
+    "description": "Adreslerim"
+  },
   "favoriteProducts": "Favori Ürünler",
+  "@favoriteProducts": {
+    "description": "Favori Ürünler"
+  },
   "popularProducts": "Popüler Ürünler",
+  "@popularProducts": {
+    "description": "Popüler Ürünler"
+  },
   "popularVendors": "Popüler İşletmeler",
+  "@popularVendors": {
+    "description": "Popüler İşletmeler"
+  },
   "viewAll": "Tümünü Gör",
+  "@viewAll": {
+    "description": "Tümünü Gör"
+  },
   "productDetail": "Ürün Detayı",
+  "@productDetail": {
+    "description": "Ürün Detayı"
+  },
   "description": "Açıklama",
+  "@description": {
+    "description": "Açıklama"
+  },
   "vendor": "Satıcı",
+  "@vendor": {
+    "description": "Satıcı"
+  },
   "category": "Kategori",
+  "@category": {
+    "description": "Kategori"
+  },
   "addToFavorites": "Favorilere Ekle",
+  "@addToFavorites": {
+    "description": "Favorilere Ekle"
+  },
   "removeFromFavorites": "Favorilerden Çıkar",
+  "@removeFromFavorites": {
+    "description": "Favorilerden Çıkar"
+  },
   "inStock": "Stokta Var",
+  "@inStock": {
+    "description": "Stokta Var"
+  },
   "outOfStock": "Stokta Yok",
+  "@outOfStock": {
+    "description": "Stokta Yok"
+  },
   "signIn": "Giriş Yap",
+  "@signIn": {
+    "description": "Giriş Yap"
+  },
   "signUp": "Kayıt Ol",
+  "@signUp": {
+    "description": "Kayıt Ol"
+  },
   "welcomeBack": "Hoş Geldiniz!",
+  "@welcomeBack": {
+    "description": "Hoş Geldiniz!"
+  },
   "loginDescription": "Sipariş vermek ve verdiğiniz siparişleri anlık olarak takip etmek için giriş yapın",
+  "@loginDescription": {
+    "description": "Sipariş vermek ve verdiğiniz siparişleri anlık ..."
+  },
   "emailAddress": "E-posta Adresi",
+  "@emailAddress": {
+    "description": "E-posta Adresi"
+  },
   "password": "Şifre",
+  "@password": {
+    "description": "Şifre"
+  },
   "rememberMe": "Beni hatırla?",
+  "@rememberMe": {
+    "description": "Beni hatırla?"
+  },
   "recoveryPassword": "Şifremi Unuttum",
+  "@recoveryPassword": {
+    "description": "Şifremi Unuttum"
+  },
   "logIn": "Giriş Yap",
+  "@logIn": {
+    "description": "Giriş Yap"
+  },
   "orContinueWith": "Veya devam et",
+  "@orContinueWith": {
+    "description": "Veya devam et"
+  },
   "google": "Google",
+  "@google": {
+    "description": "Google"
+  },
   "apple": "Apple",
+  "@apple": {
+    "description": "Apple"
+  },
   "facebook": "Facebook",
+  "@facebook": {
+    "description": "Facebook"
+  },
   "dontHaveAccount": "Hesabınız yok mu? ",
+  "@dontHaveAccount": {
+    "description": "Hesabınız yok mu? "
+  },
   "createAccount": "Hesap Oluştur",
+  "@createAccount": {
+    "description": "Hesap Oluştur"
+  },
   "registerDescription": "Talabi'ye başlamak için kayıt olun",
+  "@registerDescription": {
+    "description": "Talabi'ye başlamak için kayıt olun"
+  },
   "fullName": "Ad Soyad",
+  "@fullName": {
+    "description": "Ad Soyad"
+  },
   "alreadyHaveAccount": "Zaten hesabınız var mı? ",
+  "@alreadyHaveAccount": {
+    "description": "Zaten hesabınız var mı? "
+  },
   "emailRequired": "E-posta gerekli",
+  "@emailRequired": {
+    "description": "E-posta gerekli"
+  },
   "validEmail": "Geçerli bir e-posta girin",
+  "@validEmail": {
+    "description": "Geçerli bir e-posta girin"
+  },
   "passwordRequired": "Şifre gerekli",
+  "@passwordRequired": {
+    "description": "Şifre gerekli"
+  },
   "passwordMinLength": "Şifre en az 6 karakter olmalı",
+  "@passwordMinLength": {
+    "description": "Şifre en az 6 karakter olmalı"
+  },
   "fullNameRequired": "Ad soyad gerekli",
+  "@fullNameRequired": {
+    "description": "Ad soyad gerekli"
+  },
   "loginFailed": "Giriş başarısız",
+  "@loginFailed": {
+    "description": "Giriş başarısız"
+  },
   "registerFailed": "Kayıt başarısız",
+  "@registerFailed": {
+    "description": "Kayıt başarısız"
+  },
   "passwordReset": "Şifre Sıfırlama",
+  "@passwordReset": {
+    "description": "Şifre Sıfırlama"
+  },
   "forgetPassword": "Şifremi Unuttum",
+  "@forgetPassword": {
+    "description": "Şifremi Unuttum"
+  },
   "forgetPasswordDescription": "Şifrenizi sıfırlamak için e-posta adresinizi girin",
+  "@forgetPasswordDescription": {
+    "description": "Şifrenizi sıfırlamak için e-posta adresinizi girin"
+  },
   "continueButton": "Devam Et",
+  "@continueButton": {
+    "description": "Devam Et"
+  },
   "passwordResetEmailSent": "Şifre sıfırlama e-postası e-posta adresinize gönderildi",
+  "@passwordResetEmailSent": {
+    "description": "Şifre sıfırlama e-postası e-posta adresinize gö..."
+  },
   "passwordResetFailed": "Şifre sıfırlama e-postası gönderilemedi",
+  "@passwordResetFailed": {
+    "description": "Şifre sıfırlama e-postası gönderilemedi"
+  },
   "emailVerification": "E-posta Doğrulama",
+  "@emailVerification": {
+    "description": "E-posta Doğrulama"
+  },
   "checkYourEmail": "E-postanızı Kontrol Edin",
+  "@checkYourEmail": {
+    "description": "E-postanızı Kontrol Edin"
+  },
   "emailVerificationDescription": "E-posta adresinize bir doğrulama bağlantısı gönderdik. Lütfen gelen kutunuzu kontrol edin ve hesabınızı doğrulamak için bağlantıya tıklayın.",
+  "@emailVerificationDescription": {
+    "description": "E-posta adresinize bir doğrulama bağlantısı gön..."
+  },
   "iHaveVerified": "Doğruladım",
+  "@iHaveVerified": {
+    "description": "Doğruladım"
+  },
   "resendEmail": "E-postayı Tekrar Gönder",
+  "@resendEmail": {
+    "description": "E-postayı Tekrar Gönder"
+  },
   "resendFeatureComingSoon": "Tekrar gönderme özelliği yakında gelecek",
+  "@resendFeatureComingSoon": {
+    "description": "Tekrar gönderme özelliği yakında gelecek"
+  },
   "verificationEmailResent": "Doğrulama e-postası tekrar gönderildi",
+  "@verificationEmailResent": {
+    "description": "Doğrulama e-postası tekrar gönderildi"
+  },
   "pleaseVerifyEmail": "Lütfen e-posta adresinizi doğrulayın.",
+  "@pleaseVerifyEmail": {
+    "description": "Lütfen e-posta adresinizi doğrulayın."
+  },
   "offlineMode": "Çevrimdışı Mod",
+  "@offlineMode": {
+    "description": "Çevrimdışı Mod"
+  },
   "offlineModeDescription": "Bazı özellikler sınırlı olabilir",
+  "@offlineModeDescription": {
+    "description": "Bazı özellikler sınırlı olabilir"
+  },
   "accessibilityTitle": "Erişilebilirlik ve Görünüm",
+  "@accessibilityTitle": {
+    "description": "Erişilebilirlik ve Görünüm"
+  },
   "accessibilityDescription": "Daha rahat okunabilirlik için tema, kontrast ve yazı boyutunu özelleştir",
+  "@accessibilityDescription": {
+    "description": "Daha rahat okunabilirlik için tema, kontrast ve..."
+  },
   "displaySettings": "Görünüm",
+  "@displaySettings": {
+    "description": "Görünüm"
+  },
   "darkMode": "Karanlık Mod",
+  "@darkMode": {
+    "description": "Karanlık Mod"
+  },
   "darkModeDescription": "Düşük ışık ortamları için koyu temayı kullan",
+  "@darkModeDescription": {
+    "description": "Düşük ışık ortamları için koyu temayı kullan"
+  },
   "highContrast": "Yüksek Kontrast",
+  "@highContrast": {
+    "description": "Yüksek Kontrast"
+  },
   "highContrastDescription": "Daha iyi görünürlük için kontrastı artır",
+  "@highContrastDescription": {
+    "description": "Daha iyi görünürlük için kontrastı artır"
+  },
   "textSize": "Metin Boyutu",
+  "@textSize": {
+    "description": "Metin Boyutu"
+  },
   "textSizeDescription": "Okunabilirliği artırmak için yazı boyutunu ayarla",
+  "@textSizeDescription": {
+    "description": "Okunabilirliği artırmak için yazı boyutunu ayarla"
+  },
   "textSizePreview": "Önizleme Metni",
+  "@textSizePreview": {
+    "description": "Önizleme Metni"
+  },
   "cartEmptyMessage": "Sepetiniz boş",
+  "@cartEmptyMessage": {
+    "description": "Sepetiniz boş"
+  },
   "cartVoucherPlaceholder": "Kupon kodunuzu girin",
+  "@cartVoucherPlaceholder": {
+    "description": "Kupon kodunuzu girin"
+  },
   "cartSubtotalLabel": "Ara Toplam",
+  "@cartSubtotalLabel": {
+    "description": "Ara Toplam"
+  },
   "discountTitle": "İndirim",
+  "@discountTitle": {
+    "description": "İndirim"
+  },
   "cartDeliveryFeeLabel": "Teslimat Ücreti",
+  "@cartDeliveryFeeLabel": {
+    "description": "Teslimat Ücreti"
+  },
   "cartTotalAmountLabel": "Genel Toplam",
+  "@cartTotalAmountLabel": {
+    "description": "Genel Toplam"
+  },
   "checkoutTitle": "Ödeme",
+  "@checkoutTitle": {
+    "description": "Ödeme"
+  },
   "addOrderNote": "Sipariş Notu Ekle",
+  "@addOrderNote": {
+    "description": "Sipariş Notu Ekle"
+  },
   "orderNote": "Sipariş Notu",
+  "@orderNote": {
+    "description": "Sipariş Notu"
+  },
   "enterOrderNoteHint": "Siparişiniz için notunuzu girin...",
+  "@enterOrderNoteHint": {
+    "description": "Siparişiniz için notunuzu girin..."
+  },
   "couponApplied": "Kupon Uygulandı",
+  "@couponApplied": {
+    "description": "Kupon Uygulandı"
+  },
   "couponRemoved": "Kupon Kaldırıldı",
+  "@couponRemoved": {
+    "description": "Kupon Kaldırıldı"
+  },
   "enterCouponCode": "Kupon Kodu Girin",
+  "@enterCouponCode": {
+    "description": "Kupon Kodu Girin"
+  },
   "apply": "Uygula",
+  "@apply": {
+    "description": "Uygula"
+  },
   "noCampaignsFound": "Aktif Kampanya Yok",
+  "@noCampaignsFound": {
+    "description": "Aktif Kampanya Yok"
+  },
   "noCampaignsDescription": "Şu anda aktif bir kampanya bulunmamaktadır. Lütfen daha sonra tekrar kontrol edin veya kupon kodu girin.",
+  "@noCampaignsDescription": {
+    "description": "Şu anda aktif bir kampanya bulunmamaktadır. Lüt..."
+  },
   "confirmOrder": "Siparişi Onayla",
+  "@confirmOrder": {
+    "description": "Siparişi Onayla"
+  },
   "cartSameVendorWarning": "Sepetteki tüm ürünler aynı marketten olmalı",
+  "@cartSameVendorWarning": {
+    "description": "Sepetteki tüm ürünler aynı marketten olmalı"
+  },
   "orderPlacedTitle": "Sipariş Alındı!",
+  "@orderPlacedTitle": {
+    "description": "Sipariş Alındı!"
+  },
   "orderPlacedMessage": "Sipariş numaranız: {orderId}\nToplam: {total}",
   "@orderPlacedMessage": {
     "placeholders": {
@@ -163,12 +619,33 @@
     }
   },
   "ok": "Tamam",
+  "@ok": {
+    "description": "Tamam"
+  },
   "duplicateEmail": "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+  "@duplicateEmail": {
+    "description": "Bu email adresi ile zaten bir hesap bulunmaktadır."
+  },
   "passwordRuleChars": "En az 6 karakter",
+  "@passwordRuleChars": {
+    "description": "En az 6 karakter"
+  },
   "passwordRuleDigit": "En az bir rakam (0-9)",
+  "@passwordRuleDigit": {
+    "description": "En az bir rakam (0-9)"
+  },
   "passwordRuleUpper": "En az bir büyük harf (A-Z)",
+  "@passwordRuleUpper": {
+    "description": "En az bir büyük harf (A-Z)"
+  },
   "passwordRuleLower": "En az bir küçük harf (a-z)",
+  "@passwordRuleLower": {
+    "description": "En az bir küçük harf (a-z)"
+  },
   "passwordRuleSpecial": "En az bir özel karakter (@,*,!,? vb.)",
+  "@passwordRuleSpecial": {
+    "description": "En az bir özel karakter (@,*,!,? vb.)"
+  },
   "googleLoginFailed": "Google ile giriş başarısız: {error}",
   "@googleLoginFailed": {
     "placeholders": {
@@ -194,14 +671,41 @@
     }
   },
   "clearCartTitle": "Sepeti Temizle",
+  "@clearCartTitle": {
+    "description": "Sepeti Temizle"
+  },
   "clearCartMessage": "Sepetteki tüm ürünleri kaldırmak istiyor musunuz?",
+  "@clearCartMessage": {
+    "description": "Sepetteki tüm ürünleri kaldırmak istiyor musunuz?"
+  },
   "clearCartNo": "Hayır",
+  "@clearCartNo": {
+    "description": "Hayır"
+  },
   "clearCartYes": "Evet",
+  "@clearCartYes": {
+    "description": "Evet"
+  },
   "clearCartSuccess": "Sepet başarıyla temizlendi",
+  "@clearCartSuccess": {
+    "description": "Sepet başarıyla temizlendi"
+  },
   "categoryChangeConfirmTitle": "Kategori Değişimi",
+  "@categoryChangeConfirmTitle": {
+    "description": "Kategori Değişimi"
+  },
   "categoryChangeConfirmMessage": "Kategori değişimi yaptığınızda sepetinizdeki ürünler silinecektir.",
+  "@categoryChangeConfirmMessage": {
+    "description": "Kategori değişimi yaptığınızda sepetinizdeki ür..."
+  },
   "categoryChangeConfirmOk": "Onayla",
+  "@categoryChangeConfirmOk": {
+    "description": "Onayla"
+  },
   "categoryChangeConfirmCancel": "İptal Et",
+  "@categoryChangeConfirmCancel": {
+    "description": "İptal Et"
+  },
   "productByVendor": "Satıcı: {vendorName}",
   "@productByVendor": {
     "placeholders": {
@@ -209,44 +713,161 @@
     }
   },
   "alreadyReviewedTitle": "Bilgi",
+  "@alreadyReviewedTitle": {
+    "description": "Bilgi"
+  },
   "alreadyReviewedMessage": "Bu ürüne daha önce puan verdiniz.",
+  "@alreadyReviewedMessage": {
+    "description": "Bu ürüne daha önce puan verdiniz."
+  },
   "writeReview": "Yorum Yaz",
+  "@writeReview": {
+    "description": "Yorum Yaz"
+  },
   "courierLogin": "Kurye Girişi",
+  "@courierLogin": {
+    "description": "Kurye Girişi"
+  },
   "courierWelcome": "Hoş Geldin Kurye!",
+  "@courierWelcome": {
+    "description": "Hoş Geldin Kurye!"
+  },
   "courierSubtitle": "Teslimatlarını yönetmek için giriş yap",
+  "@courierSubtitle": {
+    "description": "Teslimatlarını yönetmek için giriş yap"
+  },
   "areYouCourier": "Kurye misiniz?",
+  "@areYouCourier": {
+    "description": "Kurye misiniz?"
+  },
   "areYouVendor": "Satıcı mısınız? ",
+  "@areYouVendor": {
+    "description": "Satıcı mısınız? "
+  },
   "courierSignIn": "Giriş yap",
+  "@courierSignIn": {
+    "description": "Giriş yap"
+  },
   "courierLoginLink": "Kurye Girişi",
+  "@courierLoginLink": {
+    "description": "Kurye Girişi"
+  },
   "roleCustomer": "Müşteri",
+  "@roleCustomer": {
+    "description": "Müşteri"
+  },
   "roleVendor": "Satıcı",
+  "@roleVendor": {
+    "description": "Satıcı"
+  },
   "roleCourier": "Kurye",
+  "@roleCourier": {
+    "description": "Kurye"
+  },
   "roleAdmin": "Yönetici",
+  "@roleAdmin": {
+    "description": "Yönetici"
+  },
   "activeDeliveries": "Aktif Teslimatlar",
+  "@activeDeliveries": {
+    "description": "Aktif Teslimatlar"
+  },
   "deliveryHistory": "Teslimat Geçmişi",
+  "@deliveryHistory": {
+    "description": "Teslimat Geçmişi"
+  },
   "earnings": "Kazançlar",
+  "@earnings": {
+    "description": "Kazançlar"
+  },
   "deliveries": "Teslimatlar",
+  "@deliveries": {
+    "description": "Teslimatlar"
+  },
   "noActiveDeliveries": "Aktif teslimat yok",
+  "@noActiveDeliveries": {
+    "description": "Aktif teslimat yok"
+  },
   "courierProfileNotFound": "Kurye profili bulunamadı",
+  "@courierProfileNotFound": {
+    "description": "Kurye profili bulunamadı"
+  },
   "profileUpdatedSuccessfully": "Profil başarıyla güncellendi",
+  "@profileUpdatedSuccessfully": {
+    "description": "Profil başarıyla güncellendi"
+  },
   "invalidStatus": "Geçersiz durum. Geçerli değerler: Offline, Available, Busy, Break, Assigned",
+  "@invalidStatus": {
+    "description": "Geçersiz durum. Geçerli değerler: Offline, Avai..."
+  },
   "cannotGoAvailableOutsideWorkingHours": "Çalışma saatleri dışında müsait olamazsınız",
+  "@cannotGoAvailableOutsideWorkingHours": {
+    "description": "Çalışma saatleri dışında müsait olamazsınız"
+  },
   "cannotGoOfflineWithActiveOrders": "Aktif siparişleriniz varken çevrimdışı olamazsınız",
+  "@cannotGoOfflineWithActiveOrders": {
+    "description": "Aktif siparişleriniz varken çevrimdışı olamazsınız"
+  },
   "statusUpdated": "Durum güncellendi",
+  "@statusUpdated": {
+    "description": "Durum güncellendi"
+  },
   "locationUpdatedSuccessfully": "Konum başarıyla güncellendi",
+  "@locationUpdatedSuccessfully": {
+    "description": "Konum başarıyla güncellendi"
+  },
   "invalidLatitude": "Geçersiz enlem",
+  "@invalidLatitude": {
+    "description": "Geçersiz enlem"
+  },
   "invalidLongitude": "Geçersiz boylam",
+  "@invalidLongitude": {
+    "description": "Geçersiz boylam"
+  },
   "orderAcceptedSuccessfully": "Sipariş başarıyla kabul edildi",
+  "@orderAcceptedSuccessfully": {
+    "description": "Sipariş başarıyla kabul edildi"
+  },
   "orderRejectedSuccessfully": "Sipariş başarıyla reddedildi",
+  "@orderRejectedSuccessfully": {
+    "description": "Sipariş başarıyla reddedildi"
+  },
   "orderPickedUpSuccessfully": "Sipariş başarıyla alındı",
+  "@orderPickedUpSuccessfully": {
+    "description": "Sipariş başarıyla alındı"
+  },
   "orderDeliveredSuccessfully": "Sipariş başarıyla teslim edildi",
+  "@orderDeliveredSuccessfully": {
+    "description": "Sipariş başarıyla teslim edildi"
+  },
   "deliveryProofSubmittedSuccessfully": "Teslimat kanıtı başarıyla gönderildi",
+  "@deliveryProofSubmittedSuccessfully": {
+    "description": "Teslimat kanıtı başarıyla gönderildi"
+  },
   "orderNotFoundOrNotAssigned": "Sipariş bulunamadı veya size atanmamış",
+  "@orderNotFoundOrNotAssigned": {
+    "description": "Sipariş bulunamadı veya size atanmamış"
+  },
   "orderMustBeDeliveredBeforeSubmittingProof": "Teslimat kanıtı göndermeden önce sipariş teslim edilmiş olmalı",
+  "@orderMustBeDeliveredBeforeSubmittingProof": {
+    "description": "Teslimat kanıtı göndermeden önce sipariş teslim..."
+  },
   "failedToAcceptOrder": "Sipariş kabul edilemedi. Zaten alınmış veya iptal edilmiş olabilir",
+  "@failedToAcceptOrder": {
+    "description": "Sipariş kabul edilemedi. Zaten alınmış veya ipt..."
+  },
   "failedToRejectOrder": "Sipariş reddedilemedi",
+  "@failedToRejectOrder": {
+    "description": "Sipariş reddedilemedi"
+  },
   "failedToPickUpOrder": "Sipariş alınamadı",
+  "@failedToPickUpOrder": {
+    "description": "Sipariş alınamadı"
+  },
   "failedToDeliverOrder": "Sipariş teslim edilemedi",
+  "@failedToDeliverOrder": {
+    "description": "Sipariş teslim edilemedi"
+  },
   "failedToLoadProfile": "Profil yüklenemedi: {error}",
   "@failedToLoadProfile": {
     "placeholders": {
@@ -254,49 +875,181 @@
     }
   },
   "failedToUpdateStatus": "Durum güncellenemedi",
+  "@failedToUpdateStatus": {
+    "description": "Durum güncellenemedi"
+  },
   "failedToUpdateLocation": "Konum güncellenemedi",
+  "@failedToUpdateLocation": {
+    "description": "Konum güncellenemedi"
+  },
   "failedToLoadStatistics": "İstatistikler yüklenemedi",
+  "@failedToLoadStatistics": {
+    "description": "İstatistikler yüklenemedi"
+  },
   "failedToLoadActiveOrders": "Aktif siparişler yüklenemedi",
+  "@failedToLoadActiveOrders": {
+    "description": "Aktif siparişler yüklenemedi"
+  },
   "failedToLoadOrderDetail": "Sipariş detayı yüklenemedi",
+  "@failedToLoadOrderDetail": {
+    "description": "Sipariş detayı yüklenemedi"
+  },
   "failedToLoadTodayEarnings": "Bugünkü kazançlar yüklenemedi",
+  "@failedToLoadTodayEarnings": {
+    "description": "Bugünkü kazançlar yüklenemedi"
+  },
   "failedToLoadWeeklyEarnings": "Haftalık kazançlar yüklenemedi",
+  "@failedToLoadWeeklyEarnings": {
+    "description": "Haftalık kazançlar yüklenemedi"
+  },
   "failedToLoadMonthlyEarnings": "Aylık kazançlar yüklenemedi",
+  "@failedToLoadMonthlyEarnings": {
+    "description": "Aylık kazançlar yüklenemedi"
+  },
   "failedToLoadEarningsHistory": "Kazanç geçmişi yüklenemedi",
+  "@failedToLoadEarningsHistory": {
+    "description": "Kazanç geçmişi yüklenemedi"
+  },
   "failedToSubmitProof": "Teslimat kanıtı gönderilemedi",
+  "@failedToSubmitProof": {
+    "description": "Teslimat kanıtı gönderilemedi"
+  },
   "failedToUpdateProfile": "Profil güncellenemedi",
+  "@failedToUpdateProfile": {
+    "description": "Profil güncellenemedi"
+  },
   "failedToUploadImage": "Resim yüklenemedi",
+  "@failedToUploadImage": {
+    "description": "Resim yüklenemedi"
+  },
   "noFileUploaded": "Dosya yüklenmedi",
+  "@noFileUploaded": {
+    "description": "Dosya yüklenmedi"
+  },
   "internalServerErrorDuringUpload": "Yükleme sırasında sunucu hatası oluştu",
+  "@internalServerErrorDuringUpload": {
+    "description": "Yükleme sırasında sunucu hatası oluştu"
+  },
   "checkAvailability": "Müsaitlik Kontrolü",
+  "@checkAvailability": {
+    "description": "Müsaitlik Kontrolü"
+  },
   "businessSettings": "İşletme Ayarları",
+  "@businessSettings": {
+    "description": "İşletme Ayarları"
+  },
   "businessActive": "İşletme Aktif",
+  "@businessActive": {
+    "description": "İşletme Aktif"
+  },
   "customersCanPlaceOrders": "Müşteriler sipariş verebilir",
+  "@customersCanPlaceOrders": {
+    "description": "Müşteriler sipariş verebilir"
+  },
   "orderTakingClosed": "Sipariş alımı kapalı",
+  "@orderTakingClosed": {
+    "description": "Sipariş alımı kapalı"
+  },
   "businessOperations": "İşletme İşlemleri",
+  "@businessOperations": {
+    "description": "İşletme İşlemleri"
+  },
   "minimumOrderAmount": "Minimum Sipariş Tutarı",
+  "@minimumOrderAmount": {
+    "description": "Minimum Sipariş Tutarı"
+  },
   "estimatedDeliveryTime": "Tahmini Teslimat Süresi (dakika)",
+  "@estimatedDeliveryTime": {
+    "description": "Tahmini Teslimat Süresi (dakika)"
+  },
   "enterValidAmount": "Geçerli bir tutar girin",
+  "@enterValidAmount": {
+    "description": "Geçerli bir tutar girin"
+  },
   "enterValidTime": "Geçerli bir süre girin",
+  "@enterValidTime": {
+    "description": "Geçerli bir süre girin"
+  },
   "optional": "Opsiyonel",
+  "@optional": {
+    "description": "Opsiyonel"
+  },
   "deliveryFee": "Teslimat Ücreti",
+  "@deliveryFee": {
+    "description": "Teslimat Ücreti"
+  },
   "addressRequiredTitle": "Adres Gerekli",
+  "@addressRequiredTitle": {
+    "description": "Adres Gerekli"
+  },
   "addressRequiredMessage": "Sipariş vermek için önce bir teslimat adresi eklemeniz gerekiyor.",
+  "@addressRequiredMessage": {
+    "description": "Sipariş vermek için önce bir teslimat adresi ek..."
+  },
   "addressRequiredDescription": "Sipariş verebilmek için en az bir adres eklemeniz gerekmektedir. Lütfen adresinizi ekleyin.",
+  "@addressRequiredDescription": {
+    "description": "Sipariş verebilmek için en az bir adres eklemen..."
+  },
   "addAddress": "Adres Ekle",
+  "@addAddress": {
+    "description": "Adres Ekle"
+  },
   "legalDocuments": "Yasal Belgeler",
+  "@legalDocuments": {
+    "description": "Yasal Belgeler"
+  },
   "termsOfUse": "Kullanım Şartları",
+  "@termsOfUse": {
+    "description": "Kullanım Şartları"
+  },
   "privacyPolicy": "Gizlilik Politikası",
+  "@privacyPolicy": {
+    "description": "Gizlilik Politikası"
+  },
   "refundPolicy": "İade ve İptal Politikası",
+  "@refundPolicy": {
+    "description": "İade ve İptal Politikası"
+  },
   "distanceSalesAgreement": "Mesafeli Satış Sözleşmesi",
+  "@distanceSalesAgreement": {
+    "description": "Mesafeli Satış Sözleşmesi"
+  },
   "loadingContent": "İçerik yükleniyor...",
+  "@loadingContent": {
+    "description": "İçerik yükleniyor..."
+  },
   "contentNotAvailable": "İçerik mevcut değil",
+  "@contentNotAvailable": {
+    "description": "İçerik mevcut değil"
+  },
   "error": "Hata",
+  "@error": {
+    "description": "Hata"
+  },
   "profileUpdated": "Profil güncellendi",
+  "@profileUpdated": {
+    "description": "Profil güncellendi"
+  },
   "updatePersonalInfo": "Kişisel bilgilerinizi güncelleyin",
+  "@updatePersonalInfo": {
+    "description": "Kişisel bilgilerinizi güncelleyin"
+  },
   "phoneNumber": "Telefon Numarası",
+  "@phoneNumber": {
+    "description": "Telefon Numarası"
+  },
   "profileImageUrl": "Profil Resmi URL",
+  "@profileImageUrl": {
+    "description": "Profil Resmi URL"
+  },
   "dateOfBirth": "Doğum Tarihi",
+  "@dateOfBirth": {
+    "description": "Doğum Tarihi"
+  },
   "notSelected": "Seçilmedi",
+  "@notSelected": {
+    "description": "Seçilmedi"
+  },
   "profileLoadFailed": "Profil yüklenemedi: {error}",
   "@profileLoadFailed": {
     "placeholders": {
@@ -304,94 +1057,364 @@
     }
   },
   "settingsUpdateFailed": "Ayarlar güncellenemedi",
+  "@settingsUpdateFailed": {
+    "description": "Ayarlar güncellenemedi"
+  },
   "notifications": "Bildirimler",
+  "@notifications": {
+    "description": "Bildirimler"
+  },
   "pushNotifications": "Anlık Bildirimler",
+  "@pushNotifications": {
+    "description": "Anlık Bildirimler"
+  },
   "promotionalNotifications": "Promosyon Bildirimleri",
+  "@promotionalNotifications": {
+    "description": "Promosyon Bildirimleri"
+  },
   "newProducts": "Yeni Ürünler",
+  "@newProducts": {
+    "description": "Yeni Ürünler"
+  },
   "more": "Daha Fazla",
+  "@more": {
+    "description": "Daha Fazla"
+  },
   "accessibilityAndDisplay": "Erişilebilirlik ve Görünüm",
+  "@accessibilityAndDisplay": {
+    "description": "Erişilebilirlik ve Görünüm"
+  },
   "helpCenter": "Yardım Merkezi",
+  "@helpCenter": {
+    "description": "Yardım Merkezi"
+  },
   "howCanWeHelpYou": "Size nasıl yardımcı olabiliriz?",
+  "@howCanWeHelpYou": {
+    "description": "Size nasıl yardımcı olabiliriz?"
+  },
   "faq": "SSS",
+  "@faq": {
+    "description": "SSS"
+  },
   "frequentlyAskedQuestions": "Sıkça sorulan sorular",
+  "@frequentlyAskedQuestions": {
+    "description": "Sıkça sorulan sorular"
+  },
   "contactSupport": "Destek ile İletişim",
+  "@contactSupport": {
+    "description": "Destek ile İletişim"
+  },
   "callUs": "Bizi Arayın",
+  "@callUs": {
+    "description": "Bizi Arayın"
+  },
   "liveChat": "Canlı Sohbet",
+  "@liveChat": {
+    "description": "Canlı Sohbet"
+  },
   "available24x7": "7/24 ulaşılabilir",
+  "@available24x7": {
+    "description": "7/24 ulaşılabilir"
+  },
   "close": "Kapat",
+  "@close": {
+    "description": "Kapat"
+  },
   "logoutConfirmTitle": "Çıkış Yap",
+  "@logoutConfirmTitle": {
+    "description": "Çıkış Yap"
+  },
   "logoutConfirmMessage": "Hesabınızdan çıkmak istediğinize emin misiniz?",
+  "@logoutConfirmMessage": {
+    "description": "Hesabınızdan çıkmak istediğinize emin misiniz?"
+  },
   "passwordsDoNotMatch": "Şifreler eşleşmiyor",
+  "@passwordsDoNotMatch": {
+    "description": "Şifreler eşleşmiyor"
+  },
   "passwordChangedSuccess": "Şifre başarıyla değiştirildi",
+  "@passwordChangedSuccess": {
+    "description": "Şifre başarıyla değiştirildi"
+  },
   "changePasswordDescription": "Mevcut şifrenizi girin ve yeni şifrenizi seçin",
+  "@changePasswordDescription": {
+    "description": "Mevcut şifrenizi girin ve yeni şifrenizi seçin"
+  },
   "currentPassword": "Mevcut Şifre",
+  "@currentPassword": {
+    "description": "Mevcut Şifre"
+  },
   "currentPasswordRequired": "Mevcut şifre gerekli",
+  "@currentPasswordRequired": {
+    "description": "Mevcut şifre gerekli"
+  },
   "newPassword": "Yeni Şifre",
+  "@newPassword": {
+    "description": "Yeni Şifre"
+  },
   "newPasswordRequired": "Yeni şifre gerekli",
+  "@newPasswordRequired": {
+    "description": "Yeni şifre gerekli"
+  },
   "confirmNewPassword": "Şifre Tekrarı",
+  "@confirmNewPassword": {
+    "description": "Şifre Tekrarı"
+  },
   "confirmPasswordRequired": "Şifre tekrarı gerekli",
+  "@confirmPasswordRequired": {
+    "description": "Şifre tekrarı gerekli"
+  },
   "secureYourAccount": "Hesabınızı güvende tutun",
+  "@secureYourAccount": {
+    "description": "Hesabınızı güvende tutun"
+  },
   "addressesLoadFailed": "Adresler yüklenemedi",
+  "@addressesLoadFailed": {
+    "description": "Adresler yüklenemedi"
+  },
   "deleteAddressTitle": "Adresi Sil",
+  "@deleteAddressTitle": {
+    "description": "Adresi Sil"
+  },
   "deleteAddressConfirm": "Bu adresi silmek istediğinizden emin misiniz?",
+  "@deleteAddressConfirm": {
+    "description": "Bu adresi silmek istediğinizden emin misiniz?"
+  },
   "delete": "Sil",
+  "@delete": {
+    "description": "Sil"
+  },
   "addressDeleted": "Adres silindi",
+  "@addressDeleted": {
+    "description": "Adres silindi"
+  },
   "defaultAddressUpdated": "Varsayılan adres güncellendi",
+  "@defaultAddressUpdated": {
+    "description": "Varsayılan adres güncellendi"
+  },
   "manageDeliveryAddresses": "Teslimat adreslerinizi yönetin",
+  "@manageDeliveryAddresses": {
+    "description": "Teslimat adreslerinizi yönetin"
+  },
   "noAddressesYet": "Henüz adres eklenmemiş",
+  "@noAddressesYet": {
+    "description": "Henüz adres eklenmemiş"
+  },
   "tapToAddAddress": "Yeni adres eklemek için + butonuna tıklayın",
+  "@tapToAddAddress": {
+    "description": "Yeni adres eklemek için + butonuna tıklayın"
+  },
   "defaultLabel": "Varsayılan",
+  "@defaultLabel": {
+    "description": "Varsayılan"
+  },
   "edit": "Düzenle",
+  "@edit": {
+    "description": "Düzenle"
+  },
   "setAsDefault": "Varsayılan Yap",
+  "@setAsDefault": {
+    "description": "Varsayılan Yap"
+  },
   "addressCountSingular": "1 adres",
+  "@addressCountSingular": {
+    "description": "1 adres"
+  },
   "addressCountPlural": "{count} adres",
+  "@addressCountPlural": {
+    "description": "{count} adres",
+    "placeholders": {
+      "count": {}
+    }
+  },
   "locationServicesDisabled": "Konum servisleri devre dışı",
+  "@locationServicesDisabled": {
+    "description": "Konum servisleri devre dışı"
+  },
   "pleaseSelectLocation": "Lütfen bir konum seçin",
+  "@pleaseSelectLocation": {
+    "description": "Lütfen bir konum seçin"
+  },
   "selectedLocation": "Seçilen Konum",
+  "@selectedLocation": {
+    "description": "Seçilen Konum"
+  },
   "addressTitleOptional": "Adres Başlığı (Opsiyonel)",
+  "@addressTitleOptional": {
+    "description": "Adres Başlığı (Opsiyonel)"
+  },
   "canBeLeftEmpty": "Boş bırakılabilir",
+  "@canBeLeftEmpty": {
+    "description": "Boş bırakılabilir"
+  },
   "address": "Adres",
+  "@address": {
+    "description": "Adres"
+  },
   "city": "Şehir",
+  "@city": {
+    "description": "Şehir"
+  },
   "district": "İlçe",
+  "@district": {
+    "description": "İlçe"
+  },
   "selectOrDragMarkerOnMap": "Haritada bir konum seçin veya işaretçiyi sürükleyin",
+  "@selectOrDragMarkerOnMap": {
+    "description": "Haritada bir konum seçin veya işaretçiyi sürükl..."
+  },
   "saveAddressButton": "Adresi Kaydet",
+  "@saveAddressButton": {
+    "description": "Adresi Kaydet"
+  },
   "selectAddress": "Adres Seç",
+  "@selectAddress": {
+    "description": "Adres Seç"
+  },
   "selectLocationFromMap": "Haritadan konum seç",
+  "@selectLocationFromMap": {
+    "description": "Haritadan konum seç"
+  },
   "addressAdded": "Adres eklendi",
+  "@addressAdded": {
+    "description": "Adres eklendi"
+  },
   "addressUpdated": "Adres güncellendi",
+  "@addressUpdated": {
+    "description": "Adres güncellendi"
+  },
   "editAddress": "Adresi Düzenle",
+  "@editAddress": {
+    "description": "Adresi Düzenle"
+  },
   "addNewAddress": "Yeni Adres Ekle",
+  "@addNewAddress": {
+    "description": "Yeni Adres Ekle"
+  },
   "updateAddressInfo": "Adres bilgilerini güncelleyin",
+  "@updateAddressInfo": {
+    "description": "Adres bilgilerini güncelleyin"
+  },
   "enterDeliveryAddressDetails": "Teslimat adresi bilgilerini girin",
+  "@enterDeliveryAddressDetails": {
+    "description": "Teslimat adresi bilgilerini girin"
+  },
   "addressTitleHint": "Adres Başlığı (Ev, İş, vb.)",
+  "@addressTitleHint": {
+    "description": "Adres Başlığı (Ev, İş, vb.)"
+  },
   "titleRequired": "Başlık gerekli",
+  "@titleRequired": {
+    "description": "Başlık gerekli"
+  },
   "selectAddressFromMap": "Haritadan Adres Seç",
+  "@selectAddressFromMap": {
+    "description": "Haritadan Adres Seç"
+  },
   "fullAddress": "Açık Adres",
+  "@fullAddress": {
+    "description": "Açık Adres"
+  },
   "addressRequired": "Adres gerekli",
+  "@addressRequired": {
+    "description": "Adres gerekli"
+  },
   "cityRequired": "Şehir gerekli",
+  "@cityRequired": {
+    "description": "Şehir gerekli"
+  },
   "districtRequired": "İlçe gerekli",
+  "@districtRequired": {
+    "description": "İlçe gerekli"
+  },
   "postalCodeOptional": "Posta Kodu (Opsiyonel)",
+  "@postalCodeOptional": {
+    "description": "Posta Kodu (Opsiyonel)"
+  },
   "updateAddressButton": "Adresi Güncelle",
+  "@updateAddressButton": {
+    "description": "Adresi Güncelle"
+  },
   "updateAddressDetails": "Adres detaylarını güncelle",
+  "@updateAddressDetails": {
+    "description": "Adres detaylarını güncelle"
+  },
   "createNewAddress": "Yeni adres oluştur",
+  "@createNewAddress": {
+    "description": "Yeni adres oluştur"
+  },
   "orderUpdates": "Sipariş Güncellemeleri",
+  "@orderUpdates": {
+    "description": "Sipariş Güncellemeleri"
+  },
   "orderUpdatesDescription": "Sipariş durumu değişikliklerinde bildirim al",
+  "@orderUpdatesDescription": {
+    "description": "Sipariş durumu değişikliklerinde bildirim al"
+  },
   "promotions": "Kampanyalar",
+  "@promotions": {
+    "description": "Kampanyalar"
+  },
   "promotionsDescription": "Özel teklifler ve kampanyalar",
+  "@promotionsDescription": {
+    "description": "Özel teklifler ve kampanyalar"
+  },
   "newProductsDescription": "Yeni ürün eklendiğinde bildirim al",
+  "@newProductsDescription": {
+    "description": "Yeni ürün eklendiğinde bildirim al"
+  },
   "settingsSaved": "Ayarlar kaydedildi",
+  "@settingsSaved": {
+    "description": "Ayarlar kaydedildi"
+  },
   "regionalSettingsDescription": "Tarih ve saat ayarları",
+  "@regionalSettingsDescription": {
+    "description": "Tarih ve saat ayarları"
+  },
   "timeZoneHint": "Örn: Europe/Istanbul, America/New_York",
+  "@timeZoneHint": {
+    "description": "Örn: Europe/Istanbul, America/New_York"
+  },
   "manageNotificationPreferences": "Bildirim tercihlerinizi yönetin",
+  "@manageNotificationPreferences": {
+    "description": "Bildirim tercihlerinizi yönetin"
+  },
   "orderHistoryDescription": "Geçmiş siparişlerinizi görüntüleyin",
+  "@orderHistoryDescription": {
+    "description": "Geçmiş siparişlerinizi görüntüleyin"
+  },
   "myAddressesDescription": "Teslimat adreslerinizi yönetin",
+  "@myAddressesDescription": {
+    "description": "Teslimat adreslerinizi yönetin"
+  },
   "myFavoriteProducts": "Favori Ürünlerim",
+  "@myFavoriteProducts": {
+    "description": "Favori Ürünlerim"
+  },
   "myFavoriteProductsDescription": "Beğendiğiniz ürünleri görüntüleyin ve yönetin",
+  "@myFavoriteProductsDescription": {
+    "description": "Beğendiğiniz ürünleri görüntüleyin ve yönetin"
+  },
   "changePasswordSubtitle": "Şifrenizi değiştirin ve güvenliği artırın",
+  "@changePasswordSubtitle": {
+    "description": "Şifrenizi değiştirin ve güvenliği artırın"
+  },
   "notificationSettingsDescription": "Bildirim tercihlerinizi yönetin",
+  "@notificationSettingsDescription": {
+    "description": "Bildirim tercihlerinizi yönetin"
+  },
   "selectLanguageDescription": "Uygulama dilini değiştirin",
+  "@selectLanguageDescription": {
+    "description": "Uygulama dilini değiştirin"
+  },
   "selectLanguageSubtitle": "Tercih ettiğiniz dili seçin",
+  "@selectLanguageSubtitle": {
+    "description": "Tercih ettiğiniz dili seçin"
+  },
   "languageChanged": "Dil değiştirildi",
+  "@languageChanged": {
+    "description": "Dil değiştirildi"
+  },
   "languagesCount": "{count} dil",
   "@languagesCount": {
     "placeholders": {
@@ -399,26 +1422,89 @@
     }
   },
   "legalDocumentsDescription": "Kullanım şartları ve politikalar",
+  "@legalDocumentsDescription": {
+    "description": "Kullanım şartları ve politikalar"
+  },
   "helpCenterDescription": "SSS ve destek hattı",
+  "@helpCenterDescription": {
+    "description": "SSS ve destek hattı"
+  },
   "logoutDescription": "Hesabınızdan çıkış yapın",
+  "@logoutDescription": {
+    "description": "Hesabınızdan çıkış yapın"
+  },
   "vendorRegister": "Satıcı Kaydı",
+  "@vendorRegister": {
+    "description": "Satıcı Kaydı"
+  },
   "talabiBusiness": "Talabi Business",
+  "@talabiBusiness": {
+    "description": "Talabi Business"
+  },
   "createBusinessAccount": "İşletme Hesabı Oluştur",
+  "@createBusinessAccount": {
+    "description": "İşletme Hesabı Oluştur"
+  },
   "createYourStoreAndStartSelling": "Mağazanızı oluşturun ve satışa başlayın",
+  "@createYourStoreAndStartSelling": {
+    "description": "Mağazanızı oluşturun ve satışa başlayın"
+  },
   "businessName": "İşletme Adı",
+  "@businessName": {
+    "description": "İşletme Adı"
+  },
   "businessNameRequired": "İşletme adı gerekli",
+  "@businessNameRequired": {
+    "description": "İşletme adı gerekli"
+  },
   "phoneNumberRequired": "Telefon numarası gerekli",
+  "@phoneNumberRequired": {
+    "description": "Telefon numarası gerekli"
+  },
   "createVendorAccount": "Satıcı Hesabı Oluştur",
+  "@createVendorAccount": {
+    "description": "Satıcı Hesabı Oluştur"
+  },
   "alreadyHaveVendorAccount": "Zaten satıcı hesabınız var mı? ",
+  "@alreadyHaveVendorAccount": {
+    "description": "Zaten satıcı hesabınız var mı? "
+  },
   "isCustomerAccount": "Müşteri hesabı mı? ",
+  "@isCustomerAccount": {
+    "description": "Müşteri hesabı mı? "
+  },
   "emailAlreadyExists": "Bu email adresi ile zaten bir hesap bulunmaktadır.",
+  "@emailAlreadyExists": {
+    "description": "Bu email adresi ile zaten bir hesap bulunmaktadır."
+  },
   "enterFourDigitCode": "Lütfen 4 haneli kodu giriniz",
+  "@enterFourDigitCode": {
+    "description": "Lütfen 4 haneli kodu giriniz"
+  },
   "emailVerifiedSuccess": "Email adresi başarıyla doğrulandı",
+  "@emailVerifiedSuccess": {
+    "description": "Email adresi başarıyla doğrulandı"
+  },
   "emailVerifiedLoginFailed": "Email doğrulandı ancak otomatik giriş başarısız. Lütfen giriş yapın.",
+  "@emailVerifiedLoginFailed": {
+    "description": "Email doğrulandı ancak otomatik giriş başarısız..."
+  },
   "verificationFailed": "Doğrulama başarısız",
+  "@verificationFailed": {
+    "description": "Doğrulama başarısız"
+  },
   "verificationCodeResent": "Doğrulama kodu yeniden gönderildi",
+  "@verificationCodeResent": {
+    "description": "Doğrulama kodu yeniden gönderildi"
+  },
   "codeSendFailed": "Kod gönderilemedi",
+  "@codeSendFailed": {
+    "description": "Kod gönderilemedi"
+  },
   "fourDigitVerificationCode": "4 Haneli Doğrulama Kodu",
+  "@fourDigitVerificationCode": {
+    "description": "4 Haneli Doğrulama Kodu"
+  },
   "enterCodeSentToEmail": "{email} adresine gönderilen 4 haneli kodu giriniz",
   "@enterCodeSentToEmail": {
     "placeholders": {
@@ -432,6 +1518,9 @@
     }
   },
   "resendCode": "Tekrar Kod Gönder",
+  "@resendCode": {
+    "description": "Tekrar Kod Gönder"
+  },
   "settingsLoadError": "Ayarlar yüklenemedi: {error}",
   "@settingsLoadError": {
     "placeholders": {
@@ -439,7 +1528,13 @@
     }
   },
   "settingsUpdated": "Ayarlar güncellendi",
+  "@settingsUpdated": {
+    "description": "Ayarlar güncellendi"
+  },
   "reviewApproved": "Yorum onaylandı",
+  "@reviewApproved": {
+    "description": "Yorum onaylandı"
+  },
   "reviewApproveError": "Yorum onaylanırken hata oluştu: {error}",
   "@reviewApproveError": {
     "placeholders": {
@@ -447,9 +1542,21 @@
     }
   },
   "rejectReview": "Yorumu Reddet",
+  "@rejectReview": {
+    "description": "Yorumu Reddet"
+  },
   "rejectReviewConfirmation": "Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+  "@rejectReviewConfirmation": {
+    "description": "Bu yorumu reddetmek istediğinizden emin misiniz..."
+  },
   "reject": "Reddet",
+  "@reject": {
+    "description": "Reddet"
+  },
   "reviewRejected": "Yorum reddedildi",
+  "@reviewRejected": {
+    "description": "Yorum reddedildi"
+  },
   "reviewRejectError": "Yorum reddedilirken hata oluştu: {error}",
   "@reviewRejectError": {
     "placeholders": {
@@ -457,6 +1564,9 @@
     }
   },
   "reviewDetail": "Yorum Detayı",
+  "@reviewDetail": {
+    "description": "Yorum Detayı"
+  },
   "userId": "Kullanıcı ID: {id}",
   "@userId": {
     "placeholders": {
@@ -464,55 +1574,205 @@
     }
   },
   "rating": "Puan",
+  "@rating": {
+    "description": "Puan"
+  },
   "comment": "Yorum",
+  "@comment": {
+    "description": "Yorum"
+  },
   "noComment": "Yorum yok",
+  "@noComment": {
+    "description": "Yorum yok"
+  },
   "date": "Tarih",
+  "@date": {
+    "description": "Tarih"
+  },
   "approve": "Onayla",
+  "@approve": {
+    "description": "Onayla"
+  },
   "verify": "Onayla",
+  "@verify": {
+    "description": "Onayla"
+  },
   "placeOrder": "Sipariş Ver",
+  "@placeOrder": {
+    "description": "Sipariş Ver"
+  },
   "deliveryAddress": "Teslimat Adresi",
+  "@deliveryAddress": {
+    "description": "Teslimat Adresi"
+  },
   "changeAddress": "Değiştir",
+  "@changeAddress": {
+    "description": "Değiştir"
+  },
   "paymentMethod": "Ödeme Yöntemi",
+  "@paymentMethod": {
+    "description": "Ödeme Yöntemi"
+  },
   "cash": "Nakit",
+  "@cash": {
+    "description": "Nakit"
+  },
   "creditCard": "Kredi Kartı",
+  "@creditCard": {
+    "description": "Kredi Kartı"
+  },
   "mobilePayment": "Mobil Ödeme",
+  "@mobilePayment": {
+    "description": "Mobil Ödeme"
+  },
   "comingSoon": "Çok Yakında",
+  "@comingSoon": {
+    "description": "Çok Yakında"
+  },
   "orderNotePlaceholder": "Kurye için not ekle (isteğe bağlı)",
+  "@orderNotePlaceholder": {
+    "description": "Kurye için not ekle (isteğe bağlı)"
+  },
   "estimatedDelivery": "Tahmini Teslimat",
+  "@estimatedDelivery": {
+    "description": "Tahmini Teslimat"
+  },
   "minutes": "dakika",
+  "@minutes": {
+    "description": "dakika"
+  },
   "orderSummary": "Sipariş Özeti",
+  "@orderSummary": {
+    "description": "Sipariş Özeti"
+  },
   "pleaseSelectAddress": "Lütfen teslimat adresi seçin",
+  "@pleaseSelectAddress": {
+    "description": "Lütfen teslimat adresi seçin"
+  },
   "pleaseSelectPaymentMethod": "Lütfen ödeme yöntemi seçin",
+  "@pleaseSelectPaymentMethod": {
+    "description": "Lütfen ödeme yöntemi seçin"
+  },
   "orderCreatedSuccess": "Siparişiniz başarıyla oluşturuldu!",
+  "@orderCreatedSuccess": {
+    "description": "Siparişiniz başarıyla oluşturuldu!"
+  },
   "noAddressFound": "Kayıtlı adres bulunamadı",
+  "@noAddressFound": {
+    "description": "Kayıtlı adres bulunamadı"
+  },
   "cashDescription": "Nakit olarak kapıda kuryeye teslim edebilirsiniz.",
+  "@cashDescription": {
+    "description": "Nakit olarak kapıda kuryeye teslim edebilirsiniz."
+  },
   "paymentComingSoonDescription": "Bu ödeme yöntemi yakında hizmete girecektir.",
+  "@paymentComingSoonDescription": {
+    "description": "Bu ödeme yöntemi yakında hizmete girecektir."
+  },
   "skip": "Geç",
+  "@skip": {
+    "description": "Geç"
+  },
   "next": "İleri",
+  "@next": {
+    "description": "İleri"
+  },
   "getStarted": "Hadi Başlayın!",
+  "@getStarted": {
+    "description": "Hadi Başlayın!"
+  },
   "onboardingTitle1": "Lezzetli Yemekler\nDakikalar İçinde Kapınızda",
+  "@onboardingTitle1": {
+    "description": "Lezzetli Yemekler Dakikalar İçinde Kapınızda"
+  },
   "onboardingDesc1": "Favori restoranlarınızdan dilediğiniz yemeği sipariş verin, sıcak sıcak tadını çıkarın.",
+  "@onboardingDesc1": {
+    "description": "Favori restoranlarınızdan dilediğiniz yemeği si..."
+  },
   "onboardingTitle2": "Market Alışverişiniz\nDakikalar İçinde Kapınızda",
+  "@onboardingTitle2": {
+    "description": "Market Alışverişiniz Dakikalar İçinde Kapınızda"
+  },
   "onboardingDesc2": "Taze sebze, meyve ve günlük ihtiyaçlarınız en hızlı şekilde kapınızda.",
+  "@onboardingDesc2": {
+    "description": "Taze sebze, meyve ve günlük ihtiyaçlarınız en h..."
+  },
   "onboardingTitle3": "En İyi Fiyatlar & Fırsatlar",
+  "@onboardingTitle3": {
+    "description": "En İyi Fiyatlar & Fırsatlar"
+  },
   "onboardingDesc3": "Her gün özel fırsatların ve rekabetçi fiyatların tadını çıkarın",
+  "@onboardingDesc3": {
+    "description": "Her gün özel fırsatların ve rekabetçi fiyatları..."
+  },
   "pending": "Bekleyen",
+  "@pending": {
+    "description": "Bekleyen"
+  },
   "preparing": "Hazırlanıyor",
+  "@preparing": {
+    "description": "Hazırlanıyor"
+  },
   "ready": "Hazır",
+  "@ready": {
+    "description": "Hazır"
+  },
   "outForDelivery": "Teslimata Çıktı",
+  "@outForDelivery": {
+    "description": "Teslimata Çıktı"
+  },
   "delivered": "Teslim Edildi",
+  "@delivered": {
+    "description": "Teslim Edildi"
+  },
   "onWay": "Yolda",
+  "@onWay": {
+    "description": "Yolda"
+  },
   "cancelled": "İptal Edildi",
+  "@cancelled": {
+    "description": "İptal Edildi"
+  },
   "assigned": "Atandı",
+  "@assigned": {
+    "description": "Atandı"
+  },
   "accepted": "Kabul Edildi",
+  "@accepted": {
+    "description": "Kabul Edildi"
+  },
   "rejected": "Reddedildi",
+  "@rejected": {
+    "description": "Reddedildi"
+  },
   "pickedUp": "Teslim Alındı",
+  "@pickedUp": {
+    "description": "Teslim Alındı"
+  },
   "courierInformation": "Kurye Bilgileri",
+  "@courierInformation": {
+    "description": "Kurye Bilgileri"
+  },
   "assignedAt": "Atanma Tarihi",
+  "@assignedAt": {
+    "description": "Atanma Tarihi"
+  },
   "acceptedAt": "Kabul Tarihi",
+  "@acceptedAt": {
+    "description": "Kabul Tarihi"
+  },
   "pickedUpAt": "Teslim Alındı",
+  "@pickedUpAt": {
+    "description": "Teslim Alındı"
+  },
   "outForDeliveryAt": "Teslimata Çıktı",
+  "@outForDeliveryAt": {
+    "description": "Teslimata Çıktı"
+  },
   "vendorOrders": "Satıcı Siparişleri",
+  "@vendorOrders": {
+    "description": "Satıcı Siparişleri"
+  },
   "pendingOrdersCount": "{count} adet bekleyen sipariş",
   "@pendingOrdersCount": {
     "placeholders": {
@@ -546,9 +1806,21 @@
     }
   },
   "noOrdersFound": "Sipariş bulunamadı",
+  "@noOrdersFound": {
+    "description": "Sipariş bulunamadı"
+  },
   "order": "Sipariş",
+  "@order": {
+    "description": "Sipariş"
+  },
   "customer": "Müşteri",
+  "@customer": {
+    "description": "Müşteri"
+  },
   "vendorDashboard": "Satıcı Paneli",
+  "@vendorDashboard": {
+    "description": "Satıcı Paneli"
+  },
   "summaryLoadError": "Özet yüklenemedi: {error}",
   "@summaryLoadError": {
     "placeholders": {
@@ -562,12 +1834,33 @@
     }
   },
   "todayOrders": "Bugünkü Siparişler",
+  "@todayOrders": {
+    "description": "Bugünkü Siparişler"
+  },
   "pendingOrders": "Bekleyen Siparişler",
+  "@pendingOrders": {
+    "description": "Bekleyen Siparişler"
+  },
   "todayRevenue": "Bugünkü Gelir",
+  "@todayRevenue": {
+    "description": "Bugünkü Gelir"
+  },
   "weeklyRevenue": "Haftalık Gelir",
+  "@weeklyRevenue": {
+    "description": "Haftalık Gelir"
+  },
   "quickActions": "Hızlı İşlemler",
+  "@quickActions": {
+    "description": "Hızlı İşlemler"
+  },
   "reports": "Raporlar",
+  "@reports": {
+    "description": "Raporlar"
+  },
   "logoUpdated": "Logo güncellendi",
+  "@logoUpdated": {
+    "description": "Logo güncellendi"
+  },
   "logoUploadFailed": "Logo yüklenemedi: {error}",
   "@logoUploadFailed": {
     "placeholders": {
@@ -575,19 +1868,61 @@
     }
   },
   "locationSelectedChange": "Konum Seçildi (Değiştir)",
+  "@locationSelectedChange": {
+    "description": "Konum Seçildi (Değiştir)"
+  },
   "selectLocationFromMapRequired": "Haritadan Konum Seç *",
+  "@selectLocationFromMapRequired": {
+    "description": "Haritadan Konum Seç *"
+  },
   "locationSelectionRequired": "Haritadan konum seçimi zorunludur",
+  "@locationSelectionRequired": {
+    "description": "Haritadan konum seçimi zorunludur"
+  },
   "addressAutoFillHint": "Haritadan seçilen adres otomatik doldurulur, manuel düzenleyebilirsiniz",
+  "@addressAutoFillHint": {
+    "description": "Haritadan seçilen adres otomatik doldurulur, ma..."
+  },
   "selectLocationFirst": "Önce haritadan konum seçmelisiniz",
+  "@selectLocationFirst": {
+    "description": "Önce haritadan konum seçmelisiniz"
+  },
   "vendorNotificationsTitle": "Bildirimler",
+  "@vendorNotificationsTitle": {
+    "description": "Bildirimler"
+  },
   "vendorNotificationsEmptyMessage": "Henüz bildiriminiz yok.",
+  "@vendorNotificationsEmptyMessage": {
+    "description": "Henüz bildiriminiz yok."
+  },
   "vendorNotificationsErrorMessage": "Bildirimler yüklenirken bir hata oluştu.",
+  "@vendorNotificationsErrorMessage": {
+    "description": "Bildirimler yüklenirken bir hata oluştu."
+  },
   "vendorLogin": "Satıcı Girişi",
+  "@vendorLogin": {
+    "description": "Satıcı Girişi"
+  },
   "welcomeBackVendor": "Tekrar Hoş Geldiniz, Satıcı!",
+  "@welcomeBackVendor": {
+    "description": "Tekrar Hoş Geldiniz, Satıcı!"
+  },
   "vendorLoginDescription": "Mağazanızı ve siparişlerinizi yönetmek için giriş yapın",
+  "@vendorLoginDescription": {
+    "description": "Mağazanızı ve siparişlerinizi yönetmek için gir..."
+  },
   "areYouCustomer": "Müşteri misiniz?",
+  "@areYouCustomer": {
+    "description": "Müşteri misiniz?"
+  },
   "vendorProductsTitle": "Ürünlerim",
+  "@vendorProductsTitle": {
+    "description": "Ürünlerim"
+  },
   "vendorProductsSearchHint": "Ürün ara...",
+  "@vendorProductsSearchHint": {
+    "description": "Ürün ara..."
+  },
   "vendorProductsLoadError": "Ürünler yüklenemedi: {error}",
   "@vendorProductsLoadError": {
     "placeholders": {
@@ -607,6 +1942,9 @@
     }
   },
   "vendorProductsDeleteTitle": "Ürünü Sil",
+  "@vendorProductsDeleteTitle": {
+    "description": "Ürünü Sil"
+  },
   "vendorProductsDeleteConfirmation": "{productName} ürününü silmek istediğinize emin misiniz?",
   "@vendorProductsDeleteConfirmation": {
     "placeholders": {
@@ -620,11 +1958,29 @@
     }
   },
   "vendorProductsEmpty": "Ürün bulunamadı",
+  "@vendorProductsEmpty": {
+    "description": "Ürün bulunamadı"
+  },
   "vendorProductsAddFirst": "İlk Ürününü Ekle",
+  "@vendorProductsAddFirst": {
+    "description": "İlk Ürününü Ekle"
+  },
   "vendorProductsAddNew": "Yeni Ürün",
+  "@vendorProductsAddNew": {
+    "description": "Yeni Ürün"
+  },
   "vendorProductFormEditTitle": "Ürün Düzenle",
+  "@vendorProductFormEditTitle": {
+    "description": "Ürün Düzenle"
+  },
   "vendorProductFormNewTitle": "Yeni Ürün",
+  "@vendorProductFormNewTitle": {
+    "description": "Yeni Ürün"
+  },
   "vendorProductFormImageUploaded": "Resim yüklendi",
+  "@vendorProductFormImageUploaded": {
+    "description": "Resim yüklendi"
+  },
   "vendorProductFormImageUploadError": "Resim yüklenemedi: {error}",
   "@vendorProductFormImageUploadError": {
     "placeholders": {
@@ -632,9 +1988,21 @@
     }
   },
   "vendorProductFormSourceCamera": "Kamera",
+  "@vendorProductFormSourceCamera": {
+    "description": "Kamera"
+  },
   "vendorProductFormSourceGallery": "Galeri",
+  "@vendorProductFormSourceGallery": {
+    "description": "Galeri"
+  },
   "vendorProductFormCreateSuccess": "Ürün oluşturuldu",
+  "@vendorProductFormCreateSuccess": {
+    "description": "Ürün oluşturuldu"
+  },
   "vendorProductFormUpdateSuccess": "Ürün güncellendi",
+  "@vendorProductFormUpdateSuccess": {
+    "description": "Ürün güncellendi"
+  },
   "vendorProductFormError": "Hata: {error}",
   "@vendorProductFormError": {
     "placeholders": {
@@ -642,37 +2010,133 @@
     }
   },
   "vendorProductFormNameLabel": "Ürün Adı *",
+  "@vendorProductFormNameLabel": {
+    "description": "Ürün Adı *"
+  },
   "vendorProductFormNameRequired": "Ürün adı gerekli",
+  "@vendorProductFormNameRequired": {
+    "description": "Ürün adı gerekli"
+  },
   "vendorProductFormDescriptionLabel": "Açıklama",
+  "@vendorProductFormDescriptionLabel": {
+    "description": "Açıklama"
+  },
   "vendorProductFormCategoryLabel": "Kategori",
+  "@vendorProductFormCategoryLabel": {
+    "description": "Kategori"
+  },
   "vendorProductFormPriceLabel": "Fiyat *",
+  "@vendorProductFormPriceLabel": {
+    "description": "Fiyat *"
+  },
   "vendorProductFormPriceRequired": "Fiyat gerekli",
+  "@vendorProductFormPriceRequired": {
+    "description": "Fiyat gerekli"
+  },
   "vendorProductFormPriceInvalid": "Geçerli bir fiyat girin",
+  "@vendorProductFormPriceInvalid": {
+    "description": "Geçerli bir fiyat girin"
+  },
   "vendorProductFormStockLabel": "Stok Miktarı",
+  "@vendorProductFormStockLabel": {
+    "description": "Stok Miktarı"
+  },
   "vendorProductFormInvalidNumber": "Geçerli bir sayı girin",
+  "@vendorProductFormInvalidNumber": {
+    "description": "Geçerli bir sayı girin"
+  },
   "vendorProductFormPreparationTimeLabel": "Hazırlık Süresi (dakika)",
+  "@vendorProductFormPreparationTimeLabel": {
+    "description": "Hazırlık Süresi (dakika)"
+  },
   "vendorProductFormInStockLabel": "Stokta",
+  "@vendorProductFormInStockLabel": {
+    "description": "Stokta"
+  },
   "vendorProductFormInStockDescription": "Ürün müşterilere gösterilecek",
+  "@vendorProductFormInStockDescription": {
+    "description": "Ürün müşterilere gösterilecek"
+  },
   "vendorProductFormOutOfStockDescription": "Ürün stok dışı olarak işaretlenecek",
+  "@vendorProductFormOutOfStockDescription": {
+    "description": "Ürün stok dışı olarak işaretlenecek"
+  },
   "updateButton": "Güncelle",
+  "@updateButton": {
+    "description": "Güncelle"
+  },
   "createButton": "Oluştur",
+  "@createButton": {
+    "description": "Oluştur"
+  },
   "vendorProductFormAddImage": "Resim Ekle",
+  "@vendorProductFormAddImage": {
+    "description": "Resim Ekle"
+  },
   "vendorProfileTitle": "Satıcı Profilim",
+  "@vendorProfileTitle": {
+    "description": "Satıcı Profilim"
+  },
   "vendorFallbackSubtitle": "Satıcı",
+  "@vendorFallbackSubtitle": {
+    "description": "Satıcı"
+  },
   "businessInfo": "İşletme Bilgileri",
+  "@businessInfo": {
+    "description": "İşletme Bilgileri"
+  },
   "addressLabel": "Adres",
+  "@addressLabel": {
+    "description": "Adres"
+  },
   "phoneLabel": "Telefon",
+  "@phoneLabel": {
+    "description": "Telefon"
+  },
   "generalSettings": "Genel Ayarlar",
+  "@generalSettings": {
+    "description": "Genel Ayarlar"
+  },
   "businessSettingsTitle": "İşletme Ayarları",
+  "@businessSettingsTitle": {
+    "description": "İşletme Ayarları"
+  },
   "businessSettingsSubtitle": "Minimum sipariş, teslimat ücreti ve diğer ayarlar",
+  "@businessSettingsSubtitle": {
+    "description": "Minimum sipariş, teslimat ücreti ve diğer ayarlar"
+  },
   "languageNameTr": "Türkçe",
+  "@languageNameTr": {
+    "description": "Türkçe"
+  },
   "languageNameEn": "English",
+  "@languageNameEn": {
+    "description": "English"
+  },
   "languageNameAr": "العربية",
+  "@languageNameAr": {
+    "description": "العربية"
+  },
   "businessNameFallback": "İşletme Adı",
+  "@businessNameFallback": {
+    "description": "İşletme Adı"
+  },
   "retry": "Yeniden Dene",
+  "@retry": {
+    "description": "Yeniden Dene"
+  },
   "markAsRead": "Okundu olarak işaretle",
+  "@markAsRead": {
+    "description": "Okundu olarak işaretle"
+  },
   "pendingReviews": "Bekleyen Yorumlar",
+  "@pendingReviews": {
+    "description": "Bekleyen Yorumlar"
+  },
   "noPendingReviews": "Bekleyen yorum yok",
+  "@noPendingReviews": {
+    "description": "Bekleyen yorum yok"
+  },
   "reviewsLoadError": "Yorumlar yüklenemedi: {error}",
   "@reviewsLoadError": {
     "placeholders": {
@@ -680,16 +2144,49 @@
     }
   },
   "salesReports": "Satış Raporları",
+  "@salesReports": {
+    "description": "Satış Raporları"
+  },
   "selectDateRange": "Tarih Aralığı Seç",
+  "@selectDateRange": {
+    "description": "Tarih Aralığı Seç"
+  },
   "daily": "Günlük",
+  "@daily": {
+    "description": "Günlük"
+  },
   "weekly": "Haftalık",
+  "@weekly": {
+    "description": "Haftalık"
+  },
   "monthly": "Aylık",
+  "@monthly": {
+    "description": "Aylık"
+  },
   "noReportFound": "Rapor bulunamadı",
+  "@noReportFound": {
+    "description": "Rapor bulunamadı"
+  },
   "totalOrders": "Toplam Sipariş",
+  "@totalOrders": {
+    "description": "Toplam Sipariş"
+  },
   "totalRevenue": "Toplam Gelir",
+  "@totalRevenue": {
+    "description": "Toplam Gelir"
+  },
   "completed": "Tamamlanan",
+  "@completed": {
+    "description": "Tamamlanan"
+  },
   "cancelledOrders": "İptal Edilen",
+  "@cancelledOrders": {
+    "description": "İptal Edilen"
+  },
   "dailySales": "Günlük Satışlar",
+  "@dailySales": {
+    "description": "Günlük Satışlar"
+  },
   "orderCount": "{count} sipariş",
   "@orderCount": {
     "placeholders": {
@@ -697,11 +2194,29 @@
     }
   },
   "refresh": "Yenile",
+  "@refresh": {
+    "description": "Yenile"
+  },
   "cancelOrder": "Siparişi İptal Et",
+  "@cancelOrder": {
+    "description": "Siparişi İptal Et"
+  },
   "reorder": "Yeniden Sipariş Ver",
+  "@reorder": {
+    "description": "Yeniden Sipariş Ver"
+  },
   "orderCancelled": "Sipariş iptal edildi",
+  "@orderCancelled": {
+    "description": "Sipariş iptal edildi"
+  },
   "cancelReason": "İptal nedeni",
+  "@cancelReason": {
+    "description": "İptal nedeni"
+  },
   "cancelReasonDescription": "İptal nedeninizi belirtin (en az 10 karakter):",
+  "@cancelReasonDescription": {
+    "description": "İptal nedeninizi belirtin (en az 10 karakter):"
+  },
   "acceptOrderTitle": "Sipariş Kabul",
   "@acceptOrderTitle": {
     "description": "Sipariş kabul etme popup başlığı"
@@ -727,15 +2242,45 @@
     "description": "Siparişi hazır olarak işaretle butonu"
   },
   "rejectOrder": "Siparişi Reddet",
+  "@rejectOrder": {
+    "description": "Siparişi Reddet"
+  },
   "rejectOrderTitle": "Sipariş Reddi",
+  "@rejectOrderTitle": {
+    "description": "Sipariş Reddi"
+  },
   "rejectReason": "Red sebebi",
+  "@rejectReason": {
+    "description": "Red sebebi"
+  },
   "rejectReasonDescription": "Red sebebinizi girin (en az 1 karakter):",
+  "@rejectReasonDescription": {
+    "description": "Red sebebinizi girin (en az 1 karakter):"
+  },
   "rejectReasonHint": "Red sebebi...",
+  "@rejectReasonHint": {
+    "description": "Red sebebi..."
+  },
   "rejectOrderConfirmation": "Bu siparişi reddetmek istediğinizden emin misiniz?",
+  "@rejectOrderConfirmation": {
+    "description": "Bu siparişi reddetmek istediğinizden emin misiniz?"
+  },
   "orderRejected": "Sipariş reddedildi",
+  "@orderRejected": {
+    "description": "Sipariş reddedildi"
+  },
   "pieces": "adet",
+  "@pieces": {
+    "description": "adet"
+  },
   "orderNotFound": "Sipariş bulunamadı",
+  "@orderNotFound": {
+    "description": "Sipariş bulunamadı"
+  },
   "productsAddedToCart": "Ürünler sepete eklendi, sepete yönlendiriliyorsunuz...",
+  "@productsAddedToCart": {
+    "description": "Ürünler sepete eklendi, sepete yönlendiriliyors..."
+  },
   "reorderFailed": "Yeniden sipariş oluşturulamadı: {error}",
   "@reorderFailed": {
     "placeholders": {
@@ -743,7 +2288,13 @@
     }
   },
   "locationPermissionDenied": "Konum izni reddedildi",
+  "@locationPermissionDenied": {
+    "description": "Konum izni reddedildi"
+  },
   "locationPermissionDeniedForever": "Konum izni kalıcı olarak reddedildi",
+  "@locationPermissionDeniedForever": {
+    "description": "Konum izni kalıcı olarak reddedildi"
+  },
   "vendorsLoadFailed": "Marketler yüklenemedi: {error}",
   "@vendorsLoadFailed": {
     "placeholders": {
@@ -751,24 +2302,81 @@
     }
   },
   "yourLocation": "Konumunuz",
+  "@yourLocation": {
+    "description": "Konumunuz"
+  },
   "locationPermissionTitle": "Konum İzni Gerekli",
+  "@locationPermissionTitle": {
+    "description": "Konum İzni Gerekli"
+  },
   "locationPermissionMessage": "Uygulamanın size yakın restoranları gösterebilmesi ve siparişlerinizi takip edebilmesi için konum iznine ihtiyacımız var.",
+  "@locationPermissionMessage": {
+    "description": "Uygulamanın size yakın restoranları gösterebilm..."
+  },
   "allow": "İzin Ver",
+  "@allow": {
+    "description": "İzin Ver"
+  },
   "locationManagement": "Konum Yönetimi",
+  "@locationManagement": {
+    "description": "Konum Yönetimi"
+  },
   "currentLocationInfo": "Mevcut Konum Bilgisi",
+  "@currentLocationInfo": {
+    "description": "Mevcut Konum Bilgisi"
+  },
   "latitude": "Enlem",
+  "@latitude": {
+    "description": "Enlem"
+  },
   "longitude": "Boylam",
+  "@longitude": {
+    "description": "Boylam"
+  },
   "lastLocationUpdate": "Son Güncelleme",
+  "@lastLocationUpdate": {
+    "description": "Son Güncelleme"
+  },
   "noLocationData": "Henüz konum bilgisi yok",
+  "@noLocationData": {
+    "description": "Henüz konum bilgisi yok"
+  },
   "selectLocationOnMap": "Haritada Konum Seç",
+  "@selectLocationOnMap": {
+    "description": "Haritada Konum Seç"
+  },
   "useCurrentLocation": "Mevcut Konumu Kullan",
+  "@useCurrentLocation": {
+    "description": "Mevcut Konumu Kullan"
+  },
   "updateLocation": "Konumu Güncelle",
+  "@updateLocation": {
+    "description": "Konumu Güncelle"
+  },
   "locationSharingInfo": "Konum paylaşımı, yakınındaki restoranlardan sipariş alabilmen için gereklidir. Durumun \"Available\" olduğunda konumun otomatik olarak paylaşılır.",
+  "@locationSharingInfo": {
+    "description": "Konum paylaşımı, yakınındaki restoranlardan sip..."
+  },
   "locationManagementDescription": "Mevcut konumunu görüntüle ve güncelle",
+  "@locationManagementDescription": {
+    "description": "Mevcut konumunu görüntüle ve güncelle"
+  },
   "vendorsMap": "Marketler Haritası",
+  "@vendorsMap": {
+    "description": "Marketler Haritası"
+  },
   "findMyLocation": "Konumumu Bul",
+  "@findMyLocation": {
+    "description": "Konumumu Bul"
+  },
   "viewProducts": "Ürünleri Görüntüle",
+  "@viewProducts": {
+    "description": "Ürünleri Görüntüle"
+  },
   "gettingLocation": "Konum alınıyor...",
+  "@gettingLocation": {
+    "description": "Konum alınıyor..."
+  },
   "searchError": "Arama hatası: {error}",
   "@searchError": {
     "placeholders": {
@@ -782,32 +2390,113 @@
     }
   },
   "filters": "Filtreler",
+  "@filters": {
+    "description": "Filtreler"
+  },
   "clear": "Temizle",
+  "@clear": {
+    "description": "Temizle"
+  },
   "selectCategory": "Kategori seçin",
+  "@selectCategory": {
+    "description": "Kategori seçin"
+  },
   "priceRange": "Fiyat Aralığı",
+  "@priceRange": {
+    "description": "Fiyat Aralığı"
+  },
   "minPrice": "Min Fiyat",
+  "@minPrice": {
+    "description": "Min Fiyat"
+  },
   "maxPrice": "Max Fiyat",
+  "@maxPrice": {
+    "description": "Max Fiyat"
+  },
   "selectCity": "Şehir seçin",
+  "@selectCity": {
+    "description": "Şehir seçin"
+  },
   "minimumRating": "Minimum Rating",
+  "@minimumRating": {
+    "description": "Minimum Rating"
+  },
   "maximumDistance": "Maksimum Mesafe (km)",
+  "@maximumDistance": {
+    "description": "Maksimum Mesafe (km)"
+  },
   "distanceKm": "Mesafe (km)",
+  "@distanceKm": {
+    "description": "Mesafe (km)"
+  },
   "sortBy": "Sıralama",
+  "@sortBy": {
+    "description": "Sıralama"
+  },
   "selectSortBy": "Sıralama seçin",
+  "@selectSortBy": {
+    "description": "Sıralama seçin"
+  },
   "priceLowToHigh": "Fiyat (Düşükten Yükseğe)",
+  "@priceLowToHigh": {
+    "description": "Fiyat (Düşükten Yükseğe)"
+  },
   "priceHighToLow": "Fiyat (Yüksekten Düşüğe)",
+  "@priceHighToLow": {
+    "description": "Fiyat (Yüksekten Düşüğe)"
+  },
   "sortByName": "İsme Göre",
+  "@sortByName": {
+    "description": "İsme Göre"
+  },
   "newest": "En Yeni",
+  "@newest": {
+    "description": "En Yeni"
+  },
   "ratingHighToLow": "Rating (Yüksekten Düşüğe)",
+  "@ratingHighToLow": {
+    "description": "Rating (Yüksekten Düşüğe)"
+  },
   "popularity": "Popülerlik",
+  "@popularity": {
+    "description": "Popülerlik"
+  },
   "distance": "Mesafe",
+  "@distance": {
+    "description": "Mesafe"
+  },
   "applyFilters": "Filtreleri Uygula",
+  "@applyFilters": {
+    "description": "Filtreleri Uygula"
+  },
   "searchProductsOrVendors": "Ürün veya market ara...",
+  "@searchProductsOrVendors": {
+    "description": "Ürün veya market ara..."
+  },
   "suggestions": "Öneriler",
+  "@suggestions": {
+    "description": "Öneriler"
+  },
   "product": "Ürün",
+  "@product": {
+    "description": "Ürün"
+  },
   "searchHistory": "Arama Geçmişi",
+  "@searchHistory": {
+    "description": "Arama Geçmişi"
+  },
   "typeToSearch": "Arama yapmak için yukarıdaki kutuya yazın",
+  "@typeToSearch": {
+    "description": "Arama yapmak için yukarıdaki kutuya yazın"
+  },
   "recentSearches": "Son Aramalar",
+  "@recentSearches": {
+    "description": "Son Aramalar"
+  },
   "noResultsFound": "Sonuç bulunamadı",
+  "@noResultsFound": {
+    "description": "Sonuç bulunamadı"
+  },
   "cityLabel": "Şehir: {city}",
   "@cityLabel": {
     "placeholders": {
@@ -821,6 +2510,9 @@
     }
   },
   "popularSearches": "Popüler Aramalar",
+  "@popularSearches": {
+    "description": "Popüler Aramalar"
+  },
   "removedFromFavorites": "{productName} favorilerden çıkarıldı",
   "@removedFromFavorites": {
     "placeholders": {
@@ -828,8 +2520,17 @@
     }
   },
   "deliveryZones": "Teslimat Bölgeleri",
+  "@deliveryZones": {
+    "description": "Teslimat Bölgeleri"
+  },
   "deliveryZonesDescription": "Teslimat yaptığınız şehir ve ilçeleri yönetin",
+  "@deliveryZonesDescription": {
+    "description": "Teslimat yaptığınız şehir ve ilçeleri yönetin"
+  },
   "deliveryZonesUpdated": "Teslimat bölgeleri başarıyla güncellendi",
+  "@deliveryZonesUpdated": {
+    "description": "Teslimat bölgeleri başarıyla güncellendi"
+  },
   "addedToFavorites": "{productName} favorilere eklendi",
   "@addedToFavorites": {
     "placeholders": {
@@ -843,6 +2544,9 @@
     }
   },
   "noProductsYet": "Henüz ürün yok.",
+  "@noProductsYet": {
+    "description": "Henüz ürün yok."
+  },
   "productLoadFailed": "Ürün yüklenemedi: {error}",
   "@productLoadFailed": {
     "placeholders": {
@@ -850,16 +2554,49 @@
     }
   },
   "productNotFound": "Ürün bulunamadı",
+  "@productNotFound": {
+    "description": "Ürün bulunamadı"
+  },
   "rateVendor": "Vendor'u Değerlendir",
+  "@rateVendor": {
+    "description": "Vendor'u Değerlendir"
+  },
   "shareYourThoughts": "Düşüncelerinizi paylaşın...",
+  "@shareYourThoughts": {
+    "description": "Düşüncelerinizi paylaşın..."
+  },
   "submit": "Gönder",
+  "@submit": {
+    "description": "Gönder"
+  },
   "vendorReviewSubmitted": "Vendor değerlendirmesi gönderildi!",
+  "@vendorReviewSubmitted": {
+    "description": "Vendor değerlendirmesi gönderildi!"
+  },
   "productReviewSubmitted": "Ürün değerlendirmesi gönderildi!",
+  "@productReviewSubmitted": {
+    "description": "Ürün değerlendirmesi gönderildi!"
+  },
   "noDescription": "Açıklama bulunmuyor.",
+  "@noDescription": {
+    "description": "Açıklama bulunmuyor."
+  },
   "readMore": "Daha fazla oku",
+  "@readMore": {
+    "description": "Daha fazla oku"
+  },
   "showLess": "Daha az göster",
+  "@showLess": {
+    "description": "Daha az göster"
+  },
   "deliveryTime": "Teslimat Süresi",
+  "@deliveryTime": {
+    "description": "Teslimat Süresi"
+  },
   "deliveryType": "Teslimat Türü",
+  "@deliveryType": {
+    "description": "Teslimat Türü"
+  },
   "reviews": "Yorumlar ({count})",
   "@reviews": {
     "placeholders": {
@@ -867,7 +2604,13 @@
     }
   },
   "noReviewsYet": "Henüz yorum yok. İlk yorumu siz yapın!",
+  "@noReviewsYet": {
+    "description": "Henüz yorum yok. İlk yorumu siz yapın!"
+  },
   "seeAllReviews": "Tüm Yorumları Gör",
+  "@seeAllReviews": {
+    "description": "Tüm Yorumları Gör"
+  },
   "by": "Tarafından: {vendorName}",
   "@by": {
     "placeholders": {
@@ -875,9 +2618,21 @@
     }
   },
   "orderCreatedSuccessfully": "Siparişiniz Başarıyla Oluşturuldu!",
+  "@orderCreatedSuccessfully": {
+    "description": "Siparişiniz Başarıyla Oluşturuldu!"
+  },
   "orderCode": "Sipariş Kodu",
+  "@orderCode": {
+    "description": "Sipariş Kodu"
+  },
   "orderPreparationStarted": "Siparişiniz hazırlanmaya başlandı. Sipariş durumunuzu \"Siparişlerim\" sayfasından takip edebilirsiniz.",
+  "@orderPreparationStarted": {
+    "description": "Siparişiniz hazırlanmaya başlandı. Sipariş duru..."
+  },
   "homePage": "Ana Sayfa",
+  "@homePage": {
+    "description": "Ana Sayfa"
+  },
   "ordersLoadFailed": "Siparişler yüklenemedi: {error}",
   "@ordersLoadFailed": {
     "placeholders": {
@@ -885,11 +2640,29 @@
     }
   },
   "noOrdersYet": "Henüz siparişiniz yok",
+  "@noOrdersYet": {
+    "description": "Henüz siparişiniz yok"
+  },
   "unknownVendor": "Bilinmeyen Satıcı",
+  "@unknownVendor": {
+    "description": "Bilinmeyen Satıcı"
+  },
   "unknown": "Bilinmeyen",
+  "@unknown": {
+    "description": "Bilinmeyen"
+  },
   "cancelItem": "Ürünü İptal Et",
+  "@cancelItem": {
+    "description": "Ürünü İptal Et"
+  },
   "itemCancelled": "Ürün İptal Edildi",
+  "@itemCancelled": {
+    "description": "Ürün İptal Edildi"
+  },
   "itemCancelSuccess": "Ürün başarıyla iptal edildi",
+  "@itemCancelSuccess": {
+    "description": "Ürün başarıyla iptal edildi"
+  },
   "itemCancelFailed": "Ürün iptal edilemedi: {error}",
   "@itemCancelFailed": {
     "placeholders": {
@@ -897,11 +2670,29 @@
     }
   },
   "promotionalBannerTitle": "Acıktınız mı?\nSizi düşündük!",
+  "@promotionalBannerTitle": {
+    "description": "Acıktınız mı? Sizi düşündük!"
+  },
   "promotionalBannerSubtitle": "Ücretsiz teslimat, düşük ücretler & %10 nakit iade!",
+  "@promotionalBannerSubtitle": {
+    "description": "Ücretsiz teslimat, düşük ücretler & %10 nakit i..."
+  },
   "orderNow": "Sipariş Ver",
+  "@orderNow": {
+    "description": "Sipariş Ver"
+  },
   "categories": "Kategoriler",
+  "@categories": {
+    "description": "Kategoriler"
+  },
   "categoryNotFound": "Kategori bulunamadı",
+  "@categoryNotFound": {
+    "description": "Kategori bulunamadı"
+  },
   "picksForYou": "Sizin İçin Seçtiklerimiz",
+  "@picksForYou": {
+    "description": "Sizin İçin Seçtiklerimiz"
+  },
   "addressUpdateFailed": "Adres güncellenemedi: {error}",
   "@addressUpdateFailed": {
     "placeholders": {
@@ -915,6 +2706,9 @@
     }
   },
   "campaigns": "Kampanyalar",
+  "@campaigns": {
+    "description": "Kampanyalar"
+  },
   "productsCount": "{count} ürün",
   "@productsCount": {
     "placeholders": {
@@ -934,25 +2728,85 @@
     }
   },
   "similarProducts": "Benzer Ürünler",
+  "@similarProducts": {
+    "description": "Benzer Ürünler"
+  },
   "areYouHungry": "Acıktınız mı?",
+  "@areYouHungry": {
+    "description": "Acıktınız mı?"
+  },
   "onboardingDescription": "İhtiyacını talep et, en hızlı şekilde sana ulaştıralım.\nSipariş vermek artık tek dokunuş kadar kolay.",
+  "@onboardingDescription": {
+    "description": "İhtiyacını talep et, en hızlı şekilde sana ulaş..."
+  },
   "unlockDescription": "Talabî'ye doğru kaydırın!",
+  "@unlockDescription": {
+    "description": "Talabî'ye doğru kaydırın!"
+  },
   "addAddressToOrder": "Sipariş vermek için adres ekleyin",
+  "@addAddressToOrder": {
+    "description": "Sipariş vermek için adres ekleyin"
+  },
   "createCourierAccount": "Kurye Hesabı Oluştur",
+  "@createCourierAccount": {
+    "description": "Kurye Hesabı Oluştur"
+  },
   "startDeliveringToday": "Bugün teslimata başla ve para kazan",
+  "@startDeliveringToday": {
+    "description": "Bugün teslimata başla ve para kazan"
+  },
   "alreadyHaveCourierAccount": "Zaten kurye hesabınız var mı? ",
+  "@alreadyHaveCourierAccount": {
+    "description": "Zaten kurye hesabınız var mı? "
+  },
   "courierRegister": "Kurye Kaydı",
+  "@courierRegister": {
+    "description": "Kurye Kaydı"
+  },
   "talabiCourier": "Talabi Kurye",
+  "@talabiCourier": {
+    "description": "Talabi Kurye"
+  },
   "today": "Bugün",
+  "@today": {
+    "description": "Bugün"
+  },
   "allTime": "Tüm zamanlar",
+  "@allTime": {
+    "description": "Tüm zamanlar"
+  },
   "accept": "Kabul Et",
+  "@accept": {
+    "description": "Kabul Et"
+  },
   "markAsPickedUp": "Alındı Olarak İşaretle",
+  "@markAsPickedUp": {
+    "description": "Alındı Olarak İşaretle"
+  },
   "markAsDelivered": "Teslim Edildi Olarak İşaretle",
+  "@markAsDelivered": {
+    "description": "Teslim Edildi Olarak İşaretle"
+  },
   "orderAccepted": "Sipariş kabul edildi",
+  "@orderAccepted": {
+    "description": "Sipariş kabul edildi"
+  },
   "orderMarkedAsPickedUp": "Sipariş alındı olarak işaretlendi",
+  "@orderMarkedAsPickedUp": {
+    "description": "Sipariş alındı olarak işaretlendi"
+  },
   "orderDelivered": "Sipariş teslim edildi",
+  "@orderDelivered": {
+    "description": "Sipariş teslim edildi"
+  },
   "actionCouldNotBeCompleted": "İşlem tamamlanamadı",
+  "@actionCouldNotBeCompleted": {
+    "description": "İşlem tamamlanamadı"
+  },
   "cannotChangeStatusWhileBusy": "Meşgulken durum değiştirilemez",
+  "@cannotChangeStatusWhileBusy": {
+    "description": "Meşgulken durum değiştirilemez"
+  },
   "newOrderAssigned": "Yeni sipariş #{orderId} atandı!",
   "@newOrderAssigned": {
     "placeholders": {
@@ -960,43 +2814,157 @@
     }
   },
   "currentStatus": "Anlık Durum",
+  "@currentStatus": {
+    "description": "Anlık Durum"
+  },
   "performance": "Performans",
+  "@performance": {
+    "description": "Performans"
+  },
   "availabilityStatus": "Müsaitlik Durumu",
+  "@availabilityStatus": {
+    "description": "Müsaitlik Durumu"
+  },
   "checkNewOrderConditions": "Yeni sipariş alabilme şartlarını buradan kontrol et",
+  "@checkNewOrderConditions": {
+    "description": "Yeni sipariş alabilme şartlarını buradan kontro..."
+  },
   "navigationApp": "Navigasyon Uygulaması",
+  "@navigationApp": {
+    "description": "Navigasyon Uygulaması"
+  },
   "selectPreferredNavigationApp": "Tercih ettiğin navigasyon uygulamasını seç",
+  "@selectPreferredNavigationApp": {
+    "description": "Tercih ettiğin navigasyon uygulamasını seç"
+  },
   "noVehicleInfo": "Araç bilgisi yok",
+  "@noVehicleInfo": {
+    "description": "Araç bilgisi yok"
+  },
   "cannotChangeStatusWithActiveOrders": "Aktif sipariş varken durum değiştirilemez",
+  "@cannotChangeStatusWithActiveOrders": {
+    "description": "Aktif sipariş varken durum değiştirilemez"
+  },
   "cannotGoOfflineUntilOrdersCompleted": "Aktif sipariş tamamlanana kadar offline olamazsın",
+  "@cannotGoOfflineUntilOrdersCompleted": {
+    "description": "Aktif sipariş tamamlanana kadar offline olamazsın"
+  },
   "points": "Puan",
+  "@points": {
+    "description": "Puan"
+  },
   "totalEarnings": "Toplam Kazanç",
+  "@totalEarnings": {
+    "description": "Toplam Kazanç"
+  },
   "logoutConfirm": "Çıkış yapmak istediğine emin misin?",
+  "@logoutConfirm": {
+    "description": "Çıkış yapmak istediğine emin misin?"
+  },
   "personalInfo": "Kişisel Bilgiler",
+  "@personalInfo": {
+    "description": "Kişisel Bilgiler"
+  },
   "courierSettings": "Kurye Ayarları",
+  "@courierSettings": {
+    "description": "Kurye Ayarları"
+  },
   "vehicleType": "Araç Türü",
+  "@vehicleType": {
+    "description": "Araç Türü"
+  },
   "maxActiveOrders": "Maksimum Aktif Sipariş",
+  "@maxActiveOrders": {
+    "description": "Maksimum Aktif Sipariş"
+  },
   "useWorkingHours": "Çalışma saatlerini kullan",
+  "@useWorkingHours": {
+    "description": "Çalışma saatlerini kullan"
+  },
   "onlyAvailableDuringSetHours": "Sadece belirlediğin saatlerde \"Müsait\" olabilirsin",
+  "@onlyAvailableDuringSetHours": {
+    "description": "Sadece belirlediğin saatlerde \"Müsait\" olabilirsin"
+  },
   "startTime": "Başlangıç Saati",
+  "@startTime": {
+    "description": "Başlangıç Saati"
+  },
   "endTime": "Bitiş Saati",
+  "@endTime": {
+    "description": "Bitiş Saati"
+  },
   "mustSelectStartAndEndTime": "Çalışma saatleri için başlangıç ve bitiş seçmelisin",
+  "@mustSelectStartAndEndTime": {
+    "description": "Çalışma saatleri için başlangıç ve bitiş seçmel..."
+  },
   "saving": "Kaydediliyor...",
+  "@saving": {
+    "description": "Kaydediliyor..."
+  },
   "mustSelectVehicleType": "Araç türü seçmelisin",
+  "@mustSelectVehicleType": {
+    "description": "Araç türü seçmelisin"
+  },
   "selectVehicleType": "Araç Türü Seçin",
+  "@selectVehicleType": {
+    "description": "Araç Türü Seçin"
+  },
   "selectVehicleTypeDescription": "Lütfen kullanacağınız araç türünü seçin. Bu seçim zorunludur.",
+  "@selectVehicleTypeDescription": {
+    "description": "Lütfen kullanacağınız araç türünü seçin. Bu seç..."
+  },
   "motorcycle": "Motor",
+  "@motorcycle": {
+    "description": "Motor"
+  },
   "car": "Araba",
+  "@car": {
+    "description": "Araba"
+  },
   "bicycle": "Bisiklet",
+  "@bicycle": {
+    "description": "Bisiklet"
+  },
   "vehicleTypeUpdatedSuccessfully": "Araç türü başarıyla güncellendi",
+  "@vehicleTypeUpdatedSuccessfully": {
+    "description": "Araç türü başarıyla güncellendi"
+  },
   "failedToUpdateVehicleType": "Araç türü güncellenemedi",
+  "@failedToUpdateVehicleType": {
+    "description": "Araç türü güncellenemedi"
+  },
   "selectLocationRequired": "Konum Seçimi Zorunlu",
+  "@selectLocationRequired": {
+    "description": "Konum Seçimi Zorunlu"
+  },
   "selectLocationRequiredDescription": "Lütfen konumunuzu seçin. Bu bilgi sipariş almak için gereklidir.",
+  "@selectLocationRequiredDescription": {
+    "description": "Lütfen konumunuzu seçin. Bu bilgi sipariş almak..."
+  },
   "selectFromMap": "Haritadan Seç",
+  "@selectFromMap": {
+    "description": "Haritadan Seç"
+  },
   "gettingCurrentLocation": "Konumunuz alınıyor...",
+  "@gettingCurrentLocation": {
+    "description": "Konumunuz alınıyor..."
+  },
   "locationServicesDisabledTitle": "Konum Servisleri Kapalı",
+  "@locationServicesDisabledTitle": {
+    "description": "Konum Servisleri Kapalı"
+  },
   "locationServicesDisabledMessage": "Konum servisleri kapalı. Lütfen ayarlardan konum servislerini açın.",
+  "@locationServicesDisabledMessage": {
+    "description": "Konum servisleri kapalı. Lütfen ayarlardan konu..."
+  },
   "openSettings": "Ayarları Aç",
+  "@openSettings": {
+    "description": "Ayarları Aç"
+  },
   "assignCourierConfirmationTitle": "Kurye Atamasını Onayla",
+  "@assignCourierConfirmationTitle": {
+    "description": "Kurye Atamasını Onayla"
+  },
   "assignCourierConfirmationMessage": "{courierName} adlı kuryeye bu siparişi atamak istediğinize emin misiniz?",
   "@assignCourierConfirmationMessage": {
     "placeholders": {
@@ -1006,8 +2974,17 @@
     }
   },
   "assign": "Ata",
+  "@assign": {
+    "description": "Ata"
+  },
   "courierAssignedSuccessfully": "Kurye başarıyla atandı",
+  "@courierAssignedSuccessfully": {
+    "description": "Kurye başarıyla atandı"
+  },
   "enterValidNumber": "Geçerli bir sayı gir",
+  "@enterValidNumber": {
+    "description": "Geçerli bir sayı gir"
+  },
   "profileUpdateFailed": "Profil güncellenemedi: {error}",
   "@profileUpdateFailed": {
     "placeholders": {
@@ -1015,8 +2992,17 @@
     }
   },
   "availabilityConditions": "Müsaitlik Koşulları",
+  "@availabilityConditions": {
+    "description": "Müsaitlik Koşulları"
+  },
   "whenConditionsMetCanReceiveOrders": "Aşağıdaki şartlar sağlandığında yeni sipariş atanabilir:",
+  "@whenConditionsMetCanReceiveOrders": {
+    "description": "Aşağıdaki şartlar sağlandığında yeni sipariş at..."
+  },
   "statusMustBeAvailable": "Durumun \"Available / Müsait\" olmalı",
+  "@statusMustBeAvailable": {
+    "description": "Durumun \"Available / Müsait\" olmalı"
+  },
   "activeOrdersBelowLimit": "Aktif sipariş sayın, maksimum limitin altında olmalı ({current} / {max})",
   "@activeOrdersBelowLimit": {
     "placeholders": {
@@ -1025,19 +3011,61 @@
     }
   },
   "courierAccountMustBeActive": "Kurye hesabın aktif olmalı",
+  "@courierAccountMustBeActive": {
+    "description": "Kurye hesabın aktif olmalı"
+  },
   "currentlyBlockingReasons": "Şu anda engelleyen nedenler",
+  "@currentlyBlockingReasons": {
+    "description": "Şu anda engelleyen nedenler"
+  },
   "everythingLooksGood": "Her şey yolunda görünüyor, yeni siparişler gelebilir",
+  "@everythingLooksGood": {
+    "description": "Her şey yolunda görünüyor, yeni siparişler gele..."
+  },
   "available": "Müsait",
+  "@available": {
+    "description": "Müsait"
+  },
   "notAvailable": "Müsait Değil",
+  "@notAvailable": {
+    "description": "Müsait Değil"
+  },
   "earningsTitle": "Kazançlar",
+  "@earningsTitle": {
+    "description": "Kazançlar"
+  },
   "todayEarnings": "Bugün",
+  "@todayEarnings": {
+    "description": "Bugün"
+  },
   "thisWeek": "Bu Hafta",
+  "@thisWeek": {
+    "description": "Bu Hafta"
+  },
   "thisMonth": "Bu Ay",
+  "@thisMonth": {
+    "description": "Bu Ay"
+  },
   "totalEarningsLabel": "Toplam Kazanç",
+  "@totalEarningsLabel": {
+    "description": "Toplam Kazanç"
+  },
   "avgPerDelivery": "Teslimat Başına Ortalama",
+  "@avgPerDelivery": {
+    "description": "Teslimat Başına Ortalama"
+  },
   "history": "Geçmiş",
+  "@history": {
+    "description": "Geçmiş"
+  },
   "noEarningsForPeriod": "Bu dönem için kazanç bulunamadı",
+  "@noEarningsForPeriod": {
+    "description": "Bu dönem için kazanç bulunamadı"
+  },
   "navigationAppUpdated": "Navigasyon uygulaması güncellendi",
+  "@navigationAppUpdated": {
+    "description": "Navigasyon uygulaması güncellendi"
+  },
   "navigationPreferenceNotSaved": "Navigasyon tercihi kaydedilemedi: {error}",
   "@navigationPreferenceNotSaved": {
     "placeholders": {
@@ -1045,12 +3073,33 @@
     }
   },
   "selectDefaultNavigationApp": "Teslimat adresine giderken kullanmak istediğin varsayılan navigasyon uygulamasını seç",
+  "@selectDefaultNavigationApp": {
+    "description": "Teslimat adresine giderken kullanmak istediğin ..."
+  },
   "note": "Not",
+  "@note": {
+    "description": "Not"
+  },
   "ifAppNotInstalledSystemWillOfferAlternative": "Seçtiğin uygulama cihazında yüklü değilse sistem sana uygun bir seçenek sunar",
+  "@ifAppNotInstalledSystemWillOfferAlternative": {
+    "description": "Seçtiğin uygulama cihazında yüklü değilse siste..."
+  },
   "preferenceOnlyForCourierAccount": "Bu tercih sadece kurye hesabın için geçerlidir",
+  "@preferenceOnlyForCourierAccount": {
+    "description": "Bu tercih sadece kurye hesabın için geçerlidir"
+  },
   "notificationsTitle": "Bildirimler",
+  "@notificationsTitle": {
+    "description": "Bildirimler"
+  },
   "noNotificationsYet": "Henüz bir bildirimin yok.\nSipariş hareketlerin burada görünecek",
+  "@noNotificationsYet": {
+    "description": "Henüz bir bildirimin yok. Sipariş hareketlerin ..."
+  },
   "notificationsLoadFailed": "Bildirimler yüklenemedi",
+  "@notificationsLoadFailed": {
+    "description": "Bildirimler yüklenemedi"
+  },
   "notificationProcessingFailed": "Bildirim işlenemedi: {error}",
   "@notificationProcessingFailed": {
     "placeholders": {
@@ -1058,25 +3107,85 @@
     }
   },
   "orderDetailTitle": "Sipariş Detayı",
+  "@orderDetailTitle": {
+    "description": "Sipariş Detayı"
+  },
   "pickupLocation": "Alış Konumu",
+  "@pickupLocation": {
+    "description": "Alış Konumu"
+  },
   "deliveryLocation": "Teslimat Konumu",
+  "@deliveryLocation": {
+    "description": "Teslimat Konumu"
+  },
   "orderItems": "Sipariş Ürünleri",
+  "@orderItems": {
+    "description": "Sipariş Ürünleri"
+  },
   "viewMap": "Haritayı Görüntüle",
+  "@viewMap": {
+    "description": "Haritayı Görüntüle"
+  },
   "deliveryProof": "Teslimat Kanıtı",
+  "@deliveryProof": {
+    "description": "Teslimat Kanıtı"
+  },
   "takePhoto": "Fotoğraf Çek",
+  "@takePhoto": {
+    "description": "Fotoğraf Çek"
+  },
   "signature": "İmza",
+  "@signature": {
+    "description": "İmza"
+  },
   "notes": "Notlar",
+  "@notes": {
+    "description": "Notlar"
+  },
   "notesOptional": "Notlar (Opsiyonel)",
+  "@notesOptional": {
+    "description": "Notlar (Opsiyonel)"
+  },
   "leftAtFrontDoor": "Kapı önüne bırakıldı, vb.",
+  "@leftAtFrontDoor": {
+    "description": "Kapı önüne bırakıldı, vb."
+  },
   "submitProofAndCompleteDelivery": "Kanıt Gönder ve Teslimatı Tamamla",
+  "@submitProofAndCompleteDelivery": {
+    "description": "Kanıt Gönder ve Teslimatı Tamamla"
+  },
   "pleaseTakePhoto": "Lütfen teslimatın fotoğrafını çekin",
+  "@pleaseTakePhoto": {
+    "description": "Lütfen teslimatın fotoğrafını çekin"
+  },
   "pleaseObtainSignature": "Lütfen imza alın",
+  "@pleaseObtainSignature": {
+    "description": "Lütfen imza alın"
+  },
   "tryAgain": "Tekrar dene",
+  "@tryAgain": {
+    "description": "Tekrar dene"
+  },
   "noDeliveryHistoryYet": "Henüz teslimat geçmişi yok",
+  "@noDeliveryHistoryYet": {
+    "description": "Henüz teslimat geçmişi yok"
+  },
   "pickup": "Alış",
+  "@pickup": {
+    "description": "Alış"
+  },
   "delivery": "Teslimat",
+  "@delivery": {
+    "description": "Teslimat"
+  },
   "talabi": "Talabi",
+  "@talabi": {
+    "description": "Talabi"
+  },
   "navigate": "Yönlendir",
+  "@navigate": {
+    "description": "Yönlendir"
+  },
   "couldNotLaunchMaps": "Haritalar açılamadı: {error}",
   "@couldNotLaunchMaps": {
     "placeholders": {
@@ -1084,54 +3193,197 @@
     }
   },
   "marketBannerTitle": "Market Alışverişin\nKapında",
+  "@marketBannerTitle": {
+    "description": "Market Alışverişin Kapında"
+  },
   "selectCountry": "Ülke Seçiniz",
+  "@selectCountry": {
+    "description": "Ülke Seçiniz"
+  },
   "localityNeighborhood": "Mahalle",
+  "@localityNeighborhood": {
+    "description": "Mahalle"
+  },
   "selectCityDistrictWarning": "Lütfen onaylamak için İl ve İlçe seçiniz.",
+  "@selectCityDistrictWarning": {
+    "description": "Lütfen onaylamak için İl ve İlçe seçiniz."
+  },
   "passwordResetSuccess": "Şifre başarıyla sıfırlandı",
+  "@passwordResetSuccess": {
+    "description": "Şifre başarıyla sıfırlandı"
+  },
   "verificationCode": "Doğrulama Kodu",
+  "@verificationCode": {
+    "description": "Doğrulama Kodu"
+  },
   "verificationCodeSentDesc": "Lütfen şu adrese gönderilen doğrulama kodunu girin:",
+  "@verificationCodeSentDesc": {
+    "description": "Lütfen şu adrese gönderilen doğrulama kodunu gi..."
+  },
   "createPassword": "Yeni Şifre Oluştur",
+  "@createPassword": {
+    "description": "Yeni Şifre Oluştur"
+  },
   "createPasswordDesc": "Lütfen hesabınız için yeni bir şifre girin",
+  "@createPasswordDesc": {
+    "description": "Lütfen hesabınız için yeni bir şifre girin"
+  },
   "requiredField": "Bu alan zorunludur",
+  "@requiredField": {
+    "description": "Bu alan zorunludur"
+  },
   "resetPassword": "Şifreyi Sıfırla",
+  "@resetPassword": {
+    "description": "Şifreyi Sıfırla"
+  },
   "codeExpired": "Kodun süresi doldu.",
+  "@codeExpired": {
+    "description": "Kodun süresi doldu."
+  },
   "businessType": "İşletme Türü",
+  "@businessType": {
+    "description": "İşletme Türü"
+  },
   "businessTypeRequired": "İşletme türü gerekli",
+  "@businessTypeRequired": {
+    "description": "İşletme türü gerekli"
+  },
   "restaurant": "Restoran",
+  "@restaurant": {
+    "description": "Restoran"
+  },
   "market": "Market",
+  "@market": {
+    "description": "Market"
+  },
   "defaultError": "Bir hata oluştu",
+  "@defaultError": {
+    "description": "Bir hata oluştu"
+  },
   "passwordPlaceholder": "******",
+  "@passwordPlaceholder": {
+    "description": "******"
+  },
   "vehicleTypeRequired": "Araç Tipi zorunludur",
+  "@vehicleTypeRequired": {
+    "description": "Araç Tipi zorunludur"
+  },
   "errorLoginVendorToCustomer": "Satıcı hesabıyla, müşteri ekranlarına giriş yapılamaz.",
+  "@errorLoginVendorToCustomer": {
+    "description": "Satıcı hesabıyla, müşteri ekranlarına giriş yap..."
+  },
   "errorLoginCourierToCustomer": "Kurye hesabıyla, müşteri ekranlarına giriş yapılamaz.",
+  "@errorLoginCourierToCustomer": {
+    "description": "Kurye hesabıyla, müşteri ekranlarına giriş yapı..."
+  },
   "errorLoginCustomerToVendor": "Müşteri hesabıyla, satıcı ekranlarına giriş yapılamaz.",
+  "@errorLoginCustomerToVendor": {
+    "description": "Müşteri hesabıyla, satıcı ekranlarına giriş yap..."
+  },
   "errorLoginCourierToVendor": "Kurye hesabıyla, satıcı ekranlarına giriş yapılamaz.",
+  "@errorLoginCourierToVendor": {
+    "description": "Kurye hesabıyla, satıcı ekranlarına giriş yapıl..."
+  },
   "errorLoginCustomerToCourier": "Müşteri hesabıyla, kurye ekranlarına giriş yapılamaz.",
+  "@errorLoginCustomerToCourier": {
+    "description": "Müşteri hesabıyla, kurye ekranlarına giriş yapı..."
+  },
   "errorLoginVendorToCourier": "Satıcı hesabıyla, kurye ekranlarına giriş yapılamaz.",
+  "@errorLoginVendorToCourier": {
+    "description": "Satıcı hesabıyla, kurye ekranlarına giriş yapıl..."
+  },
   "keywordTokenExpired": "süresi",
+  "@keywordTokenExpired": {
+    "description": "süresi"
+  },
   "accountPendingApprovalTitle": "Hesabınız Onay Bekliyor",
+  "@accountPendingApprovalTitle": {
+    "description": "Hesabınız Onay Bekliyor"
+  },
   "accountPendingApprovalMessage": "Hesabınız şu anda incelenmektedir. Onaylandıktan sonra erişiminiz açılacaktır.",
+  "@accountPendingApprovalMessage": {
+    "description": "Hesabınız şu anda incelenmektedir. Onaylandıkta..."
+  },
   "vendorStatusNormal": "Normal",
+  "@vendorStatusNormal": {
+    "description": "Normal"
+  },
   "vendorStatusBusy": "Yoğun",
+  "@vendorStatusBusy": {
+    "description": "Yoğun"
+  },
   "vendorStatusOverloaded": "Çok Yoğun",
+  "@vendorStatusOverloaded": {
+    "description": "Çok Yoğun"
+  },
   "vendorStatusNormalDesc": "Standart süre",
+  "@vendorStatusNormalDesc": {
+    "description": "Standart süre"
+  },
   "vendorStatusBusyDesc": "+15 dk",
+  "@vendorStatusBusyDesc": {
+    "description": "+15 dk"
+  },
   "vendorStatusOverloadedDesc": "+45 dk",
+  "@vendorStatusOverloadedDesc": {
+    "description": "+45 dk"
+  },
   "storeStatus": "Mağaza Durumu",
+  "@storeStatus": {
+    "description": "Mağaza Durumu"
+  },
   "workingHoursRequired": "Çalışma Saatleri Zorunludur",
+  "@workingHoursRequired": {
+    "description": "Çalışma Saatleri Zorunludur"
+  },
   "workingHoursRequiredDescription": "Sipariş almaya başlamak için lütfen çalışma saatlerinizi belirleyin.",
+  "@workingHoursRequiredDescription": {
+    "description": "Sipariş almaya başlamak için lütfen çalışma saa..."
+  },
   "workingHoursStart": "Başlangıç Saati",
+  "@workingHoursStart": {
+    "description": "Başlangıç Saati"
+  },
   "workingHoursEnd": "Bitiş Saati",
+  "@workingHoursEnd": {
+    "description": "Bitiş Saati"
+  },
   "selectTime": "Saat Seçin",
+  "@selectTime": {
+    "description": "Saat Seçin"
+  },
   "workingHoursUpdatedSuccessfully": "Çalışma saatleri başarıyla güncellendi",
+  "@workingHoursUpdatedSuccessfully": {
+    "description": "Çalışma saatleri başarıyla güncellendi"
+  },
   "failedToUpdateWorkingHours": "Çalışma saatleri güncellenemedi",
+  "@failedToUpdateWorkingHours": {
+    "description": "Çalışma saatleri güncellenemedi"
+  },
   "workingHours": "Çalışma Saatleri",
+  "@workingHours": {
+    "description": "Çalışma Saatleri"
+  },
   "workingDays": "Çalışma Günleri",
+  "@workingDays": {
+    "description": "Çalışma Günleri"
+  },
   "closed": "Kapalı",
+  "@closed": {
+    "description": "Kapalı"
+  },
   "open24Hours": "24 Saat Açık",
+  "@open24Hours": {
+    "description": "24 Saat Açık"
+  },
   "hours": "Saat",
-  "workingHoursUpdatedSuccessfully": "Çalışma saatleri başarıyla güncellendi",
+  "@hours": {
+    "description": "Saat"
+  },
   "workingHoursDescription": "İşletmenizin açık olduğu günleri ve saatleri buradan düzenleyebilirsiniz.",
+  "@workingHoursDescription": {
+    "description": "İşletmenizin açık olduğu günleri ve saatleri bu..."
+  },
   "workingHoursSaveError": "Çalışma saatleri kaydedilirken hata oluştu: {error}",
   "@workingHoursSaveError": {
     "placeholders": {
@@ -1139,6 +3391,15 @@
     }
   },
   "noFavoritesFound": "Henüz favori ürününüz yok",
+  "@noFavoritesFound": {
+    "description": "Henüz favori ürününüz yok"
+  },
   "favoritesEmptyMessage": "Beğendiğiniz ürünleri favorilere ekleyerek burada görüntüleyebilirsiniz.",
-  "shamCashAccountNumber": "Sham Cash Hesap Numarası"
+  "@favoritesEmptyMessage": {
+    "description": "Beğendiğiniz ürünleri favorilere ekleyerek bura..."
+  },
+  "shamCashAccountNumber": "Sham Cash Hesap Numarası",
+  "@shamCashAccountNumber": {
+    "description": "Sham Cash Hesap Numarası"
+  }
 }

@@ -112,6 +112,8 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.ISystemSettingsService, Talabi.Infrastructure.Services.SystemSettingsService>();
+
 builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.ILocationService, Talabi.Infrastructure.Services.LocationService>();
 builder.Services.AddScoped<IDeliveryZoneService, DeliveryZoneService>();

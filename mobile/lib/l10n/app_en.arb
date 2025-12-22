@@ -5,33 +5,117 @@
     "description": "The application title"
   },
   "welcome": "Welcome",
+  "@welcome": {
+    "description": "Welcome"
+  },
   "login": "Login",
+  "@login": {
+    "description": "Login"
+  },
   "register": "Register",
+  "@register": {
+    "description": "Register"
+  },
   "logout": "Logout",
+  "@logout": {
+    "description": "Logout"
+  },
   "profile": "Profile",
+  "@profile": {
+    "description": "Profile"
+  },
   "settings": "Settings",
+  "@settings": {
+    "description": "Settings"
+  },
   "language": "Language",
+  "@language": {
+    "description": "Language"
+  },
   "currency": "Currency",
+  "@currency": {
+    "description": "Currency"
+  },
   "turkish": "Turkish",
+  "@turkish": {
+    "description": "Turkish"
+  },
   "english": "English",
+  "@english": {
+    "description": "English"
+  },
   "arabic": "Arabic",
+  "@arabic": {
+    "description": "Arabic"
+  },
   "turkishLira": "Turkish Lira",
+  "@turkishLira": {
+    "description": "Turkish Lira"
+  },
   "tether": "Tether",
+  "@tether": {
+    "description": "Tether"
+  },
   "save": "Save",
+  "@save": {
+    "description": "Save"
+  },
   "productResmi": "Product image",
+  "@productResmi": {
+    "description": "Product image"
+  },
   "yildiz": "Stars",
+  "@yildiz": {
+    "description": "Stars"
+  },
   "favorilereEkle": "Add to favorites",
+  "@favorilereEkle": {
+    "description": "Add to favorites"
+  },
   "favorilerdenCikar": "Remove from favorites",
+  "@favorilerdenCikar": {
+    "description": "Remove from favorites"
+  },
   "menu": "Menu",
+  "@menu": {
+    "description": "Menu"
+  },
   "fiyat": "Price",
+  "@fiyat": {
+    "description": "Price"
+  },
   "adediAzalt": "Decrease quantity",
+  "@adediAzalt": {
+    "description": "Decrease quantity"
+  },
   "miktar": "Quantity",
+  "@miktar": {
+    "description": "Quantity"
+  },
   "adediArtir": "Increase quantity",
+  "@adediArtir": {
+    "description": "Increase quantity"
+  },
   "sepeteEkle": "Add to cart",
+  "@sepeteEkle": {
+    "description": "Add to cart"
+  },
   "share": "Share",
+  "@share": {
+    "description": "Share"
+  },
   "back": "Go back",
+  "@back": {
+    "description": "Go back"
+  },
   "degerlendirme": "review",
+  "@degerlendirme": {
+    "description": "review"
+  },
   "totalAmount": "Total amount",
+  "@totalAmount": {
+    "description": "Total amount"
+  },
   "degerlendirmeSayisi": "{count} reviews",
   "@degerlendirmeSayisi": {
     "placeholders": {
@@ -39,127 +123,493 @@
     }
   },
   "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel"
+  },
   "products": "Products",
+  "@products": {
+    "description": "Products"
+  },
   "vendors": "Vendors",
+  "@vendors": {
+    "description": "Vendors"
+  },
   "cart": "Cart",
+  "@cart": {
+    "description": "Cart"
+  },
   "orders": "Orders",
+  "@orders": {
+    "description": "Orders"
+  },
   "favorites": "Favorites",
+  "@favorites": {
+    "description": "Favorites"
+  },
   "addresses": "Addresses",
+  "@addresses": {
+    "description": "Addresses"
+  },
   "search": "Search",
+  "@search": {
+    "description": "Search"
+  },
   "price": "Price",
+  "@price": {
+    "description": "Price"
+  },
   "addToCart": "Add to Cart",
+  "@addToCart": {
+    "description": "Add to Cart"
+  },
   "total": "Total",
+  "@total": {
+    "description": "Total"
+  },
   "totalPrice": "Total Price",
+  "@totalPrice": {
+    "description": "Total Price"
+  },
   "checkout": "Checkout",
+  "@checkout": {
+    "description": "Checkout"
+  },
   "checkoutSubtitle": "Secure Payment",
+  "@checkoutSubtitle": {
+    "description": "Secure Payment"
+  },
   "orderInformation": "Order Information",
+  "@orderInformation": {
+    "description": "Order Information"
+  },
   "orderHistory": "Order History",
+  "@orderHistory": {
+    "description": "Order History"
+  },
   "orderDetail": "Order Detail",
+  "@orderDetail": {
+    "description": "Order Detail"
+  },
   "deliveryTracking": "Delivery Tracking",
+  "@deliveryTracking": {
+    "description": "Delivery Tracking"
+  },
   "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Select Language"
+  },
   "selectCurrency": "Select Currency",
+  "@selectCurrency": {
+    "description": "Select Currency"
+  },
   "selectCurrencyDescription": "Currency selection",
+  "@selectCurrencyDescription": {
+    "description": "Currency selection"
+  },
   "regionalSettings": "Regional Settings",
+  "@regionalSettings": {
+    "description": "Regional Settings"
+  },
   "dateFormat": "Date Format",
+  "@dateFormat": {
+    "description": "Date Format"
+  },
   "timeFormat": "Time Format",
+  "@timeFormat": {
+    "description": "Time Format"
+  },
   "timeZone": "Time Zone",
+  "@timeZone": {
+    "description": "Time Zone"
+  },
   "hour24": "24 Hour",
+  "@hour24": {
+    "description": "24 Hour"
+  },
   "hour12": "12 Hour",
+  "@hour12": {
+    "description": "12 Hour"
+  },
   "discover": "Discover",
+  "@discover": {
+    "description": "Discover"
+  },
   "myFavorites": "My Favorites",
+  "@myFavorites": {
+    "description": "My Favorites"
+  },
   "myCart": "My Cart",
+  "@myCart": {
+    "description": "My Cart"
+  },
   "myOrders": "My Orders",
+  "@myOrders": {
+    "description": "My Orders"
+  },
   "myAccount": "My Account",
+  "@myAccount": {
+    "description": "My Account"
+  },
   "myProfile": "My Profile",
+  "@myProfile": {
+    "description": "My Profile"
+  },
   "user": "User",
+  "@user": {
+    "description": "User"
+  },
   "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit Profile"
+  },
   "editProfileDescription": "Edit business name, address and contact information",
+  "@editProfileDescription": {
+    "description": "Edit business name, address and contact informa..."
+  },
   "editCourierProfileDescription": "Edit name, phone, vehicle information and working hours",
+  "@editCourierProfileDescription": {
+    "description": "Edit name, phone, vehicle information and worki..."
+  },
   "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Change Password"
+  },
   "notificationSettings": "Notification Settings",
+  "@notificationSettings": {
+    "description": "Notification Settings"
+  },
   "myAddresses": "My Addresses",
+  "@myAddresses": {
+    "description": "My Addresses"
+  },
   "favoriteProducts": "Favorite Products",
+  "@favoriteProducts": {
+    "description": "Favorite Products"
+  },
   "popularProducts": "Popular Products",
+  "@popularProducts": {
+    "description": "Popular Products"
+  },
   "popularVendors": "Popular Businesses",
+  "@popularVendors": {
+    "description": "Popular Businesses"
+  },
   "viewAll": "View All",
+  "@viewAll": {
+    "description": "View All"
+  },
   "productDetail": "Product Detail",
+  "@productDetail": {
+    "description": "Product Detail"
+  },
   "description": "Description",
+  "@description": {
+    "description": "Description"
+  },
   "vendor": "Vendor",
+  "@vendor": {
+    "description": "Vendor"
+  },
   "category": "Category",
+  "@category": {
+    "description": "Category"
+  },
   "addToFavorites": "Add to Favorites",
+  "@addToFavorites": {
+    "description": "Add to Favorites"
+  },
   "removeFromFavorites": "Remove from Favorites",
+  "@removeFromFavorites": {
+    "description": "Remove from Favorites"
+  },
   "inStock": "In Stock",
+  "@inStock": {
+    "description": "In Stock"
+  },
   "outOfStock": "Out of Stock",
+  "@outOfStock": {
+    "description": "Out of Stock"
+  },
   "signIn": "Sign In",
+  "@signIn": {
+    "description": "Sign In"
+  },
   "signUp": "Sign Up",
+  "@signUp": {
+    "description": "Sign Up"
+  },
   "welcomeBack": "Welcome!",
+  "@welcomeBack": {
+    "description": "Welcome!"
+  },
   "loginDescription": "Sign in to place orders and track them in real-time",
+  "@loginDescription": {
+    "description": "Sign in to place orders and track them in real-..."
+  },
   "emailAddress": "Email Address",
+  "@emailAddress": {
+    "description": "Email Address"
+  },
   "password": "Password",
+  "@password": {
+    "description": "Password"
+  },
   "rememberMe": "Remember me?",
+  "@rememberMe": {
+    "description": "Remember me?"
+  },
   "recoveryPassword": "Recovery Password",
+  "@recoveryPassword": {
+    "description": "Recovery Password"
+  },
   "logIn": "Log in",
+  "@logIn": {
+    "description": "Log in"
+  },
   "orContinueWith": "Or continue with",
+  "@orContinueWith": {
+    "description": "Or continue with"
+  },
   "google": "Google",
+  "@google": {
+    "description": "Google"
+  },
   "apple": "Apple",
+  "@apple": {
+    "description": "Apple"
+  },
   "facebook": "Facebook",
+  "@facebook": {
+    "description": "Facebook"
+  },
   "dontHaveAccount": "Don't have an account? ",
+  "@dontHaveAccount": {
+    "description": "Don't have an account? "
+  },
   "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Create Account"
+  },
   "registerDescription": "Sign up to get started with Talabi",
+  "@registerDescription": {
+    "description": "Sign up to get started with Talabi"
+  },
   "fullName": "Full Name",
+  "@fullName": {
+    "description": "Full Name"
+  },
   "alreadyHaveAccount": "Already have an account? ",
+  "@alreadyHaveAccount": {
+    "description": "Already have an account? "
+  },
   "emailRequired": "Email is required",
+  "@emailRequired": {
+    "description": "Email is required"
+  },
   "validEmail": "Please enter a valid email",
+  "@validEmail": {
+    "description": "Please enter a valid email"
+  },
   "passwordRequired": "Password is required",
+  "@passwordRequired": {
+    "description": "Password is required"
+  },
   "passwordMinLength": "Password must be at least 6 characters",
+  "@passwordMinLength": {
+    "description": "Password must be at least 6 characters"
+  },
   "fullNameRequired": "Full name is required",
+  "@fullNameRequired": {
+    "description": "Full name is required"
+  },
   "loginFailed": "Login failed",
+  "@loginFailed": {
+    "description": "Login failed"
+  },
   "registerFailed": "Registration failed",
+  "@registerFailed": {
+    "description": "Registration failed"
+  },
   "passwordReset": "Password Reset",
+  "@passwordReset": {
+    "description": "Password Reset"
+  },
   "forgetPassword": "Forget Password",
+  "@forgetPassword": {
+    "description": "Forget Password"
+  },
   "forgetPasswordDescription": "Enter your email account to reset password",
+  "@forgetPasswordDescription": {
+    "description": "Enter your email account to reset password"
+  },
   "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue"
+  },
   "passwordResetEmailSent": "Password reset email has been sent to your email address",
+  "@passwordResetEmailSent": {
+    "description": "Password reset email has been sent to your emai..."
+  },
   "passwordResetFailed": "Failed to send password reset email",
+  "@passwordResetFailed": {
+    "description": "Failed to send password reset email"
+  },
   "emailVerification": "Email Verification",
+  "@emailVerification": {
+    "description": "Email Verification"
+  },
   "checkYourEmail": "Check Your Email",
+  "@checkYourEmail": {
+    "description": "Check Your Email"
+  },
   "emailVerificationDescription": "We have sent a verification link to your email address. Please check your inbox and click the link to verify your account.",
+  "@emailVerificationDescription": {
+    "description": "We have sent a verification link to your email ..."
+  },
   "iHaveVerified": "I Have Verified",
+  "@iHaveVerified": {
+    "description": "I Have Verified"
+  },
   "resendEmail": "Resend Email",
+  "@resendEmail": {
+    "description": "Resend Email"
+  },
   "resendFeatureComingSoon": "Resend feature coming soon",
+  "@resendFeatureComingSoon": {
+    "description": "Resend feature coming soon"
+  },
   "verificationEmailResent": "Verification email has been resent",
+  "@verificationEmailResent": {
+    "description": "Verification email has been resent"
+  },
   "pleaseVerifyEmail": "Please verify your email address.",
+  "@pleaseVerifyEmail": {
+    "description": "Please verify your email address."
+  },
   "offlineMode": "Offline Mode",
+  "@offlineMode": {
+    "description": "Offline Mode"
+  },
   "offlineModeDescription": "Some features may be limited",
+  "@offlineModeDescription": {
+    "description": "Some features may be limited"
+  },
   "accessibilityTitle": "Accessibility & Display",
+  "@accessibilityTitle": {
+    "description": "Accessibility & Display"
+  },
   "accessibilityDescription": "Customize themes, contrast and text size for better readability",
+  "@accessibilityDescription": {
+    "description": "Customize themes, contrast and text size for be..."
+  },
   "displaySettings": "Display",
+  "@displaySettings": {
+    "description": "Display"
+  },
   "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Dark Mode"
+  },
   "darkModeDescription": "Use dark theme for low light environments",
+  "@darkModeDescription": {
+    "description": "Use dark theme for low light environments"
+  },
   "highContrast": "High Contrast",
+  "@highContrast": {
+    "description": "High Contrast"
+  },
   "highContrastDescription": "Increase contrast for better visibility",
+  "@highContrastDescription": {
+    "description": "Increase contrast for better visibility"
+  },
   "textSize": "Text Size",
+  "@textSize": {
+    "description": "Text Size"
+  },
   "textSizeDescription": "Adjust text size for better readability",
+  "@textSizeDescription": {
+    "description": "Adjust text size for better readability"
+  },
   "textSizePreview": "Preview Text",
+  "@textSizePreview": {
+    "description": "Preview Text"
+  },
   "cartEmptyMessage": "Your cart is empty",
+  "@cartEmptyMessage": {
+    "description": "Your cart is empty"
+  },
   "cartVoucherPlaceholder": "Enter your voucher code",
+  "@cartVoucherPlaceholder": {
+    "description": "Enter your voucher code"
+  },
   "cartSubtotalLabel": "Subtotal",
+  "@cartSubtotalLabel": {
+    "description": "Subtotal"
+  },
   "discountTitle": "Discount",
+  "@discountTitle": {
+    "description": "Discount"
+  },
   "cartDeliveryFeeLabel": "Delivery Fee",
+  "@cartDeliveryFeeLabel": {
+    "description": "Delivery Fee"
+  },
   "cartTotalAmountLabel": "Total Amount",
+  "@cartTotalAmountLabel": {
+    "description": "Total Amount"
+  },
   "checkoutTitle": "Checkout",
+  "@checkoutTitle": {
+    "description": "Checkout"
+  },
   "addOrderNote": "Add Order Note",
+  "@addOrderNote": {
+    "description": "Add Order Note"
+  },
   "orderNote": "Order Note",
+  "@orderNote": {
+    "description": "Order Note"
+  },
   "enterOrderNoteHint": "Enter your note for the order...",
+  "@enterOrderNoteHint": {
+    "description": "Enter your note for the order..."
+  },
   "couponApplied": "Coupon Applied",
+  "@couponApplied": {
+    "description": "Coupon Applied"
+  },
   "couponRemoved": "Coupon Removed",
+  "@couponRemoved": {
+    "description": "Coupon Removed"
+  },
   "enterCouponCode": "Enter Coupon Code",
+  "@enterCouponCode": {
+    "description": "Enter Coupon Code"
+  },
   "apply": "Apply",
+  "@apply": {
+    "description": "Apply"
+  },
   "noCampaignsFound": "No Active Campaigns",
+  "@noCampaignsFound": {
+    "description": "No Active Campaigns"
+  },
   "noCampaignsDescription": "There are no active campaigns at the moment. Please check back later or enter a coupon code.",
+  "@noCampaignsDescription": {
+    "description": "There are no active campaigns at the moment. Pl..."
+  },
   "confirmOrder": "Confirm Order",
+  "@confirmOrder": {
+    "description": "Confirm Order"
+  },
   "cartSameVendorWarning": "All items in the cart must be from the same vendor",
+  "@cartSameVendorWarning": {
+    "description": "All items in the cart must be from the same vendor"
+  },
   "orderPlacedTitle": "Order Received!",
+  "@orderPlacedTitle": {
+    "description": "Order Received!"
+  },
   "orderPlacedMessage": "Your order number: {orderId}\nTotal: {total}",
   "@orderPlacedMessage": {
     "placeholders": {
@@ -168,12 +618,33 @@
     }
   },
   "ok": "OK",
+  "@ok": {
+    "description": "OK"
+  },
   "duplicateEmail": "An account with this email address already exists.",
+  "@duplicateEmail": {
+    "description": "An account with this email address already exists."
+  },
   "passwordRuleChars": "At least 6 characters",
+  "@passwordRuleChars": {
+    "description": "At least 6 characters"
+  },
   "passwordRuleDigit": "At least one digit (0-9)",
+  "@passwordRuleDigit": {
+    "description": "At least one digit (0-9)"
+  },
   "passwordRuleUpper": "At least one uppercase letter (A-Z)",
+  "@passwordRuleUpper": {
+    "description": "At least one uppercase letter (A-Z)"
+  },
   "passwordRuleLower": "At least one lowercase letter (a-z)",
+  "@passwordRuleLower": {
+    "description": "At least one lowercase letter (a-z)"
+  },
   "passwordRuleSpecial": "At least one special character (!@#$%^&* etc.)",
+  "@passwordRuleSpecial": {
+    "description": "At least one special character (!@#$%^&* etc.)"
+  },
   "googleLoginFailed": "Google login failed: {error}",
   "@googleLoginFailed": {
     "placeholders": {
@@ -199,14 +670,41 @@
     }
   },
   "clearCartTitle": "Clear Cart",
+  "@clearCartTitle": {
+    "description": "Clear Cart"
+  },
   "clearCartMessage": "Do you want to remove all items from the cart?",
+  "@clearCartMessage": {
+    "description": "Do you want to remove all items from the cart?"
+  },
   "clearCartNo": "No",
+  "@clearCartNo": {
+    "description": "No"
+  },
   "clearCartYes": "Yes",
+  "@clearCartYes": {
+    "description": "Yes"
+  },
   "clearCartSuccess": "Cart cleared successfully",
+  "@clearCartSuccess": {
+    "description": "Cart cleared successfully"
+  },
   "categoryChangeConfirmTitle": "Category Change",
+  "@categoryChangeConfirmTitle": {
+    "description": "Category Change"
+  },
   "categoryChangeConfirmMessage": "Changing category will clear your cart items.",
+  "@categoryChangeConfirmMessage": {
+    "description": "Changing category will clear your cart items."
+  },
   "categoryChangeConfirmOk": "Confirm",
+  "@categoryChangeConfirmOk": {
+    "description": "Confirm"
+  },
   "categoryChangeConfirmCancel": "Cancel",
+  "@categoryChangeConfirmCancel": {
+    "description": "Cancel"
+  },
   "productByVendor": "By {vendorName}",
   "@productByVendor": {
     "placeholders": {
@@ -214,44 +712,161 @@
     }
   },
   "alreadyReviewedTitle": "Information",
+  "@alreadyReviewedTitle": {
+    "description": "Information"
+  },
   "alreadyReviewedMessage": "You have already reviewed this product.",
+  "@alreadyReviewedMessage": {
+    "description": "You have already reviewed this product."
+  },
   "writeReview": "Write a Review",
+  "@writeReview": {
+    "description": "Write a Review"
+  },
   "courierLogin": "Courier Login",
+  "@courierLogin": {
+    "description": "Courier Login"
+  },
   "courierWelcome": "Welcome Back, Courier!",
+  "@courierWelcome": {
+    "description": "Welcome Back, Courier!"
+  },
   "courierSubtitle": "Sign in to manage your deliveries",
+  "@courierSubtitle": {
+    "description": "Sign in to manage your deliveries"
+  },
   "areYouCourier": "Are you a courier?",
+  "@areYouCourier": {
+    "description": "Are you a courier?"
+  },
   "areYouVendor": "Are you a vendor? ",
+  "@areYouVendor": {
+    "description": "Are you a vendor? "
+  },
   "courierSignIn": "Sign in",
+  "@courierSignIn": {
+    "description": "Sign in"
+  },
   "courierLoginLink": "Courier Login",
+  "@courierLoginLink": {
+    "description": "Courier Login"
+  },
   "roleCustomer": "Customer",
+  "@roleCustomer": {
+    "description": "Customer"
+  },
   "roleVendor": "Vendor",
+  "@roleVendor": {
+    "description": "Vendor"
+  },
   "roleCourier": "Courier",
+  "@roleCourier": {
+    "description": "Courier"
+  },
   "roleAdmin": "Admin",
+  "@roleAdmin": {
+    "description": "Admin"
+  },
   "activeDeliveries": "Active Deliveries",
+  "@activeDeliveries": {
+    "description": "Active Deliveries"
+  },
   "deliveryHistory": "Delivery History",
+  "@deliveryHistory": {
+    "description": "Delivery History"
+  },
   "earnings": "Earnings",
+  "@earnings": {
+    "description": "Earnings"
+  },
   "deliveries": "Deliveries",
+  "@deliveries": {
+    "description": "Deliveries"
+  },
   "noActiveDeliveries": "No active deliveries",
+  "@noActiveDeliveries": {
+    "description": "No active deliveries"
+  },
   "courierProfileNotFound": "Courier profile not found",
+  "@courierProfileNotFound": {
+    "description": "Courier profile not found"
+  },
   "profileUpdatedSuccessfully": "Profile updated successfully",
+  "@profileUpdatedSuccessfully": {
+    "description": "Profile updated successfully"
+  },
   "invalidStatus": "Invalid status. Valid values: Offline, Available, Busy, Break, Assigned",
+  "@invalidStatus": {
+    "description": "Invalid status. Valid values: Offline, Availabl..."
+  },
   "cannotGoAvailableOutsideWorkingHours": "Cannot go available outside working hours",
+  "@cannotGoAvailableOutsideWorkingHours": {
+    "description": "Cannot go available outside working hours"
+  },
   "cannotGoOfflineWithActiveOrders": "Cannot go offline with active orders",
+  "@cannotGoOfflineWithActiveOrders": {
+    "description": "Cannot go offline with active orders"
+  },
   "statusUpdated": "Status updated",
+  "@statusUpdated": {
+    "description": "Status updated"
+  },
   "locationUpdatedSuccessfully": "Location updated successfully",
+  "@locationUpdatedSuccessfully": {
+    "description": "Location updated successfully"
+  },
   "invalidLatitude": "Invalid latitude",
+  "@invalidLatitude": {
+    "description": "Invalid latitude"
+  },
   "invalidLongitude": "Invalid longitude",
+  "@invalidLongitude": {
+    "description": "Invalid longitude"
+  },
   "orderAcceptedSuccessfully": "Order accepted successfully",
+  "@orderAcceptedSuccessfully": {
+    "description": "Order accepted successfully"
+  },
   "orderRejectedSuccessfully": "Order rejected successfully",
+  "@orderRejectedSuccessfully": {
+    "description": "Order rejected successfully"
+  },
   "orderPickedUpSuccessfully": "Order picked up successfully",
+  "@orderPickedUpSuccessfully": {
+    "description": "Order picked up successfully"
+  },
   "orderDeliveredSuccessfully": "Order delivered successfully",
+  "@orderDeliveredSuccessfully": {
+    "description": "Order delivered successfully"
+  },
   "deliveryProofSubmittedSuccessfully": "Delivery proof submitted successfully",
+  "@deliveryProofSubmittedSuccessfully": {
+    "description": "Delivery proof submitted successfully"
+  },
   "orderNotFoundOrNotAssigned": "Order not found or not assigned to you",
+  "@orderNotFoundOrNotAssigned": {
+    "description": "Order not found or not assigned to you"
+  },
   "orderMustBeDeliveredBeforeSubmittingProof": "Order must be delivered before submitting proof",
+  "@orderMustBeDeliveredBeforeSubmittingProof": {
+    "description": "Order must be delivered before submitting proof"
+  },
   "failedToAcceptOrder": "Failed to accept order. It might be already taken or cancelled",
+  "@failedToAcceptOrder": {
+    "description": "Failed to accept order. It might be already tak..."
+  },
   "failedToRejectOrder": "Failed to reject order",
+  "@failedToRejectOrder": {
+    "description": "Failed to reject order"
+  },
   "failedToPickUpOrder": "Failed to pick up order",
+  "@failedToPickUpOrder": {
+    "description": "Failed to pick up order"
+  },
   "failedToDeliverOrder": "Failed to deliver order",
+  "@failedToDeliverOrder": {
+    "description": "Failed to deliver order"
+  },
   "failedToLoadProfile": "Failed to load courier profile: {error}",
   "@failedToLoadProfile": {
     "placeholders": {
@@ -259,49 +874,181 @@
     }
   },
   "failedToUpdateStatus": "Failed to update status",
+  "@failedToUpdateStatus": {
+    "description": "Failed to update status"
+  },
   "failedToUpdateLocation": "Failed to update location",
+  "@failedToUpdateLocation": {
+    "description": "Failed to update location"
+  },
   "failedToLoadStatistics": "Failed to load statistics",
+  "@failedToLoadStatistics": {
+    "description": "Failed to load statistics"
+  },
   "failedToLoadActiveOrders": "Failed to load active orders",
+  "@failedToLoadActiveOrders": {
+    "description": "Failed to load active orders"
+  },
   "failedToLoadOrderDetail": "Failed to load order detail",
+  "@failedToLoadOrderDetail": {
+    "description": "Failed to load order detail"
+  },
   "failedToLoadTodayEarnings": "Failed to load today earnings",
+  "@failedToLoadTodayEarnings": {
+    "description": "Failed to load today earnings"
+  },
   "failedToLoadWeeklyEarnings": "Failed to load weekly earnings",
+  "@failedToLoadWeeklyEarnings": {
+    "description": "Failed to load weekly earnings"
+  },
   "failedToLoadMonthlyEarnings": "Failed to load monthly earnings",
+  "@failedToLoadMonthlyEarnings": {
+    "description": "Failed to load monthly earnings"
+  },
   "failedToLoadEarningsHistory": "Failed to load earnings history",
+  "@failedToLoadEarningsHistory": {
+    "description": "Failed to load earnings history"
+  },
   "failedToSubmitProof": "Failed to submit proof",
+  "@failedToSubmitProof": {
+    "description": "Failed to submit proof"
+  },
   "failedToUpdateProfile": "Failed to update profile",
+  "@failedToUpdateProfile": {
+    "description": "Failed to update profile"
+  },
   "failedToUploadImage": "Failed to upload image",
+  "@failedToUploadImage": {
+    "description": "Failed to upload image"
+  },
   "noFileUploaded": "No file uploaded",
+  "@noFileUploaded": {
+    "description": "No file uploaded"
+  },
   "internalServerErrorDuringUpload": "Internal server error during upload",
+  "@internalServerErrorDuringUpload": {
+    "description": "Internal server error during upload"
+  },
   "checkAvailability": "Check Availability",
+  "@checkAvailability": {
+    "description": "Check Availability"
+  },
   "businessSettings": "Business Settings",
+  "@businessSettings": {
+    "description": "Business Settings"
+  },
   "businessActive": "Business Active",
+  "@businessActive": {
+    "description": "Business Active"
+  },
   "customersCanPlaceOrders": "Customers can place orders",
+  "@customersCanPlaceOrders": {
+    "description": "Customers can place orders"
+  },
   "orderTakingClosed": "Order taking is closed",
+  "@orderTakingClosed": {
+    "description": "Order taking is closed"
+  },
   "businessOperations": "Business Operations",
+  "@businessOperations": {
+    "description": "Business Operations"
+  },
   "minimumOrderAmount": "Minimum Order Amount",
+  "@minimumOrderAmount": {
+    "description": "Minimum Order Amount"
+  },
   "estimatedDeliveryTime": "Estimated Delivery Time (minutes)",
+  "@estimatedDeliveryTime": {
+    "description": "Estimated Delivery Time (minutes)"
+  },
   "enterValidAmount": "Enter a valid amount",
+  "@enterValidAmount": {
+    "description": "Enter a valid amount"
+  },
   "enterValidTime": "Enter a valid time",
+  "@enterValidTime": {
+    "description": "Enter a valid time"
+  },
   "optional": "Optional",
+  "@optional": {
+    "description": "Optional"
+  },
   "deliveryFee": "Delivery Fee",
+  "@deliveryFee": {
+    "description": "Delivery Fee"
+  },
   "addressRequiredTitle": "Address Required",
+  "@addressRequiredTitle": {
+    "description": "Address Required"
+  },
   "addressRequiredMessage": "You need to add a delivery address before placing an order.",
+  "@addressRequiredMessage": {
+    "description": "You need to add a delivery address before placi..."
+  },
   "addressRequiredDescription": "You must add at least one address to place orders. Please add your address.",
+  "@addressRequiredDescription": {
+    "description": "You must add at least one address to place orde..."
+  },
   "addAddress": "Add Address",
+  "@addAddress": {
+    "description": "Add Address"
+  },
   "legalDocuments": "Legal Documents",
+  "@legalDocuments": {
+    "description": "Legal Documents"
+  },
   "termsOfUse": "Terms of Use",
+  "@termsOfUse": {
+    "description": "Terms of Use"
+  },
   "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Privacy Policy"
+  },
   "refundPolicy": "Refund Policy",
+  "@refundPolicy": {
+    "description": "Refund Policy"
+  },
   "distanceSalesAgreement": "Distance Sales Agreement",
+  "@distanceSalesAgreement": {
+    "description": "Distance Sales Agreement"
+  },
   "loadingContent": "Loading content...",
+  "@loadingContent": {
+    "description": "Loading content..."
+  },
   "contentNotAvailable": "Content not available",
+  "@contentNotAvailable": {
+    "description": "Content not available"
+  },
   "error": "Error",
+  "@error": {
+    "description": "Error"
+  },
   "profileUpdated": "Profile updated",
+  "@profileUpdated": {
+    "description": "Profile updated"
+  },
   "updatePersonalInfo": "Update your personal information",
+  "@updatePersonalInfo": {
+    "description": "Update your personal information"
+  },
   "phoneNumber": "Phone Number",
+  "@phoneNumber": {
+    "description": "Phone Number"
+  },
   "profileImageUrl": "Profile Image URL",
+  "@profileImageUrl": {
+    "description": "Profile Image URL"
+  },
   "dateOfBirth": "Date of Birth",
+  "@dateOfBirth": {
+    "description": "Date of Birth"
+  },
   "notSelected": "Not selected",
+  "@notSelected": {
+    "description": "Not selected"
+  },
   "profileLoadFailed": "Failed to load profile: {error}",
   "@profileLoadFailed": {
     "placeholders": {
@@ -309,46 +1056,169 @@
     }
   },
   "settingsUpdateFailed": "Failed to update settings",
+  "@settingsUpdateFailed": {
+    "description": "Failed to update settings"
+  },
   "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications"
+  },
   "pushNotifications": "Push Notifications",
+  "@pushNotifications": {
+    "description": "Push Notifications"
+  },
   "promotionalNotifications": "Promotional Notifications",
+  "@promotionalNotifications": {
+    "description": "Promotional Notifications"
+  },
   "newProducts": "New Products",
+  "@newProducts": {
+    "description": "New Products"
+  },
   "more": "More",
+  "@more": {
+    "description": "More"
+  },
   "accessibilityAndDisplay": "Accessibility & Display",
+  "@accessibilityAndDisplay": {
+    "description": "Accessibility & Display"
+  },
   "helpCenter": "Help Center",
+  "@helpCenter": {
+    "description": "Help Center"
+  },
   "howCanWeHelpYou": "How can we help you?",
+  "@howCanWeHelpYou": {
+    "description": "How can we help you?"
+  },
   "faq": "FAQ",
+  "@faq": {
+    "description": "FAQ"
+  },
   "frequentlyAskedQuestions": "Frequently asked questions",
+  "@frequentlyAskedQuestions": {
+    "description": "Frequently asked questions"
+  },
   "contactSupport": "Contact Support",
+  "@contactSupport": {
+    "description": "Contact Support"
+  },
   "callUs": "Call Us",
+  "@callUs": {
+    "description": "Call Us"
+  },
   "liveChat": "Live Chat",
+  "@liveChat": {
+    "description": "Live Chat"
+  },
   "available24x7": "Available 24/7",
+  "@available24x7": {
+    "description": "Available 24/7"
+  },
   "close": "Close",
+  "@close": {
+    "description": "Close"
+  },
   "logoutConfirmTitle": "Logout",
+  "@logoutConfirmTitle": {
+    "description": "Logout"
+  },
   "logoutConfirmMessage": "Are you sure you want to logout from your account?",
+  "@logoutConfirmMessage": {
+    "description": "Are you sure you want to logout from your account?"
+  },
   "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Passwords do not match"
+  },
   "passwordChangedSuccess": "Password changed successfully",
+  "@passwordChangedSuccess": {
+    "description": "Password changed successfully"
+  },
   "changePasswordDescription": "Enter your current password and choose a new one",
+  "@changePasswordDescription": {
+    "description": "Enter your current password and choose a new one"
+  },
   "currentPassword": "Current Password",
+  "@currentPassword": {
+    "description": "Current Password"
+  },
   "currentPasswordRequired": "Current password is required",
+  "@currentPasswordRequired": {
+    "description": "Current password is required"
+  },
   "newPassword": "New Password",
+  "@newPassword": {
+    "description": "New Password"
+  },
   "newPasswordRequired": "New password is required",
+  "@newPasswordRequired": {
+    "description": "New password is required"
+  },
   "confirmNewPassword": "Confirm Password",
+  "@confirmNewPassword": {
+    "description": "Confirm Password"
+  },
   "confirmPasswordRequired": "Password confirmation is required",
+  "@confirmPasswordRequired": {
+    "description": "Password confirmation is required"
+  },
   "secureYourAccount": "Secure your account",
+  "@secureYourAccount": {
+    "description": "Secure your account"
+  },
   "addressesLoadFailed": "Failed to load addresses",
+  "@addressesLoadFailed": {
+    "description": "Failed to load addresses"
+  },
   "deleteAddressTitle": "Delete Address",
+  "@deleteAddressTitle": {
+    "description": "Delete Address"
+  },
   "deleteAddressConfirm": "Are you sure you want to delete this address?",
+  "@deleteAddressConfirm": {
+    "description": "Are you sure you want to delete this address?"
+  },
   "delete": "Delete",
+  "@delete": {
+    "description": "Delete"
+  },
   "addressDeleted": "Address deleted",
+  "@addressDeleted": {
+    "description": "Address deleted"
+  },
   "defaultAddressUpdated": "Default address updated",
+  "@defaultAddressUpdated": {
+    "description": "Default address updated"
+  },
   "manageDeliveryAddresses": "Manage your delivery addresses",
+  "@manageDeliveryAddresses": {
+    "description": "Manage your delivery addresses"
+  },
   "noAddressesYet": "No addresses yet",
+  "@noAddressesYet": {
+    "description": "No addresses yet"
+  },
   "tapToAddAddress": "Tap + button to add a new address",
+  "@tapToAddAddress": {
+    "description": "Tap + button to add a new address"
+  },
   "defaultLabel": "Default",
+  "@defaultLabel": {
+    "description": "Default"
+  },
   "edit": "Edit",
+  "@edit": {
+    "description": "Edit"
+  },
   "setAsDefault": "Set as Default",
+  "@setAsDefault": {
+    "description": "Set as Default"
+  },
   "addressCountSingular": "1 address",
+  "@addressCountSingular": {
+    "description": "1 address"
+  },
   "addressCountPlural": "{count} addresses",
   "@addressCountPlural": {
     "placeholders": {
@@ -356,52 +1226,193 @@
     }
   },
   "locationServicesDisabled": "Location services are disabled",
+  "@locationServicesDisabled": {
+    "description": "Location services are disabled"
+  },
   "pleaseSelectLocation": "Please select a location",
+  "@pleaseSelectLocation": {
+    "description": "Please select a location"
+  },
   "selectedLocation": "Selected Location",
+  "@selectedLocation": {
+    "description": "Selected Location"
+  },
   "addressTitleOptional": "Address Title (Optional)",
+  "@addressTitleOptional": {
+    "description": "Address Title (Optional)"
+  },
   "canBeLeftEmpty": "Can be left empty",
+  "@canBeLeftEmpty": {
+    "description": "Can be left empty"
+  },
   "address": "Address",
+  "@address": {
+    "description": "Address"
+  },
   "city": "City",
+  "@city": {
+    "description": "City"
+  },
   "district": "District",
+  "@district": {
+    "description": "District"
+  },
   "selectOrDragMarkerOnMap": "Select a location on the map or drag the marker",
+  "@selectOrDragMarkerOnMap": {
+    "description": "Select a location on the map or drag the marker"
+  },
   "saveAddressButton": "Save Address",
+  "@saveAddressButton": {
+    "description": "Save Address"
+  },
   "selectAddress": "Select Address",
+  "@selectAddress": {
+    "description": "Select Address"
+  },
   "selectLocationFromMap": "Select location from map",
+  "@selectLocationFromMap": {
+    "description": "Select location from map"
+  },
   "addressAdded": "Address added",
+  "@addressAdded": {
+    "description": "Address added"
+  },
   "addressUpdated": "Address updated",
+  "@addressUpdated": {
+    "description": "Address updated"
+  },
   "editAddress": "Edit Address",
+  "@editAddress": {
+    "description": "Edit Address"
+  },
   "addNewAddress": "Add New Address",
+  "@addNewAddress": {
+    "description": "Add New Address"
+  },
   "updateAddressInfo": "Update your address information",
+  "@updateAddressInfo": {
+    "description": "Update your address information"
+  },
   "enterDeliveryAddressDetails": "Enter your delivery address details",
+  "@enterDeliveryAddressDetails": {
+    "description": "Enter your delivery address details"
+  },
   "addressTitleHint": "Address Title (Home, Work, etc.)",
+  "@addressTitleHint": {
+    "description": "Address Title (Home, Work, etc.)"
+  },
   "titleRequired": "Title is required",
+  "@titleRequired": {
+    "description": "Title is required"
+  },
   "selectAddressFromMap": "Select Address from Map",
+  "@selectAddressFromMap": {
+    "description": "Select Address from Map"
+  },
   "fullAddress": "Full Address",
+  "@fullAddress": {
+    "description": "Full Address"
+  },
   "addressRequired": "Address is required",
+  "@addressRequired": {
+    "description": "Address is required"
+  },
   "cityRequired": "City is required",
+  "@cityRequired": {
+    "description": "City is required"
+  },
   "districtRequired": "District is required",
+  "@districtRequired": {
+    "description": "District is required"
+  },
   "postalCodeOptional": "Postal Code (Optional)",
+  "@postalCodeOptional": {
+    "description": "Postal Code (Optional)"
+  },
   "updateAddressButton": "Update Address",
+  "@updateAddressButton": {
+    "description": "Update Address"
+  },
   "updateAddressDetails": "Update address details",
+  "@updateAddressDetails": {
+    "description": "Update address details"
+  },
   "createNewAddress": "Create new address",
+  "@createNewAddress": {
+    "description": "Create new address"
+  },
   "orderUpdates": "Order Updates",
+  "@orderUpdates": {
+    "description": "Order Updates"
+  },
   "orderUpdatesDescription": "Get notified when your order status changes",
+  "@orderUpdatesDescription": {
+    "description": "Get notified when your order status changes"
+  },
   "promotions": "Promotions",
+  "@promotions": {
+    "description": "Promotions"
+  },
   "promotionsDescription": "Special offers and promotions",
+  "@promotionsDescription": {
+    "description": "Special offers and promotions"
+  },
   "newProductsDescription": "Get notified when new products are added",
+  "@newProductsDescription": {
+    "description": "Get notified when new products are added"
+  },
   "settingsSaved": "Settings saved",
+  "@settingsSaved": {
+    "description": "Settings saved"
+  },
   "regionalSettingsDescription": "Date and time settings",
+  "@regionalSettingsDescription": {
+    "description": "Date and time settings"
+  },
   "timeZoneHint": "e.g., Europe/Istanbul, America/New_York",
+  "@timeZoneHint": {
+    "description": "e.g., Europe/Istanbul, America/New_York"
+  },
   "manageNotificationPreferences": "Manage your notification preferences",
+  "@manageNotificationPreferences": {
+    "description": "Manage your notification preferences"
+  },
   "orderHistoryDescription": "View your past orders",
+  "@orderHistoryDescription": {
+    "description": "View your past orders"
+  },
   "myAddressesDescription": "Manage your delivery addresses",
+  "@myAddressesDescription": {
+    "description": "Manage your delivery addresses"
+  },
   "myFavoriteProducts": "My Favorite Products",
+  "@myFavoriteProducts": {
+    "description": "My Favorite Products"
+  },
   "myFavoriteProductsDescription": "View and manage your favorite products",
+  "@myFavoriteProductsDescription": {
+    "description": "View and manage your favorite products"
+  },
   "changePasswordSubtitle": "Change your password and enhance security",
+  "@changePasswordSubtitle": {
+    "description": "Change your password and enhance security"
+  },
   "notificationSettingsDescription": "Manage your notification preferences",
+  "@notificationSettingsDescription": {
+    "description": "Manage your notification preferences"
+  },
   "selectLanguageDescription": "Change application language",
+  "@selectLanguageDescription": {
+    "description": "Change application language"
+  },
   "selectLanguageSubtitle": "Choose your preferred language",
+  "@selectLanguageSubtitle": {
+    "description": "Choose your preferred language"
+  },
   "languageChanged": "Language changed",
+  "@languageChanged": {
+    "description": "Language changed"
+  },
   "languagesCount": "{count} languages",
   "@languagesCount": {
     "placeholders": {
@@ -409,26 +1420,89 @@
     }
   },
   "legalDocumentsDescription": "Terms of use and policies",
+  "@legalDocumentsDescription": {
+    "description": "Terms of use and policies"
+  },
   "helpCenterDescription": "FAQ and support line",
+  "@helpCenterDescription": {
+    "description": "FAQ and support line"
+  },
   "logoutDescription": "Sign out from your account",
+  "@logoutDescription": {
+    "description": "Sign out from your account"
+  },
   "vendorRegister": "Vendor Registration",
+  "@vendorRegister": {
+    "description": "Vendor Registration"
+  },
   "talabiBusiness": "Talabi Business",
+  "@talabiBusiness": {
+    "description": "Talabi Business"
+  },
   "createBusinessAccount": "Create Business Account",
+  "@createBusinessAccount": {
+    "description": "Create Business Account"
+  },
   "createYourStoreAndStartSelling": "Create your store and start selling",
+  "@createYourStoreAndStartSelling": {
+    "description": "Create your store and start selling"
+  },
   "businessName": "Business Name",
+  "@businessName": {
+    "description": "Business Name"
+  },
   "businessNameRequired": "Business name is required",
+  "@businessNameRequired": {
+    "description": "Business name is required"
+  },
   "phoneNumberRequired": "Phone number is required",
+  "@phoneNumberRequired": {
+    "description": "Phone number is required"
+  },
   "createVendorAccount": "Create Vendor Account",
+  "@createVendorAccount": {
+    "description": "Create Vendor Account"
+  },
   "alreadyHaveVendorAccount": "Already have a vendor account? ",
+  "@alreadyHaveVendorAccount": {
+    "description": "Already have a vendor account? "
+  },
   "isCustomerAccount": "Customer account? ",
+  "@isCustomerAccount": {
+    "description": "Customer account? "
+  },
   "emailAlreadyExists": "An account with this email already exists.",
+  "@emailAlreadyExists": {
+    "description": "An account with this email already exists."
+  },
   "enterFourDigitCode": "Please enter the 4-digit code",
+  "@enterFourDigitCode": {
+    "description": "Please enter the 4-digit code"
+  },
   "emailVerifiedSuccess": "Email address verified successfully",
+  "@emailVerifiedSuccess": {
+    "description": "Email address verified successfully"
+  },
   "emailVerifiedLoginFailed": "Email verified but auto-login failed. Please login manually.",
+  "@emailVerifiedLoginFailed": {
+    "description": "Email verified but auto-login failed. Please lo..."
+  },
   "verificationFailed": "Verification failed",
+  "@verificationFailed": {
+    "description": "Verification failed"
+  },
   "verificationCodeResent": "Verification code resent",
+  "@verificationCodeResent": {
+    "description": "Verification code resent"
+  },
   "codeSendFailed": "Failed to send code",
+  "@codeSendFailed": {
+    "description": "Failed to send code"
+  },
   "fourDigitVerificationCode": "4-Digit Verification Code",
+  "@fourDigitVerificationCode": {
+    "description": "4-Digit Verification Code"
+  },
   "enterCodeSentToEmail": "Enter the 4-digit code sent to {email}",
   "@enterCodeSentToEmail": {
     "placeholders": {
@@ -442,6 +1516,9 @@
     }
   },
   "resendCode": "Resend Code",
+  "@resendCode": {
+    "description": "Resend Code"
+  },
   "settingsLoadError": "Failed to load settings: {error}",
   "@settingsLoadError": {
     "placeholders": {
@@ -449,7 +1526,13 @@
     }
   },
   "settingsUpdated": "Settings updated",
+  "@settingsUpdated": {
+    "description": "Settings updated"
+  },
   "reviewApproved": "Review approved",
+  "@reviewApproved": {
+    "description": "Review approved"
+  },
   "reviewApproveError": "Error approving review: {error}",
   "@reviewApproveError": {
     "placeholders": {
@@ -457,9 +1540,21 @@
     }
   },
   "rejectReview": "Reject Review",
+  "@rejectReview": {
+    "description": "Reject Review"
+  },
   "rejectReviewConfirmation": "Are you sure you want to reject this review? This cannot be undone.",
+  "@rejectReviewConfirmation": {
+    "description": "Are you sure you want to reject this review? Th..."
+  },
   "reject": "Reject",
+  "@reject": {
+    "description": "Reject"
+  },
   "reviewRejected": "Review rejected",
+  "@reviewRejected": {
+    "description": "Review rejected"
+  },
   "reviewRejectError": "Error rejecting review: {error}",
   "@reviewRejectError": {
     "placeholders": {
@@ -467,6 +1562,9 @@
     }
   },
   "reviewDetail": "Review Detail",
+  "@reviewDetail": {
+    "description": "Review Detail"
+  },
   "userId": "User ID: {id}",
   "@userId": {
     "placeholders": {
@@ -474,54 +1572,201 @@
     }
   },
   "rating": "Rating",
+  "@rating": {
+    "description": "Rating"
+  },
   "comment": "Comment",
+  "@comment": {
+    "description": "Comment"
+  },
   "noComment": "No comment",
+  "@noComment": {
+    "description": "No comment"
+  },
   "date": "Date",
+  "@date": {
+    "description": "Date"
+  },
   "approve": "Approve",
+  "@approve": {
+    "description": "Approve"
+  },
   "verify": "Verify",
+  "@verify": {
+    "description": "Verify"
+  },
   "placeOrder": "Place Order",
+  "@placeOrder": {
+    "description": "Place Order"
+  },
   "deliveryAddress": "Delivery Address",
+  "@deliveryAddress": {
+    "description": "Delivery Address"
+  },
   "changeAddress": "Change",
+  "@changeAddress": {
+    "description": "Change"
+  },
   "paymentMethod": "Payment Method",
+  "@paymentMethod": {
+    "description": "Payment Method"
+  },
   "cash": "Cash",
+  "@cash": {
+    "description": "Cash"
+  },
   "creditCard": "Credit Card",
+  "@creditCard": {
+    "description": "Credit Card"
+  },
   "mobilePayment": "Mobile Payment",
+  "@mobilePayment": {
+    "description": "Mobile Payment"
+  },
   "comingSoon": "Coming Soon",
+  "@comingSoon": {
+    "description": "Coming Soon"
+  },
   "orderNotePlaceholder": "Add note for courier (optional)",
+  "@orderNotePlaceholder": {
+    "description": "Add note for courier (optional)"
+  },
   "estimatedDelivery": "Estimated Delivery",
+  "@estimatedDelivery": {
+    "description": "Estimated Delivery"
+  },
   "minutes": "minutes",
+  "@minutes": {
+    "description": "minutes"
+  },
   "orderSummary": "Order Summary",
+  "@orderSummary": {
+    "description": "Order Summary"
+  },
   "pleaseSelectAddress": "Please select a delivery address",
+  "@pleaseSelectAddress": {
+    "description": "Please select a delivery address"
+  },
   "pleaseSelectPaymentMethod": "Please select a payment method",
+  "@pleaseSelectPaymentMethod": {
+    "description": "Please select a payment method"
+  },
   "orderCreatedSuccess": "Your order has been created successfully!",
+  "@orderCreatedSuccess": {
+    "description": "Your order has been created successfully!"
+  },
   "noAddressFound": "No address found",
+  "@noAddressFound": {
+    "description": "No address found"
+  },
   "cashDescription": "You can pay cash to the courier at the door.",
+  "@cashDescription": {
+    "description": "You can pay cash to the courier at the door."
+  },
   "paymentComingSoonDescription": "This payment method will be available soon.",
+  "@paymentComingSoonDescription": {
+    "description": "This payment method will be available soon."
+  },
   "skip": "Skip",
+  "@skip": {
+    "description": "Skip"
+  },
   "next": "Next",
+  "@next": {
+    "description": "Next"
+  },
   "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get Started"
+  },
   "onboardingTitle1": "Delicious Meals\nAt Your Door In Minutes",
+  "@onboardingTitle1": {
+    "description": "Delicious Meals At Your Door In Minutes"
+  },
   "onboardingDesc1": "Order your favorite meals from top restaurants and enjoy them warm.",
+  "@onboardingDesc1": {
+    "description": "Order your favorite meals from top restaurants ..."
+  },
   "onboardingTitle2": "Grocery Shopping\nAt Your Door In Minutes",
+  "@onboardingTitle2": {
+    "description": "Grocery Shopping At Your Door In Minutes"
+  },
   "onboardingDesc2": "Fresh vegetables, fruits, and daily needs delivered fast.",
+  "@onboardingDesc2": {
+    "description": "Fresh vegetables, fruits, and daily needs deliv..."
+  },
   "onboardingTitle3": "Best Prices & Offers",
+  "@onboardingTitle3": {
+    "description": "Best Prices & Offers"
+  },
   "onboardingDesc3": "Enjoy exclusive deals and competitive prices every day",
+  "@onboardingDesc3": {
+    "description": "Enjoy exclusive deals and competitive prices ev..."
+  },
   "pending": "Pending",
+  "@pending": {
+    "description": "Pending"
+  },
   "preparing": "Preparing",
+  "@preparing": {
+    "description": "Preparing"
+  },
   "ready": "Ready",
+  "@ready": {
+    "description": "Ready"
+  },
   "outForDelivery": "Out for Delivery",
+  "@outForDelivery": {
+    "description": "Out for Delivery"
+  },
   "delivered": "Delivered",
+  "@delivered": {
+    "description": "Delivered"
+  },
   "cancelled": "Cancelled",
+  "@cancelled": {
+    "description": "Cancelled"
+  },
   "assigned": "Assigned",
+  "@assigned": {
+    "description": "Assigned"
+  },
   "accepted": "Accepted",
+  "@accepted": {
+    "description": "Accepted"
+  },
   "rejected": "Rejected",
+  "@rejected": {
+    "description": "Rejected"
+  },
   "pickedUp": "Picked Up",
+  "@pickedUp": {
+    "description": "Picked Up"
+  },
   "courierInformation": "Courier Information",
+  "@courierInformation": {
+    "description": "Courier Information"
+  },
   "assignedAt": "Assigned At",
+  "@assignedAt": {
+    "description": "Assigned At"
+  },
   "acceptedAt": "Accepted At",
+  "@acceptedAt": {
+    "description": "Accepted At"
+  },
   "pickedUpAt": "Picked Up At",
+  "@pickedUpAt": {
+    "description": "Picked Up At"
+  },
   "outForDeliveryAt": "Out for Delivery At",
+  "@outForDeliveryAt": {
+    "description": "Out for Delivery At"
+  },
   "vendorOrders": "Vendor Orders",
+  "@vendorOrders": {
+    "description": "Vendor Orders"
+  },
   "pendingOrdersCount": "{count} pending orders",
   "@pendingOrdersCount": {
     "placeholders": {
@@ -555,9 +1800,21 @@
     }
   },
   "noOrdersFound": "No orders found",
+  "@noOrdersFound": {
+    "description": "No orders found"
+  },
   "order": "Order",
+  "@order": {
+    "description": "Order"
+  },
   "customer": "Customer",
+  "@customer": {
+    "description": "Customer"
+  },
   "vendorDashboard": "Vendor Dashboard",
+  "@vendorDashboard": {
+    "description": "Vendor Dashboard"
+  },
   "summaryLoadError": "Failed to load summary: {error}",
   "@summaryLoadError": {
     "placeholders": {
@@ -571,12 +1828,33 @@
     }
   },
   "todayOrders": "Today's Orders",
+  "@todayOrders": {
+    "description": "Today's Orders"
+  },
   "pendingOrders": "Pending Orders",
+  "@pendingOrders": {
+    "description": "Pending Orders"
+  },
   "todayRevenue": "Today's Revenue",
+  "@todayRevenue": {
+    "description": "Today's Revenue"
+  },
   "weeklyRevenue": "Weekly Revenue",
+  "@weeklyRevenue": {
+    "description": "Weekly Revenue"
+  },
   "quickActions": "Quick Actions",
+  "@quickActions": {
+    "description": "Quick Actions"
+  },
   "reports": "Reports",
+  "@reports": {
+    "description": "Reports"
+  },
   "logoUpdated": "Logo updated",
+  "@logoUpdated": {
+    "description": "Logo updated"
+  },
   "logoUploadFailed": "Logo upload failed: {error}",
   "@logoUploadFailed": {
     "placeholders": {
@@ -584,19 +1862,61 @@
     }
   },
   "locationSelectedChange": "Location Selected (Change)",
+  "@locationSelectedChange": {
+    "description": "Location Selected (Change)"
+  },
   "selectLocationFromMapRequired": "Select Location from Map *",
+  "@selectLocationFromMapRequired": {
+    "description": "Select Location from Map *"
+  },
   "locationSelectionRequired": "Location selection from map is required",
+  "@locationSelectionRequired": {
+    "description": "Location selection from map is required"
+  },
   "addressAutoFillHint": "Address selected from map is auto-filled, you can edit manually",
+  "@addressAutoFillHint": {
+    "description": "Address selected from map is auto-filled, you c..."
+  },
   "selectLocationFirst": "You must select a location from map first",
+  "@selectLocationFirst": {
+    "description": "You must select a location from map first"
+  },
   "vendorLogin": "Vendor Login",
+  "@vendorLogin": {
+    "description": "Vendor Login"
+  },
   "welcomeBackVendor": "Welcome Back, Vendor!",
+  "@welcomeBackVendor": {
+    "description": "Welcome Back, Vendor!"
+  },
   "vendorLoginDescription": "Sign in to manage your store and orders",
+  "@vendorLoginDescription": {
+    "description": "Sign in to manage your store and orders"
+  },
   "areYouCustomer": "Are you a customer?",
+  "@areYouCustomer": {
+    "description": "Are you a customer?"
+  },
   "vendorNotificationsTitle": "Notifications",
+  "@vendorNotificationsTitle": {
+    "description": "Notifications"
+  },
   "vendorNotificationsEmptyMessage": "You have no notifications yet.",
+  "@vendorNotificationsEmptyMessage": {
+    "description": "You have no notifications yet."
+  },
   "vendorNotificationsErrorMessage": "An error occurred while loading notifications.",
+  "@vendorNotificationsErrorMessage": {
+    "description": "An error occurred while loading notifications."
+  },
   "vendorProductsTitle": "My Products",
+  "@vendorProductsTitle": {
+    "description": "My Products"
+  },
   "vendorProductsSearchHint": "Search products...",
+  "@vendorProductsSearchHint": {
+    "description": "Search products..."
+  },
   "vendorProductsLoadError": "Failed to load products: {error}",
   "@vendorProductsLoadError": {
     "placeholders": {
@@ -616,6 +1936,9 @@
     }
   },
   "vendorProductsDeleteTitle": "Delete Product",
+  "@vendorProductsDeleteTitle": {
+    "description": "Delete Product"
+  },
   "vendorProductsDeleteConfirmation": "Are you sure you want to delete {productName}?",
   "@vendorProductsDeleteConfirmation": {
     "placeholders": {
@@ -629,11 +1952,29 @@
     }
   },
   "vendorProductsEmpty": "No products found",
+  "@vendorProductsEmpty": {
+    "description": "No products found"
+  },
   "vendorProductsAddFirst": "Add Your First Product",
+  "@vendorProductsAddFirst": {
+    "description": "Add Your First Product"
+  },
   "vendorProductsAddNew": "New Product",
+  "@vendorProductsAddNew": {
+    "description": "New Product"
+  },
   "vendorProductFormEditTitle": "Edit Product",
+  "@vendorProductFormEditTitle": {
+    "description": "Edit Product"
+  },
   "vendorProductFormNewTitle": "New Product",
+  "@vendorProductFormNewTitle": {
+    "description": "New Product"
+  },
   "vendorProductFormImageUploaded": "Image uploaded",
+  "@vendorProductFormImageUploaded": {
+    "description": "Image uploaded"
+  },
   "vendorProductFormImageUploadError": "Failed to upload image: {error}",
   "@vendorProductFormImageUploadError": {
     "placeholders": {
@@ -641,9 +1982,21 @@
     }
   },
   "vendorProductFormSourceCamera": "Camera",
+  "@vendorProductFormSourceCamera": {
+    "description": "Camera"
+  },
   "vendorProductFormSourceGallery": "Gallery",
+  "@vendorProductFormSourceGallery": {
+    "description": "Gallery"
+  },
   "vendorProductFormCreateSuccess": "Product created",
+  "@vendorProductFormCreateSuccess": {
+    "description": "Product created"
+  },
   "vendorProductFormUpdateSuccess": "Product updated",
+  "@vendorProductFormUpdateSuccess": {
+    "description": "Product updated"
+  },
   "vendorProductFormError": "Error: {error}",
   "@vendorProductFormError": {
     "placeholders": {
@@ -651,37 +2004,133 @@
     }
   },
   "vendorProductFormNameLabel": "Product Name *",
+  "@vendorProductFormNameLabel": {
+    "description": "Product Name *"
+  },
   "vendorProductFormNameRequired": "Product name is required",
+  "@vendorProductFormNameRequired": {
+    "description": "Product name is required"
+  },
   "vendorProductFormDescriptionLabel": "Description",
+  "@vendorProductFormDescriptionLabel": {
+    "description": "Description"
+  },
   "vendorProductFormCategoryLabel": "Category",
+  "@vendorProductFormCategoryLabel": {
+    "description": "Category"
+  },
   "vendorProductFormPriceLabel": "Price *",
+  "@vendorProductFormPriceLabel": {
+    "description": "Price *"
+  },
   "vendorProductFormPriceRequired": "Price is required",
+  "@vendorProductFormPriceRequired": {
+    "description": "Price is required"
+  },
   "vendorProductFormPriceInvalid": "Please enter a valid price",
+  "@vendorProductFormPriceInvalid": {
+    "description": "Please enter a valid price"
+  },
   "vendorProductFormStockLabel": "Stock Quantity",
+  "@vendorProductFormStockLabel": {
+    "description": "Stock Quantity"
+  },
   "vendorProductFormInvalidNumber": "Please enter a valid number",
+  "@vendorProductFormInvalidNumber": {
+    "description": "Please enter a valid number"
+  },
   "vendorProductFormPreparationTimeLabel": "Preparation Time (minutes)",
+  "@vendorProductFormPreparationTimeLabel": {
+    "description": "Preparation Time (minutes)"
+  },
   "vendorProductFormInStockLabel": "In Stock",
+  "@vendorProductFormInStockLabel": {
+    "description": "In Stock"
+  },
   "vendorProductFormInStockDescription": "The product will be visible to customers",
+  "@vendorProductFormInStockDescription": {
+    "description": "The product will be visible to customers"
+  },
   "vendorProductFormOutOfStockDescription": "The product will be marked as out of stock",
+  "@vendorProductFormOutOfStockDescription": {
+    "description": "The product will be marked as out of stock"
+  },
   "updateButton": "Update",
+  "@updateButton": {
+    "description": "Update"
+  },
   "createButton": "Create",
+  "@createButton": {
+    "description": "Create"
+  },
   "vendorProductFormAddImage": "Add Image",
+  "@vendorProductFormAddImage": {
+    "description": "Add Image"
+  },
   "vendorProfileTitle": "My Vendor Profile",
+  "@vendorProfileTitle": {
+    "description": "My Vendor Profile"
+  },
   "vendorFallbackSubtitle": "Vendor",
+  "@vendorFallbackSubtitle": {
+    "description": "Vendor"
+  },
   "businessInfo": "Business Information",
+  "@businessInfo": {
+    "description": "Business Information"
+  },
   "addressLabel": "Address",
+  "@addressLabel": {
+    "description": "Address"
+  },
   "phoneLabel": "Phone",
+  "@phoneLabel": {
+    "description": "Phone"
+  },
   "generalSettings": "General Settings",
+  "@generalSettings": {
+    "description": "General Settings"
+  },
   "businessSettingsTitle": "Business Settings",
+  "@businessSettingsTitle": {
+    "description": "Business Settings"
+  },
   "businessSettingsSubtitle": "Minimum order, delivery fee, and other settings",
+  "@businessSettingsSubtitle": {
+    "description": "Minimum order, delivery fee, and other settings"
+  },
   "languageNameTr": "Turkish",
+  "@languageNameTr": {
+    "description": "Turkish"
+  },
   "languageNameEn": "English",
+  "@languageNameEn": {
+    "description": "English"
+  },
   "languageNameAr": "Arabic",
+  "@languageNameAr": {
+    "description": "Arabic"
+  },
   "businessNameFallback": "Business Name",
+  "@businessNameFallback": {
+    "description": "Business Name"
+  },
   "retry": "Retry",
+  "@retry": {
+    "description": "Retry"
+  },
   "markAsRead": "Mark as Read",
+  "@markAsRead": {
+    "description": "Mark as Read"
+  },
   "pendingReviews": "Pending Reviews",
+  "@pendingReviews": {
+    "description": "Pending Reviews"
+  },
   "noPendingReviews": "No pending reviews",
+  "@noPendingReviews": {
+    "description": "No pending reviews"
+  },
   "reviewsLoadError": "Failed to load reviews: {error}",
   "@reviewsLoadError": {
     "placeholders": {
@@ -689,16 +2138,49 @@
     }
   },
   "salesReports": "Sales Reports",
+  "@salesReports": {
+    "description": "Sales Reports"
+  },
   "selectDateRange": "Select Date Range",
+  "@selectDateRange": {
+    "description": "Select Date Range"
+  },
   "daily": "Daily",
+  "@daily": {
+    "description": "Daily"
+  },
   "weekly": "Weekly",
+  "@weekly": {
+    "description": "Weekly"
+  },
   "monthly": "Monthly",
+  "@monthly": {
+    "description": "Monthly"
+  },
   "noReportFound": "No report found",
+  "@noReportFound": {
+    "description": "No report found"
+  },
   "totalOrders": "Total Orders",
+  "@totalOrders": {
+    "description": "Total Orders"
+  },
   "totalRevenue": "Total Revenue",
+  "@totalRevenue": {
+    "description": "Total Revenue"
+  },
   "completed": "Completed",
+  "@completed": {
+    "description": "Completed"
+  },
   "cancelledOrders": "Cancelled",
+  "@cancelledOrders": {
+    "description": "Cancelled"
+  },
   "dailySales": "Daily Sales",
+  "@dailySales": {
+    "description": "Daily Sales"
+  },
   "orderCount": "{count} orders",
   "@orderCount": {
     "placeholders": {
@@ -706,11 +2188,29 @@
     }
   },
   "refresh": "Refresh",
+  "@refresh": {
+    "description": "Refresh"
+  },
   "cancelOrder": "Cancel Order",
+  "@cancelOrder": {
+    "description": "Cancel Order"
+  },
   "reorder": "Reorder",
+  "@reorder": {
+    "description": "Reorder"
+  },
   "orderCancelled": "Order cancelled",
+  "@orderCancelled": {
+    "description": "Order cancelled"
+  },
   "cancelReason": "Cancel reason",
+  "@cancelReason": {
+    "description": "Cancel reason"
+  },
   "cancelReasonDescription": "Please specify your cancellation reason (at least 10 characters):",
+  "@cancelReasonDescription": {
+    "description": "Please specify your cancellation reason (at lea..."
+  },
   "acceptOrderTitle": "Accept Order",
   "@acceptOrderTitle": {
     "description": "Order acceptance popup title"
@@ -736,15 +2236,45 @@
     "description": "Mark order as ready button"
   },
   "rejectOrder": "Reject Order",
+  "@rejectOrder": {
+    "description": "Reject Order"
+  },
   "rejectOrderTitle": "Order Rejection",
+  "@rejectOrderTitle": {
+    "description": "Order Rejection"
+  },
   "rejectReason": "Rejection reason",
+  "@rejectReason": {
+    "description": "Rejection reason"
+  },
   "rejectReasonDescription": "Please enter the rejection reason (at least 1 character):",
+  "@rejectReasonDescription": {
+    "description": "Please enter the rejection reason (at least 1 c..."
+  },
   "rejectReasonHint": "Rejection reason...",
+  "@rejectReasonHint": {
+    "description": "Rejection reason..."
+  },
   "rejectOrderConfirmation": "Are you sure you want to reject this order?",
+  "@rejectOrderConfirmation": {
+    "description": "Are you sure you want to reject this order?"
+  },
   "orderRejected": "Order rejected",
+  "@orderRejected": {
+    "description": "Order rejected"
+  },
   "pieces": "pieces",
+  "@pieces": {
+    "description": "pieces"
+  },
   "orderNotFound": "Order not found",
+  "@orderNotFound": {
+    "description": "Order not found"
+  },
   "productsAddedToCart": "Products added to cart, redirecting to cart...",
+  "@productsAddedToCart": {
+    "description": "Products added to cart, redirecting to cart..."
+  },
   "reorderFailed": "Failed to reorder: {error}",
   "@reorderFailed": {
     "placeholders": {
@@ -752,7 +2282,13 @@
     }
   },
   "locationPermissionDenied": "Location permission denied",
+  "@locationPermissionDenied": {
+    "description": "Location permission denied"
+  },
   "locationPermissionDeniedForever": "Location permission permanently denied",
+  "@locationPermissionDeniedForever": {
+    "description": "Location permission permanently denied"
+  },
   "vendorsLoadFailed": "Failed to load vendors: {error}",
   "@vendorsLoadFailed": {
     "placeholders": {
@@ -760,24 +2296,81 @@
     }
   },
   "yourLocation": "Your Location",
+  "@yourLocation": {
+    "description": "Your Location"
+  },
   "locationPermissionTitle": "Location Permission Required",
+  "@locationPermissionTitle": {
+    "description": "Location Permission Required"
+  },
   "locationPermissionMessage": "We need your location permission to show nearby restaurants and track your orders.",
+  "@locationPermissionMessage": {
+    "description": "We need your location permission to show nearby..."
+  },
   "allow": "Allow",
+  "@allow": {
+    "description": "Allow"
+  },
   "locationManagement": "Location Management",
+  "@locationManagement": {
+    "description": "Location Management"
+  },
   "currentLocationInfo": "Current Location Information",
+  "@currentLocationInfo": {
+    "description": "Current Location Information"
+  },
   "latitude": "Latitude",
+  "@latitude": {
+    "description": "Latitude"
+  },
   "longitude": "Longitude",
+  "@longitude": {
+    "description": "Longitude"
+  },
   "lastLocationUpdate": "Last Update",
+  "@lastLocationUpdate": {
+    "description": "Last Update"
+  },
   "noLocationData": "No location data available",
+  "@noLocationData": {
+    "description": "No location data available"
+  },
   "selectLocationOnMap": "Select Location on Map",
+  "@selectLocationOnMap": {
+    "description": "Select Location on Map"
+  },
   "useCurrentLocation": "Use Current Location",
+  "@useCurrentLocation": {
+    "description": "Use Current Location"
+  },
   "updateLocation": "Update Location",
+  "@updateLocation": {
+    "description": "Update Location"
+  },
   "locationSharingInfo": "Location sharing is required to receive orders from nearby restaurants. Your location is automatically shared when your status is \"Available\".",
+  "@locationSharingInfo": {
+    "description": "Location sharing is required to receive orders ..."
+  },
   "locationManagementDescription": "View and update your current location",
+  "@locationManagementDescription": {
+    "description": "View and update your current location"
+  },
   "vendorsMap": "Vendors Map",
+  "@vendorsMap": {
+    "description": "Vendors Map"
+  },
   "findMyLocation": "Find My Location",
+  "@findMyLocation": {
+    "description": "Find My Location"
+  },
   "viewProducts": "View Products",
+  "@viewProducts": {
+    "description": "View Products"
+  },
   "gettingLocation": "Getting location...",
+  "@gettingLocation": {
+    "description": "Getting location..."
+  },
   "searchError": "Search error: {error}",
   "@searchError": {
     "placeholders": {
@@ -791,32 +2384,113 @@
     }
   },
   "filters": "Filters",
+  "@filters": {
+    "description": "Filters"
+  },
   "clear": "Clear",
+  "@clear": {
+    "description": "Clear"
+  },
   "selectCategory": "Select category",
+  "@selectCategory": {
+    "description": "Select category"
+  },
   "priceRange": "Price Range",
+  "@priceRange": {
+    "description": "Price Range"
+  },
   "minPrice": "Min Price",
+  "@minPrice": {
+    "description": "Min Price"
+  },
   "maxPrice": "Max Price",
+  "@maxPrice": {
+    "description": "Max Price"
+  },
   "selectCity": "Select city",
+  "@selectCity": {
+    "description": "Select city"
+  },
   "minimumRating": "Minimum Rating",
+  "@minimumRating": {
+    "description": "Minimum Rating"
+  },
   "maximumDistance": "Maximum Distance (km)",
+  "@maximumDistance": {
+    "description": "Maximum Distance (km)"
+  },
   "distanceKm": "Distance (km)",
+  "@distanceKm": {
+    "description": "Distance (km)"
+  },
   "sortBy": "Sort By",
+  "@sortBy": {
+    "description": "Sort By"
+  },
   "selectSortBy": "Select sort by",
+  "@selectSortBy": {
+    "description": "Select sort by"
+  },
   "priceLowToHigh": "Price (Low to High)",
+  "@priceLowToHigh": {
+    "description": "Price (Low to High)"
+  },
   "priceHighToLow": "Price (High to Low)",
+  "@priceHighToLow": {
+    "description": "Price (High to Low)"
+  },
   "sortByName": "Sort by Name",
+  "@sortByName": {
+    "description": "Sort by Name"
+  },
   "newest": "Newest",
+  "@newest": {
+    "description": "Newest"
+  },
   "ratingHighToLow": "Rating (High to Low)",
+  "@ratingHighToLow": {
+    "description": "Rating (High to Low)"
+  },
   "popularity": "Popularity",
+  "@popularity": {
+    "description": "Popularity"
+  },
   "distance": "Distance",
+  "@distance": {
+    "description": "Distance"
+  },
   "applyFilters": "Apply Filters",
+  "@applyFilters": {
+    "description": "Apply Filters"
+  },
   "searchProductsOrVendors": "Search products or vendors...",
+  "@searchProductsOrVendors": {
+    "description": "Search products or vendors..."
+  },
   "suggestions": "Suggestions",
+  "@suggestions": {
+    "description": "Suggestions"
+  },
   "product": "Product",
+  "@product": {
+    "description": "Product"
+  },
   "searchHistory": "Search History",
+  "@searchHistory": {
+    "description": "Search History"
+  },
   "typeToSearch": "Type in the box above to search",
+  "@typeToSearch": {
+    "description": "Type in the box above to search"
+  },
   "recentSearches": "Recent Searches",
+  "@recentSearches": {
+    "description": "Recent Searches"
+  },
   "noResultsFound": "No results found",
+  "@noResultsFound": {
+    "description": "No results found"
+  },
   "cityLabel": "City: {city}",
   "@cityLabel": {
     "placeholders": {
@@ -830,9 +2504,21 @@
     }
   },
   "popularSearches": "Popular Searches",
+  "@popularSearches": {
+    "description": "Popular Searches"
+  },
   "deliveryZones": "Delivery Zones",
+  "@deliveryZones": {
+    "description": "Delivery Zones"
+  },
   "deliveryZonesDescription": "Manage cities and districts you deliver to",
+  "@deliveryZonesDescription": {
+    "description": "Manage cities and districts you deliver to"
+  },
   "deliveryZonesUpdated": "Delivery zones updated successfully",
+  "@deliveryZonesUpdated": {
+    "description": "Delivery zones updated successfully"
+  },
   "removedFromFavorites": "{productName} removed from favorites",
   "@removedFromFavorites": {
     "placeholders": {
@@ -840,7 +2526,13 @@
     }
   },
   "noFavoritesFound": "No favorite products found",
+  "@noFavoritesFound": {
+    "description": "No favorite products found"
+  },
   "favoritesEmptyMessage": "You can view your favorite products here by adding them to favorites.",
+  "@favoritesEmptyMessage": {
+    "description": "You can view your favorite products here by add..."
+  },
   "addedToFavorites": "{productName} added to favorites",
   "@addedToFavorites": {
     "placeholders": {
@@ -854,6 +2546,9 @@
     }
   },
   "noProductsYet": "No products yet.",
+  "@noProductsYet": {
+    "description": "No products yet."
+  },
   "productLoadFailed": "Failed to load product: {error}",
   "@productLoadFailed": {
     "placeholders": {
@@ -861,16 +2556,49 @@
     }
   },
   "productNotFound": "Product not found",
+  "@productNotFound": {
+    "description": "Product not found"
+  },
   "rateVendor": "Rate Vendor",
+  "@rateVendor": {
+    "description": "Rate Vendor"
+  },
   "shareYourThoughts": "Share your thoughts...",
+  "@shareYourThoughts": {
+    "description": "Share your thoughts..."
+  },
   "submit": "Submit",
+  "@submit": {
+    "description": "Submit"
+  },
   "vendorReviewSubmitted": "Vendor review submitted!",
+  "@vendorReviewSubmitted": {
+    "description": "Vendor review submitted!"
+  },
   "productReviewSubmitted": "Product review submitted!",
+  "@productReviewSubmitted": {
+    "description": "Product review submitted!"
+  },
   "noDescription": "No description available.",
+  "@noDescription": {
+    "description": "No description available."
+  },
   "readMore": "Read more",
+  "@readMore": {
+    "description": "Read more"
+  },
   "showLess": "Show less",
+  "@showLess": {
+    "description": "Show less"
+  },
   "deliveryTime": "Delivery Time",
+  "@deliveryTime": {
+    "description": "Delivery Time"
+  },
   "deliveryType": "Delivery Type",
+  "@deliveryType": {
+    "description": "Delivery Type"
+  },
   "reviews": "Reviews ({count})",
   "@reviews": {
     "placeholders": {
@@ -878,7 +2606,13 @@
     }
   },
   "noReviewsYet": "No reviews yet. Be the first to review!",
+  "@noReviewsYet": {
+    "description": "No reviews yet. Be the first to review!"
+  },
   "seeAllReviews": "See All Reviews",
+  "@seeAllReviews": {
+    "description": "See All Reviews"
+  },
   "by": "By {vendorName}",
   "@by": {
     "placeholders": {
@@ -886,9 +2620,21 @@
     }
   },
   "orderCreatedSuccessfully": "Your Order Has Been Created Successfully!",
+  "@orderCreatedSuccessfully": {
+    "description": "Your Order Has Been Created Successfully!"
+  },
   "orderCode": "Order Code",
+  "@orderCode": {
+    "description": "Order Code"
+  },
   "orderPreparationStarted": "Your order has started being prepared. You can track your order status from the \"My Orders\" page.",
+  "@orderPreparationStarted": {
+    "description": "Your order has started being prepared. You can ..."
+  },
   "homePage": "Home",
+  "@homePage": {
+    "description": "Home"
+  },
   "ordersLoadFailed": "Failed to load orders: {error}",
   "@ordersLoadFailed": {
     "placeholders": {
@@ -896,12 +2642,33 @@
     }
   },
   "noOrdersYet": "No orders yet",
+  "@noOrdersYet": {
+    "description": "No orders yet"
+  },
   "onWay": "On the Way",
+  "@onWay": {
+    "description": "On the Way"
+  },
   "unknownVendor": "Unknown Vendor",
+  "@unknownVendor": {
+    "description": "Unknown Vendor"
+  },
   "unknown": "Unknown",
+  "@unknown": {
+    "description": "Unknown"
+  },
   "cancelItem": "Cancel Item",
+  "@cancelItem": {
+    "description": "Cancel Item"
+  },
   "itemCancelled": "Item Cancelled",
+  "@itemCancelled": {
+    "description": "Item Cancelled"
+  },
   "itemCancelSuccess": "Item cancelled successfully",
+  "@itemCancelSuccess": {
+    "description": "Item cancelled successfully"
+  },
   "itemCancelFailed": "Failed to cancel item: {error}",
   "@itemCancelFailed": {
     "placeholders": {
@@ -909,11 +2676,29 @@
     }
   },
   "promotionalBannerTitle": "Hungry?\nWe’ve got you covered!",
+  "@promotionalBannerTitle": {
+    "description": "Hungry? We’ve got you covered!"
+  },
   "promotionalBannerSubtitle": "Free delivery, low fees & 10% cashback!",
+  "@promotionalBannerSubtitle": {
+    "description": "Free delivery, low fees & 10% cashback!"
+  },
   "orderNow": "Order Now",
+  "@orderNow": {
+    "description": "Order Now"
+  },
   "categories": "Categories",
+  "@categories": {
+    "description": "Categories"
+  },
   "categoryNotFound": "No categories found",
+  "@categoryNotFound": {
+    "description": "No categories found"
+  },
   "picksForYou": "Picks For You",
+  "@picksForYou": {
+    "description": "Picks For You"
+  },
   "addressUpdateFailed": "Address update failed: {error}",
   "@addressUpdateFailed": {
     "placeholders": {
@@ -927,6 +2712,9 @@
     }
   },
   "campaigns": "Campaigns",
+  "@campaigns": {
+    "description": "Campaigns"
+  },
   "productsCount": "{count} products",
   "@productsCount": {
     "placeholders": {
@@ -946,25 +2734,85 @@
     }
   },
   "similarProducts": "Similar Products",
+  "@similarProducts": {
+    "description": "Similar Products"
+  },
   "areYouHungry": "Are you Hungry?",
+  "@areYouHungry": {
+    "description": "Are you Hungry?"
+  },
   "onboardingDescription": "Request what you need, and we'll deliver it to you as fast as possible.\nOrdering with Talabi is now as easy as a single touch.",
+  "@onboardingDescription": {
+    "description": "Request what you need, and we'll deliver it to ..."
+  },
   "unlockDescription": "Slide to Talabî!",
+  "@unlockDescription": {
+    "description": "Slide to Talabî!"
+  },
   "addAddressToOrder": "Add address to order",
+  "@addAddressToOrder": {
+    "description": "Add address to order"
+  },
   "createCourierAccount": "Create Courier Account",
+  "@createCourierAccount": {
+    "description": "Create Courier Account"
+  },
   "startDeliveringToday": "Start delivering today and earn money",
+  "@startDeliveringToday": {
+    "description": "Start delivering today and earn money"
+  },
   "alreadyHaveCourierAccount": "Already have a courier account? ",
+  "@alreadyHaveCourierAccount": {
+    "description": "Already have a courier account? "
+  },
   "courierRegister": "Courier Register",
+  "@courierRegister": {
+    "description": "Courier Register"
+  },
   "talabiCourier": "Talabi Courier",
+  "@talabiCourier": {
+    "description": "Talabi Courier"
+  },
   "today": "Today",
+  "@today": {
+    "description": "Today"
+  },
   "allTime": "All time",
+  "@allTime": {
+    "description": "All time"
+  },
   "accept": "Accept",
+  "@accept": {
+    "description": "Accept"
+  },
   "markAsPickedUp": "Mark as Picked Up",
+  "@markAsPickedUp": {
+    "description": "Mark as Picked Up"
+  },
   "markAsDelivered": "Mark as Delivered",
+  "@markAsDelivered": {
+    "description": "Mark as Delivered"
+  },
   "orderAccepted": "Order accepted",
+  "@orderAccepted": {
+    "description": "Order accepted"
+  },
   "orderMarkedAsPickedUp": "Order marked as picked up",
+  "@orderMarkedAsPickedUp": {
+    "description": "Order marked as picked up"
+  },
   "orderDelivered": "Order delivered",
+  "@orderDelivered": {
+    "description": "Order delivered"
+  },
   "actionCouldNotBeCompleted": "Action could not be completed",
+  "@actionCouldNotBeCompleted": {
+    "description": "Action could not be completed"
+  },
   "cannotChangeStatusWhileBusy": "Cannot change status while busy",
+  "@cannotChangeStatusWhileBusy": {
+    "description": "Cannot change status while busy"
+  },
   "newOrderAssigned": "New order #{orderId} assigned!",
   "@newOrderAssigned": {
     "placeholders": {
@@ -972,43 +2820,157 @@
     }
   },
   "currentStatus": "Current Status",
+  "@currentStatus": {
+    "description": "Current Status"
+  },
   "performance": "Performance",
+  "@performance": {
+    "description": "Performance"
+  },
   "availabilityStatus": "Availability Status",
+  "@availabilityStatus": {
+    "description": "Availability Status"
+  },
   "checkNewOrderConditions": "Check new order receiving conditions here",
+  "@checkNewOrderConditions": {
+    "description": "Check new order receiving conditions here"
+  },
   "navigationApp": "Navigation App",
+  "@navigationApp": {
+    "description": "Navigation App"
+  },
   "selectPreferredNavigationApp": "Select your preferred navigation app",
+  "@selectPreferredNavigationApp": {
+    "description": "Select your preferred navigation app"
+  },
   "noVehicleInfo": "No vehicle information",
+  "@noVehicleInfo": {
+    "description": "No vehicle information"
+  },
   "cannotChangeStatusWithActiveOrders": "Cannot change status with active orders",
+  "@cannotChangeStatusWithActiveOrders": {
+    "description": "Cannot change status with active orders"
+  },
   "cannotGoOfflineUntilOrdersCompleted": "Cannot go offline until active orders are completed",
+  "@cannotGoOfflineUntilOrdersCompleted": {
+    "description": "Cannot go offline until active orders are compl..."
+  },
   "points": "Points",
+  "@points": {
+    "description": "Points"
+  },
   "totalEarnings": "Total Earnings",
+  "@totalEarnings": {
+    "description": "Total Earnings"
+  },
   "logoutConfirm": "Are you sure you want to logout?",
+  "@logoutConfirm": {
+    "description": "Are you sure you want to logout?"
+  },
   "personalInfo": "Personal Information",
+  "@personalInfo": {
+    "description": "Personal Information"
+  },
   "courierSettings": "Courier Settings",
+  "@courierSettings": {
+    "description": "Courier Settings"
+  },
   "vehicleType": "Vehicle Type",
+  "@vehicleType": {
+    "description": "Vehicle Type"
+  },
   "maxActiveOrders": "Max Active Orders",
+  "@maxActiveOrders": {
+    "description": "Max Active Orders"
+  },
   "useWorkingHours": "Use working hours",
+  "@useWorkingHours": {
+    "description": "Use working hours"
+  },
   "onlyAvailableDuringSetHours": "You can only be \"Available\" during the hours you set",
+  "@onlyAvailableDuringSetHours": {
+    "description": "You can only be \"Available\" during the hours yo..."
+  },
   "startTime": "Start Time",
+  "@startTime": {
+    "description": "Start Time"
+  },
   "endTime": "End Time",
+  "@endTime": {
+    "description": "End Time"
+  },
   "mustSelectStartAndEndTime": "You must select start and end time for working hours",
+  "@mustSelectStartAndEndTime": {
+    "description": "You must select start and end time for working ..."
+  },
   "saving": "Saving...",
+  "@saving": {
+    "description": "Saving..."
+  },
   "mustSelectVehicleType": "You must select a vehicle type",
+  "@mustSelectVehicleType": {
+    "description": "You must select a vehicle type"
+  },
   "selectVehicleType": "Select Vehicle Type",
+  "@selectVehicleType": {
+    "description": "Select Vehicle Type"
+  },
   "selectVehicleTypeDescription": "Please select the vehicle type you will use. This selection is required.",
+  "@selectVehicleTypeDescription": {
+    "description": "Please select the vehicle type you will use. Th..."
+  },
   "motorcycle": "Motorcycle",
+  "@motorcycle": {
+    "description": "Motorcycle"
+  },
   "car": "Car",
+  "@car": {
+    "description": "Car"
+  },
   "bicycle": "Bicycle",
+  "@bicycle": {
+    "description": "Bicycle"
+  },
   "vehicleTypeUpdatedSuccessfully": "Vehicle type updated successfully",
+  "@vehicleTypeUpdatedSuccessfully": {
+    "description": "Vehicle type updated successfully"
+  },
   "failedToUpdateVehicleType": "Failed to update vehicle type",
+  "@failedToUpdateVehicleType": {
+    "description": "Failed to update vehicle type"
+  },
   "selectLocationRequired": "Location Selection Required",
+  "@selectLocationRequired": {
+    "description": "Location Selection Required"
+  },
   "selectLocationRequiredDescription": "Please select your location. This information is required to receive orders.",
+  "@selectLocationRequiredDescription": {
+    "description": "Please select your location. This information i..."
+  },
   "selectFromMap": "Select from Map",
+  "@selectFromMap": {
+    "description": "Select from Map"
+  },
   "gettingCurrentLocation": "Getting your location...",
+  "@gettingCurrentLocation": {
+    "description": "Getting your location..."
+  },
   "locationServicesDisabledTitle": "Location Services Disabled",
+  "@locationServicesDisabledTitle": {
+    "description": "Location Services Disabled"
+  },
   "locationServicesDisabledMessage": "Location services are disabled. Please enable location services in settings.",
+  "@locationServicesDisabledMessage": {
+    "description": "Location services are disabled. Please enable l..."
+  },
   "openSettings": "Open Settings",
+  "@openSettings": {
+    "description": "Open Settings"
+  },
   "assignCourierConfirmationTitle": "Confirm Courier Assignment",
+  "@assignCourierConfirmationTitle": {
+    "description": "Confirm Courier Assignment"
+  },
   "assignCourierConfirmationMessage": "Are you sure you want to assign this order to {courierName}?",
   "@assignCourierConfirmationMessage": {
     "placeholders": {
@@ -1018,8 +2980,17 @@
     }
   },
   "assign": "Assign",
+  "@assign": {
+    "description": "Assign"
+  },
   "courierAssignedSuccessfully": "Courier assigned successfully",
+  "@courierAssignedSuccessfully": {
+    "description": "Courier assigned successfully"
+  },
   "enterValidNumber": "Enter a valid number",
+  "@enterValidNumber": {
+    "description": "Enter a valid number"
+  },
   "profileUpdateFailed": "Profile update failed: {error}",
   "@profileUpdateFailed": {
     "placeholders": {
@@ -1027,8 +2998,17 @@
     }
   },
   "availabilityConditions": "Availability Conditions",
+  "@availabilityConditions": {
+    "description": "Availability Conditions"
+  },
   "whenConditionsMetCanReceiveOrders": "The following conditions must be met to receive new orders:",
+  "@whenConditionsMetCanReceiveOrders": {
+    "description": "The following conditions must be met to receive..."
+  },
   "statusMustBeAvailable": "Your status must be \"Available\"",
+  "@statusMustBeAvailable": {
+    "description": "Your status must be \"Available\""
+  },
   "activeOrdersBelowLimit": "Your active orders must be below your maximum limit ({current} / {max})",
   "@activeOrdersBelowLimit": {
     "placeholders": {
@@ -1037,19 +3017,61 @@
     }
   },
   "courierAccountMustBeActive": "Your courier account must be active",
+  "@courierAccountMustBeActive": {
+    "description": "Your courier account must be active"
+  },
   "currentlyBlockingReasons": "Currently blocking reasons",
+  "@currentlyBlockingReasons": {
+    "description": "Currently blocking reasons"
+  },
   "everythingLooksGood": "Everything looks good, new orders may arrive",
+  "@everythingLooksGood": {
+    "description": "Everything looks good, new orders may arrive"
+  },
   "available": "Available",
+  "@available": {
+    "description": "Available"
+  },
   "notAvailable": "Not Available",
+  "@notAvailable": {
+    "description": "Not Available"
+  },
   "earningsTitle": "Earnings",
+  "@earningsTitle": {
+    "description": "Earnings"
+  },
   "todayEarnings": "Today",
+  "@todayEarnings": {
+    "description": "Today"
+  },
   "thisWeek": "This Week",
+  "@thisWeek": {
+    "description": "This Week"
+  },
   "thisMonth": "This Month",
+  "@thisMonth": {
+    "description": "This Month"
+  },
   "totalEarningsLabel": "Total Earnings",
+  "@totalEarningsLabel": {
+    "description": "Total Earnings"
+  },
   "avgPerDelivery": "Avg. per Delivery",
+  "@avgPerDelivery": {
+    "description": "Avg. per Delivery"
+  },
   "history": "History",
+  "@history": {
+    "description": "History"
+  },
   "noEarningsForPeriod": "No earnings found for this period",
+  "@noEarningsForPeriod": {
+    "description": "No earnings found for this period"
+  },
   "navigationAppUpdated": "Navigation app updated",
+  "@navigationAppUpdated": {
+    "description": "Navigation app updated"
+  },
   "navigationPreferenceNotSaved": "Navigation preference could not be saved: {error}",
   "@navigationPreferenceNotSaved": {
     "placeholders": {
@@ -1057,12 +3079,33 @@
     }
   },
   "selectDefaultNavigationApp": "Select the default navigation app you want to use when going to delivery address",
+  "@selectDefaultNavigationApp": {
+    "description": "Select the default navigation app you want to u..."
+  },
   "note": "Note",
+  "@note": {
+    "description": "Note"
+  },
   "ifAppNotInstalledSystemWillOfferAlternative": "If the app you selected is not installed, the system will offer you a suitable alternative",
+  "@ifAppNotInstalledSystemWillOfferAlternative": {
+    "description": "If the app you selected is not installed, the s..."
+  },
   "preferenceOnlyForCourierAccount": "This preference is only valid for your courier account",
+  "@preferenceOnlyForCourierAccount": {
+    "description": "This preference is only valid for your courier ..."
+  },
   "notificationsTitle": "Notifications",
+  "@notificationsTitle": {
+    "description": "Notifications"
+  },
   "noNotificationsYet": "You don't have any notifications yet.\nOrder movements will appear here",
+  "@noNotificationsYet": {
+    "description": "You don't have any notifications yet. Order mov..."
+  },
   "notificationsLoadFailed": "Notifications could not be loaded",
+  "@notificationsLoadFailed": {
+    "description": "Notifications could not be loaded"
+  },
   "notificationProcessingFailed": "Notification processing failed: {error}",
   "@notificationProcessingFailed": {
     "placeholders": {
@@ -1070,25 +3113,85 @@
     }
   },
   "orderDetailTitle": "Order Detail",
+  "@orderDetailTitle": {
+    "description": "Order Detail"
+  },
   "pickupLocation": "Pickup Location",
+  "@pickupLocation": {
+    "description": "Pickup Location"
+  },
   "deliveryLocation": "Delivery Location",
+  "@deliveryLocation": {
+    "description": "Delivery Location"
+  },
   "orderItems": "Order Items",
+  "@orderItems": {
+    "description": "Order Items"
+  },
   "viewMap": "View Map",
+  "@viewMap": {
+    "description": "View Map"
+  },
   "deliveryProof": "Delivery Proof",
+  "@deliveryProof": {
+    "description": "Delivery Proof"
+  },
   "takePhoto": "Take Photo",
+  "@takePhoto": {
+    "description": "Take Photo"
+  },
   "signature": "Signature",
+  "@signature": {
+    "description": "Signature"
+  },
   "notes": "Notes",
+  "@notes": {
+    "description": "Notes"
+  },
   "notesOptional": "Notes (Optional)",
+  "@notesOptional": {
+    "description": "Notes (Optional)"
+  },
   "leftAtFrontDoor": "Left at front door, etc.",
+  "@leftAtFrontDoor": {
+    "description": "Left at front door, etc."
+  },
   "submitProofAndCompleteDelivery": "Submit Proof & Complete Delivery",
+  "@submitProofAndCompleteDelivery": {
+    "description": "Submit Proof & Complete Delivery"
+  },
   "pleaseTakePhoto": "Please take a photo of the delivery",
+  "@pleaseTakePhoto": {
+    "description": "Please take a photo of the delivery"
+  },
   "pleaseObtainSignature": "Please obtain a signature",
+  "@pleaseObtainSignature": {
+    "description": "Please obtain a signature"
+  },
   "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Try Again"
+  },
   "noDeliveryHistoryYet": "No delivery history yet",
+  "@noDeliveryHistoryYet": {
+    "description": "No delivery history yet"
+  },
   "pickup": "Pickup",
+  "@pickup": {
+    "description": "Pickup"
+  },
   "delivery": "Delivery",
+  "@delivery": {
+    "description": "Delivery"
+  },
   "talabi": "Talabi",
+  "@talabi": {
+    "description": "Talabi"
+  },
   "navigate": "Navigate",
+  "@navigate": {
+    "description": "Navigate"
+  },
   "couldNotLaunchMaps": "Could not launch maps: {error}",
   "@couldNotLaunchMaps": {
     "placeholders": {
@@ -1096,59 +3199,205 @@
     }
   },
   "marketBannerTitle": "Market Shopping\nat Your Door",
+  "@marketBannerTitle": {
+    "description": "Market Shopping at Your Door"
+  },
   "selectCountry": "Select Country",
+  "@selectCountry": {
+    "description": "Select Country"
+  },
   "localityNeighborhood": "Locality / Neighborhood",
+  "@localityNeighborhood": {
+    "description": "Locality / Neighborhood"
+  },
   "selectCityDistrictWarning": "Please select City and District from dropdowns to confirm.",
+  "@selectCityDistrictWarning": {
+    "description": "Please select City and District from dropdowns ..."
+  },
   "passwordResetSuccess": "Password reset successfully",
+  "@passwordResetSuccess": {
+    "description": "Password reset successfully"
+  },
   "verificationCode": "Verification Code",
+  "@verificationCode": {
+    "description": "Verification Code"
+  },
   "verificationCodeSentDesc": "Please enter the verification code sent to",
+  "@verificationCodeSentDesc": {
+    "description": "Please enter the verification code sent to"
+  },
   "createPassword": "Create New Password",
+  "@createPassword": {
+    "description": "Create New Password"
+  },
   "createPasswordDesc": "Please enter a new password for your account",
+  "@createPasswordDesc": {
+    "description": "Please enter a new password for your account"
+  },
   "requiredField": "This field is required",
+  "@requiredField": {
+    "description": "This field is required"
+  },
   "resetPassword": "Reset Password",
+  "@resetPassword": {
+    "description": "Reset Password"
+  },
   "codeExpired": "The code has expired.",
+  "@codeExpired": {
+    "description": "The code has expired."
+  },
   "businessType": "Business Type",
+  "@businessType": {
+    "description": "Business Type"
+  },
   "businessTypeRequired": "Business type is required",
+  "@businessTypeRequired": {
+    "description": "Business type is required"
+  },
   "restaurant": "Restaurant",
+  "@restaurant": {
+    "description": "Restaurant"
+  },
   "market": "Market",
+  "@market": {
+    "description": "Market"
+  },
   "defaultError": "An error occurred",
+  "@defaultError": {
+    "description": "An error occurred"
+  },
   "passwordPlaceholder": "******",
+  "@passwordPlaceholder": {
+    "description": "******"
+  },
   "vehicleTypeRequired": "Vehicle Type is required",
+  "@vehicleTypeRequired": {
+    "description": "Vehicle Type is required"
+  },
   "errorLoginVendorToCustomer": "Cannot login to customer screens with a vendor account.",
+  "@errorLoginVendorToCustomer": {
+    "description": "Cannot login to customer screens with a vendor ..."
+  },
   "errorLoginCourierToCustomer": "Cannot login to customer screens with a courier account.",
+  "@errorLoginCourierToCustomer": {
+    "description": "Cannot login to customer screens with a courier..."
+  },
   "errorLoginCustomerToVendor": "Cannot login to vendor screens with a customer account.",
+  "@errorLoginCustomerToVendor": {
+    "description": "Cannot login to vendor screens with a customer ..."
+  },
   "errorLoginCourierToVendor": "Cannot login to vendor screens with a courier account.",
+  "@errorLoginCourierToVendor": {
+    "description": "Cannot login to vendor screens with a courier a..."
+  },
   "errorLoginCustomerToCourier": "Cannot login to courier screens with a customer account.",
+  "@errorLoginCustomerToCourier": {
+    "description": "Cannot login to courier screens with a customer..."
+  },
   "errorLoginVendorToCourier": "Cannot login to courier screens with a vendor account.",
+  "@errorLoginVendorToCourier": {
+    "description": "Cannot login to courier screens with a vendor a..."
+  },
   "keywordTokenExpired": "token expired",
+  "@keywordTokenExpired": {
+    "description": "token expired"
+  },
   "accountPendingApprovalTitle": "Account Pending Approval",
+  "@accountPendingApprovalTitle": {
+    "description": "Account Pending Approval"
+  },
   "accountPendingApprovalMessage": "Your account is currently under review. Access will be granted once your account is approved.",
+  "@accountPendingApprovalMessage": {
+    "description": "Your account is currently under review. Access ..."
+  },
   "vendorStatusNormal": "Normal",
+  "@vendorStatusNormal": {
+    "description": "Normal"
+  },
   "vendorStatusBusy": "Busy",
+  "@vendorStatusBusy": {
+    "description": "Busy"
+  },
   "vendorStatusOverloaded": "Overloaded",
+  "@vendorStatusOverloaded": {
+    "description": "Overloaded"
+  },
   "vendorStatusNormalDesc": "Standard time",
+  "@vendorStatusNormalDesc": {
+    "description": "Standard time"
+  },
   "vendorStatusBusyDesc": "+15 min",
+  "@vendorStatusBusyDesc": {
+    "description": "+15 min"
+  },
   "vendorStatusOverloadedDesc": "+45 min",
+  "@vendorStatusOverloadedDesc": {
+    "description": "+45 min"
+  },
   "storeStatus": "Store Status",
+  "@storeStatus": {
+    "description": "Store Status"
+  },
   "workingHoursRequired": "Working Hours Required",
+  "@workingHoursRequired": {
+    "description": "Working Hours Required"
+  },
   "workingHoursRequiredDescription": "Please set your working hours to start receiving orders.",
+  "@workingHoursRequiredDescription": {
+    "description": "Please set your working hours to start receivin..."
+  },
   "workingHoursStart": "Start Time",
+  "@workingHoursStart": {
+    "description": "Start Time"
+  },
   "workingHoursEnd": "End Time",
+  "@workingHoursEnd": {
+    "description": "End Time"
+  },
   "selectTime": "Select Time",
+  "@selectTime": {
+    "description": "Select Time"
+  },
   "workingHoursUpdatedSuccessfully": "Working hours updated successfully",
+  "@workingHoursUpdatedSuccessfully": {
+    "description": "Working hours updated successfully"
+  },
   "failedToUpdateWorkingHours": "Failed to update working hours",
+  "@failedToUpdateWorkingHours": {
+    "description": "Failed to update working hours"
+  },
   "workingHours": "Working Hours",
+  "@workingHours": {
+    "description": "Working Hours"
+  },
   "workingDays": "Working Days",
+  "@workingDays": {
+    "description": "Working Days"
+  },
   "closed": "Closed",
+  "@closed": {
+    "description": "Closed"
+  },
   "open24Hours": "Open 24 Hours",
+  "@open24Hours": {
+    "description": "Open 24 Hours"
+  },
   "hours": "Hours",
-  "workingHoursUpdatedSuccessfully": "Working hours updated successfully",
+  "@hours": {
+    "description": "Hours"
+  },
   "workingHoursDescription": "Manage your business opening days and hours here.",
+  "@workingHoursDescription": {
+    "description": "Manage your business opening days and hours here."
+  },
   "workingHoursSaveError": "Error saving working hours: {error}",
   "@workingHoursSaveError": {
     "placeholders": {
       "error": {}
     }
   },
-  "shamCashAccountNumber": "Sham Cash Account Number"
+  "shamCashAccountNumber": "Sham Cash Account Number",
+  "@shamCashAccountNumber": {
+    "description": "Sham Cash Account Number"
+  }
 }
