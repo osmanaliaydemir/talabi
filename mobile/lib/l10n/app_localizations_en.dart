@@ -430,6 +430,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartTotalAmountLabel => 'Total Amount';
 
   @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get addOrderNote => 'Add Order Note';
+
+  @override
+  String get orderNote => 'Order Note';
+
+  @override
+  String get enterOrderNoteHint => 'Enter your note for the order...';
+
+  @override
+  String get couponApplied => 'Coupon Applied';
+
+  @override
+  String get couponRemoved => 'Coupon Removed';
+
+  @override
+  String get enterCouponCode => 'Enter Coupon Code';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get noCampaignsFound => 'No Active Campaigns';
+
+  @override
+  String get noCampaignsDescription =>
+      'There are no active campaigns at the moment. Please check back later or enter a coupon code.';
+
+  @override
+  String get confirmOrder => 'Confirm Order';
+
+  @override
   String get cartSameVendorWarning =>
       'All items in the cart must be from the same vendor';
 
@@ -1215,9 +1249,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placeOrder => 'Place Order';
 
   @override
-  String get checkoutTitle => 'Order Confirmation';
-
-  @override
   String get deliveryAddress => 'Delivery Address';
 
   @override
@@ -1239,9 +1270,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comingSoon => 'Coming Soon';
 
   @override
-  String get orderNote => 'Order Note';
-
-  @override
   String get orderNotePlaceholder => 'Add note for courier (optional)';
 
   @override
@@ -1252,9 +1280,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderSummary => 'Order Summary';
-
-  @override
-  String get confirmOrder => 'Confirm Order';
 
   @override
   String get pleaseSelectAddress => 'Please select a delivery address';

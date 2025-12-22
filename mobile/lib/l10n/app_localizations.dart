@@ -922,6 +922,72 @@ abstract class AppLocalizations {
   /// **'Total Amount'**
   String get cartTotalAmountLabel;
 
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get checkoutTitle;
+
+  /// No description provided for @addOrderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Order Note'**
+  String get addOrderNote;
+
+  /// No description provided for @orderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Note'**
+  String get orderNote;
+
+  /// No description provided for @enterOrderNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your note for the order...'**
+  String get enterOrderNoteHint;
+
+  /// No description provided for @couponApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Coupon Applied'**
+  String get couponApplied;
+
+  /// No description provided for @couponRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Coupon Removed'**
+  String get couponRemoved;
+
+  /// No description provided for @enterCouponCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Coupon Code'**
+  String get enterCouponCode;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @noCampaignsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Active Campaigns'**
+  String get noCampaignsFound;
+
+  /// No description provided for @noCampaignsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no active campaigns at the moment. Please check back later or enter a coupon code.'**
+  String get noCampaignsDescription;
+
+  /// No description provided for @confirmOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Order'**
+  String get confirmOrder;
+
   /// No description provided for @cartSameVendorWarning.
   ///
   /// In en, this message translates to:
@@ -2368,12 +2434,6 @@ abstract class AppLocalizations {
   /// **'Place Order'**
   String get placeOrder;
 
-  /// No description provided for @checkoutTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Order Confirmation'**
-  String get checkoutTitle;
-
   /// No description provided for @deliveryAddress.
   ///
   /// In en, this message translates to:
@@ -2416,12 +2476,6 @@ abstract class AppLocalizations {
   /// **'Coming Soon'**
   String get comingSoon;
 
-  /// No description provided for @orderNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Order Note'**
-  String get orderNote;
-
   /// No description provided for @orderNotePlaceholder.
   ///
   /// In en, this message translates to:
@@ -2445,12 +2499,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Order Summary'**
   String get orderSummary;
-
-  /// No description provided for @confirmOrder.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Order'**
-  String get confirmOrder;
 
   /// No description provided for @pleaseSelectAddress.
   ///

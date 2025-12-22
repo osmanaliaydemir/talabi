@@ -433,6 +433,40 @@ class AppLocalizationsTr extends AppLocalizations {
   String get cartTotalAmountLabel => 'Genel Toplam';
 
   @override
+  String get checkoutTitle => 'Ödeme';
+
+  @override
+  String get addOrderNote => 'Sipariş Notu Ekle';
+
+  @override
+  String get orderNote => 'Sipariş Notu';
+
+  @override
+  String get enterOrderNoteHint => 'Siparişiniz için notunuzu girin...';
+
+  @override
+  String get couponApplied => 'Kupon Uygulandı';
+
+  @override
+  String get couponRemoved => 'Kupon Kaldırıldı';
+
+  @override
+  String get enterCouponCode => 'Kupon Kodu Girin';
+
+  @override
+  String get apply => 'Uygula';
+
+  @override
+  String get noCampaignsFound => 'Aktif Kampanya Yok';
+
+  @override
+  String get noCampaignsDescription =>
+      'Şu anda aktif bir kampanya bulunmamaktadır. Lütfen daha sonra tekrar kontrol edin veya kupon kodu girin.';
+
+  @override
+  String get confirmOrder => 'Siparişi Onayla';
+
+  @override
   String get cartSameVendorWarning =>
       'Sepetteki tüm ürünler aynı marketten olmalı';
 
@@ -1214,9 +1248,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get placeOrder => 'Sipariş Ver';
 
   @override
-  String get checkoutTitle => 'Sipariş Onayı';
-
-  @override
   String get deliveryAddress => 'Teslimat Adresi';
 
   @override
@@ -1235,13 +1266,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get mobilePayment => 'Mobil Ödeme';
 
   @override
-  String get comingSoon => 'Yakında';
+  String get comingSoon => 'Çok Yakında';
 
   @override
-  String get orderNote => 'Sipariş Notu';
-
-  @override
-  String get orderNotePlaceholder => 'Kurye için not ekleyin (opsiyonel)';
+  String get orderNotePlaceholder => 'Kurye için not ekle (isteğe bağlı)';
 
   @override
   String get estimatedDelivery => 'Tahmini Teslimat';
@@ -1251,9 +1279,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get orderSummary => 'Sipariş Özeti';
-
-  @override
-  String get confirmOrder => 'Siparişi Onayla';
 
   @override
   String get pleaseSelectAddress => 'Lütfen teslimat adresi seçin';

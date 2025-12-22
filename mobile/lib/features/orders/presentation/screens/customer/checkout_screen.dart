@@ -11,7 +11,6 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
-import 'package:mobile/features/coupons/presentation/screens/coupon_list_screen.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -36,7 +35,6 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final ApiService _apiService = ApiService();
   final TextEditingController _noteController = TextEditingController();
-  final TextEditingController _couponController = TextEditingController();
 
   Map<String, dynamic>? _selectedAddress;
   String _selectedPaymentMethod = 'Cash';
@@ -53,7 +51,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void dispose() {
     _noteController.dispose();
-    _couponController.dispose();
     super.dispose();
   }
 
@@ -255,11 +252,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const SizedBox(height: 24),
 
                   // Payment Method Section
-                  _buildSectionTitle(
-                    localizations.paymentMethod,
-                    Icons.payment,
-                  ),
-                  const SizedBox(height: 12),
                   Semantics(
                     label: localizations.paymentMethod,
                     explicitChildNodes: true,
@@ -268,28 +260,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const SizedBox(height: 24),
 
                   // Campaign & Coupon Section
-                  _buildCampaignAndCouponSection(localizations),
+                  // Campaign & Coupon Section
+                  _buildDiscountSection(localizations),
                   const SizedBox(height: 24),
 
                   // Order Note Section
-                  _buildSectionTitle(localizations.orderNote, Icons.note),
-                  const SizedBox(height: 12),
-                  Semantics(
-                    label: localizations.orderNote,
-                    textField: true,
-                    child: TextField(
-                      controller: _noteController,
-                      decoration: InputDecoration(
-                        hintText: localizations.orderNotePlaceholder,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      maxLines: 3,
-                    ),
-                  ),
+                  _buildOrderNoteSection(localizations),
                   const SizedBox(height: 24),
 
                   // Order Summary Section
@@ -374,235 +350,118 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildCampaignAndCouponSection(AppLocalizations localizations) {
+  Widget _buildDiscountSection(AppLocalizations localizations) {
     final cart = Provider.of<CartProvider>(context);
+    final hasDiscount =
+        cart.selectedCampaign != null || cart.appliedCoupon != null;
 
-    return Column(
-      children: [
-        // Campaign Selection
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: cart.selectedCampaign != null
-                  ? Colors.green
-                  : Colors.grey[300]!,
-              width: cart.selectedCampaign != null ? 1.5 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: InkWell(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const CampaignSelectionBottomSheet(),
-              );
-            },
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: cart.selectedCampaign != null
-                        ? Colors.green.withValues(alpha: 0.1)
-                        : AppTheme.primaryOrange.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.campaign,
-                    color: cart.selectedCampaign != null
-                        ? Colors.green
-                        : AppTheme.primaryOrange,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        localizations.campaigns,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      if (cart.selectedCampaign != null)
-                        Text(
-                          cart.selectedCampaign!.title,
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      else
-                        Text(
-                          'Mevcut kampanyaları gör',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                if (cart.selectedCampaign != null)
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    onPressed: () {
-                      cart.removeCampaign();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Kampanya kaldırıldı'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    },
-                  )
-                else
-                  const Icon(Icons.chevron_right, color: Colors.grey),
-              ],
-            ),
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: hasDiscount ? Colors.green : Colors.grey[300]!,
+          width: hasDiscount ? 1.5 : 1,
         ),
-        const SizedBox(height: 12),
-        // Coupon Selection
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(12),
-            border: cart.appliedCoupon != null
-                ? Border.all(color: Colors.green, width: 1)
-                : Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.local_offer,
-                  color: cart.appliedCoupon != null
-                      ? Colors.green
-                      : AppTheme.primaryOrange,
-                  size: 20,
-                ),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const CouponListScreen(isSelectionMode: true),
-                    ),
-                  );
-                  if (result != null && result is String) {
-                    _couponController.text = result;
-                    if (mounted) {
-                      _applyCoupon(cart, result);
-                    }
-                  }
-                },
-                tooltip: 'Kupon Seç',
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const CampaignSelectionBottomSheet(),
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: hasDiscount
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : AppTheme.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: TextField(
-                  controller: _couponController,
-                  enabled: cart.appliedCoupon == null,
-                  decoration: InputDecoration(
-                    hintText: cart.appliedCoupon != null
-                        ? cart.appliedCoupon!.code
-                        : localizations.cartVoucherPlaceholder,
-                    hintStyle: TextStyle(
-                      color: cart.appliedCoupon != null
-                          ? Colors.black87
-                          : Colors.grey[500],
-                      fontWeight: cart.appliedCoupon != null
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+              child: Icon(
+                hasDiscount ? Icons.local_offer : Icons.campaign,
+                color: hasDiscount ? Colors.green : AppTheme.primaryOrange,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.campaigns, // Or "Discounts" if available
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
-                    border: InputBorder.none,
                   ),
-                  onSubmitted: (value) {
-                    if (value.isNotEmpty) {
-                      _applyCoupon(cart, value);
-                    }
-                  },
-                ),
-              ),
-              if (cart.appliedCoupon != null)
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red, size: 20),
-                  onPressed: () {
-                    cart.removeCoupon();
-                    _couponController.clear();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Kupon kaldırıldı'),
-                        backgroundColor: Colors.orange,
+                  if (cart.selectedCampaign != null)
+                    Text(
+                      cart.selectedCampaign!.title,
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
-                    );
-                  },
-                )
-              else
-                TextButton(
-                  onPressed: () {
-                    if (_couponController.text.isNotEmpty) {
-                      _applyCoupon(cart, _couponController.text);
-                    }
-                  },
-                  child: const Text(
-                    'Uygula',
-                    style: TextStyle(
-                      color: AppTheme.primaryOrange,
-                      fontWeight: FontWeight.bold,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  else if (cart.appliedCoupon != null)
+                    Text(
+                      '${localizations.couponApplied}: ${cart.appliedCoupon!.code}',
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  else
+                    Text(
+                      'Mevcut kampanyaları ve kuponları gör',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
-                  ),
-                ),
-            ],
-          ),
+                ],
+              ),
+            ),
+            if (hasDiscount)
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.red),
+                onPressed: () {
+                  if (cart.selectedCampaign != null) {
+                    cart.removeCampaign();
+                  } else {
+                    cart.removeCoupon();
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('İndirim kaldırıldı'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+              )
+            else
+              const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+          ],
         ),
-      ],
+      ),
     );
-  }
-
-  Future<void> _applyCoupon(CartProvider cart, String code) async {
-    try {
-      await cart.applyCoupon(code);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kupon başarıyla uygulandı!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
   }
 
   Widget _buildAddressCard(AppLocalizations localizations) {
@@ -1161,7 +1020,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildPaymentMethods(AppLocalizations localizations) {
-    final paymentMethods = [
+    final paymentMethods = _getPaymentMethods(localizations);
+    final selectedMethod = paymentMethods.firstWhere(
+      (m) => m['value'] == _selectedPaymentMethod,
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () =>
+            _showPaymentMethodSelector(context, paymentMethods, localizations),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                selectedMethod['icon'] as IconData,
+                color: AppTheme.primaryOrange,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.paymentMethod,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    selectedMethod['label'] as String,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _getPaymentMethods(
+    AppLocalizations localizations,
+  ) {
+    return [
       {
         'value': 'Cash',
         'label': localizations.cash,
@@ -1184,154 +1112,95 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'description': 'Yakında hizmete geçecektir.',
       },
     ];
+  }
 
-    final selectedMethod = paymentMethods.firstWhere(
-      (m) => m['value'] == _selectedPaymentMethod,
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+  void _showPaymentMethodSelector(
+    BuildContext context,
+    List<Map<String, dynamic>> paymentMethods,
+    AppLocalizations localizations,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Selected payment method display
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(
+              localizations.paymentMethod,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ...paymentMethods.map((method) {
+              final isSelected = _selectedPaymentMethod == method['value'];
+              final isEnabled = method['enabled'] as bool;
+
+              return ListTile(
+                enabled: isEnabled,
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: isSelected
+                        ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                        : Colors.grey[100],
+                    shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    selectedMethod['icon'] as IconData,
-                    color: AppTheme.primaryOrange,
+                    method['icon'] as IconData,
+                    color: isEnabled
+                        ? (isSelected
+                              ? AppTheme.primaryOrange
+                              : Colors.grey[600])
+                        : Colors.grey[400],
                     size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        localizations.paymentMethod,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        selectedMethod['label'] as String,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
+                title: Text(
+                  method['label'] as String,
+                  style: TextStyle(
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: isEnabled ? Colors.black87 : Colors.grey[400],
                   ),
                 ),
-              ],
-            ),
-            // Payment method options
-            const SizedBox(height: 16),
-            ...paymentMethods.where((m) => m['enabled'] == true).map((method) {
-              final isSelected = _selectedPaymentMethod == method['value'];
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedPaymentMethod = method['value'] as String;
-                  });
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.primaryOrange.withValues(alpha: 0.05)
-                        : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppTheme.primaryOrange
-                          : Colors.grey[200]!,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        method['icon'] as IconData,
-                        color: isSelected
-                            ? AppTheme.primaryOrange
-                            : Colors.grey[600],
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          method['label'] as String,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? AppTheme.primaryOrange
-                                : Colors.black87,
-                          ),
-                        ),
-                      ),
-                      if (isSelected)
-                        const Icon(
-                          Icons.check_circle,
-                          color: AppTheme.primaryOrange,
-                          size: 20,
-                        ),
-                    ],
-                  ),
-                ),
+                subtitle: method['description'] != null
+                    ? Text(
+                        method['description'] as String,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      )
+                    : null,
+                trailing: isSelected
+                    ? const Icon(
+                        Icons.check_circle,
+                        color: AppTheme.primaryOrange,
+                      )
+                    : null,
+                onTap: isEnabled
+                    ? () {
+                        setState(() {
+                          _selectedPaymentMethod = method['value'] as String;
+                        });
+                        Navigator.pop(context);
+                      }
+                    : null,
               );
             }),
-            // Description (if available and enabled)
-            if (selectedMethod['enabled'] == true &&
-                selectedMethod['description'] != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.grey[500]),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        selectedMethod['description'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -1391,16 +1260,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            // Delivery Fee
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: Text(localizations.cartDeliveryFeeLabel)),
-                Text(
-                  CurrencyFormatter.format(widget.deliveryFee, displayCurrency),
-                ),
-              ],
-            ),
             // Discount
             if (cart.discountAmount > 0 ||
                 cart.selectedCampaign != null ||
@@ -1430,6 +1289,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ],
               ),
             ],
+            const SizedBox(height: 8),
+            // Delivery Fee
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: Text(localizations.cartDeliveryFeeLabel)),
+                Text(
+                  CurrencyFormatter.format(widget.deliveryFee, displayCurrency),
+                ),
+              ],
+            ),
             const Divider(height: 24),
             // Total
             Row(
@@ -1460,6 +1330,219 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOrderNoteSection(AppLocalizations localizations) {
+    final hasNote = _noteController.text.trim().isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: hasNote ? AppTheme.primaryOrange : Colors.grey[300]!,
+          width: hasNote ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () => _showOrderNoteBottomSheet(localizations),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.note_alt_outlined,
+                color: AppTheme.primaryOrange,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.orderNote,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    hasNote
+                        ? _noteController.text.trim()
+                        : localizations.addOrderNote,
+                    style: TextStyle(
+                      color: hasNote ? Colors.black87 : Colors.grey[600],
+                      fontSize: 12,
+                      fontWeight: hasNote ? FontWeight.w500 : FontWeight.normal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (hasNote)
+              IconButton(
+                icon: const Icon(
+                  Icons.edit,
+                  color: AppTheme.primaryOrange,
+                  size: 20,
+                ),
+                onPressed: () => _showOrderNoteBottomSheet(localizations),
+              )
+            else
+              const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showOrderNoteBottomSheet(AppLocalizations localizations) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final TextEditingController tempController = TextEditingController(
+          text: _noteController.text,
+        );
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Drag Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  // Title
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.note_alt_outlined,
+                          color: AppTheme.primaryOrange,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        localizations.orderNote,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Text Field
+                  TextField(
+                    controller: tempController,
+                    maxLines: 4,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: localizations.enterOrderNoteHint,
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryOrange,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
+                      contentPadding: const EdgeInsets.all(16),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Save Button
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _noteController.text = tempController.text;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryOrange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        localizations.save,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -430,6 +430,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cartTotalAmountLabel => 'المبلغ الإجمالي';
 
   @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get addOrderNote => 'إضافة ملاحظة الطلب';
+
+  @override
+  String get orderNote => 'ملاحظة الطلب';
+
+  @override
+  String get enterOrderNoteHint => 'أدخل ملاحظتك للطلب...';
+
+  @override
+  String get couponApplied => 'تم تطبيق القسيمة';
+
+  @override
+  String get couponRemoved => 'تم إزالة القسيمة';
+
+  @override
+  String get enterCouponCode => 'أدخل رمز القسيمة';
+
+  @override
+  String get apply => 'تطبيق';
+
+  @override
+  String get noCampaignsFound => 'لا توجد حملات نشطة';
+
+  @override
+  String get noCampaignsDescription =>
+      'لا توجد حملات نشطة في الوقت الحالي. يرجى التحقق مرة أخرى لاحقًا أو إدخال رمز قسيمة.';
+
+  @override
+  String get confirmOrder => 'تأكيد الطلب';
+
+  @override
   String get cartSameVendorWarning =>
       'يجب أن تكون جميع المنتجات في السلة من نفس المتجر';
 
@@ -1199,13 +1233,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get verify => 'تأكيد';
 
   @override
-  String get placeOrder => 'تقديم الطلب';
+  String get placeOrder => 'إتمام الطلب';
 
   @override
-  String get checkoutTitle => 'تأكيد الطلب';
-
-  @override
-  String get deliveryAddress => 'عنوان التسليم';
+  String get deliveryAddress => 'عنوان التوصيل';
 
   @override
   String get changeAddress => 'تغيير';
@@ -1214,25 +1245,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentMethod => 'طريقة الدفع';
 
   @override
-  String get cash => 'نقدي';
+  String get cash => 'نقداً';
 
   @override
   String get creditCard => 'بطاقة ائتمان';
 
   @override
-  String get mobilePayment => 'الدفع عبر الهاتف';
+  String get mobilePayment => 'دفع عبر الجوال';
 
   @override
   String get comingSoon => 'قريباً';
 
   @override
-  String get orderNote => 'ملاحظة الطلب';
+  String get orderNotePlaceholder => 'أضف ملاحظة للمندوب (اختياري)';
 
   @override
-  String get orderNotePlaceholder => 'أضف ملاحظة للسائق (اختياري)';
-
-  @override
-  String get estimatedDelivery => 'وقت التسليم المتوقع';
+  String get estimatedDelivery => 'وقت التوصيل المتوقع';
 
   @override
   String get minutes => 'دقيقة';
@@ -1241,10 +1269,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderSummary => 'ملخص الطلب';
 
   @override
-  String get confirmOrder => 'تأكيد الطلب';
-
-  @override
-  String get pleaseSelectAddress => 'يرجى اختيار عنوان التسليم';
+  String get pleaseSelectAddress => 'يرجى اختيار عنوان التوصيل';
 
   @override
   String get pleaseSelectPaymentMethod => 'يرجى اختيار طريقة الدفع';
