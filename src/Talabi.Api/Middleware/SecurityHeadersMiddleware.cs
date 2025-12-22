@@ -16,15 +16,34 @@ public class SecurityHeadersMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Content Security Policy - Güçlendirilmiş (unsafe-inline ve unsafe-eval kaldırıldı)
-        context.Response.Headers.Append("Content-Security-Policy", 
-            "default-src 'self'; " +
-            "script-src 'self'; " +  // unsafe-inline ve unsafe-eval kaldırıldı (XSS koruması)
-            "style-src 'self' 'unsafe-inline'; " +  // CSS için unsafe-inline gerekli (Scalar UI için)
-            "img-src 'self' data: https:; " +
-            "font-src 'self' data:; " +
-            "connect-src 'self'; " +
-            "frame-ancestors 'none';");
+        // Scalar dokümantasyonu için özel CSP (inline script'lere izin ver)
+        var isScalarPath = context.Request.Path.StartsWithSegments("/scalar") || 
+                          context.Request.Path.StartsWithSegments("/openapi");
+        
+        if (isScalarPath)
+        {
+            // Scalar için gevşetilmiş CSP
+            context.Response.Headers.Append("Content-Security-Policy", 
+                "default-src 'self'; " +
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +  // Scalar için gerekli
+                "style-src 'self' 'unsafe-inline'; " +
+                "img-src 'self' data: https:; " +
+                "font-src 'self' data: https://fonts.scalar.com; " +  // Scalar fontları için
+                "connect-src 'self'; " +
+                "frame-ancestors 'none';");
+        }
+        else
+        {
+            // API endpoint'leri için sıkı CSP
+            context.Response.Headers.Append("Content-Security-Policy", 
+                "default-src 'self'; " +
+                "script-src 'self'; " +  // unsafe-inline ve unsafe-eval kaldırıldı (XSS koruması)
+                "style-src 'self' 'unsafe-inline'; " +
+                "img-src 'self' data: https:; " +
+                "font-src 'self' data:; " +
+                "connect-src 'self'; " +
+                "frame-ancestors 'none';");
+        }
 
         // X-Content-Type-Options
         context.Response.Headers.Append("X-Content-Type-Options", "nosniff");

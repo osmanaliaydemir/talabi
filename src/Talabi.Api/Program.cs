@@ -56,11 +56,27 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<InputSanitizationActionFilter>();
     // Add FluentValidation filter globally
     options.Filters.Add<FluentValidationActionFilter>();
+})
+.AddJsonOptions(options =>
+{
+    // Circular reference handling için
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    // MaxDepth artırılması - derin object graph'ler için
+    options.JsonSerializerOptions.MaxDepth = 128;
 });
 
-// OpenAPI ve Scalar yapılandırması
+// Swagger/OpenAPI yapılandırması - Swashbuckle kullanarak
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new() { Title = "Talabi API", Version = "v1" });
+    
+    // Aynı isimli DTO'lar için tam namespace kullan
+    options.CustomSchemaIds(type => type.FullName);
+    
+    // JSON serializer ayarlarını kullan
+    options.UseInlineDefinitionsForEnums();
+});
 
 // AutoMapper configuration
 builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly);
@@ -382,16 +398,61 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// OpenAPI endpoint - Scalar için gerekli
-app.MapOpenApi();
+// Scalar ve Swagger için basit authentication
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value?.ToLower() ?? "";
+    
+    // Sadece /scalar ve /swagger path'leri için authentication iste
+    if (path.StartsWith("/scalar") || path.StartsWith("/swagger"))
+    {
+        // Authorization header'ı kontrol et
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Basic "))
+        {
+            // Authentication iste
+            context.Response.StatusCode = 401;
+            context.Response.Headers.Append("WWW-Authenticate", "Basic realm=\"Talabi API Documentation\"");
+            await context.Response.WriteAsync("Authentication required");
+            return;
+        }
+        
+        // Basic auth decode et
+        var encodedCredentials = authHeader.Substring("Basic ".Length).Trim();
+        var credentials = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+        var parts = credentials.Split(':', 2);
+        
+        var username = parts[0];
+        var password = parts.Length > 1 ? parts[1] : "";
+        
+        // Kullanıcı adı ve şifre kontrolü (appsettings'den oku veya sabit kullan)
+        var validUsername = builder.Configuration["Documentation:Username"] ?? "admin";
+        var validPassword = builder.Configuration["Documentation:Password"] ?? "talabi2024";
+        
+        if (username != validUsername || password != validPassword)
+        {
+            context.Response.StatusCode = 401;
+            context.Response.Headers.Append("WWW-Authenticate", "Basic realm=\"Talabi API Documentation\"");
+            await context.Response.WriteAsync("Invalid credentials");
+            return;
+        }
+    }
+    
+    await next();
+});
 
-// Scalar API Documentation - Root path'te göster
+// Swagger middleware - OpenAPI JSON üretimi
+app.UseSwagger();
+
+// Scalar API Documentation - Swagger spec kullanarak
 app.MapScalarApiReference(options =>
 {
     options
         .WithTitle("Talabi API Documentation")
         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-        .WithTheme(ScalarTheme.BluePlanet);
+        .WithTheme(ScalarTheme.BluePlanet)
+        .WithOpenApiRoutePattern("/swagger/v1/swagger.json");  // Swagger spec kullan
 });
 
 // Root path'i Scalar'a yönlendir (Scalar default path: /scalar/v1)
