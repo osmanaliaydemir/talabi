@@ -83,36 +83,8 @@ public class CampaignsController(IUnitOfWork unitOfWork, IRuleValidatorService r
             return NotFound(new { message = $"Campaign with ID {id} not found." });
         }
 
-        // Validate campaign is active and within date range
-        if (!campaign.IsActive || campaign.StartDate > DateTime.UtcNow || campaign.EndDate < DateTime.UtcNow)
-        {
-            return NotFound(new { message = $"Campaign with ID {id} is not currently active." });
-        }
-
-        // Build validation context
-        var context = new RuleValidationContext
-        {
-            RequestTime = DateTime.UtcNow
-        };
-
-        // Check for authenticated user
-        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdString != null && Guid.TryParse(userIdString, out var userId))
-        {
-            context.UserId = userId;
-            context.IsFirstOrder = !await unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == userIdString);
-        }
-        else
-        {
-            context.IsFirstOrder = true;
-        }
-
-        // Validate campaign rules
-        if (!ruleValidator.ValidateCampaign(campaign, context, out var failureReason))
-        {
-            return NotFound(new { message = $"Campaign with ID {id} is not valid for current context: {failureReason}" });
-        }
-
+        // Just return the campaign details without validation
+        // Mobile app needs this to display campaign info even if it's expired or inactive
         return Ok(campaign);
     }
 }
