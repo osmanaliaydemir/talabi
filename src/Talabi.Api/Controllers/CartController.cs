@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
 using AutoMapper;
+using Talabi.Core.Enums;
+using Talabi.Core.Entities;
 
 namespace Talabi.Api.Controllers;
 
@@ -466,7 +468,7 @@ public class CartController : BaseController
             .Include(oi => oi.Order)
             .Include(oi => oi.Product)
                 .ThenInclude(p => p.Vendor)
-            .Where(oi => oi.Order.UserId == userId)
+            .Where(oi => oi.Order.CustomerId == userId)
             .Where(oi => type == null || (oi.Product.VendorType == type || (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
             .OrderByDescending(oi => oi.Order.CreatedAt)
             .Select(oi => oi.Product)
