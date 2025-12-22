@@ -23,6 +23,7 @@ class ProductCard extends StatefulWidget {
     this.rating,
     this.ratingCount,
     this.heroTagPrefix,
+    this.isCompact = false,
   });
 
   final Product product;
@@ -36,6 +37,7 @@ class ProductCard extends StatefulWidget {
   final String? rating;
   final String? ratingCount;
   final String? heroTagPrefix;
+  final bool isCompact;
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -88,7 +90,7 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   // Product Image
                   Container(
-                    height: 120,
+                    height: widget.isCompact ? 90 : 120,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
@@ -305,24 +307,26 @@ class _ProductCardState extends State<ProductCard> {
                         Text(
                           widget.product.name,
                           style: AppTheme.poppins(
-                            fontSize: 18,
+                            fontSize: widget.isCompact ? 14 : 18,
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF1A1A1A),
                           ),
-                          maxLines: 2,
+                          maxLines: widget.isCompact ? 1 : 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.product.description ??
-                              '${widget.product.vendorName ?? "Talabi"} • 25 dk',
-                          style: AppTheme.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[500],
+                        if (!widget.isCompact) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.product.description ??
+                                '${widget.product.vendorName ?? "Talabi"} • 25 dk',
+                            style: AppTheme.poppins(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        ],
                         const SizedBox(height: 4),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -338,7 +342,7 @@ class _ProductCardState extends State<ProductCard> {
                                     widget.product.currency,
                                   ),
                                   style: AppTheme.poppins(
-                                    fontSize: 18,
+                                    fontSize: widget.isCompact ? 14 : 18,
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF1A1A1A),
                                   ),
@@ -376,8 +380,8 @@ class _ProductCardState extends State<ProductCard> {
                                           }
                                         },
                                         child: Container(
-                                          width: 28,
-                                          height: 28,
+                                          width: widget.isCompact ? 22 : 28,
+                                          height: widget.isCompact ? 22 : 28,
                                           decoration: BoxDecoration(
                                             color: Theme.of(context)
                                                 .colorScheme
@@ -390,7 +394,7 @@ class _ProductCardState extends State<ProductCard> {
                                             color: Theme.of(
                                               context,
                                             ).primaryColor,
-                                            size: 16,
+                                            size: widget.isCompact ? 14 : 16,
                                           ),
                                         ),
                                       ),
@@ -407,7 +411,9 @@ class _ProductCardState extends State<ProductCard> {
                                           '$quantity',
                                           style: AppTheme.poppins(
                                             color: const Color(0xFF1A1A1A),
-                                            fontSize: 14,
+                                            fontSize: widget.isCompact
+                                                ? 12
+                                                : 14,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -437,18 +443,18 @@ class _ProductCardState extends State<ProductCard> {
                                           }
                                         },
                                         child: Container(
-                                          width: 28,
-                                          height: 28,
+                                          width: widget.isCompact ? 22 : 28,
+                                          height: widget.isCompact ? 22 : 28,
                                           decoration: BoxDecoration(
                                             color: Theme.of(
                                               context,
                                             ).primaryColor,
                                             shape: BoxShape.circle,
                                           ),
-                                          child: const Icon(
+                                          child: Icon(
                                             Icons.add,
                                             color: Colors.white,
-                                            size: 16,
+                                            size: widget.isCompact ? 14 : 16,
                                           ),
                                         ),
                                       ),
@@ -486,8 +492,8 @@ class _ProductCardState extends State<ProductCard> {
                                       }
                                     },
                                     child: Container(
-                                      width: 28,
-                                      height: 28,
+                                      width: widget.isCompact ? 22 : 28,
+                                      height: widget.isCompact ? 22 : 28,
                                       decoration: BoxDecoration(
                                         color: Theme.of(context).primaryColor,
                                         shape: BoxShape.circle,
@@ -500,10 +506,10 @@ class _ProductCardState extends State<ProductCard> {
                                                 strokeWidth: 2,
                                               ),
                                             )
-                                          : const Icon(
+                                          : Icon(
                                               Icons.add,
                                               color: Colors.white,
-                                              size: 16,
+                                              size: widget.isCompact ? 14 : 16,
                                             ),
                                     ),
                                   ),

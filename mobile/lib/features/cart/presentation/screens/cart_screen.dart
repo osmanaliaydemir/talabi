@@ -792,18 +792,19 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
         SizedBox(
-          height: 210,
+          height: 185,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            itemExtent: 156.0, // 140 width + 16 total horizontal margin
+            itemExtent: 141.0, // 125 width + 16 total horizontal margin
             addRepaintBoundaries: true,
             itemCount: cart.recommendations.length,
             itemBuilder: (context, index) {
               final product = cart.recommendations[index];
               return ProductCard(
                 product: product,
-                width: 140,
+                width: 125,
+                isCompact: true,
                 heroTagPrefix: 'recommend_',
               );
             },
