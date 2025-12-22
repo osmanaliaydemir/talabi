@@ -542,6 +542,10 @@
   "@cartEmptyMessage": {
     "description": "Your cart is empty"
   },
+  "recommendedForYou": "Recommended For You",
+  "@recommendedForYou": {
+    "description": "Title for the recommendations section in empty cart"
+  },
   "cartVoucherPlaceholder": "Enter your voucher code",
   "@cartVoucherPlaceholder": {
     "description": "Enter your voucher code"

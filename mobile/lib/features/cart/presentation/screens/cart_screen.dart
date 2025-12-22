@@ -784,24 +784,26 @@ class _CartScreenState extends State<CartScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             localizations.recommendedForYou,
-            style: const TextStyle(
+            style: AppTheme.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+              color: AppTheme.textPrimary,
             ),
           ),
         ),
         SizedBox(
-          height: 230,
+          height: 210,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
+            itemExtent: 156.0, // 140 width + 16 total horizontal margin
+            addRepaintBoundaries: true,
             itemCount: cart.recommendations.length,
             itemBuilder: (context, index) {
               final product = cart.recommendations[index];
               return ProductCard(
                 product: product,
-                width: 170,
+                width: 140,
                 heroTagPrefix: 'recommend_',
               );
             },
