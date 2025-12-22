@@ -424,6 +424,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cartEmptyMessage => 'سلتك فارغة';
 
   @override
+  String get recommendedForYou => 'مقترح لك';
+
+  @override
   String get cartVoucherPlaceholder => 'أدخل رمز القسيمة';
 
   @override

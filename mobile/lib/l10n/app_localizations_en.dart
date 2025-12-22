@@ -424,6 +424,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartEmptyMessage => 'Your cart is empty';
 
   @override
+  String get recommendedForYou => 'Recommended For You';
+
+  @override
   String get cartVoucherPlaceholder => 'Enter your voucher code';
 
   @override

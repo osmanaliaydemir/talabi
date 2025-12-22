@@ -30,10 +30,29 @@ class CartProvider with ChangeNotifier {
   final ConnectivityProvider? _connectivityProvider;
   final _uuid = const Uuid();
   bool _isLoading = false;
+  List<Product> _recommendations = [];
 
   Map<String, CartItem> get items => _items;
   int get itemCount => _items.length;
   bool get isLoading => _isLoading;
+  List<Product> get recommendations => _recommendations;
+
+  Future<void> fetchRecommendations({
+    int? type,
+    double? lat,
+    double? lon,
+  }) async {
+    try {
+      _recommendations = await _apiService.getRecommendations(
+        type: type,
+        lat: lat,
+        lon: lon,
+      );
+      notifyListeners();
+    } catch (e) {
+      LoggerService().error('Error fetching recommendations in provider', e);
+    }
+  }
 
   // System Settings
   double _deliveryFee = 0.0;

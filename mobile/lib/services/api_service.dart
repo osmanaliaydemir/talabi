@@ -497,6 +497,24 @@ class ApiService {
     }
   }
 
+  Future<List<Product>> getRecommendations({
+    int? type,
+    double? lat,
+    double? lon,
+  }) async {
+    try {
+      final list = await _cartRemoteDataSource.getRecommendations(
+        type: type,
+        lat: lat,
+        lon: lon,
+      );
+      return list.map((e) => Product.fromJson(e)).toList();
+    } catch (e, stackTrace) {
+      LoggerService().error('Error mapping recommendations', e, stackTrace);
+      return [];
+    }
+  }
+
   // Profile methods
   Future<Map<String, dynamic>> getProfile() async {
     try {

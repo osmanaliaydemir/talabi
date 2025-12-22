@@ -445,4 +445,93 @@ public class CartController : BaseController
 
         return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartClearedSuccessfully", CurrentCulture)));
     }
+
+    /// <summary>
+    /// Kullanıcıya ürün önerileri getirir. 
+    /// Kullanıcının geçmiş siparişleri varsa oradan, yoksa konuma en yakın restoran/marketten önerir.
+    /// </summary>
+    [HttpGet("recommendations")]
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetRecommendations([FromQuery] VendorType? type, [FromQuery] double? lat, [FromQuery] double? lon)
+    {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<List<ProductDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        // 1. Önce kullanıcının eski siparişlerinden öneriler bulmaya çalış (aynı tipte)
+        var previousProducts = await UnitOfWork.OrderItems.Query()
+            .Include(oi => oi.Order)
+            .Include(oi => oi.Product)
+                .ThenInclude(p => p.Vendor)
+            .Where(oi => oi.Order.UserId == userId)
+            .Where(oi => type == null || (oi.Product.VendorType == type || (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
+            .OrderByDescending(oi => oi.Order.CreatedAt)
+            .Select(oi => oi.Product)
+            .Where(p => p != null)
+            .Distinct()
+            .Take(10)
+            .ToListAsync();
+
+        if (previousProducts.Any())
+        {
+            var dtos = _mapper.Map<List<ProductDto>>(previousProducts);
+            return Ok(new ApiResponse<List<ProductDto>>(dtos, LocalizationService.GetLocalizedString(ResourceName, "Success", CurrentCulture)));
+        }
+
+        // 2. Eğer eski siparişi yoksa konuma en yakın restoran/marketin ürünlerini öner
+        double? targetLat = lat;
+        double? targetLon = lon;
+
+        if (targetLat == null || targetLon == null)
+        {
+            var defaultAddress = await UnitOfWork.UserAddresses.Query()
+                .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
+            if (defaultAddress != null)
+            {
+                targetLat = defaultAddress.Latitude;
+                targetLon = defaultAddress.Longitude;
+            }
+        }
+
+        // En yakın vendor'u bul
+        var vendorsQuery = UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive);
+        
+        if (type.HasValue)
+        {
+            vendorsQuery = vendorsQuery.Where(v => v.Type == type.Value);
+        }
+
+        Vendor? nearestVendor = null;
+        if (targetLat.HasValue && targetLon.HasValue)
+        {
+             // Basit mesafe sıralaması (API seviyesinde tam formül yerine yaklaşık)
+             nearestVendor = await vendorsQuery
+                .OrderBy(v => (v.Latitude - targetLat.Value) * (v.Latitude - targetLat.Value) + (v.Longitude - targetLon.Value) * (v.Longitude - targetLon.Value))
+                .FirstOrDefaultAsync();
+        }
+        else
+        {
+            nearestVendor = await vendorsQuery
+                .OrderByDescending(v => v.Rating)
+                .FirstOrDefaultAsync();
+        }
+
+        if (nearestVendor != null)
+        {
+            var recommendedProducts = await UnitOfWork.Products.Query()
+                .Include(p => p.Vendor)
+                .Where(p => p.VendorId == nearestVendor.Id && p.IsAvailable)
+                .Take(10)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<ProductDto>>(recommendedProducts);
+            return Ok(new ApiResponse<List<ProductDto>>(dtos, LocalizationService.GetLocalizedString(ResourceName, "Success", CurrentCulture)));
+        }
+
+        return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(), LocalizationService.GetLocalizedString(ResourceName, "Success", CurrentCulture)));
+    }
 }

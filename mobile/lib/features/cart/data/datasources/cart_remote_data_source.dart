@@ -179,4 +179,40 @@ class CartRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getRecommendations({
+    int? type,
+    double? lat,
+    double? lon,
+  }) async {
+    try {
+      final response = await _networkClient.dio.get(
+        '${ApiEndpoints.cart}/recommendations',
+        queryParameters: {
+          if (type != null) 'type': type,
+          if (lat != null) 'lat': lat,
+          if (lon != null) 'lon': lon,
+        },
+      );
+
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          return [];
+        }
+
+        return apiResponse.data!;
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching recommendations', e, stackTrace);
+      return [];
+    }
+  }
 }

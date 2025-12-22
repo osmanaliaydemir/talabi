@@ -427,6 +427,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get cartEmptyMessage => 'Sepetiniz boş';
 
   @override
+  String get recommendedForYou => 'Senin İçin Önerilenler';
+
+  @override
   String get cartVoucherPlaceholder => 'Kupon kodunuzu girin';
 
   @override

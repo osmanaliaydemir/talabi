@@ -8,6 +8,7 @@ class EmptyStateWidget extends StatefulWidget {
     this.actionLabel,
     this.onAction,
     this.iconData = Icons.shopping_cart_outlined,
+    this.isCompact = false,
   });
 
   final String message;
@@ -15,6 +16,7 @@ class EmptyStateWidget extends StatefulWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final IconData iconData;
+  final bool isCompact;
 
   @override
   State<EmptyStateWidget> createState() => _EmptyStateWidgetState();
@@ -55,7 +57,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: EdgeInsets.all(widget.isCompact ? 16.0 : 32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -68,7 +70,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                   return Transform.scale(
                     scale: _scaleAnimation.value,
                     child: Container(
-                      padding: const EdgeInsets.all(30),
+                      padding: EdgeInsets.all(widget.isCompact ? 15 : 30),
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor.withValues(
                           alpha: 0.1 * _fadeAnimation.value,
@@ -77,7 +79,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                       ),
                       child: Icon(
                         widget.iconData,
-                        size: 80,
+                        size: widget.isCompact ? 40 : 80,
                         color: Theme.of(
                           context,
                         ).primaryColor.withValues(alpha: _fadeAnimation.value),
@@ -87,16 +89,16 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                 },
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: widget.isCompact ? 16 : 32),
             ExcludeSemantics(
               child: Column(
                 children: [
                   Text(
                     widget.message,
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: widget.isCompact ? 16 : 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+                      color: const Color(0xFF1F2937),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -104,9 +106,9 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                     const SizedBox(height: 12),
                     Text(
                       widget.subMessage!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF6B7280),
+                      style: TextStyle(
+                        fontSize: widget.isCompact ? 14 : 16,
+                        color: const Color(0xFF6B7280),
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
@@ -116,7 +118,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
               ),
             ),
             if (widget.actionLabel != null && widget.onAction != null) ...[
-              const SizedBox(height: 32),
+              SizedBox(height: widget.isCompact ? 16 : 32),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

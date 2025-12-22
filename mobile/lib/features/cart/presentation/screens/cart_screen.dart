@@ -13,6 +13,8 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:mobile/services/version_check_service.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -29,7 +31,14 @@ class _CartScreenState extends State<CartScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final cart = Provider.of<CartProvider>(context, listen: false);
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+
       await cart.loadCart();
+
+      // Fetch recommendations based on current app mode
+      await cart.fetchRecommendations(
+        type: bottomNav.selectedCategory == MainCategory.restaurant ? 1 : 2,
+      );
 
       if (mounted) {
         final currency = cart.items.isNotEmpty
@@ -99,7 +108,18 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   )
                 : cart.itemCount == 0
-                ? EmptyStateWidget(message: localizations.cartEmptyMessage)
+                ? Column(
+                    children: [
+                      const Spacer(),
+                      EmptyStateWidget(
+                        message: localizations.cartEmptyMessage,
+                        isCompact: true,
+                      ),
+                      const Spacer(),
+                      if (cart.recommendations.isNotEmpty)
+                        _buildRecommendationsSlider(cart, localizations),
+                    ],
+                  )
                 : Column(
                     children: [
                       Expanded(
@@ -750,6 +770,45 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRecommendationsSlider(
+    CartProvider cart,
+    AppLocalizations localizations,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            localizations.recommendedForYou,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 230,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            itemCount: cart.recommendations.length,
+            itemBuilder: (context, index) {
+              final product = cart.recommendations[index];
+              return ProductCard(
+                product: product,
+                width: 170,
+                heroTagPrefix: 'recommend_',
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 
