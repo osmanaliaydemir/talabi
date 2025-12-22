@@ -131,6 +131,9 @@ public class OrderService : IOrderService
         }
 
         // Check Delivery Zone
+        // Check Delivery Zone
+        // Delivery Zone checks disabled - allow all addresses
+        /*
         var deliveryZone = await _unitOfWork.VendorDeliveryZones.Query()
             .FirstOrDefaultAsync(z => z.VendorId == dto.VendorId && z.DistrictId == userAddress.DistrictId && z.IsActive);
 
@@ -143,6 +146,10 @@ public class OrderService : IOrderService
         {
              throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "MinimumOrderAmountNotMet", culture, deliveryZone.MinimumOrderAmount));
         }
+        */
+
+        // Use dummy delivery zone data
+        var deliveryZone = new { DeliveryFee = (decimal?)0, MinimumOrderAmount = (decimal)0 };
 
         // 4. Validate and Apply Coupon (if provided)
         decimal discountAmount = 0;

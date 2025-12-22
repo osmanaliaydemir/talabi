@@ -362,9 +362,11 @@
                 <a href="@Url.Action("Index", "SpecialHolidays")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "SpecialHolidays" ? "active" : "")">
                     <i class="fas fa-calendar-alt"></i> @LocalizationService.GetString("SpecialHolidays")
                 </a>
+                <!-- Delivery Zones Disabled
                 <a href="@Url.Action("Index", "DeliveryZones")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "DeliveryZones" ? "active" : "")">
                     <i class="fas fa-draw-polygon"></i> @LocalizationService.GetString("DeliveryZones")
                 </a>
+                -->
                 <div class="dropdown-menu-item">
                     <a href="#" class="dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "DeliveryOptimization" ? "active" : "")" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-route"></i> @LocalizationService.GetString("Delivery Optimization")

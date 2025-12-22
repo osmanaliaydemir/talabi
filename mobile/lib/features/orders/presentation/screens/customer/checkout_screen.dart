@@ -680,7 +680,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   Text(
                     '$displayTitle ${fullAddress.isNotEmpty ? '- $fullAddress' : ''}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black87,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

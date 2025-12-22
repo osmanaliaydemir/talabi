@@ -12,7 +12,7 @@ import 'package:mobile/features/profile/presentation/screens/vendor/edit_profile
 import 'package:mobile/features/profile/presentation/screens/vendor/settings_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
-import 'package:mobile/features/profile/presentation/screens/vendor/delivery_zones_screen.dart';
+
 import 'package:provider/provider.dart';
 
 class VendorProfileScreen extends StatefulWidget {
@@ -259,6 +259,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             );
           },
         ),
+        /* Delivery Zones Disabled
         ListTile(
           leading: const Icon(Icons.map_outlined),
           title: Text(localizations.deliveryZones),
@@ -273,6 +274,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             );
           },
         ),
+        */
         ListTile(
           leading: const Icon(Icons.language),
           title: Text(localizations.selectLanguage),

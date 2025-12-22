@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Getir.MerchantPortal.Controllers;
 
-[Authorize]
+[Authorize(Roles = "None")]
 public class DeliveryZonesController : Controller
 {
 	private readonly IDeliveryZoneService _zoneService;

@@ -20,7 +20,9 @@ class OrderRemoteDataSource {
   }) async {
     final data = {
       'vendorId': vendorId,
-      'items': items, // {productId: quantity} format
+      'items': items.entries
+          .map((e) => {'productId': e.key, 'quantity': e.value})
+          .toList(),
       'deliveryAddressId': deliveryAddressId,
       'paymentMethod': paymentMethod,
       'note': note,

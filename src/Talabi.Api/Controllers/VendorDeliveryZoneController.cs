@@ -10,7 +10,7 @@ namespace Talabi.Api.Controllers;
 
 [Route("api/vendor/delivery-zones")]
 [ApiController]
-[Authorize]
+[Authorize(Roles = "None")]
 public class VendorDeliveryZoneController : BaseController
 {
     private const string ResourceName = "VendorDeliveryZoneResources";
