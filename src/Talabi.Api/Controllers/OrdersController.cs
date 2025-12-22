@@ -81,8 +81,11 @@ public class OrdersController : BaseController
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new ApiResponse<OrderDto>(
                 orderDto,
                 LocalizationService.GetLocalizedString(ResourceName, "OrderCreatedSuccessfully", CurrentCulture)));
+        }
+        catch (Exception)
+        {
             await UnitOfWork.RollbackTransactionAsync();
-            throw; // Let ExceptionHandlingMiddleware handle it
+            throw;
         }
     }
 

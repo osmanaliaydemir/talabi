@@ -20,6 +20,16 @@ public class OrderCalculationResultDto
     public List<OrderItemCalculationDto> Items { get; set; } = new();
 }
 
+public class CouponDto
+{
+    public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public int DiscountType { get; set; }
+    public decimal DiscountValue { get; set; }
+    public decimal DiscountAmount { get; set; } // The actual calculated discount amount for this order
+    public string Description { get; set; } = string.Empty;
+}
+
 public class OrderItemCalculationDto
 {
     public Guid ProductId { get; set; }
