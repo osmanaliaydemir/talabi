@@ -1141,5 +1141,13 @@
   "workingDays": "Working Days",
   "closed": "Closed",
   "open24Hours": "Open 24 Hours",
-  "hours": "Hours"
+  "hours": "Hours",
+  "workingHoursUpdatedSuccessfully": "Working hours updated successfully",
+  "workingHoursDescription": "Manage your business opening days and hours here.",
+  "workingHoursSaveError": "Error saving working hours: {error}",
+  "@workingHoursSaveError": {
+    "placeholders": {
+      "error": {}
+    }
+  }
 }

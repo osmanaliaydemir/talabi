@@ -5,6 +5,8 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
+import 'package:mobile/features/profile/presentation/screens/vendor/working_hours_screen.dart';
+import 'package:mobile/utils/custom_routes.dart';
 
 class VendorSettingsScreen extends StatefulWidget {
   const VendorSettingsScreen({super.key});
@@ -98,12 +100,14 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
 
     try {
       final data = {
-        'minimumOrderAmount': _minimumOrderController.text.isEmpty
+        'minimumOrderAmount': 0, // Disabled feature
+        /*_minimumOrderController.text.isEmpty
             ? null
-            : double.parse(_minimumOrderController.text),
-        'deliveryFee': _deliveryFeeController.text.isEmpty
+            : double.parse(_minimumOrderController.text),*/
+        'deliveryFee': 0, // Disabled feature
+        /*_deliveryFeeController.text.isEmpty
             ? null
-            : double.parse(_deliveryFeeController.text),
+            : double.parse(_deliveryFeeController.text),*/
         'estimatedDeliveryTime': _deliveryTimeController.text.isEmpty
             ? null
             : int.parse(_deliveryTimeController.text),
@@ -256,7 +260,8 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    // Minimum order amount
+                    /*
+                    // Minimum order amount - DISABLING AS PER REQUEST
                     TextFormField(
                       controller: _minimumOrderController,
                       decoration: AppTheme.inputDecoration(
@@ -281,8 +286,10 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                       },
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
+                    */
 
-                    // Delivery fee
+                    /*
+                    // Delivery fee - DISABLING AS PER REQUEST
                     TextFormField(
                       controller: _deliveryFeeController,
                       decoration: AppTheme.inputDecoration(
@@ -305,6 +312,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                       },
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
+                    */
 
                     // Delivery time
                     TextFormField(
@@ -326,6 +334,40 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                               'Geçerli bir süre girin';
                         }
                         return null;
+                      },
+                    ),
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    // Working Hours Link
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.access_time_filled,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                      title: Text(
+                        localizations?.workingHours ?? 'Çalışma Saatleri',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        localizations?.workingHoursDescription ??
+                            'Çalışma saatlerinizi düzenleyin',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          NoSlidePageRoute(
+                            builder: (context) => const WorkingHoursScreen(),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: AppTheme.spacingXLarge),

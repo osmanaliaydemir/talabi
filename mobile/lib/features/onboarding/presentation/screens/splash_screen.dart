@@ -14,7 +14,7 @@ import 'package:mobile/features/onboarding/presentation/screens/main_navigation_
 import 'package:mobile/features/dashboard/presentation/screens/courier_dashboard_screen.dart';
 import 'package:mobile/features/dashboard/presentation/screens/vendor_dashboard_screen.dart';
 import 'package:mobile/features/profile/presentation/screens/vendor/edit_profile_screen.dart';
-import 'package:mobile/features/profile/presentation/screens/vendor/delivery_zones_screen.dart';
+
 import 'package:mobile/features/auth/presentation/screens/customer/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -112,19 +112,6 @@ class _SplashScreenState extends State<SplashScreen> {
               NoSlidePageRoute(
                 builder: (_) =>
                     const VendorEditProfileScreen(isOnboarding: true),
-              ),
-            );
-            Navigator.of(context).pushReplacement(
-              NoSlidePageRoute(
-                builder: (_) =>
-                    const VendorEditProfileScreen(isOnboarding: true),
-              ),
-            );
-          } else if (!authProvider.hasDeliveryZones) {
-            // Enforce Delivery Zone Selection
-            Navigator.of(context).pushReplacement(
-              NoSlidePageRoute(
-                builder: (_) => const DeliveryZonesScreen(showWarning: true),
               ),
             );
           } else {

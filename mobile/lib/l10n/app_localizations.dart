@@ -4983,6 +4983,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hours'**
   String get hours;
+
+  /// No description provided for @workingHoursDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your business opening days and hours here.'**
+  String get workingHoursDescription;
+
+  /// No description provided for @workingHoursSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving working hours: {error}'**
+  String workingHoursSaveError(Object error);
 }
 
 class _AppLocalizationsDelegate

@@ -2662,4 +2662,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get hours => 'Saat';
+
+  @override
+  String get workingHoursDescription =>
+      'İşletmenizin açık olduğu günleri ve saatleri buradan düzenleyebilirsiniz.';
+
+  @override
+  String workingHoursSaveError(Object error) {
+    return 'Çalışma saatleri kaydedilirken hata oluştu: $error';
+  }
 }

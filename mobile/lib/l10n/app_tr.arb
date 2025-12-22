@@ -1130,6 +1130,14 @@
   "closed": "Kapalı",
   "open24Hours": "24 Saat Açık",
   "hours": "Saat",
+  "workingHoursUpdatedSuccessfully": "Çalışma saatleri başarıyla güncellendi",
+  "workingHoursDescription": "İşletmenizin açık olduğu günleri ve saatleri buradan düzenleyebilirsiniz.",
+  "workingHoursSaveError": "Çalışma saatleri kaydedilirken hata oluştu: {error}",
+  "@workingHoursSaveError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "noFavoritesFound": "Henüz favori ürününüz yok",
   "favoritesEmptyMessage": "Beğendiğiniz ürünleri favorilere ekleyerek burada görüntüleyebilirsiniz."
 }

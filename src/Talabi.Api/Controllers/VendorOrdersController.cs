@@ -104,8 +104,8 @@ public class VendorOrdersController : BaseController
             {
                 Id = o.Id,
                 CustomerOrderId = o.CustomerOrderId,
-                CustomerName = o.Customer!.FullName,
-                CustomerEmail = o.Customer.Email!,
+                CustomerName = o.Customer?.FullName ?? "Misafir",
+                CustomerEmail = o.Customer?.Email ?? "-",
                 TotalAmount = o.TotalAmount,
                 Status = o.Status.ToString(),
                 CreatedAt = o.CreatedAt,
@@ -179,8 +179,8 @@ public class VendorOrdersController : BaseController
         {
             Id = order.Id,
             CustomerOrderId = order.CustomerOrderId,
-            CustomerName = order.Customer!.FullName,
-            CustomerEmail = order.Customer.Email!,
+            CustomerName = order.Customer?.FullName ?? "Misafir",
+            CustomerEmail = order.Customer?.Email ?? "-",
             TotalAmount = order.TotalAmount,
             Status = order.Status.ToString(),
             CreatedAt = order.CreatedAt,
@@ -188,8 +188,8 @@ public class VendorOrdersController : BaseController
             Items = order.OrderItems.Select(oi => new VendorOrderItemDto
             {
                 ProductId = oi.ProductId,
-                ProductName = oi.Product!.Name,
-                ProductImageUrl = oi.Product.ImageUrl,
+                ProductName = oi.Product?.Name ?? "Unknown Product",
+                ProductImageUrl = oi.Product?.ImageUrl,
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 TotalPrice = oi.Quantity * oi.UnitPrice
@@ -612,27 +612,18 @@ public class VendorOrdersController : BaseController
             return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAlreadyAssigned", CurrentCulture), "COURIER_ALREADY_ASSIGNED"));
         }
 
-        // Find best courier
-        var bestCourier = await _assignmentService.FindBestCourierAsync(order);
+        // Broadcast to nearby couriers
+        var offeredCount = await _assignmentService.BroadcastOrderToCouriersAsync(id, 5.0); // 5km radius
 
-        if (bestCourier == null)
+        if (offeredCount == 0)
         {
             return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NoAvailableCouriers", CurrentCulture), "NO_AVAILABLE_COURIERS"));
         }
 
-        // Assign courier
-        var success = await _assignmentService.AssignOrderToCourierAsync(id, bestCourier.Id);
-
-        if (!success)
-        {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAssignmentFailed", CurrentCulture), "COURIER_ASSIGNMENT_FAILED"));
-        }
-
         return Ok(new ApiResponse<object>(new
         {
-            CourierId = bestCourier.Id,
-            CourierName = bestCourier.Name
-        }, LocalizationService.GetLocalizedString(ResourceName, "CourierAutoAssignedSuccessfully", CurrentCulture)));
+            OfferedCount = offeredCount
+        }, LocalizationService.GetLocalizedString(ResourceName, "OrderBroadcastedSuccessfully", CurrentCulture)));
     }
 
 

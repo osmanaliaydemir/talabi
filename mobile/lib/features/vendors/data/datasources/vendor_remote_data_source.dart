@@ -110,6 +110,20 @@ class VendorRemoteDataSource {
   Future<Map<String, dynamic>> getVendorProfile() async {
     final response = await _networkClient.dio.get(ApiEndpoints.vendorProfile);
 
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Satıcı profili getirilemedi');
+      }
+
+      return apiResponse.data!;
+    }
+
     // Ideally map to VendorProfileDto
     return response.data as Map<String, dynamic>;
   }

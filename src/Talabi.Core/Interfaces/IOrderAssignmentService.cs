@@ -12,4 +12,5 @@ public interface IOrderAssignmentService
     Task<bool> DeliverOrderAsync(Guid orderId, Guid courierId);
     Task<List<Order>> GetActiveOrdersForCourierAsync(Guid courierId);
     Task<List<OrderCourier>> GetOrderCourierHistoryAsync(Guid orderId);
+    Task<int> BroadcastOrderToCouriersAsync(Guid orderId, double radiusKm = 5.0);
 }

@@ -163,8 +163,16 @@ class OrderRemoteDataSource {
       queryParameters: queryParams,
     );
 
-    // Simplified handling based on ApiService
-    return response.data['items'] ?? [];
+    // Unwrap ApiResponse -> PagedResultDto -> Items
+    final data = response.data;
+    if (data is Map<String, dynamic> && data.containsKey('data')) {
+      final innerData = data['data'];
+      if (innerData is Map<String, dynamic> && innerData.containsKey('items')) {
+        return innerData['items'] as List<dynamic>? ?? [];
+      }
+    }
+
+    return [];
   }
 
   Future<Map<String, dynamic>> getVendorOrdersWithCount({
@@ -200,7 +208,18 @@ class OrderRemoteDataSource {
     final response = await _networkClient.dio.get(
       '${ApiEndpoints.vendorOrders}/$orderId',
     );
-    return response.data as Map<String, dynamic>;
+
+    // Unwrap the ApiResponse to return the Order DTO directly
+    final apiResponse = ApiResponse.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => json as Map<String, dynamic>,
+    );
+
+    if (!apiResponse.success || apiResponse.data == null) {
+      throw Exception(apiResponse.message ?? 'Sipariş detayı alınamadı');
+    }
+
+    return apiResponse.data!;
   }
 
   Future<void> acceptOrder(String orderId) async {

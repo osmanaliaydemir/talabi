@@ -7,6 +7,8 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 
 class VendorOrderDetailScreen extends StatefulWidget {
   const VendorOrderDetailScreen({super.key, required this.orderId});
@@ -588,12 +590,12 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => CustomConfirmationDialog(
-        title: 'Otomatik Kurye Ataması',
+        title: 'Kurye Teklifi Başlat',
         message:
-            'Sistem en yakın ve en uygun kuryeyi otomatik olarak atayacak. Devam etmek istiyor musunuz?',
-        confirmText: 'Evet, Ata',
+            'Sipariş 5km çapındaki tüm uygun kuryelere teklif edilecek.\n\nİlk kabul eden kurye siparişi alacak.\n\nDevam etmek istiyor musunuz?',
+        confirmText: 'Teklifi Başlat',
         cancelText: 'Vazgeç',
-        icon: Icons.auto_awesome,
+        icon: Icons.sensors,
         iconColor: Colors.green,
         confirmButtonColor: Colors.green,
         onConfirm: () => Navigator.pop(context, true),
@@ -699,7 +701,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       );
     }
 
-    final status = _order!['status'] as String;
+    final status = _order!['status'] as String? ?? 'Pending';
     final customerOrderId =
         _order!['customerOrderId']?.toString() ??
         _order!['id']?.toString() ??
@@ -746,12 +748,19 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                       'Sipariş No',
                       '#${_order!['customerOrderId'] ?? _order!['id']}',
                     ),
-                    _buildInfoRow('İsim', _order!['customerName']),
-                    _buildInfoRow('E-posta', _order!['customerEmail']),
+                    _buildInfoRow(
+                      'İsim',
+                      _order!['customerName'] as String? ?? 'Misafir',
+                    ),
+                    _buildInfoRow(
+                      'E-posta',
+                      _order!['customerEmail'] as String? ?? '-',
+                    ),
                     _buildInfoRow(
                       'Tarih',
                       DateTime.parse(
-                        _order!['createdAt'],
+                        _order!['createdAt'] as String? ??
+                            DateTime.now().toIso8601String(),
                       ).toString().substring(0, 16),
                     ),
                   ],
@@ -779,7 +788,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...(_order!['items'] as List).map((item) {
+                    ...((_order!['items'] as List?) ?? []).map((item) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Row(
@@ -844,7 +853,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                         ),
                         Text(
                           CurrencyFormatter.format(
-                            (_order!['totalAmount'] as num).toDouble(),
+                            ((_order!['totalAmount'] as num?) ?? 0).toDouble(),
                             displayCurrency,
                           ),
                           style: TextStyle(
@@ -926,24 +935,26 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
               child: SafeArea(
                 child: Row(
                   children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _showCourierSelection,
-                        icon: const Icon(Icons.person_search),
-                        label: const Text('Kurye Seç'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryOrange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                    if (context.read<AuthProvider>().role == 'Admin') ...[
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _showCourierSelection,
+                          icon: const Icon(Icons.person_search),
+                          label: const Text('Kurye Seç'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryOrange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: _autoAssignCourier,
-                        icon: const Icon(Icons.auto_awesome),
-                        label: const Text('Otomatik Ata'),
+                        icon: const Icon(Icons.sensors), // Broadcast icon
+                        label: const Text('Kuryelere Teklif Et'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,

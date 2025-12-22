@@ -7,13 +7,11 @@ import 'package:mobile/services/api_service.dart';
 //Todo: remove this import OAA
 import 'package:mobile/features/profile/presentation/screens/customer/address_picker_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
-import 'package:mobile/features/profile/presentation/screens/vendor/delivery_zones_screen.dart';
+
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 // Added imports
-import 'package:mobile/features/vendors/data/models/working_hour.dart';
-import 'package:mobile/widgets/working_days_selection_widget.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
   const VendorEditProfileScreen({super.key, this.isOnboarding = false});
@@ -45,9 +43,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
   double? _latitude;
   double? _longitude;
   bool _isLocationSelected = false;
-
-  // Working Hours
-  List<WorkingHour> _workingHours = [];
 
   @override
   void initState() {
@@ -88,15 +83,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             : null;
         _isLocationSelected = _latitude != null && _longitude != null;
 
-        if (profile['workingHours'] != null &&
-            (profile['workingHours'] as List).isNotEmpty) {
-          _workingHours = (profile['workingHours'] as List)
-              .map((e) => WorkingHour.fromJson(e))
-              .toList();
-        } else {
-          _workingHours = _createDefaultWeek();
-        }
-
         _isLoading = false;
       });
     } catch (e) {
@@ -125,28 +111,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         );
       }
     }
-  }
-
-  List<WorkingHour> _createDefaultWeek() {
-    final List<String> dayNames = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ];
-
-    return List.generate(7, (index) {
-      return WorkingHour(
-        dayOfWeek: index,
-        dayName: dayNames[index],
-        startTime: '09:00',
-        endTime: '18:00',
-        isClosed: false,
-      );
-    });
   }
 
   Future<void> _pickImage() async {
@@ -222,7 +186,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             : _descriptionController.text,
         'latitude': _latitude,
         'longitude': _longitude,
-        'workingHours': _workingHours.map((e) => e.toJson()).toList(),
       };
 
       await _apiService.updateVendorProfile(data);
@@ -238,12 +201,10 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         );
 
         if (widget.isOnboarding) {
-          // Profile completed, now enforce Delivery Zones
-          Navigator.of(context).pushReplacement(
-            NoSlidePageRoute(
-              builder: (context) =>
-                  const DeliveryZonesScreen(showWarning: true),
-            ),
+          // Profile completed, skip Delivery Zones and go to dashboard/home
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/', // Or vendor dashboard route if different
+            (route) => false,
           );
         } else {
           Navigator.pop(context, true);
@@ -565,25 +526,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Working Hours Section
-                  Text(
-                    localizations?.workingHours ?? 'Çalışma Saatleri',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: WorkingDaysSelectionWidget(
-                        initialWorkingHours: _workingHours,
-                        onWorkingHoursChanged: (updatedHours) {
-                          _workingHours = updatedHours;
-                        },
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 24),
 
                   // Save button

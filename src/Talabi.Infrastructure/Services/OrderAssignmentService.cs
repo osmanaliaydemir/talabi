@@ -224,6 +224,76 @@ public class OrderAssignmentService : IOrderAssignmentService
         return bestCourier?.Courier;
     }
 
+    public async Task<int> BroadcastOrderToCouriersAsync(Guid orderId, double radiusKm = 5.0)
+    {
+        var order = await _unitOfWork.Orders.Query()
+            .Include(o => o.DeliveryAddress) // Needed for fee calculation
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order == null || order.Status != OrderStatus.Ready) return 0;
+
+        var vendor = await _unitOfWork.Vendors.GetByIdAsync(order.VendorId);
+        if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue) return 0;
+
+        // Get available couriers
+        var availableCouriers = await _unitOfWork.Couriers.Query()
+            .Where(c => c.IsActive
+                && c.Status == CourierStatus.Available
+                && c.CurrentActiveOrders < c.MaxActiveOrders
+                && c.CurrentLatitude.HasValue
+                && c.CurrentLongitude.HasValue)
+            .ToListAsync();
+
+        // Filter by distance
+        var nearbyCouriers = availableCouriers
+            .Select(c => new
+            {
+                Courier = c,
+                Distance = GeoHelper.CalculateDistance(
+                    vendor.Latitude.Value,
+                    vendor.Longitude.Value,
+                    c.CurrentLatitude!.Value,
+                    c.CurrentLongitude!.Value
+                )
+            })
+            .Where(x => x.Distance <= radiusKm)
+            .ToList();
+
+        if (!nearbyCouriers.Any()) return 0;
+
+        // Deactivate previous active assignments/offers
+        await DeactivatePreviousAssignmentsAsync(orderId);
+
+        int offerCount = 0;
+        foreach (var item in nearbyCouriers)
+        {
+            var fee = await CalculateDeliveryFee(order, item.Courier);
+
+            var offer = new OrderCourier
+            {
+                OrderId = orderId,
+                CourierId = item.Courier.Id,
+                Status = OrderCourierStatus.Offered,
+                IsActive = true,
+                DeliveryFee = fee,
+                CourierAssignedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.OrderCouriers.AddAsync(offer);
+            offerCount++;
+
+            // Send notification to courier
+            if (!string.IsNullOrEmpty(item.Courier.UserId))
+            {
+                await _notificationService.SendOrderAssignmentNotificationAsync(item.Courier.UserId, orderId);
+            }
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Order {OrderId} broadcasted to {Count} couriers within {Radius}km", orderId, offerCount, radiusKm);
+
+        return offerCount;
+    }
+
 
     public async Task<bool> AcceptOrderAsync(Guid orderId, Guid courierId)
     {
@@ -233,12 +303,45 @@ public class OrderAssignmentService : IOrderAssignmentService
         if (order == null || courier == null) return false;
         
         var orderCourier = await GetActiveOrderCourierAsync(orderId);
+        
+        // Allow acceptance if it matches this courier
         if (orderCourier == null || orderCourier.CourierId != courierId) return false;
-        if (order.Status != OrderStatus.Assigned) return false;
-        if (orderCourier.Status != OrderCourierStatus.Assigned) return false;
+
+        // Case 1: Standard Assignment (Assigned -> Accepted)
+        bool isStandardAssignment = order.Status == OrderStatus.Assigned && orderCourier.Status == OrderCourierStatus.Assigned;
+        
+        // Case 2: Broadcase Offer (Ready -> Accepted) - Order might be Ready while Courier is Offered
+        bool isOfferAcceptance = order.Status == OrderStatus.Ready && orderCourier.Status == OrderCourierStatus.Offered;
+
+        if (!isStandardAssignment && !isOfferAcceptance) return false;
+
         if (courier.CurrentActiveOrders >= courier.MaxActiveOrders) return false;
 
-        // Update OrderCourier
+        // If this was an offer acceptance, we need to handle "Race Condition" / "Winner Takes All"
+        if (isOfferAcceptance)
+        {
+            // Double check order hasn't been taken by someone else in the split second
+            // The 'order.Status == Ready' check above helps, but DB concurrency is real key.
+            // For now, assuming optimistic concurrency or single threaded logic for simplicity,
+            // but we MUST deactivate other offers.
+            
+            // Reload all active offers for this order to deactivate others
+            var allOffers = await _unitOfWork.OrderCouriers.Query()
+                .Where(oc => oc.OrderId == orderId && oc.IsActive && oc.Status == OrderCourierStatus.Offered)
+                .ToListAsync();
+
+            foreach (var offer in allOffers)
+            {
+                if (offer.Id != orderCourier.Id) // Don't touch the winner yet
+                {
+                    offer.IsActive = false;
+                    offer.UpdatedAt = DateTime.UtcNow;
+                    _unitOfWork.OrderCouriers.Update(offer);
+                }
+            }
+        }
+
+        // Update OrderCourier (Winner)
         orderCourier.CourierAcceptedAt = DateTime.UtcNow;
         orderCourier.Status = OrderCourierStatus.Accepted;
         orderCourier.UpdatedAt = DateTime.UtcNow;

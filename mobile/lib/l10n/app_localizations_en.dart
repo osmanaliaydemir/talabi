@@ -2665,4 +2665,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hours => 'Hours';
+
+  @override
+  String get workingHoursDescription =>
+      'Manage your business opening days and hours here.';
+
+  @override
+  String workingHoursSaveError(Object error) {
+    return 'Error saving working hours: $error';
+  }
 }

@@ -7,6 +7,7 @@ public enum OrderCourierStatus
     Rejected = 2,        // Kurye reddetti
     PickedUp = 3,        // Sipariş alındı
     OutForDelivery = 4,  // Yola çıktı
-    Delivered = 5        // Teslim edildi
+    Delivered = 5,       // Teslim edildi
+    Offered = 6          // Kuryeye teklif edildi
 }
 
