@@ -373,6 +373,41 @@ public class CartController : BaseController
     }
 
     /// <summary>
+    /// Sepetteki tüm promosyonları (kampanya ve kupon) temizler
+    /// </summary>
+    [HttpDelete("promotions")]
+    public async Task<ActionResult<ApiResponse<object>>> ClearPromotions()
+    {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        var cart = await UnitOfWork.Carts.Query()
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+
+        if (cart == null)
+        {
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CartNotFound", CurrentCulture),
+                "CART_NOT_FOUND"));
+        }
+
+        // Clear promotions
+        cart.CampaignId = null;
+        cart.CouponId = null;
+
+        UnitOfWork.Carts.Update(cart);
+        await UnitOfWork.SaveChangesAsync();
+
+        return Ok(new ApiResponse<object>(new { }, 
+            LocalizationService.GetLocalizedString(ResourceName, "PromotionsCleared", CurrentCulture)));
+    }
+
+    /// <summary>
     /// Sepeti temizler
     /// </summary>
     /// <returns>İşlem sonucu</returns>

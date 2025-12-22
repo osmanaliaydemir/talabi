@@ -452,6 +452,15 @@ class ApiService {
     }
   }
 
+  Future<void> clearCartPromotions() async {
+    try {
+      await _cartRemoteDataSource.clearCartPromotions();
+    } catch (e, stackTrace) {
+      LoggerService().error('Error clearing cart promotions', e, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> addToCart(String productId, int quantity) async {
     try {
       await _cartRemoteDataSource.addToCart(productId, quantity);

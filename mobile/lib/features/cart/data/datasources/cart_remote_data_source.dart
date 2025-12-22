@@ -159,4 +159,24 @@ class CartRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<void> clearCartPromotions() async {
+    try {
+      final response = await _networkClient.dio.delete(
+        '${ApiEndpoints.cart}/promotions',
+      );
+
+      final apiResponse = ApiResponse<Map<String, dynamic>?>.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>?,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Promosyonlar temizlenemedi');
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error clearing cart promotions', e, stackTrace);
+      rethrow;
+    }
+  }
 }
