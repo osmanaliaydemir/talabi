@@ -104,8 +104,8 @@ public class VendorOrdersController : BaseController
             {
                 Id = o.Id,
                 CustomerOrderId = o.CustomerOrderId,
-                CustomerName = o.Customer?.FullName ?? "Misafir",
-                CustomerEmail = o.Customer?.Email ?? "-",
+                CustomerName = o.Customer.FullName,
+                CustomerEmail = o.Customer.Email,
                 TotalAmount = o.TotalAmount,
                 Status = o.Status.ToString(),
                 CreatedAt = o.CreatedAt,
