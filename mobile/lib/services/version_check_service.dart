@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/config/app_theme.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/services/api_service.dart';
@@ -27,7 +29,7 @@ class VersionCheckService {
 
       if (_isVersionLower(currentVersion, minVersion)) {
         if (context.mounted) {
-          _showUpdateDialog(context, settings, settings.forceUpdate);
+          await _showUpdateDialog(context, settings, settings.forceUpdate);
         }
       }
     } catch (e) {
@@ -52,7 +54,11 @@ class VersionCheckService {
     }
   }
 
-  void _showUpdateDialog(BuildContext context, dynamic settings, bool force) {
+  Future<void> _showUpdateDialog(
+    BuildContext context,
+    dynamic settings,
+    bool force,
+  ) async {
     // Determine language from context or system?
     // Using simple fallback for now or context locale if possible.
     // Assuming 'tr' as default or checking locale.
@@ -72,7 +78,17 @@ class VersionCheckService {
     if (title.isEmpty) title = 'Update Available';
     if (body.isEmpty) body = 'A new version is available. Please update.';
 
-    showDialog(
+    final String? cancelText = !force
+        ? (locale == 'tr'
+              ? 'Daha Sonra'
+              : (locale == 'ar' ? 'لاحقاً' : 'Later'))
+        : null;
+
+    final String confirmText = locale == 'tr'
+        ? 'Güncelle'
+        : (locale == 'ar' ? 'تحديث' : 'Update');
+
+    return showDialog(
       context: context,
       barrierDismissible: !force,
       builder: (BuildContext context) {
@@ -81,32 +97,22 @@ class VersionCheckService {
           onPopInvokedWithResult: (bool didPop, dynamic result) async {
             if (didPop) return;
           },
-          child: AlertDialog(
-            title: Text(title),
-            content: Text(body),
-            actions: <Widget>[
-              if (!force)
-                TextButton(
-                  child: Text(
-                    locale == 'tr'
-                        ? 'Daha Sonra'
-                        : (locale == 'ar' ? 'لاحقاً' : 'Later'),
-                  ),
-                  onPressed: () {
+          child: CustomConfirmationDialog(
+            title: title,
+            message: body,
+            cancelText: cancelText,
+            confirmText: confirmText,
+            onConfirm: () {
+              _launchStore();
+            },
+            onCancel: !force
+                ? () {
                     Navigator.of(context).pop();
-                  },
-                ),
-              TextButton(
-                child: Text(
-                  locale == 'tr'
-                      ? 'Güncelle'
-                      : (locale == 'ar' ? 'تحديث' : 'Update'),
-                ),
-                onPressed: () {
-                  _launchStore();
-                },
-              ),
-            ],
+                  }
+                : null,
+            icon: Icons.system_update,
+            iconColor: AppTheme.primaryOrange,
+            confirmButtonColor: AppTheme.primaryOrange,
           ),
         );
       },
@@ -114,32 +120,37 @@ class VersionCheckService {
   }
 
   void _launchStore() async {
-    // Add logic to open store based on ID
-    // For now opening a generic search/url
-    // In real app, packageName is used
-    final packageInfo = await PackageInfo.fromPlatform();
-    final packageName = packageInfo.packageName;
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final packageName = packageInfo.packageName;
 
-    Uri url;
-    if (Platform.isAndroid) {
-      url = Uri.parse('market://details?id=$packageName');
-    } else {
-      url = Uri.parse(
-        'https://apps.apple.com/app/idYOUR_APP_ID',
-      ); // TODO: Need App ID
-    }
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      // Fallback web url
+      Uri url;
       if (Platform.isAndroid) {
-        await launchUrl(
-          Uri.parse(
-            'https://play.google.com/store/apps/details?id=$packageName',
-          ),
-        );
+        url = Uri.parse('market://details?id=$packageName');
+      } else {
+        // Fallback to search query since we don't have the App ID yet
+        // Ideally this should be configurable from backend
+        url = Uri.parse('https://apps.apple.com/search?term=Talabi');
       }
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        // Fallback web url
+        if (Platform.isAndroid) {
+          await launchUrl(
+            Uri.parse(
+              'https://play.google.com/store/apps/details?id=$packageName',
+            ),
+          );
+        } else if (Platform.isIOS) {
+          await launchUrl(
+            Uri.parse('https://apps.apple.com/search?term=Talabi'),
+          );
+        }
+      }
+    } catch (e) {
+      _logger.error('Error launching store', e);
     }
   }
 }

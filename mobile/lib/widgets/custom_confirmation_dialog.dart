@@ -6,7 +6,7 @@ class CustomConfirmationDialog extends StatelessWidget {
     required this.title,
     required this.message,
     required this.confirmText,
-    required this.cancelText,
+    this.cancelText,
     required this.onConfirm,
     this.onCancel,
     this.icon,
@@ -19,7 +19,7 @@ class CustomConfirmationDialog extends StatelessWidget {
   final String title;
   final String message;
   final String confirmText;
-  final String cancelText;
+  final String? cancelText;
   final VoidCallback onConfirm;
   final VoidCallback? onCancel;
   final IconData? icon;
@@ -82,32 +82,34 @@ class CustomConfirmationDialog extends StatelessWidget {
             const SizedBox(height: 24),
             Row(
               children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      if (onCancel != null) {
-                        onCancel!();
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.grey[300]!),
+                if (cancelText != null) ...[
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        if (onCancel != null) {
+                          onCancel!();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.grey[300]!),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      cancelText,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w600,
+                      child: Text(
+                        cancelText!,
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
+                  const SizedBox(width: 12),
+                ],
                 Expanded(
                   child: ElevatedButton(
                     onPressed: isConfirmEnabled ? onConfirm : null,

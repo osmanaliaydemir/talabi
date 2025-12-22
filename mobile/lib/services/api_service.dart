@@ -800,8 +800,8 @@ class ApiService {
       final response = await _networkClient.get(
         '/system-settings/version-check',
       );
-      if (response.data != null) {
-        return VersionSettingsModel.fromJson(response.data);
+      if (response != null) {
+        return VersionSettingsModel.fromJson(response);
       }
       return null;
     } catch (e) {
