@@ -140,6 +140,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get checkout => 'Ödeme';
 
   @override
+  String get checkoutSubtitle => 'Güvenli Ödeme';
+
+  @override
+  String get orderInformation => 'Sipariş Bilgileri';
+
+  @override
   String get orderHistory => 'Sipariş Geçmişi';
 
   @override

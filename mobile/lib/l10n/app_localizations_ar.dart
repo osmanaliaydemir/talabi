@@ -140,6 +140,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get checkout => 'الدفع';
 
   @override
+  String get checkoutSubtitle => 'دفع آمن';
+
+  @override
+  String get orderInformation => 'معلومات الطلب';
+
+  @override
   String get orderHistory => 'سجل الطلبات';
 
   @override

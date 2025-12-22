@@ -105,7 +105,7 @@ class _CampaignSelectionBottomSheetState
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        maxHeight: MediaQuery.sizeOf(context).height * 0.70,
       ),
       child: Column(
         children: [

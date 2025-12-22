@@ -140,6 +140,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkout => 'Checkout';
 
   @override
+  String get checkoutSubtitle => 'Secure Payment';
+
+  @override
+  String get orderInformation => 'Order Information';
+
+  @override
   String get orderHistory => 'Order History';
 
   @override

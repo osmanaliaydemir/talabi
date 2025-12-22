@@ -46,6 +46,8 @@
   "total": "Toplam",
   "totalPrice": "Toplam Fiyat",
   "checkout": "Ödeme",
+  "checkoutSubtitle": "Güvenli Ödeme",
+  "orderInformation": "Sipariş Bilgileri",
   "orderHistory": "Sipariş Geçmişi",
   "orderDetail": "Sipariş Detayı",
   "deliveryTracking": "Teslimat Takibi",

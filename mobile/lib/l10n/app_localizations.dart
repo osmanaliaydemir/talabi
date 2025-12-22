@@ -358,6 +358,18 @@ abstract class AppLocalizations {
   /// **'Checkout'**
   String get checkout;
 
+  /// No description provided for @checkoutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Payment'**
+  String get checkoutSubtitle;
+
+  /// No description provided for @orderInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Information'**
+  String get orderInformation;
+
   /// No description provided for @orderHistory.
   ///
   /// In en, this message translates to:

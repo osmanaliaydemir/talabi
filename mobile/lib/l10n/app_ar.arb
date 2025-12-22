@@ -46,6 +46,8 @@
   "total": "المجموع",
   "totalPrice": "السعر الإجمالي",
   "checkout": "الدفع",
+  "checkoutSubtitle": "دفع آمن",
+  "orderInformation": "معلومات الطلب",
   "orderHistory": "سجل الطلبات",
   "orderDetail": "تفاصيل الطلب",
   "deliveryTracking": "تتبع التسليم",

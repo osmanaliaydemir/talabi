@@ -51,6 +51,8 @@
   "total": "Total",
   "totalPrice": "Total Price",
   "checkout": "Checkout",
+  "checkoutSubtitle": "Secure Payment",
+  "orderInformation": "Order Information",
   "orderHistory": "Order History",
   "orderDetail": "Order Detail",
   "deliveryTracking": "Delivery Tracking",

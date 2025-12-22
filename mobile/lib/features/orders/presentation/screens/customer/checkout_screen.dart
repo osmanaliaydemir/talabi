@@ -9,6 +9,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
+import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -228,109 +229,139 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(localizations.checkoutTitle),
-        backgroundColor: AppTheme.primaryOrange,
-        foregroundColor: Colors.white,
-      ),
-      body: _isLoadingAddresses
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryOrange),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Delivery Address Section
-                  _buildSectionTitle(
-                    localizations.deliveryAddress,
-                    Icons.location_on,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildAddressCard(localizations),
-                  const SizedBox(height: 24),
-
-                  // Payment Method Section
-                  Semantics(
-                    label: localizations.paymentMethod,
-                    explicitChildNodes: true,
-                    child: _buildPaymentMethods(localizations),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Campaign & Coupon Section
-                  // Campaign & Coupon Section
-                  _buildDiscountSection(localizations),
-                  const SizedBox(height: 24),
-
-                  // Order Note Section
-                  _buildOrderNoteSection(localizations),
-                  const SizedBox(height: 24),
-
-                  // Order Summary Section
-                  _buildSectionTitle(localizations.orderSummary, Icons.receipt),
-                  const SizedBox(height: 12),
-                  _buildOrderSummary(localizations, displayCurrency, cart),
-                  const SizedBox(height: 24),
-
-                  Semantics(
-                    label:
-                        '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(cart.totalAmount + widget.deliveryFee, displayCurrency)}',
-                    button: true,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _createOrder,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryOrange,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      localizations.confirmOrder,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      CurrencyFormatter.format(
-                                        cart.totalAmount + widget.deliveryFee,
-                                        displayCurrency,
-                                      ),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          SharedHeader(
+            title: localizations.checkoutTitle,
+            subtitle: localizations.checkoutSubtitle,
+            showBackButton: true,
+            action: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.receipt_long,
+                color: Colors.white,
+                size: 20,
               ),
             ),
+          ),
+          Expanded(
+            child: _isLoadingAddresses
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryOrange,
+                    ),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Order Information Section Header
+                        _buildSectionTitle(
+                          localizations.orderInformation,
+                          Icons.list_alt,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Delivery Address Section
+                        _buildAddressCard(localizations),
+                        const SizedBox(height: 24),
+
+                        // Payment Method Section
+                        Semantics(
+                          label: localizations.paymentMethod,
+                          explicitChildNodes: true,
+                          child: _buildPaymentMethods(localizations),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Campaign & Coupon Section
+                        _buildDiscountSection(localizations),
+                        const SizedBox(height: 24),
+
+                        // Order Note Section
+                        _buildOrderNoteSection(localizations),
+                        const SizedBox(height: 24),
+
+                        // Order Summary Section
+                        _buildSectionTitle(
+                          localizations.orderSummary,
+                          Icons.receipt,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildOrderSummary(
+                          localizations,
+                          displayCurrency,
+                          cart,
+                        ),
+                        const SizedBox(height: 24),
+
+                        Semantics(
+                          label:
+                              '${localizations.confirmOrder}, ${localizations.totalAmount}: ${CurrencyFormatter.format(cart.totalAmount + widget.deliveryFee, displayCurrency)}',
+                          button: true,
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _createOrder,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryOrange,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            localizations.confirmOrder,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            CurrencyFormatter.format(
+                                              cart.totalAmount +
+                                                  widget.deliveryFee,
+                                              displayCurrency,
+                                            ),
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -572,6 +603,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     String district,
   ) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -579,167 +611,87 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: () => _showAddressSelector(localizations),
+        child: Row(
           children: [
-            // Header with icon, title and change button
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.location_on,
-                    color: AppTheme.primaryOrange,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Semantics(
-                    label: '${localizations.deliveryAddress}: $displayTitle',
-                    explicitChildNodes: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.location_on,
+                color: AppTheme.primaryOrange,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        localizations.deliveryAddress,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              localizations.deliveryAddress,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                            const Icon(
+                              Icons.access_time,
+                              size: 10,
+                              color: Colors.green,
                             ),
-                            const Spacer(),
-                            // Minimal Estimated Delivery info
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.timer_outlined,
-                                    size: 12,
-                                    color: Colors.green,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '30-45dk',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green[700],
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(width: 4),
+                            Text(
+                              '30-45dk',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          displayTitle,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                Semantics(
-                  label: localizations.changeAddress,
-                  button: true,
-                  child: IconButton(
-                    onPressed: () => _showAddressSelector(localizations),
-                    icon: const Icon(
-                      Icons.edit_outlined,
-                      size: 20,
-                      color: AppTheme.primaryOrange,
+                  Text(
+                    '$displayTitle ${fullAddress.isNotEmpty ? '- $fullAddress' : ''}',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            // Full Address
-            if (fullAddress.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Divider(height: 1, color: Colors.grey[200]),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.home_outlined, size: 18, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      fullAddress,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            // City and District bilgileri (varsa)
-            if ((city.isNotEmpty || district.isNotEmpty) &&
-                fullAddress.isNotEmpty)
-              const SizedBox(height: 8),
-            if (city.isNotEmpty || district.isNotEmpty)
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_city_outlined,
-                    size: 18,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      district.isNotEmpty && city.isNotEmpty
-                          ? '$district / $city'
-                          : district.isNotEmpty
-                          ? district
-                          : city,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+            const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
           ],
         ),
       ),
