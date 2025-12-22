@@ -639,6 +639,24 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
       ) as _i9.Future<Map<String, dynamic>>);
 
   @override
+  _i9.Future<void> updateCartPromotions({
+    String? couponCode,
+    String? campaignId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCartPromotions,
+          [],
+          {
+            #couponCode: couponCode,
+            #campaignId: campaignId,
+          },
+        ),
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
+
+  @override
   _i9.Future<void> addToCart(
     String? productId,
     int? quantity,
@@ -953,6 +971,15 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
         ),
         returnValue: _i9.Future<List<_i15.Campaign>>.value(<_i15.Campaign>[]),
       ) as _i9.Future<List<_i15.Campaign>>);
+
+  @override
+  _i9.Future<_i15.Campaign?> getCampaign(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #getCampaign,
+          [id],
+        ),
+        returnValue: _i9.Future<_i15.Campaign?>.value(),
+      ) as _i9.Future<_i15.Campaign?>);
 
   @override
   _i9.Future<List<_i16.Coupon>> getCoupons() => (super.noSuchMethod(

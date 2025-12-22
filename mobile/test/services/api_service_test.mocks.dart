@@ -1414,6 +1414,24 @@ class MockCartRemoteDataSource extends _i1.Mock
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateCartPromotions({
+    String? couponCode,
+    String? campaignId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCartPromotions,
+          [],
+          {
+            #couponCode: couponCode,
+            #campaignId: campaignId,
+          },
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 }
 
 /// A class which mocks [LocationRemoteDataSource].

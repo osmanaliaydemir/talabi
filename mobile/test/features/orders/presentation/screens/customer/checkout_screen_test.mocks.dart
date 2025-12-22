@@ -729,6 +729,24 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
       ) as _i9.Future<Map<String, dynamic>>);
 
   @override
+  _i9.Future<void> updateCartPromotions({
+    String? couponCode,
+    String? campaignId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCartPromotions,
+          [],
+          {
+            #couponCode: couponCode,
+            #campaignId: campaignId,
+          },
+        ),
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
+
+  @override
   _i9.Future<void> addToCart(
     String? productId,
     int? quantity,
@@ -1073,6 +1091,16 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
         returnValueForMissingStub:
             _i9.Future<List<_i15.Campaign>>.value(<_i15.Campaign>[]),
       ) as _i9.Future<List<_i15.Campaign>>);
+
+  @override
+  _i9.Future<_i15.Campaign?> getCampaign(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #getCampaign,
+          [id],
+        ),
+        returnValue: _i9.Future<_i15.Campaign?>.value(),
+        returnValueForMissingStub: _i9.Future<_i15.Campaign?>.value(),
+      ) as _i9.Future<_i15.Campaign?>);
 
   @override
   _i9.Future<List<_i16.Coupon>> getCoupons() => (super.noSuchMethod(
@@ -2083,13 +2111,14 @@ class MockCartProvider extends _i1.Mock implements _i18.CartProvider {
       ) as _i9.Future<void>);
 
   @override
-  void removeCampaign() => super.noSuchMethod(
+  _i9.Future<void> removeCampaign() => (super.noSuchMethod(
         Invocation.method(
           #removeCampaign,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
 
   @override
   _i9.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
@@ -2102,13 +2131,14 @@ class MockCartProvider extends _i1.Mock implements _i18.CartProvider {
       ) as _i9.Future<void>);
 
   @override
-  void removeCoupon() => super.noSuchMethod(
+  _i9.Future<void> removeCoupon() => (super.noSuchMethod(
         Invocation.method(
           #removeCoupon,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
 
   @override
   _i9.Future<void> loadCart() => (super.noSuchMethod(

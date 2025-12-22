@@ -5,6 +5,10 @@ public class CartDto
     public Guid Id { get; set; }
     public string UserId { get; set; } = string.Empty;
     public List<CartItemDto> Items { get; set; } = new();
+    public Guid? CouponId { get; set; }
+    public string? CouponCode { get; set; }
+    public Guid? CampaignId { get; set; }
+    public string? CampaignTitle { get; set; }
 }
 
 public class CartItemDto
@@ -29,4 +33,10 @@ public class AddToCartDto
 public class UpdateCartItemDto
 {
     public int Quantity { get; set; }
+}
+
+public class UpdateCartPromotionsDto
+{
+    public string? CouponCode { get; set; }
+    public Guid? CampaignId { get; set; }
 }

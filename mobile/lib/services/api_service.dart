@@ -437,6 +437,21 @@ class ApiService {
     }
   }
 
+  Future<void> updateCartPromotions({
+    String? couponCode,
+    String? campaignId,
+  }) async {
+    try {
+      await _cartRemoteDataSource.updateCartPromotions(
+        couponCode: couponCode,
+        campaignId: campaignId,
+      );
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating cart promotions', e, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> addToCart(String productId, int quantity) async {
     try {
       await _cartRemoteDataSource.addToCart(productId, quantity);
@@ -906,6 +921,24 @@ class ApiService {
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching campaigns', e, stackTrace);
       return [];
+    }
+  }
+
+  Future<Campaign?> getCampaign(String id) async {
+    try {
+      final response = await dio.get('/campaigns/$id');
+      if (response.data is Map<String, dynamic>) {
+        if (response.data.containsKey('data')) {
+          return Campaign.fromJson(
+            response.data['data'] as Map<String, dynamic>,
+          );
+        }
+        return Campaign.fromJson(response.data as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching campaign $id', e, stackTrace);
+      return null;
     }
   }
 

@@ -407,6 +407,12 @@ namespace Talabi.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("CampaignId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CouponId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -418,6 +424,10 @@ namespace Talabi.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CouponId");
 
                     b.HasIndex("UserId");
 
@@ -2263,11 +2273,23 @@ namespace Talabi.Infrastructure.Migrations
 
             modelBuilder.Entity("Talabi.Core.Entities.Cart", b =>
                 {
+                    b.HasOne("Talabi.Core.Entities.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId");
+
+                    b.HasOne("Talabi.Core.Entities.Coupon", "Coupon")
+                        .WithMany()
+                        .HasForeignKey("CouponId");
+
                     b.HasOne("Talabi.Core.Entities.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("Coupon");
 
                     b.Navigation("User");
                 });

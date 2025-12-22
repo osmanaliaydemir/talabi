@@ -130,4 +130,33 @@ class CartRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<void> updateCartPromotions({
+    String? couponCode,
+    String? campaignId,
+  }) async {
+    try {
+      final response = await _networkClient.dio.put(
+        '${ApiEndpoints.cart}/promotions',
+        data: {'couponCode': couponCode, 'campaignId': campaignId},
+      );
+
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json,
+        );
+
+        if (!apiResponse.success) {
+          throw Exception(
+            apiResponse.message ?? 'Sepet promosyonları güncellenemedi',
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating cart promotions', e, stackTrace);
+      rethrow;
+    }
+  }
 }

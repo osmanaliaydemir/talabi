@@ -103,6 +103,15 @@ class CartProvider with ChangeNotifier {
         );
       }
 
+      // Sync with Backend
+      // When selecting campaign, we clear coupon implicitly on backend?
+      // Our backend logic handles them independently. But Mobile logic makes them exclusive.
+      // So we should send couponCode: null explicitly.
+      await _apiService.updateCartPromotions(
+        campaignId: campaign.id,
+        couponCode: null, // Clear coupon
+      );
+
       // Remove coupon if selecting campaign (Mutually Exclusive)
       _appliedCoupon = null;
       _selectedCampaign = campaign;
@@ -114,9 +123,20 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  void removeCampaign() {
-    _selectedCampaign = null;
-    notifyListeners();
+  Future<void> removeCampaign() async {
+    try {
+      await _apiService.updateCartPromotions(
+        campaignId: null, // Clear campaign
+        // Preserve coupon? Use current state?
+        // If we are removing campaign, coupon is already null because of exclusivity.
+        couponCode: _appliedCoupon?.code,
+      );
+      _selectedCampaign = null;
+      notifyListeners();
+    } catch (e) {
+      // Handle error?
+      LoggerService().error('Error removing campaign from cart', e);
+    }
   }
 
   Future<void> applyCoupon(String code) async {
@@ -135,6 +155,12 @@ class CartProvider with ChangeNotifier {
         );
       }
 
+      // Sync with Backend
+      await _apiService.updateCartPromotions(
+        couponCode: code,
+        campaignId: null, // Clear campaign
+      );
+
       // Remove campaign if applying coupon (Mutually Exclusive)
       _selectedCampaign = null;
       _appliedCoupon = coupon;
@@ -146,9 +172,17 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  void removeCoupon() {
-    _appliedCoupon = null;
-    notifyListeners();
+  Future<void> removeCoupon() async {
+    try {
+      await _apiService.updateCartPromotions(
+        couponCode: null, // Clear coupon
+        campaignId: _selectedCampaign?.id, // Preserve campaign (should be null)
+      );
+      _appliedCoupon = null;
+      notifyListeners();
+    } catch (e) {
+      LoggerService().error('Error removing coupon from cart', e);
+    }
   }
 
   void _checkCouponValidity() {
@@ -239,6 +273,79 @@ class CartProvider with ChangeNotifier {
       } catch (e) {
         LoggerService().warning('Error loading system settings for cart', e);
         // Default to 0 or keep previous
+      }
+
+      // Hydrate Promotions (Persisted from Backend)
+      try {
+        // Reset local state first
+        _appliedCoupon = null;
+        _selectedCampaign = null;
+
+        if (cartData['couponCode'] != null &&
+            cartData['couponCode'].toString().isNotEmpty) {
+          final code = cartData['couponCode'].toString();
+          // Validate and fetch full coupon object
+          final coupon = await _couponService.validateCoupon(code);
+          if (coupon != null && subtotalAmount >= coupon.minCartAmount) {
+            _appliedCoupon = coupon;
+          }
+        }
+
+        if (cartData['campaignId'] != null) {
+          final campaignId = cartData['campaignId'].toString();
+          final campaign = await _apiService.getCampaign(campaignId);
+          if (campaign != null) {
+            if (campaign.minCartAmount != null &&
+                subtotalAmount < campaign.minCartAmount!) {
+              // Criteria not met, don't select
+            } else {
+              _selectedCampaign = campaign;
+            }
+          }
+        }
+
+        _checkCouponValidity();
+      } catch (e) {
+        LoggerService().error('Error hydrating promotions', e);
+      }
+
+      // Hydrate Promotions (Persisted from Backend)
+      try {
+        // Reset local state first
+        _appliedCoupon = null;
+        _selectedCampaign = null;
+
+        if (cartData['couponCode'] != null &&
+            cartData['couponCode'].toString().isNotEmpty) {
+          final code = cartData['couponCode'].toString();
+          // Validate and fetch full coupon object
+          final coupon = await _couponService.validateCoupon(code);
+          if (coupon != null && subtotalAmount >= coupon.minCartAmount) {
+            _appliedCoupon = coupon;
+          } else {
+            // Invalid or expired or min amount not met - clear on backend?
+            // Maybe don't clear automatically to avoid flickering, but don't apply it locally.
+          }
+        }
+
+        if (cartData['campaignId'] != null) {
+          final campaignId = cartData['campaignId'].toString();
+          final campaign = await _apiService.getCampaign(campaignId);
+          if (campaign != null) {
+            if (campaign.minCartAmount != null &&
+                subtotalAmount < campaign.minCartAmount!) {
+              // Criteria not met
+            } else {
+              _selectedCampaign = campaign;
+            }
+          }
+        }
+
+        // Check validity again (mutually exclusive check is done on backend persistence usually,
+        // but double check here)
+        _checkCouponValidity();
+      } catch (e) {
+        LoggerService().error('Error hydrating promotions', e);
       }
     } catch (e, stackTrace) {
       LoggerService().error('Error loading cart', e, stackTrace);

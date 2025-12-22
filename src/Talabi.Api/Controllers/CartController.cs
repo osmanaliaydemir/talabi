@@ -57,6 +57,8 @@ public class CartController : BaseController
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
             .ThenInclude(p => p!.Vendor)
+            .Include(c => c.Coupon)
+            .Include(c => c.Campaign)
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         CartDto cartDto;
@@ -67,6 +69,13 @@ public class CartController : BaseController
         else
         {
             cartDto = _mapper.Map<CartDto>(cart);
+            // Manual mapping for new properties if Mapper Profile not updated
+            // Assuming Mapper handles basic mapping, but we extended CartDto
+            // Safer to double check or set manually
+            cartDto.CouponId = cart.CouponId;
+            cartDto.CampaignId = cart.CampaignId;
+            cartDto.CouponCode = cart.Coupon?.Code;
+            cartDto.CampaignTitle = cart.Campaign?.Title;
         }
 
         return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
@@ -263,9 +272,106 @@ public class CartController : BaseController
     }
 
     /// <summary>
-    /// Sepeti temizler
+    /// Sepetin promosyon (kampanya/kupon) bilgilerini günceller
     /// </summary>
-    /// <returns>İşlem sonucu</returns>
+    [HttpPut("promotions")]
+    public async Task<ActionResult<ApiResponse<object>>> UpdateCartPromotions(UpdateCartPromotionsDto dto)
+    {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
+
+        var cart = await UnitOfWork.Carts.Query()
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+
+        if (cart == null)
+        {
+            cart = new Core.Entities.Cart { UserId = userId };
+            await UnitOfWork.Carts.AddAsync(cart);
+        }
+
+        // Logic:
+        // 1. Coupon
+        if (!string.IsNullOrEmpty(dto.CouponCode))
+        {
+            var coupon = await UnitOfWork.Coupons.Query()
+                .FirstOrDefaultAsync(c => c.Code == dto.CouponCode && c.IsActive);
+            
+            if (coupon != null)
+            {
+                cart.CouponId = coupon.Id;
+            }
+            else
+            {
+                 // Invalid coupon? Clear it or ignore? 
+                 // If sending a coupon code that doesn't exist, maybe clear?
+                 // But safest is to only set if valid. If empty string sent, we clear.
+            }
+        }
+        else
+        {
+            // If explicitly sent as null/empty, clear it
+            // Assuming the client sends "null" or "" to remove.
+            // But checking dto property presence is hard in C#, so we assume the DTO sends valid state.
+            // Actually, if we want to support clearing, we should treat empty string as clear.
+            // But if DTO property is nullable, null might mean "don't change".
+            // Let's assume the mobile app sends the *current desired state*.
+            // So if CouponCode is null, it means no coupon.
+            cart.CouponId = null;
+        }
+
+        // However, standard PATCH logic says null = no change.
+        // But here we are doing PUT (UpdateCartPromotions).
+        // Let's refine:
+        // If CouponCode is provided (non-null), look it up.
+        // If it is empty string "", clear it.
+        // If null, clear it? Or ignore?
+        // Mobile Implementation:
+        // - Select Coupon -> Sends Code
+        // - Remove Coupon -> Sends null
+        // So null should clear.
+
+        if (!string.IsNullOrEmpty(dto.CouponCode))
+        {
+             var coupon = await UnitOfWork.Coupons.Query()
+                .FirstOrDefaultAsync(c => c.Code == dto.CouponCode);
+             if (coupon != null) cart.CouponId = coupon.Id;
+             else cart.CouponId = null; // Invalid code -> clear
+        }
+        else
+        {
+            cart.CouponId = null;
+        }
+
+
+        // 2. Campaign
+        if (dto.CampaignId.HasValue)
+        {
+            var campaign = await UnitOfWork.Campaigns.GetByIdAsync(dto.CampaignId.Value);
+            if (campaign != null && campaign.IsActive)
+            {
+                cart.CampaignId = campaign.Id;
+            }
+            else
+            {
+                cart.CampaignId = null;
+            }
+        }
+        else
+        {
+            cart.CampaignId = null;
+        }
+
+        UnitOfWork.Carts.Update(cart);
+        await UnitOfWork.SaveChangesAsync();
+
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartUpdatedSuccessfully", CurrentCulture)));
+    }
+
     /// <summary>
     /// Sepeti temizler
     /// </summary>
@@ -273,8 +379,6 @@ public class CartController : BaseController
     [HttpDelete]
     public async Task<ActionResult<ApiResponse<object>>> ClearCart()
     {
-
-
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -293,6 +397,10 @@ public class CartController : BaseController
             {
                 UnitOfWork.CartItems.Remove(item);
             }
+
+            // Clear promotions too
+            cart.CouponId = null;
+            cart.CampaignId = null;
 
             // Mark cart as modified to trigger UpdatedAt
             UnitOfWork.Carts.Update(cart);

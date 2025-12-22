@@ -99,13 +99,14 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as _i4.Future<void>);
 
   @override
-  void removeCampaign() => super.noSuchMethod(
+  _i4.Future<void> removeCampaign() => (super.noSuchMethod(
         Invocation.method(
           #removeCampaign,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
@@ -118,13 +119,14 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as _i4.Future<void>);
 
   @override
-  void removeCoupon() => super.noSuchMethod(
+  _i4.Future<void> removeCoupon() => (super.noSuchMethod(
         Invocation.method(
           #removeCoupon,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> loadCart() => (super.noSuchMethod(
