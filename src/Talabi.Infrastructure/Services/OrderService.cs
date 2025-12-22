@@ -207,6 +207,59 @@ public class OrderService : IOrderService
             }
         }
 
+        // Campaign Logic
+        Campaign? appliedCampaign = null;
+        if (dto.CampaignId.HasValue)
+        {
+             var campaign = await _unitOfWork.Campaigns.Query()
+                .AsNoTracking()
+                .Include(c => c.CampaignCities)
+                .Include(c => c.CampaignDistricts)
+                .Include(c => c.CampaignCategories)
+                .Include(c => c.CampaignProducts)
+                .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
+
+             if (campaign != null)
+             {
+                 Guid.TryParse(customerId, out var userIdGuid);
+                 var validationContext = new RuleValidationContext
+                 {
+                     UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
+                     CityId = userAddress.CityId,
+                     DistrictId = userAddress.DistrictId,
+                     RequestTime = DateTime.UtcNow,
+                     Items = ruleCartItems,
+                     CartTotal = totalAmount,
+                     IsFirstOrder = !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == customerId)
+                 };
+
+                 if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
+                 {
+                      decimal campaignDiscount = 0;
+                      if (campaign.DiscountType == DiscountType.Percentage)
+                      {
+                          campaignDiscount = totalAmount * (campaign.DiscountValue / 100);
+                      }
+                      else
+                      {
+                          campaignDiscount = campaign.DiscountValue;
+                      }
+
+                      if (campaignDiscount > totalAmount) campaignDiscount = totalAmount;
+
+                      if (campaignDiscount > 0) 
+                      {
+                          if (campaignDiscount >= discountAmount)
+                          {
+                              discountAmount = campaignDiscount;
+                              appliedCampaign = campaign;
+                              appliedCoupon = null; // Campaign wins
+                          }
+                      }
+                 }
+             }
+        }
+
         // Apply discount to total (before delivery fee)
         var finalAmount = totalAmount - discountAmount;
         if (finalAmount < 0) finalAmount = 0;
@@ -228,6 +281,7 @@ public class OrderService : IOrderService
             DeliveryAddressId = dto.DeliveryAddressId,
             // New Fields
             CouponId = appliedCoupon?.Id,
+            CampaignId = appliedCampaign?.Id,
             DiscountAmount = discountAmount
         };
 
@@ -616,10 +670,39 @@ public class OrderService : IOrderService
              }
         }
 
-        // 4. Validate and Apply Coupon
+        // 4. Validate and Apply Promotions
         decimal discountAmount = 0;
         CouponDto? appliedCouponDto = null;
+        Guid? appliedCampaignId = null;
 
+        // Shared Validation Context Construction
+        Guid? userCityId = null;
+        Guid? userDistrictId = null;
+
+        if (dto.DeliveryAddressId.HasValue)
+        {
+            var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
+            if (userAddress != null)
+            {
+                userCityId = userAddress.CityId;
+                userDistrictId = userAddress.DistrictId;
+            }
+        }
+
+        Guid.TryParse(userId, out var userIdGuid);
+
+        var validationContext = new RuleValidationContext
+        {
+            UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
+            CityId = userCityId,
+            DistrictId = userDistrictId,
+            RequestTime = DateTime.UtcNow,
+            Items = ruleCartItems,
+            CartTotal = subtotal,
+            IsFirstOrder = userId != null && !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == userId)
+        };
+
+        // Coupon Logic
         if (!string.IsNullOrEmpty(dto.CouponCode))
         {
             var coupon = await _unitOfWork.Coupons.Query()
@@ -632,37 +715,8 @@ public class OrderService : IOrderService
 
             if (coupon != null)
             {
-                // Build Validation Context
-                Guid? userCityId = null;
-                Guid? userDistrictId = null;
-
-                if (dto.DeliveryAddressId.HasValue)
-                {
-                    var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
-                    if (userAddress != null)
-                    {
-                        userCityId = userAddress.CityId;
-                        userDistrictId = userAddress.DistrictId;
-                    }
-                }
-
-                Guid.TryParse(userId, out var userIdGuid);
-
-                var validationContext = new RuleValidationContext
-                {
-                    UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
-                    CityId = userCityId,
-                    DistrictId = userDistrictId,
-                    RequestTime = DateTime.UtcNow,
-                    Items = ruleCartItems,
-                    CartTotal = subtotal,
-                    IsFirstOrder = userId != null && !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == userId)
-                };
-
-                // Validate
                 if (_ruleValidatorService.ValidateCoupon(coupon, validationContext, out var _))
                 {
-                    // Calculate discount
                     if (coupon.DiscountType == DiscountType.Percentage)
                     {
                         discountAmount = subtotal * (coupon.DiscountValue / 100);
@@ -674,17 +728,59 @@ public class OrderService : IOrderService
 
                     if (discountAmount > subtotal) discountAmount = subtotal;
 
-                    // Manual Mapping to CouponDto if needed, or stick to simple object
                     appliedCouponDto = new CouponDto
                     {
                          Id = coupon.Id,
                          Code = coupon.Code,
                          DiscountType = (int)coupon.DiscountType,
-                         DiscountValue = coupon.DiscountValue
-                         // Add other fields if CouponDto has them and they are critical
+                         DiscountValue = coupon.DiscountValue,
+                         DiscountAmount = discountAmount,
+                         Description = coupon.Description ?? ""
                     };
                 }
             }
+        }
+
+        // Campaign Logic
+        if (dto.CampaignId.HasValue)
+        {
+             var campaign = await _unitOfWork.Campaigns.Query()
+                .AsNoTracking()
+                .Include(c => c.CampaignCities)
+                .Include(c => c.CampaignDistricts)
+                .Include(c => c.CampaignCategories)
+                .Include(c => c.CampaignProducts)
+                .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
+
+             if (campaign != null)
+             {
+                 if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
+                 {
+                      decimal campaignDiscount = 0;
+                      if (campaign.DiscountType == DiscountType.Percentage)
+                      {
+                          campaignDiscount = subtotal * (campaign.DiscountValue / 100);
+                      }
+                      else
+                      {
+                          campaignDiscount = campaign.DiscountValue;
+                      }
+
+                      if (campaignDiscount > subtotal) campaignDiscount = subtotal;
+
+                      // Campaign overrides coupon if explicitly selected and valid (or better specific logic)
+                      // Here: If Campaign provides a discount, we use it and verify vs coupon
+                      if (campaignDiscount > 0) 
+                      {
+                          if (campaignDiscount >= discountAmount)
+                          {
+                              discountAmount = campaignDiscount;
+                              appliedCampaignId = campaign.Id;
+                              appliedCouponDto = null;
+                          }
+                      }
+                 }
+             }
         }
 
         // Final Totals
@@ -701,6 +797,7 @@ public class OrderService : IOrderService
             DiscountAmount = discountAmount,
             TotalAmount = totalAmount,
             AppliedCoupon = appliedCouponDto,
+            AppliedCampaignId = appliedCampaignId,
             Items = calculationItems
         };
     }

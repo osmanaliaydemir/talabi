@@ -8,6 +8,7 @@ public class CalculateOrderDto
     public List<OrderItemDto> Items { get; set; } = new();
     public Guid? DeliveryAddressId { get; set; }
     public string? CouponCode { get; set; }
+    public Guid? CampaignId { get; set; }
 }
 
 public class OrderCalculationResultDto
@@ -17,6 +18,7 @@ public class OrderCalculationResultDto
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
     public CouponDto? AppliedCoupon { get; set; }
+    public Guid? AppliedCampaignId { get; set; }
     public List<OrderItemCalculationDto> Items { get; set; } = new();
 }
 

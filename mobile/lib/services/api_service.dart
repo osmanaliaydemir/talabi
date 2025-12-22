@@ -251,6 +251,7 @@ class ApiService {
     String? paymentMethod,
     String? note,
     String? couponCode,
+    String? campaignId,
   }) async {
     try {
       return await _orderRemoteDataSource.createOrder(
@@ -260,6 +261,7 @@ class ApiService {
         paymentMethod: paymentMethod,
         note: note,
         couponCode: couponCode,
+        campaignId: campaignId,
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error creating order', e, stackTrace);

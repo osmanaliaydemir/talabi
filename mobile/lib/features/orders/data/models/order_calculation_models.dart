@@ -10,6 +10,7 @@ class CalculateOrderRequest with _$CalculateOrderRequest {
     required List<OrderItemDto> items,
     String? deliveryAddressId,
     String? couponCode,
+    String? campaignId,
   }) = _CalculateOrderRequest;
 
   factory CalculateOrderRequest.fromJson(Map<String, dynamic> json) =>

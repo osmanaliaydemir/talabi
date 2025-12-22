@@ -83,10 +83,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _calculateOrder() async {
     if (!mounted) return;
 
-    setState(() {
-      _isCalculating = true;
-      _calculationError = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isCalculating = true;
+        _calculationError = null;
+      });
+    }
 
     try {
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
@@ -102,6 +104,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         items: items,
         deliveryAddressId: _selectedAddress?['id']?.toString(),
         couponCode: cartProvider.appliedCoupon?.code,
+        campaignId: cartProvider.selectedCampaign?.id,
       );
 
       final result = await _apiService.calculateOrder(request);
@@ -218,6 +221,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ? null
             : _noteController.text.trim(),
         couponCode: couponCode,
+        campaignId: cartProvider.selectedCampaign?.id,
       );
 
       await AnalyticsService.logPurchase(

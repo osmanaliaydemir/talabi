@@ -888,6 +888,7 @@ class MockOrderRemoteDataSource extends _i1.Mock
     String? paymentMethod,
     String? note,
     String? couponCode,
+    String? campaignId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -901,6 +902,7 @@ class MockOrderRemoteDataSource extends _i1.Mock
             #paymentMethod: paymentMethod,
             #note: note,
             #couponCode: couponCode,
+            #campaignId: campaignId,
           },
         ),
         returnValue: _i7.Future<_i4.Order>.value(_FakeOrder_2(
@@ -916,6 +918,7 @@ class MockOrderRemoteDataSource extends _i1.Mock
               #paymentMethod: paymentMethod,
               #note: note,
               #couponCode: couponCode,
+              #campaignId: campaignId,
             },
           ),
         )),
@@ -932,6 +935,7 @@ class MockOrderRemoteDataSource extends _i1.Mock
               #paymentMethod: paymentMethod,
               #note: note,
               #couponCode: couponCode,
+              #campaignId: campaignId,
             },
           ),
         )),

@@ -25,6 +25,7 @@ mixin _$CalculateOrderRequest {
   List<OrderItemDto> get items => throw _privateConstructorUsedError;
   String? get deliveryAddressId => throw _privateConstructorUsedError;
   String? get couponCode => throw _privateConstructorUsedError;
+  String? get campaignId => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -42,7 +43,8 @@ abstract class $CalculateOrderRequestCopyWith<$Res> {
       {String vendorId,
       List<OrderItemDto> items,
       String? deliveryAddressId,
-      String? couponCode});
+      String? couponCode,
+      String? campaignId});
 }
 
 /// @nodoc
@@ -63,6 +65,7 @@ class _$CalculateOrderRequestCopyWithImpl<$Res,
     Object? items = null,
     Object? deliveryAddressId = freezed,
     Object? couponCode = freezed,
+    Object? campaignId = freezed,
   }) {
     return _then(_value.copyWith(
       vendorId: null == vendorId
@@ -81,6 +84,10 @@ class _$CalculateOrderRequestCopyWithImpl<$Res,
           ? _value.couponCode
           : couponCode // ignore: cast_nullable_to_non_nullable
               as String?,
+      campaignId: freezed == campaignId
+          ? _value.campaignId
+          : campaignId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -98,7 +105,8 @@ abstract class _$$CalculateOrderRequestImplCopyWith<$Res>
       {String vendorId,
       List<OrderItemDto> items,
       String? deliveryAddressId,
-      String? couponCode});
+      String? couponCode,
+      String? campaignId});
 }
 
 /// @nodoc
@@ -117,6 +125,7 @@ class __$$CalculateOrderRequestImplCopyWithImpl<$Res>
     Object? items = null,
     Object? deliveryAddressId = freezed,
     Object? couponCode = freezed,
+    Object? campaignId = freezed,
   }) {
     return _then(_$CalculateOrderRequestImpl(
       vendorId: null == vendorId
@@ -135,6 +144,10 @@ class __$$CalculateOrderRequestImplCopyWithImpl<$Res>
           ? _value.couponCode
           : couponCode // ignore: cast_nullable_to_non_nullable
               as String?,
+      campaignId: freezed == campaignId
+          ? _value.campaignId
+          : campaignId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -146,7 +159,8 @@ class _$CalculateOrderRequestImpl implements _CalculateOrderRequest {
       {required this.vendorId,
       required final List<OrderItemDto> items,
       this.deliveryAddressId,
-      this.couponCode})
+      this.couponCode,
+      this.campaignId})
       : _items = items;
 
   factory _$CalculateOrderRequestImpl.fromJson(Map<String, dynamic> json) =>
@@ -166,10 +180,12 @@ class _$CalculateOrderRequestImpl implements _CalculateOrderRequest {
   final String? deliveryAddressId;
   @override
   final String? couponCode;
+  @override
+  final String? campaignId;
 
   @override
   String toString() {
-    return 'CalculateOrderRequest(vendorId: $vendorId, items: $items, deliveryAddressId: $deliveryAddressId, couponCode: $couponCode)';
+    return 'CalculateOrderRequest(vendorId: $vendorId, items: $items, deliveryAddressId: $deliveryAddressId, couponCode: $couponCode, campaignId: $campaignId)';
   }
 
   @override
@@ -183,7 +199,9 @@ class _$CalculateOrderRequestImpl implements _CalculateOrderRequest {
             (identical(other.deliveryAddressId, deliveryAddressId) ||
                 other.deliveryAddressId == deliveryAddressId) &&
             (identical(other.couponCode, couponCode) ||
-                other.couponCode == couponCode));
+                other.couponCode == couponCode) &&
+            (identical(other.campaignId, campaignId) ||
+                other.campaignId == campaignId));
   }
 
   @JsonKey(ignore: true)
@@ -193,7 +211,8 @@ class _$CalculateOrderRequestImpl implements _CalculateOrderRequest {
       vendorId,
       const DeepCollectionEquality().hash(_items),
       deliveryAddressId,
-      couponCode);
+      couponCode,
+      campaignId);
 
   @JsonKey(ignore: true)
   @override
@@ -215,7 +234,8 @@ abstract class _CalculateOrderRequest implements CalculateOrderRequest {
       {required final String vendorId,
       required final List<OrderItemDto> items,
       final String? deliveryAddressId,
-      final String? couponCode}) = _$CalculateOrderRequestImpl;
+      final String? couponCode,
+      final String? campaignId}) = _$CalculateOrderRequestImpl;
 
   factory _CalculateOrderRequest.fromJson(Map<String, dynamic> json) =
       _$CalculateOrderRequestImpl.fromJson;
@@ -228,6 +248,8 @@ abstract class _CalculateOrderRequest implements CalculateOrderRequest {
   String? get deliveryAddressId;
   @override
   String? get couponCode;
+  @override
+  String? get campaignId;
   @override
   @JsonKey(ignore: true)
   _$$CalculateOrderRequestImplCopyWith<_$CalculateOrderRequestImpl>

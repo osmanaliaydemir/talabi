@@ -15,6 +15,7 @@ _$CalculateOrderRequestImpl _$$CalculateOrderRequestImplFromJson(
           .toList(),
       deliveryAddressId: json['deliveryAddressId'] as String?,
       couponCode: json['couponCode'] as String?,
+      campaignId: json['campaignId'] as String?,
     );
 
 Map<String, dynamic> _$$CalculateOrderRequestImplToJson(
@@ -24,6 +25,7 @@ Map<String, dynamic> _$$CalculateOrderRequestImplToJson(
       'items': instance.items,
       'deliveryAddressId': instance.deliveryAddressId,
       'couponCode': instance.couponCode,
+      'campaignId': instance.campaignId,
     };
 
 _$OrderItemDtoImpl _$$OrderItemDtoImplFromJson(Map<String, dynamic> json) =>

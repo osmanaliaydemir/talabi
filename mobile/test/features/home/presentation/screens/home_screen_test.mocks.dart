@@ -342,6 +342,7 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
     String? paymentMethod,
     String? note,
     String? couponCode,
+    String? campaignId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -355,6 +356,7 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
             #paymentMethod: paymentMethod,
             #note: note,
             #couponCode: couponCode,
+            #campaignId: campaignId,
           },
         ),
         returnValue: _i9.Future<_i4.Order>.value(_FakeOrder_2(
@@ -370,6 +372,7 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
               #paymentMethod: paymentMethod,
               #note: note,
               #couponCode: couponCode,
+              #campaignId: campaignId,
             },
           ),
         )),
@@ -386,6 +389,7 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
               #paymentMethod: paymentMethod,
               #note: note,
               #couponCode: couponCode,
+              #campaignId: campaignId,
             },
           ),
         )),
