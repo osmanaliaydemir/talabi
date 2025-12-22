@@ -910,7 +910,7 @@ abstract class AppLocalizations {
   /// **'Your cart is empty'**
   String get cartEmptyMessage;
 
-  /// Recommended For You
+  /// Title for the recommendations section in empty cart
   ///
   /// In en, this message translates to:
   /// **'Recommended For You'**

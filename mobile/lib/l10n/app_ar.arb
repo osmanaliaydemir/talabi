@@ -541,7 +541,11 @@
   },
   "cartEmptyMessage": "سلتك فارغة",
   "@cartEmptyMessage": {
-    "description": "سلتك فارغة"
+    "description": "Your cart is empty"
+  },
+  "recommendedForYou": "مقترح لك",
+  "@recommendedForYou": {
+    "description": "Title for the recommendations section in empty cart"
   },
   "cartVoucherPlaceholder": "أدخل رمز القسيمة",
   "@cartVoucherPlaceholder": {

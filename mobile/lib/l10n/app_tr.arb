@@ -543,6 +543,10 @@
   "@cartEmptyMessage": {
     "description": "Sepetiniz boş"
   },
+  "recommendedForYou": "Senin İçin Önerilenler",
+  "@recommendedForYou": {
+    "description": "Title for the recommendations section in empty cart"
+  },
   "cartVoucherPlaceholder": "Kupon kodunuzu girin",
   "@cartVoucherPlaceholder": {
     "description": "Kupon kodunuzu girin"
