@@ -47,37 +47,50 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   // Calculation State
   bool _isCalculating = false;
+  bool _isInitializing = true;
   OrderCalculationResult? _calculationResult;
   String? _calculationError;
+  late CartProvider _cartProvider;
 
   @override
   void initState() {
     super.initState();
+    _cartProvider = Provider.of<CartProvider>(context, listen: false);
     _loadAddresses();
+
     // Listen to cart changes for coupon/campaign updates
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final cartProvider = Provider.of<CartProvider>(context, listen: false)
-        ..addListener(_onCartChanged);
-
       // Clear any previously selected promotions when entering checkout
       // User requested: "Ödeme ekranına girdiğimde daha önceden kampanya veya kupon seçilmişse sepet tablosundan silsin sıfırlasın"
       try {
         await _apiService.clearCartPromotions();
-        // Also clear local state
-        await cartProvider.removeCampaign();
-        await cartProvider.removeCoupon();
+        // Clear local state
+        await _cartProvider.removeCampaign();
+        await _cartProvider.removeCoupon();
       } catch (e) {
         LoggerService().error('Error clearing promotions on checkout entry', e);
+      }
+
+      // Add listener AFTER clearing initial promotions to avoid unnecessary calculations
+      if (mounted) {
+        _cartProvider.addListener(_onCartChanged);
+        // Force calculation to update summary to non-discounted state
+        await _calculateOrder();
+
+        // Mark initialization as complete so UI can show the correct non-discounted state
+        if (mounted) {
+          setState(() {
+            _isInitializing = false;
+          });
+        }
       }
     });
   }
 
   @override
   void dispose() {
-    Provider.of<CartProvider>(
-      context,
-      listen: false,
-    ).removeListener(_onCartChanged);
+    // Safely remove listener using the stored provider reference
+    _cartProvider.removeListener(_onCartChanged);
     _noteController.dispose();
     super.dispose();
   }
@@ -92,15 +105,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _calculateOrder() async {
     if (!mounted) return;
 
-    if (mounted) {
-      setState(() {
-        _isCalculating = true;
-        _calculationError = null;
-      });
-    }
+    setState(() {
+      _isCalculating = true;
+      _calculationError = null;
+    });
 
     try {
-      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      // Use the stored _cartProvider instead of looking up context again
 
       final items = widget.cartItems.entries
           .map(
@@ -112,8 +123,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         vendorId: widget.vendorId,
         items: items,
         deliveryAddressId: _selectedAddress?['id']?.toString(),
-        couponCode: cartProvider.appliedCoupon?.code,
-        campaignId: cartProvider.selectedCampaign?.id,
+        couponCode: _cartProvider.appliedCoupon?.code,
+        campaignId: _cartProvider.selectedCampaign?.id,
       );
 
       final result = await _apiService.calculateOrder(request);
@@ -380,12 +391,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                           ),
 
-                        _buildOrderSummary(
-                          localizations,
-                          displayCurrency,
-                          cart,
-                          _calculationResult,
-                        ),
+                        _isInitializing
+                            ? const Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : _buildOrderSummary(
+                                localizations,
+                                displayCurrency,
+                                cart,
+                                _calculationResult,
+                              ),
                         const SizedBox(height: 24),
 
                         Semantics(

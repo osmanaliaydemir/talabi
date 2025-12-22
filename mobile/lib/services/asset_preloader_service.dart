@@ -12,8 +12,9 @@ class AssetPreloaderService {
       // Using eagerError: false to continue loading even if one fails
       await Future.wait([
         // Splash/onboarding images
-        _preloadImage(context, 'assets/images/logo.png'),
+        // _preloadImage(context, 'assets/images/logo.png'), // File doesn't exist
 
+        // Note: logo.png removed - file doesn't exist in assets/images/
         // Note: Assuming 'assets/images/logo.png' exists based on SplashScreen icon usage,
         // but if not, we should stick to known assets or generic ones.
         // The original code had:
