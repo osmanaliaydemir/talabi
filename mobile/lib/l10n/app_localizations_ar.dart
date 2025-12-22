@@ -146,6 +146,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get checkoutSubtitle => 'دفع آمن';
 
   @override
+  String get freeDeliveryReached => 'تم الوصول إلى التوصيل المجاني!';
+
+  @override
+  String remainingForFreeDelivery(Object amount) {
+    return '$amount متبقي للتوصيل المجاني';
+  }
+
+  @override
   String get orderInformation => 'معلومات الطلب';
 
   @override

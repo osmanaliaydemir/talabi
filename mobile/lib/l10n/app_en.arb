@@ -558,6 +558,18 @@
   "@cartDeliveryFeeLabel": {
     "description": "Delivery Fee"
   },
+  "freeDeliveryReached": "Free delivery reached!",
+  "@freeDeliveryReached": {
+    "description": "Free delivery reached!"
+  },
+  "remainingForFreeDelivery": "{amount} more for free delivery",
+  "@remainingForFreeDelivery": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "cartTotalAmountLabel": "Total Amount",
   "@cartTotalAmountLabel": {
     "description": "Total Amount"

@@ -146,6 +146,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get checkoutSubtitle => 'Güvenli Ödeme';
 
   @override
+  String get freeDeliveryReached => 'Ücretsiz teslimat sınırına ulaştınız!';
+
+  @override
+  String remainingForFreeDelivery(Object amount) {
+    return 'Ücretsiz teslimat için $amount daha';
+  }
+
+  @override
   String get orderInformation => 'Sipariş Bilgileri';
 
   @override

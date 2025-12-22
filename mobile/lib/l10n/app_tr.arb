@@ -559,6 +559,18 @@
   "@cartDeliveryFeeLabel": {
     "description": "Teslimat Ücreti"
   },
+  "freeDeliveryReached": "Ücretsiz teslimat sınırına ulaştınız!",
+  "@freeDeliveryReached": {
+    "description": "Ücretsiz teslimat sınırına ulaştınız!"
+  },
+  "remainingForFreeDelivery": "Ücretsiz teslimat için {amount} daha",
+  "@remainingForFreeDelivery": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "cartTotalAmountLabel": "Genel Toplam",
   "@cartTotalAmountLabel": {
     "description": "Genel Toplam"

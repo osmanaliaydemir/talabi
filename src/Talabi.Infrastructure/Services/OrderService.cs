@@ -133,12 +133,21 @@ public class OrderService : IOrderService
             throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
         }
 
-        // Fetch Delivery Fee from System Settings
+        // Fetch Delivery Fee and Free Delivery Threshold from System Settings
         decimal deliveryFee = 0;
         var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
         if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
         {
             deliveryFee = parsedFee;
+        }
+
+        var freeDeliveryThresholdStr = await _systemSettingsService.GetSettingAsync("FreeDeliveryThreshold");
+        if (!string.IsNullOrEmpty(freeDeliveryThresholdStr) && decimal.TryParse(freeDeliveryThresholdStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var threshold))
+        {
+            if (totalAmount >= threshold)
+            {
+                deliveryFee = 0;
+            }
         }
 
         // Delivery Zone checks disabled - allow all addresses
@@ -640,34 +649,22 @@ public class OrderService : IOrderService
 
         // 3. Calculate Delivery Fee
         decimal deliveryFee = 0;
-        
-        // Only calculate delivery fee if address is provided (or use default logic if needed)
-        // If no address, we might assume base fee or 0 depending on requirement. 
-        // Current create order logic requires address. 
-        if (dto.DeliveryAddressId.HasValue)
+
+        // Fetch Base Delivery Fee
+        var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
+        if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
         {
-             var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
-             // If address invalid, we might throw or return 0? Throwing is safer if ID provided.
-             if (userAddress == null)
-             {
-                 throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
-             }
-             
-             // Fetch Delivery Fee logic - same as CreateOrder
-             var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
-             if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
-             {
-                 deliveryFee = parsedFee;
-             }
+            deliveryFee = parsedFee;
         }
-        else 
+
+        // Apply Free Delivery Threshold
+        var freeDeliveryThresholdStr = await _systemSettingsService.GetSettingAsync("FreeDeliveryThreshold");
+        if (!string.IsNullOrEmpty(freeDeliveryThresholdStr) && decimal.TryParse(freeDeliveryThresholdStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var threshold))
         {
-             // Fallback if no address selected yet (e.g. cart view) -> currently system wide fee
-             var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
-             if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
-             {
-                 deliveryFee = parsedFee;
-             }
+            if (subtotal >= threshold)
+            {
+                deliveryFee = 0;
+            }
         }
 
         // 4. Validate and Apply Promotions

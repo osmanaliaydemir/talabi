@@ -341,6 +341,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        _buildFreeDeliveryProgressBar(
+                          cart,
+                          localizations,
+                          displayCurrency,
+                        ),
                         _buildSectionTitle(
                           localizations.orderInformation,
                           Icons.list_alt,
@@ -469,6 +474,127 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ],
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFreeDeliveryProgressBar(
+    CartProvider cart,
+    AppLocalizations localizations,
+    Currency currency,
+  ) {
+    if (!cart.isFreeDeliveryEnabled) return const SizedBox.shrink();
+
+    final progress = cart.freeDeliveryProgress;
+    final isReached = cart.isFreeDeliveryReached;
+    final remaining = cart.remainingForFreeDelivery;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isReached
+            ? Colors.green.withValues(alpha: 0.05)
+            : AppTheme.primaryOrange.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isReached
+              ? Colors.green.withValues(alpha: 0.2)
+              : AppTheme.primaryOrange.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isReached
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : AppTheme.primaryOrange.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isReached ? Icons.check_circle : Icons.delivery_dining,
+                  color: isReached ? Colors.green : AppTheme.primaryOrange,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isReached
+                          ? localizations.freeDeliveryReached
+                          : localizations.remainingForFreeDelivery(
+                              CurrencyFormatter.format(remaining, currency),
+                            ),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isReached
+                            ? Colors.green[800]
+                            : AppTheme.primaryOrange,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (!isReached)
+                      Text(
+                        'Sepetinize biraz daha ürün ekleyerek kargo ücretinden kurtulun!',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Stack(
+            children: [
+              Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                height: 8,
+                width:
+                    (MediaQuery.of(context).size.width - 64) *
+                    progress, // 64 = padding(16*2) + margin(16*2)
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isReached
+                        ? [Colors.green, Colors.greenAccent]
+                        : [
+                            AppTheme.primaryOrange,
+                            AppTheme.primaryOrange.withValues(alpha: 0.7),
+                          ],
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isReached ? Colors.green : AppTheme.primaryOrange)
+                          .withValues(alpha: 0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

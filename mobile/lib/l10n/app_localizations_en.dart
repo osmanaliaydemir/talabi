@@ -146,6 +146,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkoutSubtitle => 'Secure Payment';
 
   @override
+  String get freeDeliveryReached => 'Free delivery reached!';
+
+  @override
+  String remainingForFreeDelivery(Object amount) {
+    return '$amount more for free delivery';
+  }
+
+  @override
   String get orderInformation => 'Order Information';
 
   @override

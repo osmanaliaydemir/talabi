@@ -37,7 +37,26 @@ class CartProvider with ChangeNotifier {
 
   // System Settings
   double _deliveryFee = 0.0;
-  double get deliveryFee => _deliveryFee;
+  double _freeDeliveryThreshold = 0.0;
+
+  double get deliveryFee => isFreeDeliveryReached ? 0.0 : _deliveryFee;
+  double get freeDeliveryThreshold => _freeDeliveryThreshold;
+
+  bool get isFreeDeliveryEnabled =>
+      _freeDeliveryThreshold > 0 && _deliveryFee > 0;
+  bool get isFreeDeliveryReached =>
+      isFreeDeliveryEnabled && subtotalAmount >= _freeDeliveryThreshold;
+
+  double get freeDeliveryProgress {
+    if (_freeDeliveryThreshold <= 0) return 0;
+    return (subtotalAmount / _freeDeliveryThreshold).clamp(0.0, 1.0);
+  }
+
+  double get remainingForFreeDelivery {
+    if (_freeDeliveryThreshold <= 0) return 0;
+    final remaining = _freeDeliveryThreshold - subtotalAmount;
+    return remaining < 0 ? 0 : remaining;
+  }
 
   // Coupon handling
   final CouponService _couponService = CouponService();
@@ -261,13 +280,19 @@ class CartProvider with ChangeNotifier {
       }
       _checkCouponValidity();
 
-      // Fetch System Settings (Delivery Fee)
+      // Fetch System Settings (Delivery Fee & Threshold)
       try {
         final settings = await _apiService.getSystemSettings();
         if (settings.containsKey('DeliveryFee')) {
           final fee = double.tryParse(settings['DeliveryFee']!);
           if (fee != null) {
             _deliveryFee = fee;
+          }
+        }
+        if (settings.containsKey('FreeDeliveryThreshold')) {
+          final threshold = double.tryParse(settings['FreeDeliveryThreshold']!);
+          if (threshold != null) {
+            _freeDeliveryThreshold = threshold;
           }
         }
       } catch (e) {

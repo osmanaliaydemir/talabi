@@ -559,6 +559,18 @@
   "@cartDeliveryFeeLabel": {
     "description": "رسوم التوصيل"
   },
+  "freeDeliveryReached": "تم الوصول إلى التوصيل المجاني!",
+  "@freeDeliveryReached": {
+    "description": "تم الوصول إلى التوصيل المجاني!"
+  },
+  "remainingForFreeDelivery": "{amount} متبقي للتوصيل المجاني",
+  "@remainingForFreeDelivery": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "cartTotalAmountLabel": "المبلغ الإجمالي",
   "@cartTotalAmountLabel": {
     "description": "المبلغ الإجمالي"
