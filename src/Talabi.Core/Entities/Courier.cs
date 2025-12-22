@@ -9,6 +9,7 @@ public class Courier : BaseEntity
 
     public string Name { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
+    public string? ShamCashAccountNumber { get; set; }
     public CourierVehicleType VehicleType { get; set; } = CourierVehicleType.Motorcycle; // Default motorcycle
     public bool IsActive { get; set; } = true;
 

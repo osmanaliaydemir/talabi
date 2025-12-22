@@ -790,6 +790,9 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ShamCashAccountNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -1965,6 +1968,9 @@ namespace Talabi.Infrastructure.Migrations
 
                     b.Property<int>("RatingCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("ShamCashAccountNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");

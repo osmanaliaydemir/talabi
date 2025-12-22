@@ -22,6 +22,7 @@ class Courier {
     this.workingHoursEnd,
     required this.isWithinWorkingHours,
     this.workingHours,
+    this.shamCashAccountNumber,
   });
 
   factory Courier.fromJson(Map<String, dynamic> json) {
@@ -82,6 +83,7 @@ class Courier {
                 .map((e) => WorkingHour.fromJson(e as Map<String, dynamic>))
                 .toList()
           : null,
+      shamCashAccountNumber: json['shamCashAccountNumber'],
     );
   }
 
@@ -105,6 +107,7 @@ class Courier {
   final String? workingHoursEnd;
   final bool isWithinWorkingHours;
   final List<WorkingHour>? workingHours;
+  final String? shamCashAccountNumber;
 }
 
 class CourierStatistics {

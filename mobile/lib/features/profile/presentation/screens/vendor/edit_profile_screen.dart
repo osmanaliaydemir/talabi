@@ -32,6 +32,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
   late TextEditingController _cityController;
   late TextEditingController _phoneController;
   late TextEditingController _descriptionController;
+  late TextEditingController _shamCashController;
 
   String? _imageUrl;
   File? _imageFile;
@@ -52,6 +53,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
     _cityController = TextEditingController();
     _phoneController = TextEditingController();
     _descriptionController = TextEditingController();
+    _shamCashController = TextEditingController();
     _loadProfile();
   }
 
@@ -62,6 +64,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
     _cityController.dispose();
     _phoneController.dispose();
     _descriptionController.dispose();
+    _shamCashController.dispose();
     super.dispose();
   }
 
@@ -74,6 +77,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         _cityController.text = profile['city'] ?? '';
         _phoneController.text = profile['phoneNumber'] ?? '';
         _descriptionController.text = profile['description'] ?? '';
+        _shamCashController.text = profile['shamCashAccountNumber'] ?? '';
         _imageUrl = profile['imageUrl'];
         _latitude = profile['latitude'] != null
             ? (profile['latitude'] as num).toDouble()
@@ -184,6 +188,9 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         'description': _descriptionController.text.isEmpty
             ? null
             : _descriptionController.text,
+        'shamCashAccountNumber': _shamCashController.text.isEmpty
+            ? null
+            : _shamCashController.text,
         'latitude': _latitude,
         'longitude': _longitude,
       };
@@ -513,12 +520,25 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  // Sham Cash Account Number
+                  TextFormField(
+                    controller: _shamCashController,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(
+                        context,
+                      )!.shamCashAccountNumber,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.account_balance_wallet),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
 
                   // Description
                   TextFormField(
                     controller: _descriptionController,
                     decoration: InputDecoration(
-                      labelText: localizations?.description ?? 'Açıklama',
+                      labelText: AppLocalizations.of(context)!.description,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.description),
                     ),

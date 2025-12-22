@@ -2644,4 +2644,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String workingHoursSaveError(Object error) {
     return 'Error saving working hours: $error';
   }
+
+  @override
+  String get shamCashAccountNumber => 'رقم حساب شام كاش';
 }

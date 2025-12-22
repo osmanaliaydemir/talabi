@@ -21,6 +21,7 @@ public class Vendor : BaseEntity
     // Profile information
     public string? PhoneNumber { get; set; }
     public string? Description { get; set; }
+    public string? ShamCashAccountNumber { get; set; }
 
     // Business settings
     public decimal? MinimumOrderAmount { get; set; }

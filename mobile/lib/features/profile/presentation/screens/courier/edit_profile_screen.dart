@@ -24,6 +24,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _vehicleController;
   late TextEditingController _maxOrdersController;
+  late TextEditingController _shamCashController;
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -41,6 +42,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     _phoneController = TextEditingController();
     _vehicleController = TextEditingController();
     _maxOrdersController = TextEditingController(text: '3');
+    _shamCashController = TextEditingController();
     _loadProfile();
     _loadVehicleTypes();
   }
@@ -51,6 +53,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     _phoneController.dispose();
     _vehicleController.dispose();
     _maxOrdersController.dispose();
+    _shamCashController.dispose();
     super.dispose();
   }
 
@@ -93,6 +96,7 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     _phoneController.text = courier.phoneNumber ?? '';
     _vehicleController.text = courier.vehicleType ?? '';
     _maxOrdersController.text = courier.maxActiveOrders.toString();
+    _shamCashController.text = courier.shamCashAccountNumber ?? '';
     _selectedVehicleKey = courier.vehicleType;
 
     if (courier.workingHours != null && courier.workingHours!.isNotEmpty) {
@@ -177,6 +181,9 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         'phoneNumber': _phoneController.text.trim(),
         'vehicleType': _selectedVehicleKey,
         'maxActiveOrders': int.tryParse(_maxOrdersController.text.trim()) ?? 3,
+        'shamCashAccountNumber': _shamCashController.text.trim().isEmpty
+            ? null
+            : _shamCashController.text.trim(),
       };
 
       if (_useWorkingHours) {
@@ -302,6 +309,19 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
                                   labelText:
                                       localizations?.phoneNumber ?? 'Telefon',
                                   prefixIcon: const Icon(Icons.phone_outlined),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _shamCashController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(
+                                    context,
+                                  )!.shamCashAccountNumber,
+                                  prefixIcon: const Icon(
+                                    Icons.account_balance_wallet_outlined,
+                                  ),
                                 ),
                               ),
                             ],

@@ -2674,4 +2674,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String workingHoursSaveError(Object error) {
     return 'Error saving working hours: $error';
   }
+
+  @override
+  String get shamCashAccountNumber => 'Sham Cash Account Number';
 }

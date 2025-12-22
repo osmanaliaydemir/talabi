@@ -16,6 +16,7 @@ public class VendorProfileDto
     public double? Longitude { get; set; }
     public string? PhoneNumber { get; set; }
     public string? Description { get; set; }
+    public string? ShamCashAccountNumber { get; set; }
     public decimal? Rating { get; set; }
     public int RatingCount { get; set; }
     public BusyStatus BusyStatus { get; set; }
@@ -40,6 +41,8 @@ public class UpdateVendorProfileDto
     public string? PhoneNumber { get; set; }
     [JsonPropertyName("description")]
     public string? Description { get; set; }
+    [JsonPropertyName("shamCashAccountNumber")]
+    public string? ShamCashAccountNumber { get; set; }
     [JsonPropertyName("workingHours")]
     public List<WorkingHourDto>? WorkingHours { get; set; }
 }

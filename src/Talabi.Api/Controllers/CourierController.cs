@@ -133,6 +133,7 @@ public class CourierController : BaseController
 
         courier.Name = dto.Name;
         courier.PhoneNumber = dto.PhoneNumber;
+        courier.ShamCashAccountNumber = dto.ShamCashAccountNumber;
 
         // Vehicle type as enum (Motor, Araba, Bisiklet)
         if (!string.IsNullOrWhiteSpace(dto.VehicleType))

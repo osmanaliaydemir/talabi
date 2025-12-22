@@ -65,6 +65,7 @@ public class VendorProfileController : BaseController
             Longitude = vendor.Longitude,
             PhoneNumber = vendor.PhoneNumber,
             Description = vendor.Description,
+            ShamCashAccountNumber = vendor.ShamCashAccountNumber,
             Rating = vendor.Rating,
             RatingCount = vendor.RatingCount,
             BusyStatus = vendor.BusyStatus,
@@ -119,6 +120,7 @@ public class VendorProfileController : BaseController
                 if (dto.Longitude.HasValue) vendor.Longitude = dto.Longitude.Value;
                 if (dto.PhoneNumber != null) vendor.PhoneNumber = dto.PhoneNumber;
                 if (dto.Description != null) vendor.Description = dto.Description;
+                if (dto.ShamCashAccountNumber != null) vendor.ShamCashAccountNumber = dto.ShamCashAccountNumber;
 
                 // 3. Handle Working Hours (Nuclear Option)
                 if (dto.WorkingHours != null)

@@ -12,6 +12,7 @@ class VendorProfile {
     this.rating,
     this.ratingCount = 0,
     this.busyStatus = 0,
+    this.shamCashAccountNumber,
   });
 
   factory VendorProfile.fromJson(Map<String, dynamic> json) {
@@ -34,6 +35,7 @@ class VendorProfile {
           : null,
       ratingCount: json['ratingCount'] ?? 0,
       busyStatus: json['busyStatus'] ?? 0,
+      shamCashAccountNumber: json['shamCashAccountNumber'],
     );
   }
   final int id;
@@ -48,6 +50,7 @@ class VendorProfile {
   final double? rating;
   final int ratingCount;
   final int busyStatus;
+  final String? shamCashAccountNumber;
 
   Map<String, dynamic> toJson() {
     return {
@@ -63,6 +66,7 @@ class VendorProfile {
       'rating': rating,
       'ratingCount': ratingCount,
       'busyStatus': busyStatus,
+      'shamCashAccountNumber': shamCashAccountNumber,
     };
   }
 }

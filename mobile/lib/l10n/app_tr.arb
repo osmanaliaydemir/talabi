@@ -1139,5 +1139,6 @@
     }
   },
   "noFavoritesFound": "Henüz favori ürününüz yok",
-  "favoritesEmptyMessage": "Beğendiğiniz ürünleri favorilere ekleyerek burada görüntüleyebilirsiniz."
+  "favoritesEmptyMessage": "Beğendiğiniz ürünleri favorilere ekleyerek burada görüntüleyebilirsiniz.",
+  "shamCashAccountNumber": "Sham Cash Hesap Numarası"
 }

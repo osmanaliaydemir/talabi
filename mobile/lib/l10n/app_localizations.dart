@@ -4995,6 +4995,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error saving working hours: {error}'**
   String workingHoursSaveError(Object error);
+
+  /// No description provided for @shamCashAccountNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Sham Cash Account Number'**
+  String get shamCashAccountNumber;
 }
 
 class _AppLocalizationsDelegate

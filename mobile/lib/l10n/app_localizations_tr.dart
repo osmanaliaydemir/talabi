@@ -2671,4 +2671,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String workingHoursSaveError(Object error) {
     return 'Çalışma saatleri kaydedilirken hata oluştu: $error';
   }
+
+  @override
+  String get shamCashAccountNumber => 'Sham Cash Hesap Numarası';
 }

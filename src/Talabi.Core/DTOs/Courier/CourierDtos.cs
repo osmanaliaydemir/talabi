@@ -6,6 +6,7 @@ public class CourierProfileDto
     public string UserId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
+    public string? ShamCashAccountNumber { get; set; }
     public string? VehicleType { get; set; }
     public bool IsActive { get; set; }
 
@@ -33,6 +34,7 @@ public class UpdateCourierProfileDto
 {
     public string Name { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
+    public string? ShamCashAccountNumber { get; set; }
     public string? VehicleType { get; set; }
     public int MaxActiveOrders { get; set; } = 3;
     public TimeSpan? WorkingHoursStart { get; set; }

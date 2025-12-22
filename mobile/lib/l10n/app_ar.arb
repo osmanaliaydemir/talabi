@@ -1119,5 +1119,6 @@
   "workingHoursEnd": "وقت الانتهاء",
   "selectTime": "اختر الوقت",
   "workingHoursUpdatedSuccessfully": "تم تحديث ساعات العمل بنجاح",
-  "failedToUpdateWorkingHours": "فشل تحديث ساعات العمل"
+  "failedToUpdateWorkingHours": "فشل تحديث ساعات العمل",
+  "shamCashAccountNumber": "رقم حساب شام كاش"
 }
