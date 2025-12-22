@@ -55,11 +55,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.initState();
     _loadAddresses();
     // Listen to cart changes for coupon/campaign updates
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CartProvider>(
-        context,
-        listen: false,
-      ).addListener(_onCartChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.addListener(_onCartChanged);
+
+      // Load campaign details if campaignId exists in cart
+      // This is where we fetch campaign data, not in CartProvider.loadCart()
+      await _loadCampaignIfNeeded();
     });
   }
 
@@ -121,6 +123,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _calculationError = e.toString().replaceAll('Exception: ', '');
         _isCalculating = false;
       });
+    }
+  }
+
+  Future<void> _loadCampaignIfNeeded() async {
+    try {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final cartData = await _apiService.getCart();
+
+      if (cartData['campaignId'] != null) {
+        final campaignId = cartData['campaignId'].toString();
+        final campaign = await _apiService.getCampaign(campaignId);
+
+        if (campaign != null && mounted) {
+          // Check if campaign criteria is met
+          if (campaign.minCartAmount != null &&
+              cartProvider.subtotalAmount < campaign.minCartAmount!) {
+            // Criteria not met, don't apply
+            LoggerService().warning(
+              'Campaign criteria not met: min amount ${campaign.minCartAmount}',
+            );
+          } else {
+            // Apply campaign to cart provider
+            await cartProvider.selectCampaign(campaign);
+          }
+        }
+      }
+    } catch (e) {
+      LoggerService().error('Error loading campaign in checkout', e);
+      // Don't block checkout if campaign loading fails
     }
   }
 

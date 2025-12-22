@@ -291,58 +291,10 @@ class CartProvider with ChangeNotifier {
           }
         }
 
-        if (cartData['campaignId'] != null) {
-          final campaignId = cartData['campaignId'].toString();
-          final campaign = await _apiService.getCampaign(campaignId);
-          if (campaign != null) {
-            if (campaign.minCartAmount != null &&
-                subtotalAmount < campaign.minCartAmount!) {
-              // Criteria not met, don't select
-            } else {
-              _selectedCampaign = campaign;
-            }
-          }
-        }
+        // Campaign loading moved to CheckoutScreen
+        // We only store the campaignId from backend, but don't fetch campaign details here
+        // This improves cart screen performance
 
-        _checkCouponValidity();
-      } catch (e) {
-        LoggerService().error('Error hydrating promotions', e);
-      }
-
-      // Hydrate Promotions (Persisted from Backend)
-      try {
-        // Reset local state first
-        _appliedCoupon = null;
-        _selectedCampaign = null;
-
-        if (cartData['couponCode'] != null &&
-            cartData['couponCode'].toString().isNotEmpty) {
-          final code = cartData['couponCode'].toString();
-          // Validate and fetch full coupon object
-          final coupon = await _couponService.validateCoupon(code);
-          if (coupon != null && subtotalAmount >= coupon.minCartAmount) {
-            _appliedCoupon = coupon;
-          } else {
-            // Invalid or expired or min amount not met - clear on backend?
-            // Maybe don't clear automatically to avoid flickering, but don't apply it locally.
-          }
-        }
-
-        if (cartData['campaignId'] != null) {
-          final campaignId = cartData['campaignId'].toString();
-          final campaign = await _apiService.getCampaign(campaignId);
-          if (campaign != null) {
-            if (campaign.minCartAmount != null &&
-                subtotalAmount < campaign.minCartAmount!) {
-              // Criteria not met
-            } else {
-              _selectedCampaign = campaign;
-            }
-          }
-        }
-
-        // Check validity again (mutually exclusive check is done on backend persistence usually,
-        // but double check here)
         _checkCouponValidity();
       } catch (e) {
         LoggerService().error('Error hydrating promotions', e);
