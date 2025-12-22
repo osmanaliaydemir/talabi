@@ -561,7 +561,7 @@
   },
   "freeDeliveryReached": "Ücretsiz teslimat sınırına ulaştınız!",
   "@freeDeliveryReached": {
-    "description": "Ücretsiz teslimat sınırına ulaştınız!"
+    "description": "Free delivery reached!"
   },
   "remainingForFreeDelivery": "Ücretsiz teslimat için {amount} daha",
   "@remainingForFreeDelivery": {
@@ -570,6 +570,10 @@
         "type": "String"
       }
     }
+  },
+  "freeDeliveryDescription": "Sepetinize biraz daha ürün ekleyerek kargo ücretinden kurtulun!",
+  "@freeDeliveryDescription": {
+    "description": "Description for free delivery progress"
   },
   "cartTotalAmountLabel": "Genel Toplam",
   "@cartTotalAmountLabel": {

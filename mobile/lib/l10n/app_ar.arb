@@ -571,6 +571,10 @@
       }
     }
   },
+  "freeDeliveryDescription": "أضف المزيد من العناصر إلى سلتك للحصول على توصيل مجاني!",
+  "@freeDeliveryDescription": {
+    "description": "Description for free delivery progress"
+  },
   "cartTotalAmountLabel": "المبلغ الإجمالي",
   "@cartTotalAmountLabel": {
     "description": "المبلغ الإجمالي"

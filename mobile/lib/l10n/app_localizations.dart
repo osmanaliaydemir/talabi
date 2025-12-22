@@ -370,18 +370,6 @@ abstract class AppLocalizations {
   /// **'Secure Payment'**
   String get checkoutSubtitle;
 
-  /// Free delivery reached!
-  ///
-  /// In en, this message translates to:
-  /// **'Free delivery reached!'**
-  String get freeDeliveryReached;
-
-  /// No description provided for @remainingForFreeDelivery.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} more for free delivery'**
-  String remainingForFreeDelivery(Object amount);
-
   /// Order Information
   ///
   /// In en, this message translates to:
@@ -945,6 +933,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery Fee'**
   String get cartDeliveryFeeLabel;
+
+  /// Free delivery reached!
+  ///
+  /// In en, this message translates to:
+  /// **'Free delivery reached!'**
+  String get freeDeliveryReached;
+
+  /// No description provided for @remainingForFreeDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} more for free delivery'**
+  String remainingForFreeDelivery(String amount);
+
+  /// Description for free delivery progress
+  ///
+  /// In en, this message translates to:
+  /// **'Add more items to your cart to get free delivery!'**
+  String get freeDeliveryDescription;
 
   /// Total Amount
   ///

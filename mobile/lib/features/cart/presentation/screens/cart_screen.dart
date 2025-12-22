@@ -146,6 +146,11 @@ class _CartScreenState extends State<CartScreen> {
                       ),
 
                       const SizedBox(height: 16),
+                      _buildFreeDeliveryProgressBar(
+                        cart,
+                        localizations,
+                        displayCurrency,
+                      ),
                       // Order Summary
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -613,6 +618,138 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFreeDeliveryProgressBar(
+    CartProvider cart,
+    AppLocalizations localizations,
+    Currency currency,
+  ) {
+    if (!cart.isFreeDeliveryEnabled) return const SizedBox.shrink();
+
+    final progress = cart.freeDeliveryProgress;
+    final isReached = cart.isFreeDeliveryReached;
+    final remaining = cart.remainingForFreeDelivery;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  isReached
+                      ? localizations.freeDeliveryReached
+                      : localizations.remainingForFreeDelivery(
+                          CurrencyFormatter.format(remaining, currency),
+                        ),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isReached
+                        ? Colors.green[700]
+                        : AppTheme.primaryOrange,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (!isReached) ...[
+            const SizedBox(height: 2),
+            Text(
+              localizations.freeDeliveryDescription,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+          const SizedBox(height: 6),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final maxWidth = constraints.maxWidth;
+              final iconSize = 24.0;
+              final iconPosition = (maxWidth * progress) - (iconSize / 2);
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Background Bar
+                  Container(
+                    height: 6,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  // Progress Bar
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutCubic,
+                    height: 6,
+                    width: maxWidth * progress,
+                    decoration: BoxDecoration(
+                      color: isReached ? Colors.green : AppTheme.primaryOrange,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        if (!isReached)
+                          BoxShadow(
+                            color: AppTheme.primaryOrange.withValues(
+                              alpha: 0.2,
+                            ),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Moving Courier Icon
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutCubic,
+                    left: iconPosition.clamp(0.0, maxWidth - iconSize),
+                    top: -12, // Position above the bar
+                    child: Container(
+                      width: iconSize,
+                      height: iconSize,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: isReached
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : AppTheme.primaryOrange.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        isReached ? Icons.check_circle : Icons.moped,
+                        color: isReached
+                            ? Colors.green
+                            : AppTheme.primaryOrange,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

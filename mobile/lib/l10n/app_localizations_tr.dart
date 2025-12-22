@@ -146,14 +146,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get checkoutSubtitle => 'Güvenli Ödeme';
 
   @override
-  String get freeDeliveryReached => 'Ücretsiz teslimat sınırına ulaştınız!';
-
-  @override
-  String remainingForFreeDelivery(Object amount) {
-    return 'Ücretsiz teslimat için $amount daha';
-  }
-
-  @override
   String get orderInformation => 'Sipariş Bilgileri';
 
   @override
@@ -445,6 +437,18 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cartDeliveryFeeLabel => 'Teslimat Ücreti';
+
+  @override
+  String get freeDeliveryReached => 'Ücretsiz teslimat sınırına ulaştınız!';
+
+  @override
+  String remainingForFreeDelivery(String amount) {
+    return 'Ücretsiz teslimat için $amount daha';
+  }
+
+  @override
+  String get freeDeliveryDescription =>
+      'Sepetinize biraz daha ürün ekleyerek kargo ücretinden kurtulun!';
 
   @override
   String get cartTotalAmountLabel => 'Genel Toplam';

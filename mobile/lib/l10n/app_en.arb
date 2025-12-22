@@ -570,6 +570,10 @@
       }
     }
   },
+  "freeDeliveryDescription": "Add more items to your cart to get free delivery!",
+  "@freeDeliveryDescription": {
+    "description": "Description for free delivery progress"
+  },
   "cartTotalAmountLabel": "Total Amount",
   "@cartTotalAmountLabel": {
     "description": "Total Amount"

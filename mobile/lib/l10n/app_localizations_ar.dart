@@ -146,14 +146,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get checkoutSubtitle => 'دفع آمن';
 
   @override
-  String get freeDeliveryReached => 'تم الوصول إلى التوصيل المجاني!';
-
-  @override
-  String remainingForFreeDelivery(Object amount) {
-    return '$amount متبقي للتوصيل المجاني';
-  }
-
-  @override
   String get orderInformation => 'معلومات الطلب';
 
   @override
@@ -442,6 +434,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cartDeliveryFeeLabel => 'رسوم التوصيل';
+
+  @override
+  String get freeDeliveryReached => 'تم الوصول إلى التوصيل المجاني!';
+
+  @override
+  String remainingForFreeDelivery(String amount) {
+    return '$amount متبقي للتوصيل المجاني';
+  }
+
+  @override
+  String get freeDeliveryDescription =>
+      'أضف المزيد من العناصر إلى سلتك للحصول على توصيل مجاني!';
 
   @override
   String get cartTotalAmountLabel => 'المبلغ الإجمالي';

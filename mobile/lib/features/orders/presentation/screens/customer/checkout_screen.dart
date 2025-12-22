@@ -546,7 +546,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     if (!isReached)
                       Text(
-                        'Sepetinize biraz daha ürün ekleyerek kargo ücretinden kurtulun!',
+                        localizations.freeDeliveryDescription,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 11,
@@ -559,42 +559,91 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Stack(
-            children: [
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                height: 8,
-                width:
-                    (MediaQuery.of(context).size.width - 64) *
-                    progress, // 64 = padding(16*2) + margin(16*2)
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isReached
-                        ? [Colors.green, Colors.greenAccent]
-                        : [
-                            AppTheme.primaryOrange,
-                            AppTheme.primaryOrange.withValues(alpha: 0.7),
-                          ],
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isReached ? Colors.green : AppTheme.primaryOrange)
-                          .withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final maxWidth = constraints.maxWidth;
+              final iconSize = 32.0;
+              final iconPosition = (maxWidth * progress) - (iconSize / 2);
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Background Bar
+                  Container(
+                    height: 8,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                  // Progress Bar
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutCubic,
+                    height: 8,
+                    width: maxWidth * progress,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isReached
+                            ? [Colors.green, Colors.greenAccent]
+                            : [
+                                AppTheme.primaryOrange,
+                                AppTheme.primaryOrange.withValues(alpha: 0.7),
+                              ],
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              (isReached
+                                      ? Colors.green
+                                      : AppTheme.primaryOrange)
+                                  .withValues(alpha: 0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Moving Courier Icon
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutCubic,
+                    left: iconPosition.clamp(0.0, maxWidth - iconSize),
+                    top: -12, // Position above the bar
+                    child: Container(
+                      width: iconSize,
+                      height: iconSize,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: isReached
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : AppTheme.primaryOrange.withValues(alpha: 0.2),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Icon(
+                        isReached ? Icons.check_circle : Icons.moped,
+                        color: isReached
+                            ? Colors.green
+                            : AppTheme.primaryOrange,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
