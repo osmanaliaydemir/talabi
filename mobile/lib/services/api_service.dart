@@ -2148,8 +2148,8 @@ class ApiService {
   Future<String?> getSystemSetting(String key) async {
     try {
       final response = await _networkClient.get('/system-settings/$key');
-      if (response.data != null && response.data['value'] != null) {
-        return response.data['value'].toString();
+      if (response != null && response['value'] != null) {
+        return response['value'].toString();
       }
       return null;
     } catch (e, stackTrace) {
