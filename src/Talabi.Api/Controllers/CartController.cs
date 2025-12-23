@@ -52,12 +52,12 @@ public class CartController(
             var cart = await UnitOfWork.Carts.Query()
                 .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Product)
-                .ThenInclude(p => p!.Vendor)
+                .ThenInclude(p => p.Vendor)
                 .Include(c => c.Coupon)
                 .Include(c => c.Campaign)
-                    .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
+                    .ThenInclude(cmp => cmp.CampaignProducts) // Load related products
                 .Include(c => c.Campaign)
-                    .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
+                    .ThenInclude(cmp => cmp.CampaignCategories) // Load related categories
                 .FirstOrDefaultAsync(c => c.UserId == userId);
 
             CartDto cartDto;
@@ -104,9 +104,16 @@ public class CartController(
         }
         catch (Exception ex)
         {
-            // Debugging: Return exception as 200 OK with Disclaimer
+            Console.WriteLine("CRITICAL_CART_ERROR: " + ex.ToString());
+            var errorMsg = "DEBUG_ERROR: " + ex.Message + " | Stack: " + ex.StackTrace;
+
+            // Debugging: Return exception as 200 OK with Disclaimer AND CampaignTitle (for visibility)
             return Ok(new ApiResponse<CartDto>(
-                new CartDto { Disclaimer = "DEBUG_ERROR: " + ex.Message + " | Stack: " + ex.StackTrace },
+                new CartDto
+                {
+                    Disclaimer = errorMsg,
+                    CampaignTitle = errorMsg // Show in UI if possible
+                },
                 "DEBUG_ERROR"
             ));
         }
