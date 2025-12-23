@@ -14,26 +14,18 @@ namespace Talabi.Api.Controllers;
 [Route("api/notifications")]
 [ApiController]
 [Authorize]
-public class NotificationsController : BaseController
+public class NotificationsController(
+    IUnitOfWork unitOfWork,
+    ILogger<NotificationsController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
     private const string ResourceName = "NotificationResources";
 
     /// <summary>
-    /// NotificationsController constructor
-    /// </summary>
-    public NotificationsController(
-        IUnitOfWork unitOfWork,
-        ILogger<NotificationsController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-    }
-
-    /// <summary>
     /// Kullanıcının bildirim ayarlarını getirir
     /// </summary>
-    /// <param name="language">Dil kodu (tr, en, ar)</param>
     /// <returns>Bildirim ayarları</returns>
     [HttpGet("settings")]
     public async Task<ActionResult<ApiResponse<NotificationSettingsDto>>> GetSettings()
@@ -70,7 +62,7 @@ public class NotificationsController : BaseController
         };
 
         return Ok(new ApiResponse<NotificationSettingsDto>(
-            dto, 
+            dto,
             LocalizationService.GetLocalizedString(ResourceName, "SettingsRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -78,7 +70,6 @@ public class NotificationsController : BaseController
     /// Kullanıcının bildirim ayarlarını günceller
     /// </summary>
     /// <param name="dto">Güncellenecek bildirim ayarları</param>
-    /// <param name="language">Dil kodu (tr, en, ar)</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("settings")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(NotificationSettingsDto dto)
@@ -109,7 +100,7 @@ public class NotificationsController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "SettingsUpdatedSuccessfully", CurrentCulture)));
     }
 }

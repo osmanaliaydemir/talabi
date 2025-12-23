@@ -16,24 +16,16 @@ namespace Talabi.Api.Controllers;
 [Route("api/vendor/notifications")]
 [ApiController]
 [Authorize(Roles = "Vendor")]
-public class VendorNotificationsController : BaseController
+public class VendorNotificationsController(
+    IUnitOfWork unitOfWork,
+    ILogger<VendorNotificationsController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    UserManager<AppUser> userManager)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<AppUser> _userManager = userManager;
     private const string ResourceName = "VendorNotificationResources";
-
-    /// <summary>
-    /// VendorNotificationsController constructor
-    /// </summary>
-    public VendorNotificationsController(
-        IUnitOfWork unitOfWork,
-        ILogger<VendorNotificationsController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        UserManager<AppUser> userManager)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _userManager = userManager;
-    }
 
     private async Task<Vendor?> GetCurrentVendorAsync(bool createIfMissing = false)
     {
@@ -70,7 +62,7 @@ public class VendorNotificationsController : BaseController
     /// <returns>Bildirim listesi ve okunmamış sayısı</returns>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<VendorNotificationResponseDto>>> GetNotifications(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
@@ -87,7 +79,7 @@ public class VendorNotificationsController : BaseController
                 UnreadCount = 0
             };
             return Ok(new ApiResponse<VendorNotificationResponseDto>(
-                emptyResponse, 
+                emptyResponse,
                 LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFoundEmptyList", CurrentCulture)));
         }
 
@@ -122,7 +114,7 @@ public class VendorNotificationsController : BaseController
         };
 
         return Ok(new ApiResponse<VendorNotificationResponseDto>(
-            response, 
+            response,
             LocalizationService.GetLocalizedString(ResourceName, "NotificationsRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -130,7 +122,6 @@ public class VendorNotificationsController : BaseController
     /// Belirli bir bildirimi okundu olarak işaretler
     /// </summary>
     /// <param name="id">Bildirim ID'si</param>
-    /// <param name="language">Dil kodu (tr, en, ar)</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("{id}/read")]
     public async Task<ActionResult<ApiResponse<object>>> MarkAsRead(Guid id)
@@ -139,7 +130,7 @@ public class VendorNotificationsController : BaseController
         if (vendor == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -149,7 +140,7 @@ public class VendorNotificationsController : BaseController
         if (notification == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "NotificationNotFound", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "NotificationNotFound", CurrentCulture),
                 "NOTIFICATION_NOT_FOUND"));
         }
 
@@ -162,14 +153,13 @@ public class VendorNotificationsController : BaseController
         }
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "NotificationMarkedAsRead", CurrentCulture)));
     }
 
     /// <summary>
     /// Tüm bildirimleri okundu olarak işaretler
     /// </summary>
-    /// <param name="language">Dil kodu (tr, en, ar)</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("read-all")]
     public async Task<ActionResult<ApiResponse<object>>> MarkAllAsRead()
@@ -178,7 +168,7 @@ public class VendorNotificationsController : BaseController
         if (vendor == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "VendorProfileNotFound", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
@@ -189,7 +179,7 @@ public class VendorNotificationsController : BaseController
         if (unreadNotifications.Count == 0)
         {
             return Ok(new ApiResponse<object>(
-                new { }, 
+                new { },
                 LocalizationService.GetLocalizedString(ResourceName, "AllNotificationsAlreadyRead", CurrentCulture)));
         }
 
@@ -203,7 +193,7 @@ public class VendorNotificationsController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "AllNotificationsMarkedAsRead", CurrentCulture)));
     }
 

@@ -17,41 +17,21 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController : BaseController
+public class ProductsController(
+    IUnitOfWork unitOfWork,
+    ILogger<ProductsController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    IMapper mapper,
+    ICacheService cacheService,
+    IOptions<CacheOptions> cacheOptions)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly IMapper _mapper;
-    private readonly ICacheService _cacheService;
-    private readonly CacheOptions _cacheOptions;
+    private readonly IMapper _mapper = mapper;
+    private readonly ICacheService _cacheService = cacheService;
+    private readonly CacheOptions _cacheOptions = cacheOptions.Value;
     private const string ResourceName = "ProductResources";
 
-    /// <summary>
-    /// ProductsController constructor
-    /// </summary>
-    /// <param name="unitOfWork">Unit of Work instance</param>
-    /// <param name="logger">Logger instance</param>
-    /// <param name="localizationService">Localization service</param>
-    /// <param name="userContext">User context service</param>
-    /// <param name="mapper">AutoMapper instance</param>
-    /// <param name="cacheService">Cache service instance</param>
-    /// <param name="cacheOptions">Cache options</param>
-    public ProductsController(
-        IUnitOfWork unitOfWork,
-        ILogger<ProductsController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        IMapper mapper,
-        ICacheService cacheService,
-        IOptions<CacheOptions> cacheOptions)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _mapper = mapper;
-        _cacheService = cacheService;
-        _cacheOptions = cacheOptions.Value;
-    }
-
-    /// <summary>
-    /// Ürün arama endpoint'i - Filtreleme, sıralama ve sayfalama desteği ile
-    /// </summary>
     /// <summary>
     /// Ürün arama endpoint'i - Filtreleme, sıralama ve sayfalama desteği ile
     /// </summary>
@@ -259,12 +239,6 @@ public class ProductsController : BaseController
         return Ok(new ApiResponse<List<AutocompleteResultDto>>(results, LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
     }
 
-    /// <summary>
-    /// Popüler ürünleri getirir - Sipariş sayısına göre sıralanır
-    /// </summary>
-    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
-    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
-    /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
     /// <summary>
     /// Popüler ürünleri getirir - Sipariş sayısına göre sıralanır
     /// </summary>

@@ -7,16 +7,10 @@ using Talabi.Core.Helpers; // Added for PagedResult
 
 namespace Talabi.Portal.Services;
 
-public class VendorService : IVendorService
+public class VendorService(IRepository<Vendor> vendorRepository, IUnitOfWork unitOfWork) : IVendorService
 {
-    private readonly IRepository<Vendor> _vendorRepository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public VendorService(IRepository<Vendor> vendorRepository, IUnitOfWork unitOfWork)
-    {
-        _vendorRepository = vendorRepository;
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IRepository<Vendor> _vendorRepository = vendorRepository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<PagedResult<VendorListDto>> GetVendorsAsync(int page, int pageSize, string? search, string? sortColumn, string? sortDirection)
     {
@@ -27,11 +21,10 @@ public class VendorService : IVendorService
 
         if (!string.IsNullOrEmpty(search))
         {
-            search = search.ToLower();
-            query = query.Where(v => 
-                v.Name.ToLower().Contains(search) || 
-                (v.Owner != null && v.Owner.Email!.ToLower().Contains(search)) ||
-                (v.PhoneNumber != null && v.PhoneNumber.Contains(search))
+            query = query.Where(v =>
+                v.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (v.Owner != null && v.Owner.Email!.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                (v.PhoneNumber != null && v.PhoneNumber.Contains(search, StringComparison.OrdinalIgnoreCase))
             );
         }
 
@@ -43,7 +36,7 @@ public class VendorService : IVendorService
             "email" => sortDirection == "desc" ? query.OrderByDescending(v => v.Owner!.Email) : query.OrderBy(v => v.Owner!.Email),
             "isActive" => sortDirection == "desc" ? query.OrderByDescending(v => v.IsActive) : query.OrderBy(v => v.IsActive),
             "createdDate" => sortDirection == "desc" ? query.OrderByDescending(v => v.CreatedAt) : query.OrderBy(v => v.CreatedAt),
-            _ => query.OrderByDescending(v => v.CreatedAt) 
+            _ => query.OrderByDescending(v => v.CreatedAt)
         };
 
         var totalCount = await query.CountAsync();
@@ -53,7 +46,7 @@ public class VendorService : IVendorService
                 Id = v.Id.ToString(),
                 Name = v.Name,
                 Type = v.Type.ToString(),
-                Email = v.Owner != null ? v.Owner.Email : null,
+                Email = v.Owner != null ? v.Owner.Email : "",
                 PhoneNumber = v.PhoneNumber,
                 IsActive = v.IsActive,
                 CreatedDate = v.CreatedAt,

@@ -13,6 +13,8 @@ using Talabi.Core.DTOs.Email;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
@@ -38,7 +40,16 @@ public class AuthControllerTests
         _mockAuthService = new Mock<IAuthService>();
 
         var userStore = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null, null, null, null, null, null, null, null);
+        _mockUserManager = new Mock<UserManager<AppUser>>(
+            userStore.Object,
+            new Mock<IOptions<IdentityOptions>>().Object,
+            new Mock<IPasswordHasher<AppUser>>().Object,
+            new IUserValidator<AppUser>[0],
+            new IPasswordValidator<AppUser>[0],
+            new Mock<ILookupNormalizer>().Object,
+            new IdentityErrorDescriber(),
+            new Mock<IServiceProvider>().Object,
+            new Mock<ILogger<UserManager<AppUser>>>().Object);
 
         _mockMemoryCache = new Mock<IMemoryCache>();
         _mockEmailSender = new Mock<Talabi.Core.Services.IEmailSender>();

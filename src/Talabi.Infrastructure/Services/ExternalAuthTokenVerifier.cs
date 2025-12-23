@@ -9,21 +9,14 @@ namespace Talabi.Infrastructure.Services;
 /// <summary>
 /// External authentication token verification service implementation
 /// </summary>
-public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
+public class ExternalAuthTokenVerifier(
+    HttpClient httpClient,
+    ILogger<ExternalAuthTokenVerifier> logger,
+    IConfiguration configuration) : IExternalAuthTokenVerifier
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<ExternalAuthTokenVerifier> _logger;
-    private readonly IConfiguration _configuration;
-
-    public ExternalAuthTokenVerifier(
-        HttpClient httpClient,
-        ILogger<ExternalAuthTokenVerifier> logger,
-        IConfiguration configuration)
-    {
-        _httpClient = httpClient;
-        _logger = logger;
-        _configuration = configuration;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<ExternalAuthTokenVerifier> _logger = logger;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<bool> VerifyTokenAsync(string provider, string idToken, string? expectedEmail = null)
     {
@@ -80,7 +73,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
         {
             // Google token verification endpoint
             var response = await _httpClient.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}");
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("Google token verification failed. Status: {Status}", response.StatusCode);
@@ -88,21 +81,21 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
             }
 
             var tokenInfo = await response.Content.ReadFromJsonAsync<GoogleTokenInfo>();
-            
+
             if (tokenInfo == null)
             {
                 _logger.LogWarning("Google tokeninfo response is null");
                 return false;
             }
 
-            _logger.LogDebug("Google token verification - Email: {Email}, Exp: {Exp}, ExpiresIn: {ExpiresIn}", 
+            _logger.LogDebug("Google token verification - Email: {Email}, Exp: {Exp}, ExpiresIn: {ExpiresIn}",
                 tokenInfo.Email, tokenInfo.Exp, tokenInfo.ExpiresIn);
 
             // Verify email matches if provided
-            if (!string.IsNullOrEmpty(expectedEmail) && 
+            if (!string.IsNullOrEmpty(expectedEmail) &&
                 !string.Equals(tokenInfo.Email, expectedEmail, StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning("Email mismatch in Google token. Expected: {Expected}, Got: {Actual}", 
+                _logger.LogWarning("Email mismatch in Google token. Expected: {Expected}, Got: {Actual}",
                     expectedEmail, tokenInfo.Email);
                 return false;
             }
@@ -114,7 +107,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
                 var expirationTime = DateTimeOffset.FromUnixTimeSeconds(tokenInfo.Exp.Value);
                 if (expirationTime < DateTimeOffset.UtcNow)
                 {
-                    _logger.LogWarning("Google token has expired. Expiration: {Expiration}, Current: {Current}", 
+                    _logger.LogWarning("Google token has expired. Expiration: {Expiration}, Current: {Current}",
                         expirationTime, DateTimeOffset.UtcNow);
                     return false;
                 }
@@ -140,7 +133,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
         try
         {
             var response = await _httpClient.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}");
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 return null;
@@ -155,20 +148,20 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
         }
     }
 
-    private async Task<bool> VerifyAppleTokenAsync(string idToken, string? expectedEmail)
+    private Task<bool> VerifyAppleTokenAsync(string idToken, string? expectedEmail)
     {
         try
         {
             // Apple token verification requires JWT validation
             // For now, we'll do basic validation
             // In production, you should use Apple's public keys to verify the JWT signature
-            
+
             // Apple tokens are JWTs, we can decode and check basic claims
             var parts = idToken.Split('.');
             if (parts.Length != 3)
             {
                 _logger.LogWarning("Invalid Apple token format");
-                return false;
+                return Task.FromResult(false);
             }
 
             // Decode payload (base64url)
@@ -191,7 +184,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
                 if (expirationTime < DateTimeOffset.UtcNow)
                 {
                     _logger.LogWarning("Apple token has expired");
-                    return false;
+                    return Task.FromResult(false);
                 }
             }
 
@@ -202,7 +195,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
                 if (!string.Equals(email, expectedEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning("Email mismatch in Apple token");
-                    return false;
+                    return Task.FromResult(false);
                 }
             }
 
@@ -210,23 +203,23 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
             // for production use. This is a basic validation.
             _logger.LogWarning("Apple token validation is using basic checks. Full JWT signature verification should be implemented for production.");
 
-            return true;
+            return Task.FromResult(true);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error verifying Apple token");
-            return false;
+            return Task.FromResult(false);
         }
     }
 
-    private async Task<string?> GetEmailFromAppleTokenAsync(string idToken)
+    private Task<string?> GetEmailFromAppleTokenAsync(string idToken)
     {
         try
         {
             var parts = idToken.Split('.');
             if (parts.Length != 3)
             {
-                return null;
+                return Task.FromResult<string?>(null);
             }
 
             var payload = parts[1];
@@ -241,14 +234,14 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
 
             if (payloadData.TryGetProperty("email", out var emailElement))
             {
-                return emailElement.GetString();
+                return Task.FromResult(emailElement.GetString());
             }
 
-            return null;
+            return Task.FromResult<string?>(null);
         }
         catch
         {
-            return null;
+            return Task.FromResult<string?>(null);
         }
     }
 
@@ -278,7 +271,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
             }
 
             var debugInfo = await response.Content.ReadFromJsonAsync<FacebookDebugTokenResponse>();
-            
+
             if (debugInfo?.Data == null || !debugInfo.Data.IsValid)
             {
                 _logger.LogWarning("Facebook token is invalid");
@@ -294,7 +287,7 @@ public class ExternalAuthTokenVerifier : IExternalAuthTokenVerifier
                 if (userResponse.IsSuccessStatusCode)
                 {
                     var userInfo = await userResponse.Content.ReadFromJsonAsync<FacebookUserInfo>();
-                    if (userInfo?.Email != null && 
+                    if (userInfo?.Email != null &&
                         !string.Equals(userInfo.Email, expectedEmail, StringComparison.OrdinalIgnoreCase))
                     {
                         _logger.LogWarning("Email mismatch in Facebook token");

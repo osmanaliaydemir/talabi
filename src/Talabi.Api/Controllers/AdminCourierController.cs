@@ -16,24 +16,16 @@ namespace Talabi.Api.Controllers;
 [Route("api/admin/couriers")]
 [ApiController]
 [Authorize(Roles = "Admin")]
-public class AdminCourierController : BaseController
+public class AdminCourierController(
+    IUnitOfWork unitOfWork,
+    ILogger<AdminCourierController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    IOrderAssignmentService assignmentService)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly IOrderAssignmentService _assignmentService;
+    private readonly IOrderAssignmentService _assignmentService = assignmentService;
     private const string ResourceName = "AdminCourierResources";
-
-    /// <summary>
-    /// AdminCourierController constructor
-    /// </summary>
-    public AdminCourierController(
-        IUnitOfWork unitOfWork,
-        ILogger<AdminCourierController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        IOrderAssignmentService assignmentService)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _assignmentService = assignmentService;
-    }
 
     /// <summary>
     /// Tüm kuryeleri getirir (filtreleme ile)
@@ -79,8 +71,8 @@ public class AdminCourierController : BaseController
                 CurrentDayEarnings = c.CurrentDayEarnings,
                 TotalDeliveries = c.TotalDeliveries,
                 AverageRating = c.AverageRating,
-                WorkingHoursStart = c.WorkingHoursStart,
-                WorkingHoursEnd = c.WorkingHoursEnd,
+                // WorkingHoursStart = c.WorkingHoursStart,
+                // WorkingHoursEnd = c.WorkingHoursEnd,
                 IsWithinWorkingHours = c.IsWithinWorkingHours
             })
             .ToListAsync();

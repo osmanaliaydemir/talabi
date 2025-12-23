@@ -3,23 +3,17 @@ using Talabi.Core.Services;
 
 namespace Talabi.Infrastructure.Services;
 
-public class CurrencyService : ICurrencyService
+public class CurrencyService(HttpClient httpClient, ILogger<CurrencyService> logger) : ICurrencyService
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<CurrencyService> _logger;
-    
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<CurrencyService> _logger = logger;
+
     // Cache for exchange rates (in production, use Redis or similar)
     private readonly Dictionary<string, decimal> _exchangeRates = new()
     {
         { "TRY_USDT", 0.034m }, // Example: 1 TRY = 0.034 USDT
         { "USDT_TRY", 29.41m }  // Example: 1 USDT = 29.41 TRY
     };
-
-    public CurrencyService(HttpClient httpClient, ILogger<CurrencyService> logger)
-    {
-        _httpClient = httpClient;
-        _logger = logger;
-    }
 
     public decimal Convert(decimal amount, string fromCurrency, string toCurrency)
     {
@@ -52,11 +46,11 @@ public class CurrencyService : ICurrencyService
         return 1.0m;
     }
 
-    public async Task<decimal> GetExchangeRateAsync(string fromCurrency, string toCurrency)
+    public Task<decimal> GetExchangeRateAsync(string fromCurrency, string toCurrency)
     {
         // TODO: Implement real-time exchange rate fetching from an API
         // For now, return cached rate
-        return GetExchangeRate(fromCurrency, toCurrency);
+        return Task.FromResult(GetExchangeRate(fromCurrency, toCurrency));
     }
 }
 

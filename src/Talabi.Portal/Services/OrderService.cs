@@ -6,21 +6,14 @@ using Talabi.Portal.Models;
 
 namespace Talabi.Portal.Services;
 
-public class OrderService : IOrderService
+public class OrderService(
+    IUnitOfWork unitOfWork,
+    IUserContextService userContextService,
+    ILogger<OrderService> logger) : IOrderService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IUserContextService _userContextService;
-    private readonly ILogger<OrderService> _logger;
-
-    public OrderService(
-        IUnitOfWork unitOfWork,
-        IUserContextService userContextService,
-        ILogger<OrderService> logger)
-    {
-        _unitOfWork = unitOfWork;
-        _userContextService = userContextService;
-        _logger = logger;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUserContextService _userContextService = userContextService;
+    private readonly ILogger<OrderService> _logger = logger;
 
     private async Task<Guid?> GetVendorIdAsync(CancellationToken ct)
     {
@@ -30,11 +23,11 @@ public class OrderService : IOrderService
         var vendor = await _unitOfWork.Vendors.Query()
             .Select(v => new { v.Id, v.OwnerId })
             .FirstOrDefaultAsync(v => v.OwnerId == userId, ct);
-        
+
         return vendor?.Id;
     }
 
-    public async Task<PagedResultDto<VendorOrderDto>?> GetOrdersAsync(int page = 1, int pageSize = 10, OrderStatus? status = null, 
+    public async Task<PagedResultDto<VendorOrderDto>?> GetOrdersAsync(int page = 1, int pageSize = 10, OrderStatus? status = null,
         string? search = null, string? sortBy = null, string sortOrder = "desc",
         DateTime? startDate = null, DateTime? endDate = null, decimal? minAmount = null, decimal? maxAmount = null,
         CancellationToken ct = default)
@@ -70,7 +63,7 @@ public class OrderService : IOrderService
             {
                 var searchLower = search.ToLower();
                 // Search by Order ID or Customer Name
-                query = query.Where(o => o.CustomerOrderId.ToLower().Contains(searchLower) || 
+                query = query.Where(o => o.CustomerOrderId.ToLower().Contains(searchLower) ||
                                          (o.Customer != null && (o.Customer.FullName).ToLower().Contains(searchLower)));
             }
 
@@ -141,7 +134,7 @@ public class OrderService : IOrderService
                 .Include(o => o.StatusHistory)
                 .Include(o => o.OrderCouriers)
                 .ThenInclude(oc => oc.Courier)
-                .ThenInclude(c => c.User)
+                .ThenInclude(c => c!.User)
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId.Value, ct);
 
             if (order == null) return null;
@@ -162,18 +155,18 @@ public class OrderService : IOrderService
                 CreatedAt = order.CreatedAt,
                 ItemCount = order.OrderItems.Count,
                 DeliveryAddress = order.DeliveryAddress != null ? $"{order.DeliveryAddress.FullAddress} {(order.DeliveryAddress.City != null ? order.DeliveryAddress.City.NameTr : "")}" : null,
-                Items = order.OrderItems.Select(oi => new VendorOrderItemDto
+                Items = [.. order.OrderItems.Select(oi => new VendorOrderItemDto
                 {
                     ProductName = oi.Product?.Name ?? "Unknown Product",
                     Quantity = oi.Quantity,
                     UnitPrice = oi.UnitPrice
-                }).ToList(),
-                StatusHistory = order.StatusHistory.OrderByDescending(h => h.CreatedAt).Select(h => new OrderStatusHistoryDto
+                })],
+                StatusHistory = [.. order.StatusHistory.OrderByDescending(h => h.CreatedAt).Select(h => new OrderStatusHistoryDto
                 {
                     Status = h.Status,
                     CreatedAt = h.CreatedAt,
                     Note = h.Note
-                }).ToList(),
+                })],
                 CourierName = activeCourier?.Courier?.User?.FullName,
                 CourierPhone = activeCourier?.Courier?.User?.PhoneNumber,
                 CourierStatus = activeCourier != null ? "Assigned" : null // Simplified logic
@@ -319,16 +312,16 @@ public class OrderService : IOrderService
         try
         {
             var vendorId = await GetVendorIdAsync(ct);
-            if (vendorId == null) return new List<AvailableCourierDto>();
+            if (vendorId == null) return [];
 
-             var order = await _unitOfWork.Orders.Query()
-                .Include(o => o.Vendor)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.VendorId == vendorId.Value, ct);
+            var order = await _unitOfWork.Orders.Query()
+               .Include(o => o.Vendor)
+               .FirstOrDefaultAsync(o => o.Id == orderId && o.VendorId == vendorId.Value, ct);
 
-            if (order == null || order.Status != OrderStatus.Ready) return new List<AvailableCourierDto>();
+            if (order == null || order.Status != OrderStatus.Ready) return [];
 
             var vendor = order.Vendor;
-            if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue) return new List<AvailableCourierDto>();
+            if (vendor == null || !vendor.Latitude.HasValue || !vendor.Longitude.HasValue) return [];
 
             var availableCouriersQuery = await _unitOfWork.Couriers.Query()
                 .Where(c => c.IsActive
@@ -371,7 +364,7 @@ public class OrderService : IOrderService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting available couriers for order {OrderId}", orderId);
-            return new List<AvailableCourierDto>();
+            return [];
         }
     }
 }

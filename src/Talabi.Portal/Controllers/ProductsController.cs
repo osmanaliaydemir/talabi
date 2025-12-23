@@ -13,7 +13,7 @@ public class ProductsController : Controller
     private readonly ILogger<ProductsController> _logger;
 
     public ProductsController(
-        IProductService productService, 
+        IProductService productService,
         ILocalizationService localizationService,
         ILogger<ProductsController> logger)
     {
@@ -72,27 +72,27 @@ public class ProductsController : Controller
 
             if (result == null)
             {
-                 return Json(new 
-                 { 
-                     draw = draw, 
-                     recordsTotal = 0, 
-                     recordsFiltered = 0, 
-                     data = Array.Empty<object>() 
-                 });
+                return Json(new
+                {
+                    draw,
+                    recordsTotal = 0,
+                    recordsFiltered = 0,
+                    data = Array.Empty<object>()
+                });
             }
 
             return Json(new
             {
-                draw = draw,
+                draw,
                 recordsTotal = result.TotalCount,
-                recordsFiltered = result.TotalCount, // API returns total filtered count in TotalCount usually
+                recordsFiltered = result.TotalCount,
                 data = result.Items
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching product list");
-            return Json(new { draw = draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
+            return Json(new { draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
         }
     }
 
@@ -112,12 +112,12 @@ public class ProductsController : Controller
         var success = await _productService.CreateProductAsync(dto);
         if (success)
             return Json(new { success = true });
-        
+
         return Json(new { success = false, message = "Ürün oluşturulamadı." });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Update([FromBody] UpdateProductDto dto)
+    public IActionResult Update([FromBody] UpdateProductDto dto)
     {
         // For update, we might need ID in URL or Body. DTO acts as Body usually. 
         // But usually Update needs ID. I'll read ID from Query or DTO wrapper?
@@ -130,7 +130,7 @@ public class ProductsController : Controller
         // Let's make: Products/Update/{id}
         return BadRequest("Use Update/{id}");
     }
-    
+
     [HttpPut] // Using PUT to match semantic
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
     {

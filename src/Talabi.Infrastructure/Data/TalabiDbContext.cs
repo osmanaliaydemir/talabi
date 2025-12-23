@@ -10,55 +10,55 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     {
     }
 
-    public DbSet<Vendor> Vendors { get; set; }
-    public DbSet<Product> Products { get; set; }
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<CategoryTranslation> CategoryTranslations { get; set; }
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<OrderItem> OrderItems { get; set; }
-    public DbSet<OrderCourier> OrderCouriers { get; set; }
-    public DbSet<Cart> Carts { get; set; }
-    public DbSet<CartItem> CartItems { get; set; }
-    public DbSet<UserAddress> UserAddresses { get; set; }
-    public DbSet<FavoriteProduct> FavoriteProducts { get; set; }
-    public DbSet<NotificationSettings> NotificationSettings { get; set; }
-    public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
-    public DbSet<Courier> Couriers { get; set; }
-    public DbSet<CourierNotification> CourierNotifications { get; set; }
-    public DbSet<VendorNotification> VendorNotifications { get; set; }
-    public DbSet<CustomerNotification> CustomerNotifications { get; set; }
-    public DbSet<UserPreferences> UserPreferences { get; set; }
-    public DbSet<Review> Reviews { get; set; }
-    public DbSet<DeliveryProof> DeliveryProofs { get; set; }
-    public DbSet<CourierEarning> CourierEarnings { get; set; }
-    public DbSet<Customer> Customers { get; set; }
-    public DbSet<LegalDocument> LegalDocuments { get; set; }
-    public DbSet<UserActivityLog> UserActivityLogs { get; set; }
-    public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
-    public DbSet<PromotionalBanner> PromotionalBanners { get; set; }
-    public DbSet<PromotionalBannerTranslation> PromotionalBannerTranslations { get; set; }
-    public DbSet<ErrorLog> ErrorLogs { get; set; }
-    public DbSet<VendorDeliveryZone> VendorDeliveryZones { get; set; }
-    public DbSet<CourierDeliveryZone> CourierDeliveryZones { get; set; }
-    public DbSet<Country> Countries { get; set; }
-    public DbSet<City> Cities { get; set; }
-    public DbSet<District> Districts { get; set; }
-    public DbSet<Locality> Localities { get; set; }
-    public DbSet<VendorWorkingHour> VendorWorkingHours { get; set; }
-    public DbSet<CourierWorkingHour> CourierWorkingHours { get; set; }
-    public DbSet<Coupon> Coupons { get; set; }
-    public DbSet<Campaign> Campaigns { get; set; }
+    public DbSet<Vendor> Vendors { get; set; } = null!;
+    public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<Category> Categories { get; set; } = null!;
+    public DbSet<CategoryTranslation> CategoryTranslations { get; set; } = null!;
+    public DbSet<Order> Orders { get; set; } = null!;
+    public DbSet<OrderItem> OrderItems { get; set; } = null!;
+    public DbSet<OrderCourier> OrderCouriers { get; set; } = null!;
+    public DbSet<Cart> Carts { get; set; } = null!;
+    public DbSet<CartItem> CartItems { get; set; } = null!;
+    public DbSet<UserAddress> UserAddresses { get; set; } = null!;
+    public DbSet<FavoriteProduct> FavoriteProducts { get; set; } = null!;
+    public DbSet<NotificationSettings> NotificationSettings { get; set; } = null!;
+    public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; } = null!;
+    public DbSet<Courier> Couriers { get; set; } = null!;
+    public DbSet<CourierNotification> CourierNotifications { get; set; } = null!;
+    public DbSet<VendorNotification> VendorNotifications { get; set; } = null!;
+    public DbSet<CustomerNotification> CustomerNotifications { get; set; } = null!;
+    public DbSet<UserPreferences> UserPreferences { get; set; } = null!;
+    public DbSet<Review> Reviews { get; set; } = null!;
+    public DbSet<DeliveryProof> DeliveryProofs { get; set; } = null!;
+    public DbSet<CourierEarning> CourierEarnings { get; set; } = null!;
+    public DbSet<Customer> Customers { get; set; } = null!;
+    public DbSet<LegalDocument> LegalDocuments { get; set; } = null!;
+    public DbSet<UserActivityLog> UserActivityLogs { get; set; } = null!;
+    public DbSet<UserDeviceToken> UserDeviceTokens { get; set; } = null!;
+    public DbSet<PromotionalBanner> PromotionalBanners { get; set; } = null!;
+    public DbSet<PromotionalBannerTranslation> PromotionalBannerTranslations { get; set; } = null!;
+    public DbSet<ErrorLog> ErrorLogs { get; set; } = null!;
+    public DbSet<VendorDeliveryZone> VendorDeliveryZones { get; set; } = null!;
+    public DbSet<CourierDeliveryZone> CourierDeliveryZones { get; set; } = null!;
+    public DbSet<Country> Countries { get; set; } = null!;
+    public DbSet<City> Cities { get; set; } = null!;
+    public DbSet<District> Districts { get; set; } = null!;
+    public DbSet<Locality> Localities { get; set; } = null!;
+    public DbSet<VendorWorkingHour> VendorWorkingHours { get; set; } = null!;
+    public DbSet<CourierWorkingHour> CourierWorkingHours { get; set; } = null!;
+    public DbSet<Coupon> Coupons { get; set; } = null!;
+    public DbSet<Campaign> Campaigns { get; set; } = null!;
 
     // Advanced Rules Relations
-    public DbSet<CampaignCity> CampaignCities { get; set; }
-    public DbSet<CampaignDistrict> CampaignDistricts { get; set; }
-    public DbSet<CampaignCategory> CampaignCategories { get; set; }
-    public DbSet<CampaignProduct> CampaignProducts { get; set; }
-    public DbSet<CouponCity> CouponCities { get; set; }
-    public DbSet<CouponDistrict> CouponDistricts { get; set; }
-    public DbSet<CouponCategory> CouponCategories { get; set; }
-    public DbSet<CouponProduct> CouponProducts { get; set; }
-    public DbSet<SystemSetting> SystemSettings { get; set; }
+    public DbSet<CampaignCity> CampaignCities { get; set; } = null!;
+    public DbSet<CampaignDistrict> CampaignDistricts { get; set; } = null!;
+    public DbSet<CampaignCategory> CampaignCategories { get; set; } = null!;
+    public DbSet<CampaignProduct> CampaignProducts { get; set; } = null!;
+    public DbSet<CouponCity> CouponCities { get; set; } = null!;
+    public DbSet<CouponDistrict> CouponDistricts { get; set; } = null!;
+    public DbSet<CouponCategory> CouponCategories { get; set; } = null!;
+    public DbSet<CouponProduct> CouponProducts { get; set; } = null!;
+    public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
 
 
 
@@ -485,7 +485,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .WithMany(c => c.CampaignDistricts)
             .HasForeignKey(cd => cd.CampaignId)
             .OnDelete(DeleteBehavior.Cascade);
-            
+
         builder.Entity<CampaignDistrict>()
             .HasOne(cd => cd.District)
             .WithMany()
@@ -540,7 +540,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<CouponDistrict>()
             .HasKey(cd => new { cd.CouponId, cd.DistrictId });
-        
+
         builder.Entity<CouponDistrict>()
             .HasOne(cd => cd.Coupon)
             .WithMany(c => c.CouponDistricts)
@@ -555,7 +555,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<CouponCategory>()
             .HasKey(cc => new { cc.CouponId, cc.CategoryId });
-        
+
         builder.Entity<CouponCategory>()
             .HasOne(cc => cc.Coupon)
             .WithMany(c => c.CouponCategories)

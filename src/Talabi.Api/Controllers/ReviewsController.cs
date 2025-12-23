@@ -15,27 +15,18 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class ReviewsController : BaseController
+public class ReviewsController(
+    IUnitOfWork unitOfWork,
+    ILogger<ReviewsController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    UserManager<AppUser> userManager,
+    IMapper mapper)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly IMapper _mapper;
+    private readonly UserManager<AppUser> _userManager = userManager;
+    private readonly IMapper _mapper = mapper;
     private const string ResourceName = "ReviewResources";
-
-    /// <summary>
-    /// ReviewsController constructor
-    /// </summary>
-    public ReviewsController(
-        IUnitOfWork unitOfWork,
-        ILogger<ReviewsController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        UserManager<AppUser> userManager,
-        IMapper mapper)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _userManager = userManager;
-        _mapper = mapper;
-    }
 
     /// <summary>
     /// Yeni değerlendirme oluşturur
@@ -150,7 +141,7 @@ public class ReviewsController : BaseController
         var reviewWithRelations = await UnitOfWork.Reviews.Query()
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p.Vendor)
+                .ThenInclude(p => p!.Vendor)
             .Include(r => r.Vendor)
             .FirstOrDefaultAsync(r => r.Id == review.Id);
 
@@ -204,7 +195,7 @@ public class ReviewsController : BaseController
         var reviews = await orderedQuery
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .Include(r => r.Vendor)
             .ToListAsync();
 
@@ -235,7 +226,7 @@ public class ReviewsController : BaseController
             .Include(r => r.User)
             .Include(r => r.Vendor)
             .Include(r => r.Product)
-                .ThenInclude(p => p.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .Where(r => r.VendorId == vendorId);
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);

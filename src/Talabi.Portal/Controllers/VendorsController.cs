@@ -6,21 +6,14 @@ using Talabi.Portal.Services;
 namespace Talabi.Portal.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class VendorsController : Controller
+public class VendorsController(
+    IVendorService vendorService,
+    ILogger<VendorsController> logger,
+    ILocalizationService localizationService) : Controller
 {
-    private readonly IVendorService _vendorService;
-    private readonly ILogger<VendorsController> _logger;
-    private readonly ILocalizationService _localizationService;
-
-    public VendorsController(
-        IVendorService vendorService,
-        ILogger<VendorsController> logger,
-        ILocalizationService localizationService)
-    {
-        _vendorService = vendorService;
-        _logger = logger;
-        _localizationService = localizationService;
-    }
+    private readonly IVendorService _vendorService = vendorService;
+    private readonly ILogger<VendorsController> _logger = logger;
+    private readonly ILocalizationService _localizationService = localizationService;
 
     public IActionResult Index()
     {
@@ -49,7 +42,7 @@ public class VendorsController : Controller
 
             return Json(new
             {
-                draw = draw,
+                draw,
                 recordsTotal = result.TotalCount,
                 recordsFiltered = result.TotalCount,
                 data = result.Items
@@ -58,7 +51,7 @@ public class VendorsController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching vendor list");
-            return Json(new { draw = draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
+            return Json(new { draw, recordsTotal = 0, recordsFiltered = 0, error = "Error loading data" });
         }
     }
 

@@ -27,21 +27,21 @@ public class CampaignCalculator : ICampaignCalculator
         // 2. Schedule Check (Days of Week)
         if (!string.IsNullOrEmpty(campaign.ValidDaysOfWeek))
         {
-            var dayOfWeek = (int)DateTime.UtcNow.DayOfWeek; 
+            var dayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
             // C# DayOfWeek: Sunday=0, Monday=1... 
             // Ensure format alignment. Let's assume ValidDaysOfWeek is comma separated ints "1,2,3"
             // If Sunday is 0 in C#, verify if admin portal uses 1 for Monday, 7 for Sunday.
             // Standard: 0=Sunday, 1=Monday...
-            
+
             // Let's assume the stored format matches C# DayOfWeek or handle conversion if needed.
             // For robustness, let's assume it stores C# enum values.
             var validDays = campaign.ValidDaysOfWeek.Split(',', StringSplitOptions.RemoveEmptyEntries)
                                                     .Select(s => int.Parse(s.Trim()))
                                                     .ToList();
-                                                    
+
             if (!validDays.Contains(dayOfWeek))
             {
-                 return Fail(result, "Campaign is not valid for today.");
+                return Fail(result, "Campaign is not valid for today.");
             }
         }
 
@@ -74,7 +74,7 @@ public class CampaignCalculator : ICampaignCalculator
 
             if (campaign.TargetAudience == TargetAudience.NewUsers && orderCount > 0)
             {
-                 return Fail(result, "This campaign is for new users only.");
+                return Fail(result, "This campaign is for new users only.");
             }
             else if (campaign.TargetAudience == TargetAudience.ReturningUsers && orderCount == 0)
             {
@@ -83,14 +83,14 @@ public class CampaignCalculator : ICampaignCalculator
         }
         else if (campaign.IsFirstOrderOnly) // Legacy check fallback
         {
-             if (string.IsNullOrEmpty(userId))
-             {
-                 return Fail(result, "Please login to use this campaign.");
-             }
-             var orderCount = await _unitOfWork.Orders.Query()
-                 .CountAsync(o => o.CustomerId == userId);
-                 
-             if (orderCount > 0) return Fail(result, "This campaign is for new users only.");
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Fail(result, "Please login to use this campaign.");
+            }
+            var orderCount = await _unitOfWork.Orders.Query()
+                .CountAsync(o => o.CustomerId == userId);
+
+            if (orderCount > 0) return Fail(result, "This campaign is for new users only.");
         }
 
         // 5. Usage Limits (Per User)
@@ -99,7 +99,7 @@ public class CampaignCalculator : ICampaignCalculator
             // Count completed orders with this campaign for this user
             var userUsage = await _unitOfWork.Orders.Query()
                 .CountAsync(o => o.CustomerId == userId && o.CampaignId == campaign.Id);
-                
+
             if (userUsage >= campaign.UsageLimitPerUser.Value)
             {
                 return Fail(result, "You have reached the usage limit for this campaign.");
@@ -112,7 +112,7 @@ public class CampaignCalculator : ICampaignCalculator
             // Calculate cart subtotal (excluding delivery fee, checking validation context)
             // Assuming cart items have updated prices
             var subtotal = cart.CartItems.Sum(i => i.Quantity * i.Product!.Price);
-             if (subtotal < campaign.MinCartAmount.Value)
+            if (subtotal < campaign.MinCartAmount.Value)
             {
                 return Fail(result, $"Cart amount must be at least {campaign.MinCartAmount.Value:C}.");
             }
@@ -120,31 +120,31 @@ public class CampaignCalculator : ICampaignCalculator
 
         // 7. Calculate Discount (Item Based vs Total)
         decimal discount = 0;
-        
+
         // Determine applicable items
         // Strategy: 
         // If CampaignProducts is empty & CampaignCategories is empty -> All items applicable
         // If CampaignProducts has items -> Only those items applicable
         // If CampaignCategories has items -> Only items in those categories applicable
         // Union of both (if product is in list OR category is in list)
-        
+
         // Note: Relation loading is important. Ensure Campaign was loaded with Includes.
-        
+
         var applicableItems = new List<CartItem>();
-        
+
         // Simplified Logic: if no restrictions, all items.
         bool hasProductRestrictions = campaign.CampaignProducts != null && campaign.CampaignProducts.Any();
         bool hasCategoryRestrictions = campaign.CampaignCategories != null && campaign.CampaignCategories.Any();
-        
+
         if (!hasProductRestrictions && !hasCategoryRestrictions)
         {
-             applicableItems.AddRange(cart.CartItems);
+            applicableItems.AddRange(cart.CartItems);
         }
         else
         {
             var allowedProductIds = campaign.CampaignProducts?.Select(cp => cp.ProductId).ToList() ?? new List<Guid>();
             var allowedCategoryIds = campaign.CampaignCategories?.Select(cc => cc.CategoryId).ToList() ?? new List<Guid>();
-            
+
             foreach (var item in cart.CartItems)
             {
                 if (allowedProductIds.Contains(item.ProductId))
@@ -152,16 +152,16 @@ public class CampaignCalculator : ICampaignCalculator
                     applicableItems.Add(item);
                     continue;
                 }
-                
+
                 // For category check, we need Product loaded with CategoryId.
                 // Assuming item.Product.CategoryId available.
-                if (item.Product != null && allowedCategoryIds.Contains(item.Product.CategoryId.Value))
+                if (item.Product != null && allowedCategoryIds.Contains(item.Product!.CategoryId!.Value))
                 {
-                     applicableItems.Add(item);
+                    applicableItems.Add(item);
                 }
             }
         }
-        
+
         if (!applicableItems.Any())
         {
             // Valid campaign, but no applicable items in cart?
@@ -173,7 +173,7 @@ public class CampaignCalculator : ICampaignCalculator
 
         // Calculate Discount
         var applicableSubtotal = applicableItems.Sum(i => i.Quantity * i.Product!.Price);
-        
+
         if (campaign.DiscountType == DiscountType.Percentage)
         {
             discount = applicableSubtotal * (campaign.DiscountValue / 100m);
@@ -183,7 +183,7 @@ public class CampaignCalculator : ICampaignCalculator
             // If fixed amount, is it per item or total?
             // Usually "50 TL off" means total off.
             // Usage: 50 TL off on applicable items total.
-            
+
             // Check if applicable subtotal is enough?
             // If discount > subtotal, cap at subtotal?
             discount = campaign.DiscountValue;
@@ -203,7 +203,7 @@ public class CampaignCalculator : ICampaignCalculator
 
         result.DiscountAmount = discount;
         result.ApplicableItemIds = applicableItems.Select(i => i.Id).ToList();
-        
+
         return result;
     }
 

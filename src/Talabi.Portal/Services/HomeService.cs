@@ -4,21 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Talabi.Portal.Services;
 
-public class HomeService : IHomeService
+public class HomeService(
+    IUnitOfWork unitOfWork,
+    IUserContextService userContextService,
+    ILogger<HomeService> logger) : IHomeService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IUserContextService _userContextService;
-    private readonly ILogger<HomeService> _logger;
-
-    public HomeService(
-        IUnitOfWork unitOfWork,
-        IUserContextService userContextService,
-        ILogger<HomeService> logger)
-    {
-        _unitOfWork = unitOfWork;
-        _userContextService = userContextService;
-        _logger = logger;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUserContextService _userContextService = userContextService;
+    private readonly ILogger<HomeService> _logger = logger;
 
     public async Task<VendorProfileDto?> GetProfileAsync(CancellationToken ct = default)
     {
@@ -65,7 +58,7 @@ public class HomeService : IHomeService
                 .FirstOrDefaultAsync(v => v.OwnerId == userId, ct);
 
             if (vendor == null) return viewModel;
-            
+
             var today = DateTime.UtcNow.Date;
             var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
             var todayEnd = todayStart.AddDays(1).AddTicks(-1);
@@ -73,17 +66,17 @@ public class HomeService : IHomeService
             // 1. Dashboard Stats (Today)
             viewModel.PendingOrdersCount = await _unitOfWork.Orders.Query()
                 .CountAsync(o => o.VendorId == vendor.Id && o.Status == Talabi.Core.Enums.OrderStatus.Pending, ct);
-            
+
             viewModel.CompletedOrdersToday = await _unitOfWork.Orders.Query()
-                .CountAsync(o => o.VendorId == vendor.Id && 
-                               o.Status == Talabi.Core.Enums.OrderStatus.Delivered && 
-                               o.CreatedAt >= todayStart && 
+                .CountAsync(o => o.VendorId == vendor.Id &&
+                               o.Status == Talabi.Core.Enums.OrderStatus.Delivered &&
+                               o.CreatedAt >= todayStart &&
                                o.CreatedAt <= todayEnd, ct);
-                               
+
             viewModel.TotalRevenueToday = await _unitOfWork.Orders.Query()
-                .Where(o => o.VendorId == vendor.Id && 
+                .Where(o => o.VendorId == vendor.Id &&
                             o.Status == Talabi.Core.Enums.OrderStatus.Delivered &&
-                            o.CreatedAt >= todayStart && 
+                            o.CreatedAt >= todayStart &&
                             o.CreatedAt <= todayEnd)
                 .SumAsync(o => o.TotalAmount, ct);
 
@@ -107,7 +100,7 @@ public class HomeService : IHomeService
 
             viewModel.AverageOrderValue = completedOrders > 0 ? Math.Round(totalAllTimeRevenue / completedOrders, 2) : 0;
             viewModel.CancellationRate = totalOrders > 0 ? Math.Round((double)cancelledOrders / totalOrders, 4) : 0;
-            
+
             // 3. Active Products
             viewModel.ActiveProductsCount = await _unitOfWork.Products.Query()
                 .CountAsync(p => p.VendorId == vendor.Id && p.IsAvailable, ct);
@@ -119,18 +112,18 @@ public class HomeService : IHomeService
                 .Take(10)
                 .ToListAsync(ct);
 
-            viewModel.RecentActivities = notifications.Select(n => new DashboardActivity
+            viewModel.RecentActivities = [.. notifications.Select(n => new DashboardActivity
             {
                 Title = n.Title,
                 Message = n.Message,
                 CreatedAt = n.CreatedAt,
                 Type = n.Type
-            }).ToList();
+            })];
 
             // 5. Sales Trend (Last 30 Days)
             var last30Days = todayEnd.AddDays(-30);
             var salesTrendData = await _unitOfWork.Orders.Query()
-                .Where(o => o.VendorId == vendor.Id && 
+                .Where(o => o.VendorId == vendor.Id &&
                             o.Status == Talabi.Core.Enums.OrderStatus.Delivered &&
                             o.CreatedAt >= last30Days)
                 .GroupBy(o => o.CreatedAt.Date)
@@ -143,12 +136,12 @@ public class HomeService : IHomeService
                 .OrderBy(x => x.Date)
                 .ToListAsync(ct);
 
-            viewModel.SalesTrend = salesTrendData.Select(x => new SalesTrendItem
+            viewModel.SalesTrend = [.. salesTrendData.Select(x => new SalesTrendItem
             {
                 Date = x.Date.ToString("dd MMM", new System.Globalization.CultureInfo("tr-TR")),
                 Amount = x.Amount,
                 Count = x.Count
-            }).ToList();
+            })];
 
             // 6. Order Status Distribution
             var statusData = await _unitOfWork.Orders.Query()
@@ -161,11 +154,11 @@ public class HomeService : IHomeService
                 })
                 .ToListAsync(ct);
 
-            viewModel.OrderStatusDistribution = statusData.Select(x => new OrderStatusItem
+            viewModel.OrderStatusDistribution = [.. statusData.Select(x => new OrderStatusItem
             {
                 Status = x.Status.ToString(),
                 Count = x.Count
-            }).ToList();
+            })];
 
             // 7. Category Revenue (Based on delivered orders)
             // Note: This requires joining OrderItems -> Product -> Category
@@ -173,53 +166,53 @@ public class HomeService : IHomeService
             // Assuming we can access OrderItems directly via UnitOfWork.
             var categoryData = await _unitOfWork.OrderItems.Query()
                 .Include(oi => oi.Product)
-                .ThenInclude(p => p.Category)
+                .ThenInclude(p => p!.ProductCategory)
                 .Include(oi => oi.Order)
-                .Where(oi => oi.Order.VendorId == vendor.Id && 
-                             oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered)
-                .GroupBy(oi => oi.Product.Category.Name)
+                .Where(oi => oi.Order!.VendorId == vendor.Id &&
+                             oi.Order!.Status == Talabi.Core.Enums.OrderStatus.Delivered)
+                .GroupBy(oi => oi.Product!.ProductCategory != null ? oi.Product!.ProductCategory.Name : "Uncategorized")
                 .Select(g => new
                 {
                     CategoryName = g.Key,
-                    Revenue = g.Sum(oi => oi.TotalPrice),
+                    Revenue = g.Sum(oi => oi.UnitPrice * oi.Quantity),
                     Count = g.Count()
                 })
                 .OrderByDescending(x => x.Revenue)
                 .Take(5)
                 .ToListAsync(ct);
 
-            viewModel.Categoryrevenue = categoryData.Select(x => new CategoryRevenueItem
+            viewModel.Categoryrevenue = [.. categoryData.Select(x => new CategoryRevenueItem
             {
                 CategoryName = x.CategoryName,
                 Revenue = x.Revenue,
                 OrderCount = x.Count
-            }).ToList();
+            })];
 
             // 8. Top Products
             var topProductsData = await _unitOfWork.OrderItems.Query()
                 .Include(oi => oi.Product)
                 .Include(oi => oi.Order)
-                .Where(oi => oi.Order.VendorId == vendor.Id && 
-                             oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered)
-                .GroupBy(oi => new { oi.Product.Name, oi.Product.ImageUrl })
+                .Where(oi => oi.Order!.VendorId == vendor.Id &&
+                             oi.Order!.Status == Talabi.Core.Enums.OrderStatus.Delivered)
+                .GroupBy(oi => new { oi.Product!.Name, oi.Product!.ImageUrl })
                 .Select(g => new
                 {
                     ProductName = g.Key.Name,
-                    ImageUrl = g.Key.ImageUrl,
+                    g.Key.ImageUrl,
                     Quantity = g.Sum(oi => oi.Quantity),
-                    Revenue = g.Sum(oi => oi.TotalPrice)
+                    Revenue = g.Sum(oi => oi.UnitPrice * oi.Quantity)
                 })
                 .OrderByDescending(x => x.Quantity)
                 .Take(5)
                 .ToListAsync(ct);
 
-            viewModel.TopProducts = topProductsData.Select(x => new TopProductItem
+            viewModel.TopProducts = [.. topProductsData.Select(x => new TopProductItem
             {
                 ProductName = x.ProductName,
                 ImageUrl = x.ImageUrl,
                 QuantitySold = x.Quantity,
                 TotalRevenue = x.Revenue
-            }).ToList();
+            })];
 
             return viewModel;
         }

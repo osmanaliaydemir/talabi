@@ -6,21 +6,14 @@ using Talabi.Portal.Services;
 namespace Talabi.Portal.Controllers;
 
 [Authorize]
-public class SettingsController : Controller
+public class SettingsController(
+    ISettingsService settingsService,
+    ILocalizationService localizationService,
+    ILogger<SettingsController> logger) : Controller
 {
-    private readonly ISettingsService _settingsService;
-    private readonly ILocalizationService _localizationService;
-    private readonly ILogger<SettingsController> _logger;
-
-    public SettingsController(
-        ISettingsService settingsService,
-        ILocalizationService localizationService,
-        ILogger<SettingsController> logger)
-    {
-        _settingsService = settingsService;
-        _localizationService = localizationService;
-        _logger = logger;
-    }
+    private readonly ISettingsService _settingsService = settingsService;
+    private readonly ILocalizationService _localizationService = localizationService;
+    private readonly ILogger<SettingsController> _logger = logger;
 
     [HttpGet]
     public async Task<IActionResult> Index()

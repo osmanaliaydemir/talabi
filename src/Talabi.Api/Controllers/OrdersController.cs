@@ -16,30 +16,20 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class OrdersController : BaseController
+public class OrdersController(
+    IUnitOfWork unitOfWork,
+    ILogger<OrdersController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    IOrderAssignmentService assignmentService,
+    IOrderService orderService,
+    IMapper mapper)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly IOrderAssignmentService _assignmentService;
-    private readonly IOrderService _orderService;
-    private readonly IMapper _mapper;
+    private readonly IOrderAssignmentService _assignmentService = assignmentService;
+    private readonly IOrderService _orderService = orderService;
+    private readonly IMapper _mapper = mapper;
     private const string ResourceName = "OrderResources";
-
-    /// <summary>
-    /// OrdersController constructor
-    /// </summary>
-    public OrdersController(
-        IUnitOfWork unitOfWork,
-        ILogger<OrdersController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        IOrderAssignmentService assignmentService,
-        IOrderService orderService,
-        IMapper mapper)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _assignmentService = assignmentService;
-        _orderService = orderService;
-        _mapper = mapper;
-    }
 
     /// <summary>
     /// Yeni sipariş oluşturur
@@ -98,7 +88,7 @@ public class OrdersController : BaseController
     public async Task<ActionResult<ApiResponse<OrderCalculationResultDto>>> CalculateOrder(CalculateOrderDto dto)
     {
         var userId = UserContext.GetUserId() ?? "anonymous"; // Or null if strictly required
-        
+
         var result = await _orderService.CalculateOrderAsync(dto, userId, CurrentCulture);
 
         return Ok(new ApiResponse<OrderCalculationResultDto>(
@@ -171,7 +161,7 @@ public class OrdersController : BaseController
         // VendorType filtresi
         if (vendorType.HasValue)
         {
-            query = query.Where(o => o.Vendor.Type == vendorType.Value);
+            query = query.Where(o => o.Vendor!.Type == vendorType.Value);
         }
 
         IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.CreatedAt);
@@ -434,7 +424,7 @@ public class OrdersController : BaseController
             // Ensure StatusHistory is initialized
             if (orderItem.Order.StatusHistory == null)
             {
-                orderItem.Order.StatusHistory = new List<OrderStatusHistory>();
+                orderItem.Order.StatusHistory = [];
             }
 
             if (allItemsCancelled)

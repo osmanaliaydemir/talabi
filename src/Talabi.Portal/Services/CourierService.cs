@@ -7,16 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Talabi.Portal.Services;
 
-public class CourierService : ICourierService
+public class CourierService(IRepository<Courier> courierRepository, IUnitOfWork unitOfWork) : ICourierService
 {
-    private readonly IRepository<Courier> _courierRepository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public CourierService(IRepository<Courier> courierRepository, IUnitOfWork unitOfWork)
-    {
-        _courierRepository = courierRepository;
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IRepository<Courier> _courierRepository = courierRepository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<PagedResult<CourierListDto>> GetCouriersAsync(int page, int pageSize, string? search, string? sortColumn, string? sortDirection)
     {
@@ -28,10 +22,10 @@ public class CourierService : ICourierService
         if (!string.IsNullOrEmpty(search))
         {
             search = search.ToLower();
-            query = query.Where(c => 
-                c.Name.ToLower().Contains(search) || 
-                (c.User != null && c.User.Email!.ToLower().Contains(search)) ||
-                (c.PhoneNumber != null && c.PhoneNumber.Contains(search))
+            query = query.Where(c =>
+                c.Name.ToLower().Contains(search) ||
+                c.User!.Email!.ToLower().Contains(search) ||
+                c.PhoneNumber!.Contains(search)
             );
         }
 
@@ -43,7 +37,7 @@ public class CourierService : ICourierService
             "email" => sortDirection == "desc" ? query.OrderByDescending(c => c.User!.Email) : query.OrderBy(c => c.User!.Email),
             "isActive" => sortDirection == "desc" ? query.OrderByDescending(c => c.IsActive) : query.OrderBy(c => c.IsActive),
             "createdDate" => sortDirection == "desc" ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt),
-            _ => query.OrderByDescending(c => c.CreatedAt) 
+            _ => query.OrderByDescending(c => c.CreatedAt)
         };
 
         var totalCount = await query.CountAsync();
@@ -52,7 +46,7 @@ public class CourierService : ICourierService
             {
                 Id = c.Id.ToString(),
                 Name = c.Name,
-                Email = c.User != null ? c.User.Email : null,
+                Email = c.User!.Email,
                 PhoneNumber = c.PhoneNumber,
                 VehicleType = c.VehicleType.ToString(),
                 IsActive = c.IsActive,

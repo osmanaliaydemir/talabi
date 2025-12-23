@@ -15,27 +15,18 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CartController : BaseController
+public class CartController(
+    IUnitOfWork unitOfWork,
+    ILogger<CartController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    IMapper mapper,
+    ICampaignCalculator campaignCalculator)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly IMapper _mapper;
-    private readonly ICampaignCalculator _campaignCalculator;
+    private readonly IMapper _mapper = mapper;
+    private readonly ICampaignCalculator _campaignCalculator = campaignCalculator;
     private const string ResourceName = "CartResources";
-
-    /// <summary>
-    /// CartController constructor
-    /// </summary>
-    public CartController(
-        IUnitOfWork unitOfWork,
-        ILogger<CartController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        IMapper mapper,
-        ICampaignCalculator campaignCalculator)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _mapper = mapper;
-        _campaignCalculator = campaignCalculator;
-    }
 
     /// <summary>
     /// Kullanıcının sepetini getirir
@@ -64,15 +55,15 @@ public class CartController : BaseController
             .ThenInclude(p => p!.Vendor)
             .Include(c => c.Coupon)
             .Include(c => c.Campaign)
-                .ThenInclude(cmp => cmp.CampaignProducts) // Load related products
+                .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
             .Include(c => c.Campaign)
-                .ThenInclude(cmp => cmp.CampaignCategories) // Load related categories
+                .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         CartDto cartDto;
         if (cart == null)
         {
-            cartDto = new CartDto { UserId = userId, Items = new List<CartItemDto>() };
+            cartDto = new CartDto { UserId = userId, Items = [] };
         }
         else
         {
@@ -143,7 +134,7 @@ public class CartController : BaseController
                     return BadRequest(new ApiResponse<object>(
                         LocalizationService.GetLocalizedString(ResourceName, "AddressRequiredToAddItem", CurrentCulture),
                         "ADDRESS_REQUIRED",
-                        new List<string>())
+                        [])
                     {
                         Data = new { RequiresAddress = true }
                     });
@@ -331,16 +322,16 @@ public class CartController : BaseController
         {
             var coupon = await UnitOfWork.Coupons.Query()
                 .FirstOrDefaultAsync(c => c.Code == dto.CouponCode && c.IsActive);
-            
+
             if (coupon != null)
             {
                 cart.CouponId = coupon.Id;
             }
             else
             {
-                 // Invalid coupon? Clear it or ignore? 
-                 // If sending a coupon code that doesn't exist, maybe clear?
-                 // But safest is to only set if valid. If empty string sent, we clear.
+                // Invalid coupon? Clear it or ignore? 
+                // If sending a coupon code that doesn't exist, maybe clear?
+                // But safest is to only set if valid. If empty string sent, we clear.
             }
         }
         else
@@ -368,10 +359,10 @@ public class CartController : BaseController
 
         if (!string.IsNullOrEmpty(dto.CouponCode))
         {
-             var coupon = await UnitOfWork.Coupons.Query()
-                .FirstOrDefaultAsync(c => c.Code == dto.CouponCode);
-             if (coupon != null) cart.CouponId = coupon.Id;
-             else cart.CouponId = null; // Invalid code -> clear
+            var coupon = await UnitOfWork.Coupons.Query()
+               .FirstOrDefaultAsync(c => c.Code == dto.CouponCode);
+            if (coupon != null) cart.CouponId = coupon.Id;
+            else cart.CouponId = null; // Invalid code -> clear
         }
         else
         {
@@ -434,7 +425,7 @@ public class CartController : BaseController
         UnitOfWork.Carts.Update(cart);
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, 
+        return Ok(new ApiResponse<object>(new { },
             LocalizationService.GetLocalizedString(ResourceName, "PromotionsCleared", CurrentCulture)));
     }
 
@@ -498,19 +489,19 @@ public class CartController : BaseController
         var previousProducts = await UnitOfWork.OrderItems.Query()
             .Include(oi => oi.Order)
             .Include(oi => oi.Product)
-                .ThenInclude(p => p.Vendor)
-            .Where(oi => oi.Order.CustomerId == userId)
-            .Where(oi => type == null || (oi.Product.VendorType == type || (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
-            .OrderByDescending(oi => oi.Order.CreatedAt)
+                .ThenInclude(p => p!.Vendor)
+            .Where(oi => oi.Order!.CustomerId == userId)
+            .Where(oi => type == null || (oi.Product!.VendorType == type || (oi.Product!.Vendor != null && oi.Product!.Vendor.Type == type)))
+            .OrderByDescending(oi => oi.Order!.CreatedAt)
             .Select(oi => oi.Product)
             .Where(p => p != null && p.IsAvailable)
             .Distinct()
             .Take(10)
             .ToListAsync();
 
-        if (previousProducts.Any())
+        if (previousProducts.Count > 0)
         {
-            results.AddRange(previousProducts);
+            results.AddRange(previousProducts!);
         }
 
         // 2. Eğer 10 üründen az varsa konuma en yakın restoran/marketin ürünlerini ekle
@@ -533,7 +524,7 @@ public class CartController : BaseController
             // En yakın vendor'u bul
             var vendorsQuery = UnitOfWork.Vendors.Query()
                 .Where(v => v.IsActive);
-            
+
             if (type.HasValue)
             {
                 vendorsQuery = vendorsQuery.Where(v => v.Type == type.Value);

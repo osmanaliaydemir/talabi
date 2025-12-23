@@ -97,11 +97,11 @@ namespace Talabi.Infrastructure.Services
             var culture = new CultureInfo("tr");
             var title = _resourceManager.GetString("NewProductTitle", culture) ?? "New Product Added! 🎉";
             var bodyTemplate = _resourceManager.GetString("NewProductBody", culture) ?? "{0} added a new product: {1}";
-            var body = string.Format(bodyTemplate, product.Vendor.Name, product.Name);
+            var body = string.Format(bodyTemplate, product.Vendor!.Name, product.Name);
 
             await _notificationService.SendNotificationAsync("/topics/all_users", // Topic subscription required on mobile
                 title, body,
-                new { type = "product", productId = productId }
+                new { type = "product", productId }
             );
         }
 
@@ -117,7 +117,7 @@ namespace Talabi.Infrastructure.Services
             var body = string.Format(bodyTemplate, vendor.Name);
 
             await _notificationService.SendNotificationAsync("/topics/all_users", title, body,
-                new { type = "vendor", vendorId = vendorId });
+                new { type = "vendor", vendorId });
         }
 
         private async Task<string> GetUserLanguageAsync(string userId)

@@ -19,30 +19,20 @@ namespace Talabi.Api.Controllers;
 [Route("api/vendor/orders")]
 [ApiController]
 [Authorize]
-public class VendorOrdersController : BaseController
+public class VendorOrdersController(
+    IUnitOfWork unitOfWork,
+    ILogger<VendorOrdersController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    IOrderAssignmentService assignmentService,
+    IMapper mapper,
+    INotificationService notificationService)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly IOrderAssignmentService _assignmentService;
-    private readonly IMapper _mapper;
-    private readonly INotificationService _notificationService;
+    private readonly IOrderAssignmentService _assignmentService = assignmentService;
+    private readonly IMapper _mapper = mapper;
+    private readonly INotificationService _notificationService = notificationService;
     private const string ResourceName = "VendorOrderResources";
-
-    /// <summary>
-    /// VendorOrdersController constructor
-    /// </summary>
-    public VendorOrdersController(
-        IUnitOfWork unitOfWork,
-        ILogger<VendorOrdersController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        IOrderAssignmentService assignmentService,
-        IMapper mapper,
-        INotificationService notificationService)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _assignmentService = assignmentService;
-        _mapper = mapper;
-        _notificationService = notificationService;
-    }
 
     /// <summary>
     /// Satıcının siparişlerini getirir
@@ -78,8 +68,8 @@ public class VendorOrdersController : BaseController
             // "OutForDelivery" status'ü Assigned, Accepted ve OutForDelivery status'lerini içerir
             if (status.Equals("OutForDelivery", StringComparison.OrdinalIgnoreCase))
             {
-                query = query.Where(o => o.Status == OrderStatus.Assigned 
-                    || o.Status == OrderStatus.Accepted 
+                query = query.Where(o => o.Status == OrderStatus.Assigned
+                    || o.Status == OrderStatus.Accepted
                     || o.Status == OrderStatus.OutForDelivery);
             }
             else if (Enum.TryParse<OrderStatus>(status, out var statusEnum))
@@ -104,8 +94,8 @@ public class VendorOrdersController : BaseController
             {
                 Id = o.Id,
                 CustomerOrderId = o.CustomerOrderId,
-                CustomerName = o.Customer.FullName,
-                CustomerEmail = o.Customer.Email,
+                CustomerName = o.Customer!.FullName,
+                CustomerEmail = o.Customer != null ? o.Customer.Email : null,
                 TotalAmount = o.TotalAmount,
                 Status = o.Status.ToString(),
                 CreatedAt = o.CreatedAt,
@@ -158,7 +148,7 @@ public class VendorOrdersController : BaseController
         // Get active courier assignment
         var activeOrderCourier = order.OrderCouriers.FirstOrDefault(oc => oc.IsActive);
         VendorCourierInfoDto? courierDto = null;
-        
+
         if (activeOrderCourier != null && activeOrderCourier.Courier != null)
         {
             courierDto = new VendorCourierInfoDto
@@ -185,7 +175,7 @@ public class VendorOrdersController : BaseController
             Status = order.Status.ToString(),
             CreatedAt = order.CreatedAt,
             EstimatedDeliveryTime = order.EstimatedDeliveryTime,
-            Items = order.OrderItems.Select(oi => new VendorOrderItemDto
+            Items = [.. order.OrderItems.Select(oi => new VendorOrderItemDto
             {
                 ProductId = oi.ProductId,
                 ProductName = oi.Product?.Name ?? "Unknown Product",
@@ -193,7 +183,7 @@ public class VendorOrdersController : BaseController
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 TotalPrice = oi.Quantity * oi.UnitPrice
-            }).ToList(),
+            })],
             Courier = courierDto
         };
 
@@ -208,61 +198,61 @@ public class VendorOrdersController : BaseController
     [HttpPost("{id}/accept")]
     public async Task<ActionResult<ApiResponse<object>>> AcceptOrder(Guid id)
     {
-            var vendorId = await UserContext.GetVendorIdAsync();
-            if (vendorId == null)
-            {
-                return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
-            }
+        var vendorId = await UserContext.GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
+        }
 
-            // Order'ı Include olmadan yüklüyoruz
-            var order = await UnitOfWork.Orders.Query()
-                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+        // Order'ı Include olmadan yüklüyoruz
+        var order = await UnitOfWork.Orders.Query()
+            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
-            if (order == null)
-            {
-                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
-            }
+        if (order == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
+        }
 
-            if (order.Status != OrderStatus.Pending)
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderCanOnlyBeAcceptedWhenPending", CurrentCulture), "INVALID_ORDER_STATUS"));
-            }
+        if (order.Status != OrderStatus.Pending)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderCanOnlyBeAcceptedWhenPending", CurrentCulture), "INVALID_ORDER_STATUS"));
+        }
 
-            var userId = UserContext.GetUserId();
-            order.Status = OrderStatus.Preparing;
+        var userId = UserContext.GetUserId();
+        order.Status = OrderStatus.Preparing;
 
-            UnitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
+        UnitOfWork.Orders.Update(order); // Order'ı güncelliyoruz
 
-            // StatusHistory'yi ayrı bir entity olarak ekliyoruz
-            await UnitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
-            {
-                OrderId = order.Id,
-                Status = OrderStatus.Preparing,
-                Note = "Order accepted by vendor",
-                CreatedBy = userId ?? "System"
-            });
+        // StatusHistory'yi ayrı bir entity olarak ekliyoruz
+        await UnitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.Preparing,
+            Note = "Order accepted by vendor",
+            CreatedBy = userId ?? "System"
+        });
 
-            // Add customer notification
-            if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-            {
-                var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedTitle", CurrentCulture);
-                var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedMessage", CurrentCulture, order.CustomerOrderId);
-                
-                await AddCustomerNotificationAsync(
-                    order.CustomerId,
-                    notificationTitle,
-                    notificationMessage,
-                    "OrderAccepted",
-                    order.Id);
+        // Add customer notification
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+        {
+            var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedTitle", CurrentCulture);
+            var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedMessage", CurrentCulture, order.CustomerOrderId);
 
-                // Send Firebase push notification to customer
-                var languageCode = CurrentCulture.TwoLetterISOLanguageName;
-                await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, "Preparing", languageCode);
-            }
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                notificationTitle,
+                notificationMessage,
+                "OrderAccepted",
+                order.Id);
 
-            await UnitOfWork.SaveChangesAsync();
+            // Send Firebase push notification to customer
+            var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, "Preparing", languageCode);
+        }
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedSuccessfully", CurrentCulture)));
+        await UnitOfWork.SaveChangesAsync();
+
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -274,70 +264,70 @@ public class VendorOrdersController : BaseController
     [HttpPost("{id}/reject")]
     public async Task<ActionResult<ApiResponse<object>>> RejectOrder(Guid id, [FromBody] RejectOrderDto dto)
     {
-            var vendorId = await UserContext.GetVendorIdAsync();
-            if (vendorId == null)
-            {
-                return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
-            }
+        var vendorId = await UserContext.GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), "NOT_A_VENDOR"));
+        }
 
-            // Order'ı Include etmeden yükle (concurrency sorununu önlemek için)
-            var order = await UnitOfWork.Orders.Query()
-                .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
+        // Order'ı Include etmeden yükle (concurrency sorununu önlemek için)
+        var order = await UnitOfWork.Orders.Query()
+            .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId);
 
-            if (order == null)
-            {
-                return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
-            }
+        if (order == null)
+        {
+            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
+        }
 
-            if (order.Status != OrderStatus.Pending)
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderCanOnlyBeRejectedWhenPending", CurrentCulture), "INVALID_ORDER_STATUS"));
-            }
+        if (order.Status != OrderStatus.Pending)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderCanOnlyBeRejectedWhenPending", CurrentCulture), "INVALID_ORDER_STATUS"));
+        }
 
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
-            {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRejectionReason", CurrentCulture), "INVALID_REJECTION_REASON"));
-            }
+        if (dto == null || string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
+        {
+            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidRejectionReason", CurrentCulture), "INVALID_REJECTION_REASON"));
+        }
 
-            var userId = UserContext.GetUserId();
-            
-            // Order'ı güncelle
-            order.Status = OrderStatus.Cancelled;
-            order.CancelledAt = DateTime.UtcNow;
-            order.CancelReason = $"Rejected by vendor: {dto.Reason}";
-            UnitOfWork.Orders.Update(order);
+        var userId = UserContext.GetUserId();
 
-            // StatusHistory'yi ayrı bir entity olarak ekle (concurrency sorununu önlemek için)
-            var statusHistory = new OrderStatusHistory
-            {
-                OrderId = order.Id,
-                Status = OrderStatus.Cancelled,
-                Note = $"Rejected by vendor: {dto.Reason}",
-                CreatedBy = userId ?? "System"
-            };
-            await UnitOfWork.OrderStatusHistories.AddAsync(statusHistory);
+        // Order'ı güncelle
+        order.Status = OrderStatus.Cancelled;
+        order.CancelledAt = DateTime.UtcNow;
+        order.CancelReason = $"Rejected by vendor: {dto.Reason}";
+        UnitOfWork.Orders.Update(order);
 
-            // Add customer notification
-            if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-            {
-                var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedTitle", CurrentCulture);
-                var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedMessage", CurrentCulture, order.CustomerOrderId, dto.Reason);
-                
-                await AddCustomerNotificationAsync(
-                    order.CustomerId,
-                    notificationTitle,
-                    notificationMessage,
-                    "OrderRejected",
-                    order.Id);
+        // StatusHistory'yi ayrı bir entity olarak ekle (concurrency sorununu önlemek için)
+        var statusHistory = new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.Cancelled,
+            Note = $"Rejected by vendor: {dto.Reason}",
+            CreatedBy = userId ?? "System"
+        };
+        await UnitOfWork.OrderStatusHistories.AddAsync(statusHistory);
 
-                // Send Firebase push notification to customer
-                var languageCode = CurrentCulture.TwoLetterISOLanguageName;
-                await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, "Cancelled", languageCode);
-            }
+        // Add customer notification
+        if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
+        {
+            var notificationTitle = LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedTitle", CurrentCulture);
+            var notificationMessage = LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedMessage", CurrentCulture, order.CustomerOrderId, dto.Reason);
 
-            await UnitOfWork.SaveChangesAsync();
+            await AddCustomerNotificationAsync(
+                order.CustomerId,
+                notificationTitle,
+                notificationMessage,
+                "OrderRejected",
+                order.Id);
 
-            return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedSuccessfully", CurrentCulture)));
+            // Send Firebase push notification to customer
+            var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, "Cancelled", languageCode);
+        }
+
+        await UnitOfWork.SaveChangesAsync();
+
+        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -435,7 +425,7 @@ public class VendorOrdersController : BaseController
         }
     }
 
-    private bool IsValidVendorStatusTransition(OrderStatus current, OrderStatus next)
+    private static bool IsValidVendorStatusTransition(OrderStatus current, OrderStatus next)
     {
         return current switch
         {
@@ -559,7 +549,7 @@ public class VendorOrdersController : BaseController
         // Check if order already has an active courier assignment
         var hasActiveCourier = await UnitOfWork.OrderCouriers.Query()
             .AnyAsync(oc => oc.OrderId == id && oc.IsActive);
-        
+
         if (hasActiveCourier)
         {
             return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAlreadyAssigned", CurrentCulture), "COURIER_ALREADY_ASSIGNED"));
@@ -606,7 +596,7 @@ public class VendorOrdersController : BaseController
         // Check if order already has an active courier assignment
         var hasActiveCourier = await UnitOfWork.OrderCouriers.Query()
             .AnyAsync(oc => oc.OrderId == id && oc.IsActive);
-        
+
         if (hasActiveCourier)
         {
             return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierAlreadyAssigned", CurrentCulture), "COURIER_ALREADY_ASSIGNED"));
