@@ -39,68 +39,73 @@ public class CartController(
     [HttpGet]
     public async Task<ActionResult<ApiResponse<CartDto>>> GetCart()
     {
-
-
-        var userId = UserContext.GetUserId();
-        if (string.IsNullOrWhiteSpace(userId))
+        try
         {
-            return Unauthorized(new ApiResponse<CartDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
-                "UNAUTHORIZED"));
-        }
-
-        var cart = await UnitOfWork.Carts.Query()
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .ThenInclude(p => p!.Vendor)
-            .Include(c => c.Coupon)
-            .Include(c => c.Campaign)
-                .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
-            .Include(c => c.Campaign)
-                .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
-            .FirstOrDefaultAsync(c => c.UserId == userId);
-
-        CartDto cartDto;
-        if (cart == null)
-        {
-            cartDto = new CartDto { UserId = userId, Items = [] };
-        }
-        else
-        {
-            cartDto = _mapper.Map<CartDto>(cart);
-            // Manual mapping for new properties if Mapper Profile not updated
-            // Assuming Mapper handles basic mapping, but we extended CartDto
-            // Safer to double check or set manually
-            cartDto.CouponId = cart.CouponId;
-            cartDto.CampaignId = cart.CampaignId;
-            cartDto.CouponCode = cart.Coupon?.Code;
-            cartDto.CampaignTitle = cart.Campaign?.Title;
-
-            // Calculate Campaign Discount
-            if (cart.Campaign != null)
+            var userId = UserContext.GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                var calculationResult = await _campaignCalculator.CalculateAsync(cart, cart.Campaign, userId);
-                if (calculationResult.IsValid)
+                return Unauthorized(new ApiResponse<CartDto>(
+                    LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                    "UNAUTHORIZED"));
+            }
+
+            var cart = await UnitOfWork.Carts.Query()
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .ThenInclude(p => p!.Vendor)
+                .Include(c => c.Coupon)
+                .Include(c => c.Campaign)
+                    .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
+                .Include(c => c.Campaign)
+                    .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            CartDto cartDto;
+            if (cart == null)
+            {
+                cartDto = new CartDto { UserId = userId, Items = [] };
+            }
+            else
+            {
+                cartDto = _mapper.Map<CartDto>(cart);
+                // Manual mapping for new properties if Mapper Profile not updated
+                // Assuming Mapper handles basic mapping, but we extended CartDto
+                // Safer to double check or set manually
+                cartDto.CouponId = cart.CouponId;
+                cartDto.CampaignId = cart.CampaignId;
+                cartDto.CouponCode = cart.Coupon?.Code;
+                cartDto.CampaignTitle = cart.Campaign?.Title;
+
+                // Calculate Campaign Discount
+                if (cart.Campaign != null)
                 {
-                    cartDto.CampaignDiscountAmount = calculationResult.DiscountAmount;
-                    cartDto.DiscountedItemIds = calculationResult.ApplicableItemIds;
-                }
-                else
-                {
-                    // Campaign is invalid (expired, limit reached, etc.)
-                    // We might want to clear it or notify user.
-                    // For now, let's just not apply discount.
-                    // Ideally, we should add a warning to the response, but CartDto structure is rigid.
-                    // We can set CampaignTitle to "Campaign Invalid: " + Reason?
-                    // Or just remove it from DTO so UI doesn't show it?
-                    // Let's remove from DTO to avoid confusion
-                    cartDto.CampaignId = null;
-                    cartDto.CampaignTitle = null;
+                    var calculationResult = await _campaignCalculator.CalculateAsync(cart, cart.Campaign, userId);
+                    if (calculationResult.IsValid)
+                    {
+                        cartDto.CampaignDiscountAmount = calculationResult.DiscountAmount;
+                        cartDto.DiscountedItemIds = calculationResult.ApplicableItemIds;
+                    }
+                    else
+                    {
+                        // Campaign is invalid (expired, limit reached, etc.)
+                        // We might want to clear it or notify user.
+                        // For now, let's just not apply discount.
+                        // Ideally, we should add a warning to the response, but CartDto structure is rigid.
+                        // We can set CampaignTitle to "Campaign Invalid: " + Reason?
+                        // Or just remove it from DTO so UI doesn't show it?
+                        // Let's remove from DTO to avoid confusion
+                        cartDto.CampaignId = null;
+                        cartDto.CampaignTitle = null;
+                    }
                 }
             }
-        }
 
-        return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
+            return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<CartDto>(ex.ToString(), "DEBUG_500_ERROR"));
+        }
     }
 
     /// <summary>
