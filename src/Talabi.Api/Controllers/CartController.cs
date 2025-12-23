@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
 using AutoMapper;
-using Talabi.Core.Enums;
 using Talabi.Core.Entities;
+using Talabi.Core.Enums;
 
 namespace Talabi.Api.Controllers;
 
@@ -15,23 +15,28 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CartController(
-    IUnitOfWork unitOfWork,
-    ILogger<CartController> logger,
-    ILocalizationService localizationService,
-    IUserContextService userContext,
-    IMapper mapper,
-    ICampaignCalculator campaignCalculator)
-    : BaseController(unitOfWork, logger, localizationService, userContext)
+public class CartController : BaseController
 {
-    private readonly IMapper _mapper = mapper;
-    private readonly ICampaignCalculator _campaignCalculator = campaignCalculator;
+    private readonly IMapper _mapper;
+    private readonly ICampaignCalculator _campaignCalculator;
     private const string ResourceName = "CartResources";
 
     /// <summary>
-    /// Kullanıcının sepetini getirir
+    /// CartController constructor
     /// </summary>
-    /// <returns>Sepet bilgileri</returns>
+    public CartController(
+        IUnitOfWork unitOfWork,
+        ILogger<CartController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        IMapper mapper,
+        ICampaignCalculator campaignCalculator)
+        : base(unitOfWork, logger, localizationService, userContext)
+    {
+        _mapper = mapper;
+        _campaignCalculator = campaignCalculator;
+    }
+
     /// <summary>
     /// Kullanıcının sepetini getirir
     /// </summary>
@@ -63,7 +68,7 @@ public class CartController(
             CartDto cartDto;
             if (cart == null)
             {
-                cartDto = new CartDto { UserId = userId, Items = [] };
+                cartDto = new CartDto { UserId = userId, Items = new List<CartItemDto>() };
             }
             else
             {
@@ -150,7 +155,7 @@ public class CartController(
                     return BadRequest(new ApiResponse<object>(
                         LocalizationService.GetLocalizedString(ResourceName, "AddressRequiredToAddItem", CurrentCulture),
                         "ADDRESS_REQUIRED",
-                        [])
+                        new List<string>())
                     {
                         Data = new { RequiresAddress = true }
                     });
@@ -505,19 +510,19 @@ public class CartController(
         var previousProducts = await UnitOfWork.OrderItems.Query()
             .Include(oi => oi.Order)
             .Include(oi => oi.Product)
-                .ThenInclude(p => p!.Vendor)
-            .Where(oi => oi.Order!.CustomerId == userId)
-            .Where(oi => type == null || (oi.Product!.VendorType == type || (oi.Product!.Vendor != null && oi.Product!.Vendor.Type == type)))
-            .OrderByDescending(oi => oi.Order!.CreatedAt)
+                .ThenInclude(p => p.Vendor)
+            .Where(oi => oi.Order.CustomerId == userId)
+            .Where(oi => type == null || (oi.Product.VendorType == type || (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
+            .OrderByDescending(oi => oi.Order.CreatedAt)
             .Select(oi => oi.Product)
             .Where(p => p != null && p.IsAvailable)
             .Distinct()
             .Take(10)
             .ToListAsync();
 
-        if (previousProducts.Count > 0)
+        if (previousProducts.Any())
         {
-            results.AddRange(previousProducts!);
+            results.AddRange(previousProducts);
         }
 
         // 2. Eğer 10 üründen az varsa konuma en yakın restoran/marketin ürünlerini ekle
