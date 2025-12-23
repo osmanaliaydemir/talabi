@@ -5,14 +5,9 @@ using Talabi.Core.Interfaces;
 
 namespace Talabi.Infrastructure.Services;
 
-public class CampaignCalculator : ICampaignCalculator
+public class CampaignCalculator(IUnitOfWork unitOfWork) : ICampaignCalculator
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public CampaignCalculator(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CampaignCalculationResult> CalculateAsync(Cart cart, Campaign campaign, string userId)
     {
@@ -111,7 +106,7 @@ public class CampaignCalculator : ICampaignCalculator
         {
             // Calculate cart subtotal (excluding delivery fee, checking validation context)
             // Assuming cart items have updated prices
-            var subtotal = cart.CartItems.Sum(i => i.Quantity * i.Product!.Price);
+            var subtotal = cart.CartItems.Where(i => i.Product != null).Sum(i => i.Quantity * i.Product!.Price);
             if (subtotal < campaign.MinCartAmount.Value)
             {
                 return Fail(result, $"Cart amount must be at least {campaign.MinCartAmount.Value:C}.");
@@ -130,11 +125,11 @@ public class CampaignCalculator : ICampaignCalculator
 
         // Note: Relation loading is important. Ensure Campaign was loaded with Includes.
 
-        var applicableItems = new List<CartItem>();
+        List<CartItem> applicableItems = [];
 
         // Simplified Logic: if no restrictions, all items.
-        bool hasProductRestrictions = campaign.CampaignProducts != null && campaign.CampaignProducts.Any();
-        bool hasCategoryRestrictions = campaign.CampaignCategories != null && campaign.CampaignCategories.Any();
+        bool hasProductRestrictions = campaign.CampaignProducts != null && campaign.CampaignProducts.Count != 0;
+        bool hasCategoryRestrictions = campaign.CampaignCategories != null && campaign.CampaignCategories.Count != 0;
 
         if (!hasProductRestrictions && !hasCategoryRestrictions)
         {
@@ -142,8 +137,8 @@ public class CampaignCalculator : ICampaignCalculator
         }
         else
         {
-            var allowedProductIds = campaign.CampaignProducts?.Select(cp => cp.ProductId).ToList() ?? new List<Guid>();
-            var allowedCategoryIds = campaign.CampaignCategories?.Select(cc => cc.CategoryId).ToList() ?? new List<Guid>();
+            var allowedProductIds = campaign.CampaignProducts?.Select(cp => cp.ProductId).ToList() ?? [];
+            var allowedCategoryIds = campaign.CampaignCategories?.Select(cc => cc.CategoryId).ToList() ?? [];
 
             foreach (var item in cart.CartItems)
             {
@@ -154,15 +149,14 @@ public class CampaignCalculator : ICampaignCalculator
                 }
 
                 // For category check, we need Product loaded with CategoryId.
-                // Assuming item.Product.CategoryId available.
-                if (item.Product != null && allowedCategoryIds.Contains(item.Product!.CategoryId!.Value))
+                if (item.Product?.CategoryId != null && allowedCategoryIds.Contains(item.Product.CategoryId.Value))
                 {
                     applicableItems.Add(item);
                 }
             }
         }
 
-        if (!applicableItems.Any())
+        if (applicableItems.Count == 0)
         {
             // Valid campaign, but no applicable items in cart?
             // Should we fail or just return 0 discount?
@@ -202,12 +196,12 @@ public class CampaignCalculator : ICampaignCalculator
         }
 
         result.DiscountAmount = discount;
-        result.ApplicableItemIds = applicableItems.Select(i => i.Id).ToList();
+        result.ApplicableItemIds = [.. applicableItems.Select(i => i.Id)];
 
         return result;
     }
 
-    private CampaignCalculationResult Fail(CampaignCalculationResult result, string reason)
+    private static CampaignCalculationResult Fail(CampaignCalculationResult result, string reason)
     {
         result.IsValid = false;
         result.Reason = reason;
