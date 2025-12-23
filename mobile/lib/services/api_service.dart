@@ -969,6 +969,21 @@ class ApiService {
     }
   }
 
+  Future<List<Product>> getCampaignProducts(String campaignId) async {
+    try {
+      final response = await dio.get('/campaigns/$campaignId/products');
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => Product.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching campaign products', e, stackTrace);
+      return [];
+    }
+  }
+
   Future<List<Coupon>> getCoupons() async {
     try {
       final response = await dio.get('/coupons');

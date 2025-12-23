@@ -84,7 +84,7 @@ class HomeProductSection extends StatelessWidget {
               ),
             ),
             SizedBox(
-              height: 260,
+              height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(

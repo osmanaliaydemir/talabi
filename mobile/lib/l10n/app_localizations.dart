@@ -100,6 +100,18 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// No description provided for @upsellMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {amount} more to get the discount!'**
+  String upsellMessage(String amount);
+
+  /// Campaign Applied
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign Applied'**
+  String get campaignApplied;
+
   /// Free
   ///
   /// In en, this message translates to:

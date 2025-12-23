@@ -127,6 +127,100 @@ public class HomeService : IHomeService
                 Type = n.Type
             }).ToList();
 
+            // 5. Sales Trend (Last 30 Days)
+            var last30Days = todayEnd.AddDays(-30);
+            var salesTrendData = await _unitOfWork.Orders.Query()
+                .Where(o => o.VendorId == vendor.Id && 
+                            o.Status == Talabi.Core.Enums.OrderStatus.Delivered &&
+                            o.CreatedAt >= last30Days)
+                .GroupBy(o => o.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Amount = g.Sum(o => o.TotalAmount),
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Date)
+                .ToListAsync(ct);
+
+            viewModel.SalesTrend = salesTrendData.Select(x => new SalesTrendItem
+            {
+                Date = x.Date.ToString("dd MMM", new System.Globalization.CultureInfo("tr-TR")),
+                Amount = x.Amount,
+                Count = x.Count
+            }).ToList();
+
+            // 6. Order Status Distribution
+            var statusData = await _unitOfWork.Orders.Query()
+                .Where(o => o.VendorId == vendor.Id)
+                .GroupBy(o => o.Status)
+                .Select(g => new
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync(ct);
+
+            viewModel.OrderStatusDistribution = statusData.Select(x => new OrderStatusItem
+            {
+                Status = x.Status.ToString(),
+                Count = x.Count
+            }).ToList();
+
+            // 7. Category Revenue (Based on delivered orders)
+            // Note: This requires joining OrderItems -> Product -> Category
+            // Since we use IRepository, we might need direct access or Include.
+            // Assuming we can access OrderItems directly via UnitOfWork.
+            var categoryData = await _unitOfWork.OrderItems.Query()
+                .Include(oi => oi.Product)
+                .ThenInclude(p => p.Category)
+                .Include(oi => oi.Order)
+                .Where(oi => oi.Order.VendorId == vendor.Id && 
+                             oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered)
+                .GroupBy(oi => oi.Product.Category.Name)
+                .Select(g => new
+                {
+                    CategoryName = g.Key,
+                    Revenue = g.Sum(oi => oi.TotalPrice),
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Revenue)
+                .Take(5)
+                .ToListAsync(ct);
+
+            viewModel.Categoryrevenue = categoryData.Select(x => new CategoryRevenueItem
+            {
+                CategoryName = x.CategoryName,
+                Revenue = x.Revenue,
+                OrderCount = x.Count
+            }).ToList();
+
+            // 8. Top Products
+            var topProductsData = await _unitOfWork.OrderItems.Query()
+                .Include(oi => oi.Product)
+                .Include(oi => oi.Order)
+                .Where(oi => oi.Order.VendorId == vendor.Id && 
+                             oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered)
+                .GroupBy(oi => new { oi.Product.Name, oi.Product.ImageUrl })
+                .Select(g => new
+                {
+                    ProductName = g.Key.Name,
+                    ImageUrl = g.Key.ImageUrl,
+                    Quantity = g.Sum(oi => oi.Quantity),
+                    Revenue = g.Sum(oi => oi.TotalPrice)
+                })
+                .OrderByDescending(x => x.Quantity)
+                .Take(5)
+                .ToListAsync(ct);
+
+            viewModel.TopProducts = topProductsData.Select(x => new TopProductItem
+            {
+                ProductName = x.ProductName,
+                ImageUrl = x.ImageUrl,
+                QuantitySold = x.Quantity,
+                TotalRevenue = x.Revenue
+            }).ToList();
+
             return viewModel;
         }
         catch (Exception ex)

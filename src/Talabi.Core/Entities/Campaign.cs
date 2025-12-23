@@ -19,21 +19,40 @@ public class Campaign : BaseEntity
     public decimal DiscountValue { get; set; } = 0;
 
     // Rules
-    public bool IsFirstOrderOnly { get; set; } = false;
+    public bool IsFirstOrderOnly { get; set; } = false; // Deprecated, use TargetAudience.NewUsers
+    public TargetAudience TargetAudience { get; set; } = TargetAudience.All;
 
     // --- Advanced Rules ---
 
-    // Vendor & Product Rules
-    public int? VendorType { get; set; } // 1: Restaurant, 2: Market
-    // Relations for specific inclusions
-    // We will use dedicated join tables but keep navigation properties here
-    // For simplicity in this first step, let's add the navigation properties or IDs if using simple lists
-    // EF Core Many-to-Many requires join entities or automatic handling. We will define explicit join entities later.
+    // Usage Limits
+    public int? MaxUsageCount { get; set; } // Total global usage limit
+    public int? UsageLimitPerUser { get; set; } // Limit per specific user
+    public int CurrentUsageCount { get; set; } = 0; // Current global usage
+
+    // Scheduling
+    // Comma separated ints: 1=Monday, 7=Sunday. Null or empty = Any day
+    public string? ValidDaysOfWeek { get; set; } 
 
     // Time Rules
     public TimeSpan? StartTime { get; set; } 
     public TimeSpan? EndTime { get; set; }
 
+    // Budget
+    public decimal? TotalDiscountBudget { get; set; } // Max total discount amount to give away
+
+    // Stacking
+    public bool IsStackable { get; set; } = false; // Can be combined with other campaigns/coupons?
+
+    // Vendor & Product Rules
+    public int? VendorType { get; set; } // 1: Restaurant, 2: Market
+    
+    // Inclusions & Exclusions
+    // Note: Implicitly inclusions via Relations.
+    // Exclusions can be added similarly if needed, but typically Inclusions are enough for positive targeting.
+    // If we need "All products except X", we'd need exclusion tables. 
+    // For now, let's keep it simple with inclusions only (CampaignProducts). 
+    // If CampaignProducts is empty, it applies to all products (unless Category restricted).
+    
     // Cart Rules
     public decimal? MinCartAmount { get; set; }
 

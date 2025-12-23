@@ -1,5 +1,18 @@
 {
   "@@locale": "en",
+  "upsellMessage": "Add {amount} more to get the discount!",
+  "@upsellMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "50 TL"
+      }
+    }
+  },
+  "campaignApplied": "Campaign Applied",
+  "@campaignApplied": {
+    "description": "Campaign Applied"
+  },
   "free": "Free",
   "@free": {
     "description": "Free"

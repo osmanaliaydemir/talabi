@@ -9,6 +9,14 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String upsellMessage(String amount) {
+    return 'أضف $amount المزيد للحصول على الخصم!';
+  }
+
+  @override
+  String get campaignApplied => 'تم تطبيق الحملة';
+
+  @override
   String get free => 'مجاني';
 
   @override

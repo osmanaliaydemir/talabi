@@ -122,6 +122,16 @@ builder.Services.AddScoped<Talabi.Core.Interfaces.IDashboardNotificationService,
 builder.Services.AddScoped<ICourierService, CourierService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
 
+// File Upload & Storage
+builder.Services.Configure<Talabi.Infrastructure.Services.FileUploadSecurityOptions>(options =>
+{
+    options.MaxFileSizeBytes = 5 * 1024 * 1024; // 5MB
+    options.AllowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+});
+
+builder.Services.AddScoped<Talabi.Core.Services.IFileUploadSecurityService, Talabi.Infrastructure.Services.FileUploadSecurityService>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.IFileStorageService, Talabi.Infrastructure.Services.LocalFileStorageService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

@@ -86,6 +86,29 @@ class CartProvider with ChangeNotifier {
   Campaign? _selectedCampaign;
   Campaign? get selectedCampaign => _selectedCampaign;
 
+  double _backendDiscountAmount = 0.0;
+  List<String> _discountedItemIds = [];
+
+  bool isItemDiscounted(String itemId) {
+    // Check if backend specifically flagged this item AND we have a backend discount
+    if (_backendDiscountAmount > 0 && _discountedItemIds.isNotEmpty) {
+      // Backend IDs are GUIDs usually, but let's ensure we match format
+      // Mobile item IDs are Product IDs (GUIDs).
+      // The backend 'DiscountedItemIds' list contains CartItem IDs usually?
+      // Wait, let's check Backend logic:
+      // result.ApplicableItemIds = applicableItems.Select(i => i.Id).ToList();
+      // These are CartItem IDs, NOT Product IDs.
+      // In Mobile, _items key is ProductId.
+      // CartItem model has 'backendId'. We should check against that.
+
+      final item = _items[itemId];
+      if (item != null && item.backendId != null) {
+        return _discountedItemIds.contains(item.backendId);
+      }
+    }
+    return false;
+  }
+
   double get subtotalAmount {
     double total = 0.0;
     _items.forEach((key, cartItem) {
@@ -95,8 +118,25 @@ class CartProvider with ChangeNotifier {
   }
 
   double get discountAmount {
-    // 1. Check Campaign Discount
+    // 1. Use Backend Calculated Discount if available
+    // This allows advanced rules (item-based, limits, etc.) to be handled by server
+    if (_backendDiscountAmount > 0) {
+      // If we have a backend discount, trust it.
+      // However, check if we are in "modification mode" (e.g. user just changed quantity and waiting for sync).
+      // Ideally, we wait for clean state. But for now, returning backend value is safer than incorrect local calc.
+      return _backendDiscountAmount;
+    }
+
+    // Fallback or Local estimation (only if backend value is 0 or not synced yet)
+    // Actually, if we rely on backend, we should probably prefer 0 until sync if strict.
+    // But for responsiveness, maybe keep coupon logic if no backend campaign?
+    // Let's keep existing logic as fallback BUT Campaign logic should be removed if we exclusively rely on backend for Campaign.
+
+    // 1. Campaign Discount (Local - Deprecated/Fallback)
     if (_selectedCampaign != null) {
+      // Local calc logic...
+      // For consistency, if we moved to backend calc, we should try to avoid this.
+      // But until fully tested, let's leave it as a "prediction" if backend value is missing.
       if (_selectedCampaign!.minCartAmount != null &&
           subtotalAmount < _selectedCampaign!.minCartAmount!) {
         return 0.0;
@@ -297,6 +337,19 @@ class CartProvider with ChangeNotifier {
           );
         }
       }
+
+      // Parse Backend Discount
+      _backendDiscountAmount =
+          (cartData['campaignDiscountAmount'] as num?)?.toDouble() ?? 0.0;
+
+      if (cartData['discountedItemIds'] != null) {
+        _discountedItemIds = (cartData['discountedItemIds'] as List)
+            .map((e) => e.toString())
+            .toList();
+      } else {
+        _discountedItemIds = [];
+      }
+
       _checkCouponValidity();
 
       // Fetch System Settings (Delivery Fee & Threshold)

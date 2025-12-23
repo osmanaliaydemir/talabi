@@ -9,6 +9,14 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String upsellMessage(String amount) {
+    return '$amount daha ekle, indirimi kap!';
+  }
+
+  @override
+  String get campaignApplied => 'Kampanya Uygulandı';
+
+  @override
   String get free => 'Ücretsiz';
 
   @override

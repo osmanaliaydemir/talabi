@@ -9,7 +9,7 @@ using Talabi.Portal.Models;
 namespace Talabi.Portal.Controllers;
 
 [Authorize(Roles = "Admin,Vendor")]
-public class CampaignsController(IUnitOfWork unitOfWork) : Controller
+public class CampaignsController(IUnitOfWork unitOfWork, IFileStorageService fileStorageService) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -32,6 +32,11 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
     {
         if (ModelState.IsValid)
         {
+            if (model.ImageFile != null)
+            {
+                model.ImageUrl = await fileStorageService.SaveFileAsync(model.ImageFile, "campaigns");
+            }
+
             var campaign = new Campaign
             {
                 Id = Guid.NewGuid(),
@@ -46,6 +51,7 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
                 VendorType = model.VendorType,
                 DiscountType = (DiscountType)model.DiscountType,
                 DiscountValue = model.DiscountValue,
+                TargetAudience = (TargetAudience)model.TargetAudience,
                 StartTime = model.StartTime,
                 EndTime = model.EndTime,
                 MinCartAmount = model.MinCartAmount,
@@ -118,6 +124,7 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
             VendorType = campaign.VendorType,
             DiscountType = (int)campaign.DiscountType,
             DiscountValue = campaign.DiscountValue,
+            TargetAudience = (int)campaign.TargetAudience,
             StartTime = campaign.StartTime,
             EndTime = campaign.EndTime,
             MinCartAmount = campaign.MinCartAmount,
@@ -142,6 +149,11 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
         {
             try
             {
+                if (model.ImageFile != null)
+                {
+                    model.ImageUrl = await fileStorageService.SaveFileAsync(model.ImageFile, "campaigns");
+                }
+
                 var campaign = await unitOfWork.Campaigns.Query()
                     .Include(c => c.CampaignCities)
                     .Include(c => c.CampaignDistricts)
@@ -163,6 +175,7 @@ public class CampaignsController(IUnitOfWork unitOfWork) : Controller
                 campaign.VendorType = model.VendorType;
                 campaign.DiscountType = (DiscountType)model.DiscountType;
                 campaign.DiscountValue = model.DiscountValue;
+                campaign.TargetAudience = (TargetAudience)model.TargetAudience;
                 campaign.StartTime = model.StartTime;
                 campaign.EndTime = model.EndTime;
                 campaign.MinCartAmount = model.MinCartAmount;

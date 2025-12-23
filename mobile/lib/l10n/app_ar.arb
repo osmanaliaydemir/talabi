@@ -1,5 +1,18 @@
 {
   "@@locale": "ar",
+  "upsellMessage": "أضف {amount} المزيد للحصول على الخصم!",
+  "@upsellMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "50 TL"
+      }
+    }
+  },
+  "campaignApplied": "تم تطبيق الحملة",
+  "@campaignApplied": {
+    "description": "Campaign Applied"
+  },
   "free": "مجاني",
   "@free": {
     "description": "Free"

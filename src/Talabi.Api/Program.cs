@@ -139,6 +139,7 @@ builder.Services.AddScoped<ISystemSettingsService, SystemSettingsService>();
 
 builder.Services.AddScoped<IInputSanitizationService, InputSanitizationService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<ICampaignCalculator, CampaignCalculator>();
 // External Auth Token Verifier
 builder.Services.AddHttpClient<IExternalAuthTokenVerifier, ExternalAuthTokenVerifier>();
 // File Upload Security Service

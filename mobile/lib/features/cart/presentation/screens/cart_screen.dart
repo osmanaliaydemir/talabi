@@ -16,6 +16,7 @@ import 'package:mobile/services/version_check_service.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -28,6 +29,8 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   int? _currentVendorType;
+  Campaign? _upsellCampaign;
+  double? _upsellRemainingAmount;
 
   @override
   void initState() {
@@ -36,6 +39,7 @@ class _CartScreenState extends State<CartScreen> {
       final cart = Provider.of<CartProvider>(context, listen: false);
       // Main load handling moved to didChangeDependencies to support switching
       await cart.loadCart();
+      _checkUpsellOpportunities(cart); // Check for upsell after load
 
       if (mounted) {
         final currency = cart.items.isNotEmpty
@@ -49,6 +53,62 @@ class _CartScreenState extends State<CartScreen> {
         );
       }
     });
+  }
+
+  Future<void> _checkUpsellOpportunities(CartProvider cart) async {
+    if (cart.items.isEmpty) return;
+
+    // If a campaign is already selected, maybe don't upsell?
+    // Or upsell a better one? For now, if no campaign selected.
+    if (cart.selectedCampaign != null) {
+      if (mounted) {
+        setState(() {
+          _upsellCampaign = null;
+        });
+      }
+      return;
+    }
+
+    try {
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
+
+      // We need city/district for correct campaigns usually, but let's try generic fetch or use stored location
+      // ApiService.getCampaigns takes optional city/district.
+      // Ideally we get them from address or user location.
+      // For simplicity/speed, let's just fetch by vendorType for now as "Discovery".
+      // Backend validates anyway.
+      final campaigns = await ApiService().getCampaigns(vendorType: vendorType);
+
+      Campaign? bestCandidate;
+      double minRemaining = double.infinity;
+
+      for (final c in campaigns) {
+        if (c.minCartAmount != null && c.minCartAmount! > cart.totalAmount) {
+          final remaining = c.minCartAmount! - cart.totalAmount;
+          // Threshold: Suggest if within 30% or 200 units?
+          // Let's say if remaining is < 50% of current total or < 200.
+          if (remaining > 0 && remaining < 200) {
+            // Simple threshold check
+            if (remaining < minRemaining) {
+              minRemaining = remaining;
+              bestCandidate = c;
+            }
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _upsellCampaign = bestCandidate;
+          _upsellRemainingAmount = minRemaining;
+        });
+      }
+    } catch (e) {
+      // Ignore errors silently for upsell
+    }
   }
 
   @override
@@ -214,6 +274,55 @@ class _CartScreenState extends State<CartScreen> {
                         localizations,
                         displayCurrency,
                       ),
+
+                      if (_upsellCampaign != null &&
+                          _upsellRemainingAmount != null)
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.amber.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.saved_search,
+                                color: Colors.amber,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _upsellCampaign!.title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Text(
+                                      localizations.upsellMessage(
+                                        CurrencyFormatter.format(
+                                          _upsellRemainingAmount!,
+                                          displayCurrency,
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       // Order Summary
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -363,6 +472,8 @@ class _CartScreenState extends State<CartScreen> {
                                           } catch (e) {
                                             // Ignore error
                                           }
+
+                                          if (!context.mounted) return;
 
                                           // Get vendor ID from first item
                                           final firstItem =
@@ -532,6 +643,42 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ),
                         ),
+                        if (cart.isItemDiscounted(product.id)) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Colors.green.withValues(alpha: 0.5),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.local_offer,
+                                  size: 10,
+                                  color: Colors.green,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  localizations.campaignApplied,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 8),
                         // Quantity Selector
                         Align(

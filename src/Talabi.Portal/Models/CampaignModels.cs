@@ -8,6 +8,7 @@ public class CampaignFormViewModel
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public IFormFile? ImageFile { get; set; }
     public DateTime StartDate { get; set; } = DateTime.Now;
     public DateTime EndDate { get; set; } = DateTime.Now.AddDays(14);
     public bool IsActive { get; set; } = true;
@@ -19,6 +20,7 @@ public class CampaignFormViewModel
     public decimal DiscountValue { get; set; } = 0;
     
     public bool IsFirstOrderOnly { get; set; } = false;
+    public int TargetAudience { get; set; }
 
     // Advanced Rules
     public int? VendorType { get; set; }

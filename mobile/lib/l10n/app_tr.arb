@@ -1,5 +1,18 @@
 {
   "@@locale": "tr",
+  "upsellMessage": "{amount} daha ekle, indirimi kap!",
+  "@upsellMessage": {
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "50 TL"
+      }
+    }
+  },
+  "campaignApplied": "Kampanya Uygulandı",
+  "@campaignApplied": {
+    "description": "Kampanya Uygulandı"
+  },
   "free": "Ücretsiz",
   "@free": {
     "description": "Ücretsiz"

@@ -500,10 +500,31 @@
 				</a>
 			</div>
 
-			@if (topProducts.Any())
+			@if (Model.TopProducts.Any())
 			{
 				<div class="d-flex flex-column gap-3 p-3">
-					@* Loop implementation omitted as list is empty *@
+					@foreach(var product in Model.TopProducts)
+					{
+						<div class="d-flex align-items-center mb-2 last-no-border pb-2 border-bottom">
+							@if(!string.IsNullOrEmpty(product.ImageUrl))
+							{
+								<img src="@product.ImageUrl" class="rounded-3 me-3" style="width: 48px; height: 48px; object-fit: cover;">
+							}
+							else
+							{
+								<div class="rounded-3 me-3 bg-light d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+									<i class="fas fa-box text-secondary"></i>
+								</div>
+							}
+							<div class="flex-grow-1">
+								<h6 class="mb-0 fw-semibold text-truncate" style="max-width: 200px;">@product.ProductName</h6>
+								<small class="text-muted">@product.QuantitySold @LocalizationService.GetString("UnitsSold")</small>
+							</div>
+							<div class="text-end">
+								<div class="fw-bold text-dark">₺@product.TotalRevenue.ToString("N2")</div>
+							</div>
+						</div>
+					}
 				</div>
 			}
 			else
@@ -643,10 +664,17 @@
 	<!--
 	<script src="~/js/modules/dashboard/dashboard.js" asp-append-version="true"></script>
 	-->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script>
-		// Placeholder for dashboard.js if it accesses elements that might error out due to missing data.
-		// For now we leave the charts canvas present but we don't init the charts
+		// Serialize data for chart usage
+		window.dashboardData = {
+			salesTrend: @Json.Serialize(Model.SalesTrend),
+			orderStatus: @Json.Serialize(Model.OrderStatusDistribution),
+			categoryRevenue: @Json.Serialize(Model.Categoryrevenue),
+			topProducts: @Json.Serialize(Model.TopProducts)
+		};
 	</script>
+	<script src="~/js/modules/dashboard/dashboard.js" asp-append-version="true"></script>
 }
 
 

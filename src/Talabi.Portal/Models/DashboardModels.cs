@@ -52,6 +52,40 @@ public class HomeViewModel
 
     // Activity Feed
     public List<DashboardActivity> RecentActivities { get; set; } = new();
+
+    // Charts Data
+    public List<SalesTrendItem> SalesTrend { get; set; } = new();
+    public List<OrderStatusItem> OrderStatusDistribution { get; set; } = new();
+    public List<CategoryRevenueItem> Categoryrevenue { get; set; } = new();
+    public List<TopProductItem> TopProducts { get; set; } = new();
+}
+
+public class SalesTrendItem
+{
+    public string Date { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public int Count { get; set; }
+}
+
+public class OrderStatusItem
+{
+    public string Status { get; set; } = string.Empty;
+    public int Count { get; set; }
+}
+
+public class CategoryRevenueItem
+{
+    public string CategoryName { get; set; } = string.Empty;
+    public decimal Revenue { get; set; }
+    public int OrderCount { get; set; }
+}
+
+public class TopProductItem
+{
+    public string ProductName { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
+    public int QuantitySold { get; set; }
+    public decimal TotalRevenue { get; set; }
 }
 
 public class DashboardActivity

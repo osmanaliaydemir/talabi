@@ -18,6 +18,7 @@ namespace Talabi.Api.Controllers;
 public class CartController : BaseController
 {
     private readonly IMapper _mapper;
+    private readonly ICampaignCalculator _campaignCalculator;
     private const string ResourceName = "CartResources";
 
     /// <summary>
@@ -28,10 +29,12 @@ public class CartController : BaseController
         ILogger<CartController> logger,
         ILocalizationService localizationService,
         IUserContextService userContext,
-        IMapper mapper)
+        IMapper mapper,
+        ICampaignCalculator campaignCalculator)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _mapper = mapper;
+        _campaignCalculator = campaignCalculator;
     }
 
     /// <summary>
@@ -61,6 +64,9 @@ public class CartController : BaseController
             .ThenInclude(p => p!.Vendor)
             .Include(c => c.Coupon)
             .Include(c => c.Campaign)
+                .ThenInclude(cmp => cmp.CampaignProducts) // Load related products
+            .Include(c => c.Campaign)
+                .ThenInclude(cmp => cmp.CampaignCategories) // Load related categories
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         CartDto cartDto;
@@ -78,6 +84,29 @@ public class CartController : BaseController
             cartDto.CampaignId = cart.CampaignId;
             cartDto.CouponCode = cart.Coupon?.Code;
             cartDto.CampaignTitle = cart.Campaign?.Title;
+
+            // Calculate Campaign Discount
+            if (cart.Campaign != null)
+            {
+                var calculationResult = await _campaignCalculator.CalculateAsync(cart, cart.Campaign, userId);
+                if (calculationResult.IsValid)
+                {
+                    cartDto.CampaignDiscountAmount = calculationResult.DiscountAmount;
+                    cartDto.DiscountedItemIds = calculationResult.ApplicableItemIds;
+                }
+                else
+                {
+                    // Campaign is invalid (expired, limit reached, etc.)
+                    // We might want to clear it or notify user.
+                    // For now, let's just not apply discount.
+                    // Ideally, we should add a warning to the response, but CartDto structure is rigid.
+                    // We can set CampaignTitle to "Campaign Invalid: " + Reason?
+                    // Or just remove it from DTO so UI doesn't show it?
+                    // Let's remove from DTO to avoid confusion
+                    cartDto.CampaignId = null;
+                    cartDto.CampaignTitle = null;
+                }
+            }
         }
 
         return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));

@@ -9,6 +9,8 @@ public class CartDto
     public string? CouponCode { get; set; }
     public Guid? CampaignId { get; set; }
     public string? CampaignTitle { get; set; }
+    public decimal CampaignDiscountAmount { get; set; } // Total discount from campaign
+    public List<Guid> DiscountedItemIds { get; set; } = new(); // Items that received discount
 }
 
 public class CartItemDto
