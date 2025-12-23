@@ -11,6 +11,7 @@ public class CartDto
     public string? CampaignTitle { get; set; }
     public decimal CampaignDiscountAmount { get; set; } // Total discount from campaign
     public List<Guid> DiscountedItemIds { get; set; } = new(); // Items that received discount
+    public string? Disclaimer { get; set; } // Warning or Error message
 }
 
 public class CartItemDto

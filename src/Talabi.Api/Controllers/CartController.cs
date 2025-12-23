@@ -104,7 +104,11 @@ public class CartController(
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<CartDto>(ex.ToString(), "DEBUG_500_ERROR"));
+            // Debugging: Return exception as 200 OK with Disclaimer
+            return Ok(new ApiResponse<CartDto>(
+                new CartDto { Disclaimer = "DEBUG_ERROR: " + ex.Message + " | Stack: " + ex.StackTrace },
+                "DEBUG_ERROR"
+            ));
         }
     }
 
