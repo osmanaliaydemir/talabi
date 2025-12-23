@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Entities;
+using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Talabi.Portal.Models;
 
