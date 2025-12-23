@@ -285,9 +285,9 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  childAspectRatio: 0.7,
+                                  childAspectRatio: 0.78,
                                   crossAxisSpacing: AppTheme.spacingSmall,
-                                  mainAxisSpacing: 4,
+                                  mainAxisSpacing: 0,
                                 ),
                             delegate: SliverChildBuilderDelegate((
                               context,

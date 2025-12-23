@@ -70,7 +70,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                   return Transform.scale(
                     scale: _scaleAnimation.value,
                     child: Container(
-                      padding: EdgeInsets.all(widget.isCompact ? 15 : 30),
+                      padding: EdgeInsets.all(widget.isCompact ? 16 : 30),
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor.withValues(
                           alpha: 0.1 * _fadeAnimation.value,
@@ -79,7 +79,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                       ),
                       child: Icon(
                         widget.iconData,
-                        size: widget.isCompact ? 40 : 80,
+                        size: widget.isCompact ? 48 : 80,
                         color: Theme.of(
                           context,
                         ).primaryColor.withValues(alpha: _fadeAnimation.value),
@@ -89,7 +89,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                 },
               ),
             ),
-            SizedBox(height: widget.isCompact ? 16 : 32),
+            SizedBox(height: widget.isCompact ? 12 : 32),
             ExcludeSemantics(
               child: Column(
                 children: [

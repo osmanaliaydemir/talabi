@@ -542,6 +542,14 @@
   "@cartEmptyMessage": {
     "description": "Your cart is empty"
   },
+  "cartEmptySubMessage": "There are no products in your cart.\nStart shopping now!",
+  "@cartEmptySubMessage": {
+    "description": "There are no products in your cart. Start shopping now!"
+  },
+  "startShopping": "Start Shopping",
+  "@startShopping": {
+    "description": "Start Shopping"
+  },
   "recommendedForYou": "Recommended For You",
   "@recommendedForYou": {
     "description": "Title for the recommendations section in empty cart"

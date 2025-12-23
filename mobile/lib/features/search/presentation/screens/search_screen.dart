@@ -12,6 +12,8 @@ import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 
+import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -63,6 +65,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // Flag to ensure filter options are loaded only once
   bool _hasLoadedFilterOptions = false;
+
+  Color get _primaryColor {
+    final bottomNav = Provider.of<BottomNavProvider>(context);
+    return bottomNav.selectedCategory == MainCategory.restaurant
+        ? AppTheme.primaryOrange
+        : AppTheme.marketPrimary;
+  }
 
   @override
   void initState() {
@@ -435,7 +444,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: AppTheme.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryOrange,
+                      color: _primaryColor,
                     ),
                   ),
                 ),
@@ -582,7 +591,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           min: 0.0,
                           max: 5.0,
                           divisions: 10,
-                          activeColor: AppTheme.primaryOrange,
+                          activeColor: _primaryColor,
                           label: _minRating?.toStringAsFixed(1) ?? '0.0',
                           onChanged: (value) {
                             setState(() {
@@ -595,7 +604,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           style: AppTheme.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryOrange,
+                            color: _primaryColor,
                           ),
                         ),
                       ],
@@ -706,7 +715,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryOrange,
+                  backgroundColor: _primaryColor,
                   foregroundColor: AppTheme.textOnPrimary,
                   padding: const EdgeInsets.symmetric(
                     vertical: AppTheme.spacingMedium,
@@ -737,7 +746,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryOrange,
+        backgroundColor: _primaryColor,
         foregroundColor: AppTheme.textOnPrimary,
         elevation: 0,
         leading: GestureDetector(
@@ -802,11 +811,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            const Icon(
-                              Icons.tune,
-                              size: 24,
-                              color: AppTheme.primaryOrange,
-                            ),
+                            Icon(Icons.tune, size: 24, color: _primaryColor),
                             if (_hasActiveFilters())
                               Positioned(
                                 top: 0,
@@ -987,14 +992,10 @@ class _SearchScreenState extends State<SearchScreen> {
             Container(
               padding: const EdgeInsets.all(AppTheme.spacingLarge),
               decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                color: _primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.search,
-                size: 64,
-                color: AppTheme.primaryOrange,
-              ),
+              child: Icon(Icons.search, size: 64, color: _primaryColor),
             ),
             const SizedBox(height: AppTheme.spacingLarge),
             Text(
@@ -1035,11 +1036,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.history,
-                          size: 20,
-                          color: AppTheme.primaryOrange,
-                        ),
+                        Icon(Icons.history, size: 20, color: _primaryColor),
                         const SizedBox(width: AppTheme.spacingSmall),
                         Text(
                           l10n.recentSearches,
@@ -1080,11 +1077,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.trending_up,
-                          size: 20,
-                          color: AppTheme.primaryOrange,
-                        ),
+                        Icon(Icons.trending_up, size: 20, color: _primaryColor),
                         const SizedBox(width: AppTheme.spacingSmall),
                         Text(
                           l10n.popularSearches,
@@ -1100,15 +1093,31 @@ class _SearchScreenState extends State<SearchScreen> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: [
-                        'Pizza',
-                        'Burger',
-                        'Kebap',
-                        'Lahmacun',
-                        'Market',
-                        'Su',
-                        'Tatlı',
-                      ].map((query) => _buildHistoryChip(query)).toList(),
+                      children:
+                          (Provider.of<BottomNavProvider>(
+                                        context,
+                                      ).selectedCategory ==
+                                      MainCategory.restaurant
+                                  ? [
+                                      'Pizza',
+                                      'Burger',
+                                      'Kebap',
+                                      'Lahmacun',
+                                      'Döner',
+                                      'Tatlı',
+                                      'Çiğ Köfte',
+                                    ]
+                                  : [
+                                      'Süt',
+                                      'Ekmek',
+                                      'Yoğurt',
+                                      'Meyve',
+                                      'Sebze',
+                                      'Su',
+                                      'Atıştırmalık',
+                                    ])
+                              .map((query) => _buildHistoryChip(query))
+                              .toList(),
                     ),
                   ],
                 ),
@@ -1140,11 +1149,7 @@ class _SearchScreenState extends State<SearchScreen> {
         decoration: InputDecoration(
           hintText: l10n.searchProductsOrVendors,
           hintStyle: AppTheme.poppins(fontSize: 16, color: AppTheme.textHint),
-          prefixIcon: const Icon(
-            Icons.search,
-            color: AppTheme.primaryOrange,
-            size: 24,
-          ),
+          prefixIcon: Icon(Icons.search, color: _primaryColor, size: 24),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
@@ -1267,10 +1272,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.auto_awesome,
                           size: 20,
-                          color: AppTheme.primaryOrange,
+                          color: _primaryColor,
                         ),
                         const SizedBox(width: AppTheme.spacingSmall),
                         Text(
@@ -1313,7 +1318,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: result.type == 'product'
-                      ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                      ? _primaryColor.withValues(alpha: 0.1)
                       : AppTheme.vendorPrimary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
@@ -1321,7 +1326,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   result.type == 'product' ? Icons.shopping_bag : Icons.store,
                   size: 20,
                   color: result.type == 'product'
-                      ? AppTheme.primaryOrange
+                      ? _primaryColor
                       : AppTheme.vendorPrimary,
                 ),
               ),
@@ -1503,11 +1508,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.star,
-                                size: 14,
-                                color: AppTheme.primaryOrange,
-                              ),
+                              Icon(Icons.star, size: 14, color: _primaryColor),
                               const SizedBox(width: 4),
                               Text(
                                 (vendor.rating ?? 0.0).toStringAsFixed(1),

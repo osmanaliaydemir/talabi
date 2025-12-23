@@ -27,6 +27,15 @@ public class SystemSettingsController : ControllerBase
         var settings = await _settingsService.GetAllSettingsAsync(ct);
         return Ok(settings);
     }
+
+    [HttpGet("{key}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<string>> GetSetting(string key, CancellationToken ct)
+    {
+        var value = await _settingsService.GetSettingAsync(key, ct);
+        if (value == null) return NotFound();
+        return Ok(new { key, value });
+    }
     [HttpGet("version-check")]
     [AllowAnonymous]
     public async Task<ActionResult<MobileVersionSettingsDto>> GetVersionSettings(CancellationToken ct)

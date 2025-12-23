@@ -424,6 +424,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cartEmptyMessage => 'سلتك فارغة';
 
   @override
+  String get cartEmptySubMessage =>
+      'لا توجد منتجات في سلتك.\nابدأ التسوق الآن!';
+
+  @override
+  String get startShopping => 'ابدأ التسوق';
+
+  @override
   String get recommendedForYou => 'مقترح لك';
 
   @override

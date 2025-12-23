@@ -15,6 +15,7 @@ import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:mobile/services/version_check_service.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
+import 'package:mobile/services/api_service.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -26,19 +27,15 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  int? _currentVendorType;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final cart = Provider.of<CartProvider>(context, listen: false);
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-
+      // Main load handling moved to didChangeDependencies to support switching
       await cart.loadCart();
-
-      // Fetch recommendations based on current app mode
-      await cart.fetchRecommendations(
-        type: bottomNav.selectedCategory == MainCategory.restaurant ? 1 : 2,
-      );
 
       if (mounted) {
         final currency = cart.items.isNotEmpty
@@ -52,6 +49,26 @@ class _CartScreenState extends State<CartScreen> {
         );
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
+    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+        ? 1
+        : 2;
+
+    if (_currentVendorType != vendorType) {
+      _currentVendorType = vendorType;
+      // Fetch recommendations when vendor type changes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<CartProvider>(
+          context,
+          listen: false,
+        ).fetchRecommendations(type: vendorType);
+      });
+    }
   }
 
   @override
@@ -108,16 +125,42 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   )
                 : cart.itemCount == 0
-                ? Column(
+                ? ListView(
+                    padding: EdgeInsets.zero,
                     children: [
-                      const Spacer(),
+                      const SizedBox(height: 20),
                       EmptyStateWidget(
                         message: localizations.cartEmptyMessage,
+                        subMessage: localizations.cartEmptySubMessage,
+                        actionLabel: localizations.startShopping,
+                        onAction: () {
+                          // Navigate to Home tab
+                          Provider.of<BottomNavProvider>(
+                            context,
+                            listen: false,
+                          ).setIndex(0);
+                        },
                         isCompact: true,
                       ),
-                      const Spacer(),
-                      if (cart.recommendations.isNotEmpty)
-                        _buildRecommendationsSlider(cart, localizations),
+                      if (cart.recommendations.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: 16,
+                            bottom: 16,
+                          ),
+                          child: Text(
+                            localizations.recommendedForYou,
+                            style: AppTheme.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                        _buildRecommendationsVertical(cart, localizations),
+                      ],
                     ],
                   )
                 : Column(
@@ -273,6 +316,53 @@ class _CartScreenState extends State<CartScreen> {
                                                   );
                                           if (!isVersionValid) return;
                                           if (!context.mounted) return;
+
+                                          // Check minimum cart amount
+                                          try {
+                                            final minCartAmountStr =
+                                                await ApiService()
+                                                    .getSystemSetting(
+                                                      'MinCartAmount',
+                                                    );
+                                            if (minCartAmountStr != null) {
+                                              final minCartAmount =
+                                                  double.tryParse(
+                                                    minCartAmountStr,
+                                                  );
+                                              if (minCartAmount != null &&
+                                                  cart.totalAmount <
+                                                      minCartAmount) {
+                                                if (!context.mounted) return;
+
+                                                String message;
+                                                if (localizations.localeName ==
+                                                    'tr') {
+                                                  message =
+                                                      'Minimum sipariş tutarı: ${CurrencyFormatter.format(minCartAmount, displayCurrency)}';
+                                                } else if (localizations
+                                                        .localeName ==
+                                                    'ar') {
+                                                  message =
+                                                      'الحد الأدنى للطلب: ${CurrencyFormatter.format(minCartAmount, displayCurrency)}';
+                                                } else {
+                                                  message =
+                                                      'Minimum order amount: ${CurrencyFormatter.format(minCartAmount, displayCurrency)}';
+                                                }
+
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(message),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                                return;
+                                              }
+                                            }
+                                          } catch (e) {
+                                            // Ignore error
+                                          }
 
                                           // Get vendor ID from first item
                                           final firstItem =
@@ -773,44 +863,38 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildRecommendationsSlider(
+  Widget _buildRecommendationsVertical(
     CartProvider cart,
     AppLocalizations localizations,
   ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            localizations.recommendedForYou,
-            style: AppTheme.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
           ),
-        ),
-        SizedBox(
-          height: 185,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            itemExtent: 141.0, // 125 width + 16 total horizontal margin
-            addRepaintBoundaries: true,
+          child: GridView.builder(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.78,
+              crossAxisSpacing: AppTheme.spacingSmall,
+              mainAxisSpacing: 0,
+            ),
             itemCount: cart.recommendations.length,
             itemBuilder: (context, index) {
               final product = cart.recommendations[index];
               return ProductCard(
                 product: product,
-                width: 125,
-                isCompact: true,
+                width: null, // Full width in grid cell
                 heroTagPrefix: 'recommend_',
               );
             },
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
       ],
     );
   }

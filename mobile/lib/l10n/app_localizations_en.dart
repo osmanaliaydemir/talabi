@@ -424,6 +424,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartEmptyMessage => 'Your cart is empty';
 
   @override
+  String get cartEmptySubMessage =>
+      'There are no products in your cart.\nStart shopping now!';
+
+  @override
+  String get startShopping => 'Start Shopping';
+
+  @override
   String get recommendedForYou => 'Recommended For You';
 
   @override

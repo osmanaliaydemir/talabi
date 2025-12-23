@@ -543,6 +543,14 @@
   "@cartEmptyMessage": {
     "description": "Sepetiniz boş"
   },
+  "cartEmptySubMessage": "Sepetinde ürün bulunmamaktadır.\nHemen alışverişe başla!",
+  "@cartEmptySubMessage": {
+    "description": "Sepetinde ürün bulunmamaktadır. Hemen alışverişe başla!"
+  },
+  "startShopping": "Alışverişe Başla",
+  "@startShopping": {
+    "description": "Alışverişe Başla"
+  },
   "recommendedForYou": "Senin İçin Önerilenler",
   "@recommendedForYou": {
     "description": "Title for the recommendations section in empty cart"

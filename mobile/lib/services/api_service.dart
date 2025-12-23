@@ -2143,4 +2143,22 @@ class ApiService {
       rethrow;
     }
   }
+
+  // System Settings
+  Future<String?> getSystemSetting(String key) async {
+    try {
+      final response = await _networkClient.get('/system-settings/$key');
+      if (response.data != null && response.data['value'] != null) {
+        return response.data['value'].toString();
+      }
+      return null;
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching system setting $key',
+        e,
+        stackTrace,
+      );
+      return null;
+    }
+  }
 }

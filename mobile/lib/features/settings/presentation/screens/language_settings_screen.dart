@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/localization_provider.dart';
-import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:provider/provider.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
@@ -115,29 +115,37 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
     await localizationProvider.setLanguage(languageCode);
 
     // Show success message
-    if (mounted) {
-      final localizations = AppLocalizations.of(context);
-      ToastMessage.show(
-        context,
-        message: localizations?.languageChanged ?? 'Dil değiştirildi',
-        isSuccess: true,
-        duration: const Duration(seconds: 1),
-      );
-    }
+    // Toast message removed as per request
   }
 
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    // final theme = Theme.of(context); // Unused
+    // final colorScheme = theme.colorScheme; // Unused
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // Header
-          _buildHeader(context, appLocalizations, colorScheme),
+          SharedHeader(
+            title: appLocalizations.selectLanguage,
+            subtitle: appLocalizations.languagesCount(_languages.length),
+            showBackButton: true,
+            action: Container(
+              padding: const EdgeInsets.all(AppTheme.spacingSmall),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              ),
+              child: const Icon(
+                Icons.language,
+                color: Colors.white,
+                size: AppTheme.iconSizeSmall,
+              ),
+            ),
+          ),
           // Main Content
           Expanded(
             child: Container(
@@ -276,96 +284,6 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations localizations,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMedium,
-            vertical: AppTheme.spacingMedium,
-          ),
-          child: Row(
-            children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: const EdgeInsets.all(AppTheme.spacingSmall),
-                  decoration: BoxDecoration(
-                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: AppTheme.textOnPrimary,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppTheme.spacingSmall),
-              // Language Icon
-              Container(
-                padding: const EdgeInsets.all(AppTheme.spacingSmall),
-                decoration: BoxDecoration(
-                  color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: const Icon(
-                  Icons.language,
-                  color: AppTheme.textOnPrimary,
-                  size: AppTheme.iconSizeSmall,
-                ),
-              ),
-              const SizedBox(width: AppTheme.spacingSmall),
-              // Title and Count
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      localizations.selectLanguage,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      localizations.languagesCount(_languages.length),
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

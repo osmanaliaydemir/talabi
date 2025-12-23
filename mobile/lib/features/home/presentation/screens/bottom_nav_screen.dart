@@ -264,7 +264,9 @@ class _PersistentBottomNavBarState extends State<PersistentBottomNavBar> {
         ? Icons.storefront
         : Icons.restaurant;
 
-    final label = isCurrentRestaurant ? 'Market' : 'Restoran';
+    final label = isCurrentRestaurant
+        ? localizations.market
+        : localizations.restaurant;
     final isSelected = bottomNav.currentIndex == 1;
 
     return GestureDetector(

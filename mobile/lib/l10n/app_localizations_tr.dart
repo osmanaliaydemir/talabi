@@ -427,6 +427,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get cartEmptyMessage => 'Sepetiniz boş';
 
   @override
+  String get cartEmptySubMessage =>
+      'Sepetinde ürün bulunmamaktadır.\nHemen alışverişe başla!';
+
+  @override
+  String get startShopping => 'Alışverişe Başla';
+
+  @override
   String get recommendedForYou => 'Senin İçin Önerilenler';
 
   @override

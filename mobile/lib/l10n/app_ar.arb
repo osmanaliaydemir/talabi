@@ -543,6 +543,14 @@
   "@cartEmptyMessage": {
     "description": "Your cart is empty"
   },
+  "cartEmptySubMessage": "لا توجد منتجات في سلتك.\nابدأ التسوق الآن!",
+  "@cartEmptySubMessage": {
+    "description": "There are no products in your cart. Start shopping now!"
+  },
+  "startShopping": "ابدأ التسوق",
+  "@startShopping": {
+    "description": "Start Shopping"
+  },
   "recommendedForYou": "مقترح لك",
   "@recommendedForYou": {
     "description": "Title for the recommendations section in empty cart"

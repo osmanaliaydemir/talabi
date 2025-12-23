@@ -910,6 +910,18 @@ abstract class AppLocalizations {
   /// **'Your cart is empty'**
   String get cartEmptyMessage;
 
+  /// There are no products in your cart. Start shopping now!
+  ///
+  /// In en, this message translates to:
+  /// **'There are no products in your cart.\nStart shopping now!'**
+  String get cartEmptySubMessage;
+
+  /// Start Shopping
+  ///
+  /// In en, this message translates to:
+  /// **'Start Shopping'**
+  String get startShopping;
+
   /// Title for the recommendations section in empty cart
   ///
   /// In en, this message translates to:
