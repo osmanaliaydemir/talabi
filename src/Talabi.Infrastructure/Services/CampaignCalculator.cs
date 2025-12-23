@@ -155,7 +155,7 @@ public class CampaignCalculator : ICampaignCalculator
                 
                 // For category check, we need Product loaded with CategoryId.
                 // Assuming item.Product.CategoryId available.
-                if (item.Product != null && allowedCategoryIds.Contains(item.Product.CategoryId))
+                if (item.Product != null && allowedCategoryIds.Contains(item.Product.CategoryId.Value))
                 {
                      applicableItems.Add(item);
                 }

@@ -1,3 +1,5 @@
+using Talabi.Core.Enums;
+
 namespace Talabi.Core.Entities;
 
 public class Campaign : BaseEntity
