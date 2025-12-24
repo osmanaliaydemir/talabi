@@ -254,6 +254,9 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("CurrentUsageCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -278,6 +281,12 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<bool>("IsFirstOrderOnly")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsStackable")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MaxUsageCount")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("MinCartAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -290,12 +299,24 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<TimeSpan?>("StartTime")
                         .HasColumnType("time");
 
+                    b.Property<int>("TargetAudience")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("TotalDiscountBudget")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("UsageLimitPerUser")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ValidDaysOfWeek")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("VendorType")
                         .HasColumnType("int");
