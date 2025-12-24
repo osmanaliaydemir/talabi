@@ -20,6 +20,7 @@ public class ProductMappingProfile : Profile
 
         // Product -> VendorProductDto
         CreateMap<Product, VendorProductDto>()
-            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category ?? (src.ProductCategory != null ? src.ProductCategory.Name : null)));
+            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category ?? (src.ProductCategory != null ? src.ProductCategory.Name : null)))
+            .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId ?? (src.ProductCategory != null ? src.ProductCategory.Id : (Guid?)null)));
     }
 }

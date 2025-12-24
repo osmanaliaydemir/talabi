@@ -85,20 +85,60 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       final categories = await _apiService.getCategories(
         language: AppLocalizations.of(context)?.localeName,
       );
+
+      LoggerService().debug(
+        'LoadCategories: Fetched ${categories.length} categories',
+      );
+
       setState(() {
         _categories = categories;
         _isLoadingCategories = false;
 
         // Try to match existing category
+        if (widget.product != null) {
+          LoggerService().debug(
+            'Product Data - ID: ${widget.product!.id}, CategoryID: ${widget.product!.categoryId}, CategoryName: ${widget.product!.category}',
+          );
+        }
+
         if (widget.product?.categoryId != null) {
-          _selectedCategoryId = widget.product!.categoryId;
+          final exists = categories.any(
+            (c) => c['id'].toString() == widget.product!.categoryId,
+          );
+          LoggerService().debug(
+            'Category ID match check: $exists for ${widget.product!.categoryId}',
+          );
+
+          if (exists) {
+            _selectedCategoryId = widget.product!.categoryId;
+          } else {
+            // Fallback: Try Name Match if ID match failed?
+            // Logic: Maybe ID changed or is inconsistent?
+            // Let's check name match if ID fails
+            final nameMatch = categories.firstWhere(
+              (c) => c['name'] == widget.product!.category,
+              orElse: () => {},
+            );
+            if (nameMatch.isNotEmpty) {
+              LoggerService().debug(
+                'Found category by name fallback: ${nameMatch['name']} -> ${nameMatch['id']}',
+              );
+              _selectedCategoryId = nameMatch['id'].toString();
+            } else {
+              _selectedCategoryId = null; // Reset if category not found
+            }
+          }
         } else if (widget.product?.category != null) {
+          LoggerService().debug(
+            'Looking up by Category Name: ${widget.product!.category}',
+          );
           final existing = categories.firstWhere(
             (c) => c['name'] == widget.product!.category,
             orElse: () => {},
           );
           if (existing.isNotEmpty) {
             _selectedCategoryId = existing['id'].toString();
+            LoggerService().debug('Found by name: $_selectedCategoryId');
           }
         }
       });
