@@ -159,6 +159,18 @@
   "@orders": {
     "description": "Orders"
   },
+  "notificationAll": "All",
+  "@notificationAll": {
+    "description": "All"
+  },
+  "notificationReviews": "Reviews",
+  "@notificationReviews": {
+    "description": "Reviews"
+  },
+  "notificationSystem": "System",
+  "@notificationSystem": {
+    "description": "System"
+  },
   "favorites": "Favorites",
   "@favorites": {
     "description": "Favorites"

@@ -19,8 +19,8 @@ public class OrderAssignmentService : IOrderAssignmentService
     private const string ResourceName = "OrderAssignmentResources";
 
     public OrderAssignmentService(
-        IUnitOfWork unitOfWork, 
-        ILogger<OrderAssignmentService> logger, 
+        IUnitOfWork unitOfWork,
+        ILogger<OrderAssignmentService> logger,
         INotificationService notificationService,
         ILocalizationService localizationService,
         IHttpContextAccessor httpContextAccessor)
@@ -107,11 +107,11 @@ public class OrderAssignmentService : IOrderAssignmentService
 
         if (order == null || courier == null) return false;
         if (order.Status != OrderStatus.Ready) return false;
-        
+
         // Check if order already has an active assignment
         var activeAssignment = await GetActiveOrderCourierAsync(orderId);
         if (activeAssignment != null) return false;
-        
+
         if (!courier.IsActive || courier.Status != CourierStatus.Available) return false;
         if (courier.CurrentActiveOrders >= courier.MaxActiveOrders) return false;
 
@@ -144,7 +144,20 @@ public class OrderAssignmentService : IOrderAssignmentService
 
         var lang = GetLanguageFromRequest();
         var culture = GetCultureInfo(lang);
-        
+
+        // Add to status history
+        await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.Assigned,
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderAssignedHistoryNote", culture, courier.Name),
+            CreatedBy = "System"
+        });
+
+        // Update courier
+        courier.Status = CourierStatus.Assigned;
+        _unitOfWork.Couriers.Update(courier);
+
         await AddCourierNotification(
             courier.Id,
             _localizationService.GetLocalizedString(ResourceName, "NewOrderAssigned", culture),
@@ -301,15 +314,15 @@ public class OrderAssignmentService : IOrderAssignmentService
         var courier = await _unitOfWork.Couriers.GetByIdAsync(courierId);
 
         if (order == null || courier == null) return false;
-        
+
         var orderCourier = await GetActiveOrderCourierAsync(orderId);
-        
+
         // Allow acceptance if it matches this courier
         if (orderCourier == null || orderCourier.CourierId != courierId) return false;
 
         // Case 1: Standard Assignment (Assigned -> Accepted)
         bool isStandardAssignment = order.Status == OrderStatus.Assigned && orderCourier.Status == OrderCourierStatus.Assigned;
-        
+
         // Case 2: Broadcase Offer (Ready -> Accepted) - Order might be Ready while Courier is Offered
         bool isOfferAcceptance = order.Status == OrderStatus.Ready && orderCourier.Status == OrderCourierStatus.Offered;
 
@@ -324,7 +337,7 @@ public class OrderAssignmentService : IOrderAssignmentService
             // The 'order.Status == Ready' check above helps, but DB concurrency is real key.
             // For now, assuming optimistic concurrency or single threaded logic for simplicity,
             // but we MUST deactivate other offers.
-            
+
             // Reload all active offers for this order to deactivate others
             var allOffers = await _unitOfWork.OrderCouriers.Query()
                 .Where(oc => oc.OrderId == orderId && oc.IsActive && oc.Status == OrderCourierStatus.Offered)
@@ -351,6 +364,18 @@ public class OrderAssignmentService : IOrderAssignmentService
         order.Status = OrderStatus.Accepted;
         _unitOfWork.Orders.Update(order);
 
+        var lang = GetLanguageFromRequest();
+        var culture = GetCultureInfo(lang);
+
+        // Add to status history
+        await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.Accepted,
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderAcceptedHistoryNote", culture, courier.Name),
+            CreatedBy = courier.UserId ?? "System"
+        });
+
         // Update courier
         courier.CurrentActiveOrders++;
         courier.Status = CourierStatus.Busy;
@@ -372,7 +397,7 @@ public class OrderAssignmentService : IOrderAssignmentService
                 _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedOrderMessage", vendorCulture, order.CustomerOrderId, courier.Name),
                 "CourierAccepted",
                 order.Id);
-            
+
             // Send Firebase push notification to vendor
             await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Accepted", vendorLang);
         }
@@ -430,6 +455,17 @@ public class OrderAssignmentService : IOrderAssignmentService
         courier.Status = courier.CurrentActiveOrders > 0 ? CourierStatus.Busy : CourierStatus.Available;
         _unitOfWork.Couriers.Update(courier);
 
+        var culture = GetCultureInfo(GetLanguageFromRequest());
+
+        // Add to status history (Revert to Ready)
+        await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.Ready,
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderRejectedHistoryNote", culture, courier.Name, reason),
+            CreatedBy = courier.UserId ?? "System"
+        });
+
         // Add vendor notification
         if (order.VendorId != Guid.Empty)
         {
@@ -479,13 +515,22 @@ public class OrderAssignmentService : IOrderAssignmentService
         order.Status = OrderStatus.OutForDelivery;
         _unitOfWork.Orders.Update(order);
 
+        var lang = GetLanguageFromRequest();
+        var culture = GetCultureInfo(lang);
+
+        // Add to status history
+        await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.OutForDelivery,
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderPickedUpHistoryNote", culture, courier.Name),
+            CreatedBy = courier.UserId ?? "System"
+        });
+
         // Update courier
         courier.Status = CourierStatus.Busy;
         _unitOfWork.Couriers.Update(courier);
 
-        var lang = GetLanguageFromRequest();
-        var culture = GetCultureInfo(lang);
-        
         await AddCourierNotification(
             courier.Id,
             _localizationService.GetLocalizedString(ResourceName, "OrderOutForDelivery", culture),
@@ -509,7 +554,7 @@ public class OrderAssignmentService : IOrderAssignmentService
                 _localizationService.GetLocalizedString(ResourceName, "OrderPickedUpMessage", vendorCulture, order.CustomerOrderId),
                 "OrderPickedUp",
                 order.Id);
-            
+
             // Send Firebase push notification to vendor
             await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "OutForDelivery", vendorLang);
         }
@@ -555,6 +600,18 @@ public class OrderAssignmentService : IOrderAssignmentService
         order.Status = OrderStatus.Delivered;
         _unitOfWork.Orders.Update(order);
 
+        var lang = GetLanguageFromRequest();
+        var culture = GetCultureInfo(lang);
+
+        // Add to status history
+        await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            Status = OrderStatus.Delivered,
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredHistoryNote", culture, courier.Name),
+            CreatedBy = courier.UserId ?? "System"
+        });
+
         // Update courier
         courier.CurrentActiveOrders = Math.Max(0, courier.CurrentActiveOrders - 1);
         courier.Status = courier.CurrentActiveOrders == 0 ? CourierStatus.Available : CourierStatus.Busy;
@@ -564,9 +621,6 @@ public class OrderAssignmentService : IOrderAssignmentService
         // Create detailed earning record (use OrderCourier data)
         await CreateCourierEarningAsync(order, courier, orderCourier);
 
-        var lang = GetLanguageFromRequest();
-        var culture = GetCultureInfo(lang);
-        
         await AddCourierNotification(
             courier.Id,
             _localizationService.GetLocalizedString(ResourceName, "DeliveryCompleted", culture),
@@ -590,7 +644,7 @@ public class OrderAssignmentService : IOrderAssignmentService
                 _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredToCustomerMessage", vendorCulture, order.CustomerOrderId),
                 "OrderDelivered",
                 order.Id);
-            
+
             // Send Firebase push notification to vendor
             await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Delivered", vendorLang);
         }
@@ -663,7 +717,7 @@ public class OrderAssignmentService : IOrderAssignmentService
     {
         var lang = GetLanguageFromRequest();
         var culture = GetCultureInfo(lang);
-        
+
         await _unitOfWork.VendorNotifications.AddAsync(new VendorNotification
         {
             VendorId = vendorId,

@@ -100,5 +100,22 @@
   <data name="CourierRejectedOrderMessage" xml:space="preserve">
     <value>تم رفض الطلب #Order.{0} من قبل {1}. السبب: {2}. تم إعادة الطلب إلى حالة جاهز.</value>
   </data>
+
+  <!-- Order History Notes -->
+  <data name="OrderAssignedHistoryNote" xml:space="preserve">
+    <value>تم تعيين الطلب للساعي {0}</value>
+  </data>
+  <data name="OrderAcceptedHistoryNote" xml:space="preserve">
+    <value>تم قبول الطلب من قبل الساعي {0}</value>
+  </data>
+  <data name="OrderRejectedHistoryNote" xml:space="preserve">
+    <value>تم رفض الطلب من قبل الساعي {0}. السبب: {1}</value>
+  </data>
+  <data name="OrderPickedUpHistoryNote" xml:space="preserve">
+    <value>تم استلام الطلب من قبل الساعي {0}</value>
+  </data>
+  <data name="OrderDeliveredHistoryNote" xml:space="preserve">
+    <value>تم تسليم الطلب من قبل الساعي {0}</value>
+  </data>
 </root>
 

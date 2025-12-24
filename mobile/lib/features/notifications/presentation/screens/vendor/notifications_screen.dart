@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/notifications/data/models/vendor_notification.dart';
+import 'package:mobile/features/orders/presentation/screens/vendor/order_detail_screen.dart';
+import 'package:mobile/utils/custom_routes.dart';
 
 class VendorNotificationsScreen extends StatefulWidget {
   const VendorNotificationsScreen({super.key});
@@ -12,13 +14,22 @@ class VendorNotificationsScreen extends StatefulWidget {
       _VendorNotificationsScreenState();
 }
 
-class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
+class _VendorNotificationsScreenState extends State<VendorNotificationsScreen>
+    with SingleTickerProviderStateMixin {
   late Future<List<VendorNotification>> _notificationsFuture;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     _notificationsFuture = _loadNotifications();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<List<VendorNotification>> _loadNotifications() async {
@@ -154,6 +165,24 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
           ),
           const SizedBox(width: 8),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          tabs: [
+            Tab(text: localizations.notificationAll),
+            Tab(text: localizations.orders),
+            Tab(text: localizations.notificationReviews),
+            Tab(text: localizations.notificationSystem),
+          ],
+        ),
       ),
       body: FutureBuilder<List<VendorNotification>>(
         future: _notificationsFuture,
@@ -213,24 +242,65 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
               );
             }
 
-            return RefreshIndicator(
-              color: Colors.white,
-              backgroundColor: Colors.deepPurple,
-              onRefresh: _refreshNotifications,
-              child: ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: notifications.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final notification = notifications[index];
-                  return _buildNotificationCard(notification);
-                },
-              ),
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildNotificationList(notifications), // Tümü
+                _buildNotificationList(
+                  notifications.where((n) => n.isOrderRelated).toList(),
+                ), // Siparişler
+                _buildNotificationList(
+                  notifications.where((n) => n.isReviewRelated).toList(),
+                ), // Yorumlar
+                _buildNotificationList(
+                  notifications.where((n) => n.isSystemRelated).toList(),
+                ), // Sistem
+              ],
             );
           }
 
           return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Widget _buildNotificationList(List<VendorNotification> notifications) {
+    if (notifications.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.notifications_off_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Bu kategoride bildirim bulunmuyor',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      color: Colors.white,
+      backgroundColor: Colors.deepPurple,
+      onRefresh: _refreshNotifications,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: notifications.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final notification = notifications[index];
+          return _buildNotificationCard(notification);
         },
       ),
     );
@@ -241,6 +311,19 @@ class _VendorNotificationsScreenState extends State<VendorNotificationsScreen> {
       onTap: () {
         if (!notification.isRead) {
           _markAsRead(notification.id);
+        }
+
+        // Navigate to order detail if order related
+        if (notification.isOrderRelated &&
+            notification.relatedEntityId != null) {
+          Navigator.push(
+            context,
+            NoSlidePageRoute(
+              builder: (context) => VendorOrderDetailScreen(
+                orderId: notification.relatedEntityId!,
+              ),
+            ),
+          );
         }
       },
       child: Container(

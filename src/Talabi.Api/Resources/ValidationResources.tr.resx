@@ -58,64 +58,64 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  
-  <!-- Courier Notifications -->
-  <data name="NewOrderAssigned" xml:space="preserve">
-    <value>New order assigned</value>
+  <data name="CampaignNotActive" xml:space="preserve">
+    <value>Kampanya aktif değil.</value>
   </data>
-  <data name="OrderAssignedMessage" xml:space="preserve">
-    <value>Order #{0} has been assigned to you. Please review and take action quickly.</value>
+  <data name="CampaignFirstOrderOnly" xml:space="preserve">
+    <value>Bu kampanya sadece ilk siparişler içindir.</value>
   </data>
-  <data name="OrderOutForDelivery" xml:space="preserve">
-    <value>Order out for delivery</value>
+  <data name="CampaignExpiredOrNotStarted" xml:space="preserve">
+    <value>Kampanya süresi dolmuş veya henüz başlamamış.</value>
   </data>
-  <data name="OrderOutForDeliveryMessage" xml:space="preserve">
-    <value>Order #{0} has left for customer delivery.</value>
+  <data name="CampaignNotValidAtThisTime" xml:space="preserve">
+    <value>Kampanya bu saatte geçerli değil.</value>
   </data>
-  <data name="DeliveryCompleted" xml:space="preserve">
-    <value>Delivery completed</value>
+  <data name="CampaignNotValidInCity" xml:space="preserve">
+    <value>Kampanya bu şehirde geçerli değil.</value>
   </data>
-  <data name="DeliveryCompletedMessage" xml:space="preserve">
-    <value>Congratulations! You have successfully delivered order #{0}.</value>
+  <data name="CampaignNotValidInDistrict" xml:space="preserve">
+    <value>Kampanya bu ilçede geçerli değil.</value>
   </data>
-  
-  <!-- Customer Notifications -->
-  <data name="OrderOnTheWay" xml:space="preserve">
-    <value>Order On The Way</value>
+  <data name="CampaignVendorTypeMismatch" xml:space="preserve">
+    <value>Kampanya bu ürünler için geçerli değil (Satıcı Tipi uyuşmazlığı).</value>
   </data>
-  <data name="OrderOnTheWayMessage" xml:space="preserve">
-    <value>Your order #{0} has left for delivery.</value>
+  <data name="CampaignMinCartAmountRequired" xml:space="preserve">
+    <value>Minimum sepet tutarı {0} olmalıdır.</value>
   </data>
-  <data name="OrderDelivered" xml:space="preserve">
-    <value>Order Delivered</value>
+  <data name="CampaignRequiresSpecificProducts" xml:space="preserve">
+    <value>Kampanya belirli ürünleri gerektirir.</value>
   </data>
-  <data name="OrderDeliveredMessage" xml:space="preserve">
-    <value>Your order #{0} has been successfully delivered. Enjoy your meal!</value>
+  <data name="CouponNotActive" xml:space="preserve">
+    <value>Kupon aktif değil.</value>
   </data>
-  
-  <!-- Vendor Notifications -->
-  <data name="CourierRejectedOrder" xml:space="preserve">
-    <value>Courier Rejected Order</value>
+  <data name="CouponFirstOrderOnly" xml:space="preserve">
+    <value>Bu kupon sadece ilk siparişler içindir.</value>
   </data>
-  <data name="CourierRejectedOrderMessage" xml:space="preserve">
-    <value>Order #Order.{0} was rejected by {1}. Reason: {2}. Order has been set back to Ready status.</value>
+  <data name="CouponExpired" xml:space="preserve">
+    <value>Kupon süresi dolmuş.</value>
   </data>
-  
-  <!-- Order History Notes -->
-  <data name="OrderAssignedHistoryNote" xml:space="preserve">
-    <value>Order assigned to courier {0}</value>
+  <data name="CouponNotValidAtThisTime" xml:space="preserve">
+    <value>Kupon bu saatte geçerli değil.</value>
   </data>
-  <data name="OrderAcceptedHistoryNote" xml:space="preserve">
-    <value>Order accepted by courier {0}</value>
+  <data name="CouponVendorTypeMismatch" xml:space="preserve">
+    <value>Kupon bu ürünler için geçerli değil (Satıcı Tipi uyuşmazlığı).</value>
   </data>
-  <data name="OrderRejectedHistoryNote" xml:space="preserve">
-    <value>Order rejected by courier {0}. Reason: {1}</value>
+  <data name="CouponVendorMismatch" xml:space="preserve">
+    <value>Kupon bu satıcı için geçerli değil.</value>
   </data>
-  <data name="OrderPickedUpHistoryNote" xml:space="preserve">
-    <value>Order picked up by courier {0}</value>
+  <data name="CouponNotValidInCity" xml:space="preserve">
+    <value>Kupon bu şehirde geçerli değil.</value>
   </data>
-  <data name="OrderDeliveredHistoryNote" xml:space="preserve">
-    <value>Order delivered by courier {0}</value>
+  <data name="CouponNotValidInDistrict" xml:space="preserve">
+    <value>Kupon bu ilçede geçerli değil.</value>
+  </data>
+  <data name="CouponRequiresSpecificCategories" xml:space="preserve">
+    <value>Kupon belirli kategorileri gerektirir.</value>
+  </data>
+  <data name="CouponRequiresSpecificProducts" xml:space="preserve">
+    <value>Kupon belirli ürünleri gerektirir.</value>
+  </data>
+  <data name="CouponMinCartAmountRequired" xml:space="preserve">
+    <value>Minimum sepet tutarı {0} olmalıdır.</value>
   </data>
 </root>
-

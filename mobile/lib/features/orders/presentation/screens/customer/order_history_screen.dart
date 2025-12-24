@@ -52,24 +52,28 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  Future<void> _loadOrders() async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _loadOrders({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final orders = await _apiService.getOrders(
         vendorType: _selectedVendorType ?? 1,
       );
-      setState(() {
-        _orders = orders;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        setState(() {
+          _orders = orders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
@@ -100,43 +104,62 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
           // Main Content
           Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  )
-                : _orders.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            child: RefreshIndicator(
+              onRefresh: () => _loadOrders(isRefresh: true),
+              color: colorScheme.primary,
+              child: _isLoading
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          AppLocalizations.of(context)!.noOrdersYet,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: colorScheme.primary,
+                            ),
                           ),
                         ),
                       ],
+                    )
+                  : _orders.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(vertical: 80),
+                      children: [
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                AppLocalizations.of(context)!.noOrdersYet,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                      itemCount: _orders.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: AppTheme.spacingMedium),
+                      itemBuilder: (context, index) {
+                        final order = _orders[index];
+                        return _buildOrderCard(context, order);
+                      },
                     ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                    itemCount: _orders.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: AppTheme.spacingMedium),
-                    itemBuilder: (context, index) {
-                      final order = _orders[index];
-                      return _buildOrderCard(context, order);
-                    },
-                  ),
+            ),
           ),
         ],
       ),

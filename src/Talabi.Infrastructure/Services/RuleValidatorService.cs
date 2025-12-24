@@ -1,31 +1,94 @@
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Models;
+using Microsoft.AspNetCore.Http;
+using System.Globalization;
 
 namespace Talabi.Infrastructure.Services;
 
 public class RuleValidatorService : IRuleValidatorService
 {
+    private readonly ILocalizationService _localizationService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private const string ResourceName = "ValidationResources";
+
+    public RuleValidatorService(ILocalizationService localizationService, IHttpContextAccessor httpContextAccessor)
+    {
+        _localizationService = localizationService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private string GetLanguageFromRequest()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext == null)
+        {
+            return "tr"; // Default
+        }
+
+        // Check query parameter first
+        var languageQuery = httpContext.Request.Query["language"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(languageQuery))
+        {
+            return NormalizeLanguageCode(languageQuery);
+        }
+
+        // Check Accept-Language header
+        var acceptLanguage = httpContext.Request.Headers["Accept-Language"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(acceptLanguage))
+        {
+            return NormalizeLanguageCode(acceptLanguage);
+        }
+
+        return "tr"; // Default fallback
+    }
+
+    private string NormalizeLanguageCode(string language)
+    {
+        if (string.IsNullOrEmpty(language)) return "tr";
+        var normalized = language.Split('-')[0].ToLower();
+        return normalized switch
+        {
+            "en" => "en",
+            "ar" => "ar",
+            _ => "tr"
+        };
+    }
+
+    private CultureInfo GetCultureInfo(string languageCode)
+    {
+        try
+        {
+            return new CultureInfo(languageCode);
+        }
+        catch (CultureNotFoundException)
+        {
+            return new CultureInfo("tr");
+        }
+    }
+
     public bool ValidateCampaign(Campaign campaign, RuleValidationContext context, out string? failureReason)
     {
         failureReason = null;
 
+        var culture = GetCultureInfo(GetLanguageFromRequest());
+
         if (!campaign.IsActive)
         {
-            failureReason = "Campaign is not active.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignNotActive", culture);
             return false;
         }
 
         if (campaign.IsFirstOrderOnly && !context.IsFirstOrder)
         {
-            failureReason = "This campaign is only for first orders.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignFirstOrderOnly", culture);
             return false;
         }
 
         // Date Range
         if (context.RequestTime < campaign.StartDate || context.RequestTime > campaign.EndDate)
         {
-            failureReason = "Campaign is expired or not yet started.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignExpiredOrNotStarted", culture);
             return false;
         }
 
@@ -33,12 +96,12 @@ public class RuleValidatorService : IRuleValidatorService
         var timeOfDay = context.RequestTime.TimeOfDay;
         if (campaign.StartTime.HasValue && timeOfDay < campaign.StartTime.Value)
         {
-            failureReason = "Campaign not valid at this time.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignNotValidAtThisTime", culture);
             return false;
         }
         if (campaign.EndTime.HasValue && timeOfDay > campaign.EndTime.Value)
         {
-            failureReason = "Campaign not valid at this time.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignNotValidAtThisTime", culture);
             return false;
         }
 
@@ -47,7 +110,7 @@ public class RuleValidatorService : IRuleValidatorService
         {
             if (!context.CityId.HasValue || !campaign.CampaignCities.Any(cc => cc.CityId == context.CityId.Value))
             {
-                failureReason = "Campaign not valid in this city.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignNotValidInCity", culture);
                 return false;
             }
         }
@@ -57,7 +120,7 @@ public class RuleValidatorService : IRuleValidatorService
         {
             if (!context.DistrictId.HasValue || !campaign.CampaignDistricts.Any(cd => cd.DistrictId == context.DistrictId.Value))
             {
-                failureReason = "Campaign not valid in this district.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignNotValidInDistrict", culture);
                 return false;
             }
         }
@@ -65,22 +128,22 @@ public class RuleValidatorService : IRuleValidatorService
         // Vendor Type
         if (campaign.VendorType.HasValue)
         {
-             // If we have items, check if they match. Match if ANY item matches the vendor type? 
-             // Or if logic dictates "For Restaurant Campaigns", usually app is in Restaurant Mode.
-             // If context items are empty (browsing), we assume validity or check context intent.
-             if (context.Items.Any() && !context.Items.All(i => i.VendorType == campaign.VendorType.Value))
-             {
-                 // Strictly, if campaign is "Market", it shouldn't apply to "Restaurant" items.
-                 // But mixed carts might be complicated. Assuming single-vendor carts mostly.
-                 failureReason = "Campaign not valid for these items (Vendor Type mismatch).";
-                 return false;
-             }
+            // If we have items, check if they match. Match if ANY item matches the vendor type? 
+            // Or if logic dictates "For Restaurant Campaigns", usually app is in Restaurant Mode.
+            // If context items are empty (browsing), we assume validity or check context intent.
+            if (context.Items.Any() && !context.Items.All(i => i.VendorType == campaign.VendorType.Value))
+            {
+                // Strictly, if campaign is "Market", it shouldn't apply to "Restaurant" items.
+                // But mixed carts might be complicated. Assuming single-vendor carts mostly.
+                failureReason = "Campaign not valid for these items (Vendor Type mismatch).";
+                return false;
+            }
         }
 
         // Cart Amount (only relevant if items exist)
         if (context.Items.Any() && campaign.MinCartAmount.HasValue && context.CartTotal < campaign.MinCartAmount.Value)
         {
-            failureReason = $"Minimum cart amount of {campaign.MinCartAmount} required.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignMinCartAmountRequired", culture, campaign.MinCartAmount);
             return false;
         }
 
@@ -92,7 +155,7 @@ public class RuleValidatorService : IRuleValidatorService
             var validProductIds = campaign.CampaignProducts.Select(cp => cp.ProductId).ToHashSet();
             if (!context.Items.Any(i => validProductIds.Contains(i.ProductId)))
             {
-                failureReason = "Campaign requires specific products.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CampaignRequiresSpecificProducts", culture);
                 return false;
             }
         }
@@ -104,21 +167,23 @@ public class RuleValidatorService : IRuleValidatorService
     {
         failureReason = null;
 
+        var culture = GetCultureInfo(GetLanguageFromRequest());
+
         if (!coupon.IsActive)
         {
-            failureReason = "Coupon is not active.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponNotActive", culture);
             return false;
         }
 
         if (coupon.IsFirstOrderOnly && !context.IsFirstOrder)
         {
-            failureReason = "This coupon is only for first orders.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponFirstOrderOnly", culture);
             return false;
         }
 
         if (context.RequestTime > coupon.ExpirationDate)
         {
-            failureReason = "Coupon has expired.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponExpired", culture);
             return false;
         }
 
@@ -126,23 +191,23 @@ public class RuleValidatorService : IRuleValidatorService
         var timeOfDay = context.RequestTime.TimeOfDay;
         if (coupon.StartTime.HasValue && timeOfDay < coupon.StartTime.Value)
         {
-            failureReason = "Coupon not valid at this time.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponNotValidAtThisTime", culture);
             return false;
         }
         if (coupon.EndTime.HasValue && timeOfDay > coupon.EndTime.Value)
         {
-            failureReason = "Coupon not valid at this time.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponNotValidAtThisTime", culture);
             return false;
         }
 
         // Vendor Type
         if (coupon.VendorType.HasValue)
         {
-             if (context.Items.Any() && !context.Items.All(i => i.VendorType == coupon.VendorType.Value))
-             {
-                 failureReason = "Coupon not valid for these items (Vendor Type mismatch).";
-                 return false;
-             }
+            if (context.Items.Any() && !context.Items.All(i => i.VendorType == coupon.VendorType.Value))
+            {
+                failureReason = "Coupon not valid for these items (Vendor Type mismatch).";
+                return false;
+            }
         }
 
         // Vendor Id Specific
@@ -150,7 +215,7 @@ public class RuleValidatorService : IRuleValidatorService
         {
             if (context.Items.Any() && !context.Items.Any(i => i.VendorId == coupon.VendorId.Value))
             {
-                failureReason = "Coupon not valid for this vendor.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponVendorMismatch", culture);
                 return false;
             }
         }
@@ -160,7 +225,7 @@ public class RuleValidatorService : IRuleValidatorService
         {
             if (!context.CityId.HasValue || !coupon.CouponCities.Any(cc => cc.CityId == context.CityId.Value))
             {
-                failureReason = "Coupon not valid in this city.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponNotValidInCity", culture);
                 return false;
             }
         }
@@ -170,7 +235,7 @@ public class RuleValidatorService : IRuleValidatorService
         {
             if (!context.DistrictId.HasValue || !coupon.CouponDistricts.Any(cd => cd.DistrictId == context.DistrictId.Value))
             {
-                failureReason = "Coupon not valid in this district.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponNotValidInDistrict", culture);
                 return false;
             }
         }
@@ -184,7 +249,7 @@ public class RuleValidatorService : IRuleValidatorService
             // Sticking to "Requirement to apply": At least one item must be of the category.
             if (!context.Items.Any(i => i.CategoryId.HasValue && validCategoryIds.Contains(i.CategoryId.Value)))
             {
-                failureReason = "Coupon requires specific categories.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponRequiresSpecificCategories", culture);
                 return false;
             }
         }
@@ -195,7 +260,7 @@ public class RuleValidatorService : IRuleValidatorService
             var validProductIds = coupon.CouponProducts.Select(cp => cp.ProductId).ToHashSet();
             if (!context.Items.Any(i => validProductIds.Contains(i.ProductId)))
             {
-                failureReason = "Coupon requires specific products.";
+                failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponRequiresSpecificProducts", culture);
                 return false;
             }
         }
@@ -204,7 +269,7 @@ public class RuleValidatorService : IRuleValidatorService
         // Ensure checked against Applicable Items Only? For now, total cart.
         if (context.CartTotal < coupon.MinCartAmount)
         {
-            failureReason = $"Minimum cart amount of {coupon.MinCartAmount} required.";
+            failureReason = _localizationService.GetLocalizedString(ResourceName, "CouponMinCartAmountRequired", culture, coupon.MinCartAmount);
             return false;
         }
 

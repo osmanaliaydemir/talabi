@@ -100,5 +100,22 @@
   <data name="CourierRejectedOrderMessage" xml:space="preserve">
     <value>#Order.{0} numaralı sipariş {1} tarafından reddedildi. Sebep: {2}. Sipariş yeniden Hazır durumuna alındı.</value>
   </data>
+
+  <!-- Order History Notes -->
+  <data name="OrderAssignedHistoryNote" xml:space="preserve">
+    <value>Sipariş kurye {0} tarafına atandı</value>
+  </data>
+  <data name="OrderAcceptedHistoryNote" xml:space="preserve">
+    <value>Sipariş kurye {0} tarafından kabul edildi</value>
+  </data>
+  <data name="OrderRejectedHistoryNote" xml:space="preserve">
+    <value>Sipariş kurye {0} tarafından reddedildi. Sebep: {1}</value>
+  </data>
+  <data name="OrderPickedUpHistoryNote" xml:space="preserve">
+    <value>Sipariş kurye {0} tarafından teslim alındı</value>
+  </data>
+  <data name="OrderDeliveredHistoryNote" xml:space="preserve">
+    <value>Sipariş kurye {0} tarafından teslim edildi</value>
+  </data>
 </root>
 

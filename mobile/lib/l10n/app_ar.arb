@@ -160,6 +160,18 @@
   "@orders": {
     "description": "الطلبات"
   },
+  "notificationAll": "الكل",
+  "@notificationAll": {
+    "description": "الكل"
+  },
+  "notificationReviews": "التقييمات",
+  "@notificationReviews": {
+    "description": "التقييمات"
+  },
+  "notificationSystem": "النظام",
+  "@notificationSystem": {
+    "description": "النظام"
+  },
   "favorites": "المفضلة",
   "@favorites": {
     "description": "المفضلة"

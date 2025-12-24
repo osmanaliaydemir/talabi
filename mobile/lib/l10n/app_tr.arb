@@ -160,6 +160,18 @@
   "@orders": {
     "description": "Siparişler"
   },
+  "notificationAll": "Tümü",
+  "@notificationAll": {
+    "description": "Tümü"
+  },
+  "notificationReviews": "Yorumlar",
+  "@notificationReviews": {
+    "description": "Yorumlar"
+  },
+  "notificationSystem": "Sistem",
+  "@notificationSystem": {
+    "description": "Sistem"
+  },
   "favorites": "Favoriler",
   "@favorites": {
     "description": "Favoriler"

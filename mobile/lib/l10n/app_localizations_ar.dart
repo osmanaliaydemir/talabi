@@ -127,6 +127,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orders => 'الطلبات';
 
   @override
+  String get notificationAll => 'الكل';
+
+  @override
+  String get notificationReviews => 'التقييمات';
+
+  @override
+  String get notificationSystem => 'النظام';
+
+  @override
   String get favorites => 'المفضلة';
 
   @override

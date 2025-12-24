@@ -8,6 +8,7 @@ import 'package:mobile/providers/theme_provider.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/features/orders/presentation/screens/customer/order_detail_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -188,6 +189,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             context,
             listen: false,
           ).markAsRead(notification.id);
+        }
+
+        if (notification.isOrderRelated &&
+            notification.relatedEntityId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  OrderDetailScreen(orderId: notification.relatedEntityId!),
+            ),
+          );
         }
       },
       child: Container(

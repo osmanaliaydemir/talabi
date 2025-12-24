@@ -27,4 +27,14 @@ class VendorNotification {
   final bool isRead;
   final String? relatedEntityId;
   final DateTime createdAt;
+
+  bool get isOrderRelated =>
+      type.toLowerCase() == 'neworder' ||
+      type.toLowerCase() == 'orderstatuschanged' ||
+      type.toLowerCase() == 'ordercancelled' ||
+      type.toLowerCase() == 'orderaccepted';
+
+  bool get isReviewRelated => type.toLowerCase() == 'newreview';
+
+  bool get isSystemRelated => !isOrderRelated && !isReviewRelated;
 }

@@ -127,6 +127,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orders => 'Orders';
 
   @override
+  String get notificationAll => 'All';
+
+  @override
+  String get notificationReviews => 'Reviews';
+
+  @override
+  String get notificationSystem => 'System';
+
+  @override
   String get favorites => 'Favorites';
 
   @override

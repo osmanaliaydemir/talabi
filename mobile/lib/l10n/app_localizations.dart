@@ -328,6 +328,24 @@ abstract class AppLocalizations {
   /// **'Orders'**
   String get orders;
 
+  /// All
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notificationAll;
+
+  /// Reviews
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get notificationReviews;
+
+  /// System
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get notificationSystem;
+
   /// Favorites
   ///
   /// In en, this message translates to:

@@ -30,6 +30,13 @@ class CourierNotification {
   final DateTime createdAt;
   final DateTime? readAt;
   final String? orderId;
+
+  bool get isOrderRelated =>
+      type.toLowerCase().contains('order') ||
+      type.toLowerCase().contains('assignment') ||
+      type.toLowerCase().contains('offer');
+
+  bool get isSystemRelated => !isOrderRelated;
 }
 
 class CourierNotificationResponse {

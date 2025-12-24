@@ -52,4 +52,9 @@ class CustomerNotification {
   final DateTime createdAt;
   final DateTime? readAt;
   final String? relatedEntityId;
+
+  bool get isOrderRelated =>
+      type.toLowerCase().contains('order') ||
+      type.toLowerCase().contains('courier') ||
+      type.toLowerCase() == 'delivery';
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/notifications/data/models/courier_notification.dart';
 import 'package:mobile/services/courier_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_header.dart';
+import 'package:mobile/features/orders/presentation/screens/courier/order_detail_screen.dart'; // Import verified
 
 class CourierNotificationsScreen extends StatefulWidget {
   const CourierNotificationsScreen({super.key});
@@ -15,20 +15,28 @@ class CourierNotificationsScreen extends StatefulWidget {
       _CourierNotificationsScreenState();
 }
 
-class _CourierNotificationsScreenState
-    extends State<CourierNotificationsScreen> {
+class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
+    with SingleTickerProviderStateMixin {
   final CourierService _courierService = CourierService();
   final List<CourierNotification> _notifications = [];
   bool _isLoading = true;
   bool _isError = false;
   String? _errorMessage;
   int _unreadCount = 0;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     LoggerService().debug('CourierNotificationsScreen: initState called');
+    _tabController = TabController(length: 3, vsync: this);
     _loadNotifications();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadNotifications() async {
@@ -123,21 +131,30 @@ class _CourierNotificationsScreenState
       LoggerService().debug(
         'CourierNotificationsScreen: Navigating to order detail with orderId: $orderId',
       );
-      Navigator.of(
-        context,
-      ).pushNamed('/courier/order-detail', arguments: orderId);
+      // Use direct navigation to ensure correct screen is opened
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => OrderDetailScreen(orderId: orderId),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
+    // Fallback strings if localization is missing some keys
+    final tabAll = localizations?.notificationAll ?? 'Tümü';
+    final tabOrders = 'Siparişler'; // TODO: Add to Arb if needed
+    final tabSystem = localizations?.notificationSystem ?? 'Sistem';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CourierHeader(
         title: _unreadCount > 0
-            ? '${AppLocalizations.of(context)?.notificationsTitle ?? 'Bildirimler'} (${AppLocalizations.of(context)?.unreadNotificationsCount(_unreadCount) ?? '$_unreadCount okunmamış'})'
-            : (AppLocalizations.of(context)?.notificationsTitle ??
-                  'Bildirimler'),
+            ? '${localizations?.notificationsTitle ?? 'Bildirimler'} (${localizations?.unreadNotificationsCount(_unreadCount) ?? '$_unreadCount okunmamış'})'
+            : (localizations?.notificationsTitle ?? 'Bildirimler'),
         leadingIcon: Icons.notifications_active_outlined,
         showBackButton: true,
         showNotifications: false,
@@ -146,14 +163,47 @@ class _CourierNotificationsScreenState
         },
         onRefresh: _handleRefresh,
       ),
-      body: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: _buildBody(context),
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.teal,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.teal,
+              tabs: [
+                Tab(text: tabAll),
+                Tab(text: tabOrders),
+                Tab(text: tabSystem),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildNotificationList(_notifications),
+                _buildNotificationList(
+                  _notifications.where((n) => n.isOrderRelated).toList(),
+                  emptyMessage: 'Sipariş bildirimi bulunmuyor.',
+                ),
+                _buildNotificationList(
+                  _notifications.where((n) => n.isSystemRelated).toList(),
+                  emptyMessage: 'Sistem bildirimi bulunmuyor.',
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildNotificationList(
+    List<CourierNotification> notifications, {
+    String? emptyMessage,
+  }) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: Colors.teal));
     }
@@ -180,110 +230,115 @@ class _CourierNotificationsScreenState
       );
     }
 
-    if (_notifications.isEmpty) {
+    if (notifications.isEmpty) {
       final localizations = AppLocalizations.of(context);
       return Center(
         child: Text(
-          localizations?.noNotificationsYet ??
+          emptyMessage ??
+              localizations?.noNotificationsYet ??
               'Henüz bir bildirimin yok.\nSipariş hareketlerin burada görünecek.',
           textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.grey.shade600),
         ),
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: _notifications.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final notification = _notifications[index];
-        return GestureDetector(
-          onTap: () => _handleNotificationTap(notification),
-          child: Container(
-            decoration: BoxDecoration(
-              color: notification.isRead
-                  ? Colors.grey.shade100
-                  : Colors.teal.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
+    return RefreshIndicator(
+      onRefresh: _handleRefresh,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: notifications.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final notification = notifications[index];
+          return GestureDetector(
+            onTap: () => _handleNotificationTap(notification),
+            child: Container(
+              decoration: BoxDecoration(
                 color: notification.isRead
-                    ? Colors.grey.shade300
-                    : Colors.teal.shade200,
+                    ? Colors.grey.shade100
+                    : Colors.teal.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: notification.isRead
+                      ? Colors.grey.shade300
+                      : Colors.teal.shade200,
+                ),
               ),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      notification.isRead
-                          ? Icons.notifications_none
-                          : Icons.notifications_active,
-                      color: notification.isRead ? Colors.grey : Colors.teal,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            notification.title,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: notification.isRead
-                                  ? FontWeight.w500
-                                  : FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            notification.message,
-                            style: TextStyle(color: Colors.grey.shade700),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            DateFormat(
-                              'dd MMM yyyy HH:mm',
-                            ).format(notification.createdAt.toLocal()),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        notification.isRead
+                            ? Icons.notifications_none
+                            : Icons.notifications_active,
+                        color: notification.isRead ? Colors.grey : Colors.teal,
                       ),
-                    ),
-                    if (!notification.isRead)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
-                          Icons.fiber_manual_record,
-                          color: Colors.teal,
-                          size: 12,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              notification.title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: notification.isRead
+                                    ? FontWeight.w500
+                                    : FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              notification.message,
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              DateFormat(
+                                'dd MMM yyyy HH:mm',
+                              ).format(notification.createdAt.toLocal()),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
-                if (notification.orderId != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: TextButton.icon(
-                      onPressed: () => _handleNotificationTap(notification),
-                      icon: const Icon(Icons.open_in_new, size: 18),
-                      label: Text(
-                        _extractOrderNumber(notification.message) ??
-                            'Sipariş #${notification.orderId}',
+                      if (!notification.isRead)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(
+                            Icons.fiber_manual_record,
+                            color: Colors.teal,
+                            size: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (notification.orderId != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: TextButton.icon(
+                        onPressed: () => _handleNotificationTap(notification),
+                        icon: const Icon(Icons.open_in_new, size: 18),
+                        label: Text(
+                          _extractOrderNumber(notification.message) ??
+                              'Sipariş #${notification.orderId}',
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

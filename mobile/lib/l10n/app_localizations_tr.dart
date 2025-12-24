@@ -127,6 +127,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get orders => 'Siparişler';
 
   @override
+  String get notificationAll => 'Tümü';
+
+  @override
+  String get notificationReviews => 'Yorumlar';
+
+  @override
+  String get notificationSystem => 'Sistem';
+
+  @override
   String get favorites => 'Favoriler';
 
   @override
