@@ -85,11 +85,18 @@ class OrderRemoteDataSource {
     );
 
     // Backend Response format: ApiResponse<OrderDto>
-    // We return Map for now to match current ApiService signature,
-    // but ideally should return OrderDto
     if (response.data is Map<String, dynamic> &&
         response.data.containsKey('success')) {
-      return response.data as Map<String, dynamic>;
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Sipariş detayı alınamadı');
+      }
+
+      return apiResponse.data!;
     }
 
     // Legacy support
@@ -100,6 +107,21 @@ class OrderRemoteDataSource {
     final response = await _networkClient.dio.get(
       '${ApiEndpoints.orders}/$orderId/detail',
     );
+
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('success')) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Sipariş detayı alınamadı');
+      }
+
+      return apiResponse.data!;
+    }
+
     return response.data as Map<String, dynamic>;
   }
 

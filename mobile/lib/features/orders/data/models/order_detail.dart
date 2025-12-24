@@ -17,25 +17,38 @@ class OrderDetail {
 
   factory OrderDetail.fromJson(Map<String, dynamic> json) {
     return OrderDetail(
-      id: json['id'].toString(),
+      id: json['id']?.toString() ?? '',
       customerOrderId: json['customerOrderId']?.toString() ?? '',
-      vendorId: json['vendorId'].toString(),
-      vendorName: json['vendorName'],
-      customerId: json['customerId'],
-      customerName: json['customerName'],
-      totalAmount: (json['totalAmount'] as num).toDouble(),
-      status: json['status'],
-      createdAt: DateTime.parse(json['createdAt']),
+      vendorId: json['vendorId']?.toString() ?? '',
+      vendorName: json['vendorName']?.toString() ?? '',
+      customerId: json['customerId']?.toString() ?? '',
+      customerName: json['customerName']?.toString() ?? '',
+      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      status: json['status']?.toString() ?? 'Pending',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
       cancelledAt: json['cancelledAt'] != null
           ? DateTime.parse(json['cancelledAt'])
           : null,
-      cancelReason: json['cancelReason'],
-      items: (json['items'] as List)
-          .map((item) => OrderItemDetail.fromJson(item))
-          .toList(),
-      statusHistory: (json['statusHistory'] as List)
-          .map((history) => OrderStatusHistory.fromJson(history))
-          .toList(),
+      cancelReason: json['cancelReason']?.toString(),
+      items:
+          (json['items'] as List?)
+              ?.map(
+                (item) =>
+                    OrderItemDetail.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      statusHistory:
+          (json['statusHistory'] as List?)
+              ?.map(
+                (history) => OrderStatusHistory.fromJson(
+                  history as Map<String, dynamic>,
+                ),
+              )
+              .toList() ??
+          [],
     );
   }
 
@@ -70,18 +83,18 @@ class OrderItemDetail {
 
   factory OrderItemDetail.fromJson(Map<String, dynamic> json) {
     return OrderItemDetail(
-      productId: json['productId'].toString(),
+      productId: json['productId']?.toString() ?? '',
       customerOrderItemId: json['customerOrderItemId']?.toString() ?? '',
-      productName: json['productName'],
-      productImageUrl: json['productImageUrl'],
-      quantity: json['quantity'],
-      unitPrice: (json['unitPrice'] as num).toDouble(),
-      totalPrice: (json['totalPrice'] as num).toDouble(),
-      isCancelled: json['isCancelled'] ?? false,
+      productName: json['productName']?.toString() ?? '',
+      productImageUrl: json['productImageUrl']?.toString(),
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      isCancelled: json['isCancelled'] as bool? ?? false,
       cancelledAt: json['cancelledAt'] != null
           ? DateTime.parse(json['cancelledAt'])
           : null,
-      cancelReason: json['cancelReason'],
+      cancelReason: json['cancelReason']?.toString(),
     );
   }
   final String productId;
@@ -106,10 +119,12 @@ class OrderStatusHistory {
 
   factory OrderStatusHistory.fromJson(Map<String, dynamic> json) {
     return OrderStatusHistory(
-      status: json['status'],
-      note: json['note'],
-      createdAt: DateTime.parse(json['createdAt']),
-      createdBy: json['createdBy'],
+      status: json['status']?.toString() ?? '',
+      note: json['note']?.toString(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      createdBy: json['createdBy']?.toString() ?? '',
     );
   }
   final String status;

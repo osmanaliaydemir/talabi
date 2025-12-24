@@ -39,84 +39,62 @@ public class CartController(
     [HttpGet]
     public async Task<ActionResult<ApiResponse<CartDto>>> GetCart()
     {
-        try
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            var userId = UserContext.GetUserId();
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return Unauthorized(new ApiResponse<CartDto>(
-                    LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
-                    "UNAUTHORIZED"));
-            }
+            return Unauthorized(new ApiResponse<CartDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
+                "UNAUTHORIZED"));
+        }
 
-            var cart = await UnitOfWork.Carts.Query()
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Product)
-                .ThenInclude(p => p!.Vendor)
-                .Include(c => c.Coupon)
-                .Include(c => c.Campaign)
-                    .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
-                .Include(c => c.Campaign)
-                    .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+        var cart = await UnitOfWork.Carts.Query()
+            .Include(c => c.CartItems)
+            .ThenInclude(ci => ci.Product)
+            .ThenInclude(p => p!.Vendor)
+            .Include(c => c.Coupon)
+            .Include(c => c.Campaign)
+                .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
+            .Include(c => c.Campaign)
+                .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
+            .FirstOrDefaultAsync(c => c.UserId == userId);
 
-            CartDto cartDto;
-            if (cart == null)
-            {
-                cartDto = new CartDto { UserId = userId, Items = [] };
-            }
-            else
-            {
-                cartDto = _mapper.Map<CartDto>(cart);
-                // Manual mapping for new properties if Mapper Profile not updated
-                // Assuming Mapper handles basic mapping, but we extended CartDto
-                // Safer to double check or set manually
-                cartDto.CouponId = cart.CouponId;
-                cartDto.CampaignId = cart.CampaignId;
-                cartDto.CouponCode = cart.Coupon?.Code;
-                cartDto.CampaignTitle = cart.Campaign?.Title;
+        CartDto cartDto;
+        if (cart == null)
+        {
+            cartDto = new CartDto { UserId = userId, Items = [] };
+        }
+        else
+        {
+            cartDto = _mapper.Map<CartDto>(cart);
+            // Manual mapping for new properties if Mapper Profile not updated
+            // Assuming Mapper handles basic mapping, but we extended CartDto
+            // Safer to double check or set manually
+            cartDto.CouponId = cart.CouponId;
+            cartDto.CampaignId = cart.CampaignId;
+            cartDto.CouponCode = cart.Coupon?.Code;
+            cartDto.CampaignTitle = cart.Campaign?.Title;
 
-                // Calculate Campaign Discount
-                if (cart.Campaign != null)
+            // Calculate Campaign Discount
+            if (cart.Campaign != null)
+            {
+                var calculationResult = await _campaignCalculator.CalculateAsync(cart, cart.Campaign, userId);
+                if (calculationResult.IsValid)
                 {
-                    var calculationResult = await _campaignCalculator.CalculateAsync(cart, cart.Campaign, userId);
-                    if (calculationResult.IsValid)
-                    {
-                        cartDto.CampaignDiscountAmount = calculationResult.DiscountAmount;
-                        cartDto.DiscountedItemIds = calculationResult.ApplicableItemIds;
-                    }
-                    else
-                    {
-                        // Campaign is invalid (expired, limit reached, etc.)
-                        // We might want to clear it or notify user.
-                        // For now, let's just not apply discount.
-                        // Ideally, we should add a warning to the response, but CartDto structure is rigid.
-                        // We can set CampaignTitle to "Campaign Invalid: " + Reason?
-                        // Or just remove it from DTO so UI doesn't show it?
-                        // Let's remove from DTO to avoid confusion
-                        cartDto.CampaignId = null;
-                        cartDto.CampaignTitle = null;
-                    }
+                    cartDto.CampaignDiscountAmount = calculationResult.DiscountAmount;
+                    cartDto.DiscountedItemIds = calculationResult.ApplicableItemIds;
+                }
+                else
+                {
+                    // Campaign is invalid (expired, limit reached, etc.)
+                    // We might want to clear it or notify user.
+                    // For now, let's just not apply discount.
+                    cartDto.CampaignId = null;
+                    cartDto.CampaignTitle = null;
                 }
             }
-
-            return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("CRITICAL_CART_ERROR: " + ex.ToString());
-            var errorMsg = "DEBUG_ERROR: " + ex.Message + " | Stack: " + ex.StackTrace;
 
-            // Debugging: Return exception as 200 OK with Disclaimer AND CampaignTitle (for visibility)
-            return Ok(new ApiResponse<CartDto>(
-                new CartDto
-                {
-                    Disclaimer = errorMsg,
-                    CampaignTitle = errorMsg // Show in UI if possible
-                },
-                "DEBUG_ERROR"
-            ));
-        }
+        return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
