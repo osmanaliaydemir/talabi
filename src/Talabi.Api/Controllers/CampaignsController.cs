@@ -17,8 +17,8 @@ public class CampaignsController(IUnitOfWork unitOfWork, IRuleValidatorService r
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Campaign>>> GetCampaigns(
-        [FromQuery] Guid? cityId,
-        [FromQuery] Guid? districtId,
+        [FromQuery] Guid? cityId, 
+        [FromQuery] Guid? districtId, 
         [FromQuery] int? vendorType)
     {
         var campaigns = await unitOfWork.Campaigns.Query()
@@ -115,14 +115,14 @@ public class CampaignsController(IUnitOfWork unitOfWork, IRuleValidatorService r
         // Vendor Type Filter
         if (campaign.VendorType.HasValue)
         {
-            query = query.Where(p => (int?)p.VendorType == campaign.VendorType || (p.Vendor != null && p.Vendor.Type == (VendorType)campaign.VendorType));
+            query = query.Where(p => p.VendorType == campaign.VendorType || (p.Vendor != null && p.Vendor.Type == (VendorType)campaign.VendorType));
         }
 
         // Product/Category Filter
         var productIds = campaign.CampaignProducts.Select(cp => cp.ProductId).ToList();
         var categoryIds = campaign.CampaignCategories.Select(cc => cc.CategoryId).ToList();
 
-        if (productIds.Count > 0 || categoryIds.Count > 0)
+        if (productIds.Any() || categoryIds.Any())
         {
             query = query.Where(p => productIds.Contains(p.Id) || (p.CategoryId.HasValue && categoryIds.Contains(p.CategoryId.Value)));
         }
@@ -137,9 +137,9 @@ public class CampaignsController(IUnitOfWork unitOfWork, IRuleValidatorService r
         }
 
         var products = await query.Take(50).ToListAsync();
-
+        
         var productDtos = mapper.Map<List<ProductDto>>(products);
-
+        
         return Ok(productDtos);
     }
 }

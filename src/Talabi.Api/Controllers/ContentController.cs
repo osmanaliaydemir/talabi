@@ -13,18 +13,27 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/content")]
 [ApiController]
-public class ContentController(
-    IUnitOfWork unitOfWork,
-    ILogger<ContentController> logger,
-    ILocalizationService localizationService,
-    IUserContextService userContext,
-    ICacheService cacheService,
-    IOptions<CacheOptions> cacheOptions)
-    : BaseController(unitOfWork, logger, localizationService, userContext)
+public class ContentController : BaseController
 {
-    private readonly ICacheService _cacheService = cacheService;
-    private readonly CacheOptions _cacheOptions = cacheOptions.Value;
+    private readonly ICacheService _cacheService;
+    private readonly CacheOptions _cacheOptions;
     private const string ResourceName = "ContentResources";
+
+    /// <summary>
+    /// ContentController constructor
+    /// </summary>
+    public ContentController(
+        IUnitOfWork unitOfWork,
+        ILogger<ContentController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext,
+        ICacheService cacheService,
+        IOptions<CacheOptions> cacheOptions)
+        : base(unitOfWork, logger, localizationService, userContext)
+    {
+        _cacheService = cacheService;
+        _cacheOptions = cacheOptions.Value;
+    }
 
     /// <summary>
     /// Dil ve tip bazında yasal belge içeriğini getirir
@@ -40,7 +49,7 @@ public class ContentController(
         var cacheKey = $"{_cacheOptions.LegalDocumentsKeyPrefix}_{type}_{languageCode}";
 
         // Cache-aside pattern: Önce cache'den kontrol et
-        var documentDto = await _cacheService.GetOrSetAsync<object>(
+        var documentDto = await _cacheService.GetOrSetAsync(
             cacheKey,
             async () =>
             {
@@ -49,7 +58,7 @@ public class ContentController(
 
                 if (document == null)
                 {
-                    return null!; // Return null to indicate not found
+                    return null; // Return null to indicate not found
                 }
 
                 return (object)new

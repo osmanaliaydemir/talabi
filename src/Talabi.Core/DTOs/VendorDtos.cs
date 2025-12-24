@@ -32,13 +32,13 @@ public class VendorOrderDto
     public Guid Id { get; set; }
     public string CustomerOrderId { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
-    public string? CustomerEmail { get; set; }
+    public string CustomerEmail { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? EstimatedDeliveryTime { get; set; }
-    public List<VendorOrderItemDto> Items { get; set; } = [];
-
+    public List<VendorOrderItemDto> Items { get; set; } = new();
+    
     // Courier Information
     public VendorCourierInfoDto? Courier { get; set; }
 }
@@ -74,8 +74,8 @@ public class SalesReportDto
     public decimal TotalRevenue { get; set; }
     public int CompletedOrders { get; set; }
     public int CancelledOrders { get; set; }
-    public List<DailySalesDto> DailySales { get; set; } = [];
-    public List<ProductSalesDto> TopProducts { get; set; } = [];
+    public List<DailySalesDto> DailySales { get; set; } = new();
+    public List<ProductSalesDto> TopProducts { get; set; } = new();
 }
 
 public class DailySalesDto

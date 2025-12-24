@@ -7,10 +7,16 @@ using Talabi.Portal.Models;
 
 namespace Talabi.Portal.Services;
 
-public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService userContextService) : IDeliveryZoneService
+public class DeliveryZoneService : IDeliveryZoneService
 {
-    private readonly TalabiDbContext _dbContext = dbContext;
-    private readonly IUserContextService _userContextService = userContextService;
+    private readonly TalabiDbContext _dbContext;
+    private readonly IUserContextService _userContextService;
+
+    public DeliveryZoneService(TalabiDbContext dbContext, IUserContextService userContextService)
+    {
+        _dbContext = dbContext;
+        _userContextService = userContextService;
+    }
 
     private async Task<Guid?> GetVendorIdAsync(CancellationToken ct)
     {
@@ -23,8 +29,8 @@ public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService 
 
         return vendor?.Id;
     }
-
-    private static string GetLocalizedName(dynamic entity)
+    
+    private string GetLocalizedName(dynamic entity)
     {
         if (entity == null) return "-";
         var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
@@ -40,25 +46,25 @@ public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService 
     public async Task<List<VendorDeliveryZoneDto>> GetVendorZonesAsync(CancellationToken ct = default)
     {
         var vendorId = await GetVendorIdAsync(ct);
-        if (vendorId == null) return [];
+        if (vendorId == null) return new List<VendorDeliveryZoneDto>();
 
         var zones = await _dbContext.VendorDeliveryZones
-            .Include(z => z.District).ThenInclude(d => d!.City)
+            .Include(z => z.District).ThenInclude(d => d.City)
             .Include(z => z.Locality)
             .Where(z => z.VendorId == vendorId.Value && z.IsActive)
             .ToListAsync(ct);
 
         return zones.Select(z => new VendorDeliveryZoneDto
-        {
-            Id = z.Id,
-            LocalityId = z.LocalityId,
-            CityName = z.District?.City != null ? GetLocalizedName(z.District.City) : "-",
-            DistrictName = z.District != null ? GetLocalizedName(z.District) : "-",
-            LocalityName = z.Locality != null ? GetLocalizedName(z.Locality) : "-",
-            DeliveryFee = z.DeliveryFee,
-            MinimumOrderAmount = z.MinimumOrderAmount,
-            IsActive = z.IsActive
-        })
+            {
+                Id = z.Id,
+                LocalityId = z.LocalityId,
+                CityName = z.District?.City != null ? GetLocalizedName(z.District.City) : "-",
+                DistrictName = z.District != null ? GetLocalizedName(z.District) : "-",
+                LocalityName = z.Locality != null ? GetLocalizedName(z.Locality) : "-",
+                DeliveryFee = z.DeliveryFee,
+                MinimumOrderAmount = z.MinimumOrderAmount,
+                IsActive = z.IsActive
+            })
             .OrderBy(z => z.CityName)
             .ThenBy(z => z.DistrictName)
             .ToList();
@@ -72,23 +78,23 @@ public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService 
         // If no localities selected, check if districts selected (backward compatibility or UI helper failed)
         // If districts selected but no localities, we might want to fetch all localities for those districts.
         // For now, let's assume UI sends SelectedLocalities.
-
+        
         if (model.SelectedLocalities == null || !model.SelectedLocalities.Any())
         {
-            // Fallback: If legacy SelectedDistricts present, maybe fetch all localities for them?
-            // But user wants Locality persistence. Let's do explicit check.
-            if (model.SelectedDistricts != null && model.SelectedDistricts.Count > 0)
-            {
-                var localitiesInDistricts = await _dbContext.Localities
-                   .Where(l => model.SelectedDistricts.Contains(l.DistrictId))
-                   .Select(l => l.Id)
-                   .ToListAsync(ct);
-
-                model.SelectedLocalities = localitiesInDistricts;
-            }
+             // Fallback: If legacy SelectedDistricts present, maybe fetch all localities for them?
+             // But user wants Locality persistence. Let's do explicit check.
+             if (model.SelectedDistricts != null && model.SelectedDistricts.Any())
+             {
+                 var localitiesInDistricts = await _dbContext.Localities
+                    .Where(l => model.SelectedDistricts.Contains(l.DistrictId))
+                    .Select(l => l.Id)
+                    .ToListAsync(ct);
+                    
+                 model.SelectedLocalities = localitiesInDistricts;
+             }
         }
 
-        if (model.SelectedLocalities == null || model.SelectedLocalities.Count == 0) return;
+        if (model.SelectedLocalities == null || !model.SelectedLocalities.Any()) return;
 
         // Fetch Localities to get DistrictId and check existence
         var localitiesToAdd = await _dbContext.Localities
@@ -97,14 +103,14 @@ public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService 
 
         var existingZoneLocalityIds = await _dbContext.VendorDeliveryZones
             .Where(z => z.VendorId == vendorId.Value && z.IsActive && z.LocalityId.HasValue)
-            .Select(z => z.LocalityId!.Value)
+            .Select(z => z.LocalityId.Value)
             .ToListAsync(ct);
 
         var newZones = new List<VendorDeliveryZone>();
 
         foreach (var locality in localitiesToAdd)
         {
-            if (existingZoneLocalityIds.Contains(locality.Id)) continue;
+            if (existingZoneLocalityIds.Contains(locality.Id)) continue; 
 
             newZones.Add(new VendorDeliveryZone
             {
@@ -118,7 +124,7 @@ public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService 
             });
         }
 
-        if (newZones.Count > 0)
+        if (newZones.Any())
         {
             await _dbContext.VendorDeliveryZones.AddRangeAsync(newZones, ct);
             await _dbContext.SaveChangesAsync(ct);
@@ -152,7 +158,7 @@ public class DeliveryZoneService(TalabiDbContext dbContext, IUserContextService 
 
         zone.DeliveryFee = dto.DeliveryFee;
         zone.MinimumOrderAmount = dto.MinimumOrderAmount;
-
+        
         await _dbContext.SaveChangesAsync(ct);
         return true;
     }

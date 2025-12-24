@@ -7,14 +7,22 @@ namespace Talabi.Api.HealthChecks;
 /// <summary>
 /// Hangfire background job servisi için health check
 /// </summary>
-public class HangfireHealthCheck(ILogger<HangfireHealthCheck> logger) : IHealthCheck
+public class HangfireHealthCheck : IHealthCheck
 {
-    private readonly ILogger<HangfireHealthCheck> _logger = logger;
+    private readonly ILogger<HangfireHealthCheck> _logger;
+
+    /// <summary>
+    /// HangfireHealthCheck constructor
+    /// </summary>
+    public HangfireHealthCheck(ILogger<HangfireHealthCheck> logger)
+    {
+        _logger = logger;
+    }
 
     /// <summary>
     /// Hangfire bağlantısını ve durumunu kontrol eder
     /// </summary>
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -22,12 +30,12 @@ public class HangfireHealthCheck(ILogger<HangfireHealthCheck> logger) : IHealthC
             if (JobStorage.Current == null)
             {
                 _logger.LogWarning("Hangfire health check failed: JobStorage.Current is null");
-                return Task.FromResult(HealthCheckResult.Unhealthy("Hangfire JobStorage yapılandırılmamış",
+                return HealthCheckResult.Unhealthy("Hangfire JobStorage yapılandırılmamış",
                     data: new Dictionary<string, object>
                     {
                         { "Service", "Hangfire" },
                         { "Status", "Unhealthy" }
-                    }));
+                    });
             }
 
             // Hangfire bağlantısını test et
@@ -36,12 +44,12 @@ public class HangfireHealthCheck(ILogger<HangfireHealthCheck> logger) : IHealthC
             if (connection == null)
             {
                 _logger.LogWarning("Hangfire health check failed: Cannot get connection");
-                return Task.FromResult(HealthCheckResult.Unhealthy("Hangfire bağlantısı alınamadı",
+                return HealthCheckResult.Unhealthy("Hangfire bağlantısı alınamadı",
                     data: new Dictionary<string, object>
                     {
                         { "Service", "Hangfire" },
                         { "Status", "Unhealthy" }
-                    }));
+                    });
             }
 
             // Hangfire sunucularının durumunu kontrol et - JobStorage üzerinden
@@ -51,22 +59,22 @@ public class HangfireHealthCheck(ILogger<HangfireHealthCheck> logger) : IHealthC
                 DateTime.UtcNow - s.Heartbeat.Value < TimeSpan.FromMinutes(1));
 
             _logger.LogDebug("Hangfire health check passed. Active servers: {Count}", activeServers);
-            return Task.FromResult(HealthCheckResult.Healthy($"Hangfire çalışıyor (Aktif sunucu sayısı: {activeServers})",
+            return HealthCheckResult.Healthy($"Hangfire çalışıyor (Aktif sunucu sayısı: {activeServers})",
                 data: new Dictionary<string, object>
                 {
                     { "Service", "Hangfire" },
                     { "Status", "Healthy" },
                     { "ActiveServers", activeServers },
-                    { "TotalServers", servers.Count }
-                }));
+                    { "TotalServers", servers.Count() }
+                });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Hangfire health check failed with exception");
             // Production'da exception detaylarını gizle
             var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
-
-            return Task.FromResult(HealthCheckResult.Unhealthy(
+            
+            return HealthCheckResult.Unhealthy(
                 "Hangfire sağlık kontrolü başarısız",
                 // Production'da exception'ı geçme, sadece development'ta
                 isDevelopment ? ex : null,
@@ -75,7 +83,7 @@ public class HangfireHealthCheck(ILogger<HangfireHealthCheck> logger) : IHealthC
                     { "Service", "Hangfire" },
                     { "Status", "Unhealthy" }
                     // Error mesajını production'da gizle
-                }));
+                });
         }
     }
 }

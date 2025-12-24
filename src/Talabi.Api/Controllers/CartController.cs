@@ -15,28 +15,23 @@ namespace Talabi.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CartController : BaseController
+public class CartController(
+    IUnitOfWork unitOfWork,
+    ILogger<CartController> logger,
+    ILocalizationService localizationService,
+    IUserContextService userContext,
+    IMapper mapper,
+    ICampaignCalculator campaignCalculator)
+    : BaseController(unitOfWork, logger, localizationService, userContext)
 {
-    private readonly IMapper _mapper;
-    private readonly ICampaignCalculator _campaignCalculator;
+    private readonly IMapper _mapper = mapper;
+    private readonly ICampaignCalculator _campaignCalculator = campaignCalculator;
     private const string ResourceName = "CartResources";
 
     /// <summary>
-    /// CartController constructor
+    /// Kullanıcının sepetini getirir
     /// </summary>
-    public CartController(
-        IUnitOfWork unitOfWork,
-        ILogger<CartController> logger,
-        ILocalizationService localizationService,
-        IUserContextService userContext,
-        IMapper mapper,
-        ICampaignCalculator campaignCalculator)
-        : base(unitOfWork, logger, localizationService, userContext)
-    {
-        _mapper = mapper;
-        _campaignCalculator = campaignCalculator;
-    }
-
+    /// <returns>Sepet bilgileri</returns>
     /// <summary>
     /// Kullanıcının sepetini getirir
     /// </summary>
@@ -57,18 +52,18 @@ public class CartController : BaseController
             var cart = await UnitOfWork.Carts.Query()
                 .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Product)
-                .ThenInclude(p => p.Vendor)
+                .ThenInclude(p => p!.Vendor)
                 .Include(c => c.Coupon)
                 .Include(c => c.Campaign)
-                    .ThenInclude(cmp => cmp.CampaignProducts) // Load related products
+                    .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
                 .Include(c => c.Campaign)
-                    .ThenInclude(cmp => cmp.CampaignCategories) // Load related categories
+                    .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
                 .FirstOrDefaultAsync(c => c.UserId == userId);
 
             CartDto cartDto;
             if (cart == null)
             {
-                cartDto = new CartDto { UserId = userId, Items = new List<CartItemDto>() };
+                cartDto = new CartDto { UserId = userId, Items = [] };
             }
             else
             {

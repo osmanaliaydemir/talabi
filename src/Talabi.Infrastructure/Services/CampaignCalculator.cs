@@ -106,7 +106,7 @@ public class CampaignCalculator(IUnitOfWork unitOfWork) : ICampaignCalculator
         {
             // Calculate cart subtotal (excluding delivery fee, checking validation context)
             // Assuming cart items have updated prices
-            var subtotal = cart.CartItems.Where(i => i.Product != null).Sum(i => i.Quantity * i.Product!.Price);
+            var subtotal = cart.CartItems.Sum(i => i.Quantity * i.Product!.Price);
             if (subtotal < campaign.MinCartAmount.Value)
             {
                 return Fail(result, $"Cart amount must be at least {campaign.MinCartAmount.Value:C}.");
@@ -125,11 +125,11 @@ public class CampaignCalculator(IUnitOfWork unitOfWork) : ICampaignCalculator
 
         // Note: Relation loading is important. Ensure Campaign was loaded with Includes.
 
-        List<CartItem> applicableItems = [];
+        var applicableItems = new List<CartItem>();
 
         // Simplified Logic: if no restrictions, all items.
-        bool hasProductRestrictions = campaign.CampaignProducts != null && campaign.CampaignProducts.Count != 0;
-        bool hasCategoryRestrictions = campaign.CampaignCategories != null && campaign.CampaignCategories.Count != 0;
+        bool hasProductRestrictions = campaign.CampaignProducts != null && campaign.CampaignProducts.Any();
+        bool hasCategoryRestrictions = campaign.CampaignCategories != null && campaign.CampaignCategories.Any();
 
         if (!hasProductRestrictions && !hasCategoryRestrictions)
         {
@@ -137,8 +137,8 @@ public class CampaignCalculator(IUnitOfWork unitOfWork) : ICampaignCalculator
         }
         else
         {
-            var allowedProductIds = campaign.CampaignProducts?.Select(cp => cp.ProductId).ToList() ?? [];
-            var allowedCategoryIds = campaign.CampaignCategories?.Select(cc => cc.CategoryId).ToList() ?? [];
+            var allowedProductIds = campaign.CampaignProducts?.Select(cp => cp.ProductId).ToList() ?? new List<Guid>();
+            var allowedCategoryIds = campaign.CampaignCategories?.Select(cc => cc.CategoryId).ToList() ?? new List<Guid>();
 
             foreach (var item in cart.CartItems)
             {
@@ -149,14 +149,15 @@ public class CampaignCalculator(IUnitOfWork unitOfWork) : ICampaignCalculator
                 }
 
                 // For category check, we need Product loaded with CategoryId.
-                if (item.Product?.CategoryId != null && allowedCategoryIds.Contains(item.Product.CategoryId.Value))
+                // Assuming item.Product.CategoryId available.
+                if (item.Product != null && allowedCategoryIds.Contains(item.Product!.CategoryId!.Value))
                 {
                     applicableItems.Add(item);
                 }
             }
         }
 
-        if (applicableItems.Count == 0)
+        if (!applicableItems.Any())
         {
             // Valid campaign, but no applicable items in cart?
             // Should we fail or just return 0 discount?
@@ -196,7 +197,7 @@ public class CampaignCalculator(IUnitOfWork unitOfWork) : ICampaignCalculator
         }
 
         result.DiscountAmount = discount;
-        result.ApplicableItemIds = [.. applicableItems.Select(i => i.Id)];
+        result.ApplicableItemIds = applicableItems.Select(i => i.Id).ToList();
 
         return result;
     }

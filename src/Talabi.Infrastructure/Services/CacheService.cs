@@ -9,15 +9,23 @@ namespace Talabi.Infrastructure.Services;
 /// <summary>
 /// Cache service implementation using IMemoryCache
 /// </summary>
-public class CacheService(
-    IMemoryCache memoryCache,
-    IOptions<CacheOptions> cacheOptions,
-    ILogger<CacheService> logger) : ICacheService
+public class CacheService : ICacheService
 {
-    private readonly IMemoryCache _memoryCache = memoryCache;
-    private readonly CacheOptions _cacheOptions = cacheOptions.Value;
-    private readonly ILogger<CacheService> _logger = logger;
-    private readonly HashSet<string> _cacheKeys = []; // Track cache keys for pattern removal
+    private readonly IMemoryCache _memoryCache;
+    private readonly CacheOptions _cacheOptions;
+    private readonly ILogger<CacheService> _logger;
+    private readonly HashSet<string> _cacheKeys; // Track cache keys for pattern removal
+
+    public CacheService(
+        IMemoryCache memoryCache,
+        IOptions<CacheOptions> cacheOptions,
+        ILogger<CacheService> logger)
+    {
+        _memoryCache = memoryCache;
+        _cacheOptions = cacheOptions.Value;
+        _logger = logger;
+        _cacheKeys = new HashSet<string>();
+    }
 
     public T? Get<T>(string key) where T : class
     {
@@ -55,7 +63,7 @@ public class CacheService(
             Set(key, value, expirationMinutes);
         }
 
-        return value!;
+        return value;
     }
 
     public void Set<T>(string key, T value, int? expirationMinutes = null) where T : class
@@ -100,10 +108,10 @@ public class CacheService(
             // Simple pattern matching: supports * wildcard at the end
             var keysToRemove = new List<string>();
 
-            if (pattern.EndsWith('*'))
+            if (pattern.EndsWith("*"))
             {
-                var prefix = pattern[..^1];
-                keysToRemove = [.. _cacheKeys.Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))];
+                var prefix = pattern.Substring(0, pattern.Length - 1);
+                keysToRemove = _cacheKeys.Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {

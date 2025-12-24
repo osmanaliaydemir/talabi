@@ -184,7 +184,7 @@ public class LocationsController : Controller
     public async Task<IActionResult> DistrictDetails(Guid id)
     {
         var district = await _context.Districts
-            .Include(d => d.City).ThenInclude(c => c!.Country)
+            .Include(d => d.City).ThenInclude(c => c.Country)
             .Include(d => d.Localities)
             .FirstOrDefaultAsync(d => d.Id == id);
 

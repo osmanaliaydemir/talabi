@@ -4,9 +4,9 @@ namespace Talabi.Core.Entities
 {
     public class UserDeviceToken : BaseEntity
     {
-        public string UserId { get; set; } = string.Empty;
-        public string FcmToken { get; set; } = string.Empty;
-        public string DeviceType { get; set; } = string.Empty; // Android, iOS
+        public string UserId { get; set; }
+        public string FcmToken { get; set; }
+        public string DeviceType { get; set; } // Android, iOS
         public DateTime LastUpdated { get; set; }
 
         public UserDeviceToken()

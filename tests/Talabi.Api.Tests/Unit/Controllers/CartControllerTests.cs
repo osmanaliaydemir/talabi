@@ -26,7 +26,6 @@ public class CartControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<ICampaignCalculator> _mockCampaignCalculator;
     private readonly CartController _controller;
 
     public CartControllerTests()
@@ -36,15 +35,13 @@ public class CartControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockMapper = new Mock<IMapper>();
-        _mockCampaignCalculator = new Mock<ICampaignCalculator>();
 
         _controller = new CartController(
             _mockUnitOfWork.Object,
             _logger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
-            _mockMapper.Object,
-            _mockCampaignCalculator.Object
+            _mockMapper.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -74,7 +71,7 @@ public class CartControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<CartDto>>().Subject;
 
         apiResponse.Data.Should().NotBeNull();
-        apiResponse.Data!.Items.Should().BeEmpty();
+        apiResponse.Data.Items.Should().BeEmpty();
         apiResponse.Data.UserId.Should().Be(userId);
     }
 
@@ -91,7 +88,7 @@ public class CartControllerTests
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
 
-
+        var startCount = 0; // Capture count to fix Moq issue
         var dto = new AddToCartDto { ProductId = Guid.NewGuid(), Quantity = 1 };
 
         // Act
@@ -111,7 +108,7 @@ public class CartControllerTests
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
         // Has address
-        List<UserAddress> addresses = [new() { UserId = userId }];
+        var addresses = new List<UserAddress> { new UserAddress { UserId = userId } };
         var mockAddressRepo = new Mock<IRepository<UserAddress>>();
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
@@ -139,7 +136,7 @@ public class CartControllerTests
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
         // Has address
-        List<UserAddress> addresses = [new() { UserId = userId }];
+        var addresses = new List<UserAddress> { new UserAddress { UserId = userId } };
         var mockAddressRepo = new Mock<IRepository<UserAddress>>();
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
@@ -185,7 +182,7 @@ public class CartControllerTests
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
         // Has address
-        List<UserAddress> addresses = [new() { UserId = userId }];
+        var addresses = new List<UserAddress> { new UserAddress { UserId = userId } };
         var mockAddressRepo = new Mock<IRepository<UserAddress>>();
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);

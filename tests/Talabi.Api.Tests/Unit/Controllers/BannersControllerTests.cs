@@ -66,21 +66,21 @@ public class BannersControllerTests
         // Arrange
         var banners = new List<PromotionalBanner>
         {
-            new()
+            new PromotionalBanner
             {
                 Id = Guid.NewGuid(),
                 IsActive = true,
                 Title = "Banner 1",
                 DisplayOrder = 1,
-                Translations = []
+                Translations = new List<PromotionalBannerTranslation>()
             },
-            new()
+            new PromotionalBanner
             {
                 Id = Guid.NewGuid(),
                 IsActive = false,
                 Title = "Banner 2",
                 DisplayOrder = 2,
-                Translations = []
+                Translations = new List<PromotionalBannerTranslation>()
             }
         };
 
@@ -97,7 +97,7 @@ public class BannersControllerTests
 
         apiResponse.Success.Should().BeTrue();
         apiResponse.Data.Should().HaveCount(1);
-        apiResponse.Data!.First().Title.Should().Be("Banner 1");
+        apiResponse.Data.First().Title.Should().Be("Banner 1");
     }
 
     [Fact]
@@ -107,11 +107,11 @@ public class BannersControllerTests
         var id = Guid.NewGuid();
         var banners = new List<PromotionalBanner>
         {
-            new()
+            new PromotionalBanner
             {
                 Id = id,
                 Title = "Banner 1",
-                Translations = []
+                Translations = new List<PromotionalBannerTranslation>()
             }
         };
 
@@ -127,7 +127,7 @@ public class BannersControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PromotionalBannerDto>>().Subject;
 
         apiResponse.Success.Should().BeTrue();
-        apiResponse.Data!.Id.Should().Be(id);
+        apiResponse.Data.Id.Should().Be(id);
     }
 
     [Fact]
