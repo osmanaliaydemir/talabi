@@ -226,22 +226,19 @@ class LoggerService {
 
   /// Debug log
   void debug(String message, [dynamic error, StackTrace? stackTrace]) {
-    // Console output disabled - only errors are logged to console
-    // if (kDebugMode) {
-    //   _loggerInstance.d(message, error: error, stackTrace: stackTrace);
-    // }
+    if (kDebugMode) {
+      _loggerInstance.d(message, error: error, stackTrace: stackTrace);
+    }
   }
 
   /// Info log
   void info(String message) {
-    // Console output disabled - only errors are logged to console
-    // _loggerInstance.i(message);
+    _loggerInstance.i(message);
   }
 
   /// Warning log
   void warning(String message, [dynamic error, StackTrace? stackTrace]) {
-    // Console output disabled - only errors are logged to console
-    // _loggerInstance.w(message, error: error, stackTrace: stackTrace);
+    _loggerInstance.w(message, error: error, stackTrace: stackTrace);
 
     // Warning'leri de kaydet (opsiyonel)
     if (kDebugMode) {

@@ -26,6 +26,7 @@ public class CartControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<ICampaignCalculator> _mockCampaignCalculator;
     private readonly CartController _controller;
 
     public CartControllerTests()
@@ -35,13 +36,15 @@ public class CartControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockMapper = new Mock<IMapper>();
+        _mockCampaignCalculator = new Mock<ICampaignCalculator>();
 
         _controller = new CartController(
             _mockUnitOfWork.Object,
             _logger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
-            _mockMapper.Object
+            _mockMapper.Object,
+            _mockCampaignCalculator.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
