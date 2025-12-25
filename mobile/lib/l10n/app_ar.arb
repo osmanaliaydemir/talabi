@@ -153,6 +153,34 @@
       }
     }
   },
+  "pendingApproval": "قيد الانتظار",
+  "@pendingApproval": {
+    "description": "تسمية قيد الانتظار"
+  },
+  "characterLimitInfo": "حد الأحرف: {min}-{max} (الحالي: {current})",
+  "@characterLimitInfo": {
+    "description": "معلومات حد الأحرف",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "commentTooShort": "التعليق قصير جداً (الحد الأدنى {min} حرف)",
+  "@commentTooShort": {
+    "description": "خطأ التعليق قصير جداً",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
   "cancel": "إلغاء",
   "@cancel": {
     "description": "إلغاء"

@@ -29,6 +29,8 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
 
   // Courier
   double _courierRating = 5;
+  final TextEditingController _courierCommentController =
+      TextEditingController();
 
   // Vendor
   double _vendorRating = 5;
@@ -44,6 +46,11 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
   bool _isCourierAlreadyRated = false;
   bool _isVendorAlreadyReviewed = false;
   final Set<String> _alreadyReviewedProductIds = {};
+
+  // Approval statuses for view mode
+  bool _isCourierApproved = true;
+  bool _isVendorApproved = true;
+  final Map<String, bool> _productApprovalStatuses = {};
 
   @override
   void initState() {
@@ -83,15 +90,22 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
           final rating = (review['rating'] as num?)?.toDouble() ?? 5.0;
           final comment = review['comment'] as String? ?? '';
 
+          final isApproved = review['isApproved'] as bool? ?? true;
+
           if (courierId != null) {
             _courierRating = rating;
+            _courierCommentController.text = comment;
+            _isCourierApproved = isApproved;
           } else if (vendorId != null) {
             _vendorRating = rating;
             _vendorCommentController.text = comment;
+            _isVendorApproved = isApproved;
           } else if (productId != null) {
-            _productRatings[productId.toString()] = rating;
-            if (_productComments.containsKey(productId.toString())) {
-              _productComments[productId.toString()]!.text = comment;
+            final pid = productId.toString();
+            _productRatings[pid] = rating;
+            _productApprovalStatuses[pid] = isApproved;
+            if (_productComments.containsKey(pid)) {
+              _productComments[pid]!.text = comment;
             }
           }
         }
@@ -102,6 +116,7 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
   @override
   void dispose() {
     _vendorCommentController.dispose();
+    _courierCommentController.dispose();
     for (final controller in _productComments.values) {
       controller.dispose();
     }
@@ -113,6 +128,42 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
     final localizations = AppLocalizations.of(context)!;
 
     try {
+      // Validation
+      for (final item in widget.orderDetail.items) {
+        if (!item.isCancelled) {
+          final comment = _productComments[item.productId]?.text ?? '';
+          if (comment.isNotEmpty && comment.length < 10) {
+            ToastMessage.show(
+              context,
+              message: localizations.commentTooShort(10),
+              isSuccess: false,
+            );
+            setState(() => _isLoading = false);
+            return;
+          }
+        }
+      }
+      if (_courierCommentController.text.isNotEmpty &&
+          _courierCommentController.text.length < 10) {
+        ToastMessage.show(
+          context,
+          message: localizations.commentTooShort(10),
+          isSuccess: false,
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+      if (_vendorCommentController.text.isNotEmpty &&
+          _vendorCommentController.text.length < 10) {
+        ToastMessage.show(
+          context,
+          message: localizations.commentTooShort(10),
+          isSuccess: false,
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
       final productFeedbacks = widget.orderDetail.items
           .where((item) => !item.isCancelled)
           .map(
@@ -127,6 +178,7 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
       final feedbackData = {
         'orderId': widget.orderDetail.id,
         'courierRating': _courierRating.toInt(),
+        'courierComment': _courierCommentController.text,
         'vendorFeedback': {
           'rating': _vendorRating.toInt(),
           'comment': _vendorCommentController.text,
@@ -168,7 +220,9 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
     String? imageUrl,
     bool isCircleImage = true,
     bool isReadOnly = false,
+    bool isApproved = true,
   }) {
+    final localizations = AppLocalizations.of(context)!;
     return Opacity(
       opacity: isReadOnly ? 0.7 : 1.0,
       child: Container(
@@ -203,7 +257,30 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                   ),
                 ),
                 if (isReadOnly)
-                  const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                  isApproved
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 20,
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            localizations.pendingApproval,
+                            style: const TextStyle(
+                              color: Colors.orange,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
               ],
             ),
             const SizedBox(height: AppTheme.spacingSmall),
@@ -241,8 +318,26 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                     fillColor: isReadOnly ? Colors.grey[100] : null,
                   ),
                   maxLines: 2,
+                  onChanged: (value) => setState(() {}),
                 ),
               ),
+              if (!isReadOnly && commentController.text.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    localizations.characterLimitInfo(
+                      10,
+                      500,
+                      commentController.text.length,
+                    ),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: commentController.text.length < 10
+                          ? Colors.red
+                          : Colors.grey,
+                    ),
+                  ),
+                ),
             ],
           ],
         ),
@@ -280,8 +375,11 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                       rating: _courierRating,
                       onRatingUpdate: (val) =>
                           setState(() => _courierRating = val),
+                      commentController: _courierCommentController,
+                      hintText: localizations.writeReview,
                       imageUrl: null,
                       isReadOnly: _isCourierAlreadyRated,
+                      isApproved: _isCourierApproved,
                     ),
 
                   // Vendor Rating
@@ -295,6 +393,7 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                     imageUrl: widget.orderDetail.vendorImageUrl,
                     isCircleImage: true,
                     isReadOnly: _isVendorAlreadyReviewed,
+                    isApproved: _isVendorApproved,
                   ),
 
                   // Products Rating
@@ -314,6 +413,8 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                           imageUrl: item.productImageUrl,
                           isCircleImage: false,
                           isReadOnly: isProductReviewed,
+                          isApproved:
+                              _productApprovalStatuses[item.productId] ?? true,
                         );
                       }),
                 ],

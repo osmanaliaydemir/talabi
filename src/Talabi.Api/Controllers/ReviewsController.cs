@@ -261,7 +261,7 @@ public class ReviewsController : BaseController
                 CourierId = order.ActiveOrderCourier.CourierId,
                 OrderId = order.Id,
                 Rating = dto.CourierRating,
-                Comment = "", // Kurye yorumu istenmedi
+                Comment = dto.CourierComment ?? "",
                 CreatedAt = now,
                 IsApproved = true // Kurye puanı otomatik onaylı
             });

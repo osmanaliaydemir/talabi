@@ -143,12 +143,13 @@ public class OrdersController : BaseController
         }
 
         var orderDto = _mapper.Map<OrderDto>(order);
+        if (orderDto == null) return NotFound();
 
         var activeCourier = order.ActiveOrderCourier;
         if (activeCourier?.Courier != null)
         {
-            var courier = activeCourier.Courier;
-            orderDto.ActiveOrderCourier = new OrderCourierDto
+            var courier = activeCourier!.Courier!;
+            orderDto!.ActiveOrderCourier = new OrderCourierDto
             {
                 CourierId = courier.Id,
                 CourierName = !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),

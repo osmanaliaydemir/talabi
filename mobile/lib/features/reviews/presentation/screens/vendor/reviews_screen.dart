@@ -1,6 +1,7 @@
 import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/reviews/data/models/review.dart';
 import 'package:mobile/features/reviews/presentation/screens/vendor/review_detail_screen.dart';
 import 'package:mobile/services/api_service.dart';
@@ -48,10 +49,11 @@ class _VendorReviewsScreenState extends State<VendorReviewsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Bekleyen Yorumlar'),
+        title: Text(localizations.pendingReviews),
         backgroundColor: AppTheme.primaryOrange,
         foregroundColor: Colors.white,
       ),
@@ -71,7 +73,7 @@ class _VendorReviewsScreenState extends State<VendorReviewsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Bekleyen yorum yok',
+                    localizations.noPendingReviews,
                     style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
                 ],

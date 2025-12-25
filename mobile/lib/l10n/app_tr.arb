@@ -153,6 +153,34 @@
       }
     }
   },
+  "pendingApproval": "Onay Bekliyor",
+  "@pendingApproval": {
+    "description": "Onay bekliyor etiketi"
+  },
+  "characterLimitInfo": "Karakter sınırı: {min}-{max} (Şu an: {current})",
+  "@characterLimitInfo": {
+    "description": "Karakter sınırı bilgisi",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "commentTooShort": "Yorum çok kısa (en az {min} karakter)",
+  "@commentTooShort": {
+    "description": "Yorum çok kısa hatası",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
   "cancel": "İptal",
   "@cancel": {
     "description": "İptal"

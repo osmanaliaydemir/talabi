@@ -6,6 +6,7 @@ class Review {
     required this.rating,
     required this.comment,
     required this.createdAt,
+    required this.isApproved,
     this.productId,
     this.vendorName,
   });
@@ -18,6 +19,9 @@ class Review {
       rating: json['rating'],
       comment: json['comment'] ?? '',
       createdAt: DateTime.parse(json['createdAt']),
+      isApproved:
+          json['isApproved'] ??
+          true, // Default to true if not present (older responses)
       productId: json['productId']?.toString(),
       vendorName: json['vendorName'],
     );
@@ -28,6 +32,7 @@ class Review {
   final int rating;
   final String comment;
   final DateTime createdAt;
+  final bool isApproved;
   final String? productId;
   final String? vendorName;
 }

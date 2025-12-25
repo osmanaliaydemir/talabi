@@ -120,6 +120,74 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get pendingReviews => 'Pending Reviews';
+
+  @override
+  String get noPendingReviews => 'No pending reviews';
+
+  @override
+  String get reviewDetail => 'Review Detail';
+
+  @override
+  String userId(Object id) {
+    return 'User ID: $id';
+  }
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get noComment => 'No comment';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get reviewApproved => 'Review approved';
+
+  @override
+  String get reviewRejected => 'Review rejected';
+
+  @override
+  String reviewApproveError(Object error) {
+    return 'Error approving review: $error';
+  }
+
+  @override
+  String reviewRejectError(Object error) {
+    return 'Error rejecting review: $error';
+  }
+
+  @override
+  String get rejectReview => 'Reject Review';
+
+  @override
+  String get rejectReviewConfirmation =>
+      'Are you sure you want to reject this review? This cannot be undone.';
+
+  @override
+  String get pendingApproval => 'Pending Approval';
+
+  @override
+  String characterLimitInfo(int min, int max, int current) {
+    return 'Character limit: $min-$max (Current: $current)';
+  }
+
+  @override
+  String commentTooShort(int min) {
+    return 'Comment too short (min $min characters)';
+  }
+
+  @override
+  String get date => 'Date';
+
+  @override
   String get cancel => 'Cancel';
 
   @override
@@ -1253,55 +1321,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsUpdated => 'Settings updated';
 
   @override
-  String get reviewApproved => 'Review approved';
-
-  @override
-  String reviewApproveError(Object error) {
-    return 'Error approving review: $error';
-  }
-
-  @override
-  String get rejectReview => 'Reject Review';
-
-  @override
-  String get rejectReviewConfirmation =>
-      'Are you sure you want to reject this review? This cannot be undone.';
-
-  @override
-  String get reject => 'Reject';
-
-  @override
-  String get reviewRejected => 'Review rejected';
-
-  @override
-  String reviewRejectError(Object error) {
-    return 'Error rejecting review: $error';
-  }
-
-  @override
-  String get reviewDetail => 'Review Detail';
-
-  @override
-  String userId(Object id) {
-    return 'User ID: $id';
-  }
-
-  @override
-  String get rating => 'Rating';
-
-  @override
-  String get comment => 'Comment';
-
-  @override
-  String get noComment => 'No comment';
-
-  @override
-  String get date => 'Date';
-
-  @override
-  String get approve => 'Approve';
-
-  @override
   String get verify => 'Verify';
 
   @override
@@ -1713,12 +1732,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get markAsRead => 'Mark as Read';
-
-  @override
-  String get pendingReviews => 'Pending Reviews';
-
-  @override
-  String get noPendingReviews => 'No pending reviews';
 
   @override
   String reviewsLoadError(Object error) {

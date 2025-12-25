@@ -152,6 +152,34 @@
       }
     }
   },
+  "pendingApproval": "Pending Approval",
+  "@pendingApproval": {
+    "description": "Pending approval label"
+  },
+  "characterLimitInfo": "Character limit: {min}-{max} (Current: {current})",
+  "@characterLimitInfo": {
+    "description": "Character limit info",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "commentTooShort": "Comment too short (min {min} characters)",
+  "@commentTooShort": {
+    "description": "Comment too short error",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
   "cancel": "Cancel",
   "@cancel": {
     "description": "Cancel"
