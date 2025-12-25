@@ -30,3 +30,24 @@ public class ProductReviewsSummaryDto
     public int TotalComments { get; set; }
     public List<ReviewDto> Reviews { get; set; } = new List<ReviewDto>();
 }
+
+public class SubmitOrderFeedbackDto
+{
+    public Guid OrderId { get; set; }
+    public int CourierRating { get; set; } // 1-5
+    public VendorFeedbackDto VendorFeedback { get; set; } = new();
+    public List<ProductFeedbackDto> ProductFeedbacks { get; set; } = new();
+}
+
+public class VendorFeedbackDto
+{
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+}
+
+public class ProductFeedbackDto
+{
+    public Guid ProductId { get; set; }
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+}

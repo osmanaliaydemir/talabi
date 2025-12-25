@@ -2724,4 +2724,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get statusDelivered => 'تم التوصيل';
+
+  @override
+  String get rateOrder => 'Rate Order';
+
+  @override
+  String get rateCourier => 'Courier Rating';
+
+  @override
+  String get feedbackSubmittedSuccessfully => 'Feedback submitted successfully';
+
+  @override
+  String get orderNotDelivered => 'Order not delivered';
+
+  @override
+  String get orderAlreadyReviewed => 'Order already reviewed';
 }

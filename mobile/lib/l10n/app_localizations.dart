@@ -1231,7 +1231,7 @@ abstract class AppLocalizations {
   /// Write a Review
   ///
   /// In en, this message translates to:
-  /// **'Write a Review'**
+  /// **'Write Review'**
   String get writeReview;
 
   /// Courier Login
@@ -5145,6 +5145,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivered'**
   String get statusDelivered;
+
+  /// No description provided for @rateOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Order'**
+  String get rateOrder;
+
+  /// No description provided for @rateCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier Rating'**
+  String get rateCourier;
+
+  /// No description provided for @feedbackSubmittedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback submitted successfully'**
+  String get feedbackSubmittedSuccessfully;
+
+  /// No description provided for @orderNotDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Order not delivered'**
+  String get orderNotDelivered;
+
+  /// No description provided for @orderAlreadyReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order already reviewed'**
+  String get orderAlreadyReviewed;
 }
 
 class _AppLocalizationsDelegate

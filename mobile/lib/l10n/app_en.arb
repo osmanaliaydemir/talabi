@@ -3486,5 +3486,12 @@
   "statusRejected": "Rejected",
   "statusPickedUp": "Picked Up",
   "statusOutForDelivery": "Out for Delivery",
-  "statusDelivered": "Delivered"
+  "statusDelivered": "Delivered",
+  "rateOrder": "Rate Order",
+  "rateCourier": "Courier Rating",
+  "writeReview": "Write Review",
+  "submit": "Submit",
+  "feedbackSubmittedSuccessfully": "Feedback submitted successfully",
+  "orderNotDelivered": "Order not delivered",
+  "orderAlreadyReviewed": "Order already reviewed"
 }

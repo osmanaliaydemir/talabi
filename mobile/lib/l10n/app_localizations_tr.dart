@@ -2753,4 +2753,21 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get statusDelivered => 'Teslim Edildi';
+
+  @override
+  String get rateOrder => 'Siparişi Değerlendir';
+
+  @override
+  String get rateCourier => 'Kurye Puanı';
+
+  @override
+  String get feedbackSubmittedSuccessfully =>
+      'Değerlendirme başarıyla gönderildi';
+
+  @override
+  String get orderNotDelivered => 'Sipariş teslim edilmedi';
+
+  @override
+  String get orderAlreadyReviewed =>
+      'Bu sipariş için zaten değerlendirme yapıldı';
 }

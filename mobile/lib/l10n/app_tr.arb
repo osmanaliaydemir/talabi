@@ -777,10 +777,6 @@
   "@alreadyReviewedMessage": {
     "description": "Bu ürüne daha önce puan verdiniz."
   },
-  "writeReview": "Yorum Yaz",
-  "@writeReview": {
-    "description": "Yorum Yaz"
-  },
   "courierLogin": "Kurye Girişi",
   "@courierLogin": {
     "description": "Kurye Girişi"
@@ -2622,10 +2618,6 @@
   "@shareYourThoughts": {
     "description": "Düşüncelerinizi paylaşın..."
   },
-  "submit": "Gönder",
-  "@submit": {
-    "description": "Gönder"
-  },
   "vendorReviewSubmitted": "Vendor değerlendirmesi gönderildi!",
   "@vendorReviewSubmitted": {
     "description": "Vendor değerlendirmesi gönderildi!"
@@ -3488,5 +3480,12 @@
   "statusRejected": "Reddedildi",
   "statusPickedUp": "Teslim Alındı",
   "statusOutForDelivery": "Yolda",
-  "statusDelivered": "Teslim Edildi"
+  "statusDelivered": "Teslim Edildi",
+  "rateOrder": "Siparişi Değerlendir",
+  "rateCourier": "Kurye Puanı",
+  "writeReview": "Yorum Yaz",
+  "submit": "Gönder",
+  "feedbackSubmittedSuccessfully": "Değerlendirme başarıyla gönderildi",
+  "orderNotDelivered": "Sipariş teslim edilmedi",
+  "orderAlreadyReviewed": "Bu sipariş için zaten değerlendirme yapıldı"
 }

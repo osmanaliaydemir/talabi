@@ -12,6 +12,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/features/reviews/presentation/screens/order_feedback_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
 
@@ -287,13 +288,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     switch (status) {
       case 'Pending':
         return localizations.pending;
+      case 'Allowed':
+      case 'Accepted':
+        return localizations.accepted;
       case 'Preparing':
         return localizations.preparing;
       case 'Ready':
         return localizations.ready;
+      case 'OutForDelivery':
       case 'OnTheWay':
       case 'OnWay':
-        return localizations.onWay;
+        return localizations
+            .onWay; // Or localizations.outForDelivery if you prefer specific
       case 'Delivered':
         return localizations.delivered;
       case 'Cancelled':
@@ -922,28 +928,77 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                   if (_orderDetail != null &&
                       _orderDetail!.status == 'Delivered')
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _reorder,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMedium,
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OrderFeedbackScreen(
+                                    orderDetail: _orderDetail!,
+                                  ),
+                                ),
+                              );
+                              if (result == true) {
+                                // Refresh order detail if needed or show success
+                                _loadOrderDetail();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber, // Gold for rating
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.star, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppLocalizations.of(context)!.rateOrder ??
+                                      'Siparişi Değerlendir', // Fallback
+                                  style: AppTheme.poppins(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        child: Text(
-                          AppLocalizations.of(context)!.reorder,
-                          style: AppTheme.poppins(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        const SizedBox(height: 8), // Gap between buttons
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _reorder,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.reorder,
+                              style: AppTheme.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                 ],
               ),

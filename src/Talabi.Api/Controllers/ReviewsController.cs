@@ -7,6 +7,7 @@ using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
 using AutoMapper;
+using Talabi.Core.Enums;
 
 namespace Talabi.Api.Controllers;
 
@@ -175,6 +176,122 @@ public class ReviewsController : BaseController
         // Fallback - should not happen because product or vendor is required
         return Ok(new ApiResponse<ReviewDto>(reviewDto,
             LocalizationService.GetLocalizedString(ResourceName, "ReviewCreatedSuccessfully", CurrentCulture)));
+    }
+
+    /// <summary>
+    /// Sipariş için toplu değerlendirme gönderir
+    /// </summary>
+    /// <param name="dto">Değerlendirme detayları</param>
+    /// <returns>İşlem sonucu</returns>
+    [HttpPost("order-feedback")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<object>>> SubmitOrderFeedback(SubmitOrderFeedbackDto dto)
+    {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
+                "USER_IDENTITY_NOT_FOUND"));
+        }
+
+        // 1. Validate Order
+        var order = await UnitOfWork.Orders.Query()
+            .Include(o => o.OrderItems)
+            .Include(o => o.ActiveOrderCourier)
+            .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
+
+        if (order == null)
+        {
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                "ORDER_NOT_FOUND"));
+        }
+
+        if (order.CustomerId != userId)
+        {
+            return StatusCode(403, new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "Forbidden", CurrentCulture),
+                "FORBIDDEN"));
+        }
+
+        if (order.Status != OrderStatus.Delivered)
+        {
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotDelivered", CurrentCulture),
+                "ORDER_NOT_DELIVERED"));
+        }
+
+        // 2. Check for duplicate feedback for this order
+        var existingReview = await UnitOfWork.Reviews.Query()
+            .AnyAsync(r => r.OrderId == dto.OrderId);
+
+        if (existingReview)
+        {
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderAlreadyReviewed", CurrentCulture),
+                "ORDER_ALREADY_REVIEWED"));
+        }
+
+        var now = DateTime.UtcNow;
+
+        // 3. Create Reviews
+        var reviewsToAdd = new List<Review>();
+
+        // 3.1 Courier Review
+        if (order.ActiveOrderCourier != null)
+        {
+            reviewsToAdd.Add(new Review
+            {
+                UserId = userId,
+                CourierId = order.ActiveOrderCourier.CourierId,
+                OrderId = order.Id,
+                Rating = dto.CourierRating,
+                Comment = "", // Kurye yorumu istenmedi
+                CreatedAt = now,
+                IsApproved = true // Kurye puanı otomatik onaylı
+            });
+        }
+
+        // 3.2 Vendor Review
+        reviewsToAdd.Add(new Review
+        {
+            UserId = userId,
+            VendorId = order.VendorId,
+            OrderId = order.Id,
+            Rating = dto.VendorFeedback.Rating,
+            Comment = dto.VendorFeedback.Comment ?? "",
+            CreatedAt = now,
+            IsApproved = false // Vendor yorumları onay bekler
+        });
+
+        // 3.3 Product Reviews
+        foreach (var itemFeedback in dto.ProductFeedbacks)
+        {
+            // Verify product belongs to order
+            if (order.OrderItems.Any(oi => oi.ProductId == itemFeedback.ProductId))
+            {
+                reviewsToAdd.Add(new Review
+                {
+                    UserId = userId,
+                    ProductId = itemFeedback.ProductId,
+                    OrderId = order.Id,
+                    Rating = itemFeedback.Rating,
+                    Comment = itemFeedback.Comment ?? "",
+                    CreatedAt = now,
+                    IsApproved = false // Ürün yorumları onay bekler
+                });
+            }
+        }
+
+        if (reviewsToAdd.Count > 0)
+        {
+            await UnitOfWork.Reviews.AddRangeAsync(reviewsToAdd);
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "FeedbackSubmittedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>

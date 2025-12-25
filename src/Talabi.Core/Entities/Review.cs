@@ -16,4 +16,10 @@ public class Review : BaseEntity
     public int Rating { get; set; }
     public string Comment { get; set; } = string.Empty;
     public bool IsApproved { get; set; } = false;
+
+    public Guid? CourierId { get; set; }
+    public Courier? Courier { get; set; }
+
+    public Guid? OrderId { get; set; }
+    public Order? Order { get; set; }
 }

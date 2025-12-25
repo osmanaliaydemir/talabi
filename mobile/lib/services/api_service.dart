@@ -2181,6 +2181,24 @@ class ApiService {
     }
   }
 
+  Future<void> submitOrderFeedback(Map<String, dynamic> data) async {
+    try {
+      final response = await dio.post('/reviews/order-feedback', data: data);
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Feedback submission failed');
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error submitting feedback', e, stackTrace);
+      rethrow;
+    }
+  }
+
   // System Settings
   Future<String?> getSystemSetting(String key) async {
     try {

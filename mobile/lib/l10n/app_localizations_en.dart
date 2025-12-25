@@ -608,7 +608,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have already reviewed this product.';
 
   @override
-  String get writeReview => 'Write a Review';
+  String get writeReview => 'Write Review';
 
   @override
   String get courierLogin => 'Courier Login';
@@ -2755,4 +2755,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusDelivered => 'Delivered';
+
+  @override
+  String get rateOrder => 'Rate Order';
+
+  @override
+  String get rateCourier => 'Courier Rating';
+
+  @override
+  String get feedbackSubmittedSuccessfully => 'Feedback submitted successfully';
+
+  @override
+  String get orderNotDelivered => 'Order not delivered';
+
+  @override
+  String get orderAlreadyReviewed => 'Order already reviewed';
 }

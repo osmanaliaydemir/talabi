@@ -4,6 +4,7 @@ class OrderDetail {
     required this.customerOrderId,
     required this.vendorId,
     required this.vendorName,
+    this.vendorImageUrl,
     required this.customerId,
     required this.customerName,
     required this.totalAmount,
@@ -21,6 +22,7 @@ class OrderDetail {
       customerOrderId: json['customerOrderId']?.toString() ?? '',
       vendorId: json['vendorId']?.toString() ?? '',
       vendorName: json['vendorName']?.toString() ?? '',
+      vendorImageUrl: json['vendorImageUrl']?.toString(),
       customerId: json['customerId']?.toString() ?? '',
       customerName: json['customerName']?.toString() ?? '',
       totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
@@ -56,6 +58,7 @@ class OrderDetail {
   final String customerOrderId;
   final String vendorId;
   final String vendorName;
+  final String? vendorImageUrl;
   final String customerId;
   final String customerName;
   final double totalAmount;
