@@ -72,6 +72,7 @@ class ApiEndpoints {
 
   // Reviews
   static const String reviews = '/reviews';
+  static const String reviewsMy = '/reviews/my-reviews';
   static const String reviewsProduct = '/reviews/product'; // Base path
   static const String reviewsVendor = '/reviews/vendor'; // Base path
   static const String reviewsPending = '/reviews/pending';

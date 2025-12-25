@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_theme.dart';
 
 class EmptyStateWidget extends StatefulWidget {
   const EmptyStateWidget({
@@ -9,6 +10,7 @@ class EmptyStateWidget extends StatefulWidget {
     this.onAction,
     this.iconData = Icons.shopping_cart_outlined,
     this.isCompact = false,
+    this.usePrimaryColor = true,
   });
 
   final String message;
@@ -17,6 +19,7 @@ class EmptyStateWidget extends StatefulWidget {
   final VoidCallback? onAction;
   final IconData iconData;
   final bool isCompact;
+  final bool usePrimaryColor;
 
   @override
   State<EmptyStateWidget> createState() => _EmptyStateWidgetState();
@@ -26,24 +29,24 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
-  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _floatingAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
 
     _scaleAnimation = Tween<double>(
       begin: 1.0,
-      end: 1.1,
+      end: 1.05,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.6,
-      end: 1.0,
+    _floatingAnimation = Tween<double>(
+      begin: 0.0,
+      end: -10.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
@@ -55,95 +58,114 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(widget.isCompact ? 16.0 : 32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Animated Icon Container
-            Semantics(
-              label: widget.message,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: Container(
-                      padding: EdgeInsets.all(widget.isCompact ? 16 : 30),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(
-                          alpha: 0.1 * _fadeAnimation.value,
+    final theme = Theme.of(context);
+    final primaryColor = widget.usePrimaryColor
+        ? theme.primaryColor
+        : Colors.grey;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(widget.isCompact ? 16.0 : 32.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Animated Illustration
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, _floatingAnimation.value),
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    width: widget.isCompact ? 100 : 180,
+                    height: widget.isCompact ? 100 : 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          primaryColor.withValues(alpha: 0.15),
+                          primaryColor.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.all(widget.isCompact ? 16 : 30),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryColor.withValues(alpha: 0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                        shape: BoxShape.circle,
+                        child: Icon(
+                          widget.iconData,
+                          size: widget.isCompact ? 40 : 70,
+                          color: primaryColor,
+                        ),
                       ),
-                      child: Icon(
-                        widget.iconData,
-                        size: widget.isCompact ? 48 : 80,
-                        color: Theme.of(
-                          context,
-                        ).primaryColor.withValues(alpha: _fadeAnimation.value),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: widget.isCompact ? 12 : 32),
-            ExcludeSemantics(
-              child: Column(
-                children: [
-                  Text(
-                    widget.message,
-                    style: TextStyle(
-                      fontSize: widget.isCompact ? 16 : 20,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1F2937),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (widget.subMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.subMessage!,
-                      style: TextStyle(
-                        fontSize: widget.isCompact ? 14 : 16,
-                        color: const Color(0xFF6B7280),
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (widget.actionLabel != null && widget.onAction != null) ...[
-              SizedBox(height: widget.isCompact ? 16 : 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: widget.onAction,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    widget.actionLabel!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
                     ),
                   ),
                 ),
+              );
+            },
+          ),
+          SizedBox(height: widget.isCompact ? 16 : 40),
+          // Text Content
+          Text(
+            widget.message,
+            style: AppTheme.poppins(
+              fontSize: widget.isCompact ? 18 : 22,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1F2937),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (widget.subMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              widget.subMessage!,
+              style: AppTheme.poppins(
+                fontSize: widget.isCompact ? 14 : 16,
+                color: const Color(0xFF6B7280),
+                height: 1.5,
               ),
-            ],
+              textAlign: TextAlign.center,
+            ),
           ],
-        ),
+          if (widget.actionLabel != null && widget.onAction != null) ...[
+            SizedBox(height: widget.isCompact ? 24 : 40),
+            SizedBox(
+              width: widget.isCompact ? double.infinity : 200,
+              child: ElevatedButton(
+                onPressed: widget.onAction,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 4,
+                  shadowColor: primaryColor.withValues(alpha: 0.4),
+                ),
+                child: Text(
+                  widget.actionLabel!,
+                  style: AppTheme.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

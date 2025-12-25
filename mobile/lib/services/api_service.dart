@@ -1343,6 +1343,15 @@ class ApiService {
     }
   }
 
+  Future<List<Review>> getUserReviews() async {
+    try {
+      return await _reviewRemoteDataSource.getUserReviews();
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching user reviews', e, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<List<Review>> getPendingReviews() async {
     try {
       return await _reviewRemoteDataSource.getPendingReviews();

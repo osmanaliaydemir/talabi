@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/reviews/data/models/review.dart';
@@ -700,14 +701,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 )
                               else if (_reviewsSummary == null ||
                                   _reviewsSummary!.reviews.isEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 0,
-                                  ),
-                                  child: Text(
-                                    l10n.noReviewsYet,
-                                    style: AppTheme.poppins(color: Colors.grey),
-                                  ),
+                                EmptyStateWidget(
+                                  message: l10n.noReviewsYet,
+                                  iconData: Icons.star_outline,
+                                  isCompact: true,
+                                  usePrimaryColor: false,
                                 )
                               else ...[
                                 // Genel Puan ve İstatistikler

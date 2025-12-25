@@ -157,6 +157,18 @@
   "@pendingApproval": {
     "description": "تسمية قيد الانتظار"
   },
+  "approved": "تمت الموافقة",
+  "@approved": {
+    "description": "تسمية تمت الموافقة"
+  },
+  "errorOccurred": "حدث خطأ ما",
+  "@errorOccurred": {
+    "description": "رسالة خطأ عامة"
+  },
+  "logoutConfirmation": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+  "@logoutConfirmation": {
+    "description": "رسالة تأكيد تسجيل الخروج"
+  },
   "characterLimitInfo": "حد الأحرف: {min}-{max} (الحالي: {current})",
   "@characterLimitInfo": {
     "description": "معلومات حد الأحرف",
@@ -171,6 +183,14 @@
         "type": "int"
       }
     }
+  },
+  "myReviews": "تقييماتي",
+  "@myReviews": {
+    "description": "عنوان تقييماتي في شاشة الملف الشخصي"
+  },
+  "myReviewsDescription": "مشاهدة جميع التقييمات التي قمت بها",
+  "@myReviewsDescription": {
+    "description": "وصف تقييماتي في شاشة الملف الشخصي"
   },
   "commentTooShort": "التعليق قصير جداً (الحد الأدنى {min} حرف)",
   "@commentTooShort": {

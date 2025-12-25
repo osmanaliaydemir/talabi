@@ -120,59 +120,17 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get pendingReviews => 'Bekleyen Yorumlar';
-
-  @override
-  String get noPendingReviews => 'Bekleyen yorum yok';
-
-  @override
-  String get reviewDetail => 'Yorum Detayı';
-
-  @override
-  String userId(Object id) {
-    return 'Kullanıcı ID: $id';
-  }
-
-  @override
-  String get rating => 'Puan';
-
-  @override
-  String get comment => 'Yorum';
-
-  @override
-  String get noComment => 'Yorum yok';
-
-  @override
-  String get reject => 'Reddet';
-
-  @override
-  String get approve => 'Onayla';
-
-  @override
-  String get reviewApproved => 'Yorum onaylandı';
-
-  @override
-  String get reviewRejected => 'Yorum reddedildi';
-
-  @override
-  String reviewApproveError(Object error) {
-    return 'Yorum onaylanırken hata oluştu: $error';
-  }
-
-  @override
-  String reviewRejectError(Object error) {
-    return 'Yorum reddedilirken hata oluştu: $error';
-  }
-
-  @override
-  String get rejectReview => 'Yorumu Reddet';
-
-  @override
-  String get rejectReviewConfirmation =>
-      'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.';
-
-  @override
   String get pendingApproval => 'Onay Bekliyor';
+
+  @override
+  String get approved => 'Onaylandı';
+
+  @override
+  String get errorOccurred => 'Bir hata oluştu';
+
+  @override
+  String get logoutConfirmation =>
+      'Oturumu kapatmak istediğinize emin misiniz?';
 
   @override
   String characterLimitInfo(int min, int max, int current) {
@@ -180,12 +138,15 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get myReviews => 'Değerlendirmelerim';
+
+  @override
+  String get myReviewsDescription => 'Yaptığınız tüm yorumları görün';
+
+  @override
   String commentTooShort(int min) {
     return 'Yorum çok kısa (en az $min karakter)';
   }
-
-  @override
-  String get date => 'Tarih';
 
   @override
   String get cancel => 'İptal';
@@ -1320,6 +1281,55 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsUpdated => 'Ayarlar güncellendi';
 
   @override
+  String get reviewApproved => 'Yorum onaylandı';
+
+  @override
+  String reviewApproveError(Object error) {
+    return 'Yorum onaylanırken hata oluştu: $error';
+  }
+
+  @override
+  String get rejectReview => 'Yorumu Reddet';
+
+  @override
+  String get rejectReviewConfirmation =>
+      'Bu yorumu reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.';
+
+  @override
+  String get reject => 'Reddet';
+
+  @override
+  String get reviewRejected => 'Yorum reddedildi';
+
+  @override
+  String reviewRejectError(Object error) {
+    return 'Yorum reddedilirken hata oluştu: $error';
+  }
+
+  @override
+  String get reviewDetail => 'Yorum Detayı';
+
+  @override
+  String userId(Object id) {
+    return 'Kullanıcı ID: $id';
+  }
+
+  @override
+  String get rating => 'Puan';
+
+  @override
+  String get comment => 'Yorum';
+
+  @override
+  String get noComment => 'Yorum yok';
+
+  @override
+  String get date => 'Tarih';
+
+  @override
+  String get approve => 'Onayla';
+
+  @override
   String get verify => 'Onayla';
 
   @override
@@ -1732,6 +1742,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get markAsRead => 'Okundu olarak işaretle';
+
+  @override
+  String get pendingReviews => 'Bekleyen Yorumlar';
+
+  @override
+  String get noPendingReviews => 'Bekleyen yorum yok';
 
   @override
   String reviewsLoadError(Object error) {

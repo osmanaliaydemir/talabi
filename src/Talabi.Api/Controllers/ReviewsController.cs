@@ -703,4 +703,35 @@ public class ReviewsController : BaseController
 
         return Ok(new ApiResponse<List<ReviewDto>>(reviews, LocalizationService.GetLocalizedString(ResourceName, "PendingReviewsRetrievedSuccessfully", CurrentCulture)));
     }
+    /// <summary>
+    /// Kullanıcının kendi yaptığı tüm değerlendirmeleri getirir
+    /// </summary>
+    /// <returns>Değerlendirme listesi</returns>
+    [HttpGet("my-reviews")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<List<ReviewDto>>>> GetMyReviews()
+    {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized(new ApiResponse<List<ReviewDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
+                "USER_IDENTITY_NOT_FOUND"));
+        }
+
+        var reviews = await UnitOfWork.Reviews.Query()
+            .Include(r => r.Product)
+            .Include(r => r.Vendor)
+            .Include(r => r.Courier)
+                .ThenInclude(c => c!.User)
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+
+        var reviewDtos = _mapper.Map<List<ReviewDto>>(reviews);
+
+        return Ok(new ApiResponse<List<ReviewDto>>(reviewDtos,
+            LocalizationService.GetLocalizedString(ResourceName, "MyReviewsRetrievedSuccessfully", CurrentCulture)));
+    }
 }
+

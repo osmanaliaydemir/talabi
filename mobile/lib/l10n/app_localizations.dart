@@ -310,101 +310,29 @@ abstract class AppLocalizations {
   /// **'Order number {id}'**
   String orderNumberWithId(String id);
 
-  /// Pending Reviews
-  ///
-  /// In en, this message translates to:
-  /// **'Pending Reviews'**
-  String get pendingReviews;
-
-  /// No pending reviews
-  ///
-  /// In en, this message translates to:
-  /// **'No pending reviews'**
-  String get noPendingReviews;
-
-  /// Review Detail
-  ///
-  /// In en, this message translates to:
-  /// **'Review Detail'**
-  String get reviewDetail;
-
-  /// No description provided for @userId.
-  ///
-  /// In en, this message translates to:
-  /// **'User ID: {id}'**
-  String userId(Object id);
-
-  /// Rating
-  ///
-  /// In en, this message translates to:
-  /// **'Rating'**
-  String get rating;
-
-  /// Comment
-  ///
-  /// In en, this message translates to:
-  /// **'Comment'**
-  String get comment;
-
-  /// No comment
-  ///
-  /// In en, this message translates to:
-  /// **'No comment'**
-  String get noComment;
-
-  /// Reject
-  ///
-  /// In en, this message translates to:
-  /// **'Reject'**
-  String get reject;
-
-  /// Approve
-  ///
-  /// In en, this message translates to:
-  /// **'Approve'**
-  String get approve;
-
-  /// Review approved
-  ///
-  /// In en, this message translates to:
-  /// **'Review approved'**
-  String get reviewApproved;
-
-  /// Review rejected
-  ///
-  /// In en, this message translates to:
-  /// **'Review rejected'**
-  String get reviewRejected;
-
-  /// No description provided for @reviewApproveError.
-  ///
-  /// In en, this message translates to:
-  /// **'Error approving review: {error}'**
-  String reviewApproveError(Object error);
-
-  /// No description provided for @reviewRejectError.
-  ///
-  /// In en, this message translates to:
-  /// **'Error rejecting review: {error}'**
-  String reviewRejectError(Object error);
-
-  /// Reject Review
-  ///
-  /// In en, this message translates to:
-  /// **'Reject Review'**
-  String get rejectReview;
-
-  /// Are you sure you want to reject this review? Th...
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to reject this review? This cannot be undone.'**
-  String get rejectReviewConfirmation;
-
   /// Pending approval label
   ///
   /// In en, this message translates to:
   /// **'Pending Approval'**
   String get pendingApproval;
+
+  /// Approved label
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get approved;
+
+  /// General error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get errorOccurred;
+
+  /// Logout confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get logoutConfirmation;
 
   /// Character limit info
   ///
@@ -412,17 +340,23 @@ abstract class AppLocalizations {
   /// **'Character limit: {min}-{max} (Current: {current})'**
   String characterLimitInfo(int min, int max, int current);
 
+  /// Title for my reviews in profile screen
+  ///
+  /// In en, this message translates to:
+  /// **'My Reviews'**
+  String get myReviews;
+
+  /// Description for my reviews in profile screen
+  ///
+  /// In en, this message translates to:
+  /// **'See all reviews you have made'**
+  String get myReviewsDescription;
+
   /// Comment too short error
   ///
   /// In en, this message translates to:
   /// **'Comment too short (min {min} characters)'**
   String commentTooShort(int min);
-
-  /// Date
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get date;
 
   /// Cancel
   ///
@@ -2554,6 +2488,90 @@ abstract class AppLocalizations {
   /// **'Settings updated'**
   String get settingsUpdated;
 
+  /// Review approved
+  ///
+  /// In en, this message translates to:
+  /// **'Review approved'**
+  String get reviewApproved;
+
+  /// No description provided for @reviewApproveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error approving review: {error}'**
+  String reviewApproveError(Object error);
+
+  /// Reject Review
+  ///
+  /// In en, this message translates to:
+  /// **'Reject Review'**
+  String get rejectReview;
+
+  /// Are you sure you want to reject this review? Th...
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reject this review? This cannot be undone.'**
+  String get rejectReviewConfirmation;
+
+  /// Reject
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// Review rejected
+  ///
+  /// In en, this message translates to:
+  /// **'Review rejected'**
+  String get reviewRejected;
+
+  /// No description provided for @reviewRejectError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error rejecting review: {error}'**
+  String reviewRejectError(Object error);
+
+  /// Review Detail
+  ///
+  /// In en, this message translates to:
+  /// **'Review Detail'**
+  String get reviewDetail;
+
+  /// No description provided for @userId.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID: {id}'**
+  String userId(Object id);
+
+  /// Rating
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// Comment
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get comment;
+
+  /// No comment
+  ///
+  /// In en, this message translates to:
+  /// **'No comment'**
+  String get noComment;
+
+  /// Date
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// Approve
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
   /// Verify
   ///
   /// In en, this message translates to:
@@ -3297,6 +3315,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark as Read'**
   String get markAsRead;
+
+  /// Pending Reviews
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Reviews'**
+  String get pendingReviews;
+
+  /// No pending reviews
+  ///
+  /// In en, this message translates to:
+  /// **'No pending reviews'**
+  String get noPendingReviews;
 
   /// No description provided for @reviewsLoadError.
   ///

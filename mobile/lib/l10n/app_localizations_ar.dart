@@ -120,59 +120,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get pendingReviews => 'المراجعات المعلقة';
-
-  @override
-  String get noPendingReviews => 'لا توجد مراجعات معلقة';
-
-  @override
-  String get reviewDetail => 'تفاصيل المراجعة';
-
-  @override
-  String userId(Object id) {
-    return 'معرف المستخدم: $id';
-  }
-
-  @override
-  String get rating => 'التقييم';
-
-  @override
-  String get comment => 'تعليق';
-
-  @override
-  String get noComment => 'لا يوجد تعليق';
-
-  @override
-  String get reject => 'رفض';
-
-  @override
-  String get approve => 'موافقة';
-
-  @override
-  String get reviewApproved => 'تمت الموافقة على المراجعة';
-
-  @override
-  String get reviewRejected => 'تم رفض المراجعة';
-
-  @override
-  String reviewApproveError(Object error) {
-    return 'خطأ في الموافقة على المراجعة: $error';
-  }
-
-  @override
-  String reviewRejectError(Object error) {
-    return 'خطأ في رفض المراجعة: $error';
-  }
-
-  @override
-  String get rejectReview => 'رفض المراجعة';
-
-  @override
-  String get rejectReviewConfirmation =>
-      'هل أنت متأكد أنك تريد رفض هذه المراجعة؟ لا يمكن التراجع عن هذا الإجراء.';
-
-  @override
   String get pendingApproval => 'قيد الانتظار';
+
+  @override
+  String get approved => 'تمت الموافقة';
+
+  @override
+  String get errorOccurred => 'حدث خطأ ما';
+
+  @override
+  String get logoutConfirmation => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
 
   @override
   String characterLimitInfo(int min, int max, int current) {
@@ -180,12 +137,15 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get myReviews => 'تقييماتي';
+
+  @override
+  String get myReviewsDescription => 'مشاهدة جميع التقييمات التي قمت بها';
+
+  @override
   String commentTooShort(int min) {
     return 'التعليق قصير جداً (الحد الأدنى $min حرف)';
   }
-
-  @override
-  String get date => 'التاريخ';
 
   @override
   String get cancel => 'إلغاء';
@@ -1308,6 +1268,55 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsUpdated => 'تم تحديث الإعدادات';
 
   @override
+  String get reviewApproved => 'تمت الموافقة على المراجعة';
+
+  @override
+  String reviewApproveError(Object error) {
+    return 'خطأ في الموافقة على المراجعة: $error';
+  }
+
+  @override
+  String get rejectReview => 'رفض المراجعة';
+
+  @override
+  String get rejectReviewConfirmation =>
+      'هل أنت متأكد أنك تريد رفض هذه المراجعة؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get reviewRejected => 'تم رفض المراجعة';
+
+  @override
+  String reviewRejectError(Object error) {
+    return 'خطأ في رفض المراجعة: $error';
+  }
+
+  @override
+  String get reviewDetail => 'تفاصيل المراجعة';
+
+  @override
+  String userId(Object id) {
+    return 'معرف المستخدم: $id';
+  }
+
+  @override
+  String get rating => 'التقييم';
+
+  @override
+  String get comment => 'تعليق';
+
+  @override
+  String get noComment => 'لا يوجد تعليق';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get approve => 'موافقة';
+
+  @override
   String get verify => 'تأكيد';
 
   @override
@@ -1713,6 +1722,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get markAsRead => 'وضع علامة كمقروء';
+
+  @override
+  String get pendingReviews => 'المراجعات المعلقة';
+
+  @override
+  String get noPendingReviews => 'لا توجد مراجعات معلقة';
 
   @override
   String reviewsLoadError(Object error) {

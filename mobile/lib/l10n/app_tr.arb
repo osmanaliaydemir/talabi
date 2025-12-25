@@ -157,6 +157,18 @@
   "@pendingApproval": {
     "description": "Onay bekliyor etiketi"
   },
+  "approved": "Onaylandı",
+  "@approved": {
+    "description": "Onaylandı etiketi"
+  },
+  "errorOccurred": "Bir hata oluştu",
+  "@errorOccurred": {
+    "description": "Genel hata mesajı"
+  },
+  "logoutConfirmation": "Oturumu kapatmak istediğinize emin misiniz?",
+  "@logoutConfirmation": {
+    "description": "Oturum kapatma onay mesajı"
+  },
   "characterLimitInfo": "Karakter sınırı: {min}-{max} (Şu an: {current})",
   "@characterLimitInfo": {
     "description": "Karakter sınırı bilgisi",
@@ -171,6 +183,14 @@
         "type": "int"
       }
     }
+  },
+  "myReviews": "Değerlendirmelerim",
+  "@myReviews": {
+    "description": "Profil ekranında değerlendirmelerim başlığı"
+  },
+  "myReviewsDescription": "Yaptığınız tüm yorumları görün",
+  "@myReviewsDescription": {
+    "description": "Profil ekranında değerlendirmelerim açıklaması"
   },
   "commentTooShort": "Yorum çok kısa (en az {min} karakter)",
   "@commentTooShort": {

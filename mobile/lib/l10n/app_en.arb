@@ -156,6 +156,18 @@
   "@pendingApproval": {
     "description": "Pending approval label"
   },
+  "approved": "Approved",
+  "@approved": {
+    "description": "Approved label"
+  },
+  "errorOccurred": "An error occurred",
+  "@errorOccurred": {
+    "description": "General error message"
+  },
+  "logoutConfirmation": "Are you sure you want to log out?",
+  "@logoutConfirmation": {
+    "description": "Logout confirmation message"
+  },
   "characterLimitInfo": "Character limit: {min}-{max} (Current: {current})",
   "@characterLimitInfo": {
     "description": "Character limit info",
@@ -170,6 +182,14 @@
         "type": "int"
       }
     }
+  },
+  "myReviews": "My Reviews",
+  "@myReviews": {
+    "description": "Title for my reviews in profile screen"
+  },
+  "myReviewsDescription": "See all reviews you have made",
+  "@myReviewsDescription": {
+    "description": "Description for my reviews in profile screen"
   },
   "commentTooShort": "Comment too short (min {min} characters)",
   "@commentTooShort": {

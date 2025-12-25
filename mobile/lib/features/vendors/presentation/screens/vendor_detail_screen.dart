@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/vendors/data/models/vendor.dart';
 import 'package:mobile/services/api_service.dart';
@@ -402,10 +403,12 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
             )
           else if (_products.isEmpty)
             SliverFillRemaining(
+              hasScrollBody: false,
               child: Center(
-                child: Text(
-                  localizations.noProductsYet,
-                  style: AppTheme.poppins(color: AppTheme.textSecondary),
+                child: EmptyStateWidget(
+                  message: localizations.noProductsYet,
+                  iconData: Icons.restaurant_menu_outlined,
+                  usePrimaryColor: false,
                 ),
               ),
             )
