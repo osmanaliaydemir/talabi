@@ -84,6 +84,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     try {
       final categories = await _apiService.getCategories(
         language: AppLocalizations.of(context)?.localeName,
+        pageSize: 100, // Fetch more categories to ensure we find the target one
       );
 
       LoggerService().debug(
