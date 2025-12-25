@@ -437,10 +437,10 @@ public class ReviewsController : BaseController
         if (isVendorNeedsReview || isCourierNeedsReview)
         {
             var orderDto = _mapper.Map<OrderDto>(lastDeliveredOrder);
-            return Ok(new ApiResponse<OrderDto>(orderDto));
+            return Ok(new ApiResponse<OrderDto?>(orderDto));
         }
 
-        return Ok(new ApiResponse<object>(null, "All recent orders reviewed"));
+        return Ok(new ApiResponse<OrderDto?>(null, "All recent orders reviewed"));
     }
 
     /// <summary>

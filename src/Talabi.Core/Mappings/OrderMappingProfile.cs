@@ -14,13 +14,15 @@ public class OrderMappingProfile : Profile
         // Order -> OrderDto
         CreateMap<Order, OrderDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            .ForMember(dest => dest.VendorName, opt => opt.MapFrom(src => src.Vendor != null ? src.Vendor.Name : string.Empty));
+            .ForMember(dest => dest.VendorName, opt => opt.MapFrom(src => src.Vendor != null ? src.Vendor.Name : string.Empty))
+            .ForMember(dest => dest.ActiveOrderCourier, opt => opt.Ignore());
 
         // Order -> OrderDetailDto
         CreateMap<Order, OrderDetailDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.VendorName, opt => opt.MapFrom(src => src.Vendor != null ? src.Vendor.Name : string.Empty))
             .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.FullName : string.Empty))
+            .ForMember(dest => dest.ActiveOrderCourier, opt => opt.Ignore())
             .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems.Select(oi => new OrderItemDetailDto
             {
                 ProductId = oi.ProductId,
