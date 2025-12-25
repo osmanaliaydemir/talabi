@@ -139,6 +139,19 @@
       "count": {}
     }
   },
+  "yourOrderFeedback": "Your Order Feedback",
+  "@yourOrderFeedback": {
+    "description": "Your order feedback title"
+  },
+  "orderNumberWithId": "Order number {id}",
+  "@orderNumberWithId": {
+    "description": "Order number with ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "cancel": "Cancel",
   "@cancel": {
     "description": "Cancel"

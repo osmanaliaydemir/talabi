@@ -140,6 +140,19 @@
       "count": {}
     }
   },
+  "yourOrderFeedback": "Sipariş Değerlendirmen",
+  "@yourOrderFeedback": {
+    "description": "Sipariş değerlendirmen başlığı"
+  },
+  "orderNumberWithId": "{id} numaralı sipariş",
+  "@orderNumberWithId": {
+    "description": "ID ile sipariş numarası",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "cancel": "İptal",
   "@cancel": {
     "description": "İptal"

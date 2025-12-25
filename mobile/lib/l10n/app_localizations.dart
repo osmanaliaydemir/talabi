@@ -298,6 +298,18 @@ abstract class AppLocalizations {
   /// **'{count} reviews'**
   String degerlendirmeSayisi(Object count);
 
+  /// Your order feedback title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Order Feedback'**
+  String get yourOrderFeedback;
+
+  /// Order number with ID
+  ///
+  /// In en, this message translates to:
+  /// **'Order number {id}'**
+  String orderNumberWithId(String id);
+
   /// Cancel
   ///
   /// In en, this message translates to:

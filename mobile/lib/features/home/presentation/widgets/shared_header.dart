@@ -16,6 +16,8 @@ class SharedHeader extends StatelessWidget {
     this.showBackButton = false,
     this.onBack,
     this.action,
+    this.showSearch = true,
+    this.showNotifications = true,
   });
 
   final String? title;
@@ -25,6 +27,8 @@ class SharedHeader extends StatelessWidget {
   final bool showBackButton;
   final VoidCallback? onBack;
   final Widget? action;
+  final bool showSearch;
+  final bool showNotifications;
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -98,96 +102,100 @@ class SharedHeader extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Search Icon
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SearchScreen(),
+                    if (showSearch) ...[
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SearchScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
                           ),
-                        );
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                          size: 22,
+                          child: const Icon(
+                            Icons.search,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
-                    ),
+                      if (showNotifications) const SizedBox(width: 8),
+                    ],
                     const SizedBox(width: 8),
                     // Notification Icon
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NotificationsScreen(),
-                          ),
-                        );
-                      },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
+                    if (showNotifications)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationsScreen(),
                             ),
-                            child: const Icon(
-                              Icons.notifications,
-                              color: Colors.white,
-                              size: 22,
+                          );
+                        },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.notifications,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                             ),
-                          ),
-                          Consumer<NotificationProvider>(
-                            builder: (context, notificationProvider, child) {
-                              if (notificationProvider.unreadCount > 0) {
-                                return Positioned(
-                                  top: -2,
-                                  right: -2,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                      border: Border.fromBorderSide(
-                                        BorderSide(
-                                          color: Colors.white,
-                                          width: 1.5,
+                            Consumer<NotificationProvider>(
+                              builder: (context, notificationProvider, child) {
+                                if (notificationProvider.unreadCount > 0) {
+                                  return Positioned(
+                                    top: -2,
+                                    right: -2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                        border: Border.fromBorderSide(
+                                          BorderSide(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 16,
-                                      minHeight: 16,
-                                    ),
-                                    child: Text(
-                                      '${notificationProvider.unreadCount}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
                                       ),
-                                      textAlign: TextAlign.center,
+                                      child: Text(
+                                        '${notificationProvider.unreadCount}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                        ],
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
             ],

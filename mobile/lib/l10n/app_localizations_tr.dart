@@ -112,6 +112,14 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get yourOrderFeedback => 'Sipariş Değerlendirmen';
+
+  @override
+  String orderNumberWithId(String id) {
+    return '$id numaralı sipariş';
+  }
+
+  @override
   String get cancel => 'İptal';
 
   @override

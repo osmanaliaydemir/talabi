@@ -112,6 +112,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get yourOrderFeedback => 'Your Order Feedback';
+
+  @override
+  String orderNumberWithId(String id) {
+    return 'Order number $id';
+  }
+
+  @override
   String get cancel => 'Cancel';
 
   @override

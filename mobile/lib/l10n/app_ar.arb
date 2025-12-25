@@ -140,6 +140,19 @@
       "count": {}
     }
   },
+  "yourOrderFeedback": "تقييمك للطلب",
+  "@yourOrderFeedback": {
+    "description": "عنوان تقييمك للطلب"
+  },
+  "orderNumberWithId": "طلب رقم {id}",
+  "@orderNumberWithId": {
+    "description": "رقم الطلب مع المعرف",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "cancel": "إلغاء",
   "@cancel": {
     "description": "إلغاء"

@@ -112,6 +112,14 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get yourOrderFeedback => 'تقييمك للطلب';
+
+  @override
+  String orderNumberWithId(String id) {
+    return 'طلب رقم $id';
+  }
+
+  @override
   String get cancel => 'إلغاء';
 
   @override

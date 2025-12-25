@@ -258,7 +258,16 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          SharedHeader(title: localizations.rateOrder, showBackButton: true),
+          SharedHeader(
+            title: widget.reviewStatus != null
+                ? localizations.yourOrderFeedback
+                : localizations.rateOrder,
+            subtitle: localizations.orderNumberWithId(
+              widget.orderDetail.customerOrderId,
+            ),
+            showBackButton: true,
+            showSearch: false,
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppTheme.spacingMedium),
