@@ -130,6 +130,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationAll => 'All';
 
   @override
+  String get notificationOrders => 'Orders';
+
+  @override
   String get notificationReviews => 'Reviews';
 
   @override
@@ -2755,9 +2758,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusDelivered => 'Delivered';
-
-  @override
-  String get notificationOrders => 'Orders';
 
   @override
   String get rateOrder => 'Rate Order';

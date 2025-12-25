@@ -328,11 +328,17 @@ abstract class AppLocalizations {
   /// **'Orders'**
   String get orders;
 
-  /// All
+  /// All tab in notifications
   ///
   /// In en, this message translates to:
   /// **'All'**
   String get notificationAll;
+
+  /// Orders tab in notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get notificationOrders;
 
   /// Reviews
   ///
@@ -5145,12 +5151,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivered'**
   String get statusDelivered;
-
-  /// Orders tab in notifications
-  ///
-  /// In en, this message translates to:
-  /// **'Orders'**
-  String get notificationOrders;
 
   /// Button to rate the order
   ///

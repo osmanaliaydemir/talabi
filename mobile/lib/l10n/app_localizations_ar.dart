@@ -130,6 +130,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notificationAll => 'الكل';
 
   @override
+  String get notificationOrders => 'الطلبات';
+
+  @override
   String get notificationReviews => 'التقييمات';
 
   @override
@@ -2724,9 +2727,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get statusDelivered => 'تم التوصيل';
-
-  @override
-  String get notificationOrders => 'الطلبات';
 
   @override
   String get rateOrder => 'تقييم الطلب';

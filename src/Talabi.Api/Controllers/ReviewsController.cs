@@ -399,7 +399,7 @@ public class ReviewsController : BaseController
     /// </summary>
     [HttpGet("unreviewed")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<OrderDto>>> GetUnreviewedOrder()
+    public async Task<ActionResult<ApiResponse<OrderDto?>>> GetUnreviewedOrder()
     {
         var userId = UserContext.GetUserId();
 
@@ -416,7 +416,7 @@ public class ReviewsController : BaseController
 
         if (lastDeliveredOrder == null)
         {
-            return Ok(new ApiResponse<object?>(null, "No delivered orders"));
+            return Ok(new ApiResponse<OrderDto?>(null, "No delivered orders"));
         }
 
         // Manually populate active courier if not mapped (FIX for missing navigation)
@@ -427,10 +427,10 @@ public class ReviewsController : BaseController
 
         // Check reviews
         List<Review> reviews = await UnitOfWork.Reviews.Query()
-            .Where(r => r.OrderId == lastDeliveredOrder!.Id)
+            .Where(r => r.OrderId == lastDeliveredOrder.Id)
             .ToListAsync();
 
-        bool isCourierNeedsReview = lastDeliveredOrder!.ActiveOrderCourier != null && !reviews.Any(r => r.CourierId.HasValue);
+        bool isCourierNeedsReview = lastDeliveredOrder.ActiveOrderCourier != null && !reviews.Any(r => r.CourierId.HasValue);
         bool isVendorNeedsReview = !reviews.Any(r => r.VendorId.HasValue);
 
         // Popup mantığı: Kurye veya Restoran değerlendirilmemişse göster

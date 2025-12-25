@@ -130,6 +130,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get notificationAll => 'Tümü';
 
   @override
+  String get notificationOrders => 'Siparişler';
+
+  @override
   String get notificationReviews => 'Yorumlar';
 
   @override
@@ -2753,9 +2756,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get statusDelivered => 'Teslim Edildi';
-
-  @override
-  String get notificationOrders => 'Siparişler';
 
   @override
   String get rateOrder => 'Siparişi Değerlendir';

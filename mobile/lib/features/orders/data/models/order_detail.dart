@@ -52,6 +52,11 @@ class OrderDetail {
               )
               .toList() ??
           [],
+      activeOrderCourier: json['activeOrderCourier'] != null
+          ? OrderCourierDetail.fromJson(
+              json['activeOrderCourier'] as Map<String, dynamic>,
+            )
+          : null,
     );
   }
 
