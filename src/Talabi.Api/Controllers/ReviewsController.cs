@@ -198,8 +198,14 @@ public class ReviewsController : BaseController
         // 1. Validate Order
         var order = await UnitOfWork.Orders.Query()
             .Include(o => o.OrderItems)
-            .Include(o => o.ActiveOrderCourier)
+            .Include(o => o.OrderCouriers)
             .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
+
+        // Manually populate active courier if not mapped
+        if (order != null && order.ActiveOrderCourier == null)
+        {
+            order.ActiveOrderCourier = order.OrderCouriers.FirstOrDefault(oc => oc.IsActive);
+        }
 
         if (order == null)
         {
