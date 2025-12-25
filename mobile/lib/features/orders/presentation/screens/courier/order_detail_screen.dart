@@ -79,9 +79,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       context: context,
       builder: (context) => CustomConfirmationDialog(
         title: localizations?.acceptOrderTitle ?? 'Accept Order',
-        message: localizations?.acceptOrderConfirmation ??
+        message:
+            localizations?.acceptOrderConfirmation ??
             'Are you sure you want to accept this order?',
-        confirmText: localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
+        confirmText:
+            localizations?.acceptOrder ?? localizations?.accept ?? 'Accept',
         cancelText: localizations?.cancel ?? 'Cancel',
         icon: Icons.check_circle_outline,
         iconColor: Colors.teal,
@@ -154,20 +156,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return CustomConfirmationDialog(
-            title: localizations?.rejectOrderTitle ??
+            title:
+                localizations?.rejectOrderTitle ??
                 localizations?.rejectOrder ??
                 'Reject Order',
             message: '', // Message is empty as we use content for description
-            confirmText: localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
+            confirmText:
+                localizations?.rejectOrder ?? localizations?.reject ?? 'Reject',
             cancelText: localizations?.cancel ?? 'Cancel',
             icon: Icons.cancel_outlined,
             iconColor: Colors.red,
             confirmButtonColor: Colors.red,
             isConfirmEnabled: reasonController.text.trim().isNotEmpty,
             onConfirm: () {
-               if (formKey.currentState?.validate() ?? false) {
-                 Navigator.of(context).pop(true);
-               }
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.of(context).pop(true);
+              }
             },
             onCancel: () => Navigator.of(context).pop(false),
             content: Form(
@@ -207,7 +211,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
             ),
           );
-        }
+        },
       ),
     );
 
@@ -711,7 +715,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const SizedBox(height: 32),
 
             // Action Buttons
-            if (_order!.status.toLowerCase() == 'assigned')
+            if ((_order!.status.toLowerCase() == 'assigned' ||
+                    _order!.courierStatus == OrderCourierStatus.assigned ||
+                    _order!.courierAcceptedAt == null) &&
+                _order!.courierRejectedAt == null &&
+                _order!.status.toLowerCase() != 'cancelled' &&
+                _order!.status.toLowerCase() != 'rejected')
               Column(
                 children: [
                   Row(

@@ -618,9 +618,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
+        // Strip "Exception: " prefix for cleaner display
+        final message = e.toString().replaceAll('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Otomatik atama başarısız: $e'),
+            content: Text('Otomatik atama başarısız: $message'),
             backgroundColor: Colors.red,
           ),
         );

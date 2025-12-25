@@ -2016,7 +2016,12 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
   Widget _buildOrderActions(BuildContext context, CourierOrder order) {
     final localizations = AppLocalizations.of(context);
-    final status = order.status.toLowerCase();
+    var status = order.status.toLowerCase();
+    // Force 'assigned' status logic if not explicitly accepted yet, to ensure buttons appear
+    if (order.courierStatus == OrderCourierStatus.assigned ||
+        order.courierAcceptedAt == null) {
+      status = 'assigned';
+    }
     final isProcessing = _processingOrders.contains(order.id);
 
     switch (status) {

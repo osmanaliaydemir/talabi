@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
-import 'package:mobile/features/notifications/data/models/vendor_notification.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/features/vendors/presentation/providers/vendor_provider.dart';
+import 'package:mobile/providers/notification_provider.dart';
 
 class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
   const VendorHeader({
@@ -38,70 +39,27 @@ class VendorHeader extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _VendorHeaderState extends State<VendorHeader> {
-  int _unreadNotifications = 0;
-  int _currentStatus = 0;
-
   @override
   void initState() {
     super.initState();
-    _refreshNotificationCount();
-    _fetchCurrentStatus();
-  }
-
-  Future<void> _fetchCurrentStatus() async {
-    try {
-      final profileMap = await ApiService().getVendorProfile();
-      if (!mounted) return;
-
-      // Handle Map vs Object if API returns Map
-      final status = profileMap['busyStatus'] as int? ?? 0;
-
-      setState(() {
-        _currentStatus = status;
-      });
-    } catch (e) {
-      // Slient fail
-    }
-  }
-
-  Future<void> _refreshNotificationCount() async {
-    try {
-      final notificationsData = await ApiService().getVendorNotifications();
-      final notifications = notificationsData
-          .map((json) => VendorNotification.fromJson(json))
-          .toList();
-
-      if (!mounted) return;
-
-      setState(() {
-        _unreadNotifications = notifications.where((n) => !n.isRead).length;
-      });
-    } catch (e, stackTrace) {
-      LoggerService().error(
-        'VendorHeader: ERROR refreshing notification count',
-        e,
-        stackTrace,
-      );
-      // Keep 0 as default on error
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<VendorProvider>().loadVendorProfile();
+      context.read<NotificationProvider>().loadVendorNotifications();
+    });
   }
 
   Future<void> _openNotifications() async {
     LoggerService().debug('VendorHeader: Notifications icon tapped');
     await Navigator.of(context).pushNamed('/vendor/notifications');
     if (mounted) {
-      await _refreshNotificationCount();
+      context.read<NotificationProvider>().loadVendorNotifications(force: true);
     }
   }
 
   Future<void> _updateBusyStatus(int status) async {
     try {
-      await ApiService().updateBusyStatus(status);
+      await context.read<VendorProvider>().updateBusyStatus(status);
       if (!mounted) return;
-
-      setState(() {
-        _currentStatus = status;
-      });
 
       final localizations = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -225,7 +183,9 @@ class _VendorHeaderState extends State<VendorHeader> {
     Color color;
     String tooltip;
 
-    switch (_currentStatus) {
+    final currentStatus = context.watch<VendorProvider>().currentStatus;
+
+    switch (currentStatus) {
       case 1: // Busy
         icon = Icons.hourglass_bottom;
         color = Colors.amber;
@@ -356,45 +316,50 @@ class _VendorHeaderState extends State<VendorHeader> {
   }
 
   Widget _buildNotificationIcon() {
-    if (_unreadNotifications <= 0) {
-      return const Icon(
-        Icons.notifications_none,
-        color: Colors.white,
-        size: 24,
-      );
-    }
+    return Consumer<NotificationProvider>(
+      builder: (context, provider, child) {
+        final unreadCount = provider.vendorUnreadCount;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        const Icon(Icons.notifications, color: Colors.white, size: 24),
-        Positioned(
-          right: -4,
-          top: -4,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-            ),
-            constraints: const BoxConstraints(minHeight: 18, minWidth: 18),
-            child: Text(
-              _unreadNotifications > 9 ? '9+' : '$_unreadNotifications',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+        if (unreadCount <= 0) {
+          return const Icon(
+            Icons.notifications_none,
+            color: Colors.white,
+            size: 24,
+          );
+        }
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.notifications, color: Colors.white, size: 24),
+            Positioned(
+              right: -4,
+              top: -4,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minHeight: 18, minWidth: 18),
+                child: Text(
+                  unreadCount > 9 ? '9+' : '$unreadCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
   Widget _buildOrderCountText(AppLocalizations? localizations) {
-    // ... existing implementation ...
     if (widget.orderCounts == null || localizations == null) {
       return const SizedBox.shrink();
     }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +14,7 @@ class LocationService {
   StreamSubscription<Position>? _positionStreamSubscription;
   Timer? _updateTimer;
   BuildContext? _context;
+  DateTime? _lastUpdateTime;
 
   /// Set context for permission dialogs (should be called before using location)
   void setContext(BuildContext context) {
@@ -75,6 +77,33 @@ class LocationService {
     return await LocationPermissionService.getCurrentLocation(_context!);
   }
 
+  // Helper method to send location update with throttling
+  Future<void> _sendUpdate(Position position) async {
+    if (_courierService == null) return;
+
+    final now = DateTime.now();
+    // Throttle: Only update if 20 seconds have passed since last update
+    if (_lastUpdateTime != null &&
+        now.difference(_lastUpdateTime!) < const Duration(seconds: 20)) {
+      return;
+    }
+
+    try {
+      _lastUpdateTime = now;
+      await _courierService!.updateLocation(
+        position.latitude,
+        position.longitude,
+      );
+    } catch (e, stackTrace) {
+      // Don't log 429 errors as error, maybe warning
+      if (e is DioException && e.response?.statusCode == 429) {
+        LoggerService().warning('Rate limit hit for location update');
+      } else {
+        LoggerService().error('Error updating location', e, stackTrace);
+      }
+    }
+  }
+
   // Start background location tracking
   Future<void> startLocationTracking() async {
     final hasPermission = await checkAndRequestPermissions();
@@ -113,34 +142,19 @@ class LocationService {
     _positionStreamSubscription =
         Geolocator.getPositionStream(locationSettings: locationSettings).listen(
           (Position position) async {
-            // Update location to backend (only if courier service is available)
-            if (_courierService != null) {
-              try {
-                await _courierService.updateLocation(
-                  position.latitude,
-                  position.longitude,
-                );
-              } catch (e, stackTrace) {
-                LoggerService().error('Error updating location', e, stackTrace);
-              }
-            }
+            await _sendUpdate(position);
           },
         );
 
-    // Also set up periodic updates (every 30 seconds) even if position hasn't changed much
-    _updateTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
-      if (_courierService != null) {
-        try {
-          final position = await getCurrentLocation();
-          if (position != null) {
-            await _courierService.updateLocation(
-              position.latitude,
-              position.longitude,
-            );
-          }
-        } catch (e, stackTrace) {
-          LoggerService().error('Error in periodic update', e, stackTrace);
+    // Also set up periodic updates (every 60 seconds) as a fallback heartbeat
+    _updateTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
+      try {
+        final position = await getCurrentLocation();
+        if (position != null) {
+          await _sendUpdate(position);
         }
+      } catch (e) {
+        // Silent error for periodic update
       }
     });
   }

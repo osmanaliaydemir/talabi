@@ -29,7 +29,9 @@ class _CourierActiveDeliveriesScreenState
   // Active Deliveries Tab
   bool _isLoadingActive = true;
   String? _errorActive;
-  List<CourierOrder> _activeOrders = [];
+  // Offers and Deliveries
+  List<CourierOrder> _pendingOffers = [];
+  List<CourierOrder> _ongoingDeliveries = [];
 
   // Delivery History Tab
   bool _isLoadingHistory = true;
@@ -98,8 +100,29 @@ class _CourierActiveDeliveriesScreenState
     try {
       final orders = await _courierService.getActiveOrders();
       if (!mounted) return;
+
+      // Split orders into pending offers (Assigned) and ongoing deliveries (Accepted+)
+      final offers = <CourierOrder>[];
+      final ongoing = <CourierOrder>[];
+
+      for (final order in orders) {
+        LoggerService().debug(
+          'Order #${order.id}: status=${order.status}, courierStatus=${order.courierStatus}, acceptedAt=${order.courierAcceptedAt}',
+        );
+
+        // If the order is explicitly assigned (enum or string) or hasn't been accepted yet, treat it as an offer
+        if (order.courierStatus == OrderCourierStatus.assigned ||
+            order.status.toLowerCase() == 'assigned' ||
+            order.courierAcceptedAt == null) {
+          offers.add(order);
+        } else {
+          ongoing.add(order);
+        }
+      }
+
       setState(() {
-        _activeOrders = orders;
+        _pendingOffers = offers;
+        _ongoingDeliveries = ongoing;
         _isLoadingActive = false;
       });
       LoggerService().debug(
@@ -172,6 +195,113 @@ class _CourierActiveDeliveriesScreenState
     }
   }
 
+  Future<void> _acceptOrder(CourierOrder order) async {
+    final localizations = AppLocalizations.of(context);
+    final orderAccepted =
+        localizations?.orderAccepted ?? 'Sipariş kabul edildi';
+
+    try {
+      await _courierService.acceptOrder(order.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(orderAccepted), backgroundColor: Colors.green),
+        );
+        _loadActiveOrders();
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMessage =
+            localizations?.errorWithMessage(e.toString()) ?? 'Hata: $e';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    }
+  }
+
+  Future<void> _rejectOrder(CourierOrder order) async {
+    final reasonController = TextEditingController();
+    final localizations = AppLocalizations.of(context);
+    final rejectTitle = localizations?.rejectOrderTitle ?? 'Siparişi Reddet';
+    final rejectReasonLabel =
+        localizations?.rejectReasonLabel ??
+        'Lütfen reddetme sebebini belirtin:';
+    final rejectReasonHint = localizations?.rejectReasonHint ?? 'Sebep...';
+    final cancel = localizations?.cancel ?? 'İptal';
+    final reject = localizations?.reject ?? 'Reddet';
+    final pleaseEnterReason =
+        localizations?.pleaseEnterReason ?? 'Lütfen bir sebep girin';
+    final orderRejected = localizations?.orderRejected ?? 'Sipariş reddedildi';
+
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(rejectTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(rejectReasonLabel),
+            const SizedBox(height: 8),
+            TextField(
+              controller: reasonController,
+              decoration: InputDecoration(
+                hintText: rejectReasonHint,
+                border: const OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (reasonController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(pleaseEnterReason)));
+                return;
+              }
+              Navigator.pop(context, reasonController.text.trim());
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(reject),
+          ),
+        ],
+      ),
+    );
+
+    if (reason != null && reason.isNotEmpty) {
+      try {
+        await _courierService.rejectOrder(order.id, reason);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(orderRejected),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          _loadActiveOrders();
+        }
+      } catch (e) {
+        if (mounted) {
+          final errorMessage =
+              localizations?.errorWithMessage(e.toString()) ?? 'Hata: $e';
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errorMessage)));
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -224,52 +354,94 @@ class _CourierActiveDeliveriesScreenState
   }
 
   Widget _buildActiveDeliveriesTab(AppLocalizations? localizations) {
-    return RefreshIndicator(
-      onRefresh: _loadActiveOrders,
-      child: _isLoadingActive
-          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
-          : _errorActive != null
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _errorActive!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: _loadActiveOrders,
-                    child: Text(localizations?.tryAgain ?? 'Tekrar dene'),
-                  ),
-                ],
+    if (_isLoadingActive) {
+      return const Center(child: CircularProgressIndicator(color: Colors.teal));
+    }
+
+    if (_errorActive != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _errorActive!,
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _loadActiveOrders,
+              child: Text(localizations?.tryAgain ?? 'Tekrar dene'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_pendingOffers.isEmpty && _ongoingDeliveries.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              size: 64,
+              color: Colors.green,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              localizations?.noActiveDeliveries ?? 'Aktif teslimat yok',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // New Offers Section
+          if (_pendingOffers.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                localizations?.newOffers ?? 'YENİ TEKLİFLER',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange,
+                  letterSpacing: 1.0,
+                ),
               ),
-            )
-          : _activeOrders.isEmpty
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                const SizedBox(height: 40),
-                Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
-                const SizedBox(height: 16),
-                Center(
-                  child: Text(
-                    localizations?.noActiveDeliveries ?? 'No active deliveries',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            ..._pendingOffers.map(_buildOfferCard),
+            const SizedBox(height: 24),
+          ],
+
+          // Active Deliveries Section
+          if (_ongoingDeliveries.isNotEmpty) ...[
+            if (_pendingOffers.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  localizations?.activeDeliveriesSectionTitle ??
+                      'AKTİF TESLİMATLAR',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal,
+                    letterSpacing: 1.0,
                   ),
                 ),
-              ],
-            )
-          : ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: _activeOrders.length,
-              itemBuilder: (context, index) {
-                final order = _activeOrders[index];
-                return _buildOrderCard(order);
-              },
-            ),
+              ),
+            ..._ongoingDeliveries.map(_buildOrderCard),
+          ],
+        ],
+      ),
     );
   }
 
@@ -340,6 +512,100 @@ class _CourierActiveDeliveriesScreenState
     );
   }
 
+  Widget _buildOfferCard(CourierOrder order) {
+    final localizations = AppLocalizations.of(context);
+    final newOrderOfferMsg =
+        localizations?.newOrderOffer ?? 'Yeni Sipariş Teklifi!';
+    final rejectMsg = localizations?.reject ?? 'Reddet';
+    final acceptMsg = localizations?.accept ?? 'Kabul Et';
+
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.orange.shade200, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.new_releases, color: Colors.orange),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    newOrderOfferMsg,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Text(
+                  CurrencyFormatter.format(
+                    (order.deliveryFee).toDouble(),
+                    Currency.try_,
+                  ),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            _buildLocationRow(
+              icon: Icons.store,
+              title: order.vendorName,
+              subtitle: order.vendorAddress,
+            ),
+            const SizedBox(height: 8),
+            _buildLocationRow(
+              icon: Icons.location_on,
+              iconColor: Colors.redAccent,
+              title: order.customerName,
+              // Show full address if accepted, otherwise generic
+              subtitle: order.deliveryAddress,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _rejectOrder(order),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(rejectMsg),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _acceptOrder(order),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(acceptMsg),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildOrderCard(CourierOrder order) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -380,24 +646,13 @@ class _CourierActiveDeliveriesScreenState
                     children: [
                       Text(
                         CurrencyFormatter.format(
-                          order.totalAmount,
+                          order.deliveryFee,
                           Currency.try_,
                         ),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.teal,
                           fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        CurrencyFormatter.format(
-                          order.deliveryFee,
-                          Currency.try_,
-                        ),
-                        style: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          color: Colors.green.shade700,
-                          fontSize: 13,
                         ),
                       ),
                     ],
@@ -432,6 +687,22 @@ class _CourierActiveDeliveriesScreenState
                       ),
                     ),
                   ),
+                  if (order.courierStatus != null) ...[
+                    const SizedBox(width: 8),
+                    Chip(
+                      backgroundColor: _courierStatusColor(
+                        order.courierStatus!,
+                      ).withValues(alpha: 0.15),
+                      label: Text(
+                        _courierStatusLabel(order.courierStatus!),
+                        style: TextStyle(
+                          color: _courierStatusColor(order.courierStatus!),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ],
                   const Spacer(),
                   Text(
                     DateFormat('HH:mm').format(order.createdAt),
@@ -569,6 +840,42 @@ class _CourierActiveDeliveriesScreenState
         return Colors.red;
       default:
         return Colors.grey;
+    }
+  }
+
+  Color _courierStatusColor(OrderCourierStatus status) {
+    switch (status) {
+      case OrderCourierStatus.assigned:
+        return Colors.blue;
+      case OrderCourierStatus.accepted:
+        return Colors.green;
+      case OrderCourierStatus.rejected:
+        return Colors.red;
+      case OrderCourierStatus.pickedUp:
+        return Colors.orange;
+      case OrderCourierStatus.outForDelivery:
+        return Colors.purple;
+      case OrderCourierStatus.delivered:
+        return Colors.green.shade700;
+    }
+  }
+
+  String _courierStatusLabel(OrderCourierStatus status) {
+    final localizations = AppLocalizations.of(context);
+    // Basic localization, ideally should be in ARB
+    switch (status) {
+      case OrderCourierStatus.assigned:
+        return localizations?.statusAssigned ?? 'Atandı';
+      case OrderCourierStatus.accepted:
+        return localizations?.statusAccepted ?? 'Kabul Edildi';
+      case OrderCourierStatus.rejected:
+        return localizations?.statusRejected ?? 'Reddedildi';
+      case OrderCourierStatus.pickedUp:
+        return localizations?.statusPickedUp ?? 'Teslim Alındı';
+      case OrderCourierStatus.outForDelivery:
+        return localizations?.statusOutForDelivery ?? 'Yolda';
+      case OrderCourierStatus.delivered:
+        return localizations?.statusDelivered ?? 'Teslim Edildi';
     }
   }
 }

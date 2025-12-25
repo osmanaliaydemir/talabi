@@ -2688,4 +2688,40 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shamCashAccountNumber => 'رقم حساب شام كاش';
+
+  @override
+  String get newOffers => 'عروض جديدة';
+
+  @override
+  String get activeDeliveriesSectionTitle => 'التوصيلات النشطة';
+
+  @override
+  String get newOrderOffer => 'عرض طلب جديد!';
+
+  @override
+  String get viewableAfterAcceptance => 'يمكن رؤيته بعد القبول';
+
+  @override
+  String get rejectReasonLabel => 'يرجى تحديد سبب الرفض:';
+
+  @override
+  String get pleaseEnterReason => 'يرجى إدخال سبب';
+
+  @override
+  String get statusAssigned => 'تم التعيين';
+
+  @override
+  String get statusAccepted => 'تم القبول';
+
+  @override
+  String get statusRejected => 'مرفوض';
+
+  @override
+  String get statusPickedUp => 'تم الاستلام';
+
+  @override
+  String get statusOutForDelivery => 'جاري التوصيل';
+
+  @override
+  String get statusDelivered => 'تم التوصيل';
 }

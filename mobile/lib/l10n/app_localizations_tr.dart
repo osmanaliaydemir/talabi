@@ -2716,4 +2716,41 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get shamCashAccountNumber => 'Sham Cash Hesap Numarası';
+
+  @override
+  String get newOffers => 'YENİ TEKLİFLER';
+
+  @override
+  String get activeDeliveriesSectionTitle => 'AKTİF TESLİMATLAR';
+
+  @override
+  String get newOrderOffer => 'Yeni Sipariş Teklifi!';
+
+  @override
+  String get viewableAfterAcceptance =>
+      'Sipariş kabul edildikten sonra görüntülenebilir';
+
+  @override
+  String get rejectReasonLabel => 'Lütfen reddetme sebebini belirtin:';
+
+  @override
+  String get pleaseEnterReason => 'Lütfen bir sebep girin';
+
+  @override
+  String get statusAssigned => 'Atandı';
+
+  @override
+  String get statusAccepted => 'Kabul Edildi';
+
+  @override
+  String get statusRejected => 'Reddedildi';
+
+  @override
+  String get statusPickedUp => 'Teslim Alındı';
+
+  @override
+  String get statusOutForDelivery => 'Yolda';
+
+  @override
+  String get statusDelivered => 'Teslim Edildi';
 }

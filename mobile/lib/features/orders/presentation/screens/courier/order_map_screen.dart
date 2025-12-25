@@ -192,7 +192,9 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order #${widget.order.id} Map'),
+        title: Text(
+          'Order #${widget.order.customerOrderId.isNotEmpty ? widget.order.customerOrderId : widget.order.id} Map',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.my_location),

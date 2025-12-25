@@ -11,6 +11,7 @@ import 'package:mobile/providers/connectivity_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/providers/theme_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/features/vendors/presentation/providers/vendor_provider.dart';
 import 'package:mobile/features/coupons/presentation/providers/coupon_provider.dart';
 import 'package:mobile/features/auth/presentation/screens/customer/login_screen.dart';
 import 'package:mobile/features/onboarding/presentation/screens/splash_screen.dart';
@@ -76,6 +77,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => BottomNavProvider()),
         ChangeNotifierProvider(
           create: (context) => NotificationProvider(),
+          lazy: true,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => VendorProvider(),
           lazy: true,
         ),
         ChangeNotifierProvider(create: (context) => CouponProvider()),

@@ -5073,6 +5073,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sham Cash Account Number'**
   String get shamCashAccountNumber;
+
+  /// New active offers section title
+  ///
+  /// In en, this message translates to:
+  /// **'NEW OFFERS'**
+  String get newOffers;
+
+  /// Active deliveries section title
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE DELIVERIES'**
+  String get activeDeliveriesSectionTitle;
+
+  /// New Order Offer!
+  ///
+  /// In en, this message translates to:
+  /// **'New Order Offer!'**
+  String get newOrderOffer;
+
+  /// Viewable after acceptance
+  ///
+  /// In en, this message translates to:
+  /// **'Viewable after acceptance'**
+  String get viewableAfterAcceptance;
+
+  /// Please specify the reason for rejection:
+  ///
+  /// In en, this message translates to:
+  /// **'Please specify the reason for rejection:'**
+  String get rejectReasonLabel;
+
+  /// Please enter a reason
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a reason'**
+  String get pleaseEnterReason;
+
+  /// No description provided for @statusAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get statusAssigned;
+
+  /// No description provided for @statusAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get statusAccepted;
+
+  /// No description provided for @statusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get statusRejected;
+
+  /// No description provided for @statusPickedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked Up'**
+  String get statusPickedUp;
+
+  /// No description provided for @statusOutForDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Out for Delivery'**
+  String get statusOutForDelivery;
+
+  /// No description provided for @statusDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get statusDelivered;
 }
 
 class _AppLocalizationsDelegate

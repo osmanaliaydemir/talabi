@@ -3456,5 +3456,35 @@
   "shamCashAccountNumber": "Sham Cash Account Number",
   "@shamCashAccountNumber": {
     "description": "Sham Cash Account Number"
-  }
+  },
+  "newOffers": "NEW OFFERS",
+  "@newOffers": {
+    "description": "New active offers section title"
+  },
+  "activeDeliveriesSectionTitle": "ACTIVE DELIVERIES",
+  "@activeDeliveriesSectionTitle": {
+    "description": "Active deliveries section title"
+  },
+  "newOrderOffer": "New Order Offer!",
+  "@newOrderOffer": {
+    "description": "New Order Offer!"
+  },
+  "viewableAfterAcceptance": "Viewable after acceptance",
+  "@viewableAfterAcceptance": {
+    "description": "Viewable after acceptance"
+  },
+  "rejectReasonLabel": "Please specify the reason for rejection:",
+  "@rejectReasonLabel": {
+    "description": "Please specify the reason for rejection:"
+  },
+  "pleaseEnterReason": "Please enter a reason",
+  "@pleaseEnterReason": {
+    "description": "Please enter a reason"
+  },
+  "statusAssigned": "Assigned",
+  "statusAccepted": "Accepted",
+  "statusRejected": "Rejected",
+  "statusPickedUp": "Picked Up",
+  "statusOutForDelivery": "Out for Delivery",
+  "statusDelivered": "Delivered"
 }

@@ -3458,5 +3458,35 @@
     "placeholders": {
       "error": {}
     }
-  }
+  },
+  "newOffers": "عروض جديدة",
+  "@newOffers": {
+    "description": "عروض جديدة"
+  },
+  "activeDeliveriesSectionTitle": "التوصيلات النشطة",
+  "@activeDeliveriesSectionTitle": {
+    "description": "التوصيلات النشطة"
+  },
+  "newOrderOffer": "عرض طلب جديد!",
+  "@newOrderOffer": {
+    "description": "عرض طلب جديد!"
+  },
+  "viewableAfterAcceptance": "يمكن رؤيته بعد القبول",
+  "@viewableAfterAcceptance": {
+    "description": "يمكن رؤيته بعد القبول"
+  },
+  "rejectReasonLabel": "يرجى تحديد سبب الرفض:",
+  "@rejectReasonLabel": {
+    "description": "يرجى تحديد سبب الرفض:"
+  },
+  "pleaseEnterReason": "يرجى إدخال سبب",
+  "@pleaseEnterReason": {
+    "description": "يرجى إدخال سبب"
+  },
+  "statusAssigned": "تم التعيين",
+  "statusAccepted": "تم القبول",
+  "statusRejected": "مرفوض",
+  "statusPickedUp": "تم الاستلام",
+  "statusOutForDelivery": "جاري التوصيل",
+  "statusDelivered": "تم التوصيل"
 }

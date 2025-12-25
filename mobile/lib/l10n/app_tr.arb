@@ -3458,5 +3458,35 @@
   "shamCashAccountNumber": "Sham Cash Hesap Numarası",
   "@shamCashAccountNumber": {
     "description": "Sham Cash Hesap Numarası"
-  }
+  },
+  "newOffers": "YENİ TEKLİFLER",
+  "@newOffers": {
+    "description": "YENİ TEKLİFLER"
+  },
+  "activeDeliveriesSectionTitle": "AKTİF TESLİMATLAR",
+  "@activeDeliveriesSectionTitle": {
+    "description": "AKTİF TESLİMATLAR"
+  },
+  "newOrderOffer": "Yeni Sipariş Teklifi!",
+  "@newOrderOffer": {
+    "description": "Yeni Sipariş Teklifi!"
+  },
+  "viewableAfterAcceptance": "Sipariş kabul edildikten sonra görüntülenebilir",
+  "@viewableAfterAcceptance": {
+    "description": "Sipariş kabul edildikten sonra görüntülenebilir"
+  },
+  "rejectReasonLabel": "Lütfen reddetme sebebini belirtin:",
+  "@rejectReasonLabel": {
+    "description": "Lütfen reddetme sebebini belirtin:"
+  },
+  "pleaseEnterReason": "Lütfen bir sebep girin",
+  "@pleaseEnterReason": {
+    "description": "Lütfen bir sebep girin"
+  },
+  "statusAssigned": "Atandı",
+  "statusAccepted": "Kabul Edildi",
+  "statusRejected": "Reddedildi",
+  "statusPickedUp": "Teslim Alındı",
+  "statusOutForDelivery": "Yolda",
+  "statusDelivered": "Teslim Edildi"
 }

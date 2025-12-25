@@ -1684,6 +1684,30 @@ class ApiService {
       }
       // Eski format (direkt Map)
       return response.data;
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        try {
+          if (e.response?.data is Map<String, dynamic>) {
+            final data = e.response?.data as Map<String, dynamic>;
+            final message =
+                data['message'] ??
+                (data['errors'] != null ? data['errors'].toString() : null);
+
+            if (message != null) {
+              throw Exception(message);
+            }
+          }
+        } catch (_) {}
+        throw Exception(
+          e.response?.data['message'] ?? 'Kurye atama işlemi başarısız',
+        );
+      }
+      LoggerService().error(
+        'Error auto-assigning courier',
+        e,
+        StackTrace.current,
+      );
+      rethrow;
     } catch (e, stackTrace) {
       LoggerService().error('Error auto-assigning courier', e, stackTrace);
       rethrow;

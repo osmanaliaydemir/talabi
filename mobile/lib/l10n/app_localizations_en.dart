@@ -2719,4 +2719,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shamCashAccountNumber => 'Sham Cash Account Number';
+
+  @override
+  String get newOffers => 'NEW OFFERS';
+
+  @override
+  String get activeDeliveriesSectionTitle => 'ACTIVE DELIVERIES';
+
+  @override
+  String get newOrderOffer => 'New Order Offer!';
+
+  @override
+  String get viewableAfterAcceptance => 'Viewable after acceptance';
+
+  @override
+  String get rejectReasonLabel => 'Please specify the reason for rejection:';
+
+  @override
+  String get pleaseEnterReason => 'Please enter a reason';
+
+  @override
+  String get statusAssigned => 'Assigned';
+
+  @override
+  String get statusAccepted => 'Accepted';
+
+  @override
+  String get statusRejected => 'Rejected';
+
+  @override
+  String get statusPickedUp => 'Picked Up';
+
+  @override
+  String get statusOutForDelivery => 'Out for Delivery';
+
+  @override
+  String get statusDelivered => 'Delivered';
 }
