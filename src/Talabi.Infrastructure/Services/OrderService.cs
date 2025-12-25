@@ -198,7 +198,7 @@ public class OrderService : IOrderService
                 if (_ruleValidatorService.ValidateCoupon(coupon, validationContext, out var _))
                 {
                     // Calculate discount
-                     if (coupon.DiscountType == DiscountType.Percentage)
+                    if (coupon.DiscountType == DiscountType.Percentage)
                     {
                         discountAmount = totalAmount * (coupon.DiscountValue / 100);
                     }
@@ -220,53 +220,53 @@ public class OrderService : IOrderService
         Campaign? appliedCampaign = null;
         if (dto.CampaignId.HasValue)
         {
-             var campaign = await _unitOfWork.Campaigns.Query()
-                .AsNoTracking()
-                .Include(c => c.CampaignCities)
-                .Include(c => c.CampaignDistricts)
-                .Include(c => c.CampaignCategories)
-                .Include(c => c.CampaignProducts)
-                .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
+            var campaign = await _unitOfWork.Campaigns.Query()
+               .AsNoTracking()
+               .Include(c => c.CampaignCities)
+               .Include(c => c.CampaignDistricts)
+               .Include(c => c.CampaignCategories)
+               .Include(c => c.CampaignProducts)
+               .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
 
-             if (campaign != null)
-             {
-                 Guid.TryParse(customerId, out var userIdGuid);
-                 var validationContext = new RuleValidationContext
-                 {
-                     UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
-                     CityId = userAddress.CityId,
-                     DistrictId = userAddress.DistrictId,
-                     RequestTime = DateTime.UtcNow,
-                     Items = ruleCartItems,
-                     CartTotal = totalAmount,
-                     IsFirstOrder = !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == customerId)
-                 };
+            if (campaign != null)
+            {
+                Guid.TryParse(customerId, out var userIdGuid);
+                var validationContext = new RuleValidationContext
+                {
+                    UserId = userIdGuid != Guid.Empty ? userIdGuid : null,
+                    CityId = userAddress.CityId,
+                    DistrictId = userAddress.DistrictId,
+                    RequestTime = DateTime.UtcNow,
+                    Items = ruleCartItems,
+                    CartTotal = totalAmount,
+                    IsFirstOrder = !await _unitOfWork.Orders.Query().AnyAsync(o => o.CustomerId == customerId)
+                };
 
-                 if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
-                 {
-                      decimal campaignDiscount = 0;
-                      if (campaign.DiscountType == DiscountType.Percentage)
-                      {
-                          campaignDiscount = totalAmount * (campaign.DiscountValue / 100);
-                      }
-                      else
-                      {
-                          campaignDiscount = campaign.DiscountValue;
-                      }
+                if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
+                {
+                    decimal campaignDiscount = 0;
+                    if (campaign.DiscountType == DiscountType.Percentage)
+                    {
+                        campaignDiscount = totalAmount * (campaign.DiscountValue / 100);
+                    }
+                    else
+                    {
+                        campaignDiscount = campaign.DiscountValue;
+                    }
 
-                      if (campaignDiscount > totalAmount) campaignDiscount = totalAmount;
+                    if (campaignDiscount > totalAmount) campaignDiscount = totalAmount;
 
-                      if (campaignDiscount > 0) 
-                      {
-                          if (campaignDiscount >= discountAmount)
-                          {
-                              discountAmount = campaignDiscount;
-                              appliedCampaign = campaign;
-                              appliedCoupon = null; // Campaign wins
-                          }
-                      }
-                 }
-             }
+                    if (campaignDiscount > 0)
+                    {
+                        if (campaignDiscount >= discountAmount)
+                        {
+                            discountAmount = campaignDiscount;
+                            appliedCampaign = campaign;
+                            appliedCoupon = null; // Campaign wins
+                        }
+                    }
+                }
+            }
         }
 
         // Apply discount to total (before delivery fee)
@@ -340,6 +340,9 @@ public class OrderService : IOrderService
     /// <summary>
     /// Siparişi iptal eder
     /// </summary>
+    /// <summary>
+    /// Siparişi iptal eder
+    /// </summary>
     public async Task<bool> CancelOrderAsync(Guid orderId, string? userId, CancelOrderDto dto, CultureInfo culture)
     {
         // Authorization: userId must be provided
@@ -349,7 +352,7 @@ public class OrderService : IOrderService
         }
 
         var order = await _unitOfWork.Orders.Query()
-            .Include(o => o.StatusHistory)
+            .AsNoTracking() // Read-only check
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
@@ -370,8 +373,7 @@ public class OrderService : IOrderService
         }
 
         // Customers can only cancel Pending or Preparing orders
-        var isCustomer = order.CustomerId == userId;
-        if (isCustomer && order.Status != OrderStatus.Pending && order.Status != OrderStatus.Preparing)
+        if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Preparing)
         {
             throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "InvalidCancellationStatus", culture));
         }
@@ -382,22 +384,44 @@ public class OrderService : IOrderService
             throw new ArgumentException(_localizationService.GetLocalizedString(ResourceName, "InvalidCancellationReason", culture));
         }
 
-        // Update order
-        order.Status = OrderStatus.Cancelled;
-        order.CancelledAt = DateTime.UtcNow;
-        order.CancelReason = dto.Reason;
+        // --- BULK UPDATE LOGIC START ---
+        var now = DateTime.UtcNow;
 
-        // Add to status history
-        order.StatusHistory.Add(new OrderStatusHistory
+        // 1. Bulk Update Order Items
+        // Mark all items as cancelled
+        await _unitOfWork.OrderItems.Query()
+            .Where(oi => oi.OrderId == orderId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(oi => oi.IsCancelled, true)
+                .SetProperty(oi => oi.CancelReason, dto.Reason)
+                .SetProperty(oi => oi.CancelledAt, now));
+
+        // 2. Bulk Update Order
+        // Updates status directly avoiding Concurrency Checks
+        await _unitOfWork.Orders.Query()
+            .Where(o => o.Id == orderId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(o => o.Status, OrderStatus.Cancelled)
+                .SetProperty(o => o.CancelReason, dto.Reason)
+                .SetProperty(o => o.CancelledAt, now));
+
+        // 3. Add History Record (Manual Insert)
+        // Since we bypassed tracking/hooks, we need to add history manually
+        await _unitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
         {
-            OrderId = order.Id,
+            OrderId = orderId,
             Status = OrderStatus.Cancelled,
             Note = $"Cancelled: {dto.Reason}",
-            CreatedBy = userId ?? "System"
+            CreatedBy = userId ?? "System",
+            CreatedAt = now
         });
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync();
+        // --- BULK UPDATE LOGIC END ---
+
+        // Notification logic remains the same, but we might need to fetch fresh data if needed
+        // For notifications below, we use the 'order' object we fetched at the start.
+        // It has the OLD status but correct ID, CustomerId, VendorId etc.
 
         // Add customer notification for cancellation
         if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
@@ -463,13 +487,13 @@ public class OrderService : IOrderService
         // Vendor owner, assigned courier, or customer (for their own orders) can update
         var isVendorOwner = order.Vendor != null && order.Vendor.OwnerId == userId;
         var isCustomer = order.CustomerId == userId;
-        
+
         // Check if user is assigned courier
         var isAssignedCourier = await _unitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Courier)
-            .AnyAsync(oc => oc.OrderId == orderId && 
-                           oc.Courier != null && 
-                           oc.Courier.UserId == userId && 
+            .AnyAsync(oc => oc.OrderId == orderId &&
+                           oc.Courier != null &&
+                           oc.Courier.UserId == userId &&
                            oc.IsActive);
 
         if (!isVendorOwner && !isAssignedCourier && !isCustomer)
@@ -727,12 +751,12 @@ public class OrderService : IOrderService
 
                     appliedCouponDto = new CouponDto
                     {
-                         Id = coupon.Id,
-                         Code = coupon.Code,
-                         DiscountType = (int)coupon.DiscountType,
-                         DiscountValue = coupon.DiscountValue,
-                         DiscountAmount = discountAmount,
-                         Description = coupon.Description ?? ""
+                        Id = coupon.Id,
+                        Code = coupon.Code,
+                        DiscountType = (int)coupon.DiscountType,
+                        DiscountValue = coupon.DiscountValue,
+                        DiscountAmount = discountAmount,
+                        Description = coupon.Description ?? ""
                     };
                 }
             }
@@ -741,43 +765,43 @@ public class OrderService : IOrderService
         // Campaign Logic
         if (dto.CampaignId.HasValue)
         {
-             var campaign = await _unitOfWork.Campaigns.Query()
-                .AsNoTracking()
-                .Include(c => c.CampaignCities)
-                .Include(c => c.CampaignDistricts)
-                .Include(c => c.CampaignCategories)
-                .Include(c => c.CampaignProducts)
-                .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
+            var campaign = await _unitOfWork.Campaigns.Query()
+               .AsNoTracking()
+               .Include(c => c.CampaignCities)
+               .Include(c => c.CampaignDistricts)
+               .Include(c => c.CampaignCategories)
+               .Include(c => c.CampaignProducts)
+               .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
 
-             if (campaign != null)
-             {
-                 if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
-                 {
-                      decimal campaignDiscount = 0;
-                      if (campaign.DiscountType == DiscountType.Percentage)
-                      {
-                          campaignDiscount = subtotal * (campaign.DiscountValue / 100);
-                      }
-                      else
-                      {
-                          campaignDiscount = campaign.DiscountValue;
-                      }
+            if (campaign != null)
+            {
+                if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
+                {
+                    decimal campaignDiscount = 0;
+                    if (campaign.DiscountType == DiscountType.Percentage)
+                    {
+                        campaignDiscount = subtotal * (campaign.DiscountValue / 100);
+                    }
+                    else
+                    {
+                        campaignDiscount = campaign.DiscountValue;
+                    }
 
-                      if (campaignDiscount > subtotal) campaignDiscount = subtotal;
+                    if (campaignDiscount > subtotal) campaignDiscount = subtotal;
 
-                      // Campaign overrides coupon if explicitly selected and valid (or better specific logic)
-                      // Here: If Campaign provides a discount, we use it and verify vs coupon
-                      if (campaignDiscount > 0) 
-                      {
-                          if (campaignDiscount >= discountAmount)
-                          {
-                              discountAmount = campaignDiscount;
-                              appliedCampaignId = campaign.Id;
-                              appliedCouponDto = null;
-                          }
-                      }
-                 }
-             }
+                    // Campaign overrides coupon if explicitly selected and valid (or better specific logic)
+                    // Here: If Campaign provides a discount, we use it and verify vs coupon
+                    if (campaignDiscount > 0)
+                    {
+                        if (campaignDiscount >= discountAmount)
+                        {
+                            discountAmount = campaignDiscount;
+                            appliedCampaignId = campaign.Id;
+                            appliedCouponDto = null;
+                        }
+                    }
+                }
+            }
         }
 
         // Final Totals

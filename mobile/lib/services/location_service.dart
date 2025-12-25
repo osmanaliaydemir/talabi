@@ -90,7 +90,7 @@ class LocationService {
 
     try {
       _lastUpdateTime = now;
-      await _courierService!.updateLocation(
+      await _courierService.updateLocation(
         position.latitude,
         position.longitude,
       );

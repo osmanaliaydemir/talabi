@@ -876,7 +876,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           // Bottom Action Bar
           Container(
-            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: 4,
+            ),
             decoration: BoxDecoration(
               color: AppTheme.surfaceColor,
               boxShadow: [
@@ -901,7 +904,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.error,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusMedium,
@@ -926,7 +929,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorScheme.primary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusMedium,

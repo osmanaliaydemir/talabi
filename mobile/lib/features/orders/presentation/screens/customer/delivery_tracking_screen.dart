@@ -61,6 +61,11 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
         _isLoading = false;
       });
 
+      if (_trackingData!['orderStatus'] == 'Delivered') {
+        _updateTimer?.cancel();
+        _updateTimer = null;
+      }
+
       _updateMap();
     } catch (e) {
       setState(() {
@@ -247,7 +252,12 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sipariş #${widget.orderId}',
+                    (_trackingData!['customerOrderId'] != null &&
+                            _trackingData!['customerOrderId']
+                                .toString()
+                                .isNotEmpty)
+                        ? 'Sipariş #${_trackingData!['customerOrderId']}'
+                        : 'Sipariş #${widget.orderId}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

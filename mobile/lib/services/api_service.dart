@@ -1689,9 +1689,7 @@ class ApiService {
         try {
           if (e.response?.data is Map<String, dynamic>) {
             final data = e.response?.data as Map<String, dynamic>;
-            final message =
-                data['message'] ??
-                (data['errors'] != null ? data['errors'].toString() : null);
+            final message = data['message'] ?? (data['errors']?.toString());
 
             if (message != null) {
               throw Exception(message);

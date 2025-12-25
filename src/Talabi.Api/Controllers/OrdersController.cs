@@ -98,7 +98,7 @@ public class OrdersController : BaseController
     public async Task<ActionResult<ApiResponse<OrderCalculationResultDto>>> CalculateOrder(CalculateOrderDto dto)
     {
         var userId = UserContext.GetUserId() ?? "anonymous"; // Or null if strictly required
-        
+
         var result = await _orderService.CalculateOrderAsync(dto, userId, CurrentCulture);
 
         return Ok(new ApiResponse<OrderCalculationResultDto>(

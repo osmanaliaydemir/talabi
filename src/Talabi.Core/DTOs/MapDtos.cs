@@ -26,6 +26,7 @@ public class VendorMapDto
 public class DeliveryTrackingDto
 {
     public Guid OrderId { get; set; }
+    public string CustomerOrderId { get; set; } = string.Empty;
     public string OrderStatus { get; set; } = string.Empty;
     public DateTime? EstimatedDeliveryTime { get; set; }
 

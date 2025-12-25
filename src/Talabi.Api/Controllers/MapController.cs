@@ -42,7 +42,7 @@ public class MapController : BaseController
         var vendors = await UnitOfWork.Vendors.Query()
             .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
             .ToListAsync();
-        
+
         var vendorMapDtos = vendors.Select(v =>
         {
             var dto = _mapper.Map<VendorMapDto>(v);
@@ -119,6 +119,7 @@ public class MapController : BaseController
         var tracking = new DeliveryTrackingDto
         {
             OrderId = order.Id,
+            CustomerOrderId = order.CustomerOrderId,
             OrderStatus = order.Status.ToString(),
             EstimatedDeliveryTime = order.EstimatedDeliveryTime,
             VendorLatitude = order.Vendor.Latitude.Value,
