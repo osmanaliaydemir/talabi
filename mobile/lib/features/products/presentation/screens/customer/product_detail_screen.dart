@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
-import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/reviews/data/models/review.dart';
@@ -81,7 +80,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Future<void> _loadProduct() async {
     try {
       final product = await _apiService.getProduct(widget.productId);
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() {
         _product = product;
         _isLoading = false;
@@ -92,7 +91,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // Log view_item
       AnalyticsService.logViewItem(product: product);
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -148,22 +147,148 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
     try {
       final summary = await _apiService.getProductReviews(_product!.id);
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() {
         _reviewsSummary = summary;
         _isLoadingReviews = false;
       });
     } catch (e) {
       // 404 is expected for products without reviews, treated as empty
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() {
         _isLoadingReviews = false;
+        _reviewsSummary = ProductReviewsSummary(
+          averageRating: 0.0,
+          totalRatings: 0,
+          totalComments: 0,
+          reviews: [],
+        );
       });
       // Only log non-404 errors to avoid noise
       if (!e.toString().contains('404')) {
         LoggerService().error('Error loading reviews: $e', e);
       }
     }
+  }
+
+  Future<void> _handleWriteReview() async {
+    if (_product == null) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final canReview = await _apiService.canReviewProduct(_product!.id);
+      if (!mounted || !context.mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      if (canReview) {
+        // Navigate to write review screen/popup
+        // For now, using a toast or placeholder as I need to see if there's a specific screen for this
+        // Actually, the user says "yorum yazma popup'ı çıksın"
+        _showReviewPopup();
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.error),
+            content: Text(l10n.mustOrderToReview),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted || !context.mounted) return;
+      Navigator.pop(context);
+      ToastMessage.show(context, message: e.toString(), isSuccess: false);
+    }
+  }
+
+  void _showReviewPopup() {
+    // This would typically show a dialog with rating stars and a comment field
+    // For now, I'll implement a basic one since the user asked for a popup
+    final l10n = AppLocalizations.of(context)!;
+    int rating = 5;
+    final commentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.writeAReview),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      index < rating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                    ),
+                    onPressed: () => setDialogState(() => rating = index + 1),
+                  );
+                }),
+              ),
+              TextField(
+                controller: commentController,
+                decoration: InputDecoration(
+                  hintText: l10n.comment,
+                  border: const OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  await _apiService.createReview(
+                    _product!.id,
+                    'Product',
+                    rating,
+                    commentController.text,
+                  );
+                  if (!mounted || !context.mounted) return;
+                  Navigator.pop(context);
+                  _loadReviews();
+                  ToastMessage.show(
+                    context,
+                    message: l10n.reviewCreatedSuccessfully,
+                    isSuccess: true,
+                  );
+                } catch (e) {
+                  if (!mounted || !context.mounted) return;
+                  ToastMessage.show(
+                    context,
+                    message: e.toString(),
+                    isSuccess: false,
+                  );
+                }
+              },
+              child: Text(l10n.send),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildSkeleton(BuildContext context) {
@@ -294,13 +419,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         pageSize: 5,
       );
 
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() {
         _similarProducts = similar;
         _isLoadingSimilarProducts = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       LoggerService().error('Error loading similar products: $e', e);
       setState(() {
         _similarProducts = [];
@@ -651,19 +776,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'Değerlendirmeler',
+                                    l10n.reviewsTitle,
                                     style: AppTheme.poppins(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: const Color(0xFF1A1A1A),
                                     ),
                                   ),
+                                  const Spacer(),
+                                  TextButton(
+                                    onPressed: _handleWriteReview,
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      (_reviewsSummary == null ||
+                                              _reviewsSummary!.reviews.isEmpty)
+                                          ? l10n.beTheFirstToReview
+                                          : l10n.writeAReview,
+                                      style: AppTheme.poppins(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
                                   if (_reviewsSummary != null &&
-                                      _reviewsSummary!.reviews.isNotEmpty)
+                                      _reviewsSummary!.reviews.isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      width: 1,
+                                      height: 12,
+                                      color: Colors.grey[300],
+                                    ),
+                                    const SizedBox(width: 8),
                                     TextButton(
-                                      onPressed: () {
-                                        _showAllReviewsBottomSheet();
-                                      },
+                                      onPressed: _showAllReviewsBottomSheet,
                                       style: TextButton.styleFrom(
                                         padding: EdgeInsets.zero,
                                         minimumSize: Size.zero,
@@ -676,20 +827,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           Text(
                                             'Tümü (${_reviewsSummary!.totalComments})',
                                             style: AppTheme.poppins(
-                                              color: colorScheme.primary,
-                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.w500,
                                               fontSize: 14,
                                             ),
                                           ),
-                                          const SizedBox(width: 4),
+                                          const SizedBox(width: 2),
                                           Icon(
                                             Icons.chevron_right,
-                                            size: 18,
-                                            color: colorScheme.primary,
+                                            size: 16,
+                                            color: Colors.grey[600],
                                           ),
                                         ],
                                       ),
                                     ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 16),
@@ -701,11 +853,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 )
                               else if (_reviewsSummary == null ||
                                   _reviewsSummary!.reviews.isEmpty)
-                                EmptyStateWidget(
-                                  message: l10n.noReviewsYet,
-                                  iconData: Icons.star_outline,
-                                  isCompact: true,
-                                  usePrimaryColor: false,
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: 40,
+                                    top: 20,
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[100],
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.star_border,
+                                            size: 32,
+                                            color: Colors.grey[400],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          l10n.noReviewsYet,
+                                          style: AppTheme.poppins(
+                                            fontSize: 14,
+                                            color: Colors.grey[500],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 )
                               else ...[
                                 // Genel Puan ve İstatistikler
@@ -1207,7 +1386,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     try {
       await Share.share(shareText, subject: _product!.name);
     } catch (e) {
-      if (mounted) {
+      if (mounted && context.mounted) {
         ToastMessage.show(
           context,
           message: l10n.errorWithMessage(e.toString()),

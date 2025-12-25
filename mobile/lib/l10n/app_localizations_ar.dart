@@ -132,6 +132,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logoutConfirmation => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
 
   @override
+  String get beTheFirstToReview => 'كن أول من يقيم';
+
+  @override
+  String get writeAReview => 'اكتب تقييماً';
+
+  @override
+  String get mustOrderToReview => 'يجب أن تكون قد طلبت هذا المنتج لترك تقييم.';
+
+  @override
+  String get reviewCreatedSuccessfully => 'تم إنشاء التقييم بنجاح';
+
+  @override
+  String get send => 'إرسal';
+
+  @override
   String characterLimitInfo(int min, int max, int current) {
     return 'حد الأحرف: $min-$max (الحالي: $current)';
   }
@@ -2093,6 +2108,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deliveryType => 'نوع التسليم';
+
+  @override
+  String get reviewsTitle => 'التقييمات';
 
   @override
   String reviews(Object count) {

@@ -79,8 +79,8 @@ public class AdminCourierController : BaseController
                 CurrentDayEarnings = c.CurrentDayEarnings,
                 TotalDeliveries = c.TotalDeliveries,
                 AverageRating = c.AverageRating,
-                WorkingHoursStart = c.WorkingHoursStart,
-                WorkingHoursEnd = c.WorkingHoursEnd,
+                // WorkingHoursStart = c.WorkingHoursStart,
+                // WorkingHoursEnd = c.WorkingHoursEnd,
                 IsWithinWorkingHours = c.IsWithinWorkingHours
             })
             .ToListAsync();

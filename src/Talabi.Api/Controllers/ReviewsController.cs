@@ -733,5 +733,26 @@ public class ReviewsController : BaseController
         return Ok(new ApiResponse<List<ReviewDto>>(reviewDtos,
             LocalizationService.GetLocalizedString(ResourceName, "MyReviewsRetrievedSuccessfully", CurrentCulture)));
     }
+
+    /// <summary>
+    /// Kullanıcının bir ürüne yorum yapıp yapamayacağını kontrol eder
+    /// </summary>
+    /// <param name="productId">Ürün ID'si</param>
+    /// <returns>Evet/Hayır</returns>
+    [HttpGet("can-review/{productId}")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<bool>>> CanReviewProduct(Guid productId)
+    {
+        var userId = UserContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId)) return Ok(new ApiResponse<bool>(false));
+
+        // Kullanıcının bu ürünü içeren ve teslim edilmiş bir siparişi var mı?
+        var hasPurchased = await UnitOfWork.Orders.Query()
+            .AnyAsync(o => o.CustomerId == userId &&
+                          o.Status == OrderStatus.Delivered &&
+                          o.OrderItems.Any(oi => oi.ProductId == productId));
+
+        return Ok(new ApiResponse<bool>(hasPurchased));
+    }
 }
 

@@ -168,6 +168,26 @@
   "@logoutConfirmation": {
     "description": "Logout confirmation message"
   },
+  "beTheFirstToReview": "Be the first to review",
+  "@beTheFirstToReview": {
+    "description": "Label when no reviews exist"
+  },
+  "writeAReview": "Write a review",
+  "@writeAReview": {
+    "description": "Label to write a review"
+  },
+  "mustOrderToReview": "You must have ordered this product to leave a review.",
+  "@mustOrderToReview": {
+    "description": "Error message when user hasn't ordered the product"
+  },
+  "reviewCreatedSuccessfully": "Review created successfully",
+  "@reviewCreatedSuccessfully": {
+    "description": "Success message when review is created"
+  },
+  "send": "Send",
+  "@send": {
+    "description": "Send button label"
+  },
   "characterLimitInfo": "Character limit: {min}-{max} (Current: {current})",
   "@characterLimitInfo": {
     "description": "Character limit info",
@@ -2720,6 +2740,10 @@
   "deliveryType": "Delivery Type",
   "@deliveryType": {
     "description": "Delivery Type"
+  },
+  "reviewsTitle": "Reviews",
+  "@reviewsTitle": {
+    "description": "Reviews title without count"
   },
   "reviews": "Reviews ({count})",
   "@reviews": {

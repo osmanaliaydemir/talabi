@@ -133,6 +133,22 @@ class AppLocalizationsTr extends AppLocalizations {
       'Oturumu kapatmak istediğinize emin misiniz?';
 
   @override
+  String get beTheFirstToReview => 'İlk yorumu sen yap';
+
+  @override
+  String get writeAReview => 'Yorum yap';
+
+  @override
+  String get mustOrderToReview =>
+      'Yorum yapabilmek için üründen sipariş etmiş olmanız gerekmektedir.';
+
+  @override
+  String get reviewCreatedSuccessfully => 'Değerlendirme başarıyla oluşturuldu';
+
+  @override
+  String get send => 'Gönder';
+
+  @override
   String characterLimitInfo(int min, int max, int current) {
     return 'Karakter sınırı: $min-$max (Şu an: $current)';
   }
@@ -2117,6 +2133,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deliveryType => 'Teslimat Türü';
+
+  @override
+  String get reviewsTitle => 'Değerlendirmeler';
 
   @override
   String reviews(Object count) {

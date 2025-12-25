@@ -334,6 +334,36 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to log out?'**
   String get logoutConfirmation;
 
+  /// Label when no reviews exist
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to review'**
+  String get beTheFirstToReview;
+
+  /// Label to write a review
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review'**
+  String get writeAReview;
+
+  /// Error message when user hasn't ordered the product
+  ///
+  /// In en, this message translates to:
+  /// **'You must have ordered this product to leave a review.'**
+  String get mustOrderToReview;
+
+  /// Success message when review is created
+  ///
+  /// In en, this message translates to:
+  /// **'Review created successfully'**
+  String get reviewCreatedSuccessfully;
+
+  /// Send button label
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
   /// Character limit info
   ///
   /// In en, this message translates to:
@@ -3993,6 +4023,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery Type'**
   String get deliveryType;
+
+  /// Reviews title without count
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviewsTitle;
 
   /// No description provided for @reviews.
   ///

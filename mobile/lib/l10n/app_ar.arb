@@ -169,6 +169,26 @@
   "@logoutConfirmation": {
     "description": "رسالة تأكيد تسجيل الخروج"
   },
+  "beTheFirstToReview": "كن أول من يقيم",
+  "@beTheFirstToReview": {
+    "description": "التسمية عند عدم وجود تقييمات"
+  },
+  "writeAReview": "اكتب تقييماً",
+  "@writeAReview": {
+    "description": "التسمية لكتابة تقييم"
+  },
+  "mustOrderToReview": "يجب أن تكون قد طلبت هذا المنتج لترك تقييم.",
+  "@mustOrderToReview": {
+    "description": "رسالة خطأ عندما لا يكون المستخدم قد طلب المنتج"
+  },
+  "reviewCreatedSuccessfully": "تم إنشاء التقييم بنجاح",
+  "@reviewCreatedSuccessfully": {
+    "description": "رسالة نجاح عند إنشاء التقييم"
+  },
+  "send": "إرسal",
+  "@send": {
+    "description": "ملصق زر الإرسال"
+  },
   "characterLimitInfo": "حد الأحرف: {min}-{max} (الحالي: {current})",
   "@characterLimitInfo": {
     "description": "معلومات حد الأحرف",
@@ -2670,6 +2690,10 @@
   "deliveryType": "نوع التسليم",
   "@deliveryType": {
     "description": "نوع التسليم"
+  },
+  "reviewsTitle": "التقييمات",
+  "@reviewsTitle": {
+    "description": "Reviews title without count"
   },
   "reviews": "المراجعات ({count})",
   "@reviews": {

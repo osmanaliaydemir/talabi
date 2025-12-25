@@ -169,6 +169,26 @@
   "@logoutConfirmation": {
     "description": "Oturum kapatma onay mesajı"
   },
+  "beTheFirstToReview": "İlk yorumu sen yap",
+  "@beTheFirstToReview": {
+    "description": "Yorum yokken gösterilen etiket"
+  },
+  "writeAReview": "Yorum yap",
+  "@writeAReview": {
+    "description": "Yorum yapma etiketi"
+  },
+  "mustOrderToReview": "Yorum yapabilmek için üründen sipariş etmiş olmanız gerekmektedir.",
+  "@mustOrderToReview": {
+    "description": "Ürün sipariş edilmediğinde gösterilen hata mesajı"
+  },
+  "reviewCreatedSuccessfully": "Değerlendirme başarıyla oluşturuldu",
+  "@reviewCreatedSuccessfully": {
+    "description": "Ürün değerlendirmesi oluşturulduğunda gösterilen mesaj"
+  },
+  "send": "Gönder",
+  "@send": {
+    "description": "Gönderme butonu etiketi"
+  },
   "characterLimitInfo": "Karakter sınırı: {min}-{max} (Şu an: {current})",
   "@characterLimitInfo": {
     "description": "Karakter sınırı bilgisi",
@@ -2718,6 +2738,10 @@
   "deliveryType": "Teslimat Türü",
   "@deliveryType": {
     "description": "Teslimat Türü"
+  },
+  "reviewsTitle": "Değerlendirmeler",
+  "@reviewsTitle": {
+    "description": "Reviews title without count"
   },
   "reviews": "Yorumlar ({count})",
   "@reviews": {

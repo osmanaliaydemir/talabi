@@ -1343,6 +1343,16 @@ class ApiService {
     }
   }
 
+  Future<bool> canReviewProduct(String productId) async {
+    try {
+      final response = await dio.get('/reviews/can-review/$productId');
+      return response.data['data'] as bool;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error checking review eligibility', e, stackTrace);
+      return false;
+    }
+  }
+
   Future<List<Review>> getUserReviews() async {
     try {
       return await _reviewRemoteDataSource.getUserReviews();

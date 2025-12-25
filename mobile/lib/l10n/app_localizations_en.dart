@@ -132,6 +132,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirmation => 'Are you sure you want to log out?';
 
   @override
+  String get beTheFirstToReview => 'Be the first to review';
+
+  @override
+  String get writeAReview => 'Write a review';
+
+  @override
+  String get mustOrderToReview =>
+      'You must have ordered this product to leave a review.';
+
+  @override
+  String get reviewCreatedSuccessfully => 'Review created successfully';
+
+  @override
+  String get send => 'Send';
+
+  @override
   String characterLimitInfo(int min, int max, int current) {
     return 'Character limit: $min-$max (Current: $current)';
   }
@@ -2116,6 +2132,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deliveryType => 'Delivery Type';
+
+  @override
+  String get reviewsTitle => 'Reviews';
 
   @override
   String reviews(Object count) {
