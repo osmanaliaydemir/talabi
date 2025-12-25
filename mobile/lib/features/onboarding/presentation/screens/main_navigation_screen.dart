@@ -14,7 +14,10 @@ import 'package:mobile/features/profile/presentation/screens/customer/add_edit_a
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/connectivity_banner.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/features/home/presentation/screens/bottom_nav_screen.dart';
+import 'package:mobile/features/orders/data/models/order_detail.dart';
+import 'package:mobile/features/reviews/presentation/screens/order_feedback_screen.dart';
 import 'package:provider/provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -123,6 +126,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
         // Check if user has address
         _checkAndShowAddressBottomSheet();
+
+        // Check for unreviewed orders
+        _checkUnreviewedOrder();
       }
     });
   }
@@ -248,5 +254,55 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
       },
     );
+  }
+
+  Future<void> _checkUnreviewedOrder() async {
+    try {
+      final unreviewedOrder = await _apiService.getUnreviewedOrder();
+      if (unreviewedOrder != null && mounted) {
+        final orderId = unreviewedOrder['id']?.toString();
+
+        if (orderId == null) return;
+
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => CustomConfirmationDialog(
+              title: 'Siparişi Değerlendir',
+              message:
+                  'Son siparişin nasıldı? Deneyimini paylaşmak ister misin?',
+              confirmText: 'Siparişi Değerlendir',
+              cancelText: 'Şimdi Değil',
+              icon: Icons.star,
+              iconColor: Colors.amber,
+              confirmButtonColor: AppTheme.primaryOrange,
+              onConfirm: () async {
+                final navigator = Navigator.of(context)..pop(); // Close dialog
+                try {
+                  // Fetch full order detail for OrderFeedbackScreen
+                  final detailData = await _apiService.getOrderDetailFull(
+                    orderId,
+                  );
+                  final orderDetail = OrderDetail.fromJson(detailData);
+
+                  if (mounted) {
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            OrderFeedbackScreen(orderDetail: orderDetail),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  LoggerService().error('Error loading order for feedback: $e');
+                }
+              },
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      LoggerService().error('Error checking unreviewed order: $e', e);
+    }
   }
 }

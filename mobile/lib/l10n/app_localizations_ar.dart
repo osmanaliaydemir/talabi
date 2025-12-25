@@ -2726,17 +2726,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String get statusDelivered => 'تم التوصيل';
 
   @override
-  String get rateOrder => 'Rate Order';
+  String get notificationOrders => 'الطلبات';
 
   @override
-  String get rateCourier => 'Courier Rating';
+  String get rateOrder => 'تقييم الطلب';
 
   @override
-  String get feedbackSubmittedSuccessfully => 'Feedback submitted successfully';
+  String get rateCourier => 'تقييم السائق';
 
   @override
-  String get orderNotDelivered => 'Order not delivered';
+  String get feedbackSubmittedSuccessfully => 'تم إرسال التقييم بنجاح';
 
   @override
-  String get orderAlreadyReviewed => 'Order already reviewed';
+  String get orderNotDelivered => 'الطلب لم يتم تسليمه';
+
+  @override
+  String get orderAlreadyReviewed => 'تم تقييم هذا الطلب بالفعل';
+
+  @override
+  String get popupTitle => 'تقييم الطلب';
+
+  @override
+  String get popupMessage => 'كيف كان طلبك الأخير؟ هل ترغب في مشاركة تجربتك؟';
+
+  @override
+  String get notNow => 'ليس الآن';
+
+  @override
+  String get viewReviews => 'عرض تقييماتي';
 }

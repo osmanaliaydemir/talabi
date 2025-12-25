@@ -161,7 +161,11 @@
   },
   "notificationAll": "All",
   "@notificationAll": {
-    "description": "All"
+    "description": "All tab in notifications"
+  },
+  "notificationOrders": "Orders",
+  "@notificationOrders": {
+    "description": "Orders tab in notifications"
   },
   "notificationReviews": "Reviews",
   "@notificationReviews": {
@@ -778,7 +782,7 @@
   },
   "writeReview": "Write a Review",
   "@writeReview": {
-    "description": "Write a Review"
+    "description": "Button to open the review writing form"
   },
   "courierLogin": "Courier Login",
   "@courierLogin": {
@@ -2626,7 +2630,7 @@
   },
   "submit": "Submit",
   "@submit": {
-    "description": "Submit"
+    "description": "Generic submit button for forms"
   },
   "vendorReviewSubmitted": "Vendor review submitted!",
   "@vendorReviewSubmitted": {
@@ -3482,16 +3486,63 @@
     "description": "Please enter a reason"
   },
   "statusAssigned": "Assigned",
+  "@statusAssigned": {
+    "description": "Order status: Assigned"
+  },
   "statusAccepted": "Accepted",
+  "@statusAccepted": {
+    "description": "Order status: Accepted"
+  },
   "statusRejected": "Rejected",
+  "@statusRejected": {
+    "description": "Order status: Rejected"
+  },
   "statusPickedUp": "Picked Up",
+  "@statusPickedUp": {
+    "description": "Order status: Picked Up"
+  },
   "statusOutForDelivery": "Out for Delivery",
+  "@statusOutForDelivery": {
+    "description": "Order status: Out for Delivery"
+  },
   "statusDelivered": "Delivered",
+  "@statusDelivered": {
+    "description": "Order status: Delivered"
+  },
   "rateOrder": "Rate Order",
+  "@rateOrder": {
+    "description": "Button to rate the order"
+  },
   "rateCourier": "Courier Rating",
-  "writeReview": "Write Review",
-  "submit": "Submit",
+  "@rateCourier": {
+    "description": "Title for courier rating section"
+  },
   "feedbackSubmittedSuccessfully": "Feedback submitted successfully",
+  "@feedbackSubmittedSuccessfully": {
+    "description": "Success message after submitting feedback"
+  },
   "orderNotDelivered": "Order not delivered",
-  "orderAlreadyReviewed": "Order already reviewed"
+  "@orderNotDelivered": {
+    "description": "Error message when trying to rate an undelivered order"
+  },
+  "orderAlreadyReviewed": "Order already reviewed",
+  "@orderAlreadyReviewed": {
+    "description": "Error message when order is already reviewed"
+  },
+  "popupTitle": "Rate Order",
+  "@popupTitle": {
+    "description": "Popup title for unreviewed order reminder"
+  },
+  "popupMessage": "How was your last order? Would you like to share your experience?",
+  "@popupMessage": {
+    "description": "Popup message for unreviewed order reminder"
+  },
+  "notNow": "Not Now",
+  "@notNow": {
+    "description": "Button to dismiss the unreviewed order popup"
+  },
+  "viewReviews": "View My Reviews",
+  "@viewReviews": {
+    "description": "Button to view existing reviews"
+  }
 }

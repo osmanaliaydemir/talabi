@@ -10,9 +10,14 @@ import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class OrderFeedbackScreen extends StatefulWidget {
-  const OrderFeedbackScreen({super.key, required this.orderDetail});
+  const OrderFeedbackScreen({
+    super.key,
+    required this.orderDetail,
+    this.reviewStatus,
+  });
 
   final OrderDetail orderDetail;
+  final Map<String, dynamic>? reviewStatus;
 
   @override
   State<OrderFeedbackScreen> createState() => _OrderFeedbackScreenState();
@@ -35,16 +40,61 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
   final Map<String, double> _productRatings = {};
   final Map<String, TextEditingController> _productComments = {};
 
+  // Maps to track what is already reviewed
+  bool _isCourierAlreadyRated = false;
+  bool _isVendorAlreadyReviewed = false;
+  final Set<String> _alreadyReviewedProductIds = {};
+
   @override
   void initState() {
     super.initState();
     _apiService = GetIt.instance<ApiService>();
 
-    // Initial values
+    // Initial values from OrderDetail
     for (final item in widget.orderDetail.items) {
       if (!item.isCancelled) {
         _productRatings[item.productId] = 5;
         _productComments[item.productId] = TextEditingController();
+      }
+    }
+
+    // Parse existing reviews if available
+    if (widget.reviewStatus != null) {
+      // Status flags
+      _isCourierAlreadyRated =
+          widget.reviewStatus!['isCourierRated'] as bool? ?? false;
+      _isVendorAlreadyReviewed =
+          widget.reviewStatus!['isVendorReviewed'] as bool? ?? false;
+      final reviewedIds = (widget.reviewStatus!['reviewedProductIds'] as List?)
+          ?.map((e) => e.toString())
+          .toSet();
+      if (reviewedIds != null) {
+        _alreadyReviewedProductIds.addAll(reviewedIds);
+      }
+
+      // Review Details
+      final reviews = widget.reviewStatus!['reviews'] as List?;
+      if (reviews != null) {
+        for (final r in reviews) {
+          final review = r as Map<String, dynamic>;
+          final courierId = review['courierId'];
+          final vendorId = review['vendorId'];
+          final productId = review['productId'];
+          final rating = (review['rating'] as num?)?.toDouble() ?? 5.0;
+          final comment = review['comment'] as String? ?? '';
+
+          if (courierId != null) {
+            _courierRating = rating;
+          } else if (vendorId != null) {
+            _vendorRating = rating;
+            _vendorCommentController.text = comment;
+          } else if (productId != null) {
+            _productRatings[productId.toString()] = rating;
+            if (_productComments.containsKey(productId.toString())) {
+              _productComments[productId.toString()]!.text = comment;
+            }
+          }
+        }
       }
     }
   }
@@ -117,70 +167,85 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
     String? hintText,
     String? imageUrl,
     bool isCircleImage = true,
+    bool isReadOnly = false,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
-      padding: const EdgeInsets.all(AppTheme.spacingMedium),
-      decoration: AppTheme.cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              if (imageUrl != null) ...[
-                ClipRRect(
-                  borderRadius: isCircleImage
-                      ? BorderRadius.circular(20)
-                      : BorderRadius.circular(8),
-                  child: OptimizedCachedImage.productThumbnail(
-                    imageUrl: imageUrl,
-                    width: 40,
-                    height: 40,
+    return Opacity(
+      opacity: isReadOnly ? 0.7 : 1.0,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
+        padding: const EdgeInsets.all(AppTheme.spacingMedium),
+        decoration: AppTheme.cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (imageUrl != null) ...[
+                  ClipRRect(
+                    borderRadius: isCircleImage
+                        ? BorderRadius.circular(20)
+                        : BorderRadius.circular(8),
+                    child: OptimizedCachedImage.productThumbnail(
+                      imageUrl: imageUrl,
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacingMedium),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTheme.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.spacingMedium),
+                if (isReadOnly)
+                  const Icon(Icons.check_circle, color: Colors.green, size: 20),
               ],
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppTheme.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: AppTheme.spacingSmall),
+            IgnorePointer(
+              ignoring: isReadOnly,
+              child: Center(
+                child: RatingBar.builder(
+                  initialRating: rating,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: false,
+                  itemCount: 5,
+                  itemSize: 32,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) =>
+                      const Icon(Icons.star, color: Colors.amber),
+                  onRatingUpdate: onRatingUpdate,
+                ),
+              ),
+            ),
+            if (commentController != null) ...[
+              const SizedBox(height: AppTheme.spacingMedium),
+              IgnorePointer(
+                ignoring: isReadOnly,
+                child: TextField(
+                  controller: commentController,
+                  readOnly: isReadOnly,
+                  decoration: InputDecoration(
+                    hintText: hintText,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    ),
+                    contentPadding: const EdgeInsets.all(12),
+                    filled: isReadOnly,
+                    fillColor: isReadOnly ? Colors.grey[100] : null,
                   ),
+                  maxLines: 2,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: AppTheme.spacingSmall),
-          Center(
-            child: RatingBar.builder(
-              initialRating: rating,
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: false,
-              itemCount: 5,
-              itemSize: 32,
-              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) =>
-                  const Icon(Icons.star, color: Colors.amber),
-              onRatingUpdate: onRatingUpdate,
-            ),
-          ),
-          if (commentController != null) ...[
-            const SizedBox(height: AppTheme.spacingMedium),
-            TextField(
-              controller: commentController,
-              decoration: InputDecoration(
-                hintText: hintText,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-              maxLines: 2,
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -200,13 +265,15 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
               child: Column(
                 children: [
                   // Courier Rating
-                  _buildRatingSection(
-                    title: localizations.rateCourier,
-                    rating: _courierRating,
-                    onRatingUpdate: (val) =>
-                        setState(() => _courierRating = val),
-                    imageUrl: null,
-                  ),
+                  if (widget.orderDetail.activeOrderCourier != null)
+                    _buildRatingSection(
+                      title: localizations.rateCourier,
+                      rating: _courierRating,
+                      onRatingUpdate: (val) =>
+                          setState(() => _courierRating = val),
+                      imageUrl: null,
+                      isReadOnly: _isCourierAlreadyRated,
+                    ),
 
                   // Vendor Rating
                   _buildRatingSection(
@@ -218,12 +285,15 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                     hintText: localizations.writeReview,
                     imageUrl: widget.orderDetail.vendorImageUrl,
                     isCircleImage: true,
+                    isReadOnly: _isVendorAlreadyReviewed,
                   ),
 
                   // Products Rating
                   ...widget.orderDetail.items
                       .where((item) => !item.isCancelled)
                       .map((item) {
+                        final isProductReviewed = _alreadyReviewedProductIds
+                            .contains(item.productId);
                         return _buildRatingSection(
                           title: item.productName,
                           rating: _productRatings[item.productId] ?? 5,
@@ -234,59 +304,63 @@ class _OrderFeedbackScreenState extends State<OrderFeedbackScreen> {
                           hintText: localizations.writeReview,
                           imageUrl: item.productImageUrl,
                           isCircleImage: false,
+                          isReadOnly: isProductReviewed,
                         );
                       }),
                 ],
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(AppTheme.spacingMedium),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submitFeedback,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryOrange,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
+          if (!_isVendorAlreadyReviewed ||
+              (_isCourierAlreadyRated == false &&
+                  widget.orderDetail.activeOrderCourier != null))
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacingMedium),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submitFeedback,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryOrange,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
                       ),
                     ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            localizations.submit,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          localizations.submit,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

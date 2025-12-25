@@ -608,7 +608,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have already reviewed this product.';
 
   @override
-  String get writeReview => 'Write Review';
+  String get writeReview => 'Write a Review';
 
   @override
   String get courierLogin => 'Courier Login';
@@ -2757,6 +2757,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusDelivered => 'Delivered';
 
   @override
+  String get notificationOrders => 'Orders';
+
+  @override
   String get rateOrder => 'Rate Order';
 
   @override
@@ -2770,4 +2773,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderAlreadyReviewed => 'Order already reviewed';
+
+  @override
+  String get popupTitle => 'Rate Order';
+
+  @override
+  String get popupMessage =>
+      'How was your last order? Would you like to share your experience?';
+
+  @override
+  String get notNow => 'Not Now';
+
+  @override
+  String get viewReviews => 'View My Reviews';
 }

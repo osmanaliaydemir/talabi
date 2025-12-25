@@ -33,6 +33,7 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   late final ApiService _apiService;
   OrderDetail? _orderDetail;
+  Map<String, dynamic>? _reviewStatus;
   bool _isLoading = true;
 
   @override
@@ -45,8 +46,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Future<void> _loadOrderDetail() async {
     try {
       final data = await _apiService.getOrderDetailFull(widget.orderId);
+      final order = OrderDetail.fromJson(data);
+
+      Map<String, dynamic>? status;
+      if (order.status == 'Delivered') {
+        try {
+          status = await _apiService.getOrderReviewStatus(widget.orderId);
+        } catch (_) {}
+      }
+
       setState(() {
-        _orderDetail = OrderDetail.fromJson(data);
+        _orderDetail = order;
+        _reviewStatus = status;
         _isLoading = false;
       });
     } catch (e) {
@@ -930,49 +941,78 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       _orderDetail!.status == 'Delivered')
                     Column(
                       children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => OrderFeedbackScreen(
-                                    orderDetail: _orderDetail!,
+                        Builder(
+                          builder: (context) {
+                            bool isFullyReviewed = false;
+                            if (_reviewStatus != null) {
+                              final isVR =
+                                  _reviewStatus?['isVendorReviewed'] as bool? ??
+                                  false;
+                              final hasC =
+                                  _reviewStatus?['hasCourier'] as bool? ??
+                                  false;
+                              final isCR =
+                                  _reviewStatus?['isCourierRated'] as bool? ??
+                                  false;
+                              isFullyReviewed = isVR && (!hasC || isCR);
+                            }
+
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => OrderFeedbackScreen(
+                                        orderDetail: _orderDetail!,
+                                        reviewStatus: _reviewStatus,
+                                      ),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    // Refresh order detail
+                                    _loadOrderDetail();
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isFullyReviewed
+                                      ? Colors.grey
+                                      : Colors.amber,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
+                                    ),
                                   ),
                                 ),
-                              );
-                              if (result == true) {
-                                // Refresh order detail if needed or show success
-                                _loadOrderDetail();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber, // Gold for rating
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusMedium,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      isFullyReviewed
+                                          ? Icons.rate_review
+                                          : Icons.star,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isFullyReviewed
+                                          ? 'Değerlendirmemi Gör'
+                                          : 'Siparişi Değerlendir',
+                                      style: AppTheme.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.star, color: Colors.white),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)!.rateOrder ??
-                                      'Siparişi Değerlendir', // Fallback
-                                  style: AppTheme.poppins(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 8), // Gap between buttons
                         SizedBox(

@@ -14,6 +14,7 @@ class OrderDetail {
     this.cancelReason,
     required this.items,
     required this.statusHistory,
+    this.activeOrderCourier,
   });
 
   factory OrderDetail.fromJson(Map<String, dynamic> json) {
@@ -68,9 +69,34 @@ class OrderDetail {
   final String? cancelReason;
   final List<OrderItemDetail> items;
   final List<OrderStatusHistory> statusHistory;
+  final OrderCourierDetail? activeOrderCourier;
+}
+
+class OrderCourierDetail {
+  OrderCourierDetail({
+    required this.courierId,
+    required this.courierName,
+    this.courierImageUrl,
+    this.courierPhone,
+  });
+
+  factory OrderCourierDetail.fromJson(Map<String, dynamic> json) {
+    return OrderCourierDetail(
+      courierId: json['courierId']?.toString() ?? '',
+      courierName: json['courierName']?.toString() ?? '',
+      courierImageUrl: json['courierImageUrl']?.toString(),
+      courierPhone: json['courierPhone']?.toString(),
+    );
+  }
+
+  final String courierId;
+  final String courierName;
+  final String? courierImageUrl;
+  final String? courierPhone;
 }
 
 class OrderItemDetail {
+  // ... existing OrderItemDetail ...
   OrderItemDetail({
     required this.productId,
     required this.customerOrderItemId,

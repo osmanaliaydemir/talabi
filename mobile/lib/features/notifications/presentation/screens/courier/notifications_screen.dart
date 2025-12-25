@@ -146,7 +146,7 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
 
     // Fallback strings if localization is missing some keys
     final tabAll = localizations?.notificationAll ?? 'Tümü';
-    final tabOrders = 'Siparişler'; // TODO: Add to Arb if needed
+    final tabOrders = localizations?.notificationOrders ?? 'Siparişler';
     final tabSystem = localizations?.notificationSystem ?? 'Sistem';
 
     return Scaffold(

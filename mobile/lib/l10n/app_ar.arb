@@ -162,7 +162,11 @@
   },
   "notificationAll": "الكل",
   "@notificationAll": {
-    "description": "الكل"
+    "description": "تبويب الكل في الإشعارات"
+  },
+  "notificationOrders": "الطلبات",
+  "@notificationOrders": {
+    "description": "تبويب الطلبات في الإشعارات"
   },
   "notificationReviews": "التقييمات",
   "@notificationReviews": {
@@ -755,7 +759,7 @@
   },
   "writeReview": "اكتب مراجعة",
   "@writeReview": {
-    "description": "اكتب مراجعة"
+    "description": "زر لفتح نموذج كتابة التقييم"
   },
   "courierLogin": "تسجيل دخول السائق",
   "@courierLogin": {
@@ -2576,7 +2580,7 @@
   },
   "submit": "إرسال",
   "@submit": {
-    "description": "إرسال"
+    "description": "زر الإرسال العام للنماذج"
   },
   "vendorReviewSubmitted": "تم إرسال تقييم المتجر!",
   "@vendorReviewSubmitted": {
@@ -3484,9 +3488,63 @@
     "description": "يرجى إدخال سبب"
   },
   "statusAssigned": "تم التعيين",
+  "@statusAssigned": {
+    "description": "حالة الطلب: تم التعيين"
+  },
   "statusAccepted": "تم القبول",
+  "@statusAccepted": {
+    "description": "حالة الطلب: تم القبول"
+  },
   "statusRejected": "مرفوض",
+  "@statusRejected": {
+    "description": "حالة الطلب: مرفوض"
+  },
   "statusPickedUp": "تم الاستلام",
+  "@statusPickedUp": {
+    "description": "حالة الطلب: تم الاستلام"
+  },
   "statusOutForDelivery": "جاري التوصيل",
-  "statusDelivered": "تم التوصيل"
+  "@statusOutForDelivery": {
+    "description": "حالة الطلب: جاري التوصيل"
+  },
+  "statusDelivered": "تم التوصيل",
+  "@statusDelivered": {
+    "description": "حالة الطلب: تم التوصيل"
+  },
+  "rateOrder": "تقييم الطلب",
+  "@rateOrder": {
+    "description": "زر تقييم الطلب"
+  },
+  "rateCourier": "تقييم السائق",
+  "@rateCourier": {
+    "description": "عنوان قسم تقييم السائق"
+  },
+  "feedbackSubmittedSuccessfully": "تم إرسال التقييم بنجاح",
+  "@feedbackSubmittedSuccessfully": {
+    "description": "رسالة النجاح بعد إرسال التقييم"
+  },
+  "orderNotDelivered": "الطلب لم يتم تسليمه",
+  "@orderNotDelivered": {
+    "description": "رسالة خطأ عند محاولة تقييم طلب غير مستلم"
+  },
+  "orderAlreadyReviewed": "تم تقييم هذا الطلب بالفعل",
+  "@orderAlreadyReviewed": {
+    "description": "رسالة خطأ عندما يكون الطلب مقيّمًا بالفعل"
+  },
+  "popupTitle": "تقييم الطلب",
+  "@popupTitle": {
+    "description": "عنوان النافذة المنبثقة لتذكير التقييم"
+  },
+  "popupMessage": "كيف كان طلبك الأخير؟ هل ترغب في مشاركة تجربتك؟",
+  "@popupMessage": {
+    "description": "رسالة النافذة المنبثقة لتذكير التقييم"
+  },
+  "notNow": "ليس الآن",
+  "@notNow": {
+    "description": "زر تخطي تقييم الطلب"
+  },
+  "viewReviews": "عرض تقييماتي",
+  "@viewReviews": {
+    "description": "زر لعرض التقييمات الحالية"
+  }
 }

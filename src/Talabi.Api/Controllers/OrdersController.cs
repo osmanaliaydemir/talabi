@@ -127,7 +127,10 @@ public class OrdersController : BaseController
         IQueryable<Order> query = UnitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Product);
+            .ThenInclude(oi => oi.Product)
+            .Include(o => o.OrderCouriers)
+            .ThenInclude(oc => oc.Courier)
+            .ThenInclude(c => c.User);
 
         // Only allow access to orders that belong to the authenticated user
         var order = await query.FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == userId);
@@ -140,6 +143,18 @@ public class OrdersController : BaseController
         }
 
         var orderDto = _mapper.Map<OrderDto>(order);
+
+        if (order.ActiveOrderCourier != null && order.ActiveOrderCourier.Courier != null)
+        {
+            var courier = order.ActiveOrderCourier.Courier;
+            orderDto.ActiveOrderCourier = new OrderCourierDto
+            {
+                CourierId = courier!.Id,
+                CourierName = !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
+                CourierPhone = courier.PhoneNumber,
+                CourierImageUrl = courier.User?.ProfileImageUrl
+            };
+        }
 
         return Ok(new ApiResponse<OrderDto>(
             orderDto,

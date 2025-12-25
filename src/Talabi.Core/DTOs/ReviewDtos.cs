@@ -20,6 +20,8 @@ public class ReviewDto
     public DateTime CreatedAt { get; set; }
     public bool IsApproved { get; set; }
     public Guid? ProductId { get; set; }
+    public Guid? VendorId { get; set; }
+    public Guid? CourierId { get; set; }
     public string? VendorName { get; set; }
 }
 
@@ -50,4 +52,13 @@ public class ProductFeedbackDto
     public Guid ProductId { get; set; }
     public int Rating { get; set; }
     public string? Comment { get; set; }
+}
+
+public class OrderReviewStatusDto
+{
+    public bool IsCourierRated { get; set; }
+    public bool HasCourier { get; set; }
+    public bool IsVendorReviewed { get; set; }
+    public List<Guid> ReviewedProductIds { get; set; } = new();
+    public List<ReviewDto> Reviews { get; set; } = new();
 }

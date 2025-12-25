@@ -162,7 +162,11 @@
   },
   "notificationAll": "Tümü",
   "@notificationAll": {
-    "description": "Tümü"
+    "description": "Bildirimlerdeki Tümü sekmesi"
+  },
+  "notificationOrders": "Siparişler",
+  "@notificationOrders": {
+    "description": "Bildirimlerdeki Siparişler sekmesi"
   },
   "notificationReviews": "Yorumlar",
   "@notificationReviews": {
@@ -775,7 +779,11 @@
   },
   "alreadyReviewedMessage": "Bu ürüne daha önce puan verdiniz.",
   "@alreadyReviewedMessage": {
-    "description": "Bu ürüne daha önce puan verdiniz."
+    "description": "Zaten puan verdiniz mesajı"
+  },
+  "writeReview": "Yorum Yaz",
+  "@writeReview": {
+    "description": "Yorum yazma butonu"
   },
   "courierLogin": "Kurye Girişi",
   "@courierLogin": {
@@ -2616,7 +2624,11 @@
   },
   "shareYourThoughts": "Düşüncelerinizi paylaşın...",
   "@shareYourThoughts": {
-    "description": "Düşüncelerinizi paylaşın..."
+    "description": "Düşünce paylaşma alanı"
+  },
+  "submit": "Gönder",
+  "@submit": {
+    "description": "Genel gönder butonu"
   },
   "vendorReviewSubmitted": "Vendor değerlendirmesi gönderildi!",
   "@vendorReviewSubmitted": {
@@ -3476,16 +3488,63 @@
     "description": "Lütfen bir sebep girin"
   },
   "statusAssigned": "Atandı",
+  "@statusAssigned": {
+    "description": "Sipariş durumu: Atandı"
+  },
   "statusAccepted": "Kabul Edildi",
+  "@statusAccepted": {
+    "description": "Sipariş durumu: Kabul Edildi"
+  },
   "statusRejected": "Reddedildi",
+  "@statusRejected": {
+    "description": "Sipariş durumu: Reddedildi"
+  },
   "statusPickedUp": "Teslim Alındı",
+  "@statusPickedUp": {
+    "description": "Sipariş durumu: Teslim Alındı"
+  },
   "statusOutForDelivery": "Yolda",
+  "@statusOutForDelivery": {
+    "description": "Sipariş durumu: Yolda"
+  },
   "statusDelivered": "Teslim Edildi",
+  "@statusDelivered": {
+    "description": "Sipariş durumu: Teslim Edildi"
+  },
   "rateOrder": "Siparişi Değerlendir",
+  "@rateOrder": {
+    "description": "Siparişi değerlendirme butonu"
+  },
   "rateCourier": "Kurye Puanı",
-  "writeReview": "Yorum Yaz",
-  "submit": "Gönder",
+  "@rateCourier": {
+    "description": "Kurye değerlendirme bölümü başlığı"
+  },
   "feedbackSubmittedSuccessfully": "Değerlendirme başarıyla gönderildi",
+  "@feedbackSubmittedSuccessfully": {
+    "description": "Değerlendirme gönderildikten sonraki başarı mesajı"
+  },
   "orderNotDelivered": "Sipariş teslim edilmedi",
-  "orderAlreadyReviewed": "Bu sipariş için zaten değerlendirme yapıldı"
+  "@orderNotDelivered": {
+    "description": "Teslim edilmemiş siparişi değerlendirme hatası"
+  },
+  "orderAlreadyReviewed": "Bu sipariş için zaten değerlendirme yapıldı",
+  "@orderAlreadyReviewed": {
+    "description": "Sipariş zaten değerlendirildiğinde gösterilen hata"
+  },
+  "popupTitle": "Siparişi Değerlendir",
+  "@popupTitle": {
+    "description": "Değerlendirilmemiş sipariş hatırlatma popup başlığı"
+  },
+  "popupMessage": "Son siparişin nasıldı? Deneyimini paylaşmak ister misin?",
+  "@popupMessage": {
+    "description": "Değerlendirilmemiş sipariş hatırlatma popup mesajı"
+  },
+  "notNow": "Şimdi Değil",
+  "@notNow": {
+    "description": "Popuup'ı kapatma butonu"
+  },
+  "viewReviews": "Değerlendirmemi Gör",
+  "@viewReviews": {
+    "description": "Mevcut değerlendirmeleri görme butonu"
+  }
 }

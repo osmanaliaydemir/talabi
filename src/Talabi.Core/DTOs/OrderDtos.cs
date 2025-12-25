@@ -26,4 +26,13 @@ public class OrderDto
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public OrderCourierDto? ActiveOrderCourier { get; set; }
+}
+
+public class OrderCourierDto
+{
+    public Guid CourierId { get; set; }
+    public string CourierName { get; set; } = string.Empty;
+    public string? CourierImageUrl { get; set; }
+    public string? CourierPhone { get; set; }
 }

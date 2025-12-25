@@ -2199,6 +2199,38 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getOrderReviewStatus(String orderId) async {
+    try {
+      final response = await dio.get('/reviews/order-status/$orderId');
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+      return apiResponse.data as Map<String, dynamic>;
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching order review status',
+        e,
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getUnreviewedOrder() async {
+    try {
+      final response = await dio.get('/reviews/unreviewed');
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as Map<String, dynamic>,
+      );
+      return apiResponse.data;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching unreviewed order', e, stackTrace);
+      return null;
+    }
+  }
+
   // System Settings
   Future<String?> getSystemSetting(String key) async {
     try {

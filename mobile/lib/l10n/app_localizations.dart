@@ -1228,10 +1228,10 @@ abstract class AppLocalizations {
   /// **'You have already reviewed this product.'**
   String get alreadyReviewedMessage;
 
-  /// Write a Review
+  /// Button to open the review writing form
   ///
   /// In en, this message translates to:
-  /// **'Write Review'**
+  /// **'Write a Review'**
   String get writeReview;
 
   /// Courier Login
@@ -3880,7 +3880,7 @@ abstract class AppLocalizations {
   /// **'Share your thoughts...'**
   String get shareYourThoughts;
 
-  /// Submit
+  /// Generic submit button for forms
   ///
   /// In en, this message translates to:
   /// **'Submit'**
@@ -5110,71 +5110,101 @@ abstract class AppLocalizations {
   /// **'Please enter a reason'**
   String get pleaseEnterReason;
 
-  /// No description provided for @statusAssigned.
+  /// Order status: Assigned
   ///
   /// In en, this message translates to:
   /// **'Assigned'**
   String get statusAssigned;
 
-  /// No description provided for @statusAccepted.
+  /// Order status: Accepted
   ///
   /// In en, this message translates to:
   /// **'Accepted'**
   String get statusAccepted;
 
-  /// No description provided for @statusRejected.
+  /// Order status: Rejected
   ///
   /// In en, this message translates to:
   /// **'Rejected'**
   String get statusRejected;
 
-  /// No description provided for @statusPickedUp.
+  /// Order status: Picked Up
   ///
   /// In en, this message translates to:
   /// **'Picked Up'**
   String get statusPickedUp;
 
-  /// No description provided for @statusOutForDelivery.
+  /// Order status: Out for Delivery
   ///
   /// In en, this message translates to:
   /// **'Out for Delivery'**
   String get statusOutForDelivery;
 
-  /// No description provided for @statusDelivered.
+  /// Order status: Delivered
   ///
   /// In en, this message translates to:
   /// **'Delivered'**
   String get statusDelivered;
 
-  /// No description provided for @rateOrder.
+  /// Orders tab in notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get notificationOrders;
+
+  /// Button to rate the order
   ///
   /// In en, this message translates to:
   /// **'Rate Order'**
   String get rateOrder;
 
-  /// No description provided for @rateCourier.
+  /// Title for courier rating section
   ///
   /// In en, this message translates to:
   /// **'Courier Rating'**
   String get rateCourier;
 
-  /// No description provided for @feedbackSubmittedSuccessfully.
+  /// Success message after submitting feedback
   ///
   /// In en, this message translates to:
   /// **'Feedback submitted successfully'**
   String get feedbackSubmittedSuccessfully;
 
-  /// No description provided for @orderNotDelivered.
+  /// Error message when trying to rate an undelivered order
   ///
   /// In en, this message translates to:
   /// **'Order not delivered'**
   String get orderNotDelivered;
 
-  /// No description provided for @orderAlreadyReviewed.
+  /// Error message when order is already reviewed
   ///
   /// In en, this message translates to:
   /// **'Order already reviewed'**
   String get orderAlreadyReviewed;
+
+  /// Popup title for unreviewed order reminder
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Order'**
+  String get popupTitle;
+
+  /// Popup message for unreviewed order reminder
+  ///
+  /// In en, this message translates to:
+  /// **'How was your last order? Would you like to share your experience?'**
+  String get popupMessage;
+
+  /// Button to dismiss the unreviewed order popup
+  ///
+  /// In en, this message translates to:
+  /// **'Not Now'**
+  String get notNow;
+
+  /// Button to view existing reviews
+  ///
+  /// In en, this message translates to:
+  /// **'View My Reviews'**
+  String get viewReviews;
 }
 
 class _AppLocalizationsDelegate

@@ -20,6 +20,7 @@ public class ReviewsController : BaseController
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly IMapper _mapper;
+    private readonly INotificationService _notificationService;
     private const string ResourceName = "ReviewResources";
 
     /// <summary>
@@ -31,11 +32,13 @@ public class ReviewsController : BaseController
         ILocalizationService localizationService,
         IUserContextService userContext,
         UserManager<AppUser> userManager,
-        IMapper mapper)
+        IMapper mapper,
+        INotificationService notificationService)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _userManager = userManager;
         _mapper = mapper;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -196,9 +199,12 @@ public class ReviewsController : BaseController
         }
 
         // 1. Validate Order
+        // 1. Validate Order
         var order = await UnitOfWork.Orders.Query()
             .Include(o => o.OrderItems)
+            .Include(o => o.Vendor)
             .Include(o => o.OrderCouriers)
+                .ThenInclude(oc => oc.Courier)
             .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
 
         // Manually populate active courier if not mapped
@@ -228,24 +234,26 @@ public class ReviewsController : BaseController
                 "ORDER_NOT_DELIVERED"));
         }
 
-        // 2. Check for duplicate feedback for this order
-        var existingReview = await UnitOfWork.Reviews.Query()
-            .AnyAsync(r => r.OrderId == dto.OrderId);
+        // 2. Check for existing reviews for this order
+        var existingReviews = await UnitOfWork.Reviews.Query()
+            .Where(r => r.OrderId == dto.OrderId)
+            .ToListAsync();
 
-        if (existingReview)
-        {
-            return BadRequest(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "OrderAlreadyReviewed", CurrentCulture),
-                "ORDER_ALREADY_REVIEWED"));
-        }
+        var isCourierReviewed = existingReviews.Any(r => r.CourierId.HasValue);
+        var isVendorReviewed = existingReviews.Any(r => r.VendorId.HasValue);
+        var reviewedProductIds = existingReviews
+            .Where(r => r.ProductId.HasValue)
+            .Select(r => r.ProductId!.Value) // Use ! and .Value as we filtered HasValue
+            .ToHashSet();
 
         var now = DateTime.UtcNow;
 
         // 3. Create Reviews
         var reviewsToAdd = new List<Review>();
+        bool reviewAdded = false;
 
         // 3.1 Courier Review
-        if (order.ActiveOrderCourier != null)
+        if (order.ActiveOrderCourier != null && !isCourierReviewed && dto.CourierRating > 0)
         {
             reviewsToAdd.Add(new Review
             {
@@ -257,36 +265,46 @@ public class ReviewsController : BaseController
                 CreatedAt = now,
                 IsApproved = true // Kurye puanı otomatik onaylı
             });
+            reviewAdded = true;
         }
 
         // 3.2 Vendor Review
-        reviewsToAdd.Add(new Review
+        if (!isVendorReviewed && dto.VendorFeedback != null && dto.VendorFeedback.Rating > 0)
         {
-            UserId = userId,
-            VendorId = order.VendorId,
-            OrderId = order.Id,
-            Rating = dto.VendorFeedback.Rating,
-            Comment = dto.VendorFeedback.Comment ?? "",
-            CreatedAt = now,
-            IsApproved = false // Vendor yorumları onay bekler
-        });
+            reviewsToAdd.Add(new Review
+            {
+                UserId = userId,
+                VendorId = order.VendorId,
+                OrderId = order.Id,
+                Rating = dto.VendorFeedback.Rating,
+                Comment = dto.VendorFeedback.Comment ?? "",
+                CreatedAt = now,
+                IsApproved = false // Vendor yorumları onay bekler
+            });
+            reviewAdded = true;
+        }
 
         // 3.3 Product Reviews
-        foreach (var itemFeedback in dto.ProductFeedbacks)
+        if (dto.ProductFeedbacks != null)
         {
-            // Verify product belongs to order
-            if (order.OrderItems.Any(oi => oi.ProductId == itemFeedback.ProductId))
+            foreach (var itemFeedback in dto.ProductFeedbacks)
             {
-                reviewsToAdd.Add(new Review
+                // Verify product belongs to order AND not already reviewed
+                if (order.OrderItems.Any(oi => oi.ProductId == itemFeedback.ProductId) &&
+                    !reviewedProductIds.Contains(itemFeedback.ProductId))
                 {
-                    UserId = userId,
-                    ProductId = itemFeedback.ProductId,
-                    OrderId = order.Id,
-                    Rating = itemFeedback.Rating,
-                    Comment = itemFeedback.Comment ?? "",
-                    CreatedAt = now,
-                    IsApproved = false // Ürün yorumları onay bekler
-                });
+                    reviewsToAdd.Add(new Review
+                    {
+                        UserId = userId,
+                        ProductId = itemFeedback.ProductId,
+                        OrderId = order.Id,
+                        Rating = itemFeedback.Rating,
+                        Comment = itemFeedback.Comment ?? "",
+                        CreatedAt = now,
+                        IsApproved = false // Ürün yorumları onay bekler
+                    });
+                    reviewAdded = true;
+                }
             }
         }
 
@@ -294,10 +312,135 @@ public class ReviewsController : BaseController
         {
             await UnitOfWork.Reviews.AddRangeAsync(reviewsToAdd);
             await UnitOfWork.SaveChangesAsync();
+
+            // 4. Send Notifications
+            try
+            {
+                // 4.1 Courier Notification
+                if (order.ActiveOrderCourier?.Courier?.UserId != null && reviewsToAdd.Any(r => r.CourierId.HasValue))
+                {
+                    var courierReview = reviewsToAdd.First(r => r.CourierId.HasValue);
+                    await _notificationService.SendNotificationAsync(
+                        order.ActiveOrderCourier.Courier.UserId, // Assuming token logic handles UserId mapping
+                        LocalizationService.GetLocalizedString(ResourceName, "NewCourierReviewTitle", CurrentCulture),
+                        string.Format(LocalizationService.GetLocalizedString(ResourceName, "NewCourierReviewBody", CurrentCulture), courierReview.Rating),
+                        new { OrderId = order.Id, Type = "CourierReview" }
+                    );
+                }
+
+                // 4.2 Vendor Notification
+                if (order.Vendor?.OwnerId != null && (reviewsToAdd.Any(r => r.VendorId.HasValue) || reviewsToAdd.Any(r => r.ProductId.HasValue)))
+                {
+                    await _notificationService.SendNotificationAsync(
+                        order.Vendor.OwnerId,
+                        LocalizationService.GetLocalizedString(ResourceName, "NewVendorReviewTitle", CurrentCulture),
+                        LocalizationService.GetLocalizedString(ResourceName, "NewVendorReviewBody", CurrentCulture),
+                        new { OrderId = order.Id, Type = "VendorReview" }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error sending review notifications for Order {OrderId}", order.Id);
+                // Don't fail the request if notification fails
+            }
+        }
+        else if (!reviewAdded)
+        {
+            // If nothing was added (either everything was already reviewed or input was empty)
+            // We return OK but maybe specific message or just success.
+            // User plan implies we should just handle it gracefully.
         }
 
         return Ok(new ApiResponse<object>(new { },
             LocalizationService.GetLocalizedString(ResourceName, "FeedbackSubmittedSuccessfully", CurrentCulture)));
+    }
+
+    /// <summary>
+    /// Siparişin değerlendirme durumunu getirir
+    /// </summary>
+    [HttpGet("order-status/{orderId}")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<OrderReviewStatusDto>>> GetOrderReviewStatus(Guid orderId)
+    {
+        var userId = UserContext.GetUserId();
+
+        // Fetch order to check for courier
+        var order = await UnitOfWork.Orders.Query()
+            .Include(o => o.OrderCouriers)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        bool hasCourier = order?.ActiveOrderCourier != null || order?.OrderCouriers.Any(oc => oc.IsActive) == true;
+
+        var reviews = await UnitOfWork.Reviews.Query()
+            .Include(r => r.User)
+            .Include(r => r.Product)
+            .Include(r => r.Vendor)
+            .Where(r => r.OrderId == orderId)
+            .ToListAsync();
+
+        var status = new OrderReviewStatusDto
+        {
+            HasCourier = hasCourier,
+            IsCourierRated = reviews.Any(r => r.CourierId.HasValue),
+            IsVendorReviewed = reviews.Any(r => r.VendorId.HasValue),
+            ReviewedProductIds = reviews
+                .Where(r => r.ProductId.HasValue)
+                .Select(r => r.ProductId!.Value)
+                .ToList(),
+            Reviews = _mapper.Map<List<ReviewDto>>(reviews)
+        };
+
+        return Ok(new ApiResponse<OrderReviewStatusDto>(status));
+    }
+
+    /// <summary>
+    /// Değerlendirilmemiş son siparişi getirir (Popup için)
+    /// </summary>
+    [HttpGet("unreviewed")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<OrderDto>>> GetUnreviewedOrder()
+    {
+        var userId = UserContext.GetUserId();
+
+        // Get last delivered order
+        Order? lastDeliveredOrder = await UnitOfWork.Orders.Query()
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Include(o => o.Vendor)
+            .Include(o => o.OrderCouriers)
+                .ThenInclude(oc => oc.Courier)
+            .Where(o => o.CustomerId == userId && o.Status == OrderStatus.Delivered)
+            .OrderByDescending(o => o.UpdatedAt) // Most recent first
+            .FirstOrDefaultAsync();
+
+        if (lastDeliveredOrder == null)
+        {
+            return Ok(new ApiResponse<object?>(null, "No delivered orders"));
+        }
+
+        // Manually populate active courier if not mapped (FIX for missing navigation)
+        if (lastDeliveredOrder.ActiveOrderCourier == null)
+        {
+            lastDeliveredOrder.ActiveOrderCourier = lastDeliveredOrder.OrderCouriers.FirstOrDefault(oc => oc.IsActive);
+        }
+
+        // Check reviews
+        List<Review> reviews = await UnitOfWork.Reviews.Query()
+            .Where(r => r.OrderId == lastDeliveredOrder!.Id)
+            .ToListAsync();
+
+        bool isCourierNeedsReview = lastDeliveredOrder!.ActiveOrderCourier != null && !reviews.Any(r => r.CourierId.HasValue);
+        bool isVendorNeedsReview = !reviews.Any(r => r.VendorId.HasValue);
+
+        // Popup mantığı: Kurye veya Restoran değerlendirilmemişse göster
+        if (isVendorNeedsReview || isCourierNeedsReview)
+        {
+            var orderDto = _mapper.Map<OrderDto>(lastDeliveredOrder);
+            return Ok(new ApiResponse<OrderDto>(orderDto));
+        }
+
+        return Ok(new ApiResponse<object>(null, "All recent orders reviewed"));
     }
 
     /// <summary>

@@ -2755,6 +2755,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get statusDelivered => 'Teslim Edildi';
 
   @override
+  String get notificationOrders => 'Siparişler';
+
+  @override
   String get rateOrder => 'Siparişi Değerlendir';
 
   @override
@@ -2770,4 +2773,17 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get orderAlreadyReviewed =>
       'Bu sipariş için zaten değerlendirme yapıldı';
+
+  @override
+  String get popupTitle => 'Siparişi Değerlendir';
+
+  @override
+  String get popupMessage =>
+      'Son siparişin nasıldı? Deneyimini paylaşmak ister misin?';
+
+  @override
+  String get notNow => 'Şimdi Değil';
+
+  @override
+  String get viewReviews => 'Değerlendirmemi Gör';
 }
