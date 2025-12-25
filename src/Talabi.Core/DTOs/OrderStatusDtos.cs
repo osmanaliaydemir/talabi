@@ -16,6 +16,7 @@ public class OrderDetailDto
 
     public List<OrderItemDetailDto> Items { get; set; } = new();
     public List<OrderStatusHistoryDto> StatusHistory { get; set; } = new();
+    public OrderCourierDto? ActiveOrderCourier { get; set; }
 }
 
 public class OrderItemDetailDto

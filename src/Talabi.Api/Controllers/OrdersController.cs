@@ -227,7 +227,9 @@ public class OrdersController : BaseController
             .Include(o => o.Vendor)
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Product)
+                .ThenInclude(oi => oi.Product)
+            .Include(o => o.OrderCouriers)
+                .ThenInclude(oc => oc.Courier)
             .Include(o => o.StatusHistory.OrderByDescending(sh => sh.CreatedAt));
 
         // Only allow access to orders that belong to the authenticated user
@@ -240,7 +242,27 @@ public class OrdersController : BaseController
                 "ORDER_NOT_FOUND"));
         }
 
+        // Manually populate active courier if not mapped
+        if (order.ActiveOrderCourier == null)
+        {
+            order.ActiveOrderCourier = order.OrderCouriers.FirstOrDefault(oc => oc.IsActive);
+        }
+
         var orderDetailDto = _mapper.Map<OrderDetailDto>(order);
+
+        // Ensure Courier details are mapped if active courier exists
+        var activeCourier = order.ActiveOrderCourier;
+        if (activeCourier?.Courier != null)
+        {
+            var courier = activeCourier.Courier;
+            orderDetailDto.ActiveOrderCourier = new OrderCourierDto
+            {
+                CourierId = courier.Id,
+                CourierName = !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
+                CourierPhone = courier.PhoneNumber,
+                CourierImageUrl = courier.User?.ProfileImageUrl
+            };
+        }
 
         return Ok(new ApiResponse<OrderDetailDto>(
             orderDetailDto,
