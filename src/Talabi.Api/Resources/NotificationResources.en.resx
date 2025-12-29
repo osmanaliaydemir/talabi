@@ -72,5 +72,65 @@
   <data name="SettingsUpdatedSuccessfully" xml:space="preserve">
     <value>Notification settings updated successfully</value>
   </data>
+  <data name="NewOrderReceivedTitle" xml:space="preserve">
+    <value>New Order! 🛍️</value>
+  </data>
+  <data name="NewOrderReceivedBody" xml:space="preserve">
+    <value>You received a new order #{0}. Tap to see details.</value>
+  </data>
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>Order Confirmed ✅</value>
+  </data>
+  <data name="OrderAcceptedBody" xml:space="preserve">
+    <value>Your order #{0} has been confirmed by the vendor and is being prepared.</value>
+  </data>
+  <data name="OrderPreparingTitle" xml:space="preserve">
+    <value>Order Preparing 👨‍🍳</value>
+  </data>
+  <data name="OrderPreparingBody" xml:space="preserve">
+    <value>Your order #{0} is being prepared.</value>
+  </data>
+  <data name="OrderReadyTitle" xml:space="preserve">
+    <value>Order Ready! 🔔</value>
+  </data>
+  <data name="OrderReadyBody" xml:space="preserve">
+    <value>Your order #{0} is ready and waiting for the courier.</value>
+  </data>
+  <data name="OrderOutForDeliveryTitle" xml:space="preserve">
+    <value>Order Out for Delivery! 🛵</value>
+  </data>
+  <data name="OrderOutForDeliveryBody" xml:space="preserve">
+    <value>Your order #{0} has been handed over to the courier and is on its way.</value>
+  </data>
+  <data name="OrderDeliveredTitle" xml:space="preserve">
+    <value>Order Delivered 🎉</value>
+  </data>
+  <data name="OrderDeliveredBody" xml:space="preserve">
+    <value>Your order #{0} has been successfully delivered. Enjoy!</value>
+  </data>
+  <data name="OrderCancelledTitle" xml:space="preserve">
+    <value>Order Cancelled ❌</value>
+  </data>
+  <data name="OrderCancelledBody" xml:space="preserve">
+    <value>Your order #{0} has been cancelled. Check the app for details.</value>
+  </data>
+  <data name="OrderAssignedTitle" xml:space="preserve">
+    <value>New Assignment! 🚀</value>
+  </data>
+  <data name="OrderAssignedBody" xml:space="preserve">
+    <value>Order #{0} has been assigned to you. Tap to accept.</value>
+  </data>
+  <data name="CourierAcceptedTitle" xml:space="preserve">
+    <value>Courier Assigned 🛵</value>
+  </data>
+  <data name="CourierAcceptedBody" xml:space="preserve">
+    <value>Your order #{0} has been accepted by a courier and will be on its way soon.</value>
+  </data>
+  <data name="OrderUpdateTitle" xml:space="preserve">
+    <value>Order Update</value>
+  </data>
+  <data name="OrderUpdateBody" xml:space="preserve">
+    <value>There's an update on your order #{0}.</value>
+  </data>
 </root>
 

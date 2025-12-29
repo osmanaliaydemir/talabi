@@ -9,5 +9,7 @@ namespace Talabi.Core.Interfaces
         Task RegisterDeviceTokenAsync(string userId, string token, string deviceType);
         Task SendOrderAssignmentNotificationAsync(string userId, Guid orderId, string? languageCode = null);
         Task SendOrderStatusUpdateNotificationAsync(string userId, Guid orderId, string status, string? languageCode = null);
+        Task SendNewOrderNotificationAsync(string userId, Guid orderId, string? languageCode = null);
+        Task SendCourierAcceptedNotificationAsync(string userId, Guid orderId, string? languageCode = null);
     }
 }

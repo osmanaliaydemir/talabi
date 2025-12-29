@@ -72,4 +72,64 @@
   <data name="SettingsUpdatedSuccessfully" xml:space="preserve">
     <value>Bildirim ayarları başarıyla güncellendi</value>
   </data>
+  <data name="NewOrderReceivedTitle" xml:space="preserve">
+    <value>Yeni Sipariş! 🛍️</value>
+  </data>
+  <data name="NewOrderReceivedBody" xml:space="preserve">
+    <value>#{0} numaralı yeni bir sipariş aldınız. Detayları görmek için tıklayın.</value>
+  </data>
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>Sipariş Onaylandı ✅</value>
+  </data>
+  <data name="OrderAcceptedBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz satıcı tarafından onaylandı ve hazırlanıyor.</value>
+  </data>
+  <data name="OrderPreparingTitle" xml:space="preserve">
+    <value>Sipariş Hazırlanıyor 👨‍🍳</value>
+  </data>
+  <data name="OrderPreparingBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz hazırlanıyor.</value>
+  </data>
+  <data name="OrderReadyTitle" xml:space="preserve">
+    <value>Sipariş Hazır! 🔔</value>
+  </data>
+  <data name="OrderReadyBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz hazırlandı ve kurye bekleniyor.</value>
+  </data>
+  <data name="OrderOutForDeliveryTitle" xml:space="preserve">
+    <value>Siparişiniz Yolda! 🛵</value>
+  </data>
+  <data name="OrderOutForDeliveryBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz kuryeye teslim edildi ve yola çıktı.</value>
+  </data>
+  <data name="OrderDeliveredTitle" xml:space="preserve">
+    <value>Sipariş Teslim Edildi 🎉</value>
+  </data>
+  <data name="OrderDeliveredBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz başarıyla teslim edildi. Afiyet olsun!</value>
+  </data>
+  <data name="OrderCancelledTitle" xml:space="preserve">
+    <value>Sipariş İptal Edildi ❌</value>
+  </data>
+  <data name="OrderCancelledBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz iptal edildi. Detaylar için uygulamayı kontrol edin.</value>
+  </data>
+  <data name="OrderAssignedTitle" xml:space="preserve">
+    <value>Yeni Görev! 🚀</value>
+  </data>
+  <data name="OrderAssignedBody" xml:space="preserve">
+    <value>#{0} numaralı sipariş size atandı. Kabul etmek için dokunun.</value>
+  </data>
+  <data name="CourierAcceptedTitle" xml:space="preserve">
+    <value>Kurye Atandı 🛵</value>
+  </data>
+  <data name="CourierAcceptedBody" xml:space="preserve">
+    <value>#{0} numaralı siparişiniz bir kurye tarafından kabul edildi ve yakında yola çıkacak.</value>
+  </data>
+  <data name="OrderUpdateTitle" xml:space="preserve">
+    <value>Sipariş Güncellemesi</value>
+  </data>
+  <data name="OrderUpdateBody" xml:space="preserve">
+    <value>#{0} numaralı siparişinizde bir güncelleme var.</value>
+  </data>
 </root>

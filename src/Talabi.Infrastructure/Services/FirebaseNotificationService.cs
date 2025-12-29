@@ -207,7 +207,7 @@ namespace Talabi.Infrastructure.Services
             catch (FirebaseMessagingException ex)
             {
                 _logger.LogError(ex, $"Firebase error sending notification: {ex.Message}");
-                
+
                 // Handle invalid token - remove from database
                 if (ex.MessagingErrorCode == MessagingErrorCode.InvalidArgument ||
                     ex.MessagingErrorCode == MessagingErrorCode.Unregistered)
@@ -259,12 +259,12 @@ namespace Talabi.Infrastructure.Services
                 // Use SendEachForMulticastAsync instead of obsolete SendMulticastAsync
                 var response = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
                 _logger.LogInformation($"{response.SuccessCount} messages were sent successfully out of {tokens.Count}");
-                
+
                 // Handle failed tokens - remove invalid tokens from database
                 if (response.FailureCount > 0)
                 {
                     _logger.LogWarning($"{response.FailureCount} messages failed to send");
-                    
+
                     var invalidTokens = new List<string>();
                     for (int i = 0; i < response.Responses.Count; i++)
                     {
@@ -280,14 +280,14 @@ namespace Talabi.Infrastructure.Services
                             }
                         }
                     }
-                    
+
                     // Remove invalid tokens from database
                     if (invalidTokens.Any())
                     {
                         var tokensToRemove = await _context.UserDeviceTokens
                             .Where(t => invalidTokens.Contains(t.FcmToken))
                             .ToListAsync();
-                        
+
                         if (tokensToRemove.Any())
                         {
                             _context.UserDeviceTokens.RemoveRange(tokensToRemove);
@@ -365,6 +365,68 @@ namespace Talabi.Infrastructure.Services
             );
         }
 
+        public async Task SendNewOrderNotificationAsync(string userId, Guid orderId, string? languageCode = null)
+        {
+            var tokens = await _context.UserDeviceTokens
+                .Where(t => t.UserId == userId)
+                .Select(t => t.FcmToken)
+                .ToListAsync();
+
+            if (!tokens.Any())
+            {
+                _logger.LogWarning($"No device tokens found for user {userId}");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(languageCode))
+            {
+                languageCode = await GetUserLanguageAsync(userId);
+            }
+
+            var culture = GetCultureInfo(languageCode);
+            var title = _resourceManager?.GetString("NewOrderReceivedTitle", culture) ?? "New Order! 🛍️";
+            var bodyTemplate = _resourceManager?.GetString("NewOrderReceivedBody", culture) ?? "You received a new order #{0}.";
+            var body = string.Format(bodyTemplate, orderId);
+
+            await SendMulticastNotificationAsync(
+                tokens,
+                title,
+                body,
+                new { type = "new_order_received", orderId = orderId }
+            );
+        }
+
+        public async Task SendCourierAcceptedNotificationAsync(string userId, Guid orderId, string? languageCode = null)
+        {
+            var tokens = await _context.UserDeviceTokens
+                .Where(t => t.UserId == userId)
+                .Select(t => t.FcmToken)
+                .ToListAsync();
+
+            if (!tokens.Any())
+            {
+                _logger.LogWarning($"No device tokens found for user {userId}");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(languageCode))
+            {
+                languageCode = await GetUserLanguageAsync(userId);
+            }
+
+            var culture = GetCultureInfo(languageCode);
+            var title = _resourceManager?.GetString("CourierAcceptedTitle", culture) ?? "Courier Assigned 🛵";
+            var bodyTemplate = _resourceManager?.GetString("CourierAcceptedBody", culture) ?? "Your order #{0} has been accepted by a courier.";
+            var body = string.Format(bodyTemplate, orderId);
+
+            await SendMulticastNotificationAsync(
+                tokens,
+                title,
+                body,
+                new { type = "courier_accepted", orderId = orderId }
+            );
+        }
+
         private async Task<string> GetUserLanguageAsync(string userId)
         {
             var userPreference = await _context.UserPreferences
@@ -396,6 +458,8 @@ namespace Talabi.Infrastructure.Services
                 "Assigned" => "OrderAssignedTitle",
                 "Accepted" => "OrderAcceptedTitle",
                 "OutForDelivery" => "OrderOutForDeliveryTitle",
+                "Preparing" => "OrderPreparingTitle",
+                "Cancelled" => "OrderCancelledTitle",
                 _ => "OrderUpdateTitle"
             };
 
@@ -406,6 +470,8 @@ namespace Talabi.Infrastructure.Services
                 "Assigned" => "OrderAssignedBody",
                 "Accepted" => "OrderAcceptedBody",
                 "OutForDelivery" => "OrderOutForDeliveryBody",
+                "Preparing" => "OrderPreparingBody",
+                "Cancelled" => "OrderCancelledBody",
                 _ => "OrderUpdateBody"
             };
 
@@ -424,7 +490,7 @@ namespace Talabi.Infrastructure.Services
                 var value = prop.GetValue(data)?.ToString();
                 if (value != null)
                 {
-                    dictionary.Add(prop.Name, value);
+                    dictionary.Add(prop.Name.ToLowerInvariant(), value);
                 }
             }
             return dictionary;

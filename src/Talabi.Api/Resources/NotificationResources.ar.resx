@@ -72,4 +72,64 @@
   <data name="SettingsUpdatedSuccessfully" xml:space="preserve">
     <value>تم تحديث إعدادات الإشعارات بنجاح</value>
   </data>
+  <data name="NewOrderReceivedTitle" xml:space="preserve">
+    <value>طلب جديد! 🛍️</value>
+  </data>
+  <data name="NewOrderReceivedBody" xml:space="preserve">
+    <value>لقد استلمت طلباً جديداً رقم {0}. اضغط لرؤية التفاصيل.</value>
+  </data>
+  <data name="OrderAcceptedTitle" xml:space="preserve">
+    <value>تم تأكيد الطلب ✅</value>
+  </data>
+  <data name="OrderAcceptedBody" xml:space="preserve">
+    <value>تم تأكيد طلبك رقم {0} من قبل البائع وهو قيد التحضير.</value>
+  </data>
+  <data name="OrderPreparingTitle" xml:space="preserve">
+    <value>الطلب قيد التحضير 👨‍🍳</value>
+  </data>
+  <data name="OrderPreparingBody" xml:space="preserve">
+    <value>طلبك رقم {0} قيد التحضير الآن.</value>
+  </data>
+  <data name="OrderReadyTitle" xml:space="preserve">
+    <value>الطلب جاهز! 🔔</value>
+  </data>
+  <data name="OrderReadyBody" xml:space="preserve">
+    <value>طلبك رقم {0} جاهز وبانتظار المندوب.</value>
+  </data>
+  <data name="OrderOutForDeliveryTitle" xml:space="preserve">
+    <value>طلبك في الطريق! 🛵</value>
+  </data>
+  <data name="OrderOutForDeliveryBody" xml:space="preserve">
+    <value>تم تسليم طلبك رقم {0} للمندوب وهو في طريقه إليك.</value>
+  </data>
+  <data name="OrderDeliveredTitle" xml:space="preserve">
+    <value>تم توصيل الطلب 🎉</value>
+  </data>
+  <data name="OrderDeliveredBody" xml:space="preserve">
+    <value>تم توصيل طلبك رقم {0} بنجاح. بالهناء والشفاء!</value>
+  </data>
+  <data name="OrderCancelledTitle" xml:space="preserve">
+    <value>تم إلغاء الطلب ❌</value>
+  </data>
+  <data name="OrderCancelledBody" xml:space="preserve">
+    <value>تم إلغاء طلبك رقم {0}. يرجى التحقق من التطبيق لمزيد من التفاصيل.</value>
+  </data>
+  <data name="OrderAssignedTitle" xml:space="preserve">
+    <value>مهمة جديدة! 🚀</value>
+  </data>
+  <data name="OrderAssignedBody" xml:space="preserve">
+    <value>تم تعيين الطلب رقم {0} لك. اضغط للقبول.</value>
+  </data>
+  <data name="CourierAcceptedTitle" xml:space="preserve">
+    <value>تم تعيين مندوب 🛵</value>
+  </data>
+  <data name="CourierAcceptedBody" xml:space="preserve">
+    <value>تم قبول طلبك رقم {0} من قبل مندوب وسيكون في طريقه إليك قريباً.</value>
+  </data>
+  <data name="OrderUpdateTitle" xml:space="preserve">
+    <value>تحديث الطلب</value>
+  </data>
+  <data name="OrderUpdateBody" xml:space="preserve">
+    <value>هناك تحديث على طلبك رقم {0}.</value>
+  </data>
 </root>

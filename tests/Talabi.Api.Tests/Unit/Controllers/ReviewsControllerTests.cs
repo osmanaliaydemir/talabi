@@ -27,6 +27,7 @@ public class ReviewsControllerTests
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
     private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<INotificationService> _mockNotificationService;
     private readonly ReviewsController _controller;
 
     public ReviewsControllerTests()
@@ -35,6 +36,7 @@ public class ReviewsControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockMapper = new Mock<IMapper>();
+        _mockNotificationService = new Mock<INotificationService>();
         var logger = ControllerTestHelpers.CreateMockLogger<ReviewsController>();
 
         var store = new Mock<IUserStore<AppUser>>();
@@ -46,7 +48,8 @@ public class ReviewsControllerTests
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
             _mockUserManager.Object,
-            _mockMapper.Object
+            _mockMapper.Object,
+            _mockNotificationService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -133,8 +136,8 @@ public class ReviewsControllerTests
         var productId = Guid.NewGuid();
         var reviews = new List<Review>
         {
-            new Review { Id = Guid.NewGuid(), ProductId = productId, IsApproved = true, Rating = 5, Comment = "Good" },
-            new Review { Id = Guid.NewGuid(), ProductId = productId, IsApproved = true, Rating = 4, Comment = "Okay" }
+            new() { Id = Guid.NewGuid(), ProductId = productId, IsApproved = true, Rating = 5, Comment = "Good" },
+            new() { Id = Guid.NewGuid(), ProductId = productId, IsApproved = true, Rating = 4, Comment = "Okay" }
         };
 
         var mockRepo = new Mock<IRepository<Review>>();
@@ -143,7 +146,7 @@ public class ReviewsControllerTests
         _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockRepo.Object);
 
         _mockMapper.Setup(x => x.Map<List<ReviewDto>>(It.IsAny<List<Review>>()))
-            .Returns(new List<ReviewDto> { new ReviewDto(), new ReviewDto() });
+            .Returns([new(), new()]);
 
         // Act
         var result = await _controller.GetProductReviews(productId);

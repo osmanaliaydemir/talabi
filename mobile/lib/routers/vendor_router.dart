@@ -5,6 +5,7 @@ import 'package:mobile/features/notifications/presentation/screens/vendor/notifi
 import 'package:mobile/features/orders/presentation/screens/vendor/orders_screen.dart';
 import 'package:mobile/features/products/presentation/screens/vendor/products_screen.dart';
 import 'package:mobile/features/profile/presentation/screens/vendor/profile_screen.dart';
+import 'package:mobile/features/orders/presentation/screens/vendor/order_detail_screen.dart';
 
 import 'package:mobile/features/auth/presentation/screens/vendor/vendor_forgot_password_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/vendor_verify_reset_code_screen.dart';
@@ -23,17 +24,12 @@ class VendorRouter {
       case '/vendor/verify-reset-code':
         return NoSlidePageRoute(
           builder: (context) => const VendorVerifyResetCodeScreen(email: ''),
-          // Note: Arguments should ideally be passed via settings.arguments
-          // But for now keeping it simple as per other routes or default empty?
-          // Wait, VerifyResetCodeScreen requires email.
-          // I should check how arguments are passed in CustomerRouter or AppRouter.
         );
 
       case '/vendor/reset-password':
         return NoSlidePageRoute(
           builder: (context) =>
               const VendorResetPasswordScreen(email: '', token: ''),
-          // Same issue with arguments.
         );
 
       case '/vendor/orders':
@@ -59,6 +55,13 @@ class VendorRouter {
       case '/vendor/profile/edit':
         return NoSlidePageRoute(
           builder: (context) => const VendorEditProfileScreen(),
+        );
+
+      case '/vendor/order-detail':
+        final orderId = settings.arguments as String?;
+        if (orderId == null) return null;
+        return NoSlidePageRoute(
+          builder: (context) => VendorOrderDetailScreen(orderId: orderId),
         );
 
       default:

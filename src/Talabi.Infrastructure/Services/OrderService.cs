@@ -549,6 +549,10 @@ public class OrderService : IOrderService
                 _localizationService.GetLocalizedString(ResourceName, "OrderStatusChangedMessage", culture, order.CustomerOrderId, statusMessage),
                 "OrderStatusChanged",
                 order.Id);
+
+            // Send Firebase push notification to customer
+            var languageCode = culture.TwoLetterISOLanguageName;
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, newStatus.ToString(), languageCode);
         }
 
         await _unitOfWork.SaveChangesAsync();

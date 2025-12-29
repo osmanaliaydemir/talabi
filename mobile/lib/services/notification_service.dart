@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
+import 'package:mobile/services/navigation_service.dart';
+import 'package:mobile/services/secure_storage_service.dart';
 
 class NotificationService {
   factory NotificationService() => _instance;
@@ -162,11 +165,20 @@ class NotificationService {
 
     await _localNotifications.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: (details) {
+      onDidReceiveNotificationResponse: (details) async {
         // Handle local notification tap
         LoggerService().debug(
           '🔔 Local Notification Tapped: ${details.payload}',
         );
+
+        if (details.payload != null) {
+          try {
+            final Map<String, dynamic> data = json.decode(details.payload!);
+            await _handleDataTap(data);
+          } catch (e) {
+            LoggerService().error('Error handling local notification tap', e);
+          }
+        }
       },
     );
   }
@@ -197,9 +209,48 @@ class NotificationService {
     }
   }
 
-  void _handleBackgroundMessageTap(RemoteMessage message) {
+  Future<void> _handleBackgroundMessageTap(RemoteMessage message) async {
     LoggerService().debug('🔔 Background Message Tapped: ${message.data}');
-    // Navigate to specific screen based on data
+    await _handleDataTap(message.data);
+  }
+
+  /// Handles tap on notification data (either from FCM or Local Notification)
+  Future<void> _handleDataTap(Map<String, dynamic> data) async {
+    if (data.containsKey('orderId')) {
+      final orderId = data['orderId'].toString();
+      final type = data['type']?.toString();
+
+      final role = await SecureStorageService.instance.getRole();
+      LoggerService().info(
+        '🔔 Deep linking for role: $role, orderId: $orderId, type: $type',
+      );
+
+      if (role == null) {
+        LoggerService().warning('🔔 No role found, cannot deep link');
+        return;
+      }
+
+      final normalizedRole = role.toLowerCase();
+
+      if (normalizedRole == 'customer') {
+        NavigationService.navigateTo(
+          '/customer/order-detail',
+          arguments: orderId,
+        );
+      } else if (normalizedRole == 'vendor') {
+        NavigationService.navigateTo(
+          '/vendor/order-detail',
+          arguments: orderId,
+        );
+      } else if (normalizedRole == 'courier') {
+        NavigationService.navigateTo(
+          '/courier/order-detail',
+          arguments: orderId,
+        );
+      } else {
+        LoggerService().warning('🔔 Unknown role for deep linking: $role');
+      }
+    }
   }
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
@@ -223,7 +274,7 @@ class NotificationService {
           ),
           iOS: DarwinNotificationDetails(),
         ),
-        payload: message.data.toString(),
+        payload: json.encode(message.data),
       );
     }
   }

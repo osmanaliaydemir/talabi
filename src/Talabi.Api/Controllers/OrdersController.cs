@@ -21,6 +21,7 @@ public class OrdersController : BaseController
     private readonly IOrderAssignmentService _assignmentService;
     private readonly IOrderService _orderService;
     private readonly IMapper _mapper;
+    private readonly INotificationService _notificationService;
     private const string ResourceName = "OrderResources";
 
     /// <summary>
@@ -33,12 +34,14 @@ public class OrdersController : BaseController
         IUserContextService userContext,
         IOrderAssignmentService assignmentService,
         IOrderService orderService,
-        IMapper mapper)
+        IMapper mapper,
+        INotificationService notificationService)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _assignmentService = assignmentService;
         _orderService = orderService;
         _mapper = mapper;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -74,8 +77,13 @@ public class OrdersController : BaseController
                 // Log error but continue
             }
 
-            // Load vendor for mapping
-            await UnitOfWork.Vendors.GetByIdAsync(order.VendorId);
+            // Load vendor for mapping and notification
+            var vendor = await UnitOfWork.Vendors.GetByIdAsync(order.VendorId);
+            if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
+            {
+                await _notificationService.SendNewOrderNotificationAsync(vendor.OwnerId, order.Id);
+            }
+
             var orderDto = _mapper.Map<OrderDto>(order);
 
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, new ApiResponse<OrderDto>(
@@ -148,8 +156,8 @@ public class OrdersController : BaseController
         var activeCourier = order.ActiveOrderCourier;
         if (activeCourier?.Courier != null)
         {
-            var courier = activeCourier!.Courier!;
-            orderDto!.ActiveOrderCourier = new OrderCourierDto
+            var courier = activeCourier.Courier;
+            orderDto.ActiveOrderCourier = new OrderCourierDto
             {
                 CourierId = courier.Id,
                 CourierName = !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
@@ -250,6 +258,12 @@ public class OrdersController : BaseController
         }
 
         var orderDetailDto = _mapper.Map<OrderDetailDto>(order);
+        if (orderDetailDto == null)
+        {
+            return NotFound(new ApiResponse<OrderDetailDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                "ORDER_NOT_FOUND"));
+        }
 
         // Ensure Courier details are mapped if active courier exists
         var activeCourier = order.ActiveOrderCourier;
