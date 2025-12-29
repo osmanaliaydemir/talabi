@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/features/home/data/models/promotional_banner.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/features/home/presentation/widgets/sections/home_banner_section.dart';
 import 'package:mobile/features/campaigns/presentation/screens/campaigns_screen.dart';
 
 class HomeCampaignSection extends StatelessWidget {
   const HomeCampaignSection({super.key, required this.banners});
 
-  final List<PromotionalBanner> banners;
+  final List<Campaign> banners;
 
   @override
   Widget build(BuildContext context) {

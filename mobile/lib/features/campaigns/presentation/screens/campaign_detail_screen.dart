@@ -63,6 +63,23 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
             floating: false,
             pinned: true,
             backgroundColor: colorScheme.primary,
+            leading: Center(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(AppTheme.spacingSmall),
+                  decoration: BoxDecoration(
+                    color: AppTheme.textOnPrimary.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: AppTheme.textOnPrimary,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.campaign.title,
@@ -219,13 +236,16 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingMedium,
+                vertical: AppTheme.spacingSmall,
+              ),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.60,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: AppTheme.spacingSmall,
+                  mainAxisSpacing: AppTheme.spacingSmall,
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
                   return ProductCard(product: _products[index]);

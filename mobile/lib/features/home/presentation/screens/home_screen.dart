@@ -5,7 +5,7 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/vendors/data/models/vendor.dart';
-import 'package:mobile/features/home/data/models/promotional_banner.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/special_home_header.dart';
@@ -44,8 +44,8 @@ class HomeScreenState extends State<HomeScreen> {
   final Map<String, bool> _favoriteStatus =
       {}; // Track favorite status for each product
 
-  // Banner state
-  List<PromotionalBanner> _banners = [];
+  // Campaigns state
+  List<Campaign> _banners = [];
 
   // Track current category to detect changes
   MainCategory? _lastCategory;
@@ -90,7 +90,7 @@ class HomeScreenState extends State<HomeScreen> {
         vendorType: vendorType,
       );
     });
-    _loadBanners(vendorType: vendorType);
+    _loadCampaigns(vendorType: vendorType);
   }
 
   void _onCategoryChanged() {
@@ -130,20 +130,32 @@ class HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _loadBanners({int? vendorType}) async {
+  Future<void> _loadCampaigns({int? vendorType}) async {
     try {
-      final locale = AppLocalizations.of(context)?.localeName ?? 'tr';
-      final banners = await _apiService.getBanners(
-        language: locale,
+      String? cityId;
+      String? districtId;
+
+      if (_selectedAddress != null) {
+        if (_selectedAddress!['cityId'] != null) {
+          cityId = _selectedAddress!['cityId'].toString();
+        }
+        if (_selectedAddress!['districtId'] != null) {
+          districtId = _selectedAddress!['districtId'].toString();
+        }
+      }
+
+      final campaigns = await _apiService.getCampaigns(
         vendorType: vendorType,
+        cityId: cityId,
+        districtId: districtId,
       );
       if (mounted) {
         setState(() {
-          _banners = banners;
+          _banners = campaigns;
         });
       }
     } catch (e, stackTrace) {
-      LoggerService().error('Error loading banners', e, stackTrace);
+      LoggerService().error('Error loading campaigns', e, stackTrace);
     }
   }
 
@@ -163,7 +175,7 @@ class HomeScreenState extends State<HomeScreen> {
       final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
           ? 1
           : 2;
-      _loadBanners(vendorType: vendorType);
+      _loadCampaigns(vendorType: vendorType);
     }
   }
 

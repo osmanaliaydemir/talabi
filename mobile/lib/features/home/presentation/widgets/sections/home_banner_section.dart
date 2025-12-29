@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
-import 'package:mobile/features/home/data/models/promotional_banner.dart';
+import 'package:mobile/features/campaigns/data/models/campaign.dart';
+import 'package:mobile/features/campaigns/presentation/screens/campaign_detail_screen.dart';
 import 'package:mobile/widgets/bouncing_circle.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 class HomeBannerSection extends StatefulWidget {
   const HomeBannerSection({super.key, required this.banners});
 
-  final List<PromotionalBanner> banners;
+  final List<Campaign> banners;
 
   @override
   State<HomeBannerSection> createState() => _HomeBannerSectionState();
@@ -123,145 +124,153 @@ class _HomeBannerSectionState extends State<HomeBannerSection> {
               final iconIndex = index % bannerIcons.length;
               final bannerIcon = bannerIcons[iconIndex];
 
-              return Container(
-                margin: const EdgeInsets.only(
-                  left: AppTheme.spacingXSmall,
-                  right: AppTheme.spacingXSmall,
-                  top: AppTheme.spacingXSmall,
-                  bottom: AppTheme.spacingXSmall,
-                ),
-                padding: const EdgeInsets.only(
-                  left: AppTheme.spacingMedium,
-                  right: AppTheme.spacingMedium,
-                  top: AppTheme.spacingMedium,
-                  bottom: AppTheme.spacingMedium,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: gradientColors,
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          CampaignDetailScreen(campaign: currentBanner),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingXSmall,
+                    vertical: AppTheme.spacingXSmall,
                   ),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              currentBanner.title,
-                              style: AppTheme.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textOnPrimary,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Flexible(
-                            child: Text(
-                              currentBanner.subtitle,
-                              style: AppTheme.poppins(
-                                fontSize: 13,
-                                color: AppTheme.textOnPrimary.withValues(
-                                  alpha: 0.9,
+                  padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: gradientColors,
+                    ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                currentBanner.title,
+                                style: AppTheme.poppins(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textOnPrimary,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          if (currentBanner.buttonText != null) ...[
-                            const SizedBox(height: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (currentBanner.buttonAction == 'order') {
-                                  // Navigate logic here if needed, or callback
-                                } else if (currentBanner.buttonAction ==
-                                    'discover') {
-                                  // Navigate logic here if needed
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.cardColor,
-                                foregroundColor: colorScheme.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 10,
+                            const SizedBox(height: 6),
+                            Flexible(
+                              child: Text(
+                                currentBanner.description,
+                                style: AppTheme.poppins(
+                                  fontSize: 13,
+                                  color: AppTheme.textOnPrimary.withValues(
+                                    alpha: 0.9,
+                                  ),
                                 ),
-                                minimumSize: const Size(0, 36),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusSmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (currentBanner.actionUrl != null &&
+                                currentBanner.actionUrl!.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CampaignDetailScreen(
+                                            campaign: currentBanner,
+                                          ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.cardColor,
+                                  foregroundColor: colorScheme.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 10,
+                                  ),
+                                  minimumSize: const Size(0, 36),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusSmall,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Detaylar', // Localized "Details"
+                                  style: AppTheme.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.primary,
                                   ),
                                 ),
                               ),
-                              child: Text(
-                                currentBanner.buttonText!,
-                                style: AppTheme.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.primary,
-                                ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            Positioned(
+                              right: -18,
+                              bottom: -35,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  BouncingCircle(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                  ),
+                                  if (currentBanner.imageUrl.isNotEmpty)
+                                    ClipOval(
+                                      child: CachedNetworkImageWidget(
+                                        imageUrl: currentBanner.imageUrl,
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                        maxWidth: 200,
+                                        maxHeight: 200,
+                                        errorWidget: Icon(
+                                          bannerIcon,
+                                          size: 50,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    Icon(
+                                      bannerIcon,
+                                      size: 50,
+                                      color: Colors.white,
+                                    ),
+                                ],
                               ),
                             ),
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 120,
-                      height: 120,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned(
-                            right: -18,
-                            bottom: -35,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                BouncingCircle(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                ),
-                                if (currentBanner.imageUrl != null)
-                                  ClipOval(
-                                    child: CachedNetworkImageWidget(
-                                      imageUrl: currentBanner.imageUrl!,
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.cover,
-                                      maxWidth: 200,
-                                      maxHeight: 200,
-                                      errorWidget: Icon(
-                                        bannerIcon,
-                                        size: 50,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Icon(
-                                    bannerIcon,
-                                    size: 50,
-                                    color: Colors.white,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

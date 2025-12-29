@@ -13,6 +13,7 @@ import 'package:mobile/features/products/presentation/widgets/product_card.dart'
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -189,22 +190,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       Navigator.pop(context); // Close loading dialog
 
       if (canReview) {
-        // Navigate to write review screen/popup
-        // For now, using a toast or placeholder as I need to see if there's a specific screen for this
-        // Actually, the user says "yorum yazma popup'ı çıksın"
         _showReviewPopup();
       } else {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(l10n.error),
-            content: Text(l10n.mustOrderToReview),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.ok),
-              ),
-            ],
+          builder: (context) => CustomConfirmationDialog(
+            title: l10n.error,
+            message: l10n.mustOrderToReview,
+            confirmText: l10n.ok,
+            onConfirm: () => Navigator.pop(context),
+            icon: Icons.info_outline,
+            iconColor: AppTheme.primaryOrange,
+            confirmButtonColor: AppTheme.primaryOrange,
           ),
         );
       }
@@ -216,8 +213,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _showReviewPopup() {
-    // This would typically show a dialog with rating stars and a comment field
-    // For now, I'll implement a basic one since the user asked for a popup
     final l10n = AppLocalizations.of(context)!;
     int rating = 5;
     final commentController = TextEditingController();
@@ -225,67 +220,160 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(l10n.writeAReview),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  return IconButton(
-                    icon: Icon(
-                      index < rating ? Icons.star : Icons.star_border,
-                      color: Colors.amber,
-                    ),
-                    onPressed: () => setDialogState(() => rating = index + 1),
-                  );
-                }),
-              ),
-              TextField(
-                controller: commentController,
-                decoration: InputDecoration(
-                  hintText: l10n.comment,
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-            ],
+        builder: (context, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.cancel),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await _apiService.createReview(
-                    _product!.id,
-                    'Product',
-                    rating,
-                    commentController.text,
-                  );
-                  if (!mounted || !context.mounted) return;
-                  Navigator.pop(context);
-                  _loadReviews();
-                  ToastMessage.show(
-                    context,
-                    message: l10n.reviewCreatedSuccessfully,
-                    isSuccess: true,
-                  );
-                } catch (e) {
-                  if (!mounted || !context.mounted) return;
-                  ToastMessage.show(
-                    context,
-                    message: e.toString(),
-                    isSuccess: false,
-                  );
-                }
-              },
-              child: Text(l10n.send),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.star_rounded,
+                    color: AppTheme.primaryOrange,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.writeAReview,
+                  style: AppTheme.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < rating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      onPressed: () => setDialogState(() => rating = index + 1),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: commentController,
+                  decoration: InputDecoration(
+                    hintText: l10n.comment,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primaryOrange,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey[300]!),
+                          ),
+                        ),
+                        child: Text(
+                          l10n.cancel,
+                          style: AppTheme.poppins(
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            await _apiService.createReview(
+                              _product!.id,
+                              'Product',
+                              rating,
+                              commentController.text,
+                            );
+                            if (!mounted || !context.mounted) return;
+                            Navigator.pop(context);
+                            _loadReviews();
+                            ToastMessage.show(
+                              context,
+                              message: l10n.reviewCreatedSuccessfully,
+                              isSuccess: true,
+                            );
+                          } catch (e) {
+                            if (!mounted || !context.mounted) return;
+                            ToastMessage.show(
+                              context,
+                              message: e.toString(),
+                              isSuccess: false,
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryOrange,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          l10n.send,
+                          style: AppTheme.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
