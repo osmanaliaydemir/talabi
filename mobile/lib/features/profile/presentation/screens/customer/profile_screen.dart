@@ -60,173 +60,171 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            SharedHeader(
-              title: localizations.profile,
-              fullName: authProvider.fullName,
-              showBackButton: false,
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMedium,
-                ),
-                children: [
-                  const SizedBox(height: AppTheme.spacingMedium),
-                  _buildMenuItem(
-                    icon: Icons.person_outline,
-                    title: localizations.editProfile,
-                    subtitle: localizations.editProfile,
-                    onTap: () {
-                      if (_profile != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EditProfileScreen(profile: _profile!),
-                          ),
-                        ).then((updated) {
-                          if (updated == true) _fetchProfile();
-                        });
-                      }
-                    },
-                    trailing: _isLoadingProfile
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : null,
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.location_on,
-                    title: localizations.myAddresses,
-                    subtitle: localizations.myAddressesDescription,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddressesScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.shopping_bag,
-                    title: localizations.orderHistory,
-                    subtitle: localizations.orderHistory,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const OrderHistoryScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.favorite_outline,
-                    title: localizations.myFavoriteProducts,
-                    subtitle: localizations.myFavoriteProductsDescription,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FavoritesScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.star_border,
-                    title: localizations.myReviews,
-                    subtitle: localizations.myReviewsDescription,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UserReviewsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.lock_outline,
-                    title: localizations.changePassword,
-                    subtitle: localizations.changePassword,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ChangePasswordScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.notifications_none,
-                    title: localizations.notifications,
-                    subtitle: localizations.notifications,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const NotificationSettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.language,
-                    title: localizations.language,
-                    subtitle: localizations.language,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LanguageSettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.accessibility,
-                    title: localizations.myProfile,
-                    subtitle: localizations.myProfile,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const AccessibilitySettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.info_outline,
-                    title: localizations.myProfile,
-                    subtitle: localizations.myProfile,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LegalMenuScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppTheme.spacingLarge),
-                  _buildLogoutButton(context, localizations),
-                  const SizedBox(height: AppTheme.spacingLarge),
-                ],
+      body: Column(
+        children: [
+          SharedHeader(
+            title: localizations.profile,
+            fullName: authProvider.fullName,
+            showBackButton: false,
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingMedium,
               ),
+              children: [
+                const SizedBox(height: AppTheme.spacingMedium),
+                _buildMenuItem(
+                  icon: Icons.person_outline,
+                  title: localizations.editProfile,
+                  subtitle: localizations.editProfile,
+                  onTap: () {
+                    if (_profile != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditProfileScreen(profile: _profile!),
+                        ),
+                      ).then((updated) {
+                        if (updated == true) _fetchProfile();
+                      });
+                    }
+                  },
+                  trailing: _isLoadingProfile
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : null,
+                ),
+                _buildMenuItem(
+                  icon: Icons.location_on,
+                  title: localizations.myAddresses,
+                  subtitle: localizations.myAddressesDescription,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddressesScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.shopping_bag,
+                  title: localizations.orderHistory,
+                  subtitle: localizations.orderHistory,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OrderHistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.favorite_outline,
+                  title: localizations.myFavoriteProducts,
+                  subtitle: localizations.myFavoriteProductsDescription,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FavoritesScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.star_border,
+                  title: localizations.myReviews,
+                  subtitle: localizations.myReviewsDescription,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserReviewsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.lock_outline,
+                  title: localizations.changePassword,
+                  subtitle: localizations.changePassword,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChangePasswordScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.notifications_none,
+                  title: localizations.notifications,
+                  subtitle: localizations.notifications,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const NotificationSettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.language,
+                  title: localizations.language,
+                  subtitle: localizations.language,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LanguageSettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.accessibility,
+                  title: localizations.myProfile,
+                  subtitle: localizations.myProfile,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const AccessibilitySettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.info_outline,
+                  title: localizations.myProfile,
+                  subtitle: localizations.myProfile,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LegalMenuScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: AppTheme.spacingLarge),
+                _buildLogoutButton(context, localizations),
+                const SizedBox(height: AppTheme.spacingLarge),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -5,6 +5,8 @@ import 'package:mobile/features/search/presentation/screens/search_screen.dart';
 import 'package:mobile/features/notifications/presentation/screens/customer/notifications_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
+import 'package:mobile/features/cart/presentation/screens/cart_screen.dart';
 
 class SharedHeader extends StatelessWidget {
   const SharedHeader({
@@ -18,6 +20,9 @@ class SharedHeader extends StatelessWidget {
     this.action,
     this.showSearch = true,
     this.showNotifications = true,
+    this.showCart = false,
+    this.onCartTap,
+    this.isCompact = false,
   });
 
   final String? title;
@@ -29,6 +34,9 @@ class SharedHeader extends StatelessWidget {
   final Widget? action;
   final bool showSearch;
   final bool showNotifications;
+  final bool showCart;
+  final VoidCallback? onCartTap;
+  final bool isCompact;
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -47,7 +55,10 @@ class SharedHeader extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: isCompact ? 6 : 8,
+          ),
           child: Row(
             children: [
               if (showBackButton) ...[
@@ -78,19 +89,21 @@ class SharedHeader extends StatelessWidget {
                       title ?? localizations.myProfile,
                       style: AppTheme.poppins(
                         color: AppTheme.textOnPrimary,
-                        fontSize: 20,
+                        fontSize: isCompact ? 19 : 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle ?? fullName ?? localizations.user,
-                      style: AppTheme.poppins(
-                        color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                    if (!isCompact || (subtitle != null || fullName != null))
+                      const SizedBox(height: 2),
+                    if (subtitle != null || fullName != null)
+                      Text(
+                        subtitle ?? fullName ?? localizations.user,
+                        style: AppTheme.poppins(
+                          color: AppTheme.textOnPrimary.withValues(alpha: 0.9),
+                          fontSize: isCompact ? 12 : 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -113,24 +126,24 @@ class SharedHeader extends StatelessWidget {
                           );
                         },
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: isCompact ? 36 : 40,
+                          height: isCompact ? 36 : 40,
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.search,
                             color: Colors.white,
-                            size: 22,
+                            size: isCompact ? 20 : 22,
                           ),
                         ),
                       ),
                       if (showNotifications) const SizedBox(width: 8),
                     ],
-                    const SizedBox(width: 8),
                     // Notification Icon
-                    if (showNotifications)
+                    if (showNotifications) ...[
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -144,16 +157,16 @@ class SharedHeader extends StatelessWidget {
                           clipBehavior: Clip.none,
                           children: [
                             Container(
-                              width: 40,
-                              height: 40,
+                              width: isCompact ? 36 : 40,
+                              height: isCompact ? 36 : 40,
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.notifications,
                                 color: Colors.white,
-                                size: 22,
+                                size: isCompact ? 20 : 22,
                               ),
                             ),
                             Consumer<NotificationProvider>(
@@ -196,6 +209,80 @@ class SharedHeader extends StatelessWidget {
                           ],
                         ),
                       ),
+                    ],
+                    // Cart Icon
+                    if (showCart) ...[
+                      if (showSearch || showNotifications)
+                        const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap:
+                            onCartTap ??
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CartScreen(showBackButton: true),
+                                ),
+                              );
+                            },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: isCompact ? 36 : 40,
+                              height: isCompact ? 36 : 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.shopping_bag_outlined,
+                                color: Colors.white,
+                                size: isCompact ? 20 : 22,
+                              ),
+                            ),
+                            Consumer<CartProvider>(
+                              builder: (context, cartProvider, child) {
+                                if (cartProvider.itemCount > 0) {
+                                  return Positioned(
+                                    top: -2,
+                                    right: -2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                        border: Border.fromBorderSide(
+                                          BorderSide(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
+                                      ),
+                                      child: Text(
+                                        '${cartProvider.itemCount}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
             ],

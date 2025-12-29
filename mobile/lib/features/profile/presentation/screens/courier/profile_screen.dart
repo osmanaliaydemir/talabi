@@ -118,15 +118,21 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: CourierHeader(
-          title: localizations?.profile ?? 'Profil & Ayarlar',
-          subtitle: authProvider.fullName ?? authProvider.email ?? 'Kurye',
-          leadingIcon: Icons.person_outline,
-          showBackButton: false,
-          onRefresh: _loadProfile,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(color: Colors.teal),
+        body: Column(
+          children: [
+            CourierHeader(
+              title: localizations?.profile ?? 'Profil & Ayarlar',
+              subtitle: authProvider.fullName ?? authProvider.email ?? 'Kurye',
+              leadingIcon: Icons.person_outline,
+              showBackButton: false,
+              onRefresh: _loadProfile,
+            ),
+            const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.teal),
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
       );
@@ -135,18 +141,24 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
     if (_courier == null) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: CourierHeader(
-          title: localizations?.profile ?? 'Profil & Ayarlar',
-          subtitle: authProvider.fullName ?? authProvider.email ?? 'Kurye',
-          leadingIcon: Icons.person_outline,
-          showBackButton: false,
-          onRefresh: _loadProfile,
-        ),
-        body: Center(
-          child: Text(
-            (localizations?.failedToLoadProfile as String?) ??
-                'Failed to load profile',
-          ),
+        body: Column(
+          children: [
+            CourierHeader(
+              title: localizations?.profile ?? 'Profil & Ayarlar',
+              subtitle: authProvider.fullName ?? authProvider.email ?? 'Kurye',
+              leadingIcon: Icons.person_outline,
+              showBackButton: false,
+              onRefresh: _loadProfile,
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  (localizations?.failedToLoadProfile as String?) ??
+                      'Failed to load profile',
+                ),
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
       );
@@ -154,20 +166,26 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CourierHeader(
-        title: localizations?.profile ?? 'Profil & Ayarlar',
-        subtitle: authProvider.fullName ?? authProvider.email ?? 'Kurye',
-        leadingIcon: Icons.person_outline,
-        showBackButton: false,
-        onRefresh: _loadProfile,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadProfile,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
-          child: _buildProfileDetails(context, authProvider),
-        ),
+      body: Column(
+        children: [
+          CourierHeader(
+            title: localizations?.profile ?? 'Profil & Ayarlar',
+            subtitle: authProvider.fullName ?? authProvider.email ?? 'Kurye',
+            leadingIcon: Icons.person_outline,
+            showBackButton: false,
+            onRefresh: _loadProfile,
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadProfile,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: _buildProfileDetails(context, authProvider),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const CourierBottomNav(currentIndex: 3),
     );
@@ -422,7 +440,8 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
               context: context,
               builder: (context) => CustomConfirmationDialog(
                 title: localizations?.logout ?? 'Çıkış Yap',
-                message: localizations?.logoutConfirm ??
+                message:
+                    localizations?.logoutConfirm ??
                     'Çıkış yapmak istediğine emin misin?',
                 confirmText: localizations?.logout ?? 'Çıkış Yap',
                 cancelText: localizations?.cancel ?? 'İptal',

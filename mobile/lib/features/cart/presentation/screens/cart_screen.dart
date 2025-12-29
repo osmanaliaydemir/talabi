@@ -241,28 +241,32 @@ class _CartScreenState extends State<CartScreen> {
                             final product = cartItem.product;
                             final isLastItem = index == cart.items.length - 1;
 
-                            return Column(
-                              children: [
-                                _buildCartItem(
-                                  context,
-                                  product,
-                                  cartItem.quantity,
-                                  cart,
-                                ),
-                                if (!isLastItem)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
-                                    child: CustomPaint(
-                                      painter: DashedLinePainter(),
-                                      child: const SizedBox(
-                                        width: double.infinity,
-                                        height: 1,
+                            return _SlidableCartItem(
+                              key: Key('slidable_cart_item_${product.id}'),
+                              onDelete: () => cart.removeItem(product.id),
+                              child: Column(
+                                children: [
+                                  _buildCartItem(
+                                    context,
+                                    product,
+                                    cartItem.quantity,
+                                    cart,
+                                  ),
+                                  if (!isLastItem)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      child: CustomPaint(
+                                        painter: DashedLinePainter(),
+                                        child: const SizedBox(
+                                          width: double.infinity,
+                                          height: 1,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             );
                           },
                         ),
@@ -1092,6 +1096,142 @@ class _CartScreenState extends State<CartScreen> {
           },
         );
       },
+    );
+  }
+}
+
+class _SlidableCartItem extends StatefulWidget {
+  const _SlidableCartItem({
+    required this.child,
+    required this.onDelete,
+    super.key,
+  });
+
+  final Widget child;
+  final VoidCallback onDelete;
+
+  @override
+  State<_SlidableCartItem> createState() => _SlidableCartItemState();
+}
+
+class _SlidableCartItemState extends State<_SlidableCartItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  double _dragExtent = 0;
+  static const double _buttonWidth = 90.0;
+  static const double _threshold = 150.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    setState(() {
+      _dragExtent += details.primaryDelta!;
+      if (_dragExtent > 0) _dragExtent = 0;
+      if (_dragExtent < -_threshold * 1.5) _dragExtent = -_threshold * 1.5;
+    });
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (_dragExtent < -_threshold) {
+      _delete();
+    } else if (_dragExtent < -_buttonWidth / 2) {
+      _reveal();
+    } else {
+      _collapse();
+    }
+  }
+
+  void _reveal() {
+    _animateTo(-_buttonWidth);
+  }
+
+  void _collapse() {
+    _animateTo(0);
+  }
+
+  void _delete() {
+    _animateTo(-MediaQuery.of(context).size.width).then((_) {
+      widget.onDelete();
+    });
+  }
+
+  Future<void> _animateTo(double target) async {
+    final start = _dragExtent;
+    _controller.reset();
+    final animation = Tween<double>(
+      begin: start,
+      end: target,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    animation.addListener(() {
+      setState(() {
+        _dragExtent = animation.value;
+      });
+    });
+
+    await _controller.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        // Background Delete Button
+        Positioned.fill(
+          child: ExcludeSemantics(
+            child: Container(
+              alignment: Alignment.centerRight,
+              decoration: BoxDecoration(
+                color: Colors.red.shade600,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextButton.icon(
+                onPressed: _delete,
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                label: Text(
+                  localizations.delete,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Foreground Content
+        Transform.translate(
+          offset: Offset(_dragExtent, 0),
+          child: GestureDetector(
+            onHorizontalDragUpdate: _onHorizontalDragUpdate,
+            onHorizontalDragEnd: _onHorizontalDragEnd,
+            behavior: HitTestBehavior.opaque,
+            child: Container(color: Colors.white, child: widget.child),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -279,64 +279,65 @@ class CartProvider with ChangeNotifier {
   }
 
   Future<void> loadCart() async {
+    if (_isLoading) return;
     _isLoading = true;
     notifyListeners();
 
     try {
       final cartData = await _apiService.getCart();
-      _items.clear();
+      final Map<String, CartItem> newItems = {};
 
       if (cartData['items'] != null) {
+        final List<Future<void>> fetchTasks = [];
         for (final item in cartData['items']) {
-          String vendorId = item['vendorId']?.toString() ?? '0';
-          String? vendorName = item['vendorName'];
+          fetchTasks.add(() async {
+            String vendorId = item['vendorId']?.toString() ?? '0';
+            String? vendorName = item['vendorName'];
 
-          // If backend doesn't provide vendorId, fetch it from product endpoint
-          if (vendorId == '0') {
-            try {
-              LoggerService().debug(
-                '🛒 [CART] Backend missing vendorId for product ${item['productId']}, fetching...',
-              );
-              // Log the raw item to see what's missing
-              LoggerService().debug('🛒 [CART] Raw Item Data: $item');
-
-              final productData = await _apiService.getProduct(
-                item['productId'],
-              );
-              vendorId = productData.vendorId;
-              vendorName = productData.vendorName;
-              LoggerService().debug('🛒 [CART] Fetched vendorId: $vendorId');
-            } catch (e, stackTrace) {
-              LoggerService().warning(
-                '🛒 [CART] Error fetching product details',
-                e,
-                stackTrace,
-              );
-              // Continue with vendorId = 0 if fetch fails
+            // If backend doesn't provide vendorId, fetch it from product endpoint
+            if (vendorId == '0') {
+              try {
+                final productData = await _apiService.getProduct(
+                  item['productId'],
+                );
+                vendorId = productData.vendorId;
+                vendorName = productData.vendorName;
+              } catch (e, stackTrace) {
+                LoggerService().warning(
+                  '🛒 [CART] Error fetching product details for ${item['productId']}',
+                  e,
+                  stackTrace,
+                );
+              }
             }
-          }
 
-          final product = Product(
-            id: item['productId'].toString(),
-            vendorId: vendorId,
-            vendorName: vendorName,
-            name: item['productName'],
-            description: null,
-            price: (item['productPrice'] as num).toDouble(),
-            currency: item['currency'] != null
-                ? Currency.fromInt(item['currency'] as int?)
-                : Currency.fromString(item['currencyCode'] as String?),
-            imageUrl: item['productImageUrl'],
-            vendorType: item['vendorType'],
-          );
+            final product = Product(
+              id: item['productId'].toString(),
+              vendorId: vendorId,
+              vendorName: vendorName,
+              name: item['productName'],
+              description: null,
+              price: (item['productPrice'] as num).toDouble(),
+              currency: item['currency'] != null
+                  ? Currency.fromInt(item['currency'] as int?)
+                  : Currency.fromString(item['currencyCode'] as String?),
+              imageUrl: item['productImageUrl'],
+              vendorType: item['vendorType'],
+            );
 
-          _items[product.id] = CartItem(
-            product: product,
-            quantity: item['quantity'],
-            backendId: item['id'].toString(), // Store backend cart item ID
-          );
+            newItems[product.id] = CartItem(
+              product: product,
+              quantity: item['quantity'],
+              backendId: item['id'].toString(), // Store backend cart item ID
+            );
+          }());
         }
+        await Future.wait(fetchTasks);
       }
+
+      // Update _items with the new data
+      _items.clear();
+      _items.addAll(newItems);
 
       // Parse Backend Discount
       _backendDiscountAmount =
@@ -459,7 +460,7 @@ class CartProvider with ChangeNotifier {
             data: {'productId': product.id, 'quantity': 1},
           );
           await _syncService.addToQueue(action);
-          LoggerService().debug('📦 [CART] Action queued: addToCart');
+          // LoggerService().debug('📦 [CART] Action queued: addToCart');
         } else {
           // Re-throw error if no sync service available
           rethrow;
@@ -482,7 +483,7 @@ class CartProvider with ChangeNotifier {
           data: {'productId': product.id, 'quantity': 1},
         );
         await _syncService.addToQueue(action);
-        LoggerService().debug('📦 [CART] Offline - Action queued: addToCart');
+        // LoggerService().debug('📦 [CART] Offline - Action queued: addToCart');
       }
     }
   }
@@ -599,7 +600,7 @@ class CartProvider with ChangeNotifier {
             data: {'itemId': cartItem.backendId!},
           );
           await _syncService.addToQueue(action);
-          LoggerService().debug('📦 [CART] Action queued: removeFromCart');
+          // LoggerService().debug('📦 [CART] Action queued: removeFromCart');
         }
       }
     } else if (!isOnline && cartItem != null && cartItem.backendId != null) {
@@ -611,9 +612,7 @@ class CartProvider with ChangeNotifier {
           data: {'itemId': cartItem.backendId!},
         );
         await _syncService.addToQueue(action);
-        LoggerService().debug(
-          '📦 [CART] Offline - Action queued: removeFromCart',
-        );
+        // LoggerService().debug('📦 [CART] Offline - Action queued: removeFromCart');
       }
     }
   }

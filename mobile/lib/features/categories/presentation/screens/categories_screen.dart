@@ -4,7 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/categories/presentation/screens/category_products_screen.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/features/home/presentation/widgets/home_header.dart';
+import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -220,12 +220,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           body: Column(
             children: [
-              HomeHeader(
+              SharedHeader(
                 title: localizations.categories,
                 subtitle: localizations.discover,
-                leadingIcon: Icons.category,
                 showBackButton: true,
                 showCart: true,
+                isCompact: true,
               ),
               Expanded(
                 child: FutureBuilder<List<Map<String, dynamic>>>(

@@ -21,6 +21,7 @@ class NotificationProvider extends ChangeNotifier {
       _vendorNotifications.where((n) => !n.isRead).length;
 
   Future<void> loadNotifications() async {
+    if (_isLoading) return;
     _isLoading = true;
     _error = null;
     notifyListeners();

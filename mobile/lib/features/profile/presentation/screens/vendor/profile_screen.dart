@@ -78,18 +78,24 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: VendorHeader(
-          title: localizations.vendorProfileTitle,
-          subtitle:
-              authProvider.fullName ??
-              authProvider.email ??
-              localizations.vendorFallbackSubtitle,
-          leadingIcon: Icons.person_outline,
-          showBackButton: false,
-          onRefresh: _loadProfile,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(color: Colors.deepPurple),
+        body: Column(
+          children: [
+            VendorHeader(
+              title: localizations.vendorProfileTitle,
+              subtitle:
+                  authProvider.fullName ??
+                  authProvider.email ??
+                  localizations.vendorFallbackSubtitle,
+              leadingIcon: Icons.person_outline,
+              showBackButton: false,
+              onRefresh: _loadProfile,
+            ),
+            const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.deepPurple),
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
       );
@@ -98,40 +104,56 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
     if (_profile == null) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: VendorHeader(
-          title: localizations.vendorProfileTitle,
-          subtitle:
-              authProvider.fullName ??
-              authProvider.email ??
-              localizations.vendorFallbackSubtitle,
-          leadingIcon: Icons.person_outline,
-          showBackButton: false,
-          onRefresh: _loadProfile,
+        body: Column(
+          children: [
+            VendorHeader(
+              title: localizations.vendorProfileTitle,
+              subtitle:
+                  authProvider.fullName ??
+                  authProvider.email ??
+                  localizations.vendorFallbackSubtitle,
+              leadingIcon: Icons.person_outline,
+              showBackButton: false,
+              onRefresh: _loadProfile,
+            ),
+            Expanded(
+              child: Center(child: Text(localizations.profileLoadFailed(''))),
+            ),
+          ],
         ),
-        body: Center(child: Text(localizations.profileLoadFailed(''))),
         bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
       );
     }
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: VendorHeader(
-        title: localizations.vendorProfileTitle,
-        subtitle:
-            authProvider.fullName ??
-            authProvider.email ??
-            localizations.vendorFallbackSubtitle,
-        leadingIcon: Icons.person_outline,
-        showBackButton: false,
-        onRefresh: _loadProfile,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadProfile,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
-          child: _buildProfileDetails(context, authProvider, localizations),
-        ),
+      body: Column(
+        children: [
+          VendorHeader(
+            title: localizations.vendorProfileTitle,
+            subtitle:
+                authProvider.fullName ??
+                authProvider.email ??
+                localizations.vendorFallbackSubtitle,
+            leadingIcon: Icons.person_outline,
+            showBackButton: false,
+            onRefresh: _loadProfile,
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadProfile,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: _buildProfileDetails(
+                  context,
+                  authProvider,
+                  localizations,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
     );

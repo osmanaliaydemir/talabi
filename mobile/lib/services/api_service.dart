@@ -63,6 +63,9 @@ class ApiService {
   final NotificationRemoteDataSource _notificationRemoteDataSource;
   final UserRemoteDataSource _userRemoteDataSource;
   final CacheService _cacheService;
+  Map<String, String>? _cachedSystemSettings;
+  List<dynamic>? _cachedAddresses;
+  final Map<String, List<Campaign>> _cachedCampaigns = {};
 
   Dio get dio => _networkClient.dio;
   static const String baseUrl = NetworkClient.baseUrl;
@@ -610,6 +613,9 @@ class ApiService {
 
   // Address methods
   Future<List<dynamic>> getAddresses() async {
+    if (_cachedAddresses != null) {
+      return _cachedAddresses!;
+    }
     try {
       final response = await dio.get('/addresses');
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -625,10 +631,12 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Adresler getirilemedi');
         }
 
-        return apiResponse.data!;
+        _cachedAddresses = apiResponse.data!;
+        return _cachedAddresses!;
       }
       // Eski format (direkt liste)
-      return response.data as List;
+      _cachedAddresses = response.data as List;
+      return _cachedAddresses!;
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching addresses', e, stackTrace);
       rethrow;
@@ -638,6 +646,7 @@ class ApiService {
   Future<void> createAddress(Map<String, dynamic> data) async {
     try {
       final response = await dio.post('/addresses', data: data);
+      _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -659,6 +668,7 @@ class ApiService {
   Future<void> updateAddress(String id, Map<String, dynamic> data) async {
     try {
       final response = await dio.put('/addresses/$id', data: data);
+      _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -680,6 +690,7 @@ class ApiService {
   Future<void> deleteAddress(String id) async {
     try {
       final response = await dio.delete('/addresses/$id');
+      _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -840,29 +851,40 @@ class ApiService {
 
   // System Settings
   Future<Map<String, String>> getSystemSettings() async {
+    if (_cachedSystemSettings != null) {
+      return _cachedSystemSettings!;
+    }
     try {
       final response = await dio.get('/system-settings');
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
+        Map<String, String> settings = {};
         // Check if wrapped in ApiResponse (just in case future changes)
         if (data.containsKey('success') && data.containsKey('data')) {
           final apiData = data['data'];
           if (apiData is Map<String, dynamic>) {
-            return Map<String, String>.from(
+            settings = Map<String, String>.from(
               apiData.map((key, value) => MapEntry(key, value.toString())),
             );
           }
+        } else {
+          // Assume raw map
+          settings = Map<String, String>.from(
+            data.map((key, value) => MapEntry(key, value.toString())),
+          );
         }
-        // Assume raw map
-        return Map<String, String>.from(
-          data.map((key, value) => MapEntry(key, value.toString())),
-        );
+        _cachedSystemSettings = settings;
+        return settings;
       }
       return {};
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching system settings', e, stackTrace);
       return {};
     }
+  }
+
+  void clearSettingsCache() {
+    _cachedSystemSettings = null;
   }
 
   Future<VersionSettingsModel?> getVersionSettings() async {
@@ -929,6 +951,10 @@ class ApiService {
     String? cityId,
     String? districtId,
   }) async {
+    final cacheKey = '${vendorType}_${cityId}_$districtId';
+    if (_cachedCampaigns.containsKey(cacheKey)) {
+      return _cachedCampaigns[cacheKey]!;
+    }
     try {
       final queryParams = <String, dynamic>{};
       if (vendorType != null) queryParams['vendorType'] = vendorType;
@@ -940,9 +966,11 @@ class ApiService {
         queryParameters: queryParams,
       );
       if (response.data is List) {
-        return (response.data as List)
+        final campaigns = (response.data as List)
             .map((e) => Campaign.fromJson(e as Map<String, dynamic>))
             .toList();
+        _cachedCampaigns[cacheKey] = campaigns;
+        return campaigns;
       }
       return [];
     } catch (e, stackTrace) {
