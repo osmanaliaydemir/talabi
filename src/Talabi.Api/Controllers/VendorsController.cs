@@ -52,8 +52,6 @@ public class VendorsController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
@@ -163,8 +161,6 @@ public class VendorsController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
@@ -204,7 +200,11 @@ public class VendorsController : BaseController
                 Description = p.Description,
                 Price = p.Price,
                 Currency = p.Currency,
-                ImageUrl = p.ImageUrl
+                ImageUrl = p.ImageUrl,
+                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10,
+                ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
+                Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
+                    .Select(r => (double?)r.Rating).Average()
             },
             page,
             pageSize);
@@ -221,7 +221,8 @@ public class VendorsController : BaseController
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
             result,
-            LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -235,8 +236,6 @@ public class VendorsController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
@@ -254,7 +253,11 @@ public class VendorsController : BaseController
                 Description = p.Description,
                 Price = p.Price,
                 Currency = p.Currency,
-                ImageUrl = p.ImageUrl
+                ImageUrl = p.ImageUrl,
+                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10,
+                ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
+                Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
+                    .Select(r => (double?)r.Rating).Average()
             },
             page,
             pageSize);
@@ -283,8 +286,6 @@ public class VendorsController : BaseController
     public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> Search(
         [FromQuery] VendorSearchRequestDto request)
     {
-
-
         IQueryable<Vendor> query = UnitOfWork.Vendors.Query()
             .Include(v => v.Orders);
 
@@ -324,7 +325,8 @@ public class VendorsController : BaseController
             var maxDistance = request.MaxDistanceInKm.Value;
 
             query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= maxDistance);
+                                     GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+                                         v.Longitude!.Value) <= maxDistance);
         }
 
         // Sorting
@@ -392,7 +394,8 @@ public class VendorsController : BaseController
 
         return Ok(new ApiResponse<PagedResultDto<VendorDto>>(
             result,
-            LocalizationService.GetLocalizedString(ResourceName, "VendorSearchResultsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "VendorSearchResultsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
 
@@ -459,8 +462,6 @@ public class VendorsController : BaseController
     public async Task<ActionResult<ApiResponse<List<AutocompleteResultDto>>>> Autocomplete(
         [FromQuery] string query)
     {
-
-
         if (string.IsNullOrWhiteSpace(query))
         {
             return Ok(new ApiResponse<List<AutocompleteResultDto>>(
@@ -481,6 +482,7 @@ public class VendorsController : BaseController
 
         return Ok(new ApiResponse<List<AutocompleteResultDto>>(
             results,
-            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 }

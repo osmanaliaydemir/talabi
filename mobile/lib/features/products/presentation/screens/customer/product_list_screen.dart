@@ -225,8 +225,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     width: null, // Full width in grid
                     heroTagPrefix: 'product_list_',
                     isFavorite: isFavorite,
-                    rating: '4.7',
-                    ratingCount: '2.3k',
                     onFavoriteTap: () => _toggleFavorite(product),
                   );
                 },

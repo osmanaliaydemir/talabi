@@ -676,7 +676,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       onTap: _scrollToReviews,
                                       child: Semantics(
                                         label:
-                                            '${_reviewsSummary != null ? _reviewsSummary!.averageRating.toStringAsFixed(1) : '0.0'} ${l10n.yildiz}, ${_reviewsSummary != null ? _reviewsSummary!.totalRatings : 0} ${l10n.degerlendirme}',
+                                            '${(_reviewsSummary?.averageRating ?? _product?.rating ?? 0.0).toStringAsFixed(1)} ${l10n.yildiz}, ${_reviewsSummary?.totalRatings ?? _product?.reviewCount ?? 0} ${l10n.degerlendirme}',
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
@@ -691,13 +691,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           child: _buildInfoItem(
                                             icon: Icons.star,
                                             iconColor: Colors.orange,
-                                            text: _reviewsSummary != null
-                                                ? _reviewsSummary!.averageRating
-                                                      .toStringAsFixed(1)
-                                                : '0.0',
-                                            subText: _reviewsSummary != null
-                                                ? '(${_reviewsSummary!.totalRatings}+)'
-                                                : '(0+)',
+                                            text:
+                                                (_reviewsSummary
+                                                            ?.averageRating ??
+                                                        _product?.rating ??
+                                                        0.0)
+                                                    .toStringAsFixed(1),
+                                            subText:
+                                                '(${_reviewsSummary?.totalRatings ?? _product?.reviewCount ?? 0}+)',
                                           ),
                                         ),
                                       ),
