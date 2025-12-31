@@ -72,7 +72,16 @@ public class CartController(
             cartDto.CouponId = cart.CouponId;
             cartDto.CampaignId = cart.CampaignId;
             cartDto.CouponCode = cart.Coupon?.Code;
+            cartDto.CouponCode = cart.Coupon?.Code;
             cartDto.CampaignTitle = cart.Campaign?.Title;
+
+            // Populate Rating and ReviewCount for each item
+            foreach (var item in cartDto.Items)
+            {
+                item.ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == item.ProductId && r.IsApproved);
+                item.Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == item.ProductId && r.IsApproved)
+                    .Select(r => (double?)r.Rating).Average();
+            }
 
             // Calculate Campaign Discount
             if (cart.Campaign != null)

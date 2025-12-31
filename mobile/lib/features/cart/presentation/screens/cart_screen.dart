@@ -894,44 +894,46 @@ class _CartScreenState extends State<CartScreen> {
                       ],
                     ),
                     // Rating - Sağ üst köşe
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Semantics(
-                        label: '4.7 ${localizations.yildiz}',
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withValues(
-                              alpha: 0.1,
+                    if (product.rating != null && product.rating! > 0)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Semantics(
+                          label:
+                              '${product.rating!.toStringAsFixed(1)} ${localizations.yildiz}',
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
                             ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.star,
-                                size: 14,
-                                color: Colors.orange[700],
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryOrange.withValues(
+                                alpha: 0.1,
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '4.7',
-                                style: TextStyle(
-                                  fontSize: 12,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  size: 14,
                                   color: Colors.orange[700],
-                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 2),
+                                Text(
+                                  product.rating!.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

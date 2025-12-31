@@ -25,6 +25,8 @@ public class CartItemDto
     public Guid VendorId { get; set; }
     public string VendorName { get; set; } = string.Empty;
     public int VendorType { get; set; } // 1 = Restaurant, 2 = Market
+    public double? Rating { get; set; }
+    public int ReviewCount { get; set; }
 }
 
 public class AddToCartDto

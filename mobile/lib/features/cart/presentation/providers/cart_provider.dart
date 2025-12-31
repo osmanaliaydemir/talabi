@@ -323,6 +323,8 @@ class CartProvider with ChangeNotifier {
                   : Currency.fromString(item['currencyCode'] as String?),
               imageUrl: item['productImageUrl'],
               vendorType: item['vendorType'],
+              rating: (item['rating'] as num?)?.toDouble(),
+              reviewCount: item['reviewCount'],
             );
 
             newItems[product.id] = CartItem(
