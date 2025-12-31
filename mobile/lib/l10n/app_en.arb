@@ -1,5 +1,9 @@
 {
   "@@locale": "en",
+  "bestSeller": "Best Seller",
+  "@bestSeller": {
+    "description": "Best Seller"
+  },
   "upsellMessage": "Add {amount} more to get the discount!",
   "@upsellMessage": {
     "placeholders": {

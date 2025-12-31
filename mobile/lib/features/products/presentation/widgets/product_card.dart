@@ -204,44 +204,45 @@ class _ProductCardState extends State<ProductCard> {
                             ),
                           ),
                         // Best Seller Badge
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          child: Semantics(
-                            label: 'Çok Satan Ürün',
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFF7F00),
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(12),
+                        if (widget.product.isBestSeller)
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            child: Semantics(
+                              label: 'Çok Satan Ürün',
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.stars,
-                                    size: 12,
-                                    color: Colors.white,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFF7F00),
+                                  borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(12),
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Best Seller',
-                                    style: AppTheme.poppins(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.stars,
+                                      size: 12,
                                       color: Colors.white,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      localizations.bestSeller,
+                                      style: AppTheme.poppins(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
                         // Vendor Menu
                         if (isVendorCard)
                           Positioned(

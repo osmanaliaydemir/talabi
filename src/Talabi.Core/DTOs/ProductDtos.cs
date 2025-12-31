@@ -15,6 +15,7 @@ public class ProductDto
     public decimal Price { get; set; }
     public Currency Currency { get; set; } = Currency.TRY;
     public string? ImageUrl { get; set; }
+    public bool IsBestSeller { get; set; }
 }
 
 public class VendorProductDto

@@ -336,8 +336,9 @@ class CartProvider with ChangeNotifier {
       }
 
       // Update _items with the new data
-      _items.clear();
-      _items.addAll(newItems);
+      _items
+        ..clear()
+        ..addAll(newItems);
 
       // Parse Backend Discount
       _backendDiscountAmount =

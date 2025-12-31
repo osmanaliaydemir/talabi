@@ -193,8 +193,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 _buildMenuItem(
                   icon: Icons.accessibility,
-                  title: localizations.myProfile,
-                  subtitle: localizations.myProfile,
+                  title: localizations.accessibilityAndDisplay,
+                  subtitle: localizations.accessibilityAndDisplay,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -207,8 +207,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 _buildMenuItem(
                   icon: Icons.info_outline,
-                  title: localizations.myProfile,
-                  subtitle: localizations.myProfile,
+                  title: localizations.legalDocuments,
+                  subtitle: localizations.legalDocumentsDescription,
                   onTap: () {
                     Navigator.push(
                       context,

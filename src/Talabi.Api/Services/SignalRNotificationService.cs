@@ -58,4 +58,22 @@ public class SignalRNotificationService : INotificationService
             languageCode
         });
     }
+
+    public async Task SendNewOrderNotificationAsync(string userId, Guid orderId, string? languageCode = null)
+    {
+        await _hubContext.Clients.User(userId).SendAsync("ReceiveNewOrder", new
+        {
+            orderId,
+            languageCode
+        });
+    }
+
+    public async Task SendCourierAcceptedNotificationAsync(string userId, Guid orderId, string? languageCode = null)
+    {
+        await _hubContext.Clients.User(userId).SendAsync("ReceiveCourierAccepted", new
+        {
+            orderId,
+            languageCode
+        });
+    }
 }

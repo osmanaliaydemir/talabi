@@ -131,7 +131,8 @@ public class ProductsController : BaseController
                 Category = p.Category,
                 Price = p.Price,
                 Currency = p.Currency,
-                ImageUrl = p.ImageUrl
+                ImageUrl = p.ImageUrl,
+                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10
             },
             request.Page,
             request.PageSize);
@@ -324,7 +325,8 @@ public class ProductsController : BaseController
                         Price = p.Price,
                         Currency = p.Currency,
                         ImageUrl = p.ImageUrl,
-                        VendorType = p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null)
+                        VendorType = p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null),
+                        IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10
                     },
                     page,
                     pageSize);
@@ -368,6 +370,7 @@ public class ProductsController : BaseController
         }
 
         var productDto = _mapper.Map<ProductDto>(product);
+        productDto.IsBestSeller = await UnitOfWork.OrderItems.Query().CountAsync(oi => oi.ProductId == product.Id) > 10;
 
         if (product == null)
         {
@@ -453,7 +456,8 @@ public class ProductsController : BaseController
                 CategoryId = p.CategoryId,
                 Price = p.Price,
                 Currency = p.Currency,
-                ImageUrl = p.ImageUrl
+                ImageUrl = p.ImageUrl,
+                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10
             },
             page,
             pageSize);

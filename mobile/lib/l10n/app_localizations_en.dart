@@ -9,6 +9,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get bestSeller => 'Best Seller';
+
+  @override
   String upsellMessage(String amount) {
     return 'Add $amount more to get the discount!';
   }

@@ -31,6 +31,7 @@ public class OrdersControllerTests
     private readonly ILogger<OrdersController> _logger;
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
+    private readonly Mock<INotificationService> _mockNotificationService;
     private readonly OrdersController _controller;
 
     public OrdersControllerTests()
@@ -41,7 +42,9 @@ public class OrdersControllerTests
         _mockMapper = new Mock<IMapper>();
         _logger = ControllerTestHelpers.CreateMockLogger<OrdersController>();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
+        _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
+        _mockNotificationService = new Mock<INotificationService>();
 
         _controller = new OrdersController(
             _mockUnitOfWork.Object,
@@ -50,7 +53,8 @@ public class OrdersControllerTests
             _mockUserContextService.Object,
             _mockAssignmentService.Object,
             _mockOrderService.Object,
-            _mockMapper.Object
+            _mockMapper.Object,
+            _mockNotificationService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()

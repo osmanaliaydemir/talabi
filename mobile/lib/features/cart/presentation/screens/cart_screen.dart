@@ -16,6 +16,8 @@ import 'package:mobile/services/version_check_service.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
+import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/campaigns/data/models/campaign.dart';
 
 class CartScreen extends StatefulWidget {
@@ -31,6 +33,8 @@ class _CartScreenState extends State<CartScreen> {
   int? _currentVendorType;
   Campaign? _upsellCampaign;
   double? _upsellRemainingAmount;
+  final Map<String, bool> _favoriteStatus = {};
+  bool _isLoadingFavorites = false;
 
   @override
   void initState() {
@@ -39,6 +43,7 @@ class _CartScreenState extends State<CartScreen> {
       final cart = Provider.of<CartProvider>(context, listen: false);
       // Main load handling moved to didChangeDependencies to support switching
       await cart.loadCart();
+      _loadFavorites();
       _checkUpsellOpportunities(cart); // Check for upsell after load
 
       if (mounted) {
@@ -128,6 +133,53 @@ class _CartScreenState extends State<CartScreen> {
           listen: false,
         ).fetchRecommendations(type: vendorType);
       });
+    }
+  }
+
+  Future<void> _loadFavorites() async {
+    if (_isLoadingFavorites) return;
+    setState(() => _isLoadingFavorites = true);
+    try {
+      final favoritesResult = await ApiService().getFavorites();
+      if (mounted) {
+        setState(() {
+          _favoriteStatus.clear();
+          for (final fav in favoritesResult.items) {
+            _favoriteStatus[fav.id.toString()] = true;
+          }
+        });
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading favorites in cart', e, stackTrace);
+    } finally {
+      if (mounted) setState(() => _isLoadingFavorites = false);
+    }
+  }
+
+  Future<void> _toggleFavorite(product) async {
+    final productId = product.id.toString();
+    final isFav = _favoriteStatus[productId] ?? false;
+
+    try {
+      if (isFav) {
+        await ApiService().removeFromFavorites(productId);
+      } else {
+        await ApiService().addToFavorites(productId);
+      }
+      if (mounted) {
+        setState(() {
+          _favoriteStatus[productId] = !isFav;
+        });
+        ToastMessage.show(
+          context,
+          message: !isFav ? 'Favorilere eklendi' : 'Favorilerden çıkarıldı',
+          isSuccess: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastMessage.show(context, message: 'Hata: $e', isSuccess: false);
+      }
     }
   }
 
@@ -241,32 +293,37 @@ class _CartScreenState extends State<CartScreen> {
                             final product = cartItem.product;
                             final isLastItem = index == cart.items.length - 1;
 
-                            return _SlidableCartItem(
-                              key: Key('slidable_cart_item_${product.id}'),
-                              onDelete: () => cart.removeItem(product.id),
-                              child: Column(
-                                children: [
-                                  _buildCartItem(
+                            return Column(
+                              children: [
+                                _SlidableCartItem(
+                                  key: Key('slidable_cart_item_${product.id}'),
+                                  onDelete: () => cart.removeItem(product.id),
+                                  onFavorite: () => _toggleFavorite(product),
+                                  isFavorite:
+                                      _favoriteStatus[product.id.toString()] ??
+                                      false,
+                                  child: _buildCartItem(
                                     context,
                                     product,
                                     cartItem.quantity,
                                     cart,
                                   ),
-                                  if (!isLastItem)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                      child: CustomPaint(
-                                        painter: DashedLinePainter(),
-                                        child: const SizedBox(
-                                          width: double.infinity,
-                                          height: 1,
-                                        ),
+                                ),
+                                if (!isLastItem)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical:
+                                          12, // Slightly more space for the dashed line
+                                    ),
+                                    child: CustomPaint(
+                                      painter: DashedLinePainter(),
+                                      child: const SizedBox(
+                                        width: double.infinity,
+                                        height: 1,
                                       ),
                                     ),
-                                ],
-                              ),
+                                  ),
+                              ],
                             );
                           },
                         ),
@@ -569,7 +626,7 @@ class _CartScreenState extends State<CartScreen> {
     final localizations = AppLocalizations.of(context)!;
     return MergeSemantics(
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.zero,
         child: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -586,24 +643,56 @@ class _CartScreenState extends State<CartScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: product.imageUrl != null
-                    ? OptimizedCachedImage.productThumbnail(
-                        imageUrl: product.imageUrl!,
-                        width: 100,
-                        height: 100,
-                        borderRadius: BorderRadius.circular(12),
-                        semanticsLabel:
-                            '${product.name} ${localizations.productResmi}',
-                      )
-                    : Container(
-                        width: 100,
-                        height: 100,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.fastfood, size: 50),
+              // Product Image with Favorite Icon
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: product.imageUrl != null
+                        ? OptimizedCachedImage.productThumbnail(
+                            imageUrl: product.imageUrl!,
+                            width: 100,
+                            height: 100,
+                            borderRadius: BorderRadius.circular(12),
+                            semanticsLabel:
+                                '${product.name} ${localizations.productResmi}',
+                          )
+                        : Container(
+                            width: 100,
+                            height: 100,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.fastfood, size: 50),
+                          ),
+                  ),
+                  // Favorite Icon Overlay
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
+                      child: Icon(
+                        _favoriteStatus[product.id.toString()] ?? false
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: _favoriteStatus[product.id.toString()] ?? false
+                            ? Colors.red
+                            : Colors.grey.shade400,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(width: 12),
               // Product Details
@@ -1104,11 +1193,15 @@ class _SlidableCartItem extends StatefulWidget {
   const _SlidableCartItem({
     required this.child,
     required this.onDelete,
+    required this.onFavorite,
+    required this.isFavorite,
     super.key,
   });
 
   final Widget child;
   final VoidCallback onDelete;
+  final VoidCallback onFavorite;
+  final bool isFavorite;
 
   @override
   State<_SlidableCartItem> createState() => _SlidableCartItemState();
@@ -1120,6 +1213,7 @@ class _SlidableCartItemState extends State<_SlidableCartItem>
   double _dragExtent = 0;
   static const double _buttonWidth = 90.0;
   static const double _threshold = 150.0;
+  static _SlidableCartItemState? _activeItem;
 
   @override
   void initState() {
@@ -1132,30 +1226,53 @@ class _SlidableCartItemState extends State<_SlidableCartItem>
 
   @override
   void dispose() {
+    if (_activeItem == this) _activeItem = null;
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    if (_activeItem != null && _activeItem != this) {
+      _activeItem!._collapse();
+    }
+    _activeItem = this;
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     setState(() {
       _dragExtent += details.primaryDelta!;
-      if (_dragExtent > 0) _dragExtent = 0;
+      // Limit dragging: delete side (left swipe) and favorite side (right swipe)
       if (_dragExtent < -_threshold * 1.5) _dragExtent = -_threshold * 1.5;
+      if (_dragExtent > _threshold * 1.5) _dragExtent = _threshold * 1.5;
     });
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
     if (_dragExtent < -_threshold) {
       _delete();
+    } else if (_dragExtent > _threshold) {
+      _favorite();
     } else if (_dragExtent < -_buttonWidth / 2) {
-      _reveal();
+      _revealDelete();
+    } else if (_dragExtent > _buttonWidth / 2) {
+      _revealFavorite();
     } else {
       _collapse();
     }
   }
 
-  void _reveal() {
+  void _revealDelete() {
     _animateTo(-_buttonWidth);
+  }
+
+  void _revealFavorite() {
+    _animateTo(_buttonWidth);
+  }
+
+  void _favorite() {
+    _animateTo(0).then((_) {
+      widget.onFavorite();
+    });
   }
 
   void _collapse() {
@@ -1192,39 +1309,74 @@ class _SlidableCartItemState extends State<_SlidableCartItem>
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
-        // Background Delete Button
-        Positioned.fill(
-          child: ExcludeSemantics(
-            child: Container(
-              alignment: Alignment.centerRight,
-              decoration: BoxDecoration(
-                color: Colors.red.shade600,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextButton.icon(
-                onPressed: _delete,
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.white,
-                  size: 24,
+        // Background Buttons (Delete and Favorite)
+        if (_dragExtent < 0)
+          Positioned.fill(
+            child: ExcludeSemantics(
+              child: Container(
+                alignment: Alignment.centerRight,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade600,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                label: Text(
-                  localizations.delete,
-                  style: const TextStyle(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextButton.icon(
+                  onPressed: _delete,
+                  icon: const Icon(
+                    Icons.delete_outline,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    size: 24,
+                  ),
+                  label: Text(
+                    localizations.delete,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        if (_dragExtent > 0)
+          Positioned.fill(
+            child: ExcludeSemantics(
+              child: Container(
+                alignment: Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  color: widget.isFavorite
+                      ? AppTheme.primaryOrange
+                      : Colors.amber.shade600,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextButton.icon(
+                  onPressed: _favorite,
+                  icon: Icon(
+                    widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  label: Text(
+                    widget.isFavorite
+                        ? localizations.removeFromFavorites
+                        : localizations.addToFavorites,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         // Foreground Content
         Transform.translate(
           offset: Offset(_dragExtent, 0),
           child: GestureDetector(
+            onHorizontalDragStart: _onHorizontalDragStart,
             onHorizontalDragUpdate: _onHorizontalDragUpdate,
             onHorizontalDragEnd: _onHorizontalDragEnd,
             behavior: HitTestBehavior.opaque,

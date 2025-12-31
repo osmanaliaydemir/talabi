@@ -105,11 +105,8 @@ class NetworkClient {
         onError: (error, handler) async {
           _releasePermit(error.requestOptions);
 
-          final errorMessage =
-              '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri} | Status: ${error.response?.statusCode}';
-          LoggerService().error(errorMessage, error, error.stackTrace);
-
           // Handle 401 Unauthorized - Refresh Token Logic
+          // We check this BEFORE logging to avoid noisy logs on successful refresh
           if (error.response?.statusCode == 401 &&
               !error.requestOptions.path.contains('login') &&
               !error.requestOptions.path.contains('refresh-token') &&
@@ -139,6 +136,9 @@ class NetworkClient {
                     );
 
                     _refreshCompleter!.complete(newTokens);
+                    LoggerService().debug(
+                      '🔄 [AUTH] Token refreshed successfully. Retrying request...',
+                    );
                   } catch (e) {
                     _handleAuthFailure();
                     _refreshCompleter!.completeError(e);
@@ -160,9 +160,13 @@ class NetworkClient {
                 _handleAuthFailure();
               }
             } catch (e) {
-              return handler.next(error);
+              // Refresh failed, fall through to log the error
             }
           }
+
+          final errorMessage =
+              '❌ [HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri} | Status: ${error.response?.statusCode}';
+          LoggerService().error(errorMessage, error, error.stackTrace);
 
           return handler.next(error);
         },

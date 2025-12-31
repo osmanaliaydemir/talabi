@@ -1,5 +1,9 @@
 {
   "@@locale": "tr",
+  "bestSeller": "Çok Satan",
+  "@bestSeller": {
+    "description": "Best Seller"
+  },
   "upsellMessage": "{amount} daha ekle, indirimi kap!",
   "@upsellMessage": {
     "placeholders": {

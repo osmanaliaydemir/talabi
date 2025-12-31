@@ -1,5 +1,9 @@
 {
   "@@locale": "ar",
+  "bestSeller": "أكثر مبيعاً",
+  "@bestSeller": {
+    "description": "Best Seller"
+  },
   "upsellMessage": "أضف {amount} المزيد للحصول على الخصم!",
   "@upsellMessage": {
     "placeholders": {

@@ -53,9 +53,9 @@ public class CartController(
             .ThenInclude(p => p!.Vendor)
             .Include(c => c.Coupon)
             .Include(c => c.Campaign)
-                .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
+            .ThenInclude(cmp => cmp!.CampaignProducts) // Load related products
             .Include(c => c.Campaign)
-                .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
+            .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
         CartDto cartDto;
@@ -94,7 +94,8 @@ public class CartController(
             }
         }
 
-        return Ok(new ApiResponse<CartDto>(cartDto, LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<CartDto>(cartDto,
+            LocalizationService.GetLocalizedString(ResourceName, "CartRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -105,8 +106,6 @@ public class CartController(
     [HttpPost("items")]
     public async Task<ActionResult<ApiResponse<object>>> AddToCart(AddToCartDto dto)
     {
-
-
         var maxRetries = 3;
         for (int i = 0; i < maxRetries; i++)
         {
@@ -126,7 +125,8 @@ public class CartController(
                 if (!hasAddress)
                 {
                     return BadRequest(new ApiResponse<object>(
-                        LocalizationService.GetLocalizedString(ResourceName, "AddressRequiredToAddItem", CurrentCulture),
+                        LocalizationService.GetLocalizedString(ResourceName, "AddressRequiredToAddItem",
+                            CurrentCulture),
                         "ADDRESS_REQUIRED",
                         new List<string>())
                     {
@@ -138,7 +138,9 @@ public class CartController(
                 var product = await UnitOfWork.Products.GetByIdAsync(dto.ProductId);
                 if (product == null)
                 {
-                    return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture), "PRODUCT_NOT_FOUND"));
+                    return NotFound(new ApiResponse<object>(
+                        LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+                        "PRODUCT_NOT_FOUND"));
                 }
 
                 // 1. Get or Create Cart
@@ -173,7 +175,9 @@ public class CartController(
                 }
 
                 await UnitOfWork.SaveChangesAsync();
-                return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ItemAddedToCartSuccessfully", CurrentCulture)));
+                return Ok(new ApiResponse<object>(new { },
+                    LocalizationService.GetLocalizedString(ResourceName, "ItemAddedToCartSuccessfully",
+                        CurrentCulture)));
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -196,7 +200,9 @@ public class CartController(
             }
         }
 
-        return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "UnexpectedError", CurrentCulture), "UNEXPECTED_ERROR"));
+        return BadRequest(new ApiResponse<object>(
+            LocalizationService.GetLocalizedString(ResourceName, "UnexpectedError", CurrentCulture),
+            "UNEXPECTED_ERROR"));
     }
 
     /// <summary>
@@ -208,8 +214,6 @@ public class CartController(
     [HttpPut("items/{itemId}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateCartItem(Guid itemId, UpdateCartItemDto dto)
     {
-
-
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -224,7 +228,9 @@ public class CartController(
 
         if (cartItem == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CartItemNotFound", CurrentCulture), "CART_ITEM_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CartItemNotFound", CurrentCulture),
+                "CART_ITEM_NOT_FOUND"));
         }
 
         if (dto.Quantity <= 0)
@@ -244,7 +250,8 @@ public class CartController(
         }
 
         await UnitOfWork.SaveChangesAsync();
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartItemUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "CartItemUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -255,8 +262,6 @@ public class CartController(
     [HttpDelete("items/{itemId}")]
     public async Task<ActionResult<ApiResponse<object>>> RemoveFromCart(Guid itemId)
     {
-
-
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -271,7 +276,9 @@ public class CartController(
 
         if (cartItem == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CartItemNotFound", CurrentCulture), "CART_ITEM_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CartItemNotFound", CurrentCulture),
+                "CART_ITEM_NOT_FOUND"));
         }
 
         UnitOfWork.CartItems.Remove(cartItem);
@@ -284,7 +291,8 @@ public class CartController(
 
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ItemRemovedFromCartSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "ItemRemovedFromCartSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -354,7 +362,7 @@ public class CartController(
         if (!string.IsNullOrEmpty(dto.CouponCode))
         {
             var coupon = await UnitOfWork.Coupons.Query()
-               .FirstOrDefaultAsync(c => c.Code == dto.CouponCode);
+                .FirstOrDefaultAsync(c => c.Code == dto.CouponCode);
             if (coupon != null) cart.CouponId = coupon.Id;
             else cart.CouponId = null; // Invalid code -> clear
         }
@@ -385,7 +393,8 @@ public class CartController(
         UnitOfWork.Carts.Update(cart);
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "CartUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -459,7 +468,8 @@ public class CartController(
             await UnitOfWork.SaveChangesAsync();
         }
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "CartClearedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "CartClearedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -467,7 +477,8 @@ public class CartController(
     /// Kullanıcının geçmiş siparişleri varsa oradan, yoksa konuma en yakın restoran/marketten önerir.
     /// </summary>
     [HttpGet("recommendations")]
-    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetRecommendations([FromQuery] VendorType? type, [FromQuery] double? lat, [FromQuery] double? lon)
+    public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetRecommendations([FromQuery] VendorType? type,
+        [FromQuery] double? lat, [FromQuery] double? lon)
     {
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
@@ -483,9 +494,10 @@ public class CartController(
         var previousProducts = await UnitOfWork.OrderItems.Query()
             .Include(oi => oi.Order)
             .Include(oi => oi.Product)
-                .ThenInclude(p => p.Vendor)
+            .ThenInclude(p => p.Vendor)
             .Where(oi => oi.Order.CustomerId == userId)
-            .Where(oi => type == null || (oi.Product.VendorType == type || (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
+            .Where(oi => type == null || (oi.Product.VendorType == type ||
+                                          (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
             .OrderByDescending(oi => oi.Order.CreatedAt)
             .Select(oi => oi.Product)
             .Where(p => p != null && p.IsAvailable)
@@ -529,7 +541,9 @@ public class CartController(
             {
                 // Basit mesafe sıralaması
                 nearestVendor = await vendorsQuery
-                    .OrderBy(v => (v.Latitude - targetLat.Value) * (v.Latitude - targetLat.Value) + (v.Longitude - targetLon.Value) * (v.Longitude - targetLon.Value))
+                    .OrderBy(v =>
+                        (v.Latitude - targetLat.Value) * (v.Latitude - targetLat.Value) +
+                        (v.Longitude - targetLon.Value) * (v.Longitude - targetLon.Value))
                     .FirstOrDefaultAsync();
             }
             else
@@ -555,6 +569,7 @@ public class CartController(
         }
 
         var dtos = _mapper.Map<List<ProductDto>>(results);
-        return Ok(new ApiResponse<List<ProductDto>>(dtos, LocalizationService.GetLocalizedString(ResourceName, "Success", CurrentCulture)));
+        return Ok(new ApiResponse<List<ProductDto>>(dtos,
+            LocalizationService.GetLocalizedString(ResourceName, "Success", CurrentCulture)));
     }
 }

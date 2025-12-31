@@ -100,6 +100,12 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// Best Seller
+  ///
+  /// In en, this message translates to:
+  /// **'Best Seller'**
+  String get bestSeller;
+
   /// No description provided for @upsellMessage.
   ///
   /// In en, this message translates to:

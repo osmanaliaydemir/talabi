@@ -9,6 +9,9 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get bestSeller => 'أكثر مبيعاً';
+
+  @override
   String upsellMessage(String amount) {
     return 'أضف $amount المزيد للحصول على الخصم!';
   }

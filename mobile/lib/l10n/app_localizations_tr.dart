@@ -9,6 +9,9 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get bestSeller => 'Çok Satan';
+
+  @override
   String upsellMessage(String amount) {
     return '$amount daha ekle, indirimi kap!';
   }
