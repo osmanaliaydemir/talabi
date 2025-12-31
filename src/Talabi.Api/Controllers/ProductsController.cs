@@ -58,9 +58,9 @@ public class ProductsController : BaseController
     /// <param name="request">Arama parametreleri</param>
     /// <returns>Sayfalanmış ürün listesi</returns>
     [HttpGet("search")]
-    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search([FromQuery] ProductSearchRequestDto request)
+    public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search(
+        [FromQuery] ProductSearchRequestDto request)
     {
-
         IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Vendor == null || p.Vendor.IsActive); // Sadece aktif vendor'ların ürünleri
@@ -72,7 +72,7 @@ public class ProductsController : BaseController
             // But we trim and normalize for search
             var q = request.Query.Trim().ToLower();
             query = query.Where(p => p.Name.ToLower().Contains(q) ||
-                                   (p.Description != null && p.Description.ToLower().Contains(q)));
+                                     (p.Description != null && p.Description.ToLower().Contains(q)));
         }
 
         // VendorType filter (Vendor üzerinden - performans için)
@@ -132,7 +132,10 @@ public class ProductsController : BaseController
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl,
-                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10
+                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10,
+                ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
+                Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
+                    .Select(r => (double?)r.Rating).Average()
             },
             request.Page,
             request.PageSize);
@@ -147,7 +150,8 @@ public class ProductsController : BaseController
             TotalPages = pagedResult.TotalPages
         };
 
-        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "ProductsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result,
+            LocalizationService.GetLocalizedString(ResourceName, "ProductsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -166,7 +170,9 @@ public class ProductsController : BaseController
         [FromQuery] int pageSize = 6)
     {
         // lang parametresi varsa onu kullan, yoksa header'dan gelen CurrentCulture'ı kullan
-        var languageCode = !string.IsNullOrEmpty(lang) ? NormalizeLanguageCode(lang) : CurrentCulture.TwoLetterISOLanguageName;
+        var languageCode = !string.IsNullOrEmpty(lang)
+            ? NormalizeLanguageCode(lang)
+            : CurrentCulture.TwoLetterISOLanguageName;
 
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -225,7 +231,8 @@ public class ProductsController : BaseController
             _cacheOptions.CategoriesCacheTTLMinutes
         );
 
-        return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result,
+            LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -239,15 +246,16 @@ public class ProductsController : BaseController
     [HttpGet("autocomplete")]
     public async Task<ActionResult<ApiResponse<List<AutocompleteResultDto>>>> Autocomplete([FromQuery] string query)
     {
-
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(), LocalizationService.GetLocalizedString(ResourceName, "NoResultsFound", CurrentCulture)));
+            return Ok(new ApiResponse<List<AutocompleteResultDto>>(new List<AutocompleteResultDto>(),
+                LocalizationService.GetLocalizedString(ResourceName, "NoResultsFound", CurrentCulture)));
         }
 
         var results = await UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
-            .Where(p => p.Name.Contains(query) && (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
+            .Where(p => p.Name.Contains(query) &&
+                        (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
             .Take(10)
             .Select(p => new AutocompleteResultDto
             {
@@ -257,7 +265,9 @@ public class ProductsController : BaseController
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<AutocompleteResultDto>>(results, LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<List<AutocompleteResultDto>>(results,
+            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -298,7 +308,9 @@ public class ProductsController : BaseController
 
                 if (vendorType.HasValue)
                 {
-                    query = query.Where(p => (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)) == vendorType.Value);
+                    query = query.Where(p =>
+                        (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)) ==
+                        vendorType.Value);
                 }
 
                 // Get popular products based on order count
@@ -326,7 +338,10 @@ public class ProductsController : BaseController
                         Currency = p.Currency,
                         ImageUrl = p.ImageUrl,
                         VendorType = p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null),
-                        IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10
+                        IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10,
+                        ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
+                        Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
+                            .Select(r => (double?)r.Rating).Average()
                     },
                     page,
                     pageSize);
@@ -346,7 +361,8 @@ public class ProductsController : BaseController
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
             result,
-            LocalizationService.GetLocalizedString(ResourceName, "PopularProductsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "PopularProductsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -365,12 +381,17 @@ public class ProductsController : BaseController
 
         if (product == null)
         {
-            return NotFound(new ApiResponse<ProductDto>(LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+            return NotFound(new ApiResponse<ProductDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
         var productDto = _mapper.Map<ProductDto>(product);
         productDto.IsBestSeller = await UnitOfWork.OrderItems.Query().CountAsync(oi => oi.ProductId == product.Id) > 10;
+        productDto.ReviewCount =
+            await UnitOfWork.Reviews.Query().CountAsync(r => r.ProductId == product.Id && r.IsApproved);
+        productDto.Rating = await UnitOfWork.Reviews.Query().Where(r => r.ProductId == product.Id && r.IsApproved)
+            .Select(r => (double?)r.Rating).AverageAsync();
 
         if (product == null)
         {
@@ -379,7 +400,8 @@ public class ProductsController : BaseController
                 "PRODUCT_NOT_FOUND"));
         }
 
-        return Ok(new ApiResponse<ProductDto>(productDto, LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<ProductDto>(productDto,
+            LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -395,7 +417,6 @@ public class ProductsController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
@@ -406,14 +427,18 @@ public class ProductsController : BaseController
 
         if (currentProduct == null)
         {
-            return NotFound(new ApiResponse<PagedResultDto<ProductDto>>(LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
+            return NotFound(new ApiResponse<PagedResultDto<ProductDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
         // Aynı kategorideki diğer ürünleri getir
         IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
-            .Where(p => p.Id != id && p.IsAvailable && (p.Vendor == null || p.Vendor.IsActive)); // Mevcut ürünü hariç tut, sadece müsait olanları ve aktif vendor'ların ürünlerini getir
+            .Where(p => p.Id != id && p.IsAvailable &&
+                        (p.Vendor == null ||
+                         p.Vendor
+                             .IsActive)); // Mevcut ürünü hariç tut, sadece müsait olanları ve aktif vendor'ların ürünlerini getir
 
         // CategoryId varsa ona göre filtrele (öncelikli)
         if (currentProduct.CategoryId.HasValue)
@@ -457,7 +482,10 @@ public class ProductsController : BaseController
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl,
-                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10
+                IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10,
+                ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
+                Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
+                    .Select(r => (double?)r.Rating).Average()
             },
             page,
             pageSize);
@@ -474,6 +502,7 @@ public class ProductsController : BaseController
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
             result,
-            LocalizationService.GetLocalizedString(ResourceName, "SimilarProductsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "SimilarProductsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 }

@@ -16,6 +16,8 @@ public class ProductDto
     public Currency Currency { get; set; } = Currency.TRY;
     public string? ImageUrl { get; set; }
     public bool IsBestSeller { get; set; }
+    public double? Rating { get; set; }
+    public int ReviewCount { get; set; }
 }
 
 public class VendorProductDto

@@ -122,13 +122,16 @@ class _ProductCardState extends State<ProductCard> {
                                 child: const Icon(Icons.image, size: 50),
                               ),
                         // Rating Badge
-                        if (widget.showRating)
+                        // Rating Badge
+                        if (widget.showRating &&
+                            (widget.product.rating != null &&
+                                widget.product.rating! > 0))
                           Positioned(
                             top: 8,
                             left: 8,
                             child: Semantics(
                               label:
-                                  '${widget.rating ?? "4.7"} ${localizations.yildiz}',
+                                  '${widget.product.rating?.toStringAsFixed(1)} ${localizations.yildiz}',
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -148,17 +151,18 @@ class _ProductCardState extends State<ProductCard> {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      widget.rating ?? '4.7',
+                                      widget.product.rating!.toStringAsFixed(1),
                                       style: AppTheme.poppins(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black,
                                       ),
                                     ),
-                                    if (widget.ratingCount != null) ...[
+                                    if (widget.product.reviewCount != null &&
+                                        widget.product.reviewCount! > 0) ...[
                                       const SizedBox(width: 2),
                                       Text(
-                                        '(${widget.ratingCount})',
+                                        '(${widget.product.reviewCount})',
                                         style: AppTheme.poppins(
                                           fontSize: 10,
                                           color: Colors.grey[600],

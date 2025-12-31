@@ -17,6 +17,8 @@ class Product {
     this.preparationTime,
     this.vendorType,
     this.isBestSeller = false,
+    this.rating,
+    this.reviewCount,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,8 @@ class Product {
       preparationTime: json['preparationTime'],
       vendorType: json['vendorType'],
       isBestSeller: json['isBestSeller'] ?? false,
+      rating: (json['rating'] as num?)?.toDouble(),
+      reviewCount: json['reviewCount'],
     );
   }
 
@@ -58,6 +62,8 @@ class Product {
       'stock': stock,
       'preparationTime': preparationTime,
       'isBestSeller': isBestSeller,
+      'rating': rating,
+      'reviewCount': reviewCount,
     };
   }
 
@@ -76,4 +82,6 @@ class Product {
   final int? preparationTime;
   final int? vendorType;
   final bool isBestSeller;
+  final double? rating;
+  final int? reviewCount;
 }
