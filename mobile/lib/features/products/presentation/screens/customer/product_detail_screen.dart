@@ -159,8 +159,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       setState(() {
         _isLoadingReviews = false;
         _reviewsSummary = ProductReviewsSummary(
-          averageRating: 0.0,
-          totalRatings: 0,
+          averageRating: _product?.rating ?? 0.0,
+          totalRatings: _product?.reviewCount ?? 0,
           totalComments: 0,
           reviews: [],
         );
@@ -692,13 +692,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             icon: Icons.star,
                                             iconColor: Colors.orange,
                                             text:
-                                                (_reviewsSummary
-                                                            ?.averageRating ??
-                                                        _product?.rating ??
-                                                        0.0)
+                                                ((_reviewsSummary?.averageRating ??
+                                                                0.0) >
+                                                            0
+                                                        ? _reviewsSummary!
+                                                              .averageRating
+                                                        : (_product?.rating ??
+                                                              0.0))
                                                     .toStringAsFixed(1),
                                             subText:
-                                                '(${_reviewsSummary?.totalRatings ?? _product?.reviewCount ?? 0}+)',
+                                                '(${(_reviewsSummary?.totalRatings ?? 0) > 0 ? _reviewsSummary!.totalRatings : (_product?.reviewCount ?? 0)}+)',
                                           ),
                                         ),
                                       ),

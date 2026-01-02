@@ -1709,10 +1709,6 @@
       "error": {}
     }
   },
-  "reviewDetail": "Yorum Detayı",
-  "@reviewDetail": {
-    "description": "Yorum Detayı"
-  },
   "userId": "Kullanıcı ID: {id}",
   "@userId": {
     "placeholders": {
@@ -3635,5 +3631,13 @@
   "viewReviews": "Değerlendirmemi Gör",
   "@viewReviews": {
     "description": "Mevcut değerlendirmeleri görme butonu"
+  },
+  "reviewDetail": "Değerlendirme Detayı",
+  "@reviewDetail": {
+    "description": "Değerlendirme Detayı başlığı"
+  },
+  "status": "Durum",
+  "@status": {
+    "description": "Durum etiketi"
   }
 }

@@ -2,15 +2,106 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/reviews/data/models/review.dart';
+import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
+import 'package:mobile/services/api_service.dart';
 import 'package:intl/intl.dart';
 
-class UserReviewDetailScreen extends StatelessWidget {
-  const UserReviewDetailScreen({super.key, required this.review});
+class UserReviewDetailScreen extends StatefulWidget {
+  const UserReviewDetailScreen({super.key, this.review, this.reviewId});
 
-  final Review review;
+  final Review? review;
+  final String? reviewId;
+
+  @override
+  State<UserReviewDetailScreen> createState() => _UserReviewDetailScreenState();
+}
+
+class _UserReviewDetailScreenState extends State<UserReviewDetailScreen> {
+  Review? _review;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _review = widget.review;
+    if (_review == null && widget.reviewId != null) {
+      _loadReview();
+    }
+  }
+
+  Future<void> _loadReview() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final apiService = ApiService(); // Or get from provider/locator
+      final review = await apiService.getReviewById(widget.reviewId!);
+      if (mounted) {
+        setState(() {
+          _review = review;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    return _review == null
+        ? _buildLoadingOrError(context)
+        : _buildContent(context, _review!);
+  }
+
+  Widget _buildLoadingOrError(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          SharedHeader(
+            title: l10n.reviewDetail,
+            showBackButton: true,
+            showSearch: false,
+            showNotifications: true,
+            showCart: true,
+          ),
+          Expanded(
+            child: Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : _error != null
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _error!.replaceAll('Exception: ', ''),
+                        ), // Simple error cleanup
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadReview,
+                          child: Text(l10n.retry),
+                        ),
+                      ],
+                    )
+                  : const SizedBox(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, Review review) {
     final l10n = AppLocalizations.of(context)!;
     final dateFormat = DateFormat.yMMMMd(
       Localizations.localeOf(context).languageCode,
@@ -21,108 +112,117 @@ class UserReviewDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          l10n.reviewDetail,
-          style: AppTheme.poppins(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Rating and Date Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildRatingBadge(review.rating),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      dateFormat.format(review.createdAt),
+      body: Column(
+        children: [
+          SharedHeader(
+            title: l10n.reviewDetail,
+            showBackButton: true,
+            showSearch: false,
+            showNotifications: true,
+            showCart: true,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Rating and Date Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildRatingBadge(review.rating),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            dateFormat.format(review.createdAt),
+                            style: AppTheme.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                          Text(
+                            timeFormat.format(review.createdAt),
+                            style: AppTheme.poppins(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Entity Info (Product/Vendor)
+                  Text(
+                    l10n.vendors, // Using vendors as a general label for now
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    review.vendorName ?? l10n.reviewDetail,
+                    style: AppTheme.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Approval Status
+                  Text(
+                    l10n.status,
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStatusBadge(review.isApproved, l10n),
+                  const SizedBox(height: 32),
+
+                  // Comment Section
+                  Text(
+                    l10n.comment,
+                    style: AppTheme.poppins(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFF3F4F6)),
+                    ),
+                    child: Text(
+                      review.comment.isNotEmpty
+                          ? review.comment
+                          : l10n.noComment,
                       style: AppTheme.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                        fontSize: 16,
+                        height: 1.6,
+                        color: const Color(0xFF374151),
                       ),
                     ),
-                    Text(
-                      timeFormat.format(review.createdAt),
-                      style: AppTheme.poppins(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Entity Info (Product/Vendor)
-            Text(
-              l10n.vendors, // Using vendors as a general label for now
-              style: AppTheme.poppins(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              review.vendorName ?? 'Review',
-              style: AppTheme.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Approval Status
-            Text(
-              'Status', // Localize if needed, but usually clear
-              style: AppTheme.poppins(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildStatusBadge(review.isApproved, l10n),
-            const SizedBox(height: 32),
-
-            // Comment Section
-            Text(
-              l10n.comment,
-              style: AppTheme.poppins(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFF3F4F6)),
-              ),
-              child: Text(
-                review.comment.isNotEmpty ? review.comment : l10n.noComment,
-                style: AppTheme.poppins(
-                  fontSize: 16,
-                  height: 1.6,
-                  color: const Color(0xFF374151),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

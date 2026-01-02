@@ -1312,9 +1312,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get reviewDetail => 'تفاصيل المراجعة';
-
-  @override
   String userId(Object id) {
     return 'معرف المستخدم: $id';
   }
@@ -2811,4 +2808,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get viewReviews => 'عرض تقييماتي';
+
+  @override
+  String get reviewDetail => 'تفاصيل التقييم';
+
+  @override
+  String get status => 'الحالة';
 }

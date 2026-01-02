@@ -40,7 +40,9 @@ class Product {
       preparationTime: json['preparationTime'],
       vendorType: json['vendorType'],
       isBestSeller: json['isBestSeller'] ?? false,
-      rating: (json['rating'] as num?)?.toDouble(),
+      rating:
+          (json['rating'] as num?)?.toDouble() ??
+          (json['averageRating'] as num?)?.toDouble(),
       reviewCount: json['reviewCount'],
     );
   }

@@ -1399,6 +1399,15 @@ class ApiService {
     }
   }
 
+  Future<Review> getReviewById(String reviewId) async {
+    try {
+      return await _reviewRemoteDataSource.getReview(reviewId);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching review', e, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> approveReview(String reviewId) async {
     try {
       await _reviewRemoteDataSource.approveReview(reviewId);

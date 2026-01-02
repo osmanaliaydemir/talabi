@@ -1707,10 +1707,6 @@
       "error": {}
     }
   },
-  "reviewDetail": "Review Detail",
-  "@reviewDetail": {
-    "description": "Review Detail"
-  },
   "userId": "User ID: {id}",
   "@userId": {
     "placeholders": {
@@ -3633,5 +3629,13 @@
   "viewReviews": "View My Reviews",
   "@viewReviews": {
     "description": "Button to view existing reviews"
+  },
+  "reviewDetail": "Review Detail",
+  "@reviewDetail": {
+    "description": "Review Detail title"
+  },
+  "status": "Status",
+  "@status": {
+    "description": "Status label"
   }
 }

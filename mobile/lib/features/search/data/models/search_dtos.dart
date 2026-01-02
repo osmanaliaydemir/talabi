@@ -180,6 +180,8 @@ class ProductDto {
     required this.price,
     this.currency = Currency.try_,
     this.imageUrl,
+    this.rating,
+    this.reviewCount,
   });
 
   factory ProductDto.fromJson(Map<String, dynamic> json) {
@@ -196,6 +198,10 @@ class ProductDto {
           ? Currency.fromInt(json['currency'] as int?)
           : Currency.fromString(json['currencyCode'] as String?),
       imageUrl: json['imageUrl'],
+      rating:
+          (json['rating'] as num?)?.toDouble() ??
+          (json['averageRating'] as num?)?.toDouble(),
+      reviewCount: json['reviewCount'] ?? json['ratingCount'],
     );
   }
   final String id;
@@ -208,6 +214,8 @@ class ProductDto {
   final double price;
   final Currency currency;
   final String? imageUrl;
+  final double? rating;
+  final int? reviewCount;
 
   Product toProduct() {
     return Product(
@@ -221,6 +229,8 @@ class ProductDto {
       price: price,
       currency: currency,
       imageUrl: imageUrl,
+      rating: rating,
+      reviewCount: reviewCount,
     );
   }
 }

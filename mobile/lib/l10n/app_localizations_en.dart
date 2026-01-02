@@ -1326,9 +1326,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get reviewDetail => 'Review Detail';
-
-  @override
   String userId(Object id) {
     return 'User ID: $id';
   }
@@ -2844,4 +2841,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewReviews => 'View My Reviews';
+
+  @override
+  String get reviewDetail => 'Review Detail';
+
+  @override
+  String get status => 'Status';
 }

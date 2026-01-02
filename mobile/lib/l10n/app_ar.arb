@@ -1685,10 +1685,6 @@
       "error": {}
     }
   },
-  "reviewDetail": "تفاصيل المراجعة",
-  "@reviewDetail": {
-    "description": "تفاصيل المراجعة"
-  },
   "userId": "معرف المستخدم: {id}",
   "@userId": {
     "placeholders": {
@@ -3635,5 +3631,13 @@
   "viewReviews": "عرض تقييماتي",
   "@viewReviews": {
     "description": "زر لعرض التقييمات الحالية"
+  },
+  "reviewDetail": "تفاصيل التقييم",
+  "@reviewDetail": {
+    "description": "عنوان شاشة تفاصيل المراجعة"
+  },
+  "status": "الحالة",
+  "@status": {
+    "description": "تسمية الحالة"
   }
 }

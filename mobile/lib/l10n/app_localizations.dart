@@ -2566,12 +2566,6 @@ abstract class AppLocalizations {
   /// **'Error rejecting review: {error}'**
   String reviewRejectError(Object error);
 
-  /// Review Detail
-  ///
-  /// In en, this message translates to:
-  /// **'Review Detail'**
-  String get reviewDetail;
-
   /// No description provided for @userId.
   ///
   /// In en, this message translates to:
@@ -5307,6 +5301,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View My Reviews'**
   String get viewReviews;
+
+  /// Review Detail title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Detail'**
+  String get reviewDetail;
+
+  /// Status label
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
 }
 
 class _AppLocalizationsDelegate

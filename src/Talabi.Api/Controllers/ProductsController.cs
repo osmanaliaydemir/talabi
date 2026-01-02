@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
-using Talabi.Core.Extensions;
 using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Options;
+using Talabi.Core.Enums;
 using AutoMapper;
 
 namespace Talabi.Api.Controllers;
@@ -165,7 +164,7 @@ public class ProductsController : BaseController
     [HttpGet("categories")]
     public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories(
         [FromQuery] string? lang = null,
-        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] VendorType? vendorType = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
@@ -276,18 +275,12 @@ public class ProductsController : BaseController
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
-    /// <summary>
-    /// Popüler ürünleri getirir - Sipariş sayısına göre sıralanır
-    /// </summary>
-    /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
-    /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
-    /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
     /// <returns>Sayfalanmış popüler ürün listesi</returns>
     [HttpGet("popular")]
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6,
-        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
+        [FromQuery] VendorType? vendorType = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -309,7 +302,7 @@ public class ProductsController : BaseController
                 if (vendorType.HasValue)
                 {
                     query = query.Where(p =>
-                        (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)) ==
+                        (p.VendorType ?? (p.Vendor != null ? p.Vendor.Type : null)) ==
                         vendorType.Value);
                 }
 
@@ -392,13 +385,6 @@ public class ProductsController : BaseController
             await UnitOfWork.Reviews.Query().CountAsync(r => r.ProductId == product.Id && r.IsApproved);
         productDto.Rating = await UnitOfWork.Reviews.Query().Where(r => r.ProductId == product.Id && r.IsApproved)
             .Select(r => (double?)r.Rating).AverageAsync();
-
-        if (product == null)
-        {
-            return NotFound(new ApiResponse<ProductDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
-                "PRODUCT_NOT_FOUND"));
-        }
 
         return Ok(new ApiResponse<ProductDto>(productDto,
             LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));

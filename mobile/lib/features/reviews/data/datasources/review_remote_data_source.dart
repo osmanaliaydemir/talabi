@@ -191,4 +191,31 @@ class ReviewRemoteDataSource {
       return [];
     }
   }
+
+  Future<Review> getReview(String reviewId) async {
+    try {
+      final response = await _networkClient.dio.get(
+        '${ApiEndpoints.reviews}/$reviewId',
+      );
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Değerlendirme detayları alınamadı',
+          );
+        }
+
+        return Review.fromJson(apiResponse.data!);
+      }
+      return Review.fromJson(response.data);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching review detail', e, stackTrace);
+      rethrow;
+    }
+  }
 }

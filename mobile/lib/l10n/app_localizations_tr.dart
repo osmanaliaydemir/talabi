@@ -1326,9 +1326,6 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get reviewDetail => 'Yorum Detayı';
-
-  @override
   String userId(Object id) {
     return 'Kullanıcı ID: $id';
   }
@@ -2845,4 +2842,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get viewReviews => 'Değerlendirmemi Gör';
+
+  @override
+  String get reviewDetail => 'Değerlendirme Detayı';
+
+  @override
+  String get status => 'Durum';
 }

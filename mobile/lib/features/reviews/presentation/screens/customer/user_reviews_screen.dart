@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/reviews/data/models/review.dart';
@@ -28,7 +29,6 @@ class _UserReviewsScreenState extends State<UserReviewsScreen> {
 
   Future<void> _loadReviews() async {
     setState(() => _isLoading = true);
-    final l10n = AppLocalizations.of(context)!;
     try {
       final reviews = await _apiService.getUserReviews();
       if (mounted) {
@@ -40,6 +40,7 @@ class _UserReviewsScreenState extends State<UserReviewsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        final l10n = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
           message: l10n.errorOccurred,
@@ -55,35 +56,39 @@ class _UserReviewsScreenState extends State<UserReviewsScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        title: Text(
-          l10n.myReviews,
-          style: AppTheme.poppins(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
+      body: Column(
+        children: [
+          SharedHeader(
+            title: l10n.myReviews,
+            showBackButton: true,
+            showSearch: false,
+            showNotifications: true,
+            showCart: true,
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _reviews.isEmpty
+                ? Center(
+                    child: EmptyStateWidget(
+                      message: l10n.noReviewsYet,
+                      iconData: Icons.star_border,
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadReviews,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _reviews.length,
+                      itemBuilder: (context, index) {
+                        final review = _reviews[index];
+                        return _buildReviewCard(review, l10n);
+                      },
+                    ),
+                  ),
+          ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _reviews.isEmpty
-          ? Center(
-              child: EmptyStateWidget(
-                message: l10n.noReviewsYet,
-                iconData: Icons.star_border,
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadReviews,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _reviews.length,
-                itemBuilder: (context, index) {
-                  final review = _reviews[index];
-                  return _buildReviewCard(review, l10n);
-                },
-              ),
-            ),
     );
   }
 
