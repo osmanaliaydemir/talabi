@@ -9,4 +9,7 @@ public interface IDashboardNotificationService
     Task<int> GetUnreadCountAsync(Guid vendorId);
     Task MarkAsReadAsync(Guid notificationId, Guid vendorId);
     Task MarkAllAsReadAsync(Guid vendorId);
+
+    Task CreateNotificationAsync(Guid vendorId, string title, string message, string type,
+        Guid? relatedEntityId = null);
 }

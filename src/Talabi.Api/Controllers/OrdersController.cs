@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using Talabi.Core.DTOs;
@@ -22,6 +23,8 @@ public class OrdersController : BaseController
     private readonly IOrderService _orderService;
     private readonly IMapper _mapper;
     private readonly INotificationService _notificationService;
+    private readonly IDashboardNotificationService _dashboardNotificationService;
+    private readonly IHubContext<Talabi.Api.Hubs.NotificationHub> _hubContext;
     private const string ResourceName = "OrderResources";
 
     /// <summary>
@@ -35,13 +38,17 @@ public class OrdersController : BaseController
         IOrderAssignmentService assignmentService,
         IOrderService orderService,
         IMapper mapper,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IDashboardNotificationService dashboardNotificationService,
+        IHubContext<Talabi.Api.Hubs.NotificationHub> hubContext)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _assignmentService = assignmentService;
         _orderService = orderService;
         _mapper = mapper;
         _notificationService = notificationService;
+        _dashboardNotificationService = dashboardNotificationService;
+        _hubContext = hubContext;
     }
 
     /// <summary>
@@ -81,7 +88,27 @@ public class OrdersController : BaseController
             var vendor = await UnitOfWork.Vendors.GetByIdAsync(order.VendorId);
             if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
             {
+                // Send Firebase notification
                 await _notificationService.SendNewOrderNotificationAsync(vendor.OwnerId, order.Id);
+
+                // Add Dashboard notification
+                await _dashboardNotificationService.CreateNotificationAsync(
+                    vendor.Id,
+                    LocalizationService.GetLocalizedString(ResourceName, "NewOrderReceivedTitle", CurrentCulture),
+                    LocalizationService.GetLocalizedString(ResourceName, "NewOrderReceivedBody", CurrentCulture,
+                        order.Id),
+                    "NewOrder",
+                    order.Id
+                );
+
+                // Send SignalR notification
+                await _hubContext.Clients.Group($"vendor_{vendor.Id}").SendAsync("NewOrder", new
+                {
+                    OrderId = order.Id,
+                    CustomerName = order.Customer?.FullName ?? "Guest",
+                    TotalAmount = order.TotalAmount,
+                    Timestamp = DateTime.UtcNow
+                });
             }
 
             var orderDto = _mapper.Map<OrderDto>(order);
@@ -160,7 +187,8 @@ public class OrdersController : BaseController
             orderDto.ActiveOrderCourier = new OrderCourierDto
             {
                 CourierId = courier.Id,
-                CourierName = !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
+                CourierName =
+                    !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
                 CourierPhone = courier.PhoneNumber,
                 CourierImageUrl = courier.User?.ProfileImageUrl
             };
@@ -177,9 +205,9 @@ public class OrdersController : BaseController
     /// <param name="vendorType">Satıcı türü filtresi (opsiyonel)</param>
     /// <returns>Sipariş listesi</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<OrderDto>>>> GetOrders([FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
+    public async Task<ActionResult<ApiResponse<List<OrderDto>>>> GetOrders(
+        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
     {
-
         var userId = UserContext.GetUserId();
 
         if (userId == null)
@@ -236,9 +264,9 @@ public class OrdersController : BaseController
             .Include(o => o.Vendor)
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+            .ThenInclude(oi => oi.Product)
             .Include(o => o.OrderCouriers)
-                .ThenInclude(oc => oc.Courier)
+            .ThenInclude(oc => oc.Courier)
             .Include(o => o.StatusHistory.OrderByDescending(sh => sh.CreatedAt));
 
         // Only allow access to orders that belong to the authenticated user
@@ -273,7 +301,8 @@ public class OrdersController : BaseController
             orderDetailDto.ActiveOrderCourier = new OrderCourierDto
             {
                 CourierId = courier.Id,
-                CourierName = !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
+                CourierName =
+                    !string.IsNullOrEmpty(courier.Name) ? courier.Name : (courier.User?.FullName ?? "Courier"),
                 CourierPhone = courier.PhoneNumber,
                 CourierImageUrl = courier.User?.ProfileImageUrl
             };
@@ -327,7 +356,7 @@ public class OrdersController : BaseController
             var courier = await UnitOfWork.Couriers.Query()
                 .Include(c => c.OrderCouriers)
                 .FirstOrDefaultAsync(c => c.UserId == userId &&
-                    c.OrderCouriers.Any(oc => oc.OrderId == id && oc.IsActive));
+                                          c.OrderCouriers.Any(oc => oc.OrderId == id && oc.IsActive));
 
             if (courier == null)
             {
@@ -393,7 +422,6 @@ public class OrdersController : BaseController
     [HttpPost("items/{customerOrderItemId}/cancel")]
     public async Task<ActionResult<ApiResponse<object>>> CancelOrderItem(string customerOrderItemId, CancelOrderDto dto)
     {
-
         var userId = UserContext.GetUserId();
 
         if (userId == null)
@@ -410,7 +438,7 @@ public class OrdersController : BaseController
             // Find the order item by CustomerOrderItemId
             var orderItem = await UnitOfWork.OrderItems.Query()
                 .Include(oi => oi.Order!)
-                    .ThenInclude(o => o.StatusHistory)
+                .ThenInclude(o => o.StatusHistory)
                 .FirstOrDefaultAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
 
             if (orderItem == null)
@@ -452,7 +480,8 @@ public class OrdersController : BaseController
             {
                 await UnitOfWork.RollbackTransactionAsync();
                 return BadRequest(new ApiResponse<object>(
-                    LocalizationService.GetLocalizedString(ResourceName, "OrderItemInvalidCancellationStatus", CurrentCulture),
+                    LocalizationService.GetLocalizedString(ResourceName, "OrderItemInvalidCancellationStatus",
+                        CurrentCulture),
                     "INVALID_CANCELLATION_STATUS"
                 ));
             }
@@ -528,7 +557,8 @@ public class OrdersController : BaseController
 
             return Ok(new ApiResponse<object>(
                 new { },
-                LocalizationService.GetLocalizedString(ResourceName, "OrderItemCancelledSuccessfully", CurrentCulture)));
+                LocalizationService.GetLocalizedString(ResourceName, "OrderItemCancelledSuccessfully",
+                    CurrentCulture)));
         }
         catch
         {
@@ -536,5 +566,4 @@ public class OrdersController : BaseController
             throw; // Let ExceptionHandlingMiddleware handle it
         }
     }
-
 }

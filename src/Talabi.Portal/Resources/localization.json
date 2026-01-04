@@ -64,6 +64,51 @@
         "en-US": "Create a new product",
         "ar-SA": "إنشاء منتج جديد"
     },
+    "PortalNotificationSettings": {
+        "tr-TR": "Portal Bildirim Ayarları",
+        "en-US": "Portal Notification Settings",
+        "ar-SA": "إعدادات إشعارات البوابة"
+    },
+    "NotificationSound": {
+        "tr-TR": "Bildirim Sesi",
+        "en-US": "Notification Sound",
+        "ar-SA": "صوت الإشعار"
+    },
+    "Default": {
+        "tr-TR": "Varsayılan",
+        "en-US": "Default",
+        "ar-SA": "افتراضي"
+    },
+    "Chime": {
+        "tr-TR": "Melodi",
+        "en-US": "Chime",
+        "ar-SA": "نغمة"
+    },
+    "Bell": {
+        "tr-TR": "Zil",
+        "en-US": "Bell",
+        "ar-SA": "جرس"
+    },
+    "EnableSound": {
+        "tr-TR": "Sesi Aç",
+        "en-US": "Enable Sound",
+        "ar-SA": "تفعيل الصوت"
+    },
+    "DesktopNotification": {
+        "tr-TR": "Masaüstü Bildirimi",
+        "en-US": "Desktop Notification",
+        "ar-SA": "إشعار سطح المكتب"
+    },
+    "BrowserSettingsInfo": {
+        "tr-TR": "Bu ayarlar sadece bu tarayıcıda (Browser) geçerlidir.",
+        "en-US": "These settings apply only to this browser.",
+        "ar-SA": "هذه الإعدادات تنطبق فقط على هذا المتصفح."
+    },
+    "PortalPreferencesUpdated": {
+        "tr-TR": "Portal bildirim tercihleri güncellendi.",
+        "en-US": "Portal notification preferences updated.",
+        "ar-SA": "تم تحديث تفضيلات إشعارات البوابة."
+    },
     "CreateCampaign": {
         "tr-TR": "Kampanya Oluştur",
         "en-US": "Create Campaign",

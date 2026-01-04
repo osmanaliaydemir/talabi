@@ -63,7 +63,26 @@ public class DashboardNotificationService : IDashboardNotificationService
             {
                 notification.IsRead = true;
             }
+
             await _dbContext.SaveChangesAsync();
         }
+    }
+
+    public async Task CreateNotificationAsync(Guid vendorId, string title, string message, string type,
+        Guid? relatedEntityId = null)
+    {
+        var notification = new VendorNotification
+        {
+            VendorId = vendorId,
+            Title = title,
+            Message = message,
+            Type = type,
+            RelatedEntityId = relatedEntityId,
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.VendorNotifications.AddAsync(notification);
+        await _dbContext.SaveChangesAsync();
     }
 }

@@ -39,8 +39,8 @@
                             <input asp-for="Vendor.EstimatedDeliveryTime" type="number" class="form-control" min="0">
                         </div>
                         <div class="mb-3">
-                             <label class="form-label">@LocalizationService.GetString("OpeningHours")</label>
-                             <input asp-for="Vendor.OpeningHours" type="text" class="form-control" placeholder="09:00 - 22:00">
+                            <label class="form-label">@LocalizationService.GetString("OpeningHours")</label>
+                            <input asp-for="Vendor.OpeningHours" type="text" class="form-control" placeholder="09:00 - 22:00">
                         </div>
                         <div class="mb-3 form-check form-switch">
                             <input asp-for="Vendor.IsActive" class="form-check-input" type="checkbox">
@@ -54,14 +54,14 @@
 
         <!-- System Settings -->
         <div class="col-lg-6 mb-4">
-             <div class="card shadow h-100">
+            <div class="card shadow h-100">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("SystemSettings")</h6>
                 </div>
                 <div class="card-body">
                     <form id="systemSettingsForm">
-                         <h6 class="mb-3">@LocalizationService.GetString("Notifications")</h6>
-                         <div class="mb-3 form-check form-switch">
+                        <h6 class="mb-3">@LocalizationService.GetString("Notifications")</h6>
+                        <div class="mb-3 form-check form-switch">
                             <input asp-for="System.OrderUpdates" class="form-check-input" type="checkbox">
                             <label class="form-check-label" for="System_OrderUpdates">@LocalizationService.GetString("OrderUpdates")</label>
                             <div class="form-text">@LocalizationService.GetString("OrderUpdatesDesc")</div>
@@ -74,10 +74,58 @@
                             <input asp-for="System.NewProducts" class="form-check-input" type="checkbox">
                             <label class="form-check-label" for="System_NewProducts">@LocalizationService.GetString("NewFeatures")</label>
                         </div>
-                         <button type="button" class="btn btn-primary mt-3" onclick="saveSystemSettings()">@LocalizationService.GetString("Save")</button>
+                        <button type="button" class="btn btn-primary mt-3" onclick="saveSystemSettings()">@LocalizationService.GetString("Save")</button>
                     </form>
                 </div>
-             </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Preferences (Local) -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("PortalNotificationSettings")</h6>
+                </div>
+                <div class="card-body">
+                    <form id="dashboardPrefsForm">
+                        <div class="row align-items-center">
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">@LocalizationService.GetString("NotificationSound")</label>
+                                <div class="input-group">
+                                    <select id="notificationSoundSelect" class="form-select">
+                                        <option value="default">@LocalizationService.GetString("Default")</option>
+                                        <option value="chime">@LocalizationService.GetString("Chime")</option>
+                                        <option value="bell">@LocalizationService.GetString("Bell")</option>
+                                        <option value="ding">Ding</option>
+                                        <option value="ping">Ping</option>
+                                    </select>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="previewSound()">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3 pt-4">
+                                <div class="form-check form-switch">
+                                    <input id="soundEnabledCheck" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="soundEnabledCheck">@LocalizationService.GetString("EnableSound")</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3 pt-4">
+                                <div class="form-check form-switch">
+                                    <input id="desktopNotifCheck" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="desktopNotifCheck">@LocalizationService.GetString("DesktopNotification")</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info small">
+                            <i class="fas fa-info-circle"></i> @LocalizationService.GetString("BrowserSettingsInfo")
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveDashboardPrefs()">@LocalizationService.GetString("Save")</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -148,5 +196,68 @@
                 }
             });
         }
+
+        /* Dashboard/Local Preferences Logic */
+        const soundFiles = {
+            'default': '/sounds/notify-default.wav',
+            'chime': '/sounds/notify-1.wav',
+            'bell': '/sounds/notify-2.wav',
+            'ding': '/sounds/notify-3.wav',
+            'ping': '/sounds/notify-4.wav'
+        };
+
+        function getLocalPrefs() {
+            // Function exists in signalr-helper.js or fallback here
+            const saved = localStorage.getItem('notificationPreferences');
+            if (saved) return JSON.parse(saved);
+            return {
+                soundEnabled: true,
+                desktopNotifications: true,
+                notificationSound: 'default'
+            };
+        }
+
+        function loadDashboardPrefs() {
+            const prefs = getLocalPrefs();
+            $('#notificationSoundSelect').val(prefs.notificationSound || 'default');
+            $('#soundEnabledCheck').prop('checked', prefs.soundEnabled !== false);
+            $('#desktopNotifCheck').prop('checked', prefs.desktopNotifications !== false);
+        }
+
+        function saveDashboardPrefs() {
+            const current = getLocalPrefs();
+            const newPrefs = {
+                ...current,
+                notificationSound: $('#notificationSoundSelect').val(),
+                soundEnabled: $('#soundEnabledCheck').is(':checked'),
+                desktopNotifications: $('#desktopNotifCheck').is(':checked')
+            };
+            
+            localStorage.setItem('notificationPreferences', JSON.stringify(newPrefs));
+            
+            Swal.fire({
+                icon: 'success',
+                title: '@LocalizationService.GetString("Saved")',
+                text: '@LocalizationService.GetString("PortalPreferencesUpdated")',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // Request permission if desktop enabled
+            if (newPrefs.desktopNotifications && "Notification" in window && Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+        }
+
+        function previewSound() {
+            const selected = $('#notificationSoundSelect').val();
+            const soundFile = soundFiles[selected] || soundFiles['default'];
+            const audio = new Audio(soundFile);
+            audio.volume = 0.5;
+            audio.play().catch(e => console.error("Play error", e));
+        }
+
+        $(document).ready(function() {
+            loadDashboardPrefs();
+        });
     </script>
-}
