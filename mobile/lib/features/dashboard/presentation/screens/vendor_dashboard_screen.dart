@@ -189,6 +189,132 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
+                    // Alerts Section
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: _apiService.getDashboardAlerts(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) return const SizedBox.shrink();
+
+                        final alerts = snapshot.data!;
+                        final criticalStockCount =
+                            alerts['criticalStockCount'] as int? ?? 0;
+                        final delayedOrdersCount =
+                            alerts['delayedOrdersCount'] as int? ?? 0;
+                        final unansweredReviewsCount =
+                            alerts['unansweredReviewsCount'] as int? ?? 0;
+
+                        if (criticalStockCount == 0 &&
+                            delayedOrdersCount == 0 &&
+                            unansweredReviewsCount == 0) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              localizations?.attentionRequired ??
+                                  'Dikkat Gerekenler',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange[800],
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (criticalStockCount > 0)
+                              Card(
+                                color: Colors.red[50],
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.production_quantity_limits,
+                                    color: Colors.red,
+                                  ),
+                                  title: Text(
+                                    localizations?.criticalStockAlert(
+                                          criticalStockCount,
+                                        ) ??
+                                        '$criticalStockCount ürün kritik stok seviyesinde',
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 16,
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      NoSlidePageRoute(
+                                        builder: (context) =>
+                                            const VendorProductsScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            if (delayedOrdersCount > 0)
+                              Card(
+                                color: Colors.orange[50],
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.timer_off,
+                                    color: Colors.orange,
+                                  ),
+                                  title: Text(
+                                    localizations?.delayedOrdersAlert(
+                                          delayedOrdersCount,
+                                        ) ??
+                                        '$delayedOrdersCount sipariş gecikmiş durumda',
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 16,
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      NoSlidePageRoute(
+                                        builder: (context) =>
+                                            const VendorOrdersScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            if (unansweredReviewsCount > 0)
+                              Card(
+                                color: Colors.blue[50],
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.rate_review,
+                                    color: Colors.blue,
+                                  ),
+                                  title: Text(
+                                    localizations?.unansweredReviewsAlert(
+                                          unansweredReviewsCount,
+                                        ) ??
+                                        '$unansweredReviewsCount cevaplanmamış yorum var',
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 16,
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      NoSlidePageRoute(
+                                        builder: (context) =>
+                                            const VendorReviewsScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      },
+                    ),
+
                     // Quick actions
                     Text(
                       localizations?.quickActions ?? 'Hızlı İşlemler',

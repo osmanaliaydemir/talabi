@@ -1846,6 +1846,59 @@ class ApiService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getHourlySales() async {
+    try {
+      final response = await dio.get('/vendor/reports/hourly-sales');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) =>
+              (json as List).map((e) => e as Map<String, dynamic>).toList(),
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Saatlik satış raporu getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching hourly sales', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getDashboardAlerts() async {
+    try {
+      final response = await dio.get('/vendor/dashboard/alerts');
+      // Backend artık ApiResponse<T> formatında döndürüyor
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey('success')) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => json as Map<String, dynamic>,
+        );
+
+        if (!apiResponse.success || apiResponse.data == null) {
+          throw Exception(
+            apiResponse.message ?? 'Dashboard uyarıları getirilemedi',
+          );
+        }
+
+        return apiResponse.data!;
+      }
+      return response.data;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching dashboard alerts', e, stackTrace);
+      rethrow;
+    }
+  }
+
   // Vendor Product Management Methods
   Future<List<Product>> getVendorProducts({
     String? category,

@@ -1246,6 +1246,36 @@ abstract class AppLocalizations {
   /// **'Apple login failed: {error}'**
   String appleLoginFailed(Object error);
 
+  /// Title for dashboard alerts section
+  ///
+  /// In en, this message translates to:
+  /// **'Attention Required'**
+  String get attentionRequired;
+
+  /// No description provided for @criticalStockAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} products at critical stock level'**
+  String criticalStockAlert(int count);
+
+  /// No description provided for @delayedOrdersAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} orders are delayed'**
+  String delayedOrdersAlert(int count);
+
+  /// No description provided for @unansweredReviewsAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unanswered reviews'**
+  String unansweredReviewsAlert(int count);
+
+  /// Title for hourly sales chart
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly Sales (Today)'**
+  String get hourlySalesToday;
+
   /// No description provided for @facebookLoginFailed.
   ///
   /// In en, this message translates to:

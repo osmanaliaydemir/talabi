@@ -618,6 +618,27 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get attentionRequired => 'Dikkat Gerekenler';
+
+  @override
+  String criticalStockAlert(int count) {
+    return '$count ürün kritik stok seviyesinde';
+  }
+
+  @override
+  String delayedOrdersAlert(int count) {
+    return '$count sipariş gecikmiş durumda';
+  }
+
+  @override
+  String unansweredReviewsAlert(int count) {
+    return '$count cevaplanmamış yorum var';
+  }
+
+  @override
+  String get hourlySalesToday => 'Bugünün Saatlik Satışları';
+
+  @override
   String facebookLoginFailed(Object error) {
     return 'Facebook ile giriş başarısız: $error';
   }

@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 using Talabi.Core.DTOs;
-using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Extensions;
 using Talabi.Core.Interfaces;
@@ -39,7 +37,7 @@ public class VendorReportsController : BaseController
         {
             return null;
         }
-        
+
         var vendor = await UnitOfWork.Vendors.Query()
             .FirstOrDefaultAsync(v => v.OwnerId == userId);
         return vendor?.Id;
@@ -54,7 +52,7 @@ public class VendorReportsController : BaseController
     /// <returns>Satış raporu</returns>
     [HttpGet("sales")]
     public async Task<ActionResult<ApiResponse<SalesReportDto>>> GetSalesReport(
-        [FromQuery] DateTime? startDate = null, 
+        [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] string period = "week")
     {
@@ -62,7 +60,7 @@ public class VendorReportsController : BaseController
         if (vendorId == null)
         {
             return StatusCode(403, new ApiResponse<SalesReportDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture),
                 "NOT_A_VENDOR"));
         }
 
@@ -134,7 +132,7 @@ public class VendorReportsController : BaseController
         };
 
         return Ok(new ApiResponse<SalesReportDto>(
-            report, 
+            report,
             LocalizationService.GetLocalizedString(ResourceName, "SalesReportRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -152,7 +150,7 @@ public class VendorReportsController : BaseController
         {
             Logger.LogWarning("User ID is null or empty");
             return Unauthorized(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "Unauthorized", CurrentCulture),
                 "UNAUTHORIZED"));
         }
 
@@ -165,7 +163,7 @@ public class VendorReportsController : BaseController
         {
             Logger.LogWarning("Vendor not found for user ID: {UserId}", userId);
             return StatusCode(403, new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture),
                 "NOT_A_VENDOR"));
         }
 
@@ -235,17 +233,165 @@ public class VendorReportsController : BaseController
 
         var result = new
         {
-            todayOrders = todayOrders,
-            todayRevenue = todayRevenue,
-            pendingOrders = pendingOrders,
-            weekRevenue = weekRevenue,
-            monthRevenue = monthRevenue
+            todayOrders,
+            todayRevenue,
+            pendingOrders,
+            weekRevenue,
+            monthRevenue
         };
 
         Logger.LogInformation("Summary calculated successfully");
         return Ok(new ApiResponse<object>(
-            result, 
+            result,
             LocalizationService.GetLocalizedString(ResourceName, "SummaryRetrievedSuccessfully", CurrentCulture)));
     }
-}
 
+    /// <summary>
+    /// Saatlik satış raporunu getirir (Bugün için)
+    /// </summary>
+    /// <returns>Saatlik satış raporu ve büyüme oranları</returns>
+    [HttpGet("hourly-sales")]
+    public async Task<ActionResult<ApiResponse<List<HourlySalesDto>>>> GetHourlySales()
+    {
+        var vendorId = await GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return StatusCode(403, new ApiResponse<List<HourlySalesDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture),
+                "NOT_A_VENDOR"));
+        }
+
+        var today = DateTime.UtcNow.Date;
+        var lastWeekSameDay = today.AddDays(-7);
+
+        // Today's orders
+        var todayOrders = await UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.CreatedAt >= today && o.CreatedAt < today.AddDays(1) &&
+                        o.Status != OrderStatus.Cancelled)
+            .Select(o => new { o.CreatedAt, o.TotalAmount })
+            .ToListAsync();
+
+        // Last week's orders
+        var lastWeekOrders = await UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.CreatedAt >= lastWeekSameDay &&
+                        o.CreatedAt < lastWeekSameDay.AddDays(1) && o.Status != OrderStatus.Cancelled)
+            .Select(o => new { o.CreatedAt, o.TotalAmount })
+            .ToListAsync();
+
+        var result = new List<HourlySalesDto>();
+
+        for (int i = 0; i < 24; i++)
+        {
+            var todayHourOrders = todayOrders.Where(o => o.CreatedAt.Hour == i).ToList();
+            var lastWeekHourOrders = lastWeekOrders.Where(o => o.CreatedAt.Hour == i).ToList();
+
+            var todayRevenue = todayHourOrders.Sum(o => o.TotalAmount);
+            var lastWeekRevenue = lastWeekHourOrders.Sum(o => o.TotalAmount);
+
+            double growthRate = 0;
+            if (lastWeekRevenue > 0)
+            {
+                growthRate = (double)((todayRevenue - lastWeekRevenue) / lastWeekRevenue) * 100;
+            }
+            else if (todayRevenue > 0)
+            {
+                growthRate = 100;
+            }
+
+            result.Add(new HourlySalesDto
+            {
+                Hour = i,
+                TotalRevenue = todayRevenue,
+                OrderCount = todayHourOrders.Count,
+                GrowthRate = growthRate
+            });
+        }
+
+        return Ok(new ApiResponse<List<HourlySalesDto>>(result, "Success"));
+    }
+
+    /// <summary>
+    /// Dashboard aksiyon kartlarını ve uyarılarını getirir
+    /// </summary>
+    /// <returns>Dashboard uyarıları</returns>
+    [HttpGet("alerts")]
+    public async Task<ActionResult<ApiResponse<DashboardAlertsDto>>> GetDashboardAlerts()
+    {
+        var vendorId = await GetVendorIdAsync();
+        if (vendorId == null)
+        {
+            return StatusCode(403, new ApiResponse<DashboardAlertsDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "NotAVendor", CurrentCulture),
+                "NOT_A_VENDOR"));
+        }
+
+        // 1. Critical Stock
+        var lowStockThreshold = 10;
+        var criticalProducts = await UnitOfWork.Products.Query()
+            .Where(p => p.VendorId == vendorId && (p.Stock ?? 0) <= lowStockThreshold && p.IsAvailable)
+            .Select(p => new ProductStockDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Stock = p.Stock ?? 0
+            })
+            .ToListAsync();
+
+        // 2. Delayed Orders
+        var now = DateTime.UtcNow;
+        var delayedOrdersQuery = UnitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status != OrderStatus.Delivered &&
+                        o.Status != OrderStatus.Cancelled && o.Status != OrderStatus.Ready);
+
+        var activeOrders = await delayedOrdersQuery
+            .Include(o => o.OrderItems).ThenInclude(i => i.Product)
+            .ToListAsync();
+
+        var delayedOrders = activeOrders.Where(o =>
+        {
+            // pending (not yet accepted): if > 15 mins (hard limit)
+            if (o.Status == OrderStatus.Pending) return (now - o.CreatedAt).TotalMinutes > 15;
+
+            // preparing: if > max(preparationTime) + buffer
+            if (o.Status == OrderStatus.Preparing)
+            {
+                var maxPrep = o.OrderItems.Max(i => i.Product?.PreparationTime) ?? 30;
+                return (now - o.CreatedAt).TotalMinutes > (maxPrep + 15);
+            }
+
+            return false;
+        }).Select(o => new VendorOrderDto
+        {
+            Id = o.Id,
+            CustomerOrderId = o.Id.ToString().Substring(0, 8).ToUpper(),
+            TotalAmount = o.TotalAmount,
+            Status = o.Status.ToString(),
+            CreatedAt = o.CreatedAt,
+            Items = o.OrderItems.Select(i => new VendorOrderItemDto
+            {
+                ProductId = i.ProductId,
+                ProductName = i.Product.Name,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TotalPrice = i.UnitPrice * i.Quantity,
+                ProductImageUrl = i.Product.ImageUrl
+            }).ToList()
+        }).ToList();
+
+        // 3. Unanswered Reviews
+        var unansweredReviewsCount = await UnitOfWork.Reviews.Query()
+            .Where(r => r.Product!.VendorId == vendorId && string.IsNullOrEmpty(r.Reply))
+            .CountAsync();
+
+        var alerts = new DashboardAlertsDto
+        {
+            CriticalStockCount = criticalProducts.Count,
+            CriticalStockProducts = criticalProducts.Take(5).ToList(),
+            DelayedOrdersCount = delayedOrders.Count,
+            DelayedOrders = delayedOrders.Take(5).ToList(),
+            UnansweredReviewsCount = unansweredReviewsCount
+        };
+
+        return Ok(new ApiResponse<DashboardAlertsDto>(alerts, "Success"));
+    }
+}

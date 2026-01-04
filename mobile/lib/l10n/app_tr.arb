@@ -804,6 +804,38 @@
       "error": {}
     }
   },
+  "attentionRequired": "Dikkat Gerekenler",
+  "@attentionRequired": {
+    "description": "Dashboard uyarılar bölümü başlığı"
+  },
+  "criticalStockAlert": "{count} ürün kritik stok seviyesinde",
+  "@criticalStockAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "delayedOrdersAlert": "{count} sipariş gecikmiş durumda",
+  "@delayedOrdersAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unansweredReviewsAlert": "{count} cevaplanmamış yorum var",
+  "@unansweredReviewsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourlySalesToday": "Bugünün Saatlik Satışları",
+  "@hourlySalesToday": {
+    "description": "Saatlik satış grafiği başlığı"
+  },
   "facebookLoginFailed": "Facebook ile giriş başarısız: {error}",
   "@facebookLoginFailed": {
     "placeholders": {

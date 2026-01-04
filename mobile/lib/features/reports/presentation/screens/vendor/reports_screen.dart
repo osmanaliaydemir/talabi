@@ -302,6 +302,116 @@ class _VendorReportsScreenState extends State<VendorReportsScreen> {
                                 ),
                               ),
                             ),
+
+                          const SizedBox(height: 24),
+                          // Hourly Sales Chart
+                          FutureBuilder<List<Map<String, dynamic>>>(
+                            future: _apiService.getHourlySales(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              if (snapshot.hasError ||
+                                  !snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final hourlySales = snapshot.data!;
+                              final maxRevenue = hourlySales.fold<double>(
+                                0,
+                                (max, item) =>
+                                    (item['totalRevenue'] as num).toDouble() >
+                                        max
+                                    ? (item['totalRevenue'] as num).toDouble()
+                                    : max,
+                              );
+
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        localizations.hourlySalesToday,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      SizedBox(
+                                        height: 200,
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: hourlySales.map((item) {
+                                            final revenue =
+                                                (item['totalRevenue'] as num)
+                                                    .toDouble();
+                                            final hour = item['hour'] as int;
+                                            final height = maxRevenue > 0
+                                                ? (revenue / maxRevenue) * 150
+                                                : 0.0;
+
+                                            // Only show bars for active hours (example: 8 AM to 11 PM) or every 3rd hour to save space
+                                            // Or show all but make thin bars
+                                            return Expanded(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  if (revenue > 0)
+                                                    Container(
+                                                      width: 8,
+                                                      height: height < 4
+                                                          ? 4
+                                                          : height, // min height
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            Colors.deepPurple,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              4,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  if (revenue == 0)
+                                                    Container(
+                                                      width: 8,
+                                                      height: 1,
+                                                      color: Colors.grey[200],
+                                                    ),
+                                                  const SizedBox(height: 8),
+                                                  if (hour % 3 ==
+                                                      0) // Show label every 3 hours
+                                                    Text(
+                                                      '$hour:00',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        color: Colors.grey[600],
+                                                      ),
+                                                    )
+                                                  else
+                                                    const SizedBox(height: 12),
+                                                ],
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),

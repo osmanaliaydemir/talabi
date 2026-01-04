@@ -22,4 +22,7 @@ public class Review : BaseEntity
 
     public Guid? OrderId { get; set; }
     public Order? Order { get; set; }
+
+    public string? Reply { get; set; }
+    public DateTime? RepliedAt { get; set; }
 }

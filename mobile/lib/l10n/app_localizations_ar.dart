@@ -612,6 +612,27 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get attentionRequired => 'Attention Required';
+
+  @override
+  String criticalStockAlert(int count) {
+    return '$count products at critical stock level';
+  }
+
+  @override
+  String delayedOrdersAlert(int count) {
+    return '$count orders are delayed';
+  }
+
+  @override
+  String unansweredReviewsAlert(int count) {
+    return '$count unanswered reviews';
+  }
+
+  @override
+  String get hourlySalesToday => 'Hourly Sales (Today)';
+
+  @override
   String facebookLoginFailed(Object error) {
     return 'فشل تسجيل الدخول عبر Facebook: $error';
   }

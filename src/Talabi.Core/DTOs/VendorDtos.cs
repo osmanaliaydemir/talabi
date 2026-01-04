@@ -38,7 +38,7 @@ public class VendorOrderDto
     public DateTime CreatedAt { get; set; }
     public DateTime? EstimatedDeliveryTime { get; set; }
     public List<VendorOrderItemDto> Items { get; set; } = new();
-    
+
     // Courier Information
     public VendorCourierInfoDto? Courier { get; set; }
 }
@@ -91,4 +91,30 @@ public class ProductSalesDto
     public string ProductName { get; set; } = string.Empty;
     public int QuantitySold { get; set; }
     public decimal TotalRevenue { get; set; }
+}
+
+public class HourlySalesDto
+{
+    public int Hour { get; set; }
+    public decimal TotalRevenue { get; set; }
+    public int OrderCount { get; set; }
+    public double GrowthRate { get; set; }
+}
+
+public class DashboardAlertsDto
+{
+    public int CriticalStockCount { get; set; }
+    public List<ProductStockDto> CriticalStockProducts { get; set; } = new();
+
+    public int DelayedOrdersCount { get; set; }
+    public List<VendorOrderDto> DelayedOrders { get; set; } = new();
+
+    public int UnansweredReviewsCount { get; set; }
+}
+
+public class ProductStockDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int Stock { get; set; }
 }

@@ -803,6 +803,38 @@
       "error": {}
     }
   },
+  "attentionRequired": "Attention Required",
+  "@attentionRequired": {
+    "description": "Title for dashboard alerts section"
+  },
+  "criticalStockAlert": "{count} products at critical stock level",
+  "@criticalStockAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "delayedOrdersAlert": "{count} orders are delayed",
+  "@delayedOrdersAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unansweredReviewsAlert": "{count} unanswered reviews",
+  "@unansweredReviewsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourlySalesToday": "Hourly Sales (Today)",
+  "@hourlySalesToday": {
+    "description": "Title for hourly sales chart"
+  },
   "facebookLoginFailed": "Facebook login failed: {error}",
   "@facebookLoginFailed": {
     "placeholders": {
