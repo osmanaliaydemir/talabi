@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
-using Talabi.Core.Extensions;
-using Talabi.Core.Helpers;
 using Talabi.Core.Interfaces;
 using AutoMapper;
 
@@ -24,7 +21,7 @@ public class OrdersController : BaseController
     private readonly IMapper _mapper;
     private readonly INotificationService _notificationService;
     private readonly IDashboardNotificationService _dashboardNotificationService;
-    private readonly IHubContext<Talabi.Api.Hubs.NotificationHub> _hubContext;
+    private readonly IHubContext<Hubs.NotificationHub> _hubContext;
     private const string ResourceName = "OrderResources";
 
     /// <summary>
@@ -40,7 +37,7 @@ public class OrdersController : BaseController
         IMapper mapper,
         INotificationService notificationService,
         IDashboardNotificationService dashboardNotificationService,
-        IHubContext<Talabi.Api.Hubs.NotificationHub> hubContext)
+        IHubContext<Hubs.NotificationHub> hubContext)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _assignmentService = assignmentService;
