@@ -22,7 +22,7 @@ public class PaymentsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
     {
         var vendorIdStr = HttpContext.Session.GetString("VendorId");
         if (string.IsNullOrEmpty(vendorIdStr) || !Guid.TryParse(vendorIdStr, out var vendorId))
@@ -30,38 +30,104 @@ public class PaymentsController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        // Fetch all delivered orders for the vendor
-        // Optimization: In a real app, we might want to paginate or filter date range at DB level.
-        // For now, fetching all delivered orders to calculate totals in memory might be okay if volume is low,
-        // but ideally we should do db-side aggregation.
-
-        var deliveredOrders = await _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered)
-            .OrderByDescending(o => o.CreatedAt)
-            .ToListAsync();
-
         var today = DateTime.UtcNow.Date;
-        var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday); // Assuming Monday start
+        var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
         var startOfMonth = new DateTime(today.Year, today.Month, 1);
 
-        var viewModel = new PaymentsViewModel
-        {
-            TotalEarnings = deliveredOrders.Sum(o => o.TotalAmount),
-            DailyEarnings = deliveredOrders.Where(o => o.CreatedAt.Date == today).Sum(o => o.TotalAmount),
-            WeeklyEarnings = deliveredOrders.Where(o => o.CreatedAt.Date >= startOfWeek).Sum(o => o.TotalAmount),
-            MonthlyEarnings = deliveredOrders.Where(o => o.CreatedAt.Date >= startOfMonth).Sum(o => o.TotalAmount),
+        // Calculate earnings directly in DB (Unaffected by filter)
+        decimal totalEarnings = await _unitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered)
+            .SumAsync(o => o.TotalAmount);
 
-            // Mapping for the table
-            Transactions = deliveredOrders.Select(o => new Core.DTOs.OrderDto
+        decimal dailyEarnings = await _unitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered && o.CreatedAt.Date == today)
+            .SumAsync(o => o.TotalAmount);
+
+        decimal weeklyEarnings = await _unitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered && o.CreatedAt.Date >= startOfWeek)
+            .SumAsync(o => o.TotalAmount);
+
+        decimal monthlyEarnings = await _unitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered && o.CreatedAt.Date >= startOfMonth)
+            .SumAsync(o => o.TotalAmount);
+
+        // Filter Logic
+        var query = _unitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.CreatedAt.Date >= startDate.Value.Date);
+
+        if (endDate.HasValue)
+            query = query.Where(o => o.CreatedAt.Date <= endDate.Value.Date);
+
+        // Fetch filtered transactions
+        var transactions = await query
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(500) // Increase limit for filtered views
+            .Select(o => new Core.DTOs.OrderDto
             {
                 Id = o.Id,
                 CustomerOrderId = o.CustomerOrderId,
                 CreatedAt = o.CreatedAt,
                 TotalAmount = o.TotalAmount,
                 Status = o.Status.ToString()
-            }).ToList()
+            })
+            .ToListAsync();
+
+        var viewModel = new PaymentsViewModel
+        {
+            TotalEarnings = totalEarnings,
+            DailyEarnings = dailyEarnings,
+            WeeklyEarnings = weeklyEarnings,
+            MonthlyEarnings = monthlyEarnings,
+            Transactions = transactions
         };
 
         return View(viewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Export(DateTime? startDate, DateTime? endDate)
+    {
+        var vendorIdStr = HttpContext.Session.GetString("VendorId");
+        if (string.IsNullOrEmpty(vendorIdStr) || !Guid.TryParse(vendorIdStr, out var vendorId))
+        {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        var query = _unitOfWork.Orders.Query()
+            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.CreatedAt.Date >= startDate.Value.Date);
+
+        if (endDate.HasValue)
+            query = query.Where(o => o.CreatedAt.Date <= endDate.Value.Date);
+
+        var transactions = await query
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new
+            {
+                o.CustomerOrderId,
+                o.CreatedAt,
+                o.TotalAmount,
+                Status = o.Status.ToString()
+            })
+            .ToListAsync();
+
+        var builder = new System.Text.StringBuilder();
+        // Add header
+        builder.AppendLine("Siparis No;Tarih;Tutar;Durum");
+
+        foreach (var t in transactions)
+        {
+            builder.AppendLine($"{t.CustomerOrderId};{t.CreatedAt:yyyy-MM-dd HH:mm};{t.TotalAmount:F2};{t.Status}");
+        }
+
+        // Return as CSV file with UTF8 BOM for Excel compatibility
+        var bytes = System.Text.Encoding.UTF8.GetPreamble()
+            .Concat(System.Text.Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
+        return File(bytes, "text/csv", $"gelir_raporu_{DateTime.Now:yyyyMMdd}.csv");
     }
 }

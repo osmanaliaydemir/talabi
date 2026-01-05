@@ -599,6 +599,26 @@
         "en-US": "Special Holidays",
         "ar-SA": "العطلات الخاصة"
     },
+    "Export": {
+        "tr-TR": "Dışa Aktar",
+        "en-US": "Export",
+        "ar-SA": "تصدير"
+    },
+    "FilterTransactions": {
+        "tr-TR": "Filtrele",
+        "en-US": "Filter",
+        "ar-SA": "تصفية"
+    },
+    "StartDate": {
+        "tr-TR": "Başlangıç Tarihi",
+        "en-US": "Start Date",
+        "ar-SA": "تاريخ البدء "
+    },
+    "EndDate": {
+        "tr-TR": "Bitiş Tarihi",
+        "en-US": "End Date",
+        "ar-SA": "تاريخ الانتهاء"
+    },
     "DeliveryZones": {
         "tr-TR": "Teslimat Bölgeleri",
         "en-US": "Delivery Zones",

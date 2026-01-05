@@ -14,7 +14,8 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            @LocalizationService.GetString("DailyEarnings")</div>
+                            @LocalizationService.GetString("DailyEarnings")
+                        </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DailyEarnings.ToString("C2")</div>
                     </div>
                     <div class="col-auto">
@@ -32,7 +33,8 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            @LocalizationService.GetString("WeeklyEarnings")</div>
+                            @LocalizationService.GetString("WeeklyEarnings")
+                        </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.WeeklyEarnings.ToString("C2")</div>
                     </div>
                     <div class="col-auto">
@@ -69,7 +71,8 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            @LocalizationService.GetString("TotalEarnings")</div>
+                            @LocalizationService.GetString("TotalEarnings")
+                        </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalEarnings.ToString("C2")</div>
                     </div>
                     <div class="col-auto">
@@ -81,6 +84,33 @@
     </div>
 </div>
 
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("FilterTransactions")</h6>
+    </div>
+    <div class="card-body">
+        <form id="filterForm" class="row align-items-end">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">@LocalizationService.GetString("StartDate")</label>
+                <input type="date" id="startDate" name="startDate" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">@LocalizationService.GetString("EndDate")</label>
+                <input type="date" id="endDate" name="endDate" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3 d-flex gap-2">
+                <button type="button" class="btn btn-primary flex-fill" onclick="filterTransactions()">
+                    <i class="fas fa-filter"></i> @LocalizationService.GetString("Apply")
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="exportTransactions()" title="@LocalizationService.GetString("Export")" style="margin-left: 10px;">
+                    <i class="fas fa-file-export"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("TransactionHistory")</h6>
@@ -89,25 +119,25 @@
         <div class="table-responsive">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
-                    <tr>
-                        <th>@LocalizationService.GetString("OrderId")</th>
-                        <th>@LocalizationService.GetString("Date")</th>
-                        <th>@LocalizationService.GetString("Amount")</th>
-                        <th>@LocalizationService.GetString("Status")</th>
-                    </tr>
+                <tr>
+                    <th>@LocalizationService.GetString("OrderId")</th>
+                    <th>@LocalizationService.GetString("Date")</th>
+                    <th>@LocalizationService.GetString("Amount")</th>
+                    <th>@LocalizationService.GetString("Status")</th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Transactions)
-                    {
-                        <tr>
-                            <td>#@item.CustomerOrderId</td>
-                            <td>@item.CreatedAt.ToLocalTime().ToString("g")</td>
-                            <td>@item.TotalAmount.ToString("C2")</td>
-                            <td>
-                                <span class="badge bg-success">@LocalizationService.GetString("Delivered")</span>
-                            </td>
-                        </tr>
-                    }
+                @foreach (var item in Model.Transactions)
+                {
+                    <tr>
+                        <td>#@item.CustomerOrderId</td>
+                        <td>@item.CreatedAt.ToLocalTime().ToString("g")</td>
+                        <td>@item.TotalAmount.ToString("C2")</td>
+                        <td>
+                            <span class="badge bg-success">@LocalizationService.GetString("Delivered")</span>
+                        </td>
+                    </tr>
+                }
                 </tbody>
             </table>
         </div>
@@ -117,12 +147,61 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // Check URL params first
+            const urlParams = new URLSearchParams(window.location.search);
+            const startParam = urlParams.get('startDate');
+            const endParam = urlParams.get('endDate');
+
+            if (startParam) {
+                document.getElementById('startDate').value = startParam.split('T')[0];
+            } else {
+                 const today = new Date();
+                 const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                 document.getElementById('startDate').valueAsDate = firstDay;
+            }
+
+            if (endParam) {
+                 document.getElementById('endDate').value = endParam.split('T')[0];
+            } else {
+                document.getElementById('endDate').valueAsDate = new Date();
+            }
+
+            // Determine DataTable Language
+            let langUrl = "//cdn.datatables.net/plug-ins/1.10.24/i18n/English.json";
+            const currentCulture = '@System.Globalization.CultureInfo.CurrentUICulture.Name';
+            
+            if (currentCulture === 'tr-TR') {
+                langUrl = "//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json";
+            } else if (currentCulture === 'ar-SA') {
+                langUrl = "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json";
+            }
+
             $('#dataTable').DataTable({
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json" // Need to handle dynamic language
+                    "url": langUrl
                 },
-                "order": [[1, "desc"]] // Sort by Date desc
+                "order": [[1, "desc"]]
             });
         });
+
+        function filterTransactions() {
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            
+            // Reload page with query params (implementation would look like this)
+            // In a real SPA or ajax scenario, we would reload table data
+            window.location.href = `/Payments?startDate=${startDate}&endDate=${endDate}`;
+        }
+
+        function exportTransactions() {
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            
+            let url = `/Payments/Export?t=${new Date().getTime()}`;
+            if(startDate) url += `&startDate=${startDate}`;
+            if(endDate) url += `&endDate=${endDate}`;
+
+            window.location.href = url;
+        }
     </script>
 }
