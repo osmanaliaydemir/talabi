@@ -9,6 +9,8 @@ using Talabi.Core.Enums;
 using Talabi.Core.Extensions;
 using Talabi.Core.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
+using Talabi.Api.Hubs;
 
 namespace Talabi.Api.Controllers;
 
@@ -22,6 +24,7 @@ public class CourierController : BaseController
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly IMapper _mapper;
+    private readonly IHubContext<NotificationHub> _hubContext;
     private const string ResourceName = "CourierResources";
 
     /// <summary>
@@ -33,11 +36,13 @@ public class CourierController : BaseController
         ILogger<CourierController> logger,
         ILocalizationService localizationService,
         IUserContextService userContext,
-        IMapper mapper)
+        IMapper mapper,
+        IHubContext<NotificationHub> hubContext)
         : base(unitOfWork, logger, localizationService, userContext)
     {
         _userManager = userManager;
         _mapper = mapper;
+        _hubContext = hubContext;
     }
 
     private async Task<Courier?> GetCurrentCourier(bool createIfMissing = false)
@@ -47,6 +52,7 @@ public class CourierController : BaseController
         {
             return null;
         }
+
         var courier = await UnitOfWork.Couriers.Query()
             .Include(c => c.User)
             .Include(c => c.WorkingHours)
@@ -86,12 +92,12 @@ public class CourierController : BaseController
     [HttpGet("profile")]
     public async Task<ActionResult<ApiResponse<CourierProfileDto>>> GetProfile()
     {
-
-
         var courier = await GetCurrentCourier(createIfMissing: true);
         if (courier == null)
         {
-            return NotFound(new ApiResponse<CourierProfileDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<CourierProfileDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var profile = _mapper.Map<CourierProfileDto>(courier);
@@ -100,7 +106,9 @@ public class CourierController : BaseController
         profile.WorkingHours = courier.WorkingHours.Select(wh => new WorkingHourDto
         {
             DayOfWeek = (int)wh.DayOfWeek,
-            DayName = LocalizationService.GetLocalizedString("CommonResources", wh.DayOfWeek.ToString(), CurrentCulture), // Assumes DayOfWeek Enum string keys exist or use generic logic
+            DayName =
+                LocalizationService.GetLocalizedString("CommonResources", wh.DayOfWeek.ToString(),
+                    CurrentCulture), // Assumes DayOfWeek Enum string keys exist or use generic logic
             StartTime = wh.StartTime,
             EndTime = wh.EndTime,
             IsClosed = wh.IsClosed
@@ -112,7 +120,9 @@ public class CourierController : BaseController
         // The DTOs still have IsWithinWorkingHours.
 
 
-        return Ok(new ApiResponse<CourierProfileDto>(profile, LocalizationService.GetLocalizedString(ResourceName, "CourierProfileRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<CourierProfileDto>(profile,
+            LocalizationService.GetLocalizedString(ResourceName, "CourierProfileRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -123,12 +133,12 @@ public class CourierController : BaseController
     [HttpPut("profile")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateCourierProfileDto dto)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         courier.Name = dto.Name;
@@ -140,7 +150,9 @@ public class CourierController : BaseController
         {
             if (!Enum.TryParse<CourierVehicleType>(dto.VehicleType, true, out var vehicleType))
             {
-                return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidVehicleType", CurrentCulture), "INVALID_VEHICLE_TYPE"));
+                return BadRequest(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "InvalidVehicleType", CurrentCulture),
+                    "INVALID_VEHICLE_TYPE"));
             }
 
             courier.VehicleType = vehicleType;
@@ -170,6 +182,7 @@ public class CourierController : BaseController
             {
                 UnitOfWork.CourierWorkingHours.Remove(hour);
             }
+
             courier.WorkingHours.Clear();
 
             // Add new
@@ -191,7 +204,8 @@ public class CourierController : BaseController
         UnitOfWork.Couriers.Update(courier);
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ProfileUpdatedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "ProfileUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -201,17 +215,28 @@ public class CourierController : BaseController
     [HttpGet("vehicle-types")]
     public ActionResult<ApiResponse<List<object>>> GetVehicleTypes()
     {
-
-
         // Motor, Araba, Bisiklet seçenekleri
         var types = new List<object>
         {
-            new { Key = CourierVehicleType.Motorcycle.ToString(), Name = LocalizationService.GetLocalizedString(ResourceName, "VehicleTypeMotorcycle", CurrentCulture) },
-            new { Key = CourierVehicleType.Car.ToString(), Name = LocalizationService.GetLocalizedString(ResourceName, "VehicleTypeCar", CurrentCulture) },
-            new { Key = CourierVehicleType.Bicycle.ToString(), Name = LocalizationService.GetLocalizedString(ResourceName, "VehicleTypeBicycle", CurrentCulture) }
+            new
+            {
+                Key = CourierVehicleType.Motorcycle.ToString(),
+                Name = LocalizationService.GetLocalizedString(ResourceName, "VehicleTypeMotorcycle", CurrentCulture)
+            },
+            new
+            {
+                Key = CourierVehicleType.Car.ToString(),
+                Name = LocalizationService.GetLocalizedString(ResourceName, "VehicleTypeCar", CurrentCulture)
+            },
+            new
+            {
+                Key = CourierVehicleType.Bicycle.ToString(),
+                Name = LocalizationService.GetLocalizedString(ResourceName, "VehicleTypeBicycle", CurrentCulture)
+            }
         };
 
-        return Ok(new ApiResponse<List<object>>(types, LocalizationService.GetLocalizedString(ResourceName, "VehicleTypesRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<List<object>>(types,
+            LocalizationService.GetLocalizedString(ResourceName, "VehicleTypesRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -222,17 +247,19 @@ public class CourierController : BaseController
     [HttpPut("status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateStatus([FromBody] UpdateCourierStatusDto dto)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         if (!Enum.TryParse<CourierStatus>(dto.Status, true, out var newStatus))
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidStatus", CurrentCulture), "INVALID_STATUS"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidStatus", CurrentCulture),
+                "INVALID_STATUS"));
         }
 
         // Çalışma saati kontrolü
@@ -244,7 +271,9 @@ public class CourierController : BaseController
             {
                 if (now < courier.WorkingHoursStart.Value || now > courier.WorkingHoursEnd.Value)
                 {
-                    return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CannotGoAvailableOutsideWorkingHours", CurrentCulture), "OUTSIDE_WORKING_HOURS"));
+                    return BadRequest(new ApiResponse<object>(
+                        LocalizationService.GetLocalizedString(ResourceName, "CannotGoAvailableOutsideWorkingHours",
+                            CurrentCulture), "OUTSIDE_WORKING_HOURS"));
                 }
             }
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -253,7 +282,9 @@ public class CourierController : BaseController
         // Aktif siparişi varsa Offline olamaz
         if (newStatus == CourierStatus.Offline && courier.CurrentActiveOrders > 0)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CannotGoOfflineWithActiveOrders", CurrentCulture), "CANNOT_GO_OFFLINE_WITH_ACTIVE_ORDERS"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CannotGoOfflineWithActiveOrders", CurrentCulture),
+                "CANNOT_GO_OFFLINE_WITH_ACTIVE_ORDERS"));
         }
 
         courier.Status = newStatus;
@@ -265,7 +296,9 @@ public class CourierController : BaseController
 
         Logger.LogInformation("Courier {CourierId} status changed to {Status}", courier.Id, newStatus);
 
-        return Ok(new ApiResponse<object>(new { Status = newStatus.ToString() }, LocalizationService.GetLocalizedString(ResourceName, "StatusUpdated", CurrentCulture, newStatus.ToString())));
+        return Ok(new ApiResponse<object>(new { Status = newStatus.ToString() },
+            LocalizationService.GetLocalizedString(ResourceName, "StatusUpdated", CurrentCulture,
+                newStatus.ToString())));
     }
 
     /// <summary>
@@ -274,24 +307,29 @@ public class CourierController : BaseController
     /// <param name="dto">Yeni konum bilgisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("location")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateLocation([FromBody] Talabi.Core.DTOs.Courier.UpdateCourierLocationDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateLocation(
+        [FromBody] Talabi.Core.DTOs.Courier.UpdateCourierLocationDto dto)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         if (dto.Latitude < -90 || dto.Latitude > 90)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidLatitude", CurrentCulture), "INVALID_LATITUDE"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidLatitude", CurrentCulture),
+                "INVALID_LATITUDE"));
         }
 
         if (dto.Longitude < -180 || dto.Longitude > 180)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "InvalidLongitude", CurrentCulture), "INVALID_LONGITUDE"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidLongitude", CurrentCulture),
+                "INVALID_LONGITUDE"));
         }
 
         courier.CurrentLatitude = dto.Latitude;
@@ -302,7 +340,38 @@ public class CourierController : BaseController
         UnitOfWork.Couriers.Update(courier);
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "LocationUpdatedSuccessfully", CurrentCulture)));
+        // Broadcast to NotificationHub
+        try
+        {
+            // Notify active orders' tracking groups
+            var activeOrders = await UnitOfWork.OrderCouriers.Query()
+                .Where(oc => oc.CourierId == courier.Id && oc.IsActive && oc.Order.Status == OrderStatus.OutForDelivery)
+                .Select(oc => new { oc.OrderId, oc.Order.VendorId })
+                .ToListAsync();
+
+            foreach (var order in activeOrders)
+            {
+                // Notify Customer (Order Tracking Group)
+                await _hubContext.Clients.Group($"order_tracking_{order.OrderId}")
+                    .SendAsync("OrderLocationUpdated", order.OrderId, dto.Latitude, dto.Longitude);
+
+                // Notify Vendor
+                await _hubContext.Clients.Group($"vendor_{order.VendorId}")
+                    .SendAsync("CourierLocationUpdated", new
+                    {
+                        CourierId = courier.Id,
+                        Lat = dto.Latitude,
+                        Lng = dto.Longitude
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to broadcast location update for courier {CourierId}", courier.Id);
+        }
+
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "LocationUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -312,12 +381,12 @@ public class CourierController : BaseController
     [HttpGet("statistics")]
     public async Task<ActionResult<ApiResponse<CourierStatisticsDto>>> GetStatistics()
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<CourierStatisticsDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<CourierStatisticsDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var today = DateTime.Today;
@@ -328,8 +397,8 @@ public class CourierController : BaseController
         var orderCouriers = await UnitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Order)
             .Where(oc => oc.CourierId == courier.Id
-                && oc.Order != null
-                && oc.Order.Status == OrderStatus.Delivered)
+                         && oc.Order != null
+                         && oc.Order.Status == OrderStatus.Delivered)
             .ToListAsync();
 
         var todayOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date == today);
@@ -351,7 +420,9 @@ public class CourierController : BaseController
             ActiveOrders = courier.CurrentActiveOrders
         };
 
-        return Ok(new ApiResponse<CourierStatisticsDto>(stats, LocalizationService.GetLocalizedString(ResourceName, "CourierStatisticsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<CourierStatisticsDto>(stats,
+            LocalizationService.GetLocalizedString(ResourceName, "CourierStatisticsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -361,17 +432,17 @@ public class CourierController : BaseController
     [HttpGet("check-availability")]
     public async Task<ActionResult<ApiResponse<object>>> CheckAvailability()
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var isAvailable = courier.Status == CourierStatus.Available
-            && courier.IsActive
-            && courier.CurrentActiveOrders < courier.MaxActiveOrders;
+                          && courier.IsActive
+                          && courier.CurrentActiveOrders < courier.MaxActiveOrders;
 
         var reasons = new List<string>();
         if (!courier.IsActive) reasons.Add("Courier is not active");
@@ -387,7 +458,8 @@ public class CourierController : BaseController
             Reasons = reasons
         };
 
-        return Ok(new ApiResponse<object>(result, LocalizationService.GetLocalizedString(ResourceName, "AvailabilityCheckedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(result,
+            LocalizationService.GetLocalizedString(ResourceName, "AvailabilityCheckedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -397,20 +469,24 @@ public class CourierController : BaseController
     /// <param name="dto">Yeni konum bilgisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("{courierId}/location")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateLocationLegacy(Guid courierId, Talabi.Core.DTOs.Courier.UpdateCourierLocationDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateLocationLegacy(Guid courierId,
+        Talabi.Core.DTOs.Courier.UpdateCourierLocationDto dto)
     {
-
-
         var courier = await UnitOfWork.Couriers.GetByIdAsync(courierId);
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierNotFound", CurrentCulture), "COURIER_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierNotFound", CurrentCulture),
+                "COURIER_NOT_FOUND"));
         }
 
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId) || courier.UserId != userId)
         {
-            return StatusCode(403, new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "NotAuthorizedForThisCourier", CurrentCulture), "FORBIDDEN"));
+            return StatusCode(403,
+                new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "NotAuthorizedForThisCourier", CurrentCulture),
+                    "FORBIDDEN"));
         }
 
         courier.CurrentLatitude = dto.Latitude;
@@ -420,7 +496,35 @@ public class CourierController : BaseController
         UnitOfWork.Couriers.Update(courier);
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "LocationUpdatedSuccessfully", CurrentCulture)));
+        // Broadcast to NotificationHub
+        try
+        {
+            var activeOrders = await UnitOfWork.OrderCouriers.Query()
+                .Where(oc => oc.CourierId == courier.Id && oc.IsActive && oc.Order.Status == OrderStatus.OutForDelivery)
+                .Select(oc => new { oc.OrderId, oc.Order.VendorId })
+                .ToListAsync();
+
+            foreach (var order in activeOrders)
+            {
+                await _hubContext.Clients.Group($"order_tracking_{order.OrderId}")
+                    .SendAsync("OrderLocationUpdated", order.OrderId, dto.Latitude, dto.Longitude);
+
+                await _hubContext.Clients.Group($"vendor_{order.VendorId}")
+                    .SendAsync("CourierLocationUpdated", new
+                    {
+                        CourierId = courier.Id,
+                        Lat = dto.Latitude,
+                        Lng = dto.Longitude
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to broadcast location update for courier {CourierId}", courier.Id);
+        }
+
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "LocationUpdatedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -431,17 +535,19 @@ public class CourierController : BaseController
     [HttpGet("{courierId}/location")]
     public async Task<ActionResult<ApiResponse<Talabi.Core.DTOs.CourierLocationDto>>> GetLocation(Guid courierId)
     {
-
-
         var courier = await UnitOfWork.Couriers.GetByIdAsync(courierId);
         if (courier == null)
         {
-            return NotFound(new ApiResponse<Talabi.Core.DTOs.CourierLocationDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierNotFound", CurrentCulture), "COURIER_NOT_FOUND"));
+            return NotFound(new ApiResponse<Talabi.Core.DTOs.CourierLocationDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierNotFound", CurrentCulture),
+                "COURIER_NOT_FOUND"));
         }
 
         if (!courier.CurrentLatitude.HasValue || !courier.CurrentLongitude.HasValue)
         {
-            return NotFound(new ApiResponse<Talabi.Core.DTOs.CourierLocationDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierLocationNotFound", CurrentCulture), "LOCATION_NOT_FOUND"));
+            return NotFound(new ApiResponse<Talabi.Core.DTOs.CourierLocationDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierLocationNotFound", CurrentCulture),
+                "LOCATION_NOT_FOUND"));
         }
 
         var locationDto = new Talabi.Core.DTOs.CourierLocationDto
@@ -453,7 +559,9 @@ public class CourierController : BaseController
             LastUpdate = courier.LastLocationUpdate ?? DateTime.UtcNow
         };
 
-        return Ok(new ApiResponse<Talabi.Core.DTOs.CourierLocationDto>(locationDto, LocalizationService.GetLocalizedString(ResourceName, "CourierLocationRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<Talabi.Core.DTOs.CourierLocationDto>(locationDto,
+            LocalizationService.GetLocalizedString(ResourceName, "CourierLocationRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -464,17 +572,17 @@ public class CourierController : BaseController
     [AllowAnonymous]
     public async Task<ActionResult<ApiResponse<List<Talabi.Core.DTOs.CourierLocationDto>>>> GetActiveCouriers()
     {
-
-
         var couriers = await UnitOfWork.Couriers.Query()
             .Where(c => c.IsActive &&
-                       c.CurrentLatitude.HasValue &&
-                       c.CurrentLongitude.HasValue)
+                        c.CurrentLatitude.HasValue &&
+                        c.CurrentLongitude.HasValue)
             .ToListAsync();
 
         var courierLocationDtos = couriers.Select(c => _mapper.Map<Talabi.Core.DTOs.CourierLocationDto>(c)).ToList();
 
-        return Ok(new ApiResponse<List<Talabi.Core.DTOs.CourierLocationDto>>(courierLocationDtos, LocalizationService.GetLocalizedString(ResourceName, "ActiveCouriersRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<List<Talabi.Core.DTOs.CourierLocationDto>>(courierLocationDtos,
+            LocalizationService.GetLocalizedString(ResourceName, "ActiveCouriersRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -483,14 +591,15 @@ public class CourierController : BaseController
     /// <param name="assignmentService">Sipariş atama servisi</param>
     /// <returns>Aktif sipariş listesi</returns>
     [HttpGet("orders/active")]
-    public async Task<ActionResult<ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>>> GetActiveOrders([FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<ActionResult<ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>>> GetActiveOrders(
+        [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var courierId = courier.Id;
@@ -523,7 +632,8 @@ public class CourierController : BaseController
             return dto;
         }).ToList();
 
-        return Ok(new ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>(orderDtos, LocalizationService.GetLocalizedString(ResourceName, "ActiveOrdersRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<List<Talabi.Core.DTOs.Courier.CourierOrderDto>>(orderDtos,
+            LocalizationService.GetLocalizedString(ResourceName, "ActiveOrdersRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -533,23 +643,27 @@ public class CourierController : BaseController
     /// <param name="assignmentService">Sipariş atama servisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("orders/{id}/accept")]
-    public async Task<ActionResult<ApiResponse<object>>> AcceptOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<ActionResult<ApiResponse<object>>> AcceptOrder(Guid id,
+        [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var success = await assignmentService.AcceptOrderAsync(id, courier.Id);
         if (!success)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "FailedToAcceptOrder", CurrentCulture), "ORDER_ACCEPT_FAILED"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "FailedToAcceptOrder", CurrentCulture),
+                "ORDER_ACCEPT_FAILED"));
         }
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "OrderAcceptedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -565,18 +679,20 @@ public class CourierController : BaseController
         [FromBody] Talabi.Core.DTOs.Courier.RejectOrderDto dto,
         [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         // Validate reject reason
         if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Trim().Length < 10)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "RejectReasonMustBeAtLeast10Characters", CurrentCulture),
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "RejectReasonMustBeAtLeast10Characters",
+                    CurrentCulture),
                 "INVALID_REJECT_REASON"
             ));
         }
@@ -584,10 +700,13 @@ public class CourierController : BaseController
         var success = await assignmentService.RejectOrderAsync(id, courier.Id, dto.Reason.Trim());
         if (!success)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "FailedToRejectOrder", CurrentCulture), "ORDER_REJECT_FAILED"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "FailedToRejectOrder", CurrentCulture),
+                "ORDER_REJECT_FAILED"));
         }
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "OrderRejectedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -597,23 +716,27 @@ public class CourierController : BaseController
     /// <param name="assignmentService">Sipariş atama servisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("orders/{id}/pickup")]
-    public async Task<ActionResult<ApiResponse<object>>> PickUpOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<ActionResult<ApiResponse<object>>> PickUpOrder(Guid id,
+        [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var success = await assignmentService.PickUpOrderAsync(id, courier.Id);
         if (!success)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "FailedToPickUpOrder", CurrentCulture), "ORDER_PICKUP_FAILED"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "FailedToPickUpOrder", CurrentCulture),
+                "ORDER_PICKUP_FAILED"));
         }
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderPickedUpSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "OrderPickedUpSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -623,23 +746,27 @@ public class CourierController : BaseController
     /// <param name="assignmentService">Sipariş atama servisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("orders/{id}/deliver")]
-    public async Task<ActionResult<ApiResponse<object>>> DeliverOrder(Guid id, [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
+    public async Task<ActionResult<ApiResponse<object>>> DeliverOrder(Guid id,
+        [FromServices] Talabi.Core.Interfaces.IOrderAssignmentService assignmentService)
     {
-
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var success = await assignmentService.DeliverOrderAsync(id, courier.Id);
         if (!success)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "FailedToDeliverOrder", CurrentCulture), "ORDER_DELIVER_FAILED"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "FailedToDeliverOrder", CurrentCulture),
+                "ORDER_DELIVER_FAILED"));
         }
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "OrderDeliveredSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "OrderDeliveredSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -649,13 +776,15 @@ public class CourierController : BaseController
     /// <param name="dto">Teslimat kanıtı bilgileri</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPost("orders/{id}/proof")]
-    public async Task<ActionResult<ApiResponse<object>>> SubmitDeliveryProof(Guid id, [FromBody] SubmitDeliveryProofDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> SubmitDeliveryProof(Guid id,
+        [FromBody] SubmitDeliveryProofDto dto)
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var courierId = courier.Id;
@@ -663,16 +792,21 @@ public class CourierController : BaseController
         var order = await UnitOfWork.Orders.Query()
             .Include(o => o.DeliveryProof)
             .Include(o => o.OrderCouriers)
-            .FirstOrDefaultAsync(o => o.Id == id && o.OrderCouriers.Any(oc => oc.CourierId == courierId && oc.IsActive));
+            .FirstOrDefaultAsync(o =>
+                o.Id == id && o.OrderCouriers.Any(oc => oc.CourierId == courierId && oc.IsActive));
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFoundOrNotAssigned", CurrentCulture), "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFoundOrNotAssigned", CurrentCulture),
+                "ORDER_NOT_FOUND"));
         }
 
         if (order.Status != OrderStatus.Delivered)
         {
-            return BadRequest(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "OrderMustBeDeliveredBeforeSubmittingProof", CurrentCulture), "ORDER_NOT_DELIVERED"));
+            return BadRequest(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderMustBeDeliveredBeforeSubmittingProof",
+                    CurrentCulture), "ORDER_NOT_DELIVERED"));
         }
 
         // Create or update delivery proof
@@ -699,7 +833,9 @@ public class CourierController : BaseController
 
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "DeliveryProofSubmittedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "DeliveryProofSubmittedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -709,30 +845,32 @@ public class CourierController : BaseController
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 20)</param>
     /// <returns>Sayfalanmış sipariş geçmişi</returns>
     [HttpGet("orders/history")]
-    public async Task<ActionResult<ApiResponse<object>>> GetOrderHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<ApiResponse<object>>> GetOrderHistory([FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         // Get orders through OrderCouriers
         var orderCouriers = await UnitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Order)
-                .ThenInclude(o => o!.Vendor)
+            .ThenInclude(o => o!.Vendor)
             .Include(oc => oc.Order)
-                .ThenInclude(o => o!.Customer)
+            .ThenInclude(o => o!.Customer)
             .Include(oc => oc.Order)
-                .ThenInclude(o => o!.DeliveryAddress)
+            .ThenInclude(o => o!.DeliveryAddress)
             .Include(oc => oc.Order)
-                .ThenInclude(o => o!.OrderItems)
-                    .ThenInclude(oi => oi.Product)
+            .ThenInclude(o => o!.OrderItems)
+            .ThenInclude(oi => oi.Product)
             .Where(oc => oc.CourierId == courier.Id
-                && oc.Order != null
-                && oc.Order.Status == OrderStatus.Delivered
-                && oc.DeliveredAt.HasValue)
+                         && oc.Order != null
+                         && oc.Order.Status == OrderStatus.Delivered
+                         && oc.DeliveredAt.HasValue)
             .OrderByDescending(oc => oc.DeliveredAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -740,9 +878,9 @@ public class CourierController : BaseController
 
         var totalCount = await UnitOfWork.OrderCouriers.Query()
             .CountAsync(oc => oc.CourierId == courier.Id
-                && oc.Order != null
-                && oc.Order.Status == OrderStatus.Delivered
-                && oc.DeliveredAt.HasValue);
+                              && oc.Order != null
+                              && oc.Order.Status == OrderStatus.Delivered
+                              && oc.DeliveredAt.HasValue);
 
         var orderDtos = _mapper.Map<List<CourierOrderDto>>(orderCouriers);
 
@@ -758,7 +896,8 @@ public class CourierController : BaseController
             items = orderDtos
         };
 
-        return Ok(new ApiResponse<object>(result, LocalizationService.GetLocalizedString(ResourceName, "OrderHistoryRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(result,
+            LocalizationService.GetLocalizedString(ResourceName, "OrderHistoryRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -769,11 +908,12 @@ public class CourierController : BaseController
     [HttpGet("orders/{id}")]
     public async Task<ActionResult<ApiResponse<CourierOrderDto>>> GetOrderDetail(Guid id)
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<CourierOrderDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<CourierOrderDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var courierId = courier.Id;
@@ -784,10 +924,11 @@ public class CourierController : BaseController
             .Include(o => o.Customer)
             .Include(o => o.DeliveryAddress)
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+            .ThenInclude(oi => oi.Product)
             .Include(o => o.DeliveryProof)
             .Include(o => o.OrderCouriers)
-            .FirstOrDefaultAsync(o => o.Id == id && o.OrderCouriers.Any(oc => oc.CourierId == courierId && oc.IsActive));
+            .FirstOrDefaultAsync(o =>
+                o.Id == id && o.OrderCouriers.Any(oc => oc.CourierId == courierId && oc.IsActive));
 
         // If not found, check if this courier has a notification for this order
         // This allows viewing orders from notifications even if they were rejected or reassigned
@@ -804,7 +945,7 @@ public class CourierController : BaseController
                     .Include(o => o.Customer)
                     .Include(o => o.DeliveryAddress)
                     .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Product)
+                    .ThenInclude(oi => oi.Product)
                     .Include(o => o.DeliveryProof)
                     .FirstOrDefaultAsync(o => o.Id == id);
             }
@@ -812,7 +953,9 @@ public class CourierController : BaseController
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<CourierOrderDto>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFoundOrNotAssigned", CurrentCulture), "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<CourierOrderDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFoundOrNotAssigned", CurrentCulture),
+                "ORDER_NOT_FOUND"));
         }
 
         var orderCourier = order.OrderCouriers
@@ -837,7 +980,8 @@ public class CourierController : BaseController
             orderDto.CourierTip = orderCourier.CourierTip;
         }
 
-        return Ok(new ApiResponse<CourierOrderDto>(orderDto, LocalizationService.GetLocalizedString(ResourceName, "OrderDetailsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<CourierOrderDto>(orderDto,
+            LocalizationService.GetLocalizedString(ResourceName, "OrderDetailsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -847,11 +991,12 @@ public class CourierController : BaseController
     [HttpGet("earnings/today")]
     public async Task<ActionResult<ApiResponse<EarningsSummaryDto>>> GetTodayEarnings()
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<EarningsSummaryDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<EarningsSummaryDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var today = DateTime.Today;
@@ -869,7 +1014,9 @@ public class CourierController : BaseController
             Earnings = _mapper.Map<List<CourierEarningDto>>(earnings)
         };
 
-        return Ok(new ApiResponse<EarningsSummaryDto>(summary, LocalizationService.GetLocalizedString(ResourceName, "TodayEarningsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<EarningsSummaryDto>(summary,
+            LocalizationService.GetLocalizedString(ResourceName, "TodayEarningsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -879,11 +1026,12 @@ public class CourierController : BaseController
     [HttpGet("earnings/week")]
     public async Task<ActionResult<ApiResponse<EarningsSummaryDto>>> GetWeekEarnings()
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<EarningsSummaryDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<EarningsSummaryDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var today = DateTime.Today;
@@ -903,7 +1051,8 @@ public class CourierController : BaseController
             Earnings = _mapper.Map<List<CourierEarningDto>>(earnings)
         };
 
-        return Ok(new ApiResponse<EarningsSummaryDto>(summary, LocalizationService.GetLocalizedString(ResourceName, "WeekEarningsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<EarningsSummaryDto>(summary,
+            LocalizationService.GetLocalizedString(ResourceName, "WeekEarningsRetrievedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -913,11 +1062,12 @@ public class CourierController : BaseController
     [HttpGet("earnings/month")]
     public async Task<ActionResult<ApiResponse<EarningsSummaryDto>>> GetMonthEarnings()
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<EarningsSummaryDto>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<EarningsSummaryDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         var today = DateTime.Today;
@@ -937,7 +1087,9 @@ public class CourierController : BaseController
             Earnings = _mapper.Map<List<CourierEarningDto>>(earnings)
         };
 
-        return Ok(new ApiResponse<EarningsSummaryDto>(summary, LocalizationService.GetLocalizedString(ResourceName, "MonthEarningsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<EarningsSummaryDto>(summary,
+            LocalizationService.GetLocalizedString(ResourceName, "MonthEarningsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -947,13 +1099,15 @@ public class CourierController : BaseController
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 50)</param>
     /// <returns>Sayfalanmış kazanç geçmişi</returns>
     [HttpGet("earnings/history")]
-    public async Task<ActionResult<ApiResponse<object>>> GetEarningsHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    public async Task<ActionResult<ApiResponse<object>>> GetEarningsHistory([FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
-
         var courier = await GetCurrentCourier();
         if (courier == null)
         {
-            return NotFound(new ApiResponse<object>(LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture), "COURIER_PROFILE_NOT_FOUND"));
+            return NotFound(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "CourierProfileNotFound", CurrentCulture),
+                "COURIER_PROFILE_NOT_FOUND"));
         }
 
         IQueryable<CourierEarning> query = UnitOfWork.CourierEarnings.Query()
@@ -979,6 +1133,8 @@ public class CourierController : BaseController
             Earnings = earningDtos
         };
 
-        return Ok(new ApiResponse<object>(result, LocalizationService.GetLocalizedString(ResourceName, "EarningsHistoryRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(result,
+            LocalizationService.GetLocalizedString(ResourceName, "EarningsHistoryRetrievedSuccessfully",
+                CurrentCulture)));
     }
 }

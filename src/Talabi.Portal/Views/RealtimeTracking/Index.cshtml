@@ -99,7 +99,7 @@
                     <span class="status-badge bg-info text-white">@LocalizationService.GetString("OnWay")</span>
                     <small class="text-success fw-bold">@string.Format(LocalizationService.GetString("OrderNo"), "4521")</small>
                 </div>
-                 <div class="mt-2 text-xs text-muted">
+                <div class="mt-2 text-xs text-muted">
                     <i class="fas fa-map-marker-alt me-1"></i> Kadıköy, İstanbul
                 </div>
             </div>
@@ -120,12 +120,12 @@
                     <span class="status-badge bg-warning text-dark">@LocalizationService.GetString("PickingUp")</span>
                     <small class="text-success fw-bold">@string.Format(LocalizationService.GetString("OrderNo"), "4525")</small>
                 </div>
-                 <div class="mt-2 text-xs text-muted">
+                <div class="mt-2 text-xs text-muted">
                     <i class="fas fa-map-marker-alt me-1"></i> Beşiktaş, İstanbul
                 </div>
             </div>
 
-             <div class="courier-card" onclick="focusCourier('courier3')">
+            <div class="courier-card" onclick="focusCourier('courier3')">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div class="d-flex align-items-center">
                         <div class="avatar bg-success text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:35px;height:35px">
@@ -141,7 +141,7 @@
                     <span class="status-badge bg-success text-white">@LocalizationService.GetString("Delivered")</span>
                     <small class="text-success fw-bold">@string.Format(LocalizationService.GetString("OrderNo"), "4510")</small>
                 </div>
-                 <div class="mt-2 text-xs text-muted">
+                <div class="mt-2 text-xs text-muted">
                     <i class="fas fa-map-marker-alt me-1"></i> Üsküdar, İstanbul
                 </div>
             </div>
@@ -150,44 +150,177 @@
         <!-- Map Area -->
         <div class="col-lg-9">
             <div class="tracking-map-container d-flex align-items-center justify-content-center flex-column">
+                <!-- Leaflet Map Container -->
+                <div id="trackingMap" style="width: 100%; height: 100%; border-radius: 15px; z-index: 1;"></div>
+
                 <div id="mapOverlay" class="map-overlay-info">
-                   <div class="d-flex justify-content-between">
-                       <h6 class="fw-bold mb-0">Ahmet Yılmaz</h6>
-                       <small class="text-success">@string.Format(LocalizationService.GetString("ArrivingInXMinutes"), 2)</small>
-                   </div>
-                   <hr class="my-2">
-                   <div class="small">
-                       <div><strong>@LocalizationService.GetString("Speed"):</strong> 45 @LocalizationService.GetString("SpeedUnit")</div>
-                       <div><strong>@LocalizationService.GetString("Distance"):</strong> 1.2 km</div>
-                       <div><strong>@LocalizationService.GetString("Destination"):</strong> Bağdat Cd. No:12</div>
-                   </div>
-                </div>
-                
-                <!-- Mock Map Visual -->
-                <i class="fas fa-map-marked-alt fa-5x text-gray-300 mb-3"></i>
-                <h5 class="text-gray-500">@LocalizationService.GetString("MapIntegrationTitle")</h5>
-                <p class="text-gray-400 small">@LocalizationService.GetString("MapKeyMissingDesc")</p>
-                <div class="mt-4">
-                     <span class="badge bg-white text-dark shadow-sm me-2"><i class="fas fa-motorcycle text-primary"></i> @string.Format(LocalizationService.GetString("CouriersCount"), 3)</span>
-                     <span class="badge bg-white text-dark shadow-sm"><i class="fas fa-home text-danger"></i> @string.Format(LocalizationService.GetString("RestaurantsCount"), 1)</span>
+                    <div class="d-flex justify-content-between">
+                        <h6 class="fw-bold mb-0" id="courierName"></h6>
+                        <small class="text-success" id="courierEta"></small>
+                    </div>
+                    <hr class="my-2">
+                    <div class="small">
+                        <div>
+                            <strong>@LocalizationService.GetString("Speed"):</strong> <span id="courierSpeed"></span> @LocalizationService.GetString("SpeedUnit")
+                        </div>
+                        <div><strong>@LocalizationService.GetString("Distance"):</strong> <span id="courierDistance"></span> km</div>
+                        <div>
+                            <strong>@LocalizationService.GetString("Destination"):</strong> <span id="courierDest"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        function focusCourier(id) {
-            // Remove active class from all
-            $('.courier-card').removeClass('active');
-            
-            // Add to clicked (in real app, find by ID)
-            // For now just toggle mock active state on click
-            $(event.currentTarget).addClass('active');
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-            // Show overlay
-            $('#mapOverlay').hide().fadeIn();
+<script>
+        let map;
+        let markers = {};
+        // Couriers object now stores real data
+        let couriers = {};
+
+        $(document).ready(function () {
+            initMap();
+            loadActiveDeliveries();
+            waitForSignalR();
+        });
+
+        function initMap() {
+            // Default center Istanbul
+            map = L.map('trackingMap').setView([41.0082, 28.9784], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        function loadActiveDeliveries() {
+            $.get('@Url.Action("GetActiveDeliveries", "RealtimeTracking")', function(data) {
+                // Clear list if needed
+                $('.tracking-sidebar').empty();
+                
+                if(data.length === 0) {
+                     $('.tracking-sidebar').html('<div class="text-center p-4 text-muted">@LocalizationService.GetString("NoActiveDeliveries")</div>');
+                     return;
+                }
+
+                data.forEach(c => {
+                    couriers[c.courierId] = {
+                        id: c.courierId,
+                        name: c.courierName,
+                        lat: c.lat,
+                        lng: c.lng,
+                        orderNo: c.orderNo,
+                        status: c.status,
+                        destination: c.destination,
+                        color: c.color || 'blue'
+                    };
+
+                    addCourierMarker(couriers[c.courierId]);
+                    addCourierCard(couriers[c.courierId]);
+                });
+                
+                // Fit bounds if we have markers
+                if(Object.keys(markers).length > 0) {
+                    const group = new L.featureGroup(Object.values(markers));
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            });
+        }
+
+        function addCourierCard(c) {
+             const html = `
+             <div class="courier-card" onclick="focusCourier('${c.id}')" id="card-${c.id}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:35px;height:35px">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">${c.name}</h6>
+                            <span class="text-xs text-muted">Order #${c.orderNo}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="status-badge bg-info text-white">${c.status}</span>
+                </div>
+                 <div class="mt-2 text-xs text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i> ${c.destination}
+                </div>
+            </div>`;
+            $('.tracking-sidebar').append(html);
+        }
+
+        function addCourierMarker(courier) {
+            if(markers[courier.id]) {
+                markers[courier.id].setLatLng([courier.lat, courier.lng]);
+                return;
+            }
+
+            const icon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color:${courier.color};width:15px;height:15px;border-radius:50%;border:2px solid white;box-shadow:0 0 5px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            const marker = L.marker([courier.lat, courier.lng], { icon: icon })
+                .bindPopup(`<b>${courier.name}</b><br>#${courier.orderNo}`)
+                .addTo(map);
+            
+            markers[courier.id] = marker;
+        }
+
+        function focusCourier(id) {
+            $('.courier-card').removeClass('active');
+            $(`#card-${id}`).addClass('active');
+
+            const courier = couriers[id];
+            if (courier && markers[id]) {
+                map.flyTo([courier.lat, courier.lng], 15);
+                markers[id].openPopup();
+                
+                // Update Overlay
+                $('#courierName').text(courier.name);
+                $('#courierEta').text('...'); // Calculate if possible
+                $('#courierSpeed').text('...');
+                $('#courierDistance').text('...');
+                $('#courierDest').text(courier.destination);
+                
+                $('#mapOverlay').hide().fadeIn();
+            }
+        }
+
+        function waitForSignalR() {
+            if (window.talabiSignalR) {
+                console.log("Attaching Realtime Tracking listeners...");
+                window.talabiSignalR.on("CourierLocationUpdated", (data) => {
+                    console.log("Update received:", data);
+                    if (couriers[data.courierId]) {
+                        // Update local data
+                        couriers[data.courierId].lat = data.lat;
+                        couriers[data.courierId].lng = data.lng;
+                        
+                        // Move marker
+                        if (markers[data.courierId]) {
+                            markers[data.courierId].setLatLng([data.lat, data.lng]);
+                            
+                            // If focused, follow?
+                            // Optional: map.panTo(...) if user wants follow mode
+                        }
+                    } else {
+                        // New courier not in list? Reload active deliveries to sync
+                        // Debounce this to avoid spam
+                         loadActiveDeliveries();
+                    }
+                });
+            } else {
+                setTimeout(waitForSignalR, 500);
+            }
         }
     </script>
 }
