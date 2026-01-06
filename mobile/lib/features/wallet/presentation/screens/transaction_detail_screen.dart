@@ -9,14 +9,14 @@ import 'package:mobile/features/orders/presentation/screens/courier/order_detail
     as courier;
 
 class TransactionDetailScreen extends StatelessWidget {
-  final WalletTransaction transaction;
-  final bool isVendor;
-
   const TransactionDetailScreen({
     super.key,
     required this.transaction,
     required this.isVendor,
   });
+
+  final WalletTransaction transaction;
+  final bool isVendor;
 
   @override
   Widget build(BuildContext context) {
@@ -94,9 +94,9 @@ class TransactionDetailScreen extends StatelessWidget {
               context,
               Icons.calendar_today_outlined,
               localizations.dateLabel,
-              DateFormat(
-                'dd MMMM yyyy, HH:mm',
-              ).format(transaction.transactionDate),
+              DateFormat.yMMMd(
+                Localizations.localeOf(context).toString(),
+              ).add_Hm().format(transaction.transactionDate),
             ),
             _buildDetailItem(
               context,
@@ -109,7 +109,7 @@ class TransactionDetailScreen extends StatelessWidget {
                 context,
                 Icons.tag,
                 localizations.referenceNo,
-                transaction.referenceId!,
+                transaction.customerOrderId ?? transaction.referenceId!,
               ),
             const SizedBox(height: 40),
             // Action Button

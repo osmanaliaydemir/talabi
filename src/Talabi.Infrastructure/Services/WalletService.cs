@@ -98,6 +98,7 @@ public class WalletService : IWalletService
     }
 
     public async Task<WalletTransaction> ProcessPaymentAsync(string userId, decimal amount, string orderId,
+        string customerOrderId,
         string description)
     {
         var wallet = await GetWalletByUserIdAsync(userId);
@@ -116,6 +117,7 @@ public class WalletService : IWalletService
             Amount = amount,
             TransactionType = TransactionType.Payment,
             ReferenceId = orderId,
+            CustomerOrderId = customerOrderId,
             Description = description,
             TransactionDate = DateTime.UtcNow
         };
@@ -127,6 +129,7 @@ public class WalletService : IWalletService
     }
 
     public async Task<WalletTransaction> AddEarningAsync(string userId, decimal amount, string referenceId,
+        string customerOrderId,
         string description)
     {
         var wallet = await GetWalletByUserIdAsync(userId);
@@ -140,6 +143,7 @@ public class WalletService : IWalletService
             Amount = amount,
             TransactionType = TransactionType.Earning,
             ReferenceId = referenceId,
+            CustomerOrderId = customerOrderId,
             Description = description,
             TransactionDate = DateTime.UtcNow
         };
@@ -184,6 +188,7 @@ public class WalletService : IWalletService
                     earning.Courier!.UserId,
                     earning.TotalEarning,
                     earning.OrderId.ToString(),
+                    earning.Order?.CustomerOrderId ?? earning.OrderId.ToString(),
                     _localizationService.GetLocalizedString("OrderAssignmentResources", "EarningDescription", culture,
                         earning.Order?.CustomerOrderId ?? earning.OrderId.ToString()));
 
@@ -225,6 +230,7 @@ public class WalletService : IWalletService
                         order.Vendor.OwnerId!,
                         order.TotalAmount,
                         order.Id.ToString(),
+                        order.CustomerOrderId,
                         _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning", culture,
                             order.CustomerOrderId));
 

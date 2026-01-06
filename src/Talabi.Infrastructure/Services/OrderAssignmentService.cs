@@ -646,6 +646,7 @@ public class OrderAssignmentService(
                         courier.UserId,
                         courierEarning.TotalEarning,
                         order.Id.ToString(),
+                        order.CustomerOrderId,
                         _localizationService.GetLocalizedString(ResourceName, "EarningDescription", culture,
                             order.CustomerOrderId));
 
@@ -687,6 +688,7 @@ public class OrderAssignmentService(
                     vendor.OwnerId,
                     order.TotalAmount,
                     order.Id.ToString(),
+                    order.CustomerOrderId,
                     _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning", vendorCulture,
                         order.CustomerOrderId));
             }

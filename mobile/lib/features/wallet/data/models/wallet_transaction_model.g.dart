@@ -15,6 +15,7 @@ WalletTransaction _$WalletTransactionFromJson(Map<String, dynamic> json) =>
           $enumDecode(_$TransactionTypeEnumMap, json['transactionType']),
       description: json['description'] as String,
       referenceId: json['referenceId'] as String?,
+      customerOrderId: json['customerOrderId'] as String?,
       transactionDate: DateTime.parse(json['transactionDate'] as String),
     );
 
@@ -26,6 +27,7 @@ Map<String, dynamic> _$WalletTransactionToJson(WalletTransaction instance) =>
       'transactionType': _$TransactionTypeEnumMap[instance.transactionType]!,
       'description': instance.description,
       'referenceId': instance.referenceId,
+      'customerOrderId': instance.customerOrderId,
       'transactionDate': instance.transactionDate.toIso8601String(),
     };
 

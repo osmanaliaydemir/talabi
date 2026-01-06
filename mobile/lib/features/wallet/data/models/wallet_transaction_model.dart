@@ -24,6 +24,7 @@ class WalletTransaction {
     required this.transactionType,
     required this.description,
     this.referenceId,
+    this.customerOrderId,
     required this.transactionDate,
   });
 
@@ -37,5 +38,6 @@ class WalletTransaction {
   final TransactionType transactionType;
   final String description;
   final String? referenceId;
+  final String? customerOrderId;
   final DateTime transactionDate;
 }

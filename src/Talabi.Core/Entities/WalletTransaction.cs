@@ -10,7 +10,8 @@ public class WalletTransaction : BaseEntity
     public decimal Amount { get; set; }
     public TransactionType TransactionType { get; set; }
     public string Description { get; set; }
-    public string ReferenceId { get; set; } // OrderId, PaymentId etc.
+    public string? ReferenceId { get; set; } // OrderId, PaymentId etc.
+    public string? CustomerOrderId { get; set; }
 
     public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
 }
