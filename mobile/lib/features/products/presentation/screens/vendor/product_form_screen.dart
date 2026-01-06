@@ -82,13 +82,22 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       _isLoadingCategories = true;
     });
     try {
+      // First fetch vendor profile to get vendor type
+      final vendorProfile = await _apiService.getVendorProfile();
+      int? vendorType;
+      if (vendorProfile.containsKey('type')) {
+        vendorType = vendorProfile['type'];
+        LoggerService().debug('Vendor Type found: $vendorType');
+      }
+
       final categories = await _apiService.getCategories(
         language: AppLocalizations.of(context)?.localeName,
-        pageSize: 100, // Fetch more categories to ensure we find the target one
+        pageSize: 100,
+        vendorType: vendorType,
       );
 
       LoggerService().debug(
-        'LoadCategories: Fetched ${categories.length} categories',
+        'LoadCategories: Fetched ${categories.length} categories using VendorType: $vendorType',
       );
 
       setState(() {
