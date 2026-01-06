@@ -1730,5 +1730,70 @@
         "tr-TR": "IBAN",
         "en-US": "IBAN",
         "ar-SA": "الآيبان"
+    },
+    "InvalidAmount": {
+        "tr-TR": "Geçersiz tutar girdiniz.",
+        "en-US": "You entered an invalid amount.",
+        "ar-SA": "لقد أدخلت مبلغًا غير صالح."
+    },
+    "DepositSuccessful": {
+        "tr-TR": "Para yükleme işlemi başarılı.",
+        "en-US": "Deposit successful.",
+        "ar-SA": "تمت عملية الإيداع بنجاح."
+    },
+    "WithdrawRequestCreated": {
+        "tr-TR": "Para çekme talebiniz alındı.",
+        "en-US": "Withdraw request created.",
+        "ar-SA": "تم إنشاء طلب السحب."
+    },
+    "InsufficientBalance": {
+        "tr-TR": "Yetersiz bakiye.",
+        "en-US": "Insufficient balance.",
+        "ar-SA": "رصيد غير كاف."
+    },
+    "SavedAccounts": {
+        "tr-TR": "Kayıtlı Hesaplar",
+        "en-US": "Saved Accounts",
+        "ar-SA": "الحسابات المحفوظة"
+    },
+    "AddAccount": {
+        "tr-TR": "Hesap Ekle",
+        "en-US": "Add Account",
+        "ar-SA": "إضافة حساب"
+    },
+    "AccountName": {
+        "tr-TR": "Hesap Adı",
+        "en-US": "Account Name",
+        "ar-SA": "اسم الحساب"
+    },
+    "DefaultAccount": {
+        "tr-TR": "Varsayılan Hesap",
+        "en-US": "Default Account",
+        "ar-SA": "الحساب الافتراضي"
+    },
+    "BankAccountAdded": {
+        "tr-TR": "Banka hesabı başarıyla eklendi.",
+        "en-US": "Bank account successfully added.",
+        "ar-SA": "تم إضافة الحساب البنكي بنجاح."
+    },
+    "BankAccountDeleted": {
+        "tr-TR": "Banka hesabı silindi.",
+        "en-US": "Bank account deleted.",
+        "ar-SA": "تم حذف الحساب البنكي."
+    },
+    "DefaultAccountUpdated": {
+        "tr-TR": "Varsayılan hesap güncellendi.",
+        "en-US": "Default account updated.",
+        "ar-SA": "تم تحديث الحساب الافتراضي."
+    },
+    "AllFieldsRequired": {
+        "tr-TR": "Lütfen tüm alanları doldurun.",
+        "en-US": "Please fill in all fields.",
+        "ar-SA": "يرجى ملء جميع الحقول."
+    },
+    "SetDefault": {
+        "tr-TR": "Varsayılan Yap",
+        "en-US": "Set as Default",
+        "ar-SA": "عيّن كافتراضي"
     }
 }

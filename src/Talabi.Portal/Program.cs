@@ -116,7 +116,11 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services
     .AddScoped<Talabi.Core.Interfaces.ISystemSettingsService, Talabi.Infrastructure.Services.SystemSettingsService>();
 
-builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
+// Localization Services
+builder.Services
+    .AddSingleton<Talabi.Portal.Services.ILocalizationService, Talabi.Portal.Services.LocalizationService>();
+builder.Services
+    .AddSingleton<Talabi.Core.Interfaces.ILocalizationService, Talabi.Infrastructure.Services.LocalizationService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.ILocationService, Talabi.Infrastructure.Services.LocationService>();
 builder.Services.AddScoped<IDeliveryZoneService, DeliveryZoneService>();
 builder.Services

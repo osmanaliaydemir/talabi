@@ -1,26 +1,23 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
+using Talabi.Core.DTOs;
 using Talabi.Portal.Models;
 using PortalServices = Talabi.Portal.Services;
 
 namespace Talabi.Portal.Controllers;
 
 [Authorize]
-[Route("[controller]")]
 public class PaymentsController : Controller
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IWalletService _walletService;
     private readonly IUserContextService _userContextService;
     private readonly PortalServices.ILocalizationService _localizationService;
 
-    public PaymentsController(IUnitOfWork unitOfWork, IWalletService walletService,
+    public PaymentsController(IWalletService walletService,
         IUserContextService userContextService, PortalServices.ILocalizationService localizationService)
     {
-        _unitOfWork = unitOfWork;
         _walletService = walletService;
         _userContextService = userContextService;
         _localizationService = localizationService;
@@ -59,7 +56,7 @@ public class PaymentsController : Controller
             earningTransactions.Where(t => t.TransactionDate.Date >= startOfMonth).Sum(t => t.Amount);
 
         // Map transactions to DTO for view compatibility
-        var transactionDtos = transactions.Select(t => new Core.DTOs.OrderDto
+        var transactionDtos = transactions.Select(t => new OrderDto
         {
             // We reuse OrderDto for list display for now to match View expecting 'Transactions' list
             // Ideally create a WalletTransactionDto
@@ -76,13 +73,10 @@ public class PaymentsController : Controller
             DailyEarnings = dailyEarnings,
             WeeklyEarnings = weeklyEarnings,
             MonthlyEarnings = monthlyEarnings,
-            Transactions = transactionDtos
+            Transactions = transactionDtos,
+            BankAccounts = await _walletService.GetBankAccountsAsync(userId)
         };
 
-        // If we want actual Total Lifetime Earnings instead of Balance:
-        // decimal lifetimeEarnings = await _unitOfWork.WalletTransactions.Query()
-        //    .Where(t => t.WalletId == wallet.Id && t.TransactionType == TransactionType.Earning)
-        //    .SumAsync(t => t.Amount);
         // viewModel.TotalEarnings = lifetimeEarnings; 
 
         // Let's stick to Balance for the main card as it's more useful for a 'Wallet' concept.
@@ -136,7 +130,7 @@ public class PaymentsController : Controller
             await _walletService.WithdrawAsync(userId, amount, $"Para Çekme Talebi - IBAN: {iban}");
             TempData["Success"] = _localizationService.GetString("WithdrawRequestCreated");
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             TempData["Error"] = _localizationService.GetString("InsufficientBalance");
         }
@@ -175,5 +169,68 @@ public class PaymentsController : Controller
         var bytes = System.Text.Encoding.UTF8.GetPreamble()
             .Concat(System.Text.Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
         return File(bytes, "text/csv", $"cuzdan_hareketleri_{DateTime.Now:yyyyMMdd}.csv");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddBankAccount(CreateBankAccountRequest request)
+    {
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
+
+        if (string.IsNullOrEmpty(request.AccountName) || string.IsNullOrEmpty(request.Iban))
+        {
+            TempData["Error"] = _localizationService.GetString("AllFieldsRequired");
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            await _walletService.AddBankAccountAsync(userId, request);
+            TempData["Success"] = _localizationService.GetString("BankAccountAdded");
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = _localizationService.GetString("ErrorAddingBankAccount"); // Generic error message
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteBankAccount(Guid id)
+    {
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
+
+        try
+        {
+            await _walletService.DeleteBankAccountAsync(userId, id);
+            TempData["Success"] = _localizationService.GetString("BankAccountDeleted");
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SetDefaultBankAccount(Guid id)
+    {
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
+
+        try
+        {
+            await _walletService.SetDefaultBankAccountAsync(userId, id);
+            TempData["Success"] = _localizationService.GetString("DefaultAccountUpdated");
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 }
