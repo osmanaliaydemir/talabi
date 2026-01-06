@@ -1860,5 +1860,40 @@
         "tr-TR": "Lütfen banka üzerinden manuel gönderim yaptıktan sonra bu işlemi onaylayın. Bu işlem kurye/restoran tarafına ödemenin yapıldığı bilgisini iletecektir.",
         "en-US": "Please confirm this action after making the manual bank transfer. This will inform the courier/vendor that the payment has been made.",
         "ar-SA": "يرجى تأكيد هذا الإجراء بعد إجراء التحويل البنكي اليدوي. سيؤدي ذلك إلى إبلاغ المندوب / البائع بأنه تم إجراء الدفع."
+    },
+    "RequestNotFound": {
+        "tr-TR": "Talep bulunamadı.",
+        "en-US": "Request not found.",
+        "ar-SA": "الطلب غير موجود."
+    },
+    "WithdrawalRequestApprovedTitle": {
+        "tr-TR": "Para Çekme Talebi Onaylandı",
+        "en-US": "Withdrawal Request Approved",
+        "ar-SA": "تمت الموافقة على طلب السحب"
+    },
+    "WithdrawalRequestApprovedMessage": {
+        "tr-TR": "Para çekme talebiniz onaylandı. Miktar: {0}",
+        "en-US": "Your withdrawal request has been approved. Amount: {0}",
+        "ar-SA": "تمت الموافقة على طلب السحب الخاص بك. المبلغ: {0}"
+    },
+    "WithdrawalRequestRejectedTitle": {
+        "tr-TR": "Para Çekme Talebi Reddedildi",
+        "en-US": "Withdrawal Request Rejected",
+        "ar-SA": "تم رفض طلب السحب"
+    },
+    "WithdrawalRequestRejectedMessage": {
+        "tr-TR": "Para çekme talebiniz reddedildi. Sebep: {0}",
+        "en-US": "Your withdrawal request has been rejected. Reason: {0}",
+        "ar-SA": "تم رفض طلب السحب الخاص بك. السبب: {0}"
+    },
+    "WithdrawalTransferCompletedTitle": {
+        "tr-TR": "Para Transferi Tamamlandı",
+        "en-US": "Money Transfer Completed",
+        "ar-SA": "اكتمال تحويل الأموال"
+    },
+    "WithdrawalTransferCompletedMessage": {
+        "tr-TR": "Para çekme işleminiz tamamlandı. Miktar: {0} hesabınıza gönderildi.",
+        "en-US": "Your withdrawal has been completed. Amount: {0} has been sent to your account.",
+        "ar-SA": "اكتمل سحبك. المبلغ: {0} تم إرساله إلى حسابك."
     }
 }

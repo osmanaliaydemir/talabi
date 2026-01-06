@@ -10,7 +10,9 @@ namespace Talabi.Portal.Controllers;
 public class WithdrawalRequestsController(
     IWalletService walletService,
     PortalServices.ILocalizationService localizationService,
-    IUserContextService userContextService) : Controller
+    IUserContextService userContextService,
+    INotificationService notificationService)
+    : Controller
 {
     public async Task<IActionResult> Index(WithdrawalStatus? status)
     {
@@ -26,7 +28,32 @@ public class WithdrawalRequestsController(
 
         try
         {
+            var request = await walletService.GetWithdrawalRequestByIdAsync(id);
+            if (request is null)
+            {
+                TempData["ErrorMessage"] = localizationService.GetString("RequestNotFound");
+                return RedirectToAction(nameof(Index));
+            }
+
             await walletService.UpdateWithdrawalStatusAsync(id, WithdrawalStatus.Approved, adminId, adminNote);
+
+            // Send notification to user
+            try
+            {
+                await notificationService.SendNotificationAsync(
+                    request.AppUserId,
+                    localizationService.GetString("WithdrawalRequestApprovedTitle"),
+                    string.Format(localizationService.GetString("WithdrawalRequestApprovedMessage"),
+                        request.Amount.ToString("C2")),
+                    new { type = "withdrawal_approved", id, amount = request.Amount }
+                );
+            }
+            catch (Exception ex)
+            {
+                // Log notification error but don't fail the request
+                Console.WriteLine($"Notification error: {ex.Message}");
+            }
+
             TempData["SuccessMessage"] = localizationService.GetString("WithdrawalApproved");
         }
         catch (Exception ex)
@@ -51,7 +78,30 @@ public class WithdrawalRequestsController(
 
         try
         {
+            var request = await walletService.GetWithdrawalRequestByIdAsync(id);
+            if (request is null)
+            {
+                TempData["ErrorMessage"] = localizationService.GetString("RequestNotFound");
+                return RedirectToAction(nameof(Index));
+            }
+
             await walletService.UpdateWithdrawalStatusAsync(id, WithdrawalStatus.Rejected, adminId, adminNote);
+
+            // Send notification to user
+            try
+            {
+                await notificationService.SendNotificationAsync(
+                    request.AppUserId,
+                    localizationService.GetString("WithdrawalRequestRejectedTitle"),
+                    string.Format(localizationService.GetString("WithdrawalRequestRejectedMessage"), adminNote),
+                    new { type = "withdrawal_rejected", id, reason = adminNote }
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Notification error: {ex.Message}");
+            }
+
             TempData["SuccessMessage"] = localizationService.GetString("WithdrawalRejected");
         }
         catch (Exception ex)
@@ -70,7 +120,31 @@ public class WithdrawalRequestsController(
 
         try
         {
+            var request = await walletService.GetWithdrawalRequestByIdAsync(id);
+            if (request is null)
+            {
+                TempData["ErrorMessage"] = localizationService.GetString("RequestNotFound");
+                return RedirectToAction(nameof(Index));
+            }
+
             await walletService.UpdateWithdrawalStatusAsync(id, WithdrawalStatus.Completed, adminId, adminNote);
+
+            // Send notification to user
+            try
+            {
+                await notificationService.SendNotificationAsync(
+                    request.AppUserId,
+                    localizationService.GetString("WithdrawalTransferCompletedTitle"),
+                    string.Format(localizationService.GetString("WithdrawalTransferCompletedMessage"),
+                        request.Amount.ToString("C2")),
+                    new { type = "withdrawal_completed", id, amount = request.Amount }
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Notification error: {ex.Message}");
+            }
+
             TempData["SuccessMessage"] = localizationService.GetString("WithdrawalCompleted");
         }
         catch (Exception ex)

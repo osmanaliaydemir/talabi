@@ -6,6 +6,10 @@
     Layout = "_Layout";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap4.min.css"/>
+}
+
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">@LocalizationService.GetString("WithdrawalRequests")</h1>
@@ -23,154 +27,155 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="withdrawalTable" width="100%" cellspacing="0">
+                <table class="table table-bordered" id="withdrawalTable" width="100%">
                     <thead>
-                        <tr>
-                            <th>@LocalizationService.GetString("Date")</th>
-                            <th>@LocalizationService.GetString("Requester")</th>
-                            <th>@LocalizationService.GetString("Amount")</th>
-                            <th>@LocalizationService.GetString("IBAN")</th>
-                            <th>@LocalizationService.GetString("Status")</th>
-                            <th>@LocalizationService.GetString("Actions")</th>
-                        </tr>
+                    <tr>
+                        <th>@LocalizationService.GetString("Date")</th>
+                        <th>@LocalizationService.GetString("Requester")</th>
+                        <th>@LocalizationService.GetString("Amount")</th>
+                        <th>@LocalizationService.GetString("IBAN")</th>
+                        <th>@LocalizationService.GetString("Status")</th>
+                        <th>@LocalizationService.GetString("Actions")</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        @foreach (var request in Model)
-                        {
-                            <tr>
-                                <td>@request.CreatedAt.ToLocalTime().ToString("g")</td>
-                                <td>
-                                    @(request.AppUser?.FullName ?? request.AppUserId)
-                                    <br />
-                                    <small class="text-muted">@request.BankAccountName</small>
-                                </td>
-                                <td>@request.Amount.ToString("C2")</td>
-                                <td>
-                                    <code>@request.Iban</code>
-                                    @if (!string.IsNullOrEmpty(request.Note))
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td>@request.CreatedAt.ToLocalTime().ToString("g")</td>
+                            <td>
+                                @(request.AppUser?.FullName ?? request.AppUserId)
+                                <br/>
+                                <small class="text-muted">@request.BankAccountName</small>
+                            </td>
+                            <td>@request.Amount.ToString("C2")</td>
+                            <td>
+                                <code>@request.Iban</code>
+                                @if (!string.IsNullOrEmpty(request.Note))
+                                {
+                                    <br/>
+                                    <small>@request.Note</small>
+                                }
+                            </td>
+                            <td>
+                                @switch (request.Status)
+                                {
+                                    case WithdrawalStatus.Pending:
+                                        <span class="badge badge-warning">@LocalizationService.GetString("Pending")</span>
+                                        break;
+                                    case WithdrawalStatus.Approved:
+                                        <span class="badge badge-primary">@LocalizationService.GetString("Approved")</span>
+                                        break;
+                                    case WithdrawalStatus.Rejected:
+                                        <span class="badge badge-danger">@LocalizationService.GetString("Rejected")</span>
+                                        break;
+                                    case WithdrawalStatus.Completed:
+                                        <span class="badge badge-success">@LocalizationService.GetString("Completed")</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    @if (request.Status == WithdrawalStatus.Pending)
                                     {
-                                        <br/><small>@request.Note</small>
+                                        <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#approveModal-@request.Id">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectModal-@request.Id">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     }
-                                </td>
-                                <td>
-                                    @switch (request.Status)
+                                    else if (request.Status == WithdrawalStatus.Approved)
                                     {
-                                        case WithdrawalStatus.Pending:
-                                            <span class="badge badge-warning">@LocalizationService.GetString("Pending")</span>
-                                            break;
-                                        case WithdrawalStatus.Approved:
-                                            <span class="badge badge-primary">@LocalizationService.GetString("Approved")</span>
-                                            break;
-                                        case WithdrawalStatus.Rejected:
-                                            <span class="badge badge-danger">@LocalizationService.GetString("Rejected")</span>
-                                            break;
-                                        case WithdrawalStatus.Completed:
-                                            <span class="badge badge-success">@LocalizationService.GetString("Completed")</span>
-                                            break;
+                                        <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#completeModal-@request.Id" title="@LocalizationService.GetString("MarkAsSent")">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
                                     }
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        @if (request.Status == WithdrawalStatus.Pending)
-                                        {
-                                            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#approveModal-@request.Id">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectModal-@request.Id">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        }
-                                        else if (request.Status == WithdrawalStatus.Approved)
-                                        {
-                                            <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#completeModal-@request.Id" title="@LocalizationService.GetString("MarkAsSent")">
-                                                <i class="fas fa-paper-plane"></i>
-                                            </button>
-                                        }
-                                    </div>
+                                </div>
 
-                                    <!-- Approve Modal -->
-                                    <div class="modal fade" id="approveModal-@request.Id" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <form asp-action="Approve" method="post">
-                                                    <input type="hidden" name="id" value="@request.Id" />
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">@LocalizationService.GetString("Approve")</h5>
-                                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <!-- Approve Modal -->
+                                <div class="modal fade" id="approveModal-@request.Id" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form asp-action="Approve" method="post">
+                                                <input type="hidden" name="id" value="@request.Id"/>
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">@LocalizationService.GetString("Approve")</h5>
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>@LocalizationService.GetString("AreYouSure")</p>
+                                                    <div class="form-group">
+                                                        <label>@LocalizationService.GetString("AdminNote")</label>
+                                                        <textarea name="adminNote" class="form-control"></textarea>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <p>@LocalizationService.GetString("AreYouSure")</p>
-                                                        <div class="form-group">
-                                                            <label>@LocalizationService.GetString("AdminNote")</label>
-                                                            <textarea name="adminNote" class="form-control"></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
-                                                        <button type="submit" class="btn btn-success">@LocalizationService.GetString("Approve")</button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                                                    <button type="submit" class="btn btn-success">@LocalizationService.GetString("Approve")</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!-- Reject Modal -->
-                                    <div class="modal fade" id="rejectModal-@request.Id" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <form asp-action="Reject" method="post">
-                                                    <input type="hidden" name="id" value="@request.Id" />
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">@LocalizationService.GetString("Reject")</h5>
-                                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal-@request.Id" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form asp-action="Reject" method="post">
+                                                <input type="hidden" name="id" value="@request.Id"/>
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">@LocalizationService.GetString("Reject")</h5>
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>@LocalizationService.GetString("AreYouSure")</p>
+                                                    <div class="form-group">
+                                                        <label>@LocalizationService.GetString("AdminNote") (@LocalizationService.GetString("ReasonRequired"))</label>
+                                                        <textarea name="adminNote" class="form-control" required></textarea>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <p>@LocalizationService.GetString("AreYouSure")</p>
-                                                        <div class="form-group">
-                                                            <label>@LocalizationService.GetString("AdminNote") (@LocalizationService.GetString("ReasonRequired"))</label>
-                                                            <textarea name="adminNote" class="form-control" required></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
-                                                        <button type="submit" class="btn btn-danger">@LocalizationService.GetString("Reject")</button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                                                    <button type="submit" class="btn btn-danger">@LocalizationService.GetString("Reject")</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!-- Complete Modal -->
-                                    <div class="modal fade" id="completeModal-@request.Id" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <form asp-action="Complete" method="post">
-                                                    <input type="hidden" name="id" value="@request.Id" />
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">@LocalizationService.GetString("MarkAsSent")</h5>
-                                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <!-- Complete Modal -->
+                                <div class="modal fade" id="completeModal-@request.Id" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form asp-action="Complete" method="post">
+                                                <input type="hidden" name="id" value="@request.Id"/>
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">@LocalizationService.GetString("MarkAsSent")</h5>
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>@LocalizationService.GetString("AreYouSure")</p>
+                                                    <div class="alert alert-info">
+                                                        @LocalizationService.GetString("WithdrawalInstructions")
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <p>@LocalizationService.GetString("AreYouSure")</p>
-                                                        <div class="alert alert-info">
-                                                            @LocalizationService.GetString("WithdrawalInstructions")
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label>@LocalizationService.GetString("AdminNote")</label>
-                                                            <textarea name="adminNote" class="form-control"></textarea>
-                                                        </div>
+                                                    <div class="form-group">
+                                                        <label>@LocalizationService.GetString("AdminNote")</label>
+                                                        <textarea name="adminNote" class="form-control"></textarea>
                                                     </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
-                                                        <button type="submit" class="btn btn-info">@LocalizationService.GetString("MarkAsSent")</button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                                                    <button type="submit" class="btn btn-info">@LocalizationService.GetString("MarkAsSent")</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                        }
+                                </div>
+                            </td>
+                        </tr>
+                    }
                     </tbody>
                 </table>
             </div>
@@ -179,10 +184,16 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#withdrawalTable').DataTable({
-                "order": [[0, "desc"]]
+                "order": [[0, "desc"]],
+                "pageLength": 25,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json"
+                }
             });
         });
     </script>
