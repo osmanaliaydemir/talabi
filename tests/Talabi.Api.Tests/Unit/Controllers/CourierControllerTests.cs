@@ -17,6 +17,8 @@ using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Xunit;
+using Microsoft.AspNetCore.SignalR;
+using Talabi.Api.Hubs;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
@@ -27,6 +29,7 @@ public class CourierControllerTests
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
     private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
     private readonly CourierController _controller;
 
     public CourierControllerTests()
@@ -35,9 +38,11 @@ public class CourierControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockMapper = new Mock<IMapper>();
+        _mockHubContext = new Mock<IHubContext<NotificationHub>>();
 
         var userStore = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager =
+            new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         var logger = ControllerTestHelpers.CreateMockLogger<CourierController>();
 
@@ -47,7 +52,8 @@ public class CourierControllerTests
             logger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
-            _mockMapper.Object
+            _mockMapper.Object,
+            _mockHubContext.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -246,8 +252,15 @@ public class CourierControllerTests
         var today = DateTime.Today;
         var orderCouriers = new List<OrderCourier>
         {
-            new OrderCourier { CourierId = courierId, DeliveredAt = DateTime.Now, Order = new Order { Status = OrderStatus.Delivered } }, // Today
-            new OrderCourier { CourierId = courierId, DeliveredAt = DateTime.Now.AddDays(-1), Order = new Order { Status = OrderStatus.Delivered } } // This week
+            new OrderCourier
+            {
+                CourierId = courierId, DeliveredAt = DateTime.Now, Order = new Order { Status = OrderStatus.Delivered }
+            }, // Today
+            new OrderCourier
+            {
+                CourierId = courierId, DeliveredAt = DateTime.Now.AddDays(-1),
+                Order = new Order { Status = OrderStatus.Delivered }
+            } // This week
         };
 
         var mockOCRepo = new Mock<IRepository<OrderCourier>>();
@@ -308,8 +321,14 @@ public class CourierControllerTests
         // Arrange
         var couriers = new List<Courier>
         {
-            new Courier { Id = Guid.NewGuid(), IsActive = true, CurrentLatitude = 1, CurrentLongitude = 1, Name = "Active" },
-            new Courier { Id = Guid.NewGuid(), IsActive = false, CurrentLatitude = 2, CurrentLongitude = 2, Name = "Inactive" },
+            new Courier
+            {
+                Id = Guid.NewGuid(), IsActive = true, CurrentLatitude = 1, CurrentLongitude = 1, Name = "Active"
+            },
+            new Courier
+            {
+                Id = Guid.NewGuid(), IsActive = false, CurrentLatitude = 2, CurrentLongitude = 2, Name = "Inactive"
+            },
             new Courier { Id = Guid.NewGuid(), IsActive = true, Name = "NoLocation" } // missing lat/long
         };
 
@@ -325,7 +344,8 @@ public class CourierControllerTests
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<Talabi.Core.DTOs.CourierLocationDto>>>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<Talabi.Core.DTOs.CourierLocationDto>>>()
+            .Subject;
 
         apiResponse.Data!.Should().HaveCount(1);
         apiResponse.Data!.First().CourierName.Should().Be("Active");

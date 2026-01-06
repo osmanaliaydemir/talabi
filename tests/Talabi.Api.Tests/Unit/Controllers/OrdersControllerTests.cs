@@ -16,6 +16,8 @@ using Xunit;
 using System.Linq;
 using System.Threading;
 using System.Globalization;
+using Microsoft.AspNetCore.SignalR;
+using Talabi.Api.Hubs;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
@@ -32,6 +34,8 @@ public class OrdersControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<INotificationService> _mockNotificationService;
+    private readonly Mock<IDashboardNotificationService> _mockDashboardNotificationService;
+    private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
     private readonly OrdersController _controller;
 
     public OrdersControllerTests()
@@ -42,9 +46,10 @@ public class OrdersControllerTests
         _mockMapper = new Mock<IMapper>();
         _logger = ControllerTestHelpers.CreateMockLogger<OrdersController>();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
-        _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockNotificationService = new Mock<INotificationService>();
+        _mockDashboardNotificationService = new Mock<IDashboardNotificationService>();
+        _mockHubContext = new Mock<IHubContext<NotificationHub>>();
 
         _controller = new OrdersController(
             _mockUnitOfWork.Object,
@@ -54,7 +59,9 @@ public class OrdersControllerTests
             _mockAssignmentService.Object,
             _mockOrderService.Object,
             _mockMapper.Object,
-            _mockNotificationService.Object
+            _mockNotificationService.Object,
+            _mockDashboardNotificationService.Object,
+            _mockHubContext.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -79,7 +86,8 @@ public class OrdersControllerTests
 
         // Vendor loading setup
         var vendorRepo = new Mock<IRepository<Vendor>>();
-        vendorRepo.Setup(x => x.GetByIdAsync(createdOrder.VendorId, It.IsAny<CancellationToken>())).ReturnsAsync(new Vendor());
+        vendorRepo.Setup(x => x.GetByIdAsync(createdOrder.VendorId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Vendor());
         _mockUnitOfWork.Setup(x => x.Vendors).Returns(vendorRepo.Object);
 
         // Act
@@ -103,7 +111,8 @@ public class OrdersControllerTests
         var userId = "user-1";
         _mockUserContextService.Setup(x => x.GetUserId()).Returns(userId);
 
-        _mockOrderService.Setup(x => x.CreateOrderAsync(It.IsAny<CreateOrderDto>(), It.IsAny<string>(), It.IsAny<CultureInfo>()))
+        _mockOrderService.Setup(x =>
+                x.CreateOrderAsync(It.IsAny<CreateOrderDto>(), It.IsAny<string>(), It.IsAny<CultureInfo>()))
             .ThrowsAsync(new Exception("Order creation failed"));
 
         // Act
@@ -181,7 +190,8 @@ public class OrdersControllerTests
         result.Result.Should().BeOfType<OkObjectResult>();
 
         _mockUnitOfWork.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mockOrderService.Verify(x => x.CancelOrderAsync(orderId, userId, cancelDto, It.IsAny<CultureInfo>()), Times.Once);
+        _mockOrderService.Verify(x => x.CancelOrderAsync(orderId, userId, cancelDto, It.IsAny<CultureInfo>()),
+            Times.Once);
         _mockUnitOfWork.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -194,7 +204,8 @@ public class OrdersControllerTests
         var orderId = Guid.NewGuid();
         var cancelDto = new CancelOrderDto();
 
-        _mockOrderService.Setup(x => x.CancelOrderAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancelOrderDto>(), It.IsAny<CultureInfo>()))
+        _mockOrderService.Setup(x => x.CancelOrderAsync(It.IsAny<Guid>(), It.IsAny<string>(),
+                It.IsAny<CancelOrderDto>(), It.IsAny<CultureInfo>()))
             .ThrowsAsync(new DbUpdateConcurrencyException());
 
         // Act
@@ -235,7 +246,10 @@ public class OrdersControllerTests
             IsCancelled = false
         };
 
-        var orderItems = new List<OrderItem> { orderItem, new OrderItem { Id = Guid.NewGuid(), OrderId = orderId, IsCancelled = false } }; // One cancelled, one remaining
+        var orderItems = new List<OrderItem>
+        {
+            orderItem, new OrderItem { Id = Guid.NewGuid(), OrderId = orderId, IsCancelled = false }
+        }; // One cancelled, one remaining
 
         var mockItemRepo = new Mock<IRepository<OrderItem>>();
         // Setup Query to return correct items based on expression is tricky with simple lists

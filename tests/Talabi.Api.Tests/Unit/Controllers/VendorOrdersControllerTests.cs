@@ -16,6 +16,8 @@ using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
 using Xunit;
+using Microsoft.AspNetCore.SignalR;
+using Talabi.Api.Hubs;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
@@ -27,6 +29,7 @@ public class VendorOrdersControllerTests
     private readonly Mock<IOrderAssignmentService> _mockAssignmentService;
     private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
     private readonly VendorOrdersController _controller;
 
     public VendorOrdersControllerTests()
@@ -37,6 +40,7 @@ public class VendorOrdersControllerTests
         _mockAssignmentService = new Mock<IOrderAssignmentService>();
         _mockNotificationService = new Mock<INotificationService>();
         _mockMapper = new Mock<IMapper>();
+        _mockHubContext = new Mock<IHubContext<NotificationHub>>();
 
         var logger = ControllerTestHelpers.CreateMockLogger<VendorOrdersController>();
 
@@ -47,7 +51,8 @@ public class VendorOrdersControllerTests
             _mockUserContextService.Object,
             _mockAssignmentService.Object,
             _mockMapper.Object,
-            _mockNotificationService.Object
+            _mockNotificationService.Object,
+            _mockHubContext.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -149,13 +154,15 @@ public class VendorOrdersControllerTests
         _mockUnitOfWork.Setup(x => x.Orders).Returns(mockRepo.Object);
 
         // Mock for customer notification logic
-        var customers = new List<Customer> { new Customer { UserId = "cust-1", Id = Guid.NewGuid() } }; // Match CustomerId from order? 
+        var customers = new List<Customer>
+            { new Customer { UserId = "cust-1", Id = Guid.NewGuid() } }; // Match CustomerId from order? 
         // Logic uses order.CustomerId as UserId lookup in AddCustomerNotificationAsync
         var mockCustomerRepo = new Mock<IRepository<Customer>>();
         mockCustomerRepo.Setup(x => x.Query()).Returns(customers.BuildMock());
         _mockUnitOfWork.Setup(x => x.Customers).Returns(mockCustomerRepo.Object);
 
-        _mockUnitOfWork.Setup(x => x.CustomerNotifications).Returns(new Mock<IRepository<CustomerNotification>>().Object);
+        _mockUnitOfWork.Setup(x => x.CustomerNotifications)
+            .Returns(new Mock<IRepository<CustomerNotification>>().Object);
         _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(new Mock<IRepository<OrderStatusHistory>>().Object);
 
         // Act
@@ -166,8 +173,12 @@ public class VendorOrdersControllerTests
         order.Status.Should().Be(OrderStatus.Preparing);
 
         _mockUnitOfWork.Verify(x => x.Orders.Update(order), Times.Once);
-        _mockUnitOfWork.Verify(x => x.OrderStatusHistories.AddAsync(It.IsAny<OrderStatusHistory>(), It.IsAny<CancellationToken>()), Times.Once);
-        _mockNotificationService.Verify(x => x.SendOrderStatusUpdateNotificationAsync("cust-1", orderId, "Preparing", It.IsAny<string>()), Times.Once);
+        _mockUnitOfWork.Verify(
+            x => x.OrderStatusHistories.AddAsync(It.IsAny<OrderStatusHistory>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        _mockNotificationService.Verify(
+            x => x.SendOrderStatusUpdateNotificationAsync("cust-1", orderId, "Preparing", It.IsAny<string>()),
+            Times.Once);
     }
 
     [Fact]
@@ -191,7 +202,8 @@ public class VendorOrdersControllerTests
         mockRepo.Setup(x => x.Query()).Returns(orders.BuildMock());
         _mockUnitOfWork.Setup(x => x.Orders).Returns(mockRepo.Object);
 
-        _mockUnitOfWork.Setup(x => x.CustomerNotifications).Returns(new Mock<IRepository<CustomerNotification>>().Object);
+        _mockUnitOfWork.Setup(x => x.CustomerNotifications)
+            .Returns(new Mock<IRepository<CustomerNotification>>().Object);
         _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(new Mock<IRepository<OrderStatusHistory>>().Object);
         // Customer repo needs to be mocked for AddCustomerNotificationAsync, even if customer is null (it handles creating it)
         // But here order doesn't have CustomerId or it's null?
@@ -237,7 +249,8 @@ public class VendorOrdersControllerTests
         mockRepo.Setup(x => x.Query()).Returns(orders.BuildMock());
         _mockUnitOfWork.Setup(x => x.Orders).Returns(mockRepo.Object);
 
-        _mockUnitOfWork.Setup(x => x.CustomerNotifications).Returns(new Mock<IRepository<CustomerNotification>>().Object);
+        _mockUnitOfWork.Setup(x => x.CustomerNotifications)
+            .Returns(new Mock<IRepository<CustomerNotification>>().Object);
         _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(new Mock<IRepository<OrderStatusHistory>>().Object);
 
         var updateDto = new UpdateOrderStatusDto { Status = "Preparing" }; // Valid transition from Pending
