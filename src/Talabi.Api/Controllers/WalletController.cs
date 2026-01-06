@@ -89,15 +89,18 @@ namespace Talabi.Api.Controllers
 
             try
             {
-                var description = LocalizationService.GetLocalizedString("WalletResources", "WithdrawalDescription",
-                    CurrentCulture, request.Iban ?? string.Empty);
-                var transaction = await walletService.WithdrawAsync(userId, request.Amount, description);
-                return Ok(new ApiResponse<WalletTransaction>(transaction));
+                var withdrawalRequest = await walletService.CreateWithdrawalRequestAsync(
+                    userId,
+                    request.Amount,
+                    request.Iban,
+                    request.BankAccountName ?? "Mobil Hesap",
+                    "Mobil uygulama üzerinden talep edildi.");
+
+                return Ok(new ApiResponse<WithdrawalRequest>(withdrawalRequest));
             }
-            // Catching specific exceptions if needed, but general catch covers it for now.
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error withdrawing from wallet");
+                Logger.LogError(ex, "Error creating withdrawal request");
                 return BadRequest(new ApiResponse<object>(ex.Message));
             }
         }
@@ -130,5 +133,6 @@ namespace Talabi.Api.Controllers
     {
         public decimal Amount { get; set; }
         public string? Iban { get; set; }
+        public string? BankAccountName { get; set; }
     }
 }

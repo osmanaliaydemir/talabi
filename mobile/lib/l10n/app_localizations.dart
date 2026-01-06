@@ -5583,6 +5583,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No saved accounts yet'**
   String get noSavedAccounts;
+
+  /// Title for withdrawal requests section
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal Requests'**
+  String get withdrawalRequests;
 }
 
 class _AppLocalizationsDelegate

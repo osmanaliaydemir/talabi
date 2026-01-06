@@ -21,6 +21,7 @@ import 'package:mobile/features/orders/data/models/order_calculation_models.dart
 import 'package:mobile/features/wallet/data/models/wallet_model.dart';
 import 'package:mobile/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:mobile/features/wallet/data/models/bank_account_model.dart';
+import 'package:mobile/features/wallet/data/models/withdrawal_request_model.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
@@ -2556,6 +2557,61 @@ class ApiService {
         e,
         stackTrace,
       );
+      rethrow;
+    }
+  }
+
+  // Withdrawal Requests
+  Future<List<WithdrawalRequest>> getWithdrawalRequests({
+    WithdrawalStatus? status,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/withdrawal/requests',
+        queryParameters: status != null ? {'status': status.index} : null,
+      );
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List)
+            .map((item) => WithdrawalRequest.fromJson(item))
+            .toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Talepler getirilemedi');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching withdrawal requests',
+        e,
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<WithdrawalRequest> createWithdrawalRequest(
+    CreateWithdrawalRequestParams params,
+  ) async {
+    try {
+      final response = await dio.post(
+        '/withdrawal/request',
+        data: params.toJson(),
+      );
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => WithdrawalRequest.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Talep oluşturulamadı');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error creating withdrawal request', e, stackTrace);
       rethrow;
     }
   }

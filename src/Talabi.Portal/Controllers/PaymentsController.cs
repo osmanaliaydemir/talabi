@@ -9,31 +9,23 @@ using PortalServices = Talabi.Portal.Services;
 namespace Talabi.Portal.Controllers;
 
 [Authorize]
-public class PaymentsController : Controller
+public class PaymentsController(
+    IWalletService walletService,
+    IUserContextService userContextService,
+    PortalServices.ILocalizationService localizationService)
+    : Controller
 {
-    private readonly IWalletService _walletService;
-    private readonly IUserContextService _userContextService;
-    private readonly PortalServices.ILocalizationService _localizationService;
-
-    public PaymentsController(IWalletService walletService,
-        IUserContextService userContextService, PortalServices.ILocalizationService localizationService)
-    {
-        _walletService = walletService;
-        _userContextService = userContextService;
-        _localizationService = localizationService;
-    }
-
     [HttpGet]
     public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId))
         {
             return RedirectToAction("Login", "Auth");
         }
 
-        var wallet = await _walletService.GetWalletByUserIdAsync(userId);
-        var transactions = await _walletService.GetTransactionsAsync(userId, 1, 500); // Get recent transactions
+        var wallet = await walletService.GetWalletByUserIdAsync(userId);
+        var transactions = await walletService.GetTransactionsAsync(userId, 1, 500); // Get recent transactions
 
         // Filter valid dates
         if (startDate.HasValue)
@@ -74,7 +66,8 @@ public class PaymentsController : Controller
             WeeklyEarnings = weeklyEarnings,
             MonthlyEarnings = monthlyEarnings,
             Transactions = transactionDtos,
-            BankAccounts = await _walletService.GetBankAccountsAsync(userId)
+            BankAccounts = await walletService.GetBankAccountsAsync(userId),
+            WithdrawalRequests = await walletService.GetWithdrawalRequestsAsync(userId)
         };
 
         // viewModel.TotalEarnings = lifetimeEarnings; 
@@ -89,7 +82,7 @@ public class PaymentsController : Controller
     [HttpPost]
     public async Task<IActionResult> Deposit(decimal amount)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId))
         {
             return RedirectToAction("Login", "Auth");
@@ -97,23 +90,23 @@ public class PaymentsController : Controller
 
         if (amount <= 0)
         {
-            TempData["Error"] = _localizationService.GetString("InvalidAmount");
+            TempData["Error"] = localizationService.GetString("InvalidAmount");
             return RedirectToAction(nameof(Index));
         }
 
         // Mock Payment Gateway integration here
         // For now, we simulate a successful payment
-        await _walletService.DepositAsync(userId, amount, "Kredi Kartı ile Yükleme",
+        await walletService.DepositAsync(userId, amount, "Kredi Kartı ile Yükleme",
             "REF-" + Guid.NewGuid().ToString().Substring(0, 8));
 
-        TempData["Success"] = _localizationService.GetString("DepositSuccessful");
+        TempData["Success"] = localizationService.GetString("DepositSuccessful");
         return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Withdraw(decimal amount, string iban)
+    public async Task<IActionResult> Withdraw(decimal amount, string iban, string accountName)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId))
         {
             return RedirectToAction("Login", "Auth");
@@ -121,18 +114,19 @@ public class PaymentsController : Controller
 
         if (amount <= 0)
         {
-            TempData["Error"] = _localizationService.GetString("InvalidAmount");
+            TempData["Error"] = localizationService.GetString("InvalidAmount");
             return RedirectToAction(nameof(Index));
         }
 
         try
         {
-            await _walletService.WithdrawAsync(userId, amount, $"Para Çekme Talebi - IBAN: {iban}");
-            TempData["Success"] = _localizationService.GetString("WithdrawRequestCreated");
+            await walletService.CreateWithdrawalRequestAsync(userId, amount, iban, accountName,
+                "Portal üzerinden talep edildi.");
+            TempData["Success"] = localizationService.GetString("WithdrawRequestCreated");
         }
         catch (InvalidOperationException)
         {
-            TempData["Error"] = _localizationService.GetString("InsufficientBalance");
+            TempData["Error"] = localizationService.GetString("InsufficientBalance");
         }
 
         return RedirectToAction(nameof(Index));
@@ -141,13 +135,13 @@ public class PaymentsController : Controller
     [HttpGet]
     public async Task<IActionResult> Export(DateTime? startDate, DateTime? endDate)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId))
         {
             return RedirectToAction("Login", "Auth");
         }
 
-        var transactions = await _walletService.GetTransactionsAsync(userId, 1, 1000);
+        var transactions = await walletService.GetTransactionsAsync(userId, 1, 1000);
 
         if (startDate.HasValue)
             transactions = transactions.Where(t => t.TransactionDate.Date >= startDate.Value.Date).ToList();
@@ -174,23 +168,23 @@ public class PaymentsController : Controller
     [HttpPost]
     public async Task<IActionResult> AddBankAccount(CreateBankAccountRequest request)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
 
         if (string.IsNullOrEmpty(request.AccountName) || string.IsNullOrEmpty(request.Iban))
         {
-            TempData["Error"] = _localizationService.GetString("AllFieldsRequired");
+            TempData["Error"] = localizationService.GetString("AllFieldsRequired");
             return RedirectToAction(nameof(Index));
         }
 
         try
         {
-            await _walletService.AddBankAccountAsync(userId, request);
-            TempData["Success"] = _localizationService.GetString("BankAccountAdded");
+            await walletService.AddBankAccountAsync(userId, request);
+            TempData["Success"] = localizationService.GetString("BankAccountAdded");
         }
         catch (Exception)
         {
-            TempData["Error"] = _localizationService.GetString("ErrorAddingBankAccount"); // Generic error message
+            TempData["Error"] = localizationService.GetString("ErrorAddingBankAccount"); // Generic error message
         }
 
         return RedirectToAction(nameof(Index));
@@ -199,13 +193,13 @@ public class PaymentsController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteBankAccount(Guid id)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
 
         try
         {
-            await _walletService.DeleteBankAccountAsync(userId, id);
-            TempData["Success"] = _localizationService.GetString("BankAccountDeleted");
+            await walletService.DeleteBankAccountAsync(userId, id);
+            TempData["Success"] = localizationService.GetString("BankAccountDeleted");
         }
         catch (Exception ex)
         {
@@ -218,13 +212,13 @@ public class PaymentsController : Controller
     [HttpPost]
     public async Task<IActionResult> SetDefaultBankAccount(Guid id)
     {
-        var userId = _userContextService.GetUserId();
+        var userId = userContextService.GetUserId();
         if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
 
         try
         {
-            await _walletService.SetDefaultBankAccountAsync(userId, id);
-            TempData["Success"] = _localizationService.GetString("DefaultAccountUpdated");
+            await walletService.SetDefaultBankAccountAsync(userId, id);
+            TempData["Success"] = localizationService.GetString("DefaultAccountUpdated");
         }
         catch (Exception ex)
         {

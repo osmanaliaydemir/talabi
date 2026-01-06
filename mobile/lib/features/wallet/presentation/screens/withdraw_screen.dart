@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/wallet/data/models/bank_account_model.dart';
+import 'package:mobile/features/wallet/data/models/withdrawal_request_model.dart';
 
 class WithdrawScreen extends StatefulWidget {
   const WithdrawScreen({
@@ -244,17 +245,25 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _apiService.withdraw(amount, iban);
+      await _apiService.createWithdrawalRequest(
+        CreateWithdrawalRequestParams(
+          amount: amount,
+          iban: iban,
+          bankAccountName: _selectedAccount?.accountName ?? 'Mobil Hesap',
+          note: 'Mobil uygulama üzerinden talep edildi.',
+        ),
+      );
+
       if (mounted) {
         ToastMessage.show(
           context,
           message: localizations.withdrawSuccessful,
           isSuccess: true,
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } catch (e) {
-      String errorMessage = e.toString();
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
       if (e is DioException) {
         if (e.response?.data != null && e.response?.data is Map) {
           final data = e.response!.data as Map;

@@ -2989,4 +2989,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noSavedAccounts => 'Henüz kayıtlı hesap yok';
+
+  @override
+  String get withdrawalRequests => 'Para Çekme Talepleri';
 }

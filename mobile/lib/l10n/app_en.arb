@@ -3829,5 +3829,9 @@
   "noSavedAccounts": "No saved accounts yet",
   "@noSavedAccounts": {
     "description": "Placeholder text when no bank accounts are saved"
+  },
+  "withdrawalRequests": "Withdrawal Requests",
+  "@withdrawalRequests": {
+    "description": "Title for withdrawal requests section"
   }
 }

@@ -329,5 +329,116 @@ public class WalletService : IWalletService
 
         await _context.SaveChangesAsync();
     }
+
+    public async Task<WithdrawalRequest> CreateWithdrawalRequestAsync(string userId, decimal amount, string iban,
+        string accountName, string? note)
+    {
+        var wallet = await GetWalletByUserIdAsync(userId);
+
+        if (wallet.Balance < amount)
+        {
+            throw new InvalidOperationException("Insufficient balance");
+        }
+
+        // Block the balance
+        wallet.Balance -= amount;
+        wallet.UpdatedAt = DateTime.UtcNow;
+
+        var request = new WithdrawalRequest
+        {
+            AppUserId = userId,
+            Amount = amount,
+            Iban = iban,
+            BankAccountName = accountName,
+            Note = note,
+            Status = WithdrawalStatus.Pending
+        };
+
+        _context.WithdrawalRequests.Add(request);
+        await _context.SaveChangesAsync();
+
+        return request;
+    }
+
+    public async Task<List<WithdrawalRequest>> GetWithdrawalRequestsAsync(string? userId = null,
+        WithdrawalStatus? status = null)
+    {
+        var query = _context.WithdrawalRequests
+            .Include(r => r.AppUser)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            query = query.Where(r => r.AppUserId == userId);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(r => r.Status == status.Value);
+        }
+
+        return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
+    }
+
+    public async Task<WithdrawalRequest> GetWithdrawalRequestByIdAsync(Guid requestId)
+    {
+        var request = await _context.WithdrawalRequests
+            .Include(r => r.AppUser)
+            .FirstOrDefaultAsync(r => r.Id == requestId);
+
+        if (request == null) throw new KeyNotFoundException("Withdrawal request not found");
+        return request;
+    }
+
+    public async Task<WithdrawalRequest> UpdateWithdrawalStatusAsync(Guid requestId, WithdrawalStatus status,
+        string adminUserId, string? adminNote = null)
+    {
+        var request = await GetWithdrawalRequestByIdAsync(requestId);
+
+        if (request.Status == WithdrawalStatus.Completed || request.Status == WithdrawalStatus.Rejected)
+        {
+            throw new InvalidOperationException("Cannot change status of a completed or rejected request.");
+        }
+
+        request.Status = status;
+        request.AdminNote = adminNote;
+
+        if (status == WithdrawalStatus.Approved)
+        {
+            request.ApprovedAt = DateTime.UtcNow;
+            request.ApprovedBy = adminUserId;
+        }
+        else if (status == WithdrawalStatus.Rejected)
+        {
+            request.RejectedAt = DateTime.UtcNow;
+            request.RejectedBy = adminUserId;
+
+            // Return balance to user
+            var wallet = await GetWalletByUserIdAsync(request.AppUserId);
+            wallet.Balance += request.Amount;
+            wallet.UpdatedAt = DateTime.UtcNow;
+        }
+        else if (status == WithdrawalStatus.Completed)
+        {
+            request.CompletedAt = DateTime.UtcNow;
+            request.CompletedBy = adminUserId;
+
+            // Create a real transaction record
+            var wallet = await GetWalletByUserIdAsync(request.AppUserId);
+            var transaction = new WalletTransaction
+            {
+                WalletId = wallet.Id,
+                Amount = request.Amount,
+                TransactionType = TransactionType.Withdrawal,
+                Description = $"Para Çekme - {request.BankAccountName} ({request.Iban})",
+                ReferenceId = request.Id.ToString(),
+                TransactionDate = DateTime.UtcNow
+            };
+            _context.WalletTransactions.Add(transaction);
+        }
+
+        await _context.SaveChangesAsync();
+        return request;
+    }
 }
 

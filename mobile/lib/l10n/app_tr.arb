@@ -3801,5 +3801,9 @@
   "noSavedAccounts": "Henüz kayıtlı hesap yok",
   "@noSavedAccounts": {
     "description": "Placeholder text when no bank accounts are saved"
+  },
+  "withdrawalRequests": "Para Çekme Talepleri",
+  "@withdrawalRequests": {
+    "description": "Title for withdrawal requests section"
   }
 }

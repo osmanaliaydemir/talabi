@@ -62,6 +62,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<WalletTransaction> WalletTransactions { get; set; }
     public DbSet<BankAccount> BankAccounts { get; set; }
+    public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
 
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -618,5 +619,16 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .WithMany()
             .HasForeignKey(ba => ba.AppUserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // WithdrawalRequest configuration
+        builder.Entity<WithdrawalRequest>()
+            .HasOne(wr => wr.AppUser)
+            .WithMany()
+            .HasForeignKey(wr => wr.AppUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<WithdrawalRequest>()
+            .Property(wr => wr.Amount)
+            .HasColumnType("decimal(18,2)");
     }
 }

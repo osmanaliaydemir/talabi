@@ -1,5 +1,6 @@
 using Talabi.Core.Entities;
 using Talabi.Core.DTOs;
+using Talabi.Core.Enums;
 
 namespace Talabi.Core.Interfaces;
 
@@ -25,4 +26,16 @@ public interface IWalletService
     Task<BankAccount> UpdateBankAccountAsync(string userId, UpdateBankAccountRequest request);
     Task DeleteBankAccountAsync(string userId, Guid id);
     Task SetDefaultBankAccountAsync(string userId, Guid id);
+
+    // Withdrawal Requests
+    Task<WithdrawalRequest> CreateWithdrawalRequestAsync(string userId, decimal amount, string iban, string accountName,
+        string? note);
+
+    Task<List<WithdrawalRequest>> GetWithdrawalRequestsAsync(string? userId = null,
+        WithdrawalStatus? status = null);
+
+    Task<WithdrawalRequest> GetWithdrawalRequestByIdAsync(Guid requestId);
+
+    Task<WithdrawalRequest> UpdateWithdrawalStatusAsync(Guid requestId, WithdrawalStatus status,
+        string adminUserId, string? adminNote = null);
 }

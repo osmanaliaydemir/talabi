@@ -14,4 +14,7 @@ public class PaymentsViewModel
 
   public List<BankAccount> BankAccounts { get; set; } =
     new List<BankAccount>();
+
+  public List<WithdrawalRequest> WithdrawalRequests { get; set; } =
+    new List<WithdrawalRequest>();
 }

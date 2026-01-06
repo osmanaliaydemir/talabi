@@ -3798,8 +3798,12 @@
   "@ibanRequired": {
     "description": "Validation message for empty IBAN field"
   },
-  "noSavedAccounts": "لا توجد حسابات محفوظة بعد",
+  "noSavedAccounts": "لم يتم العثور على حسابات بنكية مسجلة",
   "@noSavedAccounts": {
     "description": "Placeholder text when no bank accounts are saved"
+  },
+  "withdrawalRequests": "طلبات السحب",
+  "@withdrawalRequests": {
+    "description": "Title for withdrawal requests section"
   }
 }

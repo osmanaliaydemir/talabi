@@ -2954,5 +2954,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ibanRequired => 'رقم الآيبان/رقم الحساب مطلوب';
 
   @override
-  String get noSavedAccounts => 'لا توجد حسابات محفوظة بعد';
+  String get noSavedAccounts => 'لم يتم العثور على حسابات بنكية مسجلة';
+
+  @override
+  String get withdrawalRequests => 'طلبات السحب';
 }

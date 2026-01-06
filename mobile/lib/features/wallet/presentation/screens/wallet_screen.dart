@@ -4,10 +4,10 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/wallet/data/models/wallet_model.dart';
 import 'package:mobile/features/wallet/data/models/wallet_transaction_model.dart';
+import 'package:mobile/features/wallet/data/models/withdrawal_request_model.dart';
 import 'package:mobile/features/wallet/presentation/screens/top_up_screen.dart';
 import 'package:mobile/features/wallet/presentation/screens/withdraw_screen.dart';
 import 'package:mobile/services/api_service.dart';
-
 import 'package:mobile/features/wallet/presentation/screens/transaction_detail_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 
@@ -24,6 +24,7 @@ class _WalletScreenState extends State<WalletScreen> {
   final ApiService _apiService = GetIt.I<ApiService>();
   Wallet? _wallet;
   List<WalletTransaction> _transactions = [];
+  List<WithdrawalRequest> _withdrawalRequests = [];
   bool _isLoading = true;
 
   @override
@@ -33,15 +34,21 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final wallet = await _apiService.getWallet();
       final transactions = await _apiService.getWalletTransactions();
-      setState(() {
-        _wallet = wallet;
-        _transactions = transactions;
-        _isLoading = false;
-      });
+      final withdrawalRequests = await _apiService.getWithdrawalRequests();
+
+      if (mounted) {
+        setState(() {
+          _wallet = wallet;
+          _transactions = transactions;
+          _withdrawalRequests = withdrawalRequests;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -79,6 +86,15 @@ class _WalletScreenState extends State<WalletScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildBalanceCard(localizations, isVendor),
+                      if (_withdrawalRequests.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          localizations.withdrawalRequests,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildWithdrawalRequestsList(localizations),
+                      ],
                       const SizedBox(height: 24),
                       Text(
                         localizations.transactionHistory,
@@ -94,8 +110,88 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
+  Widget _buildWithdrawalRequestsList(AppLocalizations localizations) {
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _withdrawalRequests.length,
+        itemBuilder: (context, index) {
+          final request = _withdrawalRequests[index];
+
+          Color statusColor;
+          String statusText;
+          IconData statusIcon;
+
+          switch (request.status) {
+            case WithdrawalStatus.pending:
+              statusColor = Colors.orange;
+              statusText = localizations.pending;
+              statusIcon = Icons.timer;
+              break;
+            case WithdrawalStatus.approved:
+              statusColor = Colors.blue;
+              statusText = localizations.approved;
+              statusIcon = Icons.check_circle_outline;
+              break;
+            case WithdrawalStatus.rejected:
+              statusColor = Colors.red;
+              statusText = localizations.rejected;
+              statusIcon = Icons.cancel_outlined;
+              break;
+            case WithdrawalStatus.completed:
+              statusColor = Colors.green;
+              statusText = localizations.completed;
+              statusIcon = Icons.check_circle;
+              break;
+          }
+
+          return Container(
+            width: 160,
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${request.amount.toStringAsFixed(2)} ₺',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Icon(statusIcon, color: statusColor, size: 16),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  request.createdAt.toString().split(' ')[0],
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildBalanceCard(AppLocalizations localizations, bool isVendor) {
-    // Vendor ise DeepPurple, değilse Orange
     final primaryColor = isVendor ? Colors.deepPurple : AppTheme.primaryOrange;
 
     return Container(

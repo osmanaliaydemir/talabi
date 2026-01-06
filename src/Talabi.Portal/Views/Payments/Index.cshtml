@@ -173,6 +173,56 @@
     </div>
 </div>
 
+@if (Model.WithdrawalRequests.Any())
+{
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("WithdrawalRequests")</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>@LocalizationService.GetString("Date")</th>
+                        <th>@LocalizationService.GetString("Amount")</th>
+                        <th>@LocalizationService.GetString("Status")</th>
+                        <th>@LocalizationService.GetString("AdminNote")</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var wr in Model.WithdrawalRequests)
+                    {
+                        <tr>
+                            <td>@wr.CreatedAt.ToLocalTime().ToString("g")</td>
+                            <td>@wr.Amount.ToString("C2")</td>
+                            <td>
+                                @switch (wr.Status)
+                                {
+                                    case Talabi.Core.Enums.WithdrawalStatus.Pending:
+                                        <span class="badge badge-warning">@LocalizationService.GetString("Pending")</span>
+                                        break;
+                                    case Talabi.Core.Enums.WithdrawalStatus.Approved:
+                                        <span class="badge badge-primary">@LocalizationService.GetString("Approved")</span>
+                                        break;
+                                    case Talabi.Core.Enums.WithdrawalStatus.Rejected:
+                                        <span class="badge badge-danger">@LocalizationService.GetString("Rejected")</span>
+                                        break;
+                                    case Talabi.Core.Enums.WithdrawalStatus.Completed:
+                                        <span class="badge badge-success">@LocalizationService.GetString("Completed")</span>
+                                        break;
+                                }
+                            </td>
+                            <td>@wr.AdminNote</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
 @section Scripts {
     <script>
         $(document).ready(function () {
@@ -231,8 +281,9 @@
             window.location.href = url;
         }
 
-        function selectBankAccount(iban) {
+        function selectBankAccount(iban, name) {
             $('#iban').val(iban);
+            $('#accountName').val(name);
         }
     </script>
 }
@@ -297,6 +348,10 @@
                         <label for="iban">@LocalizationService.GetString("IBAN")</label>
                         <input type="text" class="form-control" id="iban" name="iban" placeholder="TR..." required>
                     </div>
+                    <div class="form-group">
+                        <label for="accountName">@LocalizationService.GetString("AccountName")</label>
+                        <input type="text" class="form-control" id="accountName" name="accountName" required>
+                    </div>
 
                     @if (Model.BankAccounts.Any())
                     {
@@ -306,7 +361,7 @@
                                 @foreach (var acc in Model.BankAccounts)
                                 {
                                     <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center @(acc.IsDefault ? "border-primary" : "")">
-                                        <div onclick="selectBankAccount('@acc.Iban')" style="cursor: pointer; flex-grow: 1;">
+                                        <div onclick="selectBankAccount('@acc.Iban', '@acc.AccountName')" style="cursor: pointer; flex-grow: 1;">
                                             <div class="d-flex w-100 justify-content-between">
                                                 <h6 class="mb-1">@acc.AccountName</h6>
                                                 @if (acc.IsDefault)

@@ -1121,6 +1121,21 @@
         "en-US": "Pending",
         "ar-SA": "قيد الانتظار"
     },
+    "Approved": {
+        "tr-TR": "Onaylandı",
+        "en-US": "Approved",
+        "ar-SA": "موافق عليه"
+    },
+    "Rejected": {
+        "tr-TR": "Reddedildi",
+        "en-US": "Rejected",
+        "ar-SA": "مرفوض"
+    },
+    "Completed": {
+        "tr-TR": "Tamamlandı",
+        "en-US": "Completed",
+        "ar-SA": "مكتمل"
+    },
     "Preparing": {
         "tr-TR": "Hazırlanıyor",
         "en-US": "Preparing",
@@ -1795,5 +1810,55 @@
         "tr-TR": "Varsayılan Yap",
         "en-US": "Set as Default",
         "ar-SA": "عيّن كافتراضي"
+    },
+    "WithdrawalRequests": {
+        "tr-TR": "Para Çekme Talepleri",
+        "en-US": "Withdrawal Requests",
+        "ar-SA": "طلبات السحب"
+    },
+    "WithdrawalApproved": {
+        "tr-TR": "Talep onaylandı.",
+        "en-US": "Request approved.",
+        "ar-SA": "تم الموافقة على الطلب."
+    },
+    "WithdrawalRejected": {
+        "tr-TR": "Talep reddedildi.",
+        "en-US": "Request rejected.",
+        "ar-SA": "تم رفض الطلب."
+    },
+    "WithdrawalCompleted": {
+        "tr-TR": "Ödeme tamamlandı olarak işaretlendi.",
+        "en-US": "Payment marked as completed.",
+        "ar-SA": "تم تحديد الدفع كمكتمل."
+    },
+    "MarkAsSent": {
+        "tr-TR": "Gönderildi Olarak İşaretle",
+        "en-US": "Mark as Sent",
+        "ar-SA": "تحديد كمُرسل"
+    },
+    "AdminNote": {
+        "tr-TR": "Yönetici Notu",
+        "en-US": "Admin Note",
+        "ar-SA": "ملاحظة المسؤول"
+    },
+    "UserNote": {
+        "tr-TR": "Kullanıcı Notu",
+        "en-US": "User Note",
+        "ar-SA": "ملاحظة المستخدم"
+    },
+    "Requester": {
+        "tr-TR": "Talep Eden",
+        "en-US": "Requester",
+        "ar-SA": "الطالب"
+    },
+    "WithdrawalStatus": {
+        "tr-TR": "Talep Durumu",
+        "en-US": "Request Status",
+        "ar-SA": "حالة الطلب"
+    },
+    "WithdrawalInstructions": {
+        "tr-TR": "Lütfen banka üzerinden manuel gönderim yaptıktan sonra bu işlemi onaylayın. Bu işlem kurye/restoran tarafına ödemenin yapıldığı bilgisini iletecektir.",
+        "en-US": "Please confirm this action after making the manual bank transfer. This will inform the courier/vendor that the payment has been made.",
+        "ar-SA": "يرجى تأكيد هذا الإجراء بعد إجراء التحويل البنكي اليدوي. سيؤدي ذلك إلى إبلاغ المندوب / البائع بأنه تم إجراء الدفع."
     }
 }

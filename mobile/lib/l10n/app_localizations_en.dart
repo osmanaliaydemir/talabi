@@ -2988,4 +2988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSavedAccounts => 'No saved accounts yet';
+
+  @override
+  String get withdrawalRequests => 'Withdrawal Requests';
 }
