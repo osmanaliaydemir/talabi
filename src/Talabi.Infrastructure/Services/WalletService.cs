@@ -163,45 +163,77 @@ public class WalletService : IWalletService
 
     public async Task<int> SyncPendingEarningsAsync()
     {
-        // 1. Get unpaid courier earnings
-        var pendingEarnings = await _context.CourierEarnings
+        int processedCount = 0;
+
+        // 1. Sync Courier Earnings
+        var pendingCourier = await _context.CourierEarnings
             .Include(ce => ce.Courier)
-            .Include(ce => ce.Order) // To get detailed info if needed
+            .Include(ce => ce.Order)
             .Where(ce => !ce.IsPaid && ce.Courier != null && !string.IsNullOrEmpty(ce.Courier.UserId))
             .ToListAsync();
 
-        int processedCount = 0;
-
-        foreach (var earning in pendingEarnings)
+        foreach (var earning in pendingCourier)
         {
-            if (earning.Courier == null || string.IsNullOrEmpty(earning.Courier.UserId)) continue;
-
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Add to wallet (Re-use existing method logic but slightly adapted to avoid nested save changes if possible, though here it is fine)
                 await AddEarningAsync(
-                    earning.Courier.UserId,
+                    earning.Courier!.UserId,
                     earning.TotalEarning,
                     earning.OrderId.ToString(),
                     _localizationService.GetLocalizedString("OrderAssignmentResources", "EarningDescription",
                         new System.Globalization.CultureInfo("en"),
                         earning.Order?.CustomerOrderId ?? earning.OrderId.ToString()));
 
-                // Mark as paid
                 earning.IsPaid = true;
                 earning.PaidAt = DateTime.UtcNow;
                 _context.CourierEarnings.Update(earning);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
                 processedCount++;
             }
-            catch (Exception)
+            catch
             {
                 await transaction.RollbackAsync();
-                // Continue with next earning
+            }
+        }
+
+        // 2. Sync Vendor Earnings
+        var deliveredOrders = await _context.Orders
+            .Include(o => o.Vendor)
+            .Where(o => o.Status == OrderStatus.Delivered && o.Vendor != null &&
+                        !string.IsNullOrEmpty(o.Vendor.OwnerId))
+            .ToListAsync();
+
+        foreach (var order in deliveredOrders)
+        {
+            var wallet = await GetWalletByUserIdAsync(order.Vendor!.OwnerId!);
+            var exists = await _context.WalletTransactions
+                .AnyAsync(t => t.WalletId == wallet.Id &&
+                               t.ReferenceId == order.Id.ToString() &&
+                               t.TransactionType == TransactionType.Earning);
+
+            if (!exists)
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    await AddEarningAsync(
+                        order.Vendor.OwnerId!,
+                        order.TotalAmount,
+                        order.Id.ToString(),
+                        _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning",
+                            new System.Globalization.CultureInfo("en"), order.CustomerOrderId));
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    processedCount++;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                }
             }
         }
 
