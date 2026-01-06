@@ -133,6 +133,8 @@ public class ProductService : IProductService
 
             return await _unitOfWork.Products.Query()
                 .Where(p => p.Id == id && p.VendorId == vendorId.Value)
+                .Include(p => p.OptionGroups)
+                .ThenInclude(g => g.Options)
                 .Select(p => new VendorProductDto
                 {
                     Id = p.Id,
@@ -147,7 +149,25 @@ public class ProductService : IProductService
                     Stock = p.Stock,
                     PreparationTime = p.PreparationTime,
                     CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
+                    UpdatedAt = p.UpdatedAt,
+                    OptionGroups = p.OptionGroups.Select(g => new ProductOptionGroupDto
+                    {
+                        Id = g.Id,
+                        Name = g.Name,
+                        IsRequired = g.IsRequired,
+                        AllowMultiple = g.AllowMultiple,
+                        MinSelection = g.MinSelection,
+                        MaxSelection = g.MaxSelection,
+                        DisplayOrder = g.DisplayOrder,
+                        Options = g.Options.Select(o => new ProductOptionValueDto
+                        {
+                            Id = o.Id,
+                            Name = o.Name,
+                            PriceAdjustment = o.PriceAdjustment,
+                            IsDefault = o.IsDefault,
+                            DisplayOrder = o.DisplayOrder
+                        }).OrderBy(o => o.DisplayOrder).ToList()
+                    }).OrderBy(g => g.DisplayOrder).ToList()
                 })
                 .FirstOrDefaultAsync(ct);
         }
@@ -177,7 +197,23 @@ public class ProductService : IProductService
                 ImageUrl = dto.ImageUrl,
                 IsAvailable = dto.IsAvailable,
                 Stock = dto.Stock,
-                PreparationTime = dto.PreparationTime
+                PreparationTime = dto.PreparationTime,
+                OptionGroups = dto.OptionGroups?.Select((g, i) => new ProductOptionGroup
+                {
+                    Name = g.Name,
+                    IsRequired = g.IsRequired,
+                    AllowMultiple = g.AllowMultiple,
+                    MinSelection = g.MinSelection,
+                    MaxSelection = g.MaxSelection,
+                    DisplayOrder = g.DisplayOrder == 0 ? i : g.DisplayOrder,
+                    Options = g.Options?.Select((o, j) => new ProductOptionValue
+                    {
+                        Name = o.Name,
+                        PriceAdjustment = o.PriceAdjustment,
+                        IsDefault = o.IsDefault,
+                        DisplayOrder = o.DisplayOrder == 0 ? j : o.DisplayOrder
+                    }).ToList() ?? new List<ProductOptionValue>()
+                }).ToList() ?? new List<ProductOptionGroup>()
             };
 
             await _unitOfWork.Products.AddAsync(product);
@@ -199,6 +235,8 @@ public class ProductService : IProductService
             if (vendorId == null) return false;
 
             var product = await _unitOfWork.Products.Query()
+                .Include(p => p.OptionGroups)
+                .ThenInclude(g => g.Options)
                 .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value, ct);
 
             if (product == null) return false;
@@ -214,6 +252,30 @@ public class ProductService : IProductService
             if (dto.IsAvailable.HasValue) product.IsAvailable = dto.IsAvailable.Value;
             if (dto.Stock.HasValue) product.Stock = dto.Stock;
             if (dto.PreparationTime.HasValue) product.PreparationTime = dto.PreparationTime;
+
+            if (dto.OptionGroups != null)
+            {
+                product.OptionGroups.Clear();
+                foreach (var gDto in dto.OptionGroups)
+                {
+                    product.OptionGroups.Add(new ProductOptionGroup
+                    {
+                        Name = gDto.Name,
+                        IsRequired = gDto.IsRequired,
+                        AllowMultiple = gDto.AllowMultiple,
+                        MinSelection = gDto.MinSelection,
+                        MaxSelection = gDto.MaxSelection,
+                        DisplayOrder = gDto.DisplayOrder,
+                        Options = gDto.Options?.Select(o => new ProductOptionValue
+                        {
+                            Name = o.Name,
+                            PriceAdjustment = o.PriceAdjustment,
+                            IsDefault = o.IsDefault,
+                            DisplayOrder = o.DisplayOrder
+                        }).ToList() ?? new List<ProductOptionValue>()
+                    });
+                }
+            }
 
             product.UpdatedAt = DateTime.UtcNow;
 
