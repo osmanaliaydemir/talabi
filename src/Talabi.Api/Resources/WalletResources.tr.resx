@@ -6,4 +6,13 @@
   <data name="IbanRequired" xml:space="preserve">
     <value>IBAN gereklidir</value>
   </data>
+  <data name="ManualDeposit" xml:space="preserve">
+    <value>Manuel Yatırma</value>
+  </data>
+  <data name="VendorSaleEarning" xml:space="preserve">
+    <value>#{0} nolu sipariş için satış kazancı</value>
+  </data>
+  <data name="WithdrawalDescription" xml:space="preserve">
+    <value>{0} nolu hesaba para çekme</value>
+  </data>
 </root>

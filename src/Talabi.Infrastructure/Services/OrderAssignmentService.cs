@@ -646,7 +646,13 @@ public class OrderAssignmentService(
                         courier.UserId,
                         courierEarning.TotalEarning,
                         order.Id.ToString(),
-                        $"Delivery earning for order #{order.CustomerOrderId}");
+                        _localizationService.GetLocalizedString(ResourceName, "EarningDescription", culture,
+                            order.CustomerOrderId));
+
+                    // Mark as paid (reflected in wallet)
+                    courierEarning.IsPaid = true;
+                    courierEarning.PaidAt = DateTime.UtcNow;
+                    _unitOfWork.CourierEarnings.Update(courierEarning);
                 }
                 catch (Exception ex)
                 {
@@ -671,6 +677,9 @@ public class OrderAssignmentService(
         var vendor = await _unitOfWork.Vendors.GetByIdAsync(order.VendorId);
         if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
         {
+            var vendorLang = GetLanguageFromRequest();
+            var vendorCulture = GetCultureInfo(vendorLang);
+
             // Credit Vendor Wallet
             try
             {
@@ -678,15 +687,14 @@ public class OrderAssignmentService(
                     vendor.OwnerId,
                     order.TotalAmount,
                     order.Id.ToString(),
-                    $"Sale earning for order #{order.CustomerOrderId}");
+                    _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning", vendorCulture,
+                        order.CustomerOrderId));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error crediting vendor wallet for order {OrderId}", order.Id);
             }
 
-            var vendorLang = GetLanguageFromRequest();
-            var vendorCulture = GetCultureInfo(vendorLang);
             await AddVendorNotificationAsync(
                 vendor.Id,
                 _localizationService.GetLocalizedString(ResourceName, "OrderDelivered", vendorCulture),

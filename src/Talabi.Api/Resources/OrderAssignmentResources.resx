@@ -117,5 +117,8 @@
   <data name="OrderDeliveredHistoryNote" xml:space="preserve">
     <value>Order delivered by courier {0}</value>
   </data>
+  <data name="EarningDescription" xml:space="preserve">
+    <value>Delivery earning for order #{0}</value>
+  </data>
 </root>
 

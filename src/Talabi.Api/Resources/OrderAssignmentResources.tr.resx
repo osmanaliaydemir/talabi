@@ -117,5 +117,8 @@
   <data name="OrderDeliveredHistoryNote" xml:space="preserve">
     <value>Sipariş kurye {0} tarafından teslim edildi</value>
   </data>
+  <data name="EarningDescription" xml:space="preserve">
+    <value>#{0} siparişi için teslimat kazancı</value>
+  </data>
 </root>
 

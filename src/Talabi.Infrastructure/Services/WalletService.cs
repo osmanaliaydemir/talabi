@@ -9,10 +9,12 @@ namespace Talabi.Infrastructure.Services;
 public class WalletService : IWalletService
 {
     private readonly TalabiDbContext _context;
+    private readonly ILocalizationService _localizationService;
 
-    public WalletService(TalabiDbContext context)
+    public WalletService(TalabiDbContext context, ILocalizationService localizationService)
     {
         _context = context;
+        _localizationService = localizationService;
     }
 
     public async Task<Wallet> GetWalletByUserIdAsync(string userId)
@@ -43,7 +45,8 @@ public class WalletService : IWalletService
         return wallet.Balance;
     }
 
-    public async Task<WalletTransaction> DepositAsync(string userId, decimal amount, string description, string referenceId = null)
+    public async Task<WalletTransaction> DepositAsync(string userId, decimal amount, string description,
+        string referenceId = null)
     {
         var wallet = await GetWalletByUserIdAsync(userId);
 
@@ -93,7 +96,8 @@ public class WalletService : IWalletService
         return transaction;
     }
 
-    public async Task<WalletTransaction> ProcessPaymentAsync(string userId, decimal amount, string orderId, string description)
+    public async Task<WalletTransaction> ProcessPaymentAsync(string userId, decimal amount, string orderId,
+        string description)
     {
         var wallet = await GetWalletByUserIdAsync(userId);
 
@@ -121,7 +125,8 @@ public class WalletService : IWalletService
         return transaction;
     }
 
-    public async Task<WalletTransaction> AddEarningAsync(string userId, decimal amount, string referenceId, string description)
+    public async Task<WalletTransaction> AddEarningAsync(string userId, decimal amount, string referenceId,
+        string description)
     {
         var wallet = await GetWalletByUserIdAsync(userId);
 
@@ -154,5 +159,52 @@ public class WalletService : IWalletService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+    }
+
+    public async Task<int> SyncPendingEarningsAsync()
+    {
+        // 1. Get unpaid courier earnings
+        var pendingEarnings = await _context.CourierEarnings
+            .Include(ce => ce.Courier)
+            .Include(ce => ce.Order) // To get detailed info if needed
+            .Where(ce => !ce.IsPaid && ce.Courier != null && !string.IsNullOrEmpty(ce.Courier.UserId))
+            .ToListAsync();
+
+        int processedCount = 0;
+
+        foreach (var earning in pendingEarnings)
+        {
+            if (earning.Courier == null || string.IsNullOrEmpty(earning.Courier.UserId)) continue;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Add to wallet (Re-use existing method logic but slightly adapted to avoid nested save changes if possible, though here it is fine)
+                await AddEarningAsync(
+                    earning.Courier.UserId,
+                    earning.TotalEarning,
+                    earning.OrderId.ToString(),
+                    _localizationService.GetLocalizedString("OrderAssignmentResources", "EarningDescription",
+                        new System.Globalization.CultureInfo("en"),
+                        earning.Order?.CustomerOrderId ?? earning.OrderId.ToString()));
+
+                // Mark as paid
+                earning.IsPaid = true;
+                earning.PaidAt = DateTime.UtcNow;
+                _context.CourierEarnings.Update(earning);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                processedCount++;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                // Continue with next earning
+            }
+        }
+
+        return processedCount;
     }
 }

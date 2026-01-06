@@ -117,5 +117,8 @@
   <data name="OrderDeliveredHistoryNote" xml:space="preserve">
     <value>تم تسليم الطلب من قبل الساعي {0}</value>
   </data>
+  <data name="EarningDescription" xml:space="preserve">
+    <value>أرباح التوصيل للطلب رقم #{0}</value>
+  </data>
 </root>
 

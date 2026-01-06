@@ -6,4 +6,13 @@
   <data name="IbanRequired" xml:space="preserve">
     <value>IBAN is required</value>
   </data>
+  <data name="ManualDeposit" xml:space="preserve">
+    <value>Manual Deposit</value>
+  </data>
+  <data name="VendorSaleEarning" xml:space="preserve">
+    <value>Sale earning for order #{0}</value>
+  </data>
+  <data name="WithdrawalDescription" xml:space="preserve">
+    <value>Withdrawal to {0}</value>
+  </data>
 </root>

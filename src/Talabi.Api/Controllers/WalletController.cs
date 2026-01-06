@@ -57,7 +57,9 @@ namespace Talabi.Api.Controllers
 
             try
             {
-                var transaction = await walletService.DepositAsync(userId, request.Amount, "Manual Deposit");
+                var description =
+                    LocalizationService.GetLocalizedString("WalletResources", "ManualDeposit", CurrentCulture);
+                var transaction = await walletService.DepositAsync(userId, request.Amount, description);
                 return Ok(new ApiResponse<WalletTransaction>(transaction));
             }
             catch (Exception ex)
@@ -87,7 +89,8 @@ namespace Talabi.Api.Controllers
 
             try
             {
-                var description = $"Withdrawal to {request.Iban}";
+                var description = LocalizationService.GetLocalizedString("WalletResources", "WithdrawalDescription",
+                    CurrentCulture, request.Iban ?? string.Empty);
                 var transaction = await walletService.WithdrawAsync(userId, request.Amount, description);
                 return Ok(new ApiResponse<WalletTransaction>(transaction));
             }
@@ -95,6 +98,24 @@ namespace Talabi.Api.Controllers
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error withdrawing from wallet");
+                return BadRequest(new ApiResponse<object>(ex.Message));
+            }
+        }
+
+        [HttpPost("sync-earnings")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SyncEarnings()
+        {
+            // Ideally restricted to Admin or run once
+            try
+            {
+                int count = await walletService.SyncPendingEarningsAsync();
+                return Ok(new ApiResponse<object>(new
+                    { processed = count, message = $"Successfully synced {count} pending earnings." }));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error syncing earnings");
                 return BadRequest(new ApiResponse<object>(ex.Message));
             }
         }

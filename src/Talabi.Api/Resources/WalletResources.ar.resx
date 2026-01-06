@@ -6,4 +6,13 @@
   <data name="IbanRequired" xml:space="preserve">
     <value>رقم الآيبان مطلوب</value>
   </data>
+  <data name="ManualDeposit" xml:space="preserve">
+    <value>إيداع يدوي</value>
+  </data>
+  <data name="VendorSaleEarning" xml:space="preserve">
+    <value>أرباح المبيعات للطلب رقم #{0}</value>
+  </data>
+  <data name="WithdrawalDescription" xml:space="preserve">
+    <value>سحب إلى {0}</value>
+  </data>
 </root>
