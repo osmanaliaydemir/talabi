@@ -1,5 +1,69 @@
 {
   "@@locale": "ar",
+  "myWallet": "محفظتي",
+  "@myWallet": {
+    "description": "My Wallet title"
+  },
+  "viewBalanceAndHistory": "عرض الرصيد وسجل المعاملات",
+  "@viewBalanceAndHistory": {
+    "description": "Subtitle for wallet menu item"
+  },
+  "currentBalance": "الرصيد الحالي",
+  "@currentBalance": {
+    "description": "Current Balance label"
+  },
+  "topUpBalance": "شحن الرصيد",
+  "@topUpBalance": {
+    "description": "Button to add funds"
+  },
+  "transactionHistory": "سجل المعاملات",
+  "@transactionHistory": {
+    "description": "Transaction History header"
+  },
+  "noTransactionsYet": "لا توجد معاملات حتى الآن.",
+  "@noTransactionsYet": {
+    "description": "Empty state for usage history"
+  },
+  "topUp": "شحن الرصيد",
+  "@topUp": {
+    "description": "Top Up screen title"
+  },
+  "amountToTopUp": "المبلغ المراد شحنه",
+  "@amountToTopUp": {
+    "description": "Label for amount input"
+  },
+  "makePayment": "إتمام الدفع",
+  "@makePayment": {
+    "description": "Payment button label"
+  },
+  "topUpSuccessful": "تم الشحن بنجاح!",
+  "@topUpSuccessful": {
+    "description": "Success message for top up"
+  },
+  "withdraw": "سحب",
+  "@withdraw": {
+    "description": "Withdraw button label"
+  },
+  "withdrawBalance": "سحب الرصيد",
+  "@withdrawBalance": {
+    "description": "Withdraw screen title"
+  },
+  "iban": "الآيبان",
+  "@iban": {
+    "description": "IBAN label"
+  },
+  "withdrawSuccessful": "تم إنشاء طلب السحب بنجاح",
+  "@withdrawSuccessful": {
+    "description": "Success message for withdrawal"
+  },
+  "insufficientBalance": "رصيد غير كاف",
+  "@insufficientBalance": {
+    "description": "Error message for insufficient funds"
+  },
+  "enterValidIban": "الرجاء إدخال رقم آيبان صالح",
+  "@enterValidIban": {
+    "description": "Error message for invalid IBAN"
+  },
   "bestSeller": "أكثر مبيعاً",
   "@bestSeller": {
     "description": "Best Seller"
@@ -3639,5 +3703,37 @@
   "status": "الحالة",
   "@status": {
     "description": "تسمية الحالة"
+  },
+  "attentionRequired": "إجراء مطلوب",
+  "@attentionRequired": {
+    "description": "Title for dashboard alerts section"
+  },
+  "criticalStockAlert": "{count} منتجات في مستوى مخزون حرج",
+  "@criticalStockAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "delayedOrdersAlert": "{count} طلبات متأخرة",
+  "@delayedOrdersAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unansweredReviewsAlert": "{count} تقييمات لم يتم الرد عليها",
+  "@unansweredReviewsAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourlySalesToday": "المبيعات بالساعة (اليوم)",
+  "@hourlySalesToday": {
+    "description": "Title for hourly sales chart"
   }
 }

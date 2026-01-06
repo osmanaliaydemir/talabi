@@ -9,6 +9,54 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get myWallet => 'Cüzdanım';
+
+  @override
+  String get viewBalanceAndHistory => 'Bakiye ve işlem geçmişimi görüntüle';
+
+  @override
+  String get currentBalance => 'Mevcut Bakiye';
+
+  @override
+  String get topUpBalance => 'Bakiye Yükle';
+
+  @override
+  String get transactionHistory => 'İşlem Geçmişi';
+
+  @override
+  String get noTransactionsYet => 'Henüz işlem bulunmuyor.';
+
+  @override
+  String get topUp => 'Bakiye Yükle';
+
+  @override
+  String get amountToTopUp => 'Yüklenecek Tutar';
+
+  @override
+  String get makePayment => 'Ödeme Yap';
+
+  @override
+  String get topUpSuccessful => 'Yükleme başarılı!';
+
+  @override
+  String get withdraw => 'Para Çek';
+
+  @override
+  String get withdrawBalance => 'Para Çekme';
+
+  @override
+  String get iban => 'IBAN';
+
+  @override
+  String get withdrawSuccessful => 'Para çekme talebi başarıyla oluşturuldu';
+
+  @override
+  String get insufficientBalance => 'Yetersiz bakiye';
+
+  @override
+  String get enterValidIban => 'Lütfen geçerli bir IBAN girin';
+
+  @override
   String get bestSeller => 'Çok Satan';
 
   @override

@@ -51,29 +51,29 @@ builder.Services.AddScoped<FluentValidationActionFilter>();
 
 // Add services to the container.
 builder.Services.AddControllers(options =>
-{
-    // Add input sanitization filter globally
-    options.Filters.Add<InputSanitizationActionFilter>();
-    // Add FluentValidation filter globally
-    options.Filters.Add<FluentValidationActionFilter>();
-})
-.AddJsonOptions(options =>
-{
-    // Circular reference handling için
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    // MaxDepth artırılması - derin object graph'ler için
-    options.JsonSerializerOptions.MaxDepth = 128;
-});
+    {
+        // Add input sanitization filter globally
+        options.Filters.Add<InputSanitizationActionFilter>();
+        // Add FluentValidation filter globally
+        options.Filters.Add<FluentValidationActionFilter>();
+    })
+    .AddJsonOptions(options =>
+    {
+        // Circular reference handling için
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        // MaxDepth artırılması - derin object graph'ler için
+        options.JsonSerializerOptions.MaxDepth = 128;
+    });
 
 // Swagger/OpenAPI yapılandırması - Swashbuckle kullanarak
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new() { Title = "Talabi API", Version = "v1" });
-    
+
     // Aynı isimli DTO'lar için tam namespace kullan
     options.CustomSchemaIds(type => type.FullName);
-    
+
     // JSON serializer ayarlarını kullan
     options.UseInlineDefinitionsForEnums();
 });
@@ -140,6 +140,7 @@ builder.Services.AddScoped<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IInputSanitizationService, InputSanitizationService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<ICampaignCalculator, CampaignCalculator>();
+builder.Services.AddScoped<IWalletService, WalletService>();
 // External Auth Token Verifier
 builder.Services.AddHttpClient<IExternalAuthTokenVerifier, ExternalAuthTokenVerifier>();
 // File Upload Security Service
@@ -169,35 +170,35 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
         {
             Endpoint = "/api/auth/login",
             Period = "1m",
-            Limit = 5  // Max 5 login attempts per minute
+            Limit = 5 // Max 5 login attempts per minute
         },
         // Register endpoint - very strict rate limiting to prevent abuse
         new RateLimitRule
         {
             Endpoint = "/api/auth/register",
             Period = "1h",
-            Limit = 3  // Max 3 registrations per hour
+            Limit = 3 // Max 3 registrations per hour
         },
         // Email verification endpoint - very strict rate limiting
         new RateLimitRule
         {
             Endpoint = "/api/auth/verify-email-code",
             Period = "1m",
-            Limit = 5  // Max 5 attempts per minute
+            Limit = 5 // Max 5 attempts per minute
         },
         // Resend verification code - limit to prevent abuse
         new RateLimitRule
         {
             Endpoint = "/api/auth/resend-verification-code",
             Period = "1h",
-            Limit = 3  // Max 3 resends per hour
+            Limit = 3 // Max 3 resends per hour
         },
         // Confirm email endpoint - strict rate limiting to prevent token brute force
         new RateLimitRule
         {
             Endpoint = "/api/auth/confirm-email",
             Period = "1m",
-            Limit = 5  // Max 5 attempts per minute
+            Limit = 5 // Max 5 attempts per minute
         },
         // General rate limit
         new RateLimitRule
@@ -212,7 +213,8 @@ builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 // Verification Code Security
-builder.Services.Configure<VerificationCodeSecurityOptions>(builder.Configuration.GetSection("VerificationCodeSecurity"));
+builder.Services.Configure<VerificationCodeSecurityOptions>(
+    builder.Configuration.GetSection("VerificationCodeSecurity"));
 builder.Services.AddScoped<IVerificationCodeSecurityService, VerificationCodeSecurityService>();
 
 // FluentValidation
@@ -245,7 +247,8 @@ else
 }
 
 var allowCredentials = corsSettings.GetValue<bool>("AllowCredentials", true);
-var allowedMethods = corsSettings.GetSection("AllowedMethods").Get<string[]>() ?? new[] { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
+var allowedMethods = corsSettings.GetSection("AllowedMethods").Get<string[]>() ??
+                     new[] { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
 var allowedHeaders = corsSettings.GetSection("AllowedHeaders").Get<string[]>() ?? new[] { "*" };
 var exposedHeaders = corsSettings.GetSection("ExposedHeaders").Get<string[]>() ?? new[] { "*" };
 var maxAge = corsSettings.GetValue<int>("MaxAge", 3600);
@@ -257,7 +260,7 @@ builder.Services.AddCors(options =>
         if (allowedOrigins.Length > 0)
         {
             policy.WithOrigins(allowedOrigins);
-            
+
             // Credentials sadece belirli origin'lerle kullanılabilir
             if (allowCredentials)
             {
@@ -277,7 +280,8 @@ builder.Services.AddCors(options =>
             {
                 // Production ve Test ortamlarında origin belirtilmediyse uyarı
                 // Not: Logger bu aşamada henüz yapılandırılmamış olabilir, bu yüzden Console.WriteLine kullanıyoruz
-                Console.WriteLine($"WARNING: CORS: {builder.Environment.EnvironmentName} ortamı için AllowedOrigins boş! CORS yapılandırması kontrol edilmeli.");
+                Console.WriteLine(
+                    $"WARNING: CORS: {builder.Environment.EnvironmentName} ortamı için AllowedOrigins boş! CORS yapılandırması kontrol edilmeli.");
             }
         }
 
@@ -289,50 +293,51 @@ builder.Services.AddCors(options =>
 });
 
 // Identity
-var passwordPolicy = builder.Configuration.GetSection("PasswordPolicy").Get<PasswordPolicyOptions>() ?? new PasswordPolicyOptions();
+var passwordPolicy = builder.Configuration.GetSection("PasswordPolicy").Get<PasswordPolicyOptions>() ??
+                     new PasswordPolicyOptions();
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
-{
-    options.SignIn.RequireConfirmedEmail = true;
-    options.User.RequireUniqueEmail = true;
-    
-    // Password Policy
-    options.Password.RequireDigit = passwordPolicy.RequireDigit;
-    options.Password.RequireLowercase = passwordPolicy.RequireLowercase;
-    options.Password.RequireUppercase = passwordPolicy.RequireUppercase;
-    options.Password.RequireNonAlphanumeric = passwordPolicy.RequireNonAlphanumeric;
-    options.Password.RequiredLength = passwordPolicy.MinimumLength;
-    
-    // Account Lockout Policy
-    options.Lockout.AllowedForNewUsers = true;
-    options.Lockout.MaxFailedAccessAttempts = passwordPolicy.MaxFailedAttempts;
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(passwordPolicy.LockoutDurationMinutes);
-})
-.AddEntityFrameworkStores<TalabiDbContext>()
-.AddDefaultTokenProviders();
+    {
+        options.SignIn.RequireConfirmedEmail = true;
+        options.User.RequireUniqueEmail = true;
+
+        // Password Policy
+        options.Password.RequireDigit = passwordPolicy.RequireDigit;
+        options.Password.RequireLowercase = passwordPolicy.RequireLowercase;
+        options.Password.RequireUppercase = passwordPolicy.RequireUppercase;
+        options.Password.RequireNonAlphanumeric = passwordPolicy.RequireNonAlphanumeric;
+        options.Password.RequiredLength = passwordPolicy.MinimumLength;
+
+        // Account Lockout Policy
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = passwordPolicy.MaxFailedAttempts;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(passwordPolicy.LockoutDurationMinutes);
+    })
+    .AddEntityFrameworkStores<TalabiDbContext>()
+    .AddDefaultTokenProviders();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secret = jwtSettings["Secret"];
 
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!))
-    };
-});
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!))
+        };
+    });
 
 var app = builder.Build();
 
@@ -403,13 +408,13 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value?.ToLower() ?? "";
-    
+
     // Sadece /scalar ve /swagger path'leri için authentication iste
     if (path.StartsWith("/scalar") || path.StartsWith("/swagger"))
     {
         // Authorization header'ı kontrol et
         var authHeader = context.Request.Headers.Authorization.ToString();
-        
+
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Basic "))
         {
             // Authentication iste
@@ -418,19 +423,19 @@ app.Use(async (context, next) =>
             await context.Response.WriteAsync("Authentication required");
             return;
         }
-        
+
         // Basic auth decode et
         var encodedCredentials = authHeader.Substring("Basic ".Length).Trim();
         var credentials = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
         var parts = credentials.Split(':', 2);
-        
+
         var username = parts[0];
         var password = parts.Length > 1 ? parts[1] : "";
-        
+
         // Kullanıcı adı ve şifre kontrolü (appsettings'den oku veya sabit kullan)
         var validUsername = builder.Configuration["Documentation:Username"] ?? "admin";
         var validPassword = builder.Configuration["Documentation:Password"] ?? "talabi2024";
-        
+
         if (username != validUsername || password != validPassword)
         {
             context.Response.StatusCode = 401;
@@ -439,7 +444,7 @@ app.Use(async (context, next) =>
             return;
         }
     }
-    
+
     await next();
 });
 
@@ -453,7 +458,7 @@ app.MapScalarApiReference(options =>
         .WithTitle("Talabi API Documentation")
         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
         .WithTheme(ScalarTheme.BluePlanet)
-        .WithOpenApiRoutePattern("/swagger/v1/swagger.json");  // Swagger spec kullan
+        .WithOpenApiRoutePattern("/swagger/v1/swagger.json"); // Swagger spec kullan
 });
 
 // Root path'i Scalar'a yönlendir (Scalar default path: /scalar/v1)
@@ -469,10 +474,10 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
-        
+
         // Production'da hassas bilgileri gizle
         var isDevelopment = app.Environment.IsDevelopment();
-        
+
         var result = System.Text.Json.JsonSerializer.Serialize(new
         {
             status = report.Status.ToString(),
@@ -499,7 +504,7 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
-        
+
         // Production'da hassas bilgileri gizle - sadece status bilgisi
         var result = System.Text.Json.JsonSerializer.Serialize(new
         {

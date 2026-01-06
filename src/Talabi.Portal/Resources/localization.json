@@ -1156,16 +1156,6 @@
         "en-US": "Cancelled",
         "ar-SA": "ملغاة"
     },
-    "StartDate": {
-        "tr-TR": "Başlangıç Tarihi",
-        "en-US": "Start Date",
-        "ar-SA": "تاريخ البدء"
-    },
-    "EndDate": {
-        "tr-TR": "Bitiş Tarihi",
-        "en-US": "End Date",
-        "ar-SA": "تاريخ الانتهاء"
-    },
     "MinAmount": {
         "tr-TR": "Min. Tutar",
         "en-US": "Min. Amount",
@@ -1690,5 +1680,55 @@
         "tr-TR": "Dosyanız silindi.",
         "en-US": "Your file has been deleted.",
         "ar-SA": "تم حذف الملف."
+    },
+    "CurrentBalance": {
+        "tr-TR": "Mevcut Bakiye",
+        "en-US": "Current Balance",
+        "ar-SA": "الرصيد الحالي"
+    },
+    "Deposit": {
+        "tr-TR": "Para Yükle",
+        "en-US": "Deposit",
+        "ar-SA": "إيداع"
+    },
+    "Withdraw": {
+        "tr-TR": "Para Çek",
+        "en-US": "Withdraw",
+        "ar-SA": "سحب"
+    },
+    "DepositMoney": {
+        "tr-TR": "Para Yükle",
+        "en-US": "Deposit Money",
+        "ar-SA": "إيداع المال"
+    },
+    "WithdrawMoney": {
+        "tr-TR": "Para Çek",
+        "en-US": "Withdraw Money",
+        "ar-SA": "سحب المال"
+    },
+    "DepositConfirm": {
+        "tr-TR": "Yüklemeyi Onayla",
+        "en-US": "Confirm Deposit",
+        "ar-SA": "تأكيد الإيداع"
+    },
+    "WithdrawConfirm": {
+        "tr-TR": "Çekimi Onayla",
+        "en-US": "Confirm Withdraw",
+        "ar-SA": "تأكيد السحب"
+    },
+    "DepositMockNote": {
+        "tr-TR": "Bu bir simülasyon işlemidir. Gerçek para çekilmeyecektir.",
+        "en-US": "This is a simulation. No real money will be charged.",
+        "ar-SA": "هذه محاكاة. لن يتم خصم أموال حقيقية."
+    },
+    "MaxWithdrawAmount": {
+        "tr-TR": "Çekilebilir Tutar",
+        "en-US": "Withdrawable Amount",
+        "ar-SA": "المبلغ القابل للسحب"
+    },
+    "IBAN": {
+        "tr-TR": "IBAN",
+        "en-US": "IBAN",
+        "ar-SA": "الآيبان"
     }
 }

@@ -16,10 +16,18 @@
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                             @LocalizationService.GetString("DailyEarnings")
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DailyEarnings.ToString("C2")</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalEarnings.ToString("C2")</div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    <div class="col-auto text-right">
+                        <i class="fas fa-wallet fa-2x text-gray-300 mb-2"></i>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-success shadow-sm" data-toggle="modal" data-target="#depositModal">
+                                <i class="fas fa-plus fa-sm text-white-50"></i> @LocalizationService.GetString("Deposit")
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#withdrawModal">
+                                <i class="fas fa-minus fa-sm text-white-50"></i> @LocalizationService.GetString("Withdraw")
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,7 +79,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            @LocalizationService.GetString("TotalEarnings")
+                            @LocalizationService.GetString("CurrentBalance")
                         </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalEarnings.ToString("C2")</div>
                     </div>
@@ -120,21 +128,42 @@
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                 <tr>
-                    <th>@LocalizationService.GetString("OrderId")</th>
+                    <th>@LocalizationService.GetString("ReferenceNo")</th>
                     <th>@LocalizationService.GetString("Date")</th>
                     <th>@LocalizationService.GetString("Amount")</th>
-                    <th>@LocalizationService.GetString("Status")</th>
+                    <th>@LocalizationService.GetString("TransactionType")</th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach (var item in Model.Transactions)
                 {
                     <tr>
-                        <td>#@item.CustomerOrderId</td>
-                        <td>@item.CreatedAt.ToLocalTime().ToString("g")</td>
-                        <td>@item.TotalAmount.ToString("C2")</td>
                         <td>
-                            <span class="badge bg-success">@LocalizationService.GetString("Delivered")</span>
+                            @if (item.CustomerOrderId != "-")
+                            {
+                                <span>@item.CustomerOrderId</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>@item.CreatedAt.ToLocalTime().ToString("g")</td>
+                        <td class="@(item.Status == "Withdrawal" || item.Status == "Payment" ? "text-danger" : "text-success")">
+                            @((item.Status == "Withdrawal" || item.Status == "Payment" ? "-" : "+") + item.TotalAmount.ToString("C2"))
+                        </td>
+                        <td>
+                            @{
+                                var badgeClass = item.Status switch
+                                {
+                                    "Deposit" => "bg-success",
+                                    "Withdrawal" => "bg-warning",
+                                    "Payment" => "bg-danger",
+                                    "Earning" => "bg-info",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badgeClass">@LocalizationService.GetString(item.Status)</span>
                         </td>
                     </tr>
                 }
@@ -205,3 +234,73 @@
         }
     </script>
 }
+
+<!-- Deposit Modal -->
+<div class="modal fade" id="depositModal" tabindex="-1" role="dialog" aria-labelledby="depositModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="depositModalLabel">@LocalizationService.GetString("DepositMoney")</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="Deposit" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="depositAmount">@LocalizationService.GetString("Amount")</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" min="1" class="form-control" id="depositAmount" name="amount" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text">TRY</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>@LocalizationService.GetString("DepositMockNote")</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                    <button type="submit" class="btn btn-success">@LocalizationService.GetString("DepositConfirm")</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" role="dialog" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="withdrawModalLabel">@LocalizationService.GetString("WithdrawMoney")</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="Withdraw" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="withdrawAmount">@LocalizationService.GetString("Amount")</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" min="1" class="form-control" id="withdrawAmount" name="amount" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text">TRY</span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">@LocalizationService.GetString("MaxWithdrawAmount"): @Model.TotalEarnings.ToString("C2")</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="iban">@LocalizationService.GetString("IBAN")</label>
+                        <input type="text" class="form-control" id="iban" name="iban" placeholder="TR..." required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                    <button type="submit" class="btn btn-primary">@LocalizationService.GetString("WithdrawConfirm")</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

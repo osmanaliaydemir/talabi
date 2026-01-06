@@ -18,7 +18,8 @@ import 'package:mobile/features/coupons/data/models/coupon.dart';
 import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/features/settings/data/models/version_settings_model.dart';
 import 'package:mobile/features/orders/data/models/order_calculation_models.dart';
-
+import 'package:mobile/features/wallet/data/models/wallet_model.dart';
+import 'package:mobile/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
@@ -2355,6 +2356,107 @@ class ApiService {
         stackTrace,
       );
       return null;
+    }
+  }
+
+  // Wallet methods
+  Future<Wallet> getWallet() async {
+    try {
+      final response = await dio.get('/wallet');
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => Wallet.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Cüzdan bulunamadı');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching wallet', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<List<WalletTransaction>> getWalletTransactions({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/wallet/transactions',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List)
+            .map((e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'İşlemler alınamadı');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error fetching wallet transactions',
+        e,
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<WalletTransaction> deposit(double amount) async {
+    try {
+      final response = await dio.post(
+        '/wallet/deposit',
+        data: {'amount': amount},
+      );
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => WalletTransaction.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Para yüklenemedi');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error depositing to wallet', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<WalletTransaction> withdraw(double amount, String iban) async {
+    try {
+      final response = await dio.post(
+        '/wallet/withdraw',
+        data: {'amount': amount, 'iban': iban},
+      );
+
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => WalletTransaction.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(
+          apiResponse.message ?? 'Para çekme talebi oluşturulamadı',
+        );
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error withdrawing from wallet', e, stackTrace);
+      rethrow;
     }
   }
 }

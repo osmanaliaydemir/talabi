@@ -1432,6 +1432,38 @@ class MockCartRemoteDataSource extends _i1.Mock
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> clearCartPromotions() => (super.noSuchMethod(
+        Invocation.method(
+          #clearCartPromotions,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<List<Map<String, dynamic>>> getRecommendations({
+    int? type,
+    double? lat,
+    double? lon,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getRecommendations,
+          [],
+          {
+            #type: type,
+            #lat: lat,
+            #lon: lon,
+          },
+        ),
+        returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i7.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i7.Future<List<Map<String, dynamic>>>);
 }
 
 /// A class which mocks [LocationRemoteDataSource].
@@ -1712,6 +1744,39 @@ class MockReviewRemoteDataSource extends _i1.Mock
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<List<_i5.Review>> getUserReviews() => (super.noSuchMethod(
+        Invocation.method(
+          #getUserReviews,
+          [],
+        ),
+        returnValue: _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+        returnValueForMissingStub:
+            _i7.Future<List<_i5.Review>>.value(<_i5.Review>[]),
+      ) as _i7.Future<List<_i5.Review>>);
+
+  @override
+  _i7.Future<_i5.Review> getReview(String? reviewId) => (super.noSuchMethod(
+        Invocation.method(
+          #getReview,
+          [reviewId],
+        ),
+        returnValue: _i7.Future<_i5.Review>.value(_FakeReview_3(
+          this,
+          Invocation.method(
+            #getReview,
+            [reviewId],
+          ),
+        )),
+        returnValueForMissingStub: _i7.Future<_i5.Review>.value(_FakeReview_3(
+          this,
+          Invocation.method(
+            #getReview,
+            [reviewId],
+          ),
+        )),
+      ) as _i7.Future<_i5.Review>);
 }
 
 /// A class which mocks [NotificationRemoteDataSource].

@@ -59,7 +59,8 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<CouponCategory> CouponCategories { get; set; }
     public DbSet<CouponProduct> CouponProducts { get; set; }
     public DbSet<SystemSetting> SystemSettings { get; set; }
-
+    public DbSet<Wallet> Wallets { get; set; }
+    public DbSet<WalletTransaction> WalletTransactions { get; set; }
 
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -485,7 +486,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .WithMany(c => c.CampaignDistricts)
             .HasForeignKey(cd => cd.CampaignId)
             .OnDelete(DeleteBehavior.Cascade);
-            
+
         builder.Entity<CampaignDistrict>()
             .HasOne(cd => cd.District)
             .WithMany()
@@ -540,7 +541,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<CouponDistrict>()
             .HasKey(cd => new { cd.CouponId, cd.DistrictId });
-        
+
         builder.Entity<CouponDistrict>()
             .HasOne(cd => cd.Coupon)
             .WithMany(c => c.CouponDistricts)
@@ -555,7 +556,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<CouponCategory>()
             .HasKey(cc => new { cc.CouponId, cc.CategoryId });
-        
+
         builder.Entity<CouponCategory>()
             .HasOne(cc => cc.Coupon)
             .WithMany(c => c.CouponCategories)
@@ -582,5 +583,32 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .WithMany()
             .HasForeignKey(cp => cp.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Wallet configuration
+        builder.Entity<Wallet>()
+            .HasOne(w => w.AppUser)
+            .WithOne() // Assuming one-to-one with AppUser
+            .HasForeignKey<Wallet>(w => w.AppUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Wallet>()
+            .Property(w => w.Balance)
+            .HasColumnType("decimal(18,2)");
+
+        // Ensure AppUserId is unique for Wallet
+        builder.Entity<Wallet>()
+            .HasIndex(w => w.AppUserId)
+            .IsUnique();
+
+        // WalletTransaction configuration
+        builder.Entity<WalletTransaction>()
+            .HasOne(wt => wt.Wallet)
+            .WithMany(w => w.Transactions)
+            .HasForeignKey(wt => wt.WalletId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<WalletTransaction>()
+            .Property(wt => wt.Amount)
+            .HasColumnType("decimal(18,2)");
     }
 }

@@ -100,6 +100,102 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// My Wallet title
+  ///
+  /// In en, this message translates to:
+  /// **'My Wallet'**
+  String get myWallet;
+
+  /// Subtitle for wallet menu item
+  ///
+  /// In en, this message translates to:
+  /// **'View balance and transaction history'**
+  String get viewBalanceAndHistory;
+
+  /// Current Balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Current Balance'**
+  String get currentBalance;
+
+  /// Button to add funds
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up Balance'**
+  String get topUpBalance;
+
+  /// Transaction History header
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction History'**
+  String get transactionHistory;
+
+  /// Empty state for usage history
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet.'**
+  String get noTransactionsYet;
+
+  /// Top Up screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up'**
+  String get topUp;
+
+  /// Label for amount input
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to Top Up'**
+  String get amountToTopUp;
+
+  /// Payment button label
+  ///
+  /// In en, this message translates to:
+  /// **'Make Payment'**
+  String get makePayment;
+
+  /// Success message for top up
+  ///
+  /// In en, this message translates to:
+  /// **'Top up successful!'**
+  String get topUpSuccessful;
+
+  /// Withdraw button label
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get withdraw;
+
+  /// Withdraw screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw Balance'**
+  String get withdrawBalance;
+
+  /// IBAN label
+  ///
+  /// In en, this message translates to:
+  /// **'IBAN'**
+  String get iban;
+
+  /// Success message for withdrawal
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal request created successfully'**
+  String get withdrawSuccessful;
+
+  /// Error message for insufficient funds
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance'**
+  String get insufficientBalance;
+
+  /// Error message for invalid IBAN
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid IBAN'**
+  String get enterValidIban;
+
   /// Best Seller
   ///
   /// In en, this message translates to:

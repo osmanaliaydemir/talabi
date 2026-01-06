@@ -1,5 +1,69 @@
 {
   "@@locale": "en",
+  "myWallet": "My Wallet",
+  "@myWallet": {
+    "description": "My Wallet title"
+  },
+  "viewBalanceAndHistory": "View balance and transaction history",
+  "@viewBalanceAndHistory": {
+    "description": "Subtitle for wallet menu item"
+  },
+  "currentBalance": "Current Balance",
+  "@currentBalance": {
+    "description": "Current Balance label"
+  },
+  "topUpBalance": "Top Up Balance",
+  "@topUpBalance": {
+    "description": "Button to add funds"
+  },
+  "transactionHistory": "Transaction History",
+  "@transactionHistory": {
+    "description": "Transaction History header"
+  },
+  "noTransactionsYet": "No transactions yet.",
+  "@noTransactionsYet": {
+    "description": "Empty state for usage history"
+  },
+  "topUp": "Top Up",
+  "@topUp": {
+    "description": "Top Up screen title"
+  },
+  "amountToTopUp": "Amount to Top Up",
+  "@amountToTopUp": {
+    "description": "Label for amount input"
+  },
+  "makePayment": "Make Payment",
+  "@makePayment": {
+    "description": "Payment button label"
+  },
+  "topUpSuccessful": "Top up successful!",
+  "@topUpSuccessful": {
+    "description": "Success message for top up"
+  },
+  "withdraw": "Withdraw",
+  "@withdraw": {
+    "description": "Withdraw button label"
+  },
+  "withdrawBalance": "Withdraw Balance",
+  "@withdrawBalance": {
+    "description": "Withdraw screen title"
+  },
+  "iban": "IBAN",
+  "@iban": {
+    "description": "IBAN label"
+  },
+  "withdrawSuccessful": "Withdrawal request created successfully",
+  "@withdrawSuccessful": {
+    "description": "Success message for withdrawal"
+  },
+  "insufficientBalance": "Insufficient balance",
+  "@insufficientBalance": {
+    "description": "Error message for insufficient funds"
+  },
+  "enterValidIban": "Please enter a valid IBAN",
+  "@enterValidIban": {
+    "description": "Error message for invalid IBAN"
+  },
   "bestSeller": "Best Seller",
   "@bestSeller": {
     "description": "Best Seller"

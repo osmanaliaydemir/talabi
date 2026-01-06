@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="InvalidAmount" xml:space="preserve">
+    <value>Invalid amount</value>
+  </data>
+  <data name="IbanRequired" xml:space="preserve">
+    <value>IBAN is required</value>
+  </data>
+</root>

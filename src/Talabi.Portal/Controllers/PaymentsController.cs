@@ -13,121 +13,167 @@ namespace Talabi.Portal.Controllers;
 public class PaymentsController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IWalletService _walletService;
+    private readonly IUserContextService _userContextService;
     private readonly PortalServices.ILocalizationService _localizationService;
 
-    public PaymentsController(IUnitOfWork unitOfWork, PortalServices.ILocalizationService localizationService)
+    public PaymentsController(IUnitOfWork unitOfWork, IWalletService walletService,
+        IUserContextService userContextService, PortalServices.ILocalizationService localizationService)
     {
         _unitOfWork = unitOfWork;
+        _walletService = walletService;
+        _userContextService = userContextService;
         _localizationService = localizationService;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
     {
-        var vendorIdStr = HttpContext.Session.GetString("VendorId");
-        if (string.IsNullOrEmpty(vendorIdStr) || !Guid.TryParse(vendorIdStr, out var vendorId))
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId))
         {
             return RedirectToAction("Login", "Auth");
         }
 
+        var wallet = await _walletService.GetWalletByUserIdAsync(userId);
+        var transactions = await _walletService.GetTransactionsAsync(userId, 1, 500); // Get recent transactions
+
+        // Filter valid dates
+        if (startDate.HasValue)
+            transactions = transactions.Where(t => t.TransactionDate.Date >= startDate.Value.Date).ToList();
+
+        if (endDate.HasValue)
+            transactions = transactions.Where(t => t.TransactionDate.Date <= endDate.Value.Date).ToList();
+
+        // Calculate periodic earnings from 'Earning' type transactions
         var today = DateTime.UtcNow.Date;
         var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
         var startOfMonth = new DateTime(today.Year, today.Month, 1);
 
-        // Calculate earnings directly in DB (Unaffected by filter)
-        decimal totalEarnings = await _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered)
-            .SumAsync(o => o.TotalAmount);
+        var earningTransactions = transactions.Where(t => t.TransactionType == TransactionType.Earning).ToList();
 
-        decimal dailyEarnings = await _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered && o.CreatedAt.Date == today)
-            .SumAsync(o => o.TotalAmount);
+        decimal dailyEarnings = earningTransactions.Where(t => t.TransactionDate.Date == today).Sum(t => t.Amount);
+        decimal weeklyEarnings =
+            earningTransactions.Where(t => t.TransactionDate.Date >= startOfWeek).Sum(t => t.Amount);
+        decimal monthlyEarnings =
+            earningTransactions.Where(t => t.TransactionDate.Date >= startOfMonth).Sum(t => t.Amount);
 
-        decimal weeklyEarnings = await _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered && o.CreatedAt.Date >= startOfWeek)
-            .SumAsync(o => o.TotalAmount);
-
-        decimal monthlyEarnings = await _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered && o.CreatedAt.Date >= startOfMonth)
-            .SumAsync(o => o.TotalAmount);
-
-        // Filter Logic
-        var query = _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
-
-        if (startDate.HasValue)
-            query = query.Where(o => o.CreatedAt.Date >= startDate.Value.Date);
-
-        if (endDate.HasValue)
-            query = query.Where(o => o.CreatedAt.Date <= endDate.Value.Date);
-
-        // Fetch filtered transactions
-        var transactions = await query
-            .OrderByDescending(o => o.CreatedAt)
-            .Take(500) // Increase limit for filtered views
-            .Select(o => new Core.DTOs.OrderDto
-            {
-                Id = o.Id,
-                CustomerOrderId = o.CustomerOrderId,
-                CreatedAt = o.CreatedAt,
-                TotalAmount = o.TotalAmount,
-                Status = o.Status.ToString()
-            })
-            .ToListAsync();
+        // Map transactions to DTO for view compatibility
+        var transactionDtos = transactions.Select(t => new Core.DTOs.OrderDto
+        {
+            // We reuse OrderDto for list display for now to match View expecting 'Transactions' list
+            // Ideally create a WalletTransactionDto
+            CustomerOrderId = t.ReferenceId ?? "-",
+            CreatedAt = t.TransactionDate,
+            TotalAmount = t.Amount,
+            Status = t.TransactionType.ToString() // Use Status field for TransactionType
+        }).ToList();
 
         var viewModel = new PaymentsViewModel
         {
-            TotalEarnings = totalEarnings,
+            TotalEarnings =
+                wallet.Balance, // Show Current Balance as 'Total Earnings' card for now, or fetch total lifetime earnings
             DailyEarnings = dailyEarnings,
             WeeklyEarnings = weeklyEarnings,
             MonthlyEarnings = monthlyEarnings,
-            Transactions = transactions
+            Transactions = transactionDtos
         };
 
+        // If we want actual Total Lifetime Earnings instead of Balance:
+        // decimal lifetimeEarnings = await _unitOfWork.WalletTransactions.Query()
+        //    .Where(t => t.WalletId == wallet.Id && t.TransactionType == TransactionType.Earning)
+        //    .SumAsync(t => t.Amount);
+        // viewModel.TotalEarnings = lifetimeEarnings; 
+
+        // Let's stick to Balance for the main card as it's more useful for a 'Wallet' concept.
+        // But the View Label says "Total Earnings". We might want to pass Balance separately.
+        // For now, let's map Balance to TotalEarnings property or update ViewModel.
+
         return View(viewModel);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Deposit(decimal amount)
+    {
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        if (amount <= 0)
+        {
+            TempData["Error"] = _localizationService.GetString("InvalidAmount");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Mock Payment Gateway integration here
+        // For now, we simulate a successful payment
+        await _walletService.DepositAsync(userId, amount, "Kredi Kartı ile Yükleme",
+            "REF-" + Guid.NewGuid().ToString().Substring(0, 8));
+
+        TempData["Success"] = _localizationService.GetString("DepositSuccessful");
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Withdraw(decimal amount, string iban)
+    {
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        if (amount <= 0)
+        {
+            TempData["Error"] = _localizationService.GetString("InvalidAmount");
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            await _walletService.WithdrawAsync(userId, amount, $"Para Çekme Talebi - IBAN: {iban}");
+            TempData["Success"] = _localizationService.GetString("WithdrawRequestCreated");
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["Error"] = _localizationService.GetString("InsufficientBalance");
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
     public async Task<IActionResult> Export(DateTime? startDate, DateTime? endDate)
     {
-        var vendorIdStr = HttpContext.Session.GetString("VendorId");
-        if (string.IsNullOrEmpty(vendorIdStr) || !Guid.TryParse(vendorIdStr, out var vendorId))
+        var userId = _userContextService.GetUserId();
+        if (string.IsNullOrEmpty(userId))
         {
             return RedirectToAction("Login", "Auth");
         }
 
-        var query = _unitOfWork.Orders.Query()
-            .Where(o => o.VendorId == vendorId && o.Status == OrderStatus.Delivered);
+        var transactions = await _walletService.GetTransactionsAsync(userId, 1, 1000);
 
         if (startDate.HasValue)
-            query = query.Where(o => o.CreatedAt.Date >= startDate.Value.Date);
+            transactions = transactions.Where(t => t.TransactionDate.Date >= startDate.Value.Date).ToList();
 
         if (endDate.HasValue)
-            query = query.Where(o => o.CreatedAt.Date <= endDate.Value.Date);
-
-        var transactions = await query
-            .OrderByDescending(o => o.CreatedAt)
-            .Select(o => new
-            {
-                o.CustomerOrderId,
-                o.CreatedAt,
-                o.TotalAmount,
-                Status = o.Status.ToString()
-            })
-            .ToListAsync();
+            transactions = transactions.Where(t => t.TransactionDate.Date <= endDate.Value.Date).ToList();
 
         var builder = new System.Text.StringBuilder();
         // Add header
-        builder.AppendLine("Siparis No;Tarih;Tutar;Durum");
+        builder.AppendLine("Referans No;Tarih;Tutar;Islem Tipi;Aciklama");
 
         foreach (var t in transactions)
         {
-            builder.AppendLine($"{t.CustomerOrderId};{t.CreatedAt:yyyy-MM-dd HH:mm};{t.TotalAmount:F2};{t.Status}");
+            builder.AppendLine(
+                $"{t.ReferenceId};{t.TransactionDate:yyyy-MM-dd HH:mm};{t.Amount:F2};{t.TransactionType};{t.Description}");
         }
 
         // Return as CSV file with UTF8 BOM for Excel compatibility
         var bytes = System.Text.Encoding.UTF8.GetPreamble()
             .Concat(System.Text.Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
-        return File(bytes, "text/csv", $"gelir_raporu_{DateTime.Now:yyyyMMdd}.csv");
+        return File(bytes, "text/csv", $"cuzdan_hareketleri_{DateTime.Now:yyyyMMdd}.csv");
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="InvalidAmount" xml:space="preserve">
+    <value>مبلغ غير صالح</value>
+  </data>
+  <data name="IbanRequired" xml:space="preserve">
+    <value>رقم الآيبان مطلوب</value>
+  </data>
+</root>

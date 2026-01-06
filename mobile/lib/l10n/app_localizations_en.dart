@@ -9,6 +9,54 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get myWallet => 'My Wallet';
+
+  @override
+  String get viewBalanceAndHistory => 'View balance and transaction history';
+
+  @override
+  String get currentBalance => 'Current Balance';
+
+  @override
+  String get topUpBalance => 'Top Up Balance';
+
+  @override
+  String get transactionHistory => 'Transaction History';
+
+  @override
+  String get noTransactionsYet => 'No transactions yet.';
+
+  @override
+  String get topUp => 'Top Up';
+
+  @override
+  String get amountToTopUp => 'Amount to Top Up';
+
+  @override
+  String get makePayment => 'Make Payment';
+
+  @override
+  String get topUpSuccessful => 'Top up successful!';
+
+  @override
+  String get withdraw => 'Withdraw';
+
+  @override
+  String get withdrawBalance => 'Withdraw Balance';
+
+  @override
+  String get iban => 'IBAN';
+
+  @override
+  String get withdrawSuccessful => 'Withdrawal request created successfully';
+
+  @override
+  String get insufficientBalance => 'Insufficient balance';
+
+  @override
+  String get enterValidIban => 'Please enter a valid IBAN';
+
+  @override
   String get bestSeller => 'Best Seller';
 
   @override

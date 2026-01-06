@@ -103,7 +103,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 
 // App Services
-builder.Services.AddScoped(typeof(Talabi.Core.Interfaces.IRepository<>), typeof(Talabi.Infrastructure.Repositories.Repository<>));
+builder.Services.AddScoped(typeof(Talabi.Core.Interfaces.IRepository<>),
+    typeof(Talabi.Infrastructure.Repositories.Repository<>));
 builder.Services.AddScoped<Talabi.Core.Interfaces.IUnitOfWork, Talabi.Infrastructure.Repositories.UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
@@ -112,15 +113,20 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
-builder.Services.AddScoped<Talabi.Core.Interfaces.ISystemSettingsService, Talabi.Infrastructure.Services.SystemSettingsService>();
+builder.Services
+    .AddScoped<Talabi.Core.Interfaces.ISystemSettingsService, Talabi.Infrastructure.Services.SystemSettingsService>();
 
 builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.ILocationService, Talabi.Infrastructure.Services.LocationService>();
 builder.Services.AddScoped<IDeliveryZoneService, DeliveryZoneService>();
-builder.Services.AddScoped<Talabi.Core.Interfaces.IUserContextService, Talabi.Infrastructure.Services.UserContextService>();
-builder.Services.AddScoped<Talabi.Core.Interfaces.IDashboardNotificationService, Talabi.Infrastructure.Services.DashboardNotificationService>();
+builder.Services
+    .AddScoped<Talabi.Core.Interfaces.IUserContextService, Talabi.Infrastructure.Services.UserContextService>();
+builder.Services
+    .AddScoped<Talabi.Core.Interfaces.IDashboardNotificationService,
+        Talabi.Infrastructure.Services.DashboardNotificationService>();
 builder.Services.AddScoped<ICourierService, CourierService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<Talabi.Core.Interfaces.IWalletService, Talabi.Infrastructure.Services.WalletService>();
 
 // File Upload & Storage
 builder.Services.Configure<Talabi.Infrastructure.Services.FileUploadSecurityOptions>(options =>
@@ -129,8 +135,11 @@ builder.Services.Configure<Talabi.Infrastructure.Services.FileUploadSecurityOpti
     options.AllowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
 });
 
-builder.Services.AddScoped<Talabi.Core.Services.IFileUploadSecurityService, Talabi.Infrastructure.Services.FileUploadSecurityService>();
-builder.Services.AddScoped<Talabi.Core.Interfaces.IFileStorageService, Talabi.Infrastructure.Services.LocalFileStorageService>();
+builder.Services
+    .AddScoped<Talabi.Core.Services.IFileUploadSecurityService,
+        Talabi.Infrastructure.Services.FileUploadSecurityService>();
+builder.Services
+    .AddScoped<Talabi.Core.Interfaces.IFileStorageService, Talabi.Infrastructure.Services.LocalFileStorageService>();
 
 var app = builder.Build();
 

@@ -9,6 +9,54 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get myWallet => 'محفظتي';
+
+  @override
+  String get viewBalanceAndHistory => 'عرض الرصيد وسجل المعاملات';
+
+  @override
+  String get currentBalance => 'الرصيد الحالي';
+
+  @override
+  String get topUpBalance => 'شحن الرصيد';
+
+  @override
+  String get transactionHistory => 'سجل المعاملات';
+
+  @override
+  String get noTransactionsYet => 'لا توجد معاملات حتى الآن.';
+
+  @override
+  String get topUp => 'شحن الرصيد';
+
+  @override
+  String get amountToTopUp => 'المبلغ المراد شحنه';
+
+  @override
+  String get makePayment => 'إتمام الدفع';
+
+  @override
+  String get topUpSuccessful => 'تم الشحن بنجاح!';
+
+  @override
+  String get withdraw => 'سحب';
+
+  @override
+  String get withdrawBalance => 'سحب الرصيد';
+
+  @override
+  String get iban => 'الآيبان';
+
+  @override
+  String get withdrawSuccessful => 'تم إنشاء طلب السحب بنجاح';
+
+  @override
+  String get insufficientBalance => 'رصيد غير كاف';
+
+  @override
+  String get enterValidIban => 'الرجاء إدخال رقم آيبان صالح';
+
+  @override
   String get bestSeller => 'أكثر مبيعاً';
 
   @override
@@ -612,25 +660,25 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get attentionRequired => 'Attention Required';
+  String get attentionRequired => 'إجراء مطلوب';
 
   @override
   String criticalStockAlert(int count) {
-    return '$count products at critical stock level';
+    return '$count منتجات في مستوى مخزون حرج';
   }
 
   @override
   String delayedOrdersAlert(int count) {
-    return '$count orders are delayed';
+    return '$count طلبات متأخرة';
   }
 
   @override
   String unansweredReviewsAlert(int count) {
-    return '$count unanswered reviews';
+    return '$count تقييمات لم يتم الرد عليها';
   }
 
   @override
-  String get hourlySalesToday => 'Hourly Sales (Today)';
+  String get hourlySalesToday => 'المبيعات بالساعة (اليوم)';
 
   @override
   String facebookLoginFailed(Object error) {

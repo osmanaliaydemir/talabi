@@ -17,6 +17,7 @@ import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/features/wallet/presentation/screens/wallet_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -134,6 +135,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const FavoritesScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  icon: Icons.account_balance_wallet_outlined,
+                  title: AppLocalizations.of(context)!.myWallet,
+                  subtitle: AppLocalizations.of(context)!.viewBalanceAndHistory,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WalletScreen(),
                       ),
                     );
                   },

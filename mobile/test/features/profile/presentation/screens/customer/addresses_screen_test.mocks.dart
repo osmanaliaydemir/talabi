@@ -4,7 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i9;
-import 'dart:ui' as _i19;
+import 'dart:ui' as _i20;
 
 import 'package:dio/dio.dart' as _i2;
 import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i15;
@@ -13,6 +13,8 @@ import 'package:mobile/features/home/data/models/promotional_banner.dart'
     as _i11;
 import 'package:mobile/features/notifications/data/models/customer_notification.dart'
     as _i13;
+import 'package:mobile/features/notifications/data/models/vendor_notification.dart'
+    as _i19;
 import 'package:mobile/features/orders/data/models/order.dart' as _i4;
 import 'package:mobile/features/orders/data/models/order_calculation_models.dart'
     as _i5;
@@ -659,6 +661,16 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
       ) as _i9.Future<void>);
 
   @override
+  _i9.Future<void> clearCartPromotions() => (super.noSuchMethod(
+        Invocation.method(
+          #clearCartPromotions,
+          [],
+        ),
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
+
+  @override
   _i9.Future<void> addToCart(
     String? productId,
     int? quantity,
@@ -711,6 +723,25 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
         returnValue: _i9.Future<void>.value(),
         returnValueForMissingStub: _i9.Future<void>.value(),
       ) as _i9.Future<void>);
+
+  @override
+  _i9.Future<List<_i3.Product>> getRecommendations({
+    int? type,
+    double? lat,
+    double? lon,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getRecommendations,
+          [],
+          {
+            #type: type,
+            #lat: lat,
+            #lon: lon,
+          },
+        ),
+        returnValue: _i9.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+      ) as _i9.Future<List<_i3.Product>>);
 
   @override
   _i9.Future<Map<String, dynamic>> getProfile() => (super.noSuchMethod(
@@ -897,6 +928,15 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
       ) as _i9.Future<Map<String, String>>);
 
   @override
+  void clearSettingsCache() => super.noSuchMethod(
+        Invocation.method(
+          #clearSettingsCache,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i9.Future<_i14.VersionSettingsModel?> getVersionSettings() =>
       (super.noSuchMethod(
         Invocation.method(
@@ -982,6 +1022,16 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
         ),
         returnValue: _i9.Future<_i15.Campaign?>.value(),
       ) as _i9.Future<_i15.Campaign?>);
+
+  @override
+  _i9.Future<List<_i3.Product>> getCampaignProducts(String? campaignId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCampaignProducts,
+          [campaignId],
+        ),
+        returnValue: _i9.Future<List<_i3.Product>>.value(<_i3.Product>[]),
+      ) as _i9.Future<List<_i3.Product>>);
 
   @override
   _i9.Future<List<_i16.Coupon>> getCoupons() => (super.noSuchMethod(
@@ -1246,6 +1296,24 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
       ) as _i9.Future<List<_i7.Review>>);
 
   @override
+  _i9.Future<bool> canReviewProduct(String? productId) => (super.noSuchMethod(
+        Invocation.method(
+          #canReviewProduct,
+          [productId],
+        ),
+        returnValue: _i9.Future<bool>.value(false),
+      ) as _i9.Future<bool>);
+
+  @override
+  _i9.Future<List<_i7.Review>> getUserReviews() => (super.noSuchMethod(
+        Invocation.method(
+          #getUserReviews,
+          [],
+        ),
+        returnValue: _i9.Future<List<_i7.Review>>.value(<_i7.Review>[]),
+      ) as _i9.Future<List<_i7.Review>>);
+
+  @override
   _i9.Future<List<_i7.Review>> getPendingReviews() => (super.noSuchMethod(
         Invocation.method(
           #getPendingReviews,
@@ -1253,6 +1321,21 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
         ),
         returnValue: _i9.Future<List<_i7.Review>>.value(<_i7.Review>[]),
       ) as _i9.Future<List<_i7.Review>>);
+
+  @override
+  _i9.Future<_i7.Review> getReviewById(String? reviewId) => (super.noSuchMethod(
+        Invocation.method(
+          #getReviewById,
+          [reviewId],
+        ),
+        returnValue: _i9.Future<_i7.Review>.value(_FakeReview_5(
+          this,
+          Invocation.method(
+            #getReviewById,
+            [reviewId],
+          ),
+        )),
+      ) as _i9.Future<_i7.Review>);
 
   @override
   _i9.Future<void> approveReview(String? reviewId) => (super.noSuchMethod(
@@ -1509,6 +1592,27 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
   _i9.Future<Map<String, dynamic>> getVendorSummary() => (super.noSuchMethod(
         Invocation.method(
           #getVendorSummary,
+          [],
+        ),
+        returnValue:
+            _i9.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i9.Future<Map<String, dynamic>>);
+
+  @override
+  _i9.Future<List<Map<String, dynamic>>> getHourlySales() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getHourlySales,
+          [],
+        ),
+        returnValue: _i9.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i9.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i9.Future<Map<String, dynamic>> getDashboardAlerts() => (super.noSuchMethod(
+        Invocation.method(
+          #getDashboardAlerts,
           [],
         ),
         returnValue:
@@ -1799,6 +1903,46 @@ class MockApiService extends _i1.Mock implements _i8.ApiService {
         returnValue: _i9.Future<void>.value(),
         returnValueForMissingStub: _i9.Future<void>.value(),
       ) as _i9.Future<void>);
+
+  @override
+  _i9.Future<void> submitOrderFeedback(Map<String, dynamic>? data) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #submitOrderFeedback,
+          [data],
+        ),
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
+
+  @override
+  _i9.Future<Map<String, dynamic>> getOrderReviewStatus(String? orderId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOrderReviewStatus,
+          [orderId],
+        ),
+        returnValue:
+            _i9.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i9.Future<Map<String, dynamic>>);
+
+  @override
+  _i9.Future<Map<String, dynamic>?> getUnreviewedOrder() => (super.noSuchMethod(
+        Invocation.method(
+          #getUnreviewedOrder,
+          [],
+        ),
+        returnValue: _i9.Future<Map<String, dynamic>?>.value(),
+      ) as _i9.Future<Map<String, dynamic>?>);
+
+  @override
+  _i9.Future<String?> getSystemSetting(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getSystemSetting,
+          [key],
+        ),
+        returnValue: _i9.Future<String?>.value(),
+      ) as _i9.Future<String?>);
 }
 
 /// A class which mocks [NotificationProvider].
@@ -1817,6 +1961,12 @@ class MockNotificationProvider extends _i1.Mock
       ) as List<_i13.CustomerNotification>);
 
   @override
+  List<_i19.VendorNotification> get vendorNotifications => (super.noSuchMethod(
+        Invocation.getter(#vendorNotifications),
+        returnValue: <_i19.VendorNotification>[],
+      ) as List<_i19.VendorNotification>);
+
+  @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
         returnValue: false,
@@ -1825,6 +1975,12 @@ class MockNotificationProvider extends _i1.Mock
   @override
   int get unreadCount => (super.noSuchMethod(
         Invocation.getter(#unreadCount),
+        returnValue: 0,
+      ) as int);
+
+  @override
+  int get vendorUnreadCount => (super.noSuchMethod(
+        Invocation.getter(#vendorUnreadCount),
         returnValue: 0,
       ) as int);
 
@@ -1839,6 +1995,18 @@ class MockNotificationProvider extends _i1.Mock
         Invocation.method(
           #loadNotifications,
           [],
+        ),
+        returnValue: _i9.Future<void>.value(),
+        returnValueForMissingStub: _i9.Future<void>.value(),
+      ) as _i9.Future<void>);
+
+  @override
+  _i9.Future<void> loadVendorNotifications({bool? force = false}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #loadVendorNotifications,
+          [],
+          {#force: force},
         ),
         returnValue: _i9.Future<void>.value(),
         returnValueForMissingStub: _i9.Future<void>.value(),
@@ -1865,7 +2033,7 @@ class MockNotificationProvider extends _i1.Mock
       ) as _i9.Future<void>);
 
   @override
-  void addListener(_i19.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i20.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -1874,7 +2042,7 @@ class MockNotificationProvider extends _i1.Mock
       );
 
   @override
-  void removeListener(_i19.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i20.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

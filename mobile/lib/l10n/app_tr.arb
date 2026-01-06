@@ -1,5 +1,69 @@
 {
   "@@locale": "tr",
+  "myWallet": "Cüzdanım",
+  "@myWallet": {
+    "description": "My Wallet title"
+  },
+  "viewBalanceAndHistory": "Bakiye ve işlem geçmişimi görüntüle",
+  "@viewBalanceAndHistory": {
+    "description": "Subtitle for wallet menu item"
+  },
+  "currentBalance": "Mevcut Bakiye",
+  "@currentBalance": {
+    "description": "Current Balance label"
+  },
+  "topUpBalance": "Bakiye Yükle",
+  "@topUpBalance": {
+    "description": "Button to add funds"
+  },
+  "transactionHistory": "İşlem Geçmişi",
+  "@transactionHistory": {
+    "description": "Transaction History header"
+  },
+  "noTransactionsYet": "Henüz işlem bulunmuyor.",
+  "@noTransactionsYet": {
+    "description": "Empty state for usage history"
+  },
+  "topUp": "Bakiye Yükle",
+  "@topUp": {
+    "description": "Top Up screen title"
+  },
+  "amountToTopUp": "Yüklenecek Tutar",
+  "@amountToTopUp": {
+    "description": "Label for amount input"
+  },
+  "makePayment": "Ödeme Yap",
+  "@makePayment": {
+    "description": "Payment button label"
+  },
+  "topUpSuccessful": "Yükleme başarılı!",
+  "@topUpSuccessful": {
+    "description": "Success message for top up"
+  },
+  "withdraw": "Para Çek",
+  "@withdraw": {
+    "description": "Withdraw button label"
+  },
+  "withdrawBalance": "Para Çekme",
+  "@withdrawBalance": {
+    "description": "Withdraw screen title"
+  },
+  "iban": "IBAN",
+  "@iban": {
+    "description": "IBAN label"
+  },
+  "withdrawSuccessful": "Para çekme talebi başarıyla oluşturuldu",
+  "@withdrawSuccessful": {
+    "description": "Success message for withdrawal"
+  },
+  "insufficientBalance": "Yetersiz bakiye",
+  "@insufficientBalance": {
+    "description": "Error message for insufficient funds"
+  },
+  "enterValidIban": "Lütfen geçerli bir IBAN girin",
+  "@enterValidIban": {
+    "description": "Error message for invalid IBAN"
+  },
   "bestSeller": "Çok Satan",
   "@bestSeller": {
     "description": "Best Seller"

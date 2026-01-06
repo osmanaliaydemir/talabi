@@ -3,15 +3,15 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 import 'dart:ui' as _i8;
 
 import 'package:flutter/material.dart' as _i7;
-import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i5;
+import 'package:mobile/features/campaigns/data/models/campaign.dart' as _i6;
 import 'package:mobile/features/cart/data/models/cart_item.dart' as _i3;
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart'
     as _i2;
-import 'package:mobile/features/products/data/models/product.dart' as _i6;
+import 'package:mobile/features/products/data/models/product.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -53,8 +53,50 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as bool);
 
   @override
+  List<_i4.Product> get recommendations => (super.noSuchMethod(
+        Invocation.getter(#recommendations),
+        returnValue: <_i4.Product>[],
+        returnValueForMissingStub: <_i4.Product>[],
+      ) as List<_i4.Product>);
+
+  @override
   double get deliveryFee => (super.noSuchMethod(
         Invocation.getter(#deliveryFee),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get freeDeliveryThreshold => (super.noSuchMethod(
+        Invocation.getter(#freeDeliveryThreshold),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  bool get isFreeDeliveryEnabled => (super.noSuchMethod(
+        Invocation.getter(#isFreeDeliveryEnabled),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isFreeDeliveryReached => (super.noSuchMethod(
+        Invocation.getter(#isFreeDeliveryReached),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  double get freeDeliveryProgress => (super.noSuchMethod(
+        Invocation.getter(#freeDeliveryProgress),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get remainingForFreeDelivery => (super.noSuchMethod(
+        Invocation.getter(#remainingForFreeDelivery),
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
@@ -88,59 +130,89 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
       ) as bool);
 
   @override
-  _i4.Future<void> selectCampaign(_i5.Campaign? campaign) =>
+  _i5.Future<void> fetchRecommendations({
+    int? type,
+    double? lat,
+    double? lon,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #fetchRecommendations,
+          [],
+          {
+            #type: type,
+            #lat: lat,
+            #lon: lon,
+          },
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  bool isItemDiscounted(String? itemId) => (super.noSuchMethod(
+        Invocation.method(
+          #isItemDiscounted,
+          [itemId],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i5.Future<void> selectCampaign(_i6.Campaign? campaign) =>
       (super.noSuchMethod(
         Invocation.method(
           #selectCampaign,
           [campaign],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> removeCampaign() => (super.noSuchMethod(
+  _i5.Future<void> removeCampaign() => (super.noSuchMethod(
         Invocation.method(
           #removeCampaign,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
+  _i5.Future<void> applyCoupon(String? code) => (super.noSuchMethod(
         Invocation.method(
           #applyCoupon,
           [code],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> removeCoupon() => (super.noSuchMethod(
+  _i5.Future<void> removeCoupon() => (super.noSuchMethod(
         Invocation.method(
           #removeCoupon,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> loadCart() => (super.noSuchMethod(
+  _i5.Future<void> loadCart() => (super.noSuchMethod(
         Invocation.method(
           #loadCart,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> addItem(
-    _i6.Product? product,
+  _i5.Future<void> addItem(
+    _i4.Product? product,
     _i7.BuildContext? context,
   ) =>
       (super.noSuchMethod(
@@ -151,49 +223,49 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
             context,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> removeItem(String? productId) => (super.noSuchMethod(
+  _i5.Future<void> removeItem(String? productId) => (super.noSuchMethod(
         Invocation.method(
           #removeItem,
           [productId],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> increaseQuantity(String? productId) => (super.noSuchMethod(
+  _i5.Future<void> increaseQuantity(String? productId) => (super.noSuchMethod(
         Invocation.method(
           #increaseQuantity,
           [productId],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> decreaseQuantity(String? productId) => (super.noSuchMethod(
+  _i5.Future<void> decreaseQuantity(String? productId) => (super.noSuchMethod(
         Invocation.method(
           #decreaseQuantity,
           [productId],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i4.Future<void> clear() => (super.noSuchMethod(
+  _i5.Future<void> clear() => (super.noSuchMethod(
         Invocation.method(
           #clear,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
