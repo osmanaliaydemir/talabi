@@ -128,6 +128,9 @@ builder.Services
 builder.Services
     .AddScoped<Talabi.Core.Interfaces.IDashboardNotificationService,
         Talabi.Infrastructure.Services.DashboardNotificationService>();
+builder.Services
+    .AddScoped<Talabi.Core.Interfaces.INotificationService,
+        Talabi.Infrastructure.Services.FirebaseNotificationService>();
 builder.Services.AddScoped<ICourierService, CourierService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.IWalletService, Talabi.Infrastructure.Services.WalletService>();

@@ -78,16 +78,16 @@
                                 <div class="btn-group">
                                     @if (request.Status == WithdrawalStatus.Pending)
                                     {
-                                        <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#approveModal-@request.Id">
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal-@request.Id">
                                             <i class="fas fa-check"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectModal-@request.Id">
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal-@request.Id">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     }
                                     else if (request.Status == WithdrawalStatus.Approved)
                                     {
-                                        <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#completeModal-@request.Id" title="@LocalizationService.GetString("MarkAsSent")">
+                                        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#completeModal-@request.Id" title="@LocalizationService.GetString("MarkAsSent")">
                                             <i class="fas fa-paper-plane"></i>
                                         </button>
                                     }
@@ -101,7 +101,7 @@
                                                 <input type="hidden" name="id" value="@request.Id"/>
                                                 <div class="modal-header">
                                                     <h5 class="modal-title">@LocalizationService.GetString("Approve")</h5>
-                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <p>@LocalizationService.GetString("AreYouSure")</p>
@@ -111,7 +111,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
                                                     <button type="submit" class="btn btn-success">@LocalizationService.GetString("Approve")</button>
                                                 </div>
                                             </form>
@@ -127,7 +127,7 @@
                                                 <input type="hidden" name="id" value="@request.Id"/>
                                                 <div class="modal-header">
                                                     <h5 class="modal-title">@LocalizationService.GetString("Reject")</h5>
-                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <p>@LocalizationService.GetString("AreYouSure")</p>
@@ -137,7 +137,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
                                                     <button type="submit" class="btn btn-danger">@LocalizationService.GetString("Reject")</button>
                                                 </div>
                                             </form>
@@ -153,7 +153,7 @@
                                                 <input type="hidden" name="id" value="@request.Id"/>
                                                 <div class="modal-header">
                                                     <h5 class="modal-title">@LocalizationService.GetString("MarkAsSent")</h5>
-                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <p>@LocalizationService.GetString("AreYouSure")</p>
@@ -166,9 +166,10 @@
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@LocalizationService.GetString("Cancel")</button>
                                                     <button type="submit" class="btn btn-info">@LocalizationService.GetString("MarkAsSent")</button>
                                                 </div>
+
                                             </form>
                                         </div>
                                     </div>
@@ -192,7 +193,27 @@
                 "order": [[0, "desc"]],
                 "pageLength": 25,
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json"
+                    "emptyTable": "Tabloda herhangi bir veri mevcut değil",
+                    "info": "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor",
+                    "infoEmpty": "Kayıt yok",
+                    "infoFiltered": "(_MAX_ kayıt içerisinden bulunan)",
+                    "infoPostFix": "",
+                    "thousands": ".",
+                    "lengthMenu": "Sayfada _MENU_ kayıt göster",
+                    "loadingRecords": "Yükleniyor...",
+                    "processing": "İşleniyor...",
+                    "search": "Ara:",
+                    "zeroRecords": "Eşleşen kayıt bulunamadı",
+                    "paginate": {
+                        "first": "İlk",
+                        "last": "Son",
+                        "next": "Sonraki",
+                        "previous": "Önceki"
+                    },
+                    "aria": {
+                        "sortAscending": ": artan sütun sıralamasını aktifleştir",
+                        "sortDescending": ": azalan sütun sıralamasını aktifleştir"
+                    }
                 }
             });
         });

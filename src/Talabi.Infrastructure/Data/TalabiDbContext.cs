@@ -140,6 +140,10 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
             .Property(o => o.TotalAmount)
             .HasColumnType("decimal(18,2)");
 
+        builder.Entity<Order>()
+            .Property(o => o.DiscountAmount)
+            .HasColumnType("decimal(18,2)");
+
         builder.Entity<OrderItem>()
             .Property(oi => oi.UnitPrice)
             .HasColumnType("decimal(18,2)");
@@ -462,6 +466,14 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         // Campaign Configuration
         builder.Entity<Campaign>()
             .Property(c => c.MinCartAmount)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Campaign>()
+            .Property(c => c.DiscountValue)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Campaign>()
+            .Property(c => c.TotalDiscountBudget)
             .HasColumnType("decimal(18,2)");
 
         // Campaign Relations Configuration
