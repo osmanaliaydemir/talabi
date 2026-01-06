@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
@@ -164,6 +165,8 @@ public class WalletService : IWalletService
     public async Task<int> SyncPendingEarningsAsync()
     {
         int processedCount = 0;
+        // Get culture from thread or default
+        var culture = CultureInfo.CurrentUICulture;
 
         // 1. Sync Courier Earnings
         var pendingCourier = await _context.CourierEarnings
@@ -181,8 +184,7 @@ public class WalletService : IWalletService
                     earning.Courier!.UserId,
                     earning.TotalEarning,
                     earning.OrderId.ToString(),
-                    _localizationService.GetLocalizedString("OrderAssignmentResources", "EarningDescription",
-                        new System.Globalization.CultureInfo("en"),
+                    _localizationService.GetLocalizedString("OrderAssignmentResources", "EarningDescription", culture,
                         earning.Order?.CustomerOrderId ?? earning.OrderId.ToString()));
 
                 earning.IsPaid = true;
@@ -223,8 +225,8 @@ public class WalletService : IWalletService
                         order.Vendor.OwnerId!,
                         order.TotalAmount,
                         order.Id.ToString(),
-                        _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning",
-                            new System.Globalization.CultureInfo("en"), order.CustomerOrderId));
+                        _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning", culture,
+                            order.CustomerOrderId));
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();

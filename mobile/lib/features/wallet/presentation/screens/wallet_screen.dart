@@ -8,6 +8,7 @@ import 'package:mobile/features/wallet/presentation/screens/top_up_screen.dart';
 import 'package:mobile/features/wallet/presentation/screens/withdraw_screen.dart';
 import 'package:mobile/services/api_service.dart';
 
+import 'package:mobile/features/wallet/presentation/screens/transaction_detail_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -84,7 +85,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
-                      _buildTransactionList(localizations),
+                      _buildTransactionList(localizations, isVendor),
                     ],
                   ),
                 ),
@@ -178,7 +179,7 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget _buildTransactionList(AppLocalizations localizations) {
+  Widget _buildTransactionList(AppLocalizations localizations, bool isVendor) {
     if (_transactions.isEmpty) {
       return Center(
         child: Padding(
@@ -201,6 +202,17 @@ class _WalletScreenState extends State<WalletScreen> {
             transaction.transactionType == TransactionType.refund;
 
         return ListTile(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TransactionDetailScreen(
+                  transaction: transaction,
+                  isVendor: isVendor,
+                ),
+              ),
+            );
+          },
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
             backgroundColor: isPositive

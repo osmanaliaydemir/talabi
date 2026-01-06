@@ -2883,4 +2883,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get status => 'الحالة';
+
+  @override
+  String get transactionDeposit => 'إيداع';
+
+  @override
+  String get transactionWithdrawal => 'سحب';
+
+  @override
+  String get transactionPayment => 'دفع';
+
+  @override
+  String get transactionRefund => 'استرداد';
+
+  @override
+  String get transactionEarning => 'أرباح';
+
+  @override
+  String get transactionDetail => 'تفاصيل العملية';
+
+  @override
+  String get viewOrder => 'عرض الطلب';
+
+  @override
+  String get transactionType => 'نوع العملية';
+
+  @override
+  String get referenceNo => 'رقم المرجع';
+
+  @override
+  String get dateLabel => 'التاريخ';
 }

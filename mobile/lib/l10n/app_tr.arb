@@ -3735,5 +3735,15 @@
   "status": "Durum",
   "@status": {
     "description": "Durum etiketi"
-  }
+  },
+  "transactionDeposit": "Para Yatırma",
+  "transactionWithdrawal": "Para Çekme",
+  "transactionPayment": "Ödeme",
+  "transactionRefund": "İade",
+  "transactionEarning": "Kazanç",
+  "transactionDetail": "İşlem Detayı",
+  "viewOrder": "Siparişi Görüntüle",
+  "transactionType": "İşlem Tipi",
+  "referenceNo": "Referans No",
+  "dateLabel": "Tarih"
 }

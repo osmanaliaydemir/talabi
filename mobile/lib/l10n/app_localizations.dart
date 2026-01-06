@@ -5439,6 +5439,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Status'**
   String get status;
+
+  /// Label for deposit transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get transactionDeposit;
+
+  /// Label for withdrawal transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal'**
+  String get transactionWithdrawal;
+
+  /// Label for payment transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get transactionPayment;
+
+  /// Label for refund transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Refund'**
+  String get transactionRefund;
+
+  /// Label for earning transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Earning'**
+  String get transactionEarning;
+
+  /// Title for transaction detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Detail'**
+  String get transactionDetail;
+
+  /// Button text to view associated order
+  ///
+  /// In en, this message translates to:
+  /// **'View Order'**
+  String get viewOrder;
+
+  /// Label for transaction type field
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Type'**
+  String get transactionType;
+
+  /// Label for reference number field
+  ///
+  /// In en, this message translates to:
+  /// **'Reference No'**
+  String get referenceNo;
+
+  /// Label for date field
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get dateLabel;
 }
 
 class _AppLocalizationsDelegate

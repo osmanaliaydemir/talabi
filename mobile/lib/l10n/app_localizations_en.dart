@@ -2916,4 +2916,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get status => 'Status';
+
+  @override
+  String get transactionDeposit => 'Deposit';
+
+  @override
+  String get transactionWithdrawal => 'Withdrawal';
+
+  @override
+  String get transactionPayment => 'Payment';
+
+  @override
+  String get transactionRefund => 'Refund';
+
+  @override
+  String get transactionEarning => 'Earning';
+
+  @override
+  String get transactionDetail => 'Transaction Detail';
+
+  @override
+  String get viewOrder => 'View Order';
+
+  @override
+  String get transactionType => 'Transaction Type';
+
+  @override
+  String get referenceNo => 'Reference No';
+
+  @override
+  String get dateLabel => 'Date';
 }

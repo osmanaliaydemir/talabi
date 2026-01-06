@@ -3733,5 +3733,45 @@
   "status": "Status",
   "@status": {
     "description": "Status label"
+  },
+  "transactionDeposit": "Deposit",
+  "@transactionDeposit": {
+    "description": "Label for deposit transaction type"
+  },
+  "transactionWithdrawal": "Withdrawal",
+  "@transactionWithdrawal": {
+    "description": "Label for withdrawal transaction type"
+  },
+  "transactionPayment": "Payment",
+  "@transactionPayment": {
+    "description": "Label for payment transaction type"
+  },
+  "transactionRefund": "Refund",
+  "@transactionRefund": {
+    "description": "Label for refund transaction type"
+  },
+  "transactionEarning": "Earning",
+  "@transactionEarning": {
+    "description": "Label for earning transaction type"
+  },
+  "transactionDetail": "Transaction Detail",
+  "@transactionDetail": {
+    "description": "Title for transaction detail screen"
+  },
+  "viewOrder": "View Order",
+  "@viewOrder": {
+    "description": "Button text to view associated order"
+  },
+  "transactionType": "Transaction Type",
+  "@transactionType": {
+    "description": "Label for transaction type field"
+  },
+  "referenceNo": "Reference No",
+  "@referenceNo": {
+    "description": "Label for reference number field"
+  },
+  "dateLabel": "Date",
+  "@dateLabel": {
+    "description": "Label for date field"
   }
 }

@@ -3735,5 +3735,15 @@
   "hourlySalesToday": "المبيعات بالساعة (اليوم)",
   "@hourlySalesToday": {
     "description": "Title for hourly sales chart"
-  }
+  },
+  "transactionDeposit": "إيداع",
+  "transactionWithdrawal": "سحب",
+  "transactionPayment": "دفع",
+  "transactionRefund": "استرداد",
+  "transactionEarning": "أرباح",
+  "transactionDetail": "تفاصيل العملية",
+  "viewOrder": "عرض الطلب",
+  "transactionType": "نوع العملية",
+  "referenceNo": "رقم المرجع",
+  "dateLabel": "التاريخ"
 }

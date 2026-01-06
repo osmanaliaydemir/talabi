@@ -2917,4 +2917,34 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get status => 'Durum';
+
+  @override
+  String get transactionDeposit => 'Para Yatırma';
+
+  @override
+  String get transactionWithdrawal => 'Para Çekme';
+
+  @override
+  String get transactionPayment => 'Ödeme';
+
+  @override
+  String get transactionRefund => 'İade';
+
+  @override
+  String get transactionEarning => 'Kazanç';
+
+  @override
+  String get transactionDetail => 'İşlem Detayı';
+
+  @override
+  String get viewOrder => 'Siparişi Görüntüle';
+
+  @override
+  String get transactionType => 'İşlem Tipi';
+
+  @override
+  String get referenceNo => 'Referans No';
+
+  @override
+  String get dateLabel => 'Tarih';
 }
