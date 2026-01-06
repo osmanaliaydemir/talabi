@@ -3745,5 +3745,61 @@
   "viewOrder": "عرض الطلب",
   "transactionType": "نوع العملية",
   "referenceNo": "رقم المرجع",
-  "dateLabel": "التاريخ"
+  "dateLabel": "التاريخ",
+  "amountToWithdraw": "المبلغ المراد سحبه",
+  "@amountToWithdraw": {
+    "description": "Label for amount to withdraw field"
+  },
+  "all": "الكل",
+  "@all": {
+    "description": "Button text to fill entire balance"
+  },
+  "balance": "الرصيد",
+  "@balance": {
+    "description": "Label for current balance"
+  },
+  "savedAccounts": "الحسابات المحفوظة",
+  "@savedAccounts": {
+    "description": "Title for saved bank accounts section"
+  },
+  "addAccount": "إضافة حساب",
+  "@addAccount": {
+    "description": "Button text to add a new bank account"
+  },
+  "accountName": "اسم الحساب",
+  "@accountName": {
+    "description": "Label for bank account name field"
+  },
+  "ibanOrAccountNumber": "رقم الآيبان أو رقم الحساب",
+  "@ibanOrAccountNumber": {
+    "description": "Label for IBAN/Account Number field"
+  },
+  "deleteAccount": "حذف الحساب",
+  "@deleteAccount": {
+    "description": "Button text/Title for deleting a bank account"
+  },
+  "areYouSure": "هل أنت متأكد؟",
+  "@areYouSure": {
+    "description": "Confirmation message for destructive actions"
+  },
+  "editAccount": "تعديل الحساب",
+  "@editAccount": {
+    "description": "Button text/Title for editing a bank account"
+  },
+  "selectAccount": "اختر حساباً",
+  "@selectAccount": {
+    "description": "Instruction to select a bank account"
+  },
+  "accountNameRequired": "اسم الحساب مطلوب",
+  "@accountNameRequired": {
+    "description": "Validation message for empty account name"
+  },
+  "ibanRequired": "رقم الآيبان/رقم الحساب مطلوب",
+  "@ibanRequired": {
+    "description": "Validation message for empty IBAN field"
+  },
+  "noSavedAccounts": "لا توجد حسابات محفوظة بعد",
+  "@noSavedAccounts": {
+    "description": "Placeholder text when no bank accounts are saved"
+  }
 }

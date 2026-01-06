@@ -3,6 +3,7 @@ using System.Globalization;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
+using Talabi.Core.DTOs;
 using Talabi.Infrastructure.Data;
 
 namespace Talabi.Infrastructure.Services;
@@ -47,7 +48,7 @@ public class WalletService : IWalletService
     }
 
     public async Task<WalletTransaction> DepositAsync(string userId, decimal amount, string description,
-        string referenceId = null)
+        string? referenceId = null)
     {
         var wallet = await GetWalletByUserIdAsync(userId);
 
@@ -215,7 +216,7 @@ public class WalletService : IWalletService
 
         foreach (var order in deliveredOrders)
         {
-            var wallet = await GetWalletByUserIdAsync(order.Vendor!.OwnerId!);
+            var wallet = await GetWalletByUserIdAsync(order.Vendor!.OwnerId);
             var exists = await _context.WalletTransactions
                 .AnyAsync(t => t.WalletId == wallet.Id &&
                                t.ReferenceId == order.Id.ToString() &&
@@ -227,7 +228,7 @@ public class WalletService : IWalletService
                 try
                 {
                     await AddEarningAsync(
-                        order.Vendor.OwnerId!,
+                        order.Vendor.OwnerId,
                         order.TotalAmount,
                         order.Id.ToString(),
                         order.CustomerOrderId,
@@ -247,4 +248,86 @@ public class WalletService : IWalletService
 
         return processedCount;
     }
+
+    public async Task<List<BankAccount>> GetBankAccountsAsync(string userId)
+    {
+        return await _context.BankAccounts
+            .Where(b => b.AppUserId == userId)
+            .OrderByDescending(b => b.IsDefault)
+            .ThenByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<BankAccount> AddBankAccountAsync(string userId, CreateBankAccountRequest request)
+    {
+        if (request.IsDefault)
+        {
+            var defaults = await _context.BankAccounts
+                .Where(b => b.AppUserId == userId && b.IsDefault)
+                .ToListAsync();
+            foreach (var d in defaults) d.IsDefault = false;
+        }
+
+        var account = new BankAccount
+        {
+            AppUserId = userId,
+            AccountName = request.AccountName,
+            Iban = request.Iban,
+            IsDefault = request.IsDefault
+        };
+
+        _context.BankAccounts.Add(account);
+        await _context.SaveChangesAsync();
+        return account;
+    }
+
+    public async Task<BankAccount> UpdateBankAccountAsync(string userId, UpdateBankAccountRequest request)
+    {
+        var account = await _context.BankAccounts
+            .FirstOrDefaultAsync(b => b.Id == request.Id && b.AppUserId == userId);
+
+        if (account == null) throw new KeyNotFoundException("Bank account not found");
+
+        if (request.IsDefault && !account.IsDefault)
+        {
+            var defaults = await _context.BankAccounts
+                .Where(b => b.AppUserId == userId && b.IsDefault)
+                .ToListAsync();
+            foreach (var d in defaults) d.IsDefault = false;
+        }
+
+        account.AccountName = request.AccountName;
+        account.Iban = request.Iban;
+        account.IsDefault = request.IsDefault;
+
+        _context.BankAccounts.Update(account);
+        await _context.SaveChangesAsync();
+        return account;
+    }
+
+    public async Task DeleteBankAccountAsync(string userId, Guid id)
+    {
+        var account = await _context.BankAccounts
+            .FirstOrDefaultAsync(b => b.Id == id && b.AppUserId == userId);
+        if (account != null)
+        {
+            _context.BankAccounts.Remove(account);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task SetDefaultBankAccountAsync(string userId, Guid id)
+    {
+        var accounts = await _context.BankAccounts
+            .Where(b => b.AppUserId == userId)
+            .ToListAsync();
+
+        foreach (var account in accounts)
+        {
+            account.IsDefault = account.Id == id;
+        }
+
+        await _context.SaveChangesAsync();
+    }
 }
+

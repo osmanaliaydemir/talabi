@@ -5499,6 +5499,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date'**
   String get dateLabel;
+
+  /// Label for amount to withdraw field
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to Withdraw'**
+  String get amountToWithdraw;
+
+  /// Button text to fill entire balance
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// Label for current balance
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// Title for saved bank accounts section
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Accounts'**
+  String get savedAccounts;
+
+  /// Button text to add a new bank account
+  ///
+  /// In en, this message translates to:
+  /// **'Add Account'**
+  String get addAccount;
+
+  /// Label for bank account name field
+  ///
+  /// In en, this message translates to:
+  /// **'Account Name'**
+  String get accountName;
+
+  /// Label for IBAN/Account Number field
+  ///
+  /// In en, this message translates to:
+  /// **'IBAN or Account Number'**
+  String get ibanOrAccountNumber;
+
+  /// Button text/Title for deleting a bank account
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// Confirmation message for destructive actions
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
+  String get areYouSure;
+
+  /// Button text/Title for editing a bank account
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Account'**
+  String get editAccount;
+
+  /// Instruction to select a bank account
+  ///
+  /// In en, this message translates to:
+  /// **'Select Account'**
+  String get selectAccount;
+
+  /// Validation message for empty account name
+  ///
+  /// In en, this message translates to:
+  /// **'Account name is required'**
+  String get accountNameRequired;
+
+  /// Validation message for empty IBAN field
+  ///
+  /// In en, this message translates to:
+  /// **'IBAN/Account Number is required'**
+  String get ibanRequired;
+
+  /// Placeholder text when no bank accounts are saved
+  ///
+  /// In en, this message translates to:
+  /// **'No saved accounts yet'**
+  String get noSavedAccounts;
 }
 
 class _AppLocalizationsDelegate

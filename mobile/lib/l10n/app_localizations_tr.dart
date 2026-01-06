@@ -2947,4 +2947,46 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get dateLabel => 'Tarih';
+
+  @override
+  String get amountToWithdraw => 'Çekilecek Tutar';
+
+  @override
+  String get all => 'Tümü';
+
+  @override
+  String get balance => 'Bakiye';
+
+  @override
+  String get savedAccounts => 'Kayıtlı Hesaplar';
+
+  @override
+  String get addAccount => 'Hesap Ekle';
+
+  @override
+  String get accountName => 'Hesap Adı';
+
+  @override
+  String get ibanOrAccountNumber => 'IBAN veya Hesap Numarası';
+
+  @override
+  String get deleteAccount => 'Hesabı Sil';
+
+  @override
+  String get areYouSure => 'Emin misiniz?';
+
+  @override
+  String get editAccount => 'Hesabı Düzenle';
+
+  @override
+  String get selectAccount => 'Hesap Seçin';
+
+  @override
+  String get accountNameRequired => 'Hesap adı gerekli';
+
+  @override
+  String get ibanRequired => 'IBAN/Hesap numarası gerekli';
+
+  @override
+  String get noSavedAccounts => 'Henüz kayıtlı hesap yok';
 }

@@ -20,6 +20,7 @@ import 'package:mobile/features/settings/data/models/version_settings_model.dart
 import 'package:mobile/features/orders/data/models/order_calculation_models.dart';
 import 'package:mobile/features/wallet/data/models/wallet_model.dart';
 import 'package:mobile/features/wallet/data/models/wallet_transaction_model.dart';
+import 'package:mobile/features/wallet/data/models/bank_account_model.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
@@ -2456,6 +2457,105 @@ class ApiService {
       return apiResponse.data!;
     } catch (e, stackTrace) {
       LoggerService().error('Error withdrawing from wallet', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  // Bank Account Management
+  Future<List<BankAccount>> getBankAccounts() async {
+    try {
+      final response = await dio.get('/bankaccount');
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) =>
+            (json as List).map((item) => BankAccount.fromJson(item)).toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Banka hesapları getirilemedi');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error fetching bank accounts', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<BankAccount> addBankAccount(CreateBankAccountRequest request) async {
+    try {
+      final response = await dio.post('/bankaccount', data: request.toJson());
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => BankAccount.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Banka hesabı eklenemedi');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error adding bank account', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<BankAccount> updateBankAccount(
+    UpdateBankAccountRequest request,
+  ) async {
+    try {
+      final response = await dio.put('/bankaccount', data: request.toJson());
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => BankAccount.fromJson(json as Map<String, dynamic>),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw Exception(apiResponse.message ?? 'Banka hesabı güncellenemedi');
+      }
+
+      return apiResponse.data!;
+    } catch (e, stackTrace) {
+      LoggerService().error('Error updating bank account', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteBankAccount(String id) async {
+    try {
+      final response = await dio.delete('/bankaccount/$id');
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Banka hesabı silinemedi');
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error deleting bank account', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> setDefaultBankAccount(String id) async {
+    try {
+      final response = await dio.post('/bankaccount/$id/default');
+      final apiResponse = ApiResponse.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json,
+      );
+
+      if (!apiResponse.success) {
+        throw Exception(apiResponse.message ?? 'Varsayılan hesap ayarlanamadı');
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error setting default bank account',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }

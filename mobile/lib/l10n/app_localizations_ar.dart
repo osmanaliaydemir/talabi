@@ -2913,4 +2913,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dateLabel => 'التاريخ';
+
+  @override
+  String get amountToWithdraw => 'المبلغ المراد سحبه';
+
+  @override
+  String get all => 'الكل';
+
+  @override
+  String get balance => 'الرصيد';
+
+  @override
+  String get savedAccounts => 'الحسابات المحفوظة';
+
+  @override
+  String get addAccount => 'إضافة حساب';
+
+  @override
+  String get accountName => 'اسم الحساب';
+
+  @override
+  String get ibanOrAccountNumber => 'رقم الآيبان أو رقم الحساب';
+
+  @override
+  String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get areYouSure => 'هل أنت متأكد؟';
+
+  @override
+  String get editAccount => 'تعديل الحساب';
+
+  @override
+  String get selectAccount => 'اختر حساباً';
+
+  @override
+  String get accountNameRequired => 'اسم الحساب مطلوب';
+
+  @override
+  String get ibanRequired => 'رقم الآيبان/رقم الحساب مطلوب';
+
+  @override
+  String get noSavedAccounts => 'لا توجد حسابات محفوظة بعد';
 }

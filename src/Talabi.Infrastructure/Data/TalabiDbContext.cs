@@ -61,6 +61,7 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<SystemSetting> SystemSettings { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<WalletTransaction> WalletTransactions { get; set; }
+    public DbSet<BankAccount> BankAccounts { get; set; }
 
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -610,5 +611,12 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
         builder.Entity<WalletTransaction>()
             .Property(wt => wt.Amount)
             .HasColumnType("decimal(18,2)");
+
+        // BankAccount configuration
+        builder.Entity<BankAccount>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(ba => ba.AppUserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

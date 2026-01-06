@@ -160,7 +160,10 @@ class _WalletScreenState extends State<WalletScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => WithdrawScreen(isVendor: isVendor),
+                        builder: (_) => WithdrawScreen(
+                          isVendor: isVendor,
+                          currentBalance: _wallet?.balance ?? 0.0,
+                        ),
                       ),
                     ).then((_) => _loadData());
                   },

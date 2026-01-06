@@ -3773,5 +3773,61 @@
   "dateLabel": "Date",
   "@dateLabel": {
     "description": "Label for date field"
+  },
+  "amountToWithdraw": "Amount to Withdraw",
+  "@amountToWithdraw": {
+    "description": "Label for amount to withdraw field"
+  },
+  "all": "All",
+  "@all": {
+    "description": "Button text to fill entire balance"
+  },
+  "balance": "Balance",
+  "@balance": {
+    "description": "Label for current balance"
+  },
+  "savedAccounts": "Saved Accounts",
+  "@savedAccounts": {
+    "description": "Title for saved bank accounts section"
+  },
+  "addAccount": "Add Account",
+  "@addAccount": {
+    "description": "Button text to add a new bank account"
+  },
+  "accountName": "Account Name",
+  "@accountName": {
+    "description": "Label for bank account name field"
+  },
+  "ibanOrAccountNumber": "IBAN or Account Number",
+  "@ibanOrAccountNumber": {
+    "description": "Label for IBAN/Account Number field"
+  },
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Button text/Title for deleting a bank account"
+  },
+  "areYouSure": "Are you sure?",
+  "@areYouSure": {
+    "description": "Confirmation message for destructive actions"
+  },
+  "editAccount": "Edit Account",
+  "@editAccount": {
+    "description": "Button text/Title for editing a bank account"
+  },
+  "selectAccount": "Select Account",
+  "@selectAccount": {
+    "description": "Instruction to select a bank account"
+  },
+  "accountNameRequired": "Account name is required",
+  "@accountNameRequired": {
+    "description": "Validation message for empty account name"
+  },
+  "ibanRequired": "IBAN/Account Number is required",
+  "@ibanRequired": {
+    "description": "Validation message for empty IBAN field"
+  },
+  "noSavedAccounts": "No saved accounts yet",
+  "@noSavedAccounts": {
+    "description": "Placeholder text when no bank accounts are saved"
   }
 }

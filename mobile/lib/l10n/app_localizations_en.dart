@@ -2946,4 +2946,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateLabel => 'Date';
+
+  @override
+  String get amountToWithdraw => 'Amount to Withdraw';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get savedAccounts => 'Saved Accounts';
+
+  @override
+  String get addAccount => 'Add Account';
+
+  @override
+  String get accountName => 'Account Name';
+
+  @override
+  String get ibanOrAccountNumber => 'IBAN or Account Number';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get areYouSure => 'Are you sure?';
+
+  @override
+  String get editAccount => 'Edit Account';
+
+  @override
+  String get selectAccount => 'Select Account';
+
+  @override
+  String get accountNameRequired => 'Account name is required';
+
+  @override
+  String get ibanRequired => 'IBAN/Account Number is required';
+
+  @override
+  String get noSavedAccounts => 'No saved accounts yet';
 }
