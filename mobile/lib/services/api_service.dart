@@ -1876,7 +1876,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getDashboardAlerts() async {
     try {
-      final response = await dio.get('/vendor/dashboard/alerts');
+      final response = await dio.get('/vendor/reports/alerts');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {

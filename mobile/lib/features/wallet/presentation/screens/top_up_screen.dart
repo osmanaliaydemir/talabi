@@ -5,7 +5,9 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/services/api_service.dart';
 
 class TopUpScreen extends StatefulWidget {
-  const TopUpScreen({super.key});
+  const TopUpScreen({super.key, this.isVendor = false});
+
+  final bool isVendor;
 
   @override
   State<TopUpScreen> createState() => _TopUpScreenState();
@@ -53,8 +55,16 @@ class _TopUpScreenState extends State<TopUpScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final primaryColor = widget.isVendor
+        ? Colors.deepPurple
+        : AppTheme.primaryOrange;
+
     return Scaffold(
-      appBar: AppBar(title: Text(localizations.topUp)),
+      appBar: AppBar(
+        title: Text(localizations.topUp),
+        backgroundColor: widget.isVendor ? AppTheme.vendorPrimary : null,
+        foregroundColor: widget.isVendor ? Colors.white : null,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -91,13 +101,13 @@ class _TopUpScreenState extends State<TopUpScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.primaryOrange),
+                      border: Border.all(color: primaryColor),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${amount.toInt()} ₺',
-                      style: const TextStyle(
-                        color: AppTheme.primaryOrange,
+                      style: TextStyle(
+                        color: primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -112,7 +122,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : () => _deposit(localizations),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryOrange,
+                  backgroundColor: primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

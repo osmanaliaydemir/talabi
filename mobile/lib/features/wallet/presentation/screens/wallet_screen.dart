@@ -8,8 +8,12 @@ import 'package:mobile/features/wallet/presentation/screens/top_up_screen.dart';
 import 'package:mobile/features/wallet/presentation/screens/withdraw_screen.dart';
 import 'package:mobile/services/api_service.dart';
 
+import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
+
 class WalletScreen extends StatefulWidget {
-  const WalletScreen({super.key});
+  const WalletScreen({super.key, this.bottomNavigationBar});
+
+  final Widget? bottomNavigationBar;
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
@@ -38,8 +42,8 @@ class _WalletScreenState extends State<WalletScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
@@ -50,8 +54,18 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final isVendor = widget.bottomNavigationBar != null;
+
     return Scaffold(
-      appBar: AppBar(title: Text(localizations.myWallet)),
+      appBar: isVendor
+          ? VendorHeader(
+              title: localizations.myWallet,
+              leadingIcon: Icons.account_balance_wallet,
+              showBackButton: false,
+              onRefresh: _loadData,
+            )
+          : AppBar(title: Text(localizations.myWallet)),
+      bottomNavigationBar: widget.bottomNavigationBar,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -63,7 +77,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildBalanceCard(localizations),
+                      _buildBalanceCard(localizations, isVendor),
                       const SizedBox(height: 24),
                       Text(
                         localizations.transactionHistory,
@@ -79,23 +93,23 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget _buildBalanceCard(AppLocalizations localizations) {
+  Widget _buildBalanceCard(AppLocalizations localizations, bool isVendor) {
+    // Vendor ise DeepPurple, değilse Orange
+    final primaryColor = isVendor ? Colors.deepPurple : AppTheme.primaryOrange;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryOrange,
-            AppTheme.primaryOrange.withValues(alpha: 0.8),
-          ],
+          colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryOrange.withValues(alpha: 0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -125,14 +139,16 @@ class _WalletScreenState extends State<WalletScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const TopUpScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => TopUpScreen(isVendor: isVendor),
+                      ),
                     ).then((_) => _loadData());
                   },
                   icon: const Icon(Icons.add),
                   label: Text(localizations.topUpBalance),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: AppTheme.primaryOrange,
+                    foregroundColor: primaryColor,
                   ),
                 ),
               ),
@@ -142,7 +158,9 @@ class _WalletScreenState extends State<WalletScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const WithdrawScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => WithdrawScreen(isVendor: isVendor),
+                      ),
                     ).then((_) => _loadData());
                   },
                   icon: const Icon(Icons.arrow_upward),

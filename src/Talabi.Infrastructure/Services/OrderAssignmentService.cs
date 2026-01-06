@@ -9,28 +9,17 @@ using Talabi.Core.Interfaces;
 
 namespace Talabi.Infrastructure.Services;
 
-public class OrderAssignmentService : IOrderAssignmentService
+public class OrderAssignmentService(
+    IUnitOfWork _unitOfWork,
+    ILogger<OrderAssignmentService> _logger,
+    INotificationService _notificationService,
+    ILocalizationService _localizationService,
+    IHttpContextAccessor _httpContextAccessor,
+    IWalletService walletService)
+    : IOrderAssignmentService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<OrderAssignmentService> _logger;
-    private readonly INotificationService _notificationService;
-    private readonly ILocalizationService _localizationService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IWalletService _walletService = walletService;
     private const string ResourceName = "OrderAssignmentResources";
-
-    public OrderAssignmentService(
-        IUnitOfWork unitOfWork,
-        ILogger<OrderAssignmentService> logger,
-        INotificationService notificationService,
-        ILocalizationService localizationService,
-        IHttpContextAccessor httpContextAccessor)
-    {
-        _unitOfWork = unitOfWork;
-        _logger = logger;
-        _notificationService = notificationService;
-        _localizationService = localizationService;
-        _httpContextAccessor = httpContextAccessor;
-    }
 
     private string GetLanguageFromRequest()
     {
@@ -150,7 +139,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             OrderId = order.Id,
             Status = OrderStatus.Assigned,
-            Note = _localizationService.GetLocalizedString(ResourceName, "OrderAssignedHistoryNote", culture, courier.Name),
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderAssignedHistoryNote", culture,
+                courier.Name),
             CreatedBy = "System"
         });
 
@@ -161,7 +151,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         await AddCourierNotification(
             courier.Id,
             _localizationService.GetLocalizedString(ResourceName, "NewOrderAssigned", culture),
-            _localizationService.GetLocalizedString(ResourceName, "OrderAssignedMessage", culture, order.CustomerOrderId),
+            _localizationService.GetLocalizedString(ResourceName, "OrderAssignedMessage", culture,
+                order.CustomerOrderId),
             "order_assigned",
             order.Id);
 
@@ -179,11 +170,13 @@ public class OrderAssignmentService : IOrderAssignmentService
         if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
         {
             var languageCode = GetLanguageFromRequest();
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Assigned", languageCode);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Assigned",
+                languageCode);
             await AddCustomerNotificationAsync(
                 order.CustomerId,
                 _localizationService.GetLocalizedString(ResourceName, "CourierAssignedTitle", culture),
-                _localizationService.GetLocalizedString(ResourceName, "CourierAssignedMessage", culture, order.CustomerOrderId),
+                _localizationService.GetLocalizedString(ResourceName, "CourierAssignedMessage", culture,
+                    order.CustomerOrderId),
                 "CourierAssigned",
                 order.Id);
         }
@@ -196,10 +189,10 @@ public class OrderAssignmentService : IOrderAssignmentService
         // 1. Get available couriers
         var availableCouriers = await _unitOfWork.Couriers.Query()
             .Where(c => c.IsActive
-                && c.Status == CourierStatus.Available
-                && c.CurrentActiveOrders < c.MaxActiveOrders
-                && c.CurrentLatitude.HasValue
-                && c.CurrentLongitude.HasValue)
+                        && c.Status == CourierStatus.Available
+                        && c.CurrentActiveOrders < c.MaxActiveOrders
+                        && c.CurrentLatitude.HasValue
+                        && c.CurrentLongitude.HasValue)
             .ToListAsync();
 
         if (!availableCouriers.Any())
@@ -251,10 +244,10 @@ public class OrderAssignmentService : IOrderAssignmentService
         // Get available couriers
         var availableCouriers = await _unitOfWork.Couriers.Query()
             .Where(c => c.IsActive
-                && c.Status == CourierStatus.Available
-                && c.CurrentActiveOrders < c.MaxActiveOrders
-                && c.CurrentLatitude.HasValue
-                && c.CurrentLongitude.HasValue)
+                        && c.Status == CourierStatus.Available
+                        && c.CurrentActiveOrders < c.MaxActiveOrders
+                        && c.CurrentLatitude.HasValue
+                        && c.CurrentLongitude.HasValue)
             .ToListAsync();
 
         // Filter by distance
@@ -302,7 +295,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         }
 
         await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("Order {OrderId} broadcasted to {Count} couriers within {Radius}km", orderId, offerCount, radiusKm);
+        _logger.LogInformation("Order {OrderId} broadcasted to {Count} couriers within {Radius}km", orderId, offerCount,
+            radiusKm);
 
         return offerCount;
     }
@@ -321,7 +315,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         if (orderCourier == null || orderCourier.CourierId != courierId) return false;
 
         // Case 1: Standard Assignment (Assigned -> Accepted)
-        bool isStandardAssignment = order.Status == OrderStatus.Assigned && orderCourier.Status == OrderCourierStatus.Assigned;
+        bool isStandardAssignment =
+            order.Status == OrderStatus.Assigned && orderCourier.Status == OrderCourierStatus.Assigned;
 
         // Case 2: Broadcase Offer (Ready -> Accepted) - Order might be Ready while Courier is Offered
         bool isOfferAcceptance = order.Status == OrderStatus.Ready && orderCourier.Status == OrderCourierStatus.Offered;
@@ -372,7 +367,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             OrderId = order.Id,
             Status = OrderStatus.Accepted,
-            Note = _localizationService.GetLocalizedString(ResourceName, "OrderAcceptedHistoryNote", culture, courier.Name),
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderAcceptedHistoryNote", culture,
+                courier.Name),
             CreatedBy = courier.UserId ?? "System"
         });
 
@@ -394,12 +390,14 @@ public class OrderAssignmentService : IOrderAssignmentService
             await AddVendorNotificationAsync(
                 vendor.Id,
                 _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedOrder", vendorCulture),
-                _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedOrderMessage", vendorCulture, order.CustomerOrderId, courier.Name),
+                _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedOrderMessage", vendorCulture,
+                    order.CustomerOrderId, courier.Name),
                 "CourierAccepted",
                 order.Id);
 
             // Send Firebase push notification to vendor
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Accepted", vendorLang);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Accepted",
+                vendorLang);
         }
 
         // Send notification to customer
@@ -407,11 +405,13 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             var customerLang = GetLanguageFromRequest();
             var customerCulture = GetCultureInfo(customerLang);
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Accepted", customerLang);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Accepted",
+                customerLang);
             await AddCustomerNotificationAsync(
                 order.CustomerId,
                 _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedTitle", customerCulture),
-                _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedMessage", customerCulture, order.CustomerOrderId),
+                _localizationService.GetLocalizedString(ResourceName, "CourierAcceptedMessage", customerCulture,
+                    order.CustomerOrderId),
                 "CourierAccepted",
                 order.Id);
         }
@@ -462,7 +462,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             OrderId = order.Id,
             Status = OrderStatus.Ready,
-            Note = _localizationService.GetLocalizedString(ResourceName, "OrderRejectedHistoryNote", culture, courier.Name, reason),
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderRejectedHistoryNote", culture,
+                courier.Name, reason),
             CreatedBy = courier.UserId ?? "System"
         });
 
@@ -481,13 +482,15 @@ public class OrderAssignmentService : IOrderAssignmentService
             if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
             {
                 var lang = GetLanguageFromRequest();
-                await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Ready", lang);
+                await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Ready",
+                    lang);
             }
         }
 
         await _unitOfWork.SaveChangesAsync();
 
-        _logger.LogInformation("Order {OrderId} rejected by courier {CourierId}. Reason: {Reason}", orderId, courierId, reason);
+        _logger.LogInformation("Order {OrderId} rejected by courier {CourierId}. Reason: {Reason}", orderId, courierId,
+            reason);
 
         return true;
     }
@@ -523,7 +526,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             OrderId = order.Id,
             Status = OrderStatus.OutForDelivery,
-            Note = _localizationService.GetLocalizedString(ResourceName, "OrderPickedUpHistoryNote", culture, courier.Name),
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderPickedUpHistoryNote", culture,
+                courier.Name),
             CreatedBy = courier.UserId ?? "System"
         });
 
@@ -534,7 +538,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         await AddCourierNotification(
             courier.Id,
             _localizationService.GetLocalizedString(ResourceName, "OrderOutForDelivery", culture),
-            _localizationService.GetLocalizedString(ResourceName, "OrderOutForDeliveryMessage", culture, order.CustomerOrderId),
+            _localizationService.GetLocalizedString(ResourceName, "OrderOutForDeliveryMessage", culture,
+                order.CustomerOrderId),
             "order_progress",
             order.Id);
 
@@ -551,12 +556,14 @@ public class OrderAssignmentService : IOrderAssignmentService
             await AddVendorNotificationAsync(
                 vendor.Id,
                 _localizationService.GetLocalizedString(ResourceName, "OrderPickedUp", vendorCulture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderPickedUpMessage", vendorCulture, order.CustomerOrderId),
+                _localizationService.GetLocalizedString(ResourceName, "OrderPickedUpMessage", vendorCulture,
+                    order.CustomerOrderId),
                 "OrderPickedUp",
                 order.Id);
 
             // Send Firebase push notification to vendor
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "OutForDelivery", vendorLang);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "OutForDelivery",
+                vendorLang);
         }
 
         // Notify customer
@@ -564,11 +571,13 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             var customerLang = GetLanguageFromRequest();
             var customerCulture = GetCultureInfo(customerLang);
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "OutForDelivery", customerLang);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId,
+                "OutForDelivery", customerLang);
             await AddCustomerNotificationAsync(
                 order.CustomerId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderOnTheWay", customerCulture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderOnTheWayMessage", customerCulture, order.CustomerOrderId),
+                _localizationService.GetLocalizedString(ResourceName, "OrderOnTheWayMessage", customerCulture,
+                    order.CustomerOrderId),
                 "OrderOutForDelivery",
                 order.Id);
         }
@@ -608,7 +617,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             OrderId = order.Id,
             Status = OrderStatus.Delivered,
-            Note = _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredHistoryNote", culture, courier.Name),
+            Note = _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredHistoryNote", culture,
+                courier.Name),
             CreatedBy = courier.UserId ?? "System"
         });
 
@@ -621,10 +631,35 @@ public class OrderAssignmentService : IOrderAssignmentService
         // Create detailed earning record (use OrderCourier data)
         await CreateCourierEarningAsync(order, courier, orderCourier);
 
+        // Credit Courier Wallet
+        if (!string.IsNullOrEmpty(courier.UserId))
+        {
+            var courierEarning = await _unitOfWork.CourierEarnings.Query()
+                .OrderByDescending(e => e.EarnedAt)
+                .FirstOrDefaultAsync(e => e.OrderId == order.Id && e.CourierId == courier.Id);
+
+            if (courierEarning != null)
+            {
+                try
+                {
+                    await _walletService.AddEarningAsync(
+                        courier.UserId,
+                        courierEarning.TotalEarning,
+                        order.Id.ToString(),
+                        $"Delivery earning for order #{order.CustomerOrderId}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error crediting courier wallet for order {OrderId}", order.Id);
+                }
+            }
+        }
+
         await AddCourierNotification(
             courier.Id,
             _localizationService.GetLocalizedString(ResourceName, "DeliveryCompleted", culture),
-            _localizationService.GetLocalizedString(ResourceName, "DeliveryCompletedMessage", culture, order.CustomerOrderId),
+            _localizationService.GetLocalizedString(ResourceName, "DeliveryCompletedMessage", culture,
+                order.CustomerOrderId),
             "order_delivered",
             order.Id);
 
@@ -636,17 +671,33 @@ public class OrderAssignmentService : IOrderAssignmentService
         var vendor = await _unitOfWork.Vendors.GetByIdAsync(order.VendorId);
         if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
         {
+            // Credit Vendor Wallet
+            try
+            {
+                await _walletService.AddEarningAsync(
+                    vendor.OwnerId,
+                    order.TotalAmount,
+                    order.Id.ToString(),
+                    $"Sale earning for order #{order.CustomerOrderId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error crediting vendor wallet for order {OrderId}", order.Id);
+            }
+
             var vendorLang = GetLanguageFromRequest();
             var vendorCulture = GetCultureInfo(vendorLang);
             await AddVendorNotificationAsync(
                 vendor.Id,
                 _localizationService.GetLocalizedString(ResourceName, "OrderDelivered", vendorCulture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredToCustomerMessage", vendorCulture, order.CustomerOrderId),
+                _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredToCustomerMessage", vendorCulture,
+                    order.CustomerOrderId),
                 "OrderDelivered",
                 order.Id);
 
             // Send Firebase push notification to vendor
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Delivered", vendorLang);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Delivered",
+                vendorLang);
         }
 
         // Notify customer
@@ -654,11 +705,13 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             var customerLang = GetLanguageFromRequest();
             var customerCulture = GetCultureInfo(customerLang);
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Delivered", customerLang);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Delivered",
+                customerLang);
             await AddCustomerNotificationAsync(
                 order.CustomerId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderDelivered", customerCulture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredMessage", customerCulture, order.CustomerOrderId),
+                _localizationService.GetLocalizedString(ResourceName, "OrderDeliveredMessage", customerCulture,
+                    order.CustomerOrderId),
                 "OrderDelivered",
                 order.Id);
         }
@@ -673,11 +726,11 @@ public class OrderAssignmentService : IOrderAssignmentService
             .Include(o => o.Customer)
             .Include(o => o.DeliveryAddress)
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+            .ThenInclude(oi => oi.Product)
             .Include(o => o.OrderCouriers)
             .Where(o => o.OrderCouriers.Any(oc => oc.CourierId == courierId && oc.IsActive)
-                && o.Status != OrderStatus.Delivered
-                && o.Status != OrderStatus.Cancelled)
+                        && o.Status != OrderStatus.Delivered
+                        && o.Status != OrderStatus.Cancelled)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
@@ -713,7 +766,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         });
     }
 
-    private async Task AddVendorNotificationAsync(Guid vendorId, string customerOrderId, string courierName, string rejectReason)
+    private async Task AddVendorNotificationAsync(Guid vendorId, string customerOrderId, string courierName,
+        string rejectReason)
     {
         var lang = GetLanguageFromRequest();
         var culture = GetCultureInfo(lang);
@@ -722,13 +776,15 @@ public class OrderAssignmentService : IOrderAssignmentService
         {
             VendorId = vendorId,
             Title = _localizationService.GetLocalizedString(ResourceName, "CourierRejectedOrder", culture),
-            Message = _localizationService.GetLocalizedString(ResourceName, "CourierRejectedOrderMessage", culture, customerOrderId, courierName, rejectReason),
+            Message = _localizationService.GetLocalizedString(ResourceName, "CourierRejectedOrderMessage", culture,
+                customerOrderId, courierName, rejectReason),
             Type = "CourierRejected",
             RelatedEntityId = null
         });
     }
 
-    private async Task AddVendorNotificationAsync(Guid vendorId, string title, string message, string type, Guid? relatedEntityId = null)
+    private async Task AddVendorNotificationAsync(Guid vendorId, string title, string message, string type,
+        Guid? relatedEntityId = null)
     {
         await _unitOfWork.VendorNotifications.AddAsync(new VendorNotification
         {
@@ -740,7 +796,8 @@ public class OrderAssignmentService : IOrderAssignmentService
         });
     }
 
-    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type,
+        Guid? orderId = null)
     {
         var customer = await _unitOfWork.Customers.Query()
             .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -777,7 +834,8 @@ public class OrderAssignmentService : IOrderAssignmentService
 
         if (vendor == null || deliveryAddress == null)
         {
-            _logger.LogWarning("Cannot calculate delivery fee: missing vendor or delivery address for order {OrderId}", order.Id);
+            _logger.LogWarning("Cannot calculate delivery fee: missing vendor or delivery address for order {OrderId}",
+                order.Id);
             return baseFee;
         }
 
@@ -841,7 +899,8 @@ public class OrderAssignmentService : IOrderAssignmentService
 
         if (vendor == null || deliveryAddress == null)
         {
-            _logger.LogWarning("Cannot create earning record: missing vendor or delivery address for order {OrderId}", order.Id);
+            _logger.LogWarning("Cannot create earning record: missing vendor or delivery address for order {OrderId}",
+                order.Id);
             return;
         }
 

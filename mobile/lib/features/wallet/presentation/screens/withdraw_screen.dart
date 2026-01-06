@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:dio/dio.dart';
 import 'package:mobile/services/api_service.dart';
 
 class WithdrawScreen extends StatefulWidget {
-  const WithdrawScreen({super.key});
+  const WithdrawScreen({super.key, this.isVendor = false});
+
+  final bool isVendor;
 
   @override
   State<WithdrawScreen> createState() => _WithdrawScreenState();
@@ -48,10 +51,22 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
+      String errorMessage = e.toString();
+      if (e is DioException) {
+        if (e.response?.data != null && e.response?.data is Map) {
+          final data = e.response!.data as Map;
+          if (data.containsKey('message')) {
+            errorMessage = data['message'];
+          } else if (data.containsKey('error')) {
+            errorMessage = data['error'];
+          }
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
       }
     } finally {
       if (mounted) {
@@ -63,8 +78,16 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final primaryColor = widget.isVendor
+        ? Colors.deepPurple
+        : AppTheme.primaryOrange;
+
     return Scaffold(
-      appBar: AppBar(title: Text(localizations.withdrawBalance)),
+      appBar: AppBar(
+        title: Text(localizations.withdrawBalance),
+        backgroundColor: widget.isVendor ? AppTheme.vendorPrimary : null,
+        foregroundColor: widget.isVendor ? Colors.white : null,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -102,13 +125,13 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.primaryOrange),
+                      border: Border.all(color: primaryColor),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${amount.toInt()} ₺',
-                      style: const TextStyle(
-                        color: AppTheme.primaryOrange,
+                      style: TextStyle(
+                        color: primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -137,7 +160,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : () => _withdraw(localizations),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryOrange,
+                  backgroundColor: primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

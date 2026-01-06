@@ -97,7 +97,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
+        bottomNavigationBar: const VendorBottomNav(currentIndex: 4),
       );
     }
 
@@ -121,7 +121,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
+        bottomNavigationBar: const VendorBottomNav(currentIndex: 4),
       );
     }
 
@@ -155,7 +155,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
+      bottomNavigationBar: const VendorBottomNav(currentIndex: 4),
     );
   }
 

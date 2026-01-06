@@ -37,6 +37,9 @@ class VendorBottomNav extends StatelessWidget {
             Navigator.of(context).pushNamed('/vendor/products');
             break;
           case 3:
+            Navigator.of(context).pushNamed('/vendor/wallet');
+            break;
+          case 4:
             Navigator.of(context).pushNamed('/vendor/profile');
             break;
         }
@@ -53,6 +56,10 @@ class VendorBottomNav extends StatelessWidget {
         BottomNavigationBarItem(
           icon: const Icon(Icons.inventory_2_outlined),
           label: localizations?.products ?? 'Ürünler',
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.account_balance_wallet_outlined),
+          label: localizations?.myWallet ?? 'Cüzdanım',
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.person_outline),

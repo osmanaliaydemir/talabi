@@ -6,10 +6,12 @@ import 'package:mobile/features/orders/presentation/screens/vendor/orders_screen
 import 'package:mobile/features/products/presentation/screens/vendor/products_screen.dart';
 import 'package:mobile/features/profile/presentation/screens/vendor/profile_screen.dart';
 import 'package:mobile/features/orders/presentation/screens/vendor/order_detail_screen.dart';
-
+import 'package:mobile/features/wallet/presentation/screens/wallet_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/vendor_forgot_password_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/vendor_verify_reset_code_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/vendor_reset_password_screen.dart';
+
+import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
 
 /// Vendor modülü için route yöneticisi
 class VendorRouter {
@@ -62,6 +64,13 @@ class VendorRouter {
         if (orderId == null) return null;
         return NoSlidePageRoute(
           builder: (context) => VendorOrderDetailScreen(orderId: orderId),
+        );
+
+      case '/vendor/wallet':
+        return NoSlidePageRoute(
+          builder: (context) => const WalletScreen(
+            bottomNavigationBar: VendorBottomNav(currentIndex: 3),
+          ),
         );
 
       default:
