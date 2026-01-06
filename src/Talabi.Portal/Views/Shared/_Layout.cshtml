@@ -311,111 +311,115 @@
             <i class="fas fa-store"></i> @LocalizationService.GetString("AppTitle")
         </div>
         <nav class="sidebar-nav">
-            <a href="@Url.Action("Index", "Home")"
-               class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
-                <i class="fas fa-home"></i> @LocalizationService.GetString("Dashboard")
-            </a>
-            <a href="@Url.Action("Index", "Products")"
-               class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")">
-                <i class="fas fa-box"></i> @LocalizationService.GetString("Products")
-            </a>
-            <a href="@Url.Action("Index", "Orders")"
-               class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" ? "active" : "")">
-                <i class="fas fa-shopping-cart"></i> @LocalizationService.GetString("Orders")
-            </a>
-            <a href="@Url.Action("Index", "Categories")"
-               class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Categories" ? "active" : "")">
-                <i class="fas fa-tags"></i> @LocalizationService.GetString("Categories")
-            </a>
-
-            <a href="@Url.Action("Index", "Reviews")"
-               class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reviews" ? "active" : "")">
-                <i class="fas fa-star"></i> @LocalizationService.GetString("Reviews & Ratings")
-            </a>
-            <a href="@Url.Action("Index", "Payments")">
-                <i class="fas fa-money-bill-wave"></i> @LocalizationService.GetString("Payments")
-            </a>
-
             @if (User.IsInRole("Admin"))
             {
+                <!-- Admin-only Menu Items -->
+                <a href="@Url.Action("Index", "Home")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="fas fa-home"></i> @LocalizationService.GetString("Dashboard")
+                </a>
+
+                <a href="@Url.Action("Index", "Categories")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Categories" ? "active" : "")">
+                    <i class="fas fa-tags"></i> @LocalizationService.GetString("Categories")
+                </a>
+
                 <a href="@Url.Action("Index", "WithdrawalRequests")"
                    class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "WithdrawalRequests" ? "active" : "")">
                     <i class="fas fa-hand-holding-usd"></i> @LocalizationService.GetString("WithdrawalRequests")
                 </a>
-            }
 
-            <!-- Reports & Analytics Dropdown Menu -->
-            @* <div class="dropdown-menu-item">
-                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-chart-line"></i> @LocalizationService.GetString("Reports & Analytics")
-                        <i class="fas fa-chevron-down ms-auto"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                        <li>
-                            <a href="@Url.Action("Dashboard", "Reports")" class="dropdown-item">
-                                <i class="fas fa-chart-bar me-2"></i> @LocalizationService.GetString("Sales Dashboard")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="@Url.Action("Revenue", "Reports")" class="dropdown-item">
-                                <i class="fas fa-chart-line me-2"></i> @LocalizationService.GetString("Revenue Analytics")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="@Url.Action("Customers", "Reports")" class="dropdown-item">
-                                <i class="fas fa-users me-2"></i> @LocalizationService.GetString("Customer Analytics")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="@Url.Action("Products", "Reports")" class="dropdown-item">
-                                <i class="fas fa-box me-2"></i> @LocalizationService.GetString("Product Performance")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="@Url.Action("Index", "Inventory")" class="dropdown-item">
-                                <i class="fas fa-warehouse me-2"></i> @LocalizationService.GetString("InventoryAnalytics")
-                            </a>
-                        </li>
-                    </ul>
-                </div> *@
-            @if (User.IsInRole("Admin") || User.IsInRole("Vendor"))
-            {
                 <a href="@Url.Action("Index", "Coupons")"
                    class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Coupons" ? "active" : "")">
                     <i class="fas fa-ticket-alt"></i> @LocalizationService.GetString("Coupons")
                 </a>
+
                 <a href="@Url.Action("Index", "Campaigns")"
                    class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Campaigns" ? "active" : "")">
                     <i class="fas fa-bullhorn"></i> @LocalizationService.GetString("Campaigns")
                 </a>
-            }
 
-            @if (User.IsInRole("Admin"))
-            {
                 <a href="@Url.Action("Index", "DeliveryZones")">
                     <i class="fas fa-draw-polygon"></i> @LocalizationService.GetString("DeliveryZones")
                 </a>
-                <!-- Location Management -->
+
                 <a href="@Url.Action("Index", "Couriers")">
                     <i class="fas fa-motorcycle"></i> @LocalizationService.GetString("CourierApplications")
                 </a>
+
                 <a href="@Url.Action("Index", "Vendors")">
                     <i class="fas fa-store-alt"></i> @LocalizationService.GetString("VendorApplications")
                 </a>
+
                 <a href="@Url.Action("Index", "Locations")">
                     <i class="fas fa-globe"></i> @LocalizationService.GetString("Countries")
                 </a>
+
                 <a href="@Url.Action("Index", "SystemSettings")">
                     <i class="fas fa-cogs"></i> @LocalizationService.GetString("SystemSettings")
                 </a>
-            }
-            <a href="@Url.Action("Index", "Notifications")">
-                <i class="fas fa-bell"></i> @LocalizationService.GetString("Notifications")
-            </a>
 
-            <a href="@Url.Action("Index", "Settings")">
-                <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
-            </a>
+                <a href="@Url.Action("Index", "Reviews")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reviews" ? "active" : "")">
+                    <i class="fas fa-star"></i> @LocalizationService.GetString("Reviews & Ratings")
+                </a>
+
+                <a href="@Url.Action("Index", "Notifications")">
+                    <i class="fas fa-bell"></i> @LocalizationService.GetString("Notifications")
+                </a>
+
+                <a href="@Url.Action("Index", "Settings")">
+                    <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
+                </a>
+            }
+            else
+            {
+                <!-- Vendor/Courier Menu Items -->
+                <a href="@Url.Action("Index", "Home")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="fas fa-home"></i> @LocalizationService.GetString("Dashboard")
+                </a>
+
+                <a href="@Url.Action("Index", "Products")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")">
+                    <i class="fas fa-box"></i> @LocalizationService.GetString("Products")
+                </a>
+
+                <a href="@Url.Action("Index", "Orders")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" ? "active" : "")">
+                    <i class="fas fa-shopping-cart"></i> @LocalizationService.GetString("Orders")
+                </a>
+
+                <a href="@Url.Action("Index", "Reviews")"
+                   class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reviews" ? "active" : "")">
+                    <i class="fas fa-star"></i> @LocalizationService.GetString("Reviews & Ratings")
+                </a>
+
+                <a href="@Url.Action("Index", "Payments")">
+                    <i class="fas fa-money-bill-wave"></i> @LocalizationService.GetString("Payments")
+                </a>
+
+                @if (User.IsInRole("Vendor"))
+                {
+                    <a href="@Url.Action("Index", "Coupons")"
+                       class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Coupons" ? "active" : "")">
+                        <i class="fas fa-ticket-alt"></i> @LocalizationService.GetString("Coupons")
+                    </a>
+
+                    <a href="@Url.Action("Index", "Campaigns")"
+                       class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Campaigns" ? "active" : "")">
+                        <i class="fas fa-bullhorn"></i> @LocalizationService.GetString("Campaigns")
+                    </a>
+                }
+
+                <a href="@Url.Action("Index", "Notifications")">
+                    <i class="fas fa-bell"></i> @LocalizationService.GetString("Notifications")
+                </a>
+
+                <a href="@Url.Action("Index", "Settings")">
+                    <i class="fas fa-cog"></i> @LocalizationService.GetString("Settings")
+                </a>
+            }
         </nav>
     </div>
 
