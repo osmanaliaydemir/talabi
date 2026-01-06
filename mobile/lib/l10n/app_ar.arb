@@ -3805,5 +3805,97 @@
   "withdrawalRequests": "طلبات السحب",
   "@withdrawalRequests": {
     "description": "Title for withdrawal requests section"
+  },
+  "vendorProductFormOptionsTitle": "الخيارات والإضافات",
+  "@vendorProductFormOptionsTitle": {
+    "description": "Title for product options section"
+  },
+  "vendorProductFormNoOptions": "لم يتم إضافة خيارات بعد.",
+  "@vendorProductFormNoOptions": {
+    "description": "Message when no options are added"
+  },
+  "vendorProductFormAddGroup": "إضافة مجموعة",
+  "@vendorProductFormAddGroup": {
+    "description": "Button to add a new option group"
+  },
+  "vendorProductFormEditGroup": "تعديل المجموعة",
+  "@vendorProductFormEditGroup": {
+    "description": "Title for edit group dialog"
+  },
+  "vendorProductFormGroupNameLabel": "اسم المجموعة (مثال: الحجم، الصلصات)",
+  "@vendorProductFormGroupNameLabel": {
+    "description": "Label for group name input"
+  },
+  "vendorProductFormRequiredLabel": "اختيار إجباري",
+  "@vendorProductFormRequiredLabel": {
+    "description": "Label for required selection switch"
+  },
+  "vendorProductFormMultiSelectLabel": "اختيار متعدد",
+  "@vendorProductFormMultiSelectLabel": {
+    "description": "Label for multi selection switch"
+  },
+  "vendorProductFormSingleSelectLabel": "اختيار فردي",
+  "@vendorProductFormSingleSelectLabel": {
+    "description": "Label for single selection"
+  },
+  "vendorProductFormRequired": "مطلوب",
+  "@vendorProductFormRequired": {
+    "description": "Badge for required options"
+  },
+  "vendorProductFormOptional": "اختياري",
+  "@vendorProductFormOptional": {
+    "description": "Badge for optional options"
+  },
+  "vendorProductFormAddOption": "إضافة خيار جديد",
+  "@vendorProductFormAddOption": {
+    "description": "Button to add a new option value"
+  },
+  "vendorProductFormCategoryRequired": "اختيار الفئة مطلوب",
+  "@vendorProductFormCategoryRequired": {
+    "description": "Validation error for category"
+  },
+  "vendorProductFormCurrencyLabel": "العملة",
+  "@vendorProductFormCurrencyLabel": {
+    "description": "Label for currency dropdown"
+  },
+  "vendorProductFormPriceAdjustment": "تعديل السعر",
+  "@vendorProductFormPriceAdjustment": {
+    "description": "Label for price adjustment input"
+  },
+  "vendorProductFormMinSelection": "الحد الأدنى للاختيار",
+  "@vendorProductFormMinSelection": {
+    "description": "Label for min selection"
+  },
+  "vendorProductFormMaxSelection": "الحد الأقصى للاختيار (0 = غير محدود)",
+  "@vendorProductFormMaxSelection": {
+    "description": "Label for max selection"
+  },
+  "vendorProductFormAddOptionTitle": "إضافة خيار",
+  "@vendorProductFormAddOptionTitle": {
+    "description": "Title for add option dialog"
+  },
+  "vendorProductFormEditOptionTitle": "تعديل الخيار",
+  "@vendorProductFormEditOptionTitle": {
+    "description": "Title for edit option dialog"
+  },
+  "vendorProductFormOptionNameLabel": "اسم الخيار (مثال: كبير، صوص حار)",
+  "@vendorProductFormOptionNameLabel": {
+    "description": "Label for option name input"
+  },
+  "vendorProductFormDefaultSelected": "محدد افتراضيًا",
+  "@vendorProductFormDefaultSelected": {
+    "description": "Checkbox for default selection"
+  },
+  "productOptionsTitle": "الخيارات",
+  "@productOptionsTitle": {
+    "description": "Title for options section in product detail"
+  },
+  "optionSelectionRequired": "مطلوب اختيار {name}",
+  "@optionSelectionRequired": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

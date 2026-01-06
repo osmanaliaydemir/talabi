@@ -39,11 +39,19 @@ class CartRemoteDataSource {
     }
   }
 
-  Future<void> addToCart(String productId, int quantity) async {
+  Future<void> addToCart(
+    String productId,
+    int quantity, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) async {
     try {
+      final data = {'productId': productId, 'quantity': quantity};
+      if (selectedOptions != null) {
+        data['selectedOptions'] = selectedOptions;
+      }
       final response = await _networkClient.dio.post(
         ApiEndpoints.cartItems,
-        data: {'productId': productId, 'quantity': quantity},
+        data: data,
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&

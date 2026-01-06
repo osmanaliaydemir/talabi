@@ -90,23 +90,9 @@ class CartProvider with ChangeNotifier {
   List<String> _discountedItemIds = [];
 
   bool isItemDiscounted(String itemId) {
-    // Check if backend specifically flagged this item AND we have a backend discount
-    if (_backendDiscountAmount > 0 && _discountedItemIds.isNotEmpty) {
-      // Backend IDs are GUIDs usually, but let's ensure we match format
-      // Mobile item IDs are Product IDs (GUIDs).
-      // The backend 'DiscountedItemIds' list contains CartItem IDs usually?
-      // Wait, let's check Backend logic:
-      // result.ApplicableItemIds = applicableItems.Select(i => i.Id).ToList();
-      // These are CartItem IDs, NOT Product IDs.
-      // In Mobile, _items key is ProductId.
-      // CartItem model has 'backendId'. We should check against that.
-
-      final item = _items[itemId];
-      if (item != null && item.backendId != null) {
-        return _discountedItemIds.contains(item.backendId);
-      }
-    }
-    return false;
+    // Backend IDs are GUIDs.
+    // We are now using BackendId as key.
+    return _discountedItemIds.contains(itemId);
   }
 
   double get subtotalAmount {
@@ -327,10 +313,13 @@ class CartProvider with ChangeNotifier {
               reviewCount: item['reviewCount'],
             );
 
-            newItems[product.id] = CartItem(
+            newItems[item['id'].toString()] = CartItem(
               product: product,
               quantity: item['quantity'],
               backendId: item['id'].toString(), // Store backend cart item ID
+              selectedOptions: (item['selectedOptions'] as List?)
+                  ?.map((e) => e as Map<String, dynamic>)
+                  .toList(),
             );
           }());
         }
@@ -408,13 +397,21 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addItem(Product product, BuildContext? context) async {
+  Future<void> addItem(
+    Product product,
+    BuildContext? context, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) async {
     final isOnline = _connectivityProvider?.isOnline ?? true;
 
     if (isOnline) {
       try {
         // First, check API - don't update local state until success
-        await _apiService.addToCart(product.id, 1);
+        await _apiService.addToCart(
+          product.id,
+          1,
+          selectedOptions: selectedOptions,
+        );
 
         // Log add_to_cart
         await AnalyticsService.logAddToCart(product: product, quantity: 1);
@@ -438,56 +435,13 @@ class CartProvider with ChangeNotifier {
           }
         }
 
-        // If online but request failed, update local state optimistically and queue it
-        if (_syncService != null) {
-          // Check if it's a 409 Conflict or other non-retriable error
-          if (e is DioException && e.response?.statusCode == 409) {
-            LoggerService().warning(
-              '🔴 [CART] Conflict error (409), NOT queuing action.',
-            );
-            rethrow;
-          }
-
-          // Update local state for offline/queued scenarios
-          if (_items.containsKey(product.id)) {
-            _items[product.id]!.quantity++;
-          } else {
-            _items[product.id] = CartItem(product: product);
-          }
-          _checkCouponValidity();
-          notifyListeners();
-
-          final action = SyncAction(
-            id: _uuid.v4(),
-            type: SyncActionType.addToCart,
-            data: {'productId': product.id, 'quantity': 1},
-          );
-          await _syncService.addToQueue(action);
-          // LoggerService().debug('📦 [CART] Action queued: addToCart');
-        } else {
-          // Re-throw error if no sync service available
-          rethrow;
-        }
+        // If online but request failed.
+        // For now, we Disable offline optimistic update for Options support
+        throw Exception('Operation failed while online');
       }
     } else {
-      // Offline: update local state and queue the action
-      if (_items.containsKey(product.id)) {
-        _items[product.id]!.quantity++;
-      } else {
-        _items[product.id] = CartItem(product: product);
-      }
-      _checkCouponValidity();
-      notifyListeners();
-
-      if (_syncService != null) {
-        final action = SyncAction(
-          id: _uuid.v4(),
-          type: SyncActionType.addToCart,
-          data: {'productId': product.id, 'quantity': 1},
-        );
-        await _syncService.addToQueue(action);
-        // LoggerService().debug('📦 [CART] Offline - Action queued: addToCart');
-      }
+      // Offline not fully supported for Options yet.
+      throw Exception('Offline mode not supported for items with options');
     }
   }
 
@@ -575,12 +529,12 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> removeItem(String productId) async {
-    final cartItem = _items[productId];
+  Future<void> removeItem(String itemId) async {
+    final cartItem = _items[itemId];
     final isOnline = _connectivityProvider?.isOnline ?? true;
 
     // Update local state immediately
-    _items.remove(productId);
+    _items.remove(itemId);
     _checkCouponValidity();
     notifyListeners();
 
@@ -620,10 +574,10 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> increaseQuantity(String productId) async {
-    if (!_items.containsKey(productId)) return;
+  Future<void> increaseQuantity(String itemId) async {
+    if (!_items.containsKey(itemId)) return;
 
-    final cartItem = _items[productId]!;
+    final cartItem = _items[itemId]!;
     final isOnline = _connectivityProvider?.isOnline ?? true;
 
     // Update local state immediately
@@ -669,10 +623,10 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> decreaseQuantity(String productId) async {
-    if (!_items.containsKey(productId)) return;
+  Future<void> decreaseQuantity(String itemId) async {
+    if (!_items.containsKey(itemId)) return;
 
-    final cartItem = _items[productId]!;
+    final cartItem = _items[itemId]!;
     final isOnline = _connectivityProvider?.isOnline ?? true;
 
     if (cartItem.quantity > 1) {
@@ -721,7 +675,7 @@ class CartProvider with ChangeNotifier {
         }
       }
     } else {
-      await removeItem(productId);
+      await removeItem(itemId);
     }
   }
 

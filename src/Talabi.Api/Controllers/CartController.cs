@@ -6,6 +6,8 @@ using Talabi.Core.Interfaces;
 using AutoMapper;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
+using Talabi.Core.Enums;
+using System.Text.Json;
 
 namespace Talabi.Api.Controllers;
 
@@ -81,6 +83,21 @@ public class CartController(
                 item.ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == item.ProductId && r.IsApproved);
                 item.Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == item.ProductId && r.IsApproved)
                     .Select(r => (double?)r.Rating).Average();
+
+                // Deserialize options
+                var cartItemEntity = cart.CartItems.FirstOrDefault(ci => ci.Id == item.Id);
+                if (!string.IsNullOrEmpty(cartItemEntity?.SelectedOptions))
+                {
+                    try
+                    {
+                        item.SelectedOptions =
+                            JsonSerializer.Deserialize<List<CartItemOptionDto>>(cartItemEntity.SelectedOptions);
+                    }
+                    catch
+                    {
+                        // Ignore deserialization errors
+                    }
+                }
             }
 
             // Calculate Campaign Discount
@@ -164,8 +181,20 @@ public class CartController(
                 }
 
                 // 2. Manage CartItem directly
-                var cartItem = await UnitOfWork.CartItems.Query()
-                    .FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.ProductId == dto.ProductId);
+                // Logic to find existing item must match SelectedOptions hash/string.
+                string? optionsJson = null;
+                if (dto.SelectedOptions != null && dto.SelectedOptions.Any())
+                {
+                    // Sort to ensure consistency
+                    var sortedOptions = dto.SelectedOptions.OrderBy(o => o.OptionGroupId).ToList();
+                    optionsJson = JsonSerializer.Serialize(sortedOptions);
+                }
+
+                var existingItems = await UnitOfWork.CartItems.Query()
+                    .Where(ci => ci.CartId == cart.Id && ci.ProductId == dto.ProductId)
+                    .ToListAsync();
+
+                var cartItem = existingItems.FirstOrDefault(ci => ci.SelectedOptions == optionsJson);
 
                 if (cartItem != null)
                 {
@@ -178,7 +207,8 @@ public class CartController(
                     {
                         CartId = cart.Id,
                         ProductId = dto.ProductId,
-                        Quantity = dto.Quantity
+                        Quantity = dto.Quantity,
+                        SelectedOptions = optionsJson
                     };
                     await UnitOfWork.CartItems.AddAsync(cartItem);
                 }
@@ -516,7 +546,7 @@ public class CartController(
 
         if (previousProducts.Any())
         {
-            results.AddRange(previousProducts);
+            results.AddRange(previousProducts.OfType<Product>());
         }
 
         // 2. Eğer 10 üründen az varsa konuma en yakın restoran/marketin ürünlerini ekle

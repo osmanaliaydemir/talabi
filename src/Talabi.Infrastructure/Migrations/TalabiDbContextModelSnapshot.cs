@@ -507,6 +507,9 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("SelectedOptions")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -1542,6 +1545,9 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("SelectedOptions")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -1645,6 +1651,84 @@ namespace Talabi.Infrastructure.Migrations
                     b.HasIndex("VendorId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.ProductOptionGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AllowMultiple")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxSelection")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinSelection")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductOptionGroups");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.ProductOptionValue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("OptionGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("PriceAdjustment")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OptionGroupId");
+
+                    b.ToTable("ProductOptionValues");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.PromotionalBanner", b =>
@@ -2886,6 +2970,28 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("Vendor");
                 });
 
+            modelBuilder.Entity("Talabi.Core.Entities.ProductOptionGroup", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.Product", "Product")
+                        .WithMany("OptionGroups")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.ProductOptionValue", b =>
+                {
+                    b.HasOne("Talabi.Core.Entities.ProductOptionGroup", "OptionGroup")
+                        .WithMany("Options")
+                        .HasForeignKey("OptionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OptionGroup");
+                });
+
             modelBuilder.Entity("Talabi.Core.Entities.PromotionalBannerTranslation", b =>
                 {
                     b.HasOne("Talabi.Core.Entities.PromotionalBanner", "PromotionalBanner")
@@ -3140,6 +3246,16 @@ namespace Talabi.Infrastructure.Migrations
                     b.Navigation("OrderItems");
 
                     b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.Product", b =>
+                {
+                    b.Navigation("OptionGroups");
+                });
+
+            modelBuilder.Entity("Talabi.Core.Entities.ProductOptionGroup", b =>
+                {
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("Talabi.Core.Entities.PromotionalBanner", b =>

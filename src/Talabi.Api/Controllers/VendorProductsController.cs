@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Helpers;
@@ -59,7 +58,6 @@ public class VendorProductsController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -116,7 +114,8 @@ public class VendorProductsController : BaseController
 
         return Ok(new ApiResponse<PagedResultDto<VendorProductDto>>(
             result,
-            LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "VendorProductsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -127,7 +126,6 @@ public class VendorProductsController : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<VendorProductDto>>> GetProduct(Guid id)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -153,7 +151,25 @@ public class VendorProductsController : BaseController
                 CategoryId = p.CategoryId,
                 PreparationTime = p.PreparationTime,
                 CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
+                UpdatedAt = p.UpdatedAt,
+                OptionGroups = p.OptionGroups.Select(og => new ProductOptionGroupDto
+                {
+                    Id = og.Id,
+                    Name = og.Name,
+                    IsRequired = og.IsRequired,
+                    AllowMultiple = og.AllowMultiple,
+                    MinSelection = og.MinSelection,
+                    MaxSelection = og.MaxSelection,
+                    DisplayOrder = og.DisplayOrder,
+                    Options = og.Options.Select(ov => new ProductOptionValueDto
+                    {
+                        Id = ov.Id,
+                        Name = ov.Name,
+                        PriceAdjustment = ov.PriceAdjustment,
+                        IsDefault = ov.IsDefault,
+                        DisplayOrder = ov.DisplayOrder
+                    }).OrderBy(o => o.DisplayOrder).ToList()
+                }).OrderBy(g => g.DisplayOrder).ToList()
             })
             .FirstOrDefaultAsync();
 
@@ -177,7 +193,6 @@ public class VendorProductsController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<VendorProductDto>>> CreateProduct(CreateProductDto dto)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -198,7 +213,23 @@ public class VendorProductsController : BaseController
             ImageUrl = dto.ImageUrl,
             IsAvailable = dto.IsAvailable,
             Stock = dto.Stock,
-            PreparationTime = dto.PreparationTime
+            PreparationTime = dto.PreparationTime,
+            OptionGroups = dto.OptionGroups?.Select(g => new ProductOptionGroup
+            {
+                Name = g.Name,
+                IsRequired = g.IsRequired,
+                AllowMultiple = g.AllowMultiple,
+                MinSelection = g.MinSelection,
+                MaxSelection = g.MaxSelection,
+                DisplayOrder = g.DisplayOrder,
+                Options = g.Options?.Select(o => new ProductOptionValue
+                {
+                    Name = o.Name,
+                    PriceAdjustment = o.PriceAdjustment,
+                    IsDefault = o.IsDefault,
+                    DisplayOrder = o.DisplayOrder
+                }).ToList() ?? new List<ProductOptionValue>()
+            }).ToList() ?? new List<ProductOptionGroup>()
         };
 
         await UnitOfWork.Products.AddAsync(product);
@@ -219,7 +250,25 @@ public class VendorProductsController : BaseController
             CategoryId = product.CategoryId,
             PreparationTime = product.PreparationTime,
             CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
+            UpdatedAt = product.UpdatedAt,
+            OptionGroups = product.OptionGroups.Select(og => new ProductOptionGroupDto
+            {
+                Id = og.Id,
+                Name = og.Name,
+                IsRequired = og.IsRequired,
+                AllowMultiple = og.AllowMultiple,
+                MinSelection = og.MinSelection,
+                MaxSelection = og.MaxSelection,
+                DisplayOrder = og.DisplayOrder,
+                Options = og.Options.Select(ov => new ProductOptionValueDto
+                {
+                    Id = ov.Id,
+                    Name = ov.Name,
+                    PriceAdjustment = ov.PriceAdjustment,
+                    IsDefault = ov.IsDefault,
+                    DisplayOrder = ov.DisplayOrder
+                }).ToList()
+            }).ToList()
         };
 
         return CreatedAtAction(
@@ -239,7 +288,6 @@ public class VendorProductsController : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProduct(Guid id, UpdateProductDto dto)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -249,6 +297,8 @@ public class VendorProductsController : BaseController
         }
 
         var product = await UnitOfWork.Products.Query()
+            .Include(p => p.OptionGroups)
+            .ThenInclude(og => og.Options)
             .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
@@ -280,6 +330,33 @@ public class VendorProductsController : BaseController
         if (dto.PreparationTime.HasValue)
             product.PreparationTime = dto.PreparationTime;
 
+        if (dto.OptionGroups != null)
+        {
+            // Update variants - Strategy: Replace all
+            product.OptionGroups.Clear();
+
+            foreach (var groupDto in dto.OptionGroups)
+            {
+                var newGroup = new ProductOptionGroup
+                {
+                    Name = groupDto.Name,
+                    IsRequired = groupDto.IsRequired,
+                    AllowMultiple = groupDto.AllowMultiple,
+                    MinSelection = groupDto.MinSelection,
+                    MaxSelection = groupDto.MaxSelection,
+                    DisplayOrder = groupDto.DisplayOrder,
+                    Options = groupDto.Options?.Select(o => new ProductOptionValue
+                    {
+                        Name = o.Name,
+                        PriceAdjustment = o.PriceAdjustment,
+                        IsDefault = o.IsDefault,
+                        DisplayOrder = o.DisplayOrder
+                    }).ToList() ?? new List<ProductOptionValue>()
+                };
+                product.OptionGroups.Add(newGroup);
+            }
+        }
+
         product.UpdatedAt = DateTime.UtcNow;
 
         UnitOfWork.Products.Update(product);
@@ -298,7 +375,6 @@ public class VendorProductsController : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(Guid id)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -332,9 +408,9 @@ public class VendorProductsController : BaseController
     /// <param name="dto">Müsaitlik bilgisi</param>
     /// <returns>İşlem sonucu</returns>
     [HttpPut("{id}/availability")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateProductAvailability(Guid id, UpdateProductAvailabilityDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateProductAvailability(Guid id,
+        UpdateProductAvailabilityDto dto)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -361,7 +437,8 @@ public class VendorProductsController : BaseController
 
         return Ok(new ApiResponse<object>(
             new { },
-            LocalizationService.GetLocalizedString(ResourceName, "ProductAvailabilityUpdatedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "ProductAvailabilityUpdatedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -373,7 +450,6 @@ public class VendorProductsController : BaseController
     [HttpPut("{id}/price")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
@@ -410,7 +486,6 @@ public class VendorProductsController : BaseController
     [HttpGet("categories")]
     public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
     {
-
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {

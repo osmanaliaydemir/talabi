@@ -63,6 +63,8 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     public DbSet<WalletTransaction> WalletTransactions { get; set; }
     public DbSet<BankAccount> BankAccounts { get; set; }
     public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
+    public DbSet<ProductOptionGroup> ProductOptionGroups { get; set; }
+    public DbSet<ProductOptionValue> ProductOptionValues { get; set; }
 
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -641,6 +643,24 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<WithdrawalRequest>()
             .Property(wr => wr.Amount)
+            .HasColumnType("decimal(18,2)");
+
+        // Product Option Group configuration
+        builder.Entity<ProductOptionGroup>()
+            .HasOne(og => og.Product)
+            .WithMany(p => p.OptionGroups)
+            .HasForeignKey(og => og.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Product Option Value configuration
+        builder.Entity<ProductOptionValue>()
+            .HasOne(ov => ov.OptionGroup)
+            .WithMany(og => og.Options)
+            .HasForeignKey(ov => ov.OptionGroupId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ProductOptionValue>()
+            .Property(ov => ov.PriceAdjustment)
             .HasColumnType("decimal(18,2)");
     }
 }

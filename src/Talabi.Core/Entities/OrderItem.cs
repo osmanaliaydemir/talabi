@@ -14,6 +14,9 @@ public class OrderItem : BaseEntity
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
 
+    // JSON serialized list of selected options
+    public string? SelectedOptions { get; set; }
+
     // Cancellation fields
     public bool IsCancelled { get; set; } = false;
     public DateTime? CancelledAt { get; set; }

@@ -22,6 +22,7 @@ class OrderItemDto with _$OrderItemDto {
   const factory OrderItemDto({
     required String productId,
     required int quantity,
+    List<Map<String, dynamic>>? selectedOptions,
   }) = _OrderItemDto;
 
   factory OrderItemDto.fromJson(Map<String, dynamic> json) =>

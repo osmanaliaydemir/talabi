@@ -32,12 +32,16 @@ _$OrderItemDtoImpl _$$OrderItemDtoImplFromJson(Map<String, dynamic> json) =>
     _$OrderItemDtoImpl(
       productId: json['productId'] as String,
       quantity: (json['quantity'] as num).toInt(),
+      selectedOptions: (json['selectedOptions'] as List<dynamic>?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
     );
 
 Map<String, dynamic> _$$OrderItemDtoImplToJson(_$OrderItemDtoImpl instance) =>
     <String, dynamic>{
       'productId': instance.productId,
       'quantity': instance.quantity,
+      'selectedOptions': instance.selectedOptions,
     };
 
 _$OrderCalculationResultImpl _$$OrderCalculationResultImplFromJson(

@@ -68,7 +68,8 @@ public class OrderService : IOrderService
         do
         {
             customerOrderItemId = random.Next(100000, 999999).ToString();
-            isUnique = !await _unitOfWork.OrderItems.Query().AnyAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
+            isUnique = !await _unitOfWork.OrderItems.Query()
+                .AnyAsync(oi => oi.CustomerOrderItemId == customerOrderItemId);
         } while (!isUnique);
 
         return customerOrderItemId;
@@ -83,7 +84,8 @@ public class OrderService : IOrderService
         var vendor = await _unitOfWork.Vendors.GetByIdAsync(dto.VendorId);
         if (vendor == null)
         {
-            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "VendorNotFound", culture));
+            throw new KeyNotFoundException(
+                _localizationService.GetLocalizedString(ResourceName, "VendorNotFound", culture));
         }
 
         // 2. Calculate total and create order items
@@ -97,17 +99,30 @@ public class OrderService : IOrderService
             var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
             if (product == null)
             {
-                throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "ProductNotFound", culture, item.ProductId));
+                throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "ProductNotFound",
+                    culture, item.ProductId));
             }
 
-            totalAmount += product.Price * item.Quantity;
+            decimal itemUnitPrice = product.Price;
+            if (item.SelectedOptions != null)
+            {
+                foreach (var option in item.SelectedOptions)
+                {
+                    itemUnitPrice += option.PriceAdjustment;
+                }
+            }
+
+            totalAmount += itemUnitPrice * item.Quantity;
             var customerOrderItemId = await GenerateUniqueCustomerOrderItemIdAsync();
             orderItems.Add(new OrderItem
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                UnitPrice = product.Price,
-                CustomerOrderItemId = customerOrderItemId
+                UnitPrice = itemUnitPrice,
+                CustomerOrderItemId = customerOrderItemId,
+                SelectedOptions = item.SelectedOptions != null
+                    ? System.Text.Json.JsonSerializer.Serialize(item.SelectedOptions)
+                    : null
             });
 
             ruleCartItems.Add(new RuleValidationContext.RuleCartItem
@@ -124,25 +139,29 @@ public class OrderService : IOrderService
         // 3. Validate Delivery Address and Zone
         if (!dto.DeliveryAddressId.HasValue)
         {
-            throw new ArgumentException(_localizationService.GetLocalizedString(ResourceName, "AddressRequired", culture));
+            throw new ArgumentException(
+                _localizationService.GetLocalizedString(ResourceName, "AddressRequired", culture));
         }
 
         var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
         if (userAddress == null)
         {
-            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
+            throw new KeyNotFoundException(
+                _localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
         }
 
         // Fetch Delivery Fee and Free Delivery Threshold from System Settings
         decimal deliveryFee = 0;
         var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
-        if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
+        if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var parsedFee))
         {
             deliveryFee = parsedFee;
         }
 
         var freeDeliveryThresholdStr = await _systemSettingsService.GetSettingAsync("FreeDeliveryThreshold");
-        if (!string.IsNullOrEmpty(freeDeliveryThresholdStr) && decimal.TryParse(freeDeliveryThresholdStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var threshold))
+        if (!string.IsNullOrEmpty(freeDeliveryThresholdStr) && decimal.TryParse(freeDeliveryThresholdStr,
+                NumberStyles.Any, CultureInfo.InvariantCulture, out var threshold))
         {
             if (totalAmount >= threshold)
             {
@@ -221,12 +240,12 @@ public class OrderService : IOrderService
         if (dto.CampaignId.HasValue)
         {
             var campaign = await _unitOfWork.Campaigns.Query()
-               .AsNoTracking()
-               .Include(c => c.CampaignCities)
-               .Include(c => c.CampaignDistricts)
-               .Include(c => c.CampaignCategories)
-               .Include(c => c.CampaignProducts)
-               .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
+                .AsNoTracking()
+                .Include(c => c.CampaignCities)
+                .Include(c => c.CampaignDistricts)
+                .Include(c => c.CampaignCategories)
+                .Include(c => c.CampaignProducts)
+                .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
 
             if (campaign != null)
             {
@@ -306,7 +325,8 @@ public class OrderService : IOrderService
         await AddVendorNotificationAsync(
             order.VendorId,
             _localizationService.GetLocalizedString(ResourceName, "NewOrderTitle", culture),
-            _localizationService.GetLocalizedString(ResourceName, "NewOrderMessage", culture, order.CustomerOrderId, order.TotalAmount.ToString("N2")),
+            _localizationService.GetLocalizedString(ResourceName, "NewOrderMessage", culture, order.CustomerOrderId,
+                order.TotalAmount.ToString("N2")),
             "NewOrder",
             order.Id);
 
@@ -314,7 +334,8 @@ public class OrderService : IOrderService
         if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
         {
             var languageCode = culture.TwoLetterISOLanguageName;
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, order.Id, "Pending", languageCode);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, order.Id, "Pending",
+                languageCode);
         }
 
         // Add customer notification
@@ -323,13 +344,15 @@ public class OrderService : IOrderService
             await AddCustomerNotificationAsync(
                 customerId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderCreatedTitle", culture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderCreatedMessage", culture, order.CustomerOrderId, order.TotalAmount.ToString("N2")),
+                _localizationService.GetLocalizedString(ResourceName, "OrderCreatedMessage", culture,
+                    order.CustomerOrderId, order.TotalAmount.ToString("N2")),
                 "OrderCreated",
                 order.Id);
 
             // Send Firebase push notification to customer
             var languageCode = culture.TwoLetterISOLanguageName;
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(customerId, order.Id, "Pending", languageCode);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(customerId, order.Id, "Pending",
+                languageCode);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -348,7 +371,8 @@ public class OrderService : IOrderService
         // Authorization: userId must be provided
         if (string.IsNullOrWhiteSpace(userId))
         {
-            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Unauthorized", culture));
+            throw new UnauthorizedAccessException(
+                _localizationService.GetLocalizedString(ResourceName, "Unauthorized", culture));
         }
 
         var order = await _unitOfWork.Orders.Query()
@@ -357,31 +381,36 @@ public class OrderService : IOrderService
 
         if (order == null)
         {
-            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
+            throw new KeyNotFoundException(
+                _localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
         }
 
         // Authorization: Only the customer who owns the order can cancel it
         if (order.CustomerId != userId)
         {
-            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Forbidden", culture));
+            throw new UnauthorizedAccessException(
+                _localizationService.GetLocalizedString(ResourceName, "Forbidden", culture));
         }
 
         // Check if order can be cancelled
         if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled)
         {
-            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "OrderCannotBeCancelled", culture));
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "OrderCannotBeCancelled", culture));
         }
 
         // Customers can only cancel Pending or Preparing orders
         if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Preparing)
         {
-            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "InvalidCancellationStatus", culture));
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "InvalidCancellationStatus", culture));
         }
 
         // Validate reason
         if (string.IsNullOrWhiteSpace(dto.Reason) || dto.Reason.Length < 10)
         {
-            throw new ArgumentException(_localizationService.GetLocalizedString(ResourceName, "InvalidCancellationReason", culture));
+            throw new ArgumentException(
+                _localizationService.GetLocalizedString(ResourceName, "InvalidCancellationReason", culture));
         }
 
         // --- BULK UPDATE LOGIC START ---
@@ -429,13 +458,15 @@ public class OrderService : IOrderService
             await AddCustomerNotificationAsync(
                 order.CustomerId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderCancelledTitle", culture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderCancelledMessage", culture, order.Id.ToString(), dto.Reason),
+                _localizationService.GetLocalizedString(ResourceName, "OrderCancelledMessage", culture,
+                    order.Id.ToString(), dto.Reason),
                 "OrderCancelled",
                 order.Id);
 
             // Send Firebase push notification to customer
             var languageCode = culture.TwoLetterISOLanguageName;
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Cancelled", languageCode);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, orderId, "Cancelled",
+                languageCode);
         }
 
         // Add vendor notification for cancellation
@@ -445,7 +476,8 @@ public class OrderService : IOrderService
             await AddVendorNotificationAsync(
                 order.VendorId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderCancelledByCustomerTitle", culture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderCancelledByCustomerMessage", culture, order.CustomerOrderId, dto.Reason),
+                _localizationService.GetLocalizedString(ResourceName, "OrderCancelledByCustomerMessage", culture,
+                    order.CustomerOrderId, dto.Reason),
                 "OrderCancelledByCustomer",
                 order.Id);
 
@@ -453,7 +485,8 @@ public class OrderService : IOrderService
             if (!string.IsNullOrEmpty(vendor.OwnerId))
             {
                 var languageCode = culture.TwoLetterISOLanguageName;
-                await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Cancelled", languageCode);
+                await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, orderId, "Cancelled",
+                    languageCode);
             }
         }
 
@@ -465,12 +498,14 @@ public class OrderService : IOrderService
     /// <summary>
     /// Sipariş durumunu günceller
     /// </summary>
-    public async Task<bool> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto dto, string? userId, CultureInfo culture)
+    public async Task<bool> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto dto, string? userId,
+        CultureInfo culture)
     {
         // Authorization: userId must be provided
         if (string.IsNullOrWhiteSpace(userId))
         {
-            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Unauthorized", culture));
+            throw new UnauthorizedAccessException(
+                _localizationService.GetLocalizedString(ResourceName, "Unauthorized", culture));
         }
 
         var order = await _unitOfWork.Orders.Query()
@@ -480,7 +515,8 @@ public class OrderService : IOrderService
 
         if (order == null)
         {
-            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
+            throw new KeyNotFoundException(
+                _localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
         }
 
         // Authorization: Check if user has permission to update order status
@@ -492,25 +528,28 @@ public class OrderService : IOrderService
         var isAssignedCourier = await _unitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Courier)
             .AnyAsync(oc => oc.OrderId == orderId &&
-                           oc.Courier != null &&
-                           oc.Courier.UserId == userId &&
-                           oc.IsActive);
+                            oc.Courier != null &&
+                            oc.Courier.UserId == userId &&
+                            oc.IsActive);
 
         if (!isVendorOwner && !isAssignedCourier && !isCustomer)
         {
-            throw new UnauthorizedAccessException(_localizationService.GetLocalizedString(ResourceName, "Forbidden", culture));
+            throw new UnauthorizedAccessException(
+                _localizationService.GetLocalizedString(ResourceName, "Forbidden", culture));
         }
 
         // Parse status
         if (!Enum.TryParse<OrderStatus>(dto.Status, out var newStatus))
         {
-            throw new ArgumentException(_localizationService.GetLocalizedString(ResourceName, "InvalidStatus", culture));
+            throw new ArgumentException(
+                _localizationService.GetLocalizedString(ResourceName, "InvalidStatus", culture));
         }
 
         // Validate status transition
         if (!IsValidStatusTransition(order.Status, newStatus))
         {
-            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "InvalidStatusTransition", culture, order.Status, newStatus));
+            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName,
+                "InvalidStatusTransition", culture, order.Status, newStatus));
         }
 
         // Update order status
@@ -533,26 +572,34 @@ public class OrderService : IOrderService
         {
             var statusMessage = newStatus switch
             {
-                OrderStatus.Preparing => _localizationService.GetLocalizedString(ResourceName, "StatusPreparing", culture),
+                OrderStatus.Preparing => _localizationService.GetLocalizedString(ResourceName, "StatusPreparing",
+                    culture),
                 OrderStatus.Ready => _localizationService.GetLocalizedString(ResourceName, "StatusReady", culture),
-                OrderStatus.Assigned => _localizationService.GetLocalizedString(ResourceName, "StatusAssigned", culture),
-                OrderStatus.Accepted => _localizationService.GetLocalizedString(ResourceName, "StatusAccepted", culture),
-                OrderStatus.OutForDelivery => _localizationService.GetLocalizedString(ResourceName, "StatusOutForDelivery", culture),
-                OrderStatus.Delivered => _localizationService.GetLocalizedString(ResourceName, "StatusDelivered", culture),
-                OrderStatus.Cancelled => _localizationService.GetLocalizedString(ResourceName, "StatusCancelled", culture),
+                OrderStatus.Assigned =>
+                    _localizationService.GetLocalizedString(ResourceName, "StatusAssigned", culture),
+                OrderStatus.Accepted =>
+                    _localizationService.GetLocalizedString(ResourceName, "StatusAccepted", culture),
+                OrderStatus.OutForDelivery => _localizationService.GetLocalizedString(ResourceName,
+                    "StatusOutForDelivery", culture),
+                OrderStatus.Delivered => _localizationService.GetLocalizedString(ResourceName, "StatusDelivered",
+                    culture),
+                OrderStatus.Cancelled => _localizationService.GetLocalizedString(ResourceName, "StatusCancelled",
+                    culture),
                 _ => _localizationService.GetLocalizedString(ResourceName, "StatusUpdated", culture)
             };
 
             await AddCustomerNotificationAsync(
                 order.CustomerId,
                 _localizationService.GetLocalizedString(ResourceName, "OrderStatusChangedTitle", culture),
-                _localizationService.GetLocalizedString(ResourceName, "OrderStatusChangedMessage", culture, order.CustomerOrderId, statusMessage),
+                _localizationService.GetLocalizedString(ResourceName, "OrderStatusChangedMessage", culture,
+                    order.CustomerOrderId, statusMessage),
                 "OrderStatusChanged",
                 order.Id);
 
             // Send Firebase push notification to customer
             var languageCode = culture.TwoLetterISOLanguageName;
-            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id, newStatus.ToString(), languageCode);
+            await _notificationService.SendOrderStatusUpdateNotificationAsync(order.CustomerId, order.Id,
+                newStatus.ToString(), languageCode);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -563,7 +610,8 @@ public class OrderService : IOrderService
     /// <summary>
     /// Satıcı bildirimi ekler
     /// </summary>
-    private async Task AddVendorNotificationAsync(Guid vendorId, string title, string message, string type, Guid? relatedEntityId = null)
+    private async Task AddVendorNotificationAsync(Guid vendorId, string title, string message, string type,
+        Guid? relatedEntityId = null)
     {
         await _unitOfWork.VendorNotifications.AddAsync(new VendorNotification
         {
@@ -578,7 +626,8 @@ public class OrderService : IOrderService
     /// <summary>
     /// Müşteri bildirimi ekler
     /// </summary>
-    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type, Guid? orderId = null)
+    private async Task AddCustomerNotificationAsync(string userId, string title, string message, string type,
+        Guid? orderId = null)
     {
         var customer = await _unitOfWork.Customers.Query()
             .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -624,17 +673,18 @@ public class OrderService : IOrderService
     }
 
 
-
     /// <summary>
     /// Sipariş tutarlarını hesaplar
     /// </summary>
-    public async Task<OrderCalculationResultDto> CalculateOrderAsync(CalculateOrderDto dto, string? userId, CultureInfo culture)
+    public async Task<OrderCalculationResultDto> CalculateOrderAsync(CalculateOrderDto dto, string? userId,
+        CultureInfo culture)
     {
         // 1. Validate vendor exists
         var vendor = await _unitOfWork.Vendors.GetByIdAsync(dto.VendorId);
         if (vendor == null)
         {
-            throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "VendorNotFound", culture));
+            throw new KeyNotFoundException(
+                _localizationService.GetLocalizedString(ResourceName, "VendorNotFound", culture));
         }
 
         // 2. Calculate total and create item details
@@ -649,17 +699,27 @@ public class OrderService : IOrderService
             if (product == null)
             {
                 // If product not found, we could throw or skip. Throwing ensures integrity.
-                throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "ProductNotFound", culture, item.ProductId));
+                throw new KeyNotFoundException(_localizationService.GetLocalizedString(ResourceName, "ProductNotFound",
+                    culture, item.ProductId));
             }
 
-            var lineTotal = product.Price * item.Quantity;
+            decimal itemUnitPrice = product.Price;
+            if (item.SelectedOptions != null)
+            {
+                foreach (var option in item.SelectedOptions)
+                {
+                    itemUnitPrice += option.PriceAdjustment;
+                }
+            }
+
+            var lineTotal = itemUnitPrice * item.Quantity;
             subtotal += lineTotal;
 
             calculationItems.Add(new OrderItemCalculationDto
             {
                 ProductId = item.ProductId,
                 ProductName = product.Name,
-                UnitPrice = product.Price,
+                UnitPrice = itemUnitPrice,
                 Quantity = item.Quantity,
                 TotalPrice = lineTotal
             });
@@ -680,14 +740,16 @@ public class OrderService : IOrderService
 
         // Fetch Base Delivery Fee
         var deliveryFeeStr = await _systemSettingsService.GetSettingAsync("DeliveryFee");
-        if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedFee))
+        if (!string.IsNullOrEmpty(deliveryFeeStr) && decimal.TryParse(deliveryFeeStr, NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var parsedFee))
         {
             deliveryFee = parsedFee;
         }
 
         // Apply Free Delivery Threshold
         var freeDeliveryThresholdStr = await _systemSettingsService.GetSettingAsync("FreeDeliveryThreshold");
-        if (!string.IsNullOrEmpty(freeDeliveryThresholdStr) && decimal.TryParse(freeDeliveryThresholdStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var threshold))
+        if (!string.IsNullOrEmpty(freeDeliveryThresholdStr) && decimal.TryParse(freeDeliveryThresholdStr,
+                NumberStyles.Any, CultureInfo.InvariantCulture, out var threshold))
         {
             if (subtotal >= threshold)
             {
@@ -770,12 +832,12 @@ public class OrderService : IOrderService
         if (dto.CampaignId.HasValue)
         {
             var campaign = await _unitOfWork.Campaigns.Query()
-               .AsNoTracking()
-               .Include(c => c.CampaignCities)
-               .Include(c => c.CampaignDistricts)
-               .Include(c => c.CampaignCategories)
-               .Include(c => c.CampaignProducts)
-               .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
+                .AsNoTracking()
+                .Include(c => c.CampaignCities)
+                .Include(c => c.CampaignDistricts)
+                .Include(c => c.CampaignCategories)
+                .Include(c => c.CampaignProducts)
+                .FirstOrDefaultAsync(c => c.Id == dto.CampaignId.Value && c.IsActive);
 
             if (campaign != null)
             {

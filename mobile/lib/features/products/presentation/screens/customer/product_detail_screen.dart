@@ -45,6 +45,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isLoadingReviews = false;
   List<Product> _similarProducts = [];
   bool _isLoadingSimilarProducts = false;
+  Map<String, Set<String>> _selectedOptions = {};
 
   @override
   void initState() {
@@ -57,6 +58,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _loadSimilarProducts();
       // Log view_item
       AnalyticsService.logViewItem(product: widget.product!);
+      _initOptions();
     } else {
       _loadProduct();
     }
@@ -85,6 +87,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       setState(() {
         _product = product;
         _isLoading = false;
+        _initOptions();
       });
       _checkFavorite();
       _loadReviews();
@@ -790,6 +793,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         const SizedBox(height: 24),
 
+                        _buildProductOptions(),
+                        const SizedBox(height: 24),
+
                         // Similar Products Section
                         if (_isLoadingSimilarProducts)
                           Padding(
@@ -1238,7 +1244,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Expanded(
                       child: Semantics(
                         label:
-                            '${l10n.totalPrice}: ${CurrencyFormatter.format(_product!.price, _product!.currency)}',
+                            '${l10n.totalPrice}: ${CurrencyFormatter.format(_totalPrice, _product!.currency)}',
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -1253,7 +1259,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 4),
                             Text(
                               CurrencyFormatter.format(
-                                _product!.price,
+                                _totalPrice,
                                 _product!.currency,
                               ),
                               style: AppTheme.poppins(
@@ -1338,127 +1344,104 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  List<Map<String, dynamic>> _getSelectedOptionsPayload() {
+    final List<Map<String, dynamic>> payload = [];
+    if (_product == null) return payload;
+
+    for (final group in _product!.optionGroups) {
+      if (group.id == null) continue;
+      final selectedValues = _selectedOptions[group.id!];
+      if (selectedValues == null || selectedValues.isEmpty) continue;
+
+      for (final valueId in selectedValues) {
+        // Find the value object
+        final valueObj = group.options.firstWhere(
+          (v) => v.id == valueId,
+          orElse: () => ProductOptionValue(name: '', priceAdjustment: 0),
+        );
+        if (valueObj.id == null) continue;
+
+        payload.add({
+          'optionId': valueObj.id,
+          'groupName': group.name,
+          'valueName': valueObj.name,
+          'priceAdjustment': valueObj.priceAdjustment,
+        });
+      }
+    }
+    return payload;
+  }
+
   Widget _buildBottomActionButton(BuildContext context, CartProvider cart) {
     final l10n = AppLocalizations.of(context)!;
-    final cartItem = cart.items[_product!.id];
-    final quantity = cartItem?.quantity ?? 0;
 
-    if (quantity > 0) {
-      final bottomColorScheme = Theme.of(context).colorScheme;
-      return Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: bottomColorScheme.primary,
-          borderRadius: BorderRadius.circular(100),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Semantics(
-              label: l10n.adediAzalt,
-              button: true,
-              child: IconButton(
-                icon: const Icon(Icons.remove, color: Colors.white, size: 20),
-                onPressed: () async {
-                  try {
-                    await cart.decreaseQuantity(_product!.id);
-                  } catch (e) {
-                    // Handle error
-                  }
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Semantics(
-              label: '${l10n.miktar}: $quantity',
-              child: Text(
-                '$quantity',
-                style: AppTheme.poppins(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Semantics(
-              label: l10n.adediArtir,
-              button: true,
-              child: IconButton(
-                icon: const Icon(Icons.add, color: Colors.white, size: 20),
-                onPressed: () async {
-                  try {
-                    await cart.increaseQuantity(_product!.id);
-                  } catch (e) {
-                    // Handle error
-                  }
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return GestureDetector(
-        onTap: () async {
-          try {
-            await cart.addItem(_product!, context);
-            if (context.mounted) {
-              // Toast removed as per request
-              // ToastMessage.show(
-              //   context,
-              //   message: l10n.productAddedToCart(_product!.name),
-              //   isSuccess: true,
-              // );
+    return GestureDetector(
+      onTap: () async {
+        // Validate options
+        for (final group in _product!.optionGroups) {
+          if (group.isRequired && group.id != null) {
+            if ((_selectedOptions[group.id!]?.length ?? 0) == 0) {
+              ToastMessage.show(
+                context,
+                message: l10n.optionSelectionRequired(group.name),
+                isSuccess: false,
+              );
+              return;
             }
-          } catch (e) {
-            // Error is handled globally by ApiService interceptor
-            LoggerService().error('Error adding to cart: $e', e);
           }
-        },
-        child: Builder(
-          builder: (context) {
-            final addToCartColorScheme = Theme.of(context).colorScheme;
-            return Semantics(
-              label: l10n.sepeteEkle,
-              button: true,
-              child: Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                decoration: BoxDecoration(
-                  color: addToCartColorScheme.primary,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                alignment: Alignment.center,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.shopping_bag_outlined,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.addToCart,
-                      style: AppTheme.poppins(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+        }
+
+        try {
+          await cart.addItem(
+            _product!,
+            context,
+            selectedOptions: _getSelectedOptionsPayload(),
+          );
+          if (context.mounted) {
+            // Toast removed as per request
+          }
+        } catch (e) {
+          // Error is handled globally by ApiService interceptor
+          LoggerService().error('Error adding to cart: $e', e);
+        }
+      },
+      child: Builder(
+        builder: (context) {
+          final addToCartColorScheme = Theme.of(context).colorScheme;
+          return Semantics(
+            label: l10n.sepeteEkle,
+            button: true,
+            child: Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              decoration: BoxDecoration(
+                color: addToCartColorScheme.primary,
+                borderRadius: BorderRadius.circular(100),
               ),
-            );
-          },
-        ),
-      );
-    }
+              alignment: Alignment.center,
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.addToCart,
+                    style: AppTheme.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _shareProduct() async {
@@ -1692,6 +1675,168 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ],
         ],
       ),
+    );
+  }
+
+  void _initOptions() {
+    if (_product == null) return;
+    _selectedOptions = {};
+    for (final group in _product!.optionGroups) {
+      if (group.id == null) continue;
+      // Auto-select defaults
+      final defaultOptions = group.options
+          .where((o) => o.isDefault && o.id != null)
+          .map((o) => o.id!)
+          .toSet();
+
+      if (defaultOptions.isNotEmpty) {
+        if (!group.allowMultiple && defaultOptions.length > 1) {
+          _selectedOptions[group.id!] = {defaultOptions.first};
+        } else {
+          _selectedOptions[group.id!] = defaultOptions;
+        }
+      }
+    }
+  }
+
+  double get _totalPrice {
+    if (_product == null) return 0;
+    double total = _product!.price;
+    for (final group in _product!.optionGroups) {
+      if (group.id == null) continue;
+      final selectedIds = _selectedOptions[group.id!] ?? {};
+      for (final option in group.options) {
+        if (option.id != null && selectedIds.contains(option.id)) {
+          total += option.priceAdjustment;
+        }
+      }
+    }
+    return total;
+  }
+
+  Widget _buildProductOptions() {
+    if (_product == null || _product!.optionGroups.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final localizations = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Text(
+            localizations.productOptionsTitle,
+            style: AppTheme.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1A1A1A),
+            ),
+          ),
+        ),
+        ..._product!.optionGroups.map((group) {
+          if (group.id == null) return const SizedBox.shrink();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      group.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (group.isRequired)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red[50],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          localizations.vendorProductFormRequired,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              ...group.options.map((option) {
+                if (option.id == null) return const SizedBox.shrink();
+                final isSelected =
+                    _selectedOptions[group.id!]?.contains(option.id) ?? false;
+
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      final currentSet = _selectedOptions[group.id!] ?? {};
+                      if (group.allowMultiple) {
+                        if (isSelected) {
+                          currentSet.remove(option.id);
+                        } else {
+                          // Check max selection?
+                          currentSet.add(option.id!);
+                        }
+                      } else {
+                        currentSet
+                          ..clear()
+                          ..add(option.id!);
+                      }
+                      _selectedOptions[group.id!] = currentSet;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        if (group.allowMultiple)
+                          Icon(
+                            isSelected
+                                ? Icons.check_box
+                                : Icons.check_box_outline_blank,
+                            color: isSelected
+                                ? AppTheme.primaryOrange
+                                : Colors.grey,
+                          )
+                        else
+                          Icon(
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: isSelected
+                                ? AppTheme.primaryOrange
+                                : Colors.grey,
+                          ),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text(option.name)),
+                        if (option.priceAdjustment > 0)
+                          Text(
+                            '+${CurrencyFormatter.format(option.priceAdjustment, _product!.currency)}',
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const Divider(),
+            ],
+          );
+        }),
+      ],
     );
   }
 }

@@ -2958,4 +2958,75 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get withdrawalRequests => 'طلبات السحب';
+
+  @override
+  String get vendorProductFormOptionsTitle => 'الخيارات والإضافات';
+
+  @override
+  String get vendorProductFormNoOptions => 'لم يتم إضافة خيارات بعد.';
+
+  @override
+  String get vendorProductFormAddGroup => 'إضافة مجموعة';
+
+  @override
+  String get vendorProductFormEditGroup => 'تعديل المجموعة';
+
+  @override
+  String get vendorProductFormGroupNameLabel =>
+      'اسم المجموعة (مثال: الحجم، الصلصات)';
+
+  @override
+  String get vendorProductFormRequiredLabel => 'اختيار إجباري';
+
+  @override
+  String get vendorProductFormMultiSelectLabel => 'اختيار متعدد';
+
+  @override
+  String get vendorProductFormSingleSelectLabel => 'اختيار فردي';
+
+  @override
+  String get vendorProductFormRequired => 'مطلوب';
+
+  @override
+  String get vendorProductFormOptional => 'اختياري';
+
+  @override
+  String get vendorProductFormAddOption => 'إضافة خيار جديد';
+
+  @override
+  String get vendorProductFormCategoryRequired => 'اختيار الفئة مطلوب';
+
+  @override
+  String get vendorProductFormCurrencyLabel => 'العملة';
+
+  @override
+  String get vendorProductFormPriceAdjustment => 'تعديل السعر';
+
+  @override
+  String get vendorProductFormMinSelection => 'الحد الأدنى للاختيار';
+
+  @override
+  String get vendorProductFormMaxSelection =>
+      'الحد الأقصى للاختيار (0 = غير محدود)';
+
+  @override
+  String get vendorProductFormAddOptionTitle => 'إضافة خيار';
+
+  @override
+  String get vendorProductFormEditOptionTitle => 'تعديل الخيار';
+
+  @override
+  String get vendorProductFormOptionNameLabel =>
+      'اسم الخيار (مثال: كبير، صوص حار)';
+
+  @override
+  String get vendorProductFormDefaultSelected => 'محدد افتراضيًا';
+
+  @override
+  String get productOptionsTitle => 'الخيارات';
+
+  @override
+  String optionSelectionRequired(String name) {
+    return 'مطلوب اختيار $name';
+  }
 }

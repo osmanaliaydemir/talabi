@@ -823,17 +823,32 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  if (item['selectedOptions'] != null &&
+                                      (item['selectedOptions'] as List)
+                                          .isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      (item['selectedOptions'] as List)
+                                          .map(
+                                            (o) =>
+                                                "${o['groupName']}: ${o['valueName']}",
+                                          )
+                                          .join(','),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
                                   Text(
-                                    '${item['quantity']} adet x ${CurrencyFormatter.format(item['unitPrice'].toDouble(), displayCurrency)}',
+                                    '${item['quantity']} x ${(item['unitPrice'] as num).toDouble().toStringAsFixed(2)} ₺',
+                                    style: TextStyle(color: Colors.grey[600]),
                                   ),
                                 ],
                               ),
                             ),
                             Text(
-                              CurrencyFormatter.format(
-                                item['totalPrice'].toDouble(),
-                                displayCurrency,
-                              ),
+                              '${(item['totalPrice'] as num).toDouble().toStringAsFixed(2)} ₺',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),

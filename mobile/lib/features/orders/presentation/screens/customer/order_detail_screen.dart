@@ -603,6 +603,31 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                           ),
                                                         ),
                                                       ),
+                                                      if (item.selectedOptions !=
+                                                              null &&
+                                                          item
+                                                              .selectedOptions!
+                                                              .isNotEmpty) ...[
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Text(
+                                                          item.selectedOptions!
+                                                              .map(
+                                                                (o) =>
+                                                                    "${o['groupName']}: ${o['valueName']}",
+                                                              )
+                                                              .join(', '),
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors
+                                                                .grey[600],
+                                                          ),
+                                                          maxLines: 2,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ],
                                                       if (item.isCancelled)
                                                         Container(
                                                           padding:

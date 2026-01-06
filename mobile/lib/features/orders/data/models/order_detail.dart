@@ -113,6 +113,7 @@ class OrderItemDetail {
     this.isCancelled = false,
     this.cancelledAt,
     this.cancelReason,
+    this.selectedOptions,
   });
 
   factory OrderItemDetail.fromJson(Map<String, dynamic> json) {
@@ -129,6 +130,9 @@ class OrderItemDetail {
           ? DateTime.parse(json['cancelledAt'])
           : null,
       cancelReason: json['cancelReason']?.toString(),
+      selectedOptions: (json['selectedOptions'] as List?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
     );
   }
   final String productId;
@@ -141,6 +145,7 @@ class OrderItemDetail {
   final bool isCancelled;
   final DateTime? cancelledAt;
   final String? cancelReason;
+  final List<Map<String, dynamic>>? selectedOptions;
 }
 
 class OrderStatusHistory {

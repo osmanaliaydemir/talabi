@@ -64,6 +64,7 @@ public class VendorOrderItemDto
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }
+    public List<CartItemOptionDto>? SelectedOptions { get; set; }
 }
 
 public class SalesReportDto

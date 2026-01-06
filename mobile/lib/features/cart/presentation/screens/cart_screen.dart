@@ -19,6 +19,8 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/campaigns/data/models/campaign.dart';
+import 'package:mobile/features/cart/data/models/cart_item.dart';
+import 'package:mobile/features/products/data/models/product.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key, this.showBackButton = false});
@@ -156,7 +158,7 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
-  Future<void> _toggleFavorite(product) async {
+  Future<void> _toggleFavorite(Product product) async {
     final productId = product.id.toString();
     final isFav = _favoriteStatus[productId] ?? false;
 
@@ -296,16 +298,20 @@ class _CartScreenState extends State<CartScreen> {
                             return Column(
                               children: [
                                 _SlidableCartItem(
-                                  key: Key('slidable_cart_item_${product.id}'),
-                                  onDelete: () => cart.removeItem(product.id),
+                                  key: ValueKey(
+                                    cartItem.backendId ?? product.id,
+                                  ),
+                                  onDelete: () {
+                                    if (cartItem.backendId != null) {
+                                      cart.removeItem(cartItem.backendId!);
+                                    }
+                                  },
                                   onFavorite: () => _toggleFavorite(product),
                                   isFavorite:
-                                      _favoriteStatus[product.id.toString()] ??
-                                      false,
+                                      _favoriteStatus[product.id] ?? false,
                                   child: _buildCartItem(
                                     context,
-                                    product,
-                                    cartItem.quantity,
+                                    cartItem,
                                     cart,
                                   ),
                                 ),
@@ -619,11 +625,11 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildCartItem(
     BuildContext context,
-    product,
-    int quantity,
+    CartItem cartItem,
     CartProvider cart,
   ) {
     final localizations = AppLocalizations.of(context)!;
+    final product = cartItem.product;
     return MergeSemantics(
       child: Container(
         margin: EdgeInsets.zero,
@@ -721,6 +727,25 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
+                        if (cartItem.selectedOptions != null &&
+                            cartItem.selectedOptions!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              cartItem.selectedOptions!
+                                  .map(
+                                    (o) =>
+                                        "${o['groupName']}: ${o['valueName']}",
+                                  )
+                                  .join(', '),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         Semantics(
                           label:
                               '${localizations.fiyat}: ${CurrencyFormatter.format(product.price, product.currency)}',
@@ -736,7 +761,9 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ),
                         ),
-                        if (cart.isItemDiscounted(product.id)) ...[
+                        if (cart.isItemDiscounted(
+                          cartItem.backendId ?? product.id,
+                        )) ...[
                           const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -784,7 +811,7 @@ class _CartScreenState extends State<CartScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Sol: Beyaz arka planlı eksi butonu
+                                // Decrease Button
                                 Semantics(
                                   label: localizations.adediAzalt,
                                   button: true,
@@ -798,53 +825,33 @@ class _CartScreenState extends State<CartScreen> {
                                     child: IconButton(
                                       icon: const Icon(
                                         Icons.remove,
-                                        color: Colors.grey,
-                                        size: 14,
+                                        size: 16,
+                                        color: Colors.black,
                                       ),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () async {
-                                        try {
-                                          await cart.decreaseQuantity(
-                                            product.id,
+                                      onPressed: () {
+                                        if (cartItem.backendId != null) {
+                                          cart.decreaseQuantity(
+                                            cartItem.backendId!,
                                           );
-                                        } catch (e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  localizations
-                                                      .errorWithMessage('$e'),
-                                                ),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                          }
                                         }
                                       },
+                                      padding: EdgeInsets.zero,
                                     ),
                                   ),
                                 ),
-                                // Orta: Gri arka plan üzerinde sayı
+                                // Quantity Text
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                  child: Semantics(
-                                    label: '${localizations.miktar}: $quantity',
-                                    child: Text(
-                                      '$quantity',
-                                      style: TextStyle(
-                                        color: Colors.grey[800],
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  width: 32,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '${cartItem.quantity}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                                // Sağ: Turuncu arka planlı artı butonu
+                                // Increase Button
                                 Semantics(
                                   label: localizations.adediArtir,
                                   button: true,
@@ -852,38 +859,23 @@ class _CartScreenState extends State<CartScreen> {
                                     width: 24,
                                     height: 24,
                                     decoration: const BoxDecoration(
-                                      color: AppTheme.primaryOrange,
+                                      color: Colors.white,
                                       shape: BoxShape.circle,
                                     ),
                                     child: IconButton(
                                       icon: const Icon(
                                         Icons.add,
-                                        color: Colors.white,
-                                        size: 14,
+                                        size: 16,
+                                        color: Colors.black,
                                       ),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () async {
-                                        try {
-                                          await cart.increaseQuantity(
-                                            product.id,
+                                      onPressed: () {
+                                        if (cartItem.backendId != null) {
+                                          cart.increaseQuantity(
+                                            cartItem.backendId!,
                                           );
-                                        } catch (e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  localizations
-                                                      .errorWithMessage('$e'),
-                                                ),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                          }
                                         }
                                       },
+                                      padding: EdgeInsets.zero,
                                     ),
                                   ),
                                 ),

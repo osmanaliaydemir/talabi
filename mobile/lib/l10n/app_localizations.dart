@@ -5589,6 +5589,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Withdrawal Requests'**
   String get withdrawalRequests;
+
+  /// Title for product options section
+  ///
+  /// In en, this message translates to:
+  /// **'Options & Extras'**
+  String get vendorProductFormOptionsTitle;
+
+  /// Message when no options are added
+  ///
+  /// In en, this message translates to:
+  /// **'No options added yet.'**
+  String get vendorProductFormNoOptions;
+
+  /// Button to add a new option group
+  ///
+  /// In en, this message translates to:
+  /// **'Add Group'**
+  String get vendorProductFormAddGroup;
+
+  /// Title for edit group dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Group'**
+  String get vendorProductFormEditGroup;
+
+  /// Label for group name input
+  ///
+  /// In en, this message translates to:
+  /// **'Group Name (e.g. Size, Sauces)'**
+  String get vendorProductFormGroupNameLabel;
+
+  /// Label for required selection switch
+  ///
+  /// In en, this message translates to:
+  /// **'Required Selection'**
+  String get vendorProductFormRequiredLabel;
+
+  /// Label for multi selection switch
+  ///
+  /// In en, this message translates to:
+  /// **'Multi Selection'**
+  String get vendorProductFormMultiSelectLabel;
+
+  /// Label for single selection
+  ///
+  /// In en, this message translates to:
+  /// **'Single Selection'**
+  String get vendorProductFormSingleSelectLabel;
+
+  /// Badge for required options
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get vendorProductFormRequired;
+
+  /// Badge for optional options
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get vendorProductFormOptional;
+
+  /// Button to add a new option value
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Option'**
+  String get vendorProductFormAddOption;
+
+  /// Validation error for category
+  ///
+  /// In en, this message translates to:
+  /// **'Category selection is required'**
+  String get vendorProductFormCategoryRequired;
+
+  /// Label for currency dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get vendorProductFormCurrencyLabel;
+
+  /// Label for price adjustment input
+  ///
+  /// In en, this message translates to:
+  /// **'Price Adjustment'**
+  String get vendorProductFormPriceAdjustment;
+
+  /// Label for min selection
+  ///
+  /// In en, this message translates to:
+  /// **'Min Selection'**
+  String get vendorProductFormMinSelection;
+
+  /// Label for max selection
+  ///
+  /// In en, this message translates to:
+  /// **'Max Selection (0 = Unlimited)'**
+  String get vendorProductFormMaxSelection;
+
+  /// Title for add option dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Add Option'**
+  String get vendorProductFormAddOptionTitle;
+
+  /// Title for edit option dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Option'**
+  String get vendorProductFormEditOptionTitle;
+
+  /// Label for option name input
+  ///
+  /// In en, this message translates to:
+  /// **'Option Name (e.g. Large, Hot Sauce)'**
+  String get vendorProductFormOptionNameLabel;
+
+  /// Checkbox for default selection
+  ///
+  /// In en, this message translates to:
+  /// **'Default Selected'**
+  String get vendorProductFormDefaultSelected;
+
+  /// Title for options section in product detail
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get productOptionsTitle;
+
+  /// No description provided for @optionSelectionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Selection of {name} is required.'**
+  String optionSelectionRequired(String name);
 }
 
 class _AppLocalizationsDelegate

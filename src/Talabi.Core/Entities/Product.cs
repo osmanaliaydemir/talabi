@@ -21,4 +21,6 @@ public class Product : BaseEntity
     public bool IsAvailable { get; set; } = true;
     public int? Stock { get; set; }
     public int? PreparationTime { get; set; } // in minutes
+
+    public ICollection<ProductOptionGroup> OptionGroups { get; set; } = new List<ProductOptionGroup>();
 }

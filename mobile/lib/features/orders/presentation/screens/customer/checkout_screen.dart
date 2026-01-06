@@ -115,7 +115,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final items = widget.cartItems.entries
           .map(
-            (e) => OrderItemDto(productId: e.key, quantity: e.value.quantity),
+            (e) => OrderItemDto(
+              productId: e.key,
+              quantity: e.value.quantity,
+              selectedOptions: e.value.selectedOptions,
+            ),
           )
           .toList();
 
@@ -221,9 +225,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
 
     try {
-      final orderItems = <String, int>{};
+      final orderItems = <Map<String, dynamic>>[];
       for (final item in widget.cartItems.values) {
-        orderItems[item.product.id] = item.quantity;
+        final Map<String, dynamic> itemData = {
+          'productId': item.product.id,
+          'quantity': item.quantity,
+        };
+        if (item.selectedOptions != null) {
+          itemData['selectedOptions'] = item.selectedOptions;
+        }
+        orderItems.add(itemData);
       }
 
       final addressId = _selectedAddress!['id'];
@@ -1462,10 +1473,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(
-                        '${item.product.name} x${item.quantity}',
-                        style: const TextStyle(fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${item.product.name} x${item.quantity}',
+                            style: const TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (item.selectedOptions != null &&
+                              item.selectedOptions!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                item.selectedOptions!
+                                    .map(
+                                      (o) =>
+                                          "${o['groupName']}: ${o['valueName']}",
+                                    )
+                                    .join(', '),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),

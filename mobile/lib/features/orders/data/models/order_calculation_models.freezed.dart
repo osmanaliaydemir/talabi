@@ -264,6 +264,8 @@ OrderItemDto _$OrderItemDtoFromJson(Map<String, dynamic> json) {
 mixin _$OrderItemDto {
   String get productId => throw _privateConstructorUsedError;
   int get quantity => throw _privateConstructorUsedError;
+  List<Map<String, dynamic>>? get selectedOptions =>
+      throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -277,7 +279,10 @@ abstract class $OrderItemDtoCopyWith<$Res> {
           OrderItemDto value, $Res Function(OrderItemDto) then) =
       _$OrderItemDtoCopyWithImpl<$Res, OrderItemDto>;
   @useResult
-  $Res call({String productId, int quantity});
+  $Res call(
+      {String productId,
+      int quantity,
+      List<Map<String, dynamic>>? selectedOptions});
 }
 
 /// @nodoc
@@ -295,6 +300,7 @@ class _$OrderItemDtoCopyWithImpl<$Res, $Val extends OrderItemDto>
   $Res call({
     Object? productId = null,
     Object? quantity = null,
+    Object? selectedOptions = freezed,
   }) {
     return _then(_value.copyWith(
       productId: null == productId
@@ -305,6 +311,10 @@ class _$OrderItemDtoCopyWithImpl<$Res, $Val extends OrderItemDto>
           ? _value.quantity
           : quantity // ignore: cast_nullable_to_non_nullable
               as int,
+      selectedOptions: freezed == selectedOptions
+          ? _value.selectedOptions
+          : selectedOptions // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>?,
     ) as $Val);
   }
 }
@@ -317,7 +327,10 @@ abstract class _$$OrderItemDtoImplCopyWith<$Res>
       __$$OrderItemDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String productId, int quantity});
+  $Res call(
+      {String productId,
+      int quantity,
+      List<Map<String, dynamic>>? selectedOptions});
 }
 
 /// @nodoc
@@ -333,6 +346,7 @@ class __$$OrderItemDtoImplCopyWithImpl<$Res>
   $Res call({
     Object? productId = null,
     Object? quantity = null,
+    Object? selectedOptions = freezed,
   }) {
     return _then(_$OrderItemDtoImpl(
       productId: null == productId
@@ -343,6 +357,10 @@ class __$$OrderItemDtoImplCopyWithImpl<$Res>
           ? _value.quantity
           : quantity // ignore: cast_nullable_to_non_nullable
               as int,
+      selectedOptions: freezed == selectedOptions
+          ? _value._selectedOptions
+          : selectedOptions // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>?,
     ));
   }
 }
@@ -350,7 +368,11 @@ class __$$OrderItemDtoImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$OrderItemDtoImpl implements _OrderItemDto {
-  const _$OrderItemDtoImpl({required this.productId, required this.quantity});
+  const _$OrderItemDtoImpl(
+      {required this.productId,
+      required this.quantity,
+      final List<Map<String, dynamic>>? selectedOptions})
+      : _selectedOptions = selectedOptions;
 
   factory _$OrderItemDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderItemDtoImplFromJson(json);
@@ -359,10 +381,19 @@ class _$OrderItemDtoImpl implements _OrderItemDto {
   final String productId;
   @override
   final int quantity;
+  final List<Map<String, dynamic>>? _selectedOptions;
+  @override
+  List<Map<String, dynamic>>? get selectedOptions {
+    final value = _selectedOptions;
+    if (value == null) return null;
+    if (_selectedOptions is EqualUnmodifiableListView) return _selectedOptions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'OrderItemDto(productId: $productId, quantity: $quantity)';
+    return 'OrderItemDto(productId: $productId, quantity: $quantity, selectedOptions: $selectedOptions)';
   }
 
   @override
@@ -373,12 +404,15 @@ class _$OrderItemDtoImpl implements _OrderItemDto {
             (identical(other.productId, productId) ||
                 other.productId == productId) &&
             (identical(other.quantity, quantity) ||
-                other.quantity == quantity));
+                other.quantity == quantity) &&
+            const DeepCollectionEquality()
+                .equals(other._selectedOptions, _selectedOptions));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, productId, quantity);
+  int get hashCode => Object.hash(runtimeType, productId, quantity,
+      const DeepCollectionEquality().hash(_selectedOptions));
 
   @JsonKey(ignore: true)
   @override
@@ -397,7 +431,8 @@ class _$OrderItemDtoImpl implements _OrderItemDto {
 abstract class _OrderItemDto implements OrderItemDto {
   const factory _OrderItemDto(
       {required final String productId,
-      required final int quantity}) = _$OrderItemDtoImpl;
+      required final int quantity,
+      final List<Map<String, dynamic>>? selectedOptions}) = _$OrderItemDtoImpl;
 
   factory _OrderItemDto.fromJson(Map<String, dynamic> json) =
       _$OrderItemDtoImpl.fromJson;
@@ -406,6 +441,8 @@ abstract class _OrderItemDto implements OrderItemDto {
   String get productId;
   @override
   int get quantity;
+  @override
+  List<Map<String, dynamic>>? get selectedOptions;
   @override
   @JsonKey(ignore: true)
   _$$OrderItemDtoImplCopyWith<_$OrderItemDtoImpl> get copyWith =>

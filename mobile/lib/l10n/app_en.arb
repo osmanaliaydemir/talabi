@@ -3833,5 +3833,97 @@
   "withdrawalRequests": "Withdrawal Requests",
   "@withdrawalRequests": {
     "description": "Title for withdrawal requests section"
+  },
+  "vendorProductFormOptionsTitle": "Options & Extras",
+  "@vendorProductFormOptionsTitle": {
+    "description": "Title for product options section"
+  },
+  "vendorProductFormNoOptions": "No options added yet.",
+  "@vendorProductFormNoOptions": {
+    "description": "Message when no options are added"
+  },
+  "vendorProductFormAddGroup": "Add Group",
+  "@vendorProductFormAddGroup": {
+    "description": "Button to add a new option group"
+  },
+  "vendorProductFormEditGroup": "Edit Group",
+  "@vendorProductFormEditGroup": {
+    "description": "Title for edit group dialog"
+  },
+  "vendorProductFormGroupNameLabel": "Group Name (e.g. Size, Sauces)",
+  "@vendorProductFormGroupNameLabel": {
+    "description": "Label for group name input"
+  },
+  "vendorProductFormRequiredLabel": "Required Selection",
+  "@vendorProductFormRequiredLabel": {
+    "description": "Label for required selection switch"
+  },
+  "vendorProductFormMultiSelectLabel": "Multi Selection",
+  "@vendorProductFormMultiSelectLabel": {
+    "description": "Label for multi selection switch"
+  },
+  "vendorProductFormSingleSelectLabel": "Single Selection",
+  "@vendorProductFormSingleSelectLabel": {
+    "description": "Label for single selection"
+  },
+  "vendorProductFormRequired": "Required",
+  "@vendorProductFormRequired": {
+    "description": "Badge for required options"
+  },
+  "vendorProductFormOptional": "Optional",
+  "@vendorProductFormOptional": {
+    "description": "Badge for optional options"
+  },
+  "vendorProductFormAddOption": "Add New Option",
+  "@vendorProductFormAddOption": {
+    "description": "Button to add a new option value"
+  },
+  "vendorProductFormCategoryRequired": "Category selection is required",
+  "@vendorProductFormCategoryRequired": {
+    "description": "Validation error for category"
+  },
+  "vendorProductFormCurrencyLabel": "Currency",
+  "@vendorProductFormCurrencyLabel": {
+    "description": "Label for currency dropdown"
+  },
+  "vendorProductFormPriceAdjustment": "Price Adjustment",
+  "@vendorProductFormPriceAdjustment": {
+    "description": "Label for price adjustment input"
+  },
+  "vendorProductFormMinSelection": "Min Selection",
+  "@vendorProductFormMinSelection": {
+    "description": "Label for min selection"
+  },
+  "vendorProductFormMaxSelection": "Max Selection (0 = Unlimited)",
+  "@vendorProductFormMaxSelection": {
+    "description": "Label for max selection"
+  },
+  "vendorProductFormAddOptionTitle": "Add Option",
+  "@vendorProductFormAddOptionTitle": {
+    "description": "Title for add option dialog"
+  },
+  "vendorProductFormEditOptionTitle": "Edit Option",
+  "@vendorProductFormEditOptionTitle": {
+    "description": "Title for edit option dialog"
+  },
+  "vendorProductFormOptionNameLabel": "Option Name (e.g. Large, Hot Sauce)",
+  "@vendorProductFormOptionNameLabel": {
+    "description": "Label for option name input"
+  },
+  "vendorProductFormDefaultSelected": "Default Selected",
+  "@vendorProductFormDefaultSelected": {
+    "description": "Checkbox for default selection"
+  },
+  "productOptionsTitle": "Options",
+  "@productOptionsTitle": {
+    "description": "Title for options section in product detail"
+  },
+  "optionSelectionRequired": "Selection of {name} is required.",
+  "@optionSelectionRequired": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

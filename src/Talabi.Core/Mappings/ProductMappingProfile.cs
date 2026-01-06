@@ -14,13 +14,28 @@ public class ProductMappingProfile : Profile
         // Product -> ProductDto
         CreateMap<Product, ProductDto>()
             .ForMember(dest => dest.VendorName, opt => opt.MapFrom(src => src.Vendor != null ? src.Vendor.Name : null))
-            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category ?? (src.ProductCategory != null ? src.ProductCategory.Name : null)))
-            .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId ?? (src.ProductCategory != null ? src.ProductCategory.Id : (Guid?)null)))
-            .ForMember(dest => dest.VendorType, opt => opt.MapFrom(src => src.VendorType ?? (src.Vendor != null ? src.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)));
+            .ForMember(dest => dest.Category,
+                opt => opt.MapFrom(src =>
+                    src.Category ?? (src.ProductCategory != null ? src.ProductCategory.Name : null)))
+            .ForMember(dest => dest.CategoryId,
+                opt => opt.MapFrom(src =>
+                    src.CategoryId ?? (src.ProductCategory != null ? src.ProductCategory.Id : (Guid?)null)))
+            .ForMember(dest => dest.VendorType,
+                opt => opt.MapFrom(src =>
+                    src.VendorType ?? (src.Vendor != null ? src.Vendor.Type : (Talabi.Core.Enums.VendorType?)null)));
 
         // Product -> VendorProductDto
         CreateMap<Product, VendorProductDto>()
-            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category ?? (src.ProductCategory != null ? src.ProductCategory.Name : null)))
-            .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId ?? (src.ProductCategory != null ? src.ProductCategory.Id : (Guid?)null)));
+            .ForMember(dest => dest.Category,
+                opt => opt.MapFrom(src =>
+                    src.Category ?? (src.ProductCategory != null ? src.ProductCategory.Name : null)))
+            .ForMember(dest => dest.CategoryId,
+                opt => opt.MapFrom(src =>
+                    src.CategoryId ?? (src.ProductCategory != null ? src.ProductCategory.Id : (Guid?)null)));
+
+        CreateMap<ProductOptionGroup, ProductOptionGroupDto>();
+        CreateMap<ProductOptionValue, ProductOptionValueDto>();
+        CreateMap<CreateProductOptionGroupDto, ProductOptionGroup>();
+        CreateMap<CreateProductOptionValueDto, ProductOptionValue>();
     }
 }

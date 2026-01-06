@@ -2991,4 +2991,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get withdrawalRequests => 'Withdrawal Requests';
+
+  @override
+  String get vendorProductFormOptionsTitle => 'Options & Extras';
+
+  @override
+  String get vendorProductFormNoOptions => 'No options added yet.';
+
+  @override
+  String get vendorProductFormAddGroup => 'Add Group';
+
+  @override
+  String get vendorProductFormEditGroup => 'Edit Group';
+
+  @override
+  String get vendorProductFormGroupNameLabel =>
+      'Group Name (e.g. Size, Sauces)';
+
+  @override
+  String get vendorProductFormRequiredLabel => 'Required Selection';
+
+  @override
+  String get vendorProductFormMultiSelectLabel => 'Multi Selection';
+
+  @override
+  String get vendorProductFormSingleSelectLabel => 'Single Selection';
+
+  @override
+  String get vendorProductFormRequired => 'Required';
+
+  @override
+  String get vendorProductFormOptional => 'Optional';
+
+  @override
+  String get vendorProductFormAddOption => 'Add New Option';
+
+  @override
+  String get vendorProductFormCategoryRequired =>
+      'Category selection is required';
+
+  @override
+  String get vendorProductFormCurrencyLabel => 'Currency';
+
+  @override
+  String get vendorProductFormPriceAdjustment => 'Price Adjustment';
+
+  @override
+  String get vendorProductFormMinSelection => 'Min Selection';
+
+  @override
+  String get vendorProductFormMaxSelection => 'Max Selection (0 = Unlimited)';
+
+  @override
+  String get vendorProductFormAddOptionTitle => 'Add Option';
+
+  @override
+  String get vendorProductFormEditOptionTitle => 'Edit Option';
+
+  @override
+  String get vendorProductFormOptionNameLabel =>
+      'Option Name (e.g. Large, Hot Sauce)';
+
+  @override
+  String get vendorProductFormDefaultSelected => 'Default Selected';
+
+  @override
+  String get productOptionsTitle => 'Options';
+
+  @override
+  String optionSelectionRequired(String name) {
+    return 'Selection of $name is required.';
+  }
 }

@@ -12,7 +12,7 @@ class OrderRemoteDataSource {
 
   Future<Order> createOrder(
     String vendorId,
-    Map<String, int> items, {
+    List<Map<String, dynamic>> items, {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
@@ -21,9 +21,7 @@ class OrderRemoteDataSource {
   }) async {
     final data = {
       'vendorId': vendorId,
-      'items': items.entries
-          .map((e) => {'productId': e.key, 'quantity': e.value})
-          .toList(),
+      'items': items,
       'deliveryAddressId': deliveryAddressId,
       'paymentMethod': paymentMethod,
       'note': note,

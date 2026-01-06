@@ -252,7 +252,7 @@ class ApiService {
 
   Future<Order> createOrder(
     String vendorId,
-    Map<String, int> items, {
+    List<Map<String, dynamic>> items, {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
@@ -467,9 +467,17 @@ class ApiService {
     }
   }
 
-  Future<void> addToCart(String productId, int quantity) async {
+  Future<void> addToCart(
+    String productId,
+    int quantity, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) async {
     try {
-      await _cartRemoteDataSource.addToCart(productId, quantity);
+      await _cartRemoteDataSource.addToCart(
+        productId,
+        quantity,
+        selectedOptions: selectedOptions,
+      );
     } catch (e, stackTrace) {
       LoggerService().error('Error adding to cart', e, stackTrace);
       rethrow;

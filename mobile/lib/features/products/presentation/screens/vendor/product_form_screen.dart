@@ -42,6 +42,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   String? _selectedCategoryId;
   bool _isLoadingCategories = false;
   Currency _selectedCurrency = Currency.try_;
+  List<ProductOptionGroup> _optionGroups = [];
 
   @override
   void initState() {
@@ -69,6 +70,9 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     _isAvailable = widget.product?.isAvailable ?? true;
     _imageUrl = widget.product?.imageUrl;
     _selectedCurrency = widget.product?.currency ?? Currency.try_;
+    if (widget.product != null) {
+      _optionGroups = List.from(widget.product!.optionGroups);
+    }
   }
 
   @override
@@ -81,6 +85,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     setState(() {
       _isLoadingCategories = true;
     });
+    final localeName = AppLocalizations.of(context)?.localeName;
     try {
       // First fetch vendor profile to get vendor type
       final vendorProfile = await _apiService.getVendorProfile();
@@ -91,7 +96,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       }
 
       final categories = await _apiService.getCategories(
-        language: AppLocalizations.of(context)?.localeName,
+        language: localeName,
         pageSize: 100,
         vendorType: vendorType,
       );
@@ -281,6 +286,28 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         'preparationTime': _preparationTimeController.text.isEmpty
             ? null
             : int.parse(_preparationTimeController.text),
+        'optionGroups': _optionGroups
+            .map(
+              (g) => {
+                'name': g.name,
+                'isRequired': g.isRequired,
+                'allowMultiple': g.allowMultiple,
+                'minSelection': g.minSelection,
+                'maxSelection': g.maxSelection,
+                'displayOrder': g.displayOrder,
+                'options': g.options
+                    .map(
+                      (o) => {
+                        'name': o.name,
+                        'priceAdjustment': o.priceAdjustment,
+                        'isDefault': o.isDefault,
+                        'displayOrder': o.displayOrder,
+                      },
+                    )
+                    .toList(),
+              },
+            )
+            .toList(),
       };
 
       if (widget.product == null) {
@@ -441,7 +468,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
               },
               validator: (value) {
                 if (value == null) {
-                  return 'Kategori seçimi zorunludur';
+                  return localizations.vendorProductFormCategoryRequired;
                 }
                 return null;
               },
@@ -451,10 +478,10 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             // Currency
             DropdownButtonFormField<Currency>(
               initialValue: _selectedCurrency,
-              decoration: const InputDecoration(
-                labelText: 'Para Birimi',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.currency_exchange),
+              decoration: InputDecoration(
+                labelText: localizations.vendorProductFormCurrencyLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.currency_exchange),
               ),
               items: Currency.values.map((currency) {
                 return DropdownMenuItem(
@@ -535,6 +562,9 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             ),
             const SizedBox(height: 16),
 
+            _buildOptionsSection(),
+            const SizedBox(height: 16),
+
             // Availability switch
             SwitchListTile(
               title: Text(localizations.vendorProductFormInStockLabel),
@@ -590,17 +620,323 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   }
 
   Widget _buildImagePlaceholder() {
-    final localizations = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey[400]),
-        const SizedBox(height: 8),
-        Text(
-          localizations.vendorProductFormAddImage,
-          style: TextStyle(color: Colors.grey[600]),
-        ),
       ],
+    );
+  }
+
+  Widget _buildOptionsSection() {
+    final localizations = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              localizations.vendorProductFormOptionsTitle,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_circle, color: AppTheme.primaryOrange),
+              onPressed: () => _editOptionGroupDialog(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_optionGroups.isEmpty)
+          Text(
+            localizations.vendorProductFormNoOptions,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontStyle: FontStyle.italic,
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _optionGroups.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final group = _optionGroups[index];
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ExpansionTile(
+                  title: Text(
+                    group.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    '${group.isRequired ? localizations.vendorProductFormRequired : localizations.vendorProductFormOptional} • ${group.allowMultiple ? localizations.vendorProductFormMultiSelectLabel : localizations.vendorProductFormSingleSelectLabel}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 20),
+                        onPressed: () =>
+                            _editOptionGroupDialog(group: group, index: index),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _optionGroups.removeAt(index);
+                          });
+                        },
+                      ),
+                      const Icon(Icons.expand_more),
+                    ],
+                  ),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        children: [
+                          ...group.options.asMap().entries.map((entry) {
+                            final vIndex = entry.key;
+                            final value = entry.value;
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(value.name),
+                              subtitle: Text(
+                                "${value.priceAdjustment > 0 ? '+' : ''}${value.priceAdjustment} ${_selectedCurrency.symbol}",
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, size: 18),
+                                    onPressed: () => _editOptionValueDialog(
+                                      groupIndex: index,
+                                      value: value,
+                                      valueIndex: vIndex,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                      size: 18,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        group.options.removeAt(vIndex);
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                          TextButton.icon(
+                            onPressed: () =>
+                                _editOptionValueDialog(groupIndex: index),
+                            icon: const Icon(Icons.add),
+                            label: Text(
+                              localizations.vendorProductFormAddOption,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  void _editOptionGroupDialog({ProductOptionGroup? group, int? index}) {
+    final nameController = TextEditingController(text: group?.name ?? '');
+    bool isRequired = group?.isRequired ?? false;
+    bool allowMultiple = group?.allowMultiple ?? false;
+    final minController = TextEditingController(
+      text: group?.minSelection.toString() ?? '0',
+    );
+    final maxController = TextEditingController(
+      text: group?.maxSelection.toString() ?? '0',
+    );
+
+    final localizations = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: Text(
+            group == null
+                ? localizations.vendorProductFormAddGroup
+                : localizations.vendorProductFormEditGroup,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: localizations.vendorProductFormGroupNameLabel,
+                  ),
+                ),
+                SwitchListTile(
+                  title: Text(localizations.vendorProductFormRequiredLabel),
+                  value: isRequired,
+                  onChanged: (val) => setStateDialog(() => isRequired = val),
+                ),
+                SwitchListTile(
+                  title: Text(localizations.vendorProductFormMultiSelectLabel),
+                  value: allowMultiple,
+                  onChanged: (val) => setStateDialog(() => allowMultiple = val),
+                ),
+                if (allowMultiple) ...[
+                  TextField(
+                    controller: minController,
+                    decoration: InputDecoration(
+                      labelText: localizations.vendorProductFormMinSelection,
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  TextField(
+                    controller: maxController,
+                    decoration: InputDecoration(
+                      labelText: localizations.vendorProductFormMaxSelection,
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(localizations.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.isEmpty) return;
+                final newGroup = ProductOptionGroup(
+                  id: group?.id,
+                  name: nameController.text,
+                  isRequired: isRequired,
+                  allowMultiple: allowMultiple,
+                  minSelection: int.tryParse(minController.text) ?? 0,
+                  maxSelection: int.tryParse(maxController.text) ?? 0,
+                  options: group?.options ?? [],
+                );
+
+                setState(() {
+                  if (index != null) {
+                    _optionGroups[index] = newGroup;
+                  } else {
+                    _optionGroups.add(newGroup);
+                  }
+                });
+                Navigator.pop(context);
+              },
+              child: Text(localizations.save),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _editOptionValueDialog({
+    required int groupIndex,
+    ProductOptionValue? value,
+    int? valueIndex,
+  }) {
+    final nameController = TextEditingController(text: value?.name ?? '');
+    final priceController = TextEditingController(
+      text: value?.priceAdjustment.toString() ?? '0',
+    );
+    bool isDefault = value?.isDefault ?? false;
+    final localizations = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: Text(
+            value == null
+                ? localizations.vendorProductFormAddOptionTitle
+                : localizations.vendorProductFormEditOptionTitle,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: localizations.vendorProductFormOptionNameLabel,
+                ),
+              ),
+              TextField(
+                controller: priceController,
+                decoration: InputDecoration(
+                  labelText: localizations.vendorProductFormPriceAdjustment,
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+              CheckboxListTile(
+                title: Text(localizations.vendorProductFormDefaultSelected),
+                value: isDefault,
+                onChanged: (val) => setStateDialog(() => isDefault = val!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(localizations.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.isEmpty) return;
+                final newValue = ProductOptionValue(
+                  id: value?.id,
+                  name: nameController.text,
+                  priceAdjustment: double.tryParse(priceController.text) ?? 0,
+                  isDefault: isDefault,
+                );
+
+                setState(() {
+                  if (valueIndex != null) {
+                    _optionGroups[groupIndex].options[valueIndex] = newValue;
+                  } else {
+                    _optionGroups[groupIndex].options.add(newValue);
+                  }
+                });
+                Navigator.pop(context);
+              },
+              child: Text(localizations.save),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

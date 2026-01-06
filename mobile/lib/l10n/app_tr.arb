@@ -3805,5 +3805,97 @@
   "withdrawalRequests": "Para Çekme Talepleri",
   "@withdrawalRequests": {
     "description": "Title for withdrawal requests section"
+  },
+  "vendorProductFormOptionsTitle": "Seçenekler ve Ekstralar",
+  "@vendorProductFormOptionsTitle": {
+    "description": "Title for product options section"
+  },
+  "vendorProductFormNoOptions": "Henüz seçenek eklenmemiş.",
+  "@vendorProductFormNoOptions": {
+    "description": "Message when no options are added"
+  },
+  "vendorProductFormAddGroup": "Grup Ekle",
+  "@vendorProductFormAddGroup": {
+    "description": "Button to add a new option group"
+  },
+  "vendorProductFormEditGroup": "Grubu Düzenle",
+  "@vendorProductFormEditGroup": {
+    "description": "Title for edit group dialog"
+  },
+  "vendorProductFormGroupNameLabel": "Grup Adı (Örn: Boyut, Soslar)",
+  "@vendorProductFormGroupNameLabel": {
+    "description": "Label for group name input"
+  },
+  "vendorProductFormRequiredLabel": "Zorunlu Seçim",
+  "@vendorProductFormRequiredLabel": {
+    "description": "Label for required selection switch"
+  },
+  "vendorProductFormMultiSelectLabel": "Çoklu Seçim",
+  "@vendorProductFormMultiSelectLabel": {
+    "description": "Label for multi selection switch"
+  },
+  "vendorProductFormSingleSelectLabel": "Tekli Seçim",
+  "@vendorProductFormSingleSelectLabel": {
+    "description": "Label for single selection"
+  },
+  "vendorProductFormRequired": "Zorunlu",
+  "@vendorProductFormRequired": {
+    "description": "Badge for required options"
+  },
+  "vendorProductFormOptional": "Opsiyonel",
+  "@vendorProductFormOptional": {
+    "description": "Badge for optional options"
+  },
+  "vendorProductFormAddOption": "Yeni Seçenek Ekle",
+  "@vendorProductFormAddOption": {
+    "description": "Button to add a new option value"
+  },
+  "vendorProductFormCategoryRequired": "Kategori seçimi zorunludur",
+  "@vendorProductFormCategoryRequired": {
+    "description": "Validation error for category"
+  },
+  "vendorProductFormCurrencyLabel": "Para Birimi",
+  "@vendorProductFormCurrencyLabel": {
+    "description": "Label for currency dropdown"
+  },
+  "vendorProductFormPriceAdjustment": "Fiyat Ayarlaması",
+  "@vendorProductFormPriceAdjustment": {
+    "description": "Label for price adjustment input"
+  },
+  "vendorProductFormMinSelection": "Min Seçim",
+  "@vendorProductFormMinSelection": {
+    "description": "Label for min selection"
+  },
+  "vendorProductFormMaxSelection": "Max Seçim (0 = Sınırsız)",
+  "@vendorProductFormMaxSelection": {
+    "description": "Label for max selection"
+  },
+  "vendorProductFormAddOptionTitle": "Seçenek Ekle",
+  "@vendorProductFormAddOptionTitle": {
+    "description": "Title for add option dialog"
+  },
+  "vendorProductFormEditOptionTitle": "Seçeneği Düzenle",
+  "@vendorProductFormEditOptionTitle": {
+    "description": "Title for edit option dialog"
+  },
+  "vendorProductFormOptionNameLabel": "Seçenek Adı (Örn: Büyük, Acı Sos)",
+  "@vendorProductFormOptionNameLabel": {
+    "description": "Label for option name input"
+  },
+  "vendorProductFormDefaultSelected": "Varsayılan Seçili",
+  "@vendorProductFormDefaultSelected": {
+    "description": "Checkbox for default selection"
+  },
+  "productOptionsTitle": "Seçenekler",
+  "@productOptionsTitle": {
+    "description": "Title for options section in product detail"
+  },
+  "optionSelectionRequired": "{name} seçimi zorunludur.",
+  "@optionSelectionRequired": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

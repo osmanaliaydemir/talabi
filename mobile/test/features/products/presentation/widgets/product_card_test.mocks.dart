@@ -213,8 +213,9 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
   @override
   _i5.Future<void> addItem(
     _i4.Product? product,
-    _i7.BuildContext? context,
-  ) =>
+    _i7.BuildContext? context, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #addItem,
@@ -222,36 +223,37 @@ class MockCartProvider extends _i1.Mock implements _i2.CartProvider {
             product,
             context,
           ],
+          {#selectedOptions: selectedOptions},
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> removeItem(String? productId) => (super.noSuchMethod(
+  _i5.Future<void> removeItem(String? itemId) => (super.noSuchMethod(
         Invocation.method(
           #removeItem,
-          [productId],
+          [itemId],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> increaseQuantity(String? productId) => (super.noSuchMethod(
+  _i5.Future<void> increaseQuantity(String? itemId) => (super.noSuchMethod(
         Invocation.method(
           #increaseQuantity,
-          [productId],
+          [itemId],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> decreaseQuantity(String? productId) => (super.noSuchMethod(
+  _i5.Future<void> decreaseQuantity(String? itemId) => (super.noSuchMethod(
         Invocation.method(
           #decreaseQuantity,
-          [productId],
+          [itemId],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),

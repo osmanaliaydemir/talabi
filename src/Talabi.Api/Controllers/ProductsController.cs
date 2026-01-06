@@ -369,6 +369,8 @@ public class ProductsController : BaseController
         var product = await UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Include(p => p.ProductCategory)
+            .Include(p => p.OptionGroups)
+            .ThenInclude(og => og.Options)
             .Where(p => p.Id == id && (p.Vendor == null || p.Vendor.IsActive)) // Sadece aktif vendor'ların ürünleri
             .FirstOrDefaultAsync();
 

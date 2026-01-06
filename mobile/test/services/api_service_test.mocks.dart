@@ -883,7 +883,7 @@ class MockOrderRemoteDataSource extends _i1.Mock
   @override
   _i7.Future<_i4.Order> createOrder(
     String? vendorId,
-    Map<String, int>? items, {
+    List<Map<String, dynamic>>? items, {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
@@ -1364,8 +1364,9 @@ class MockCartRemoteDataSource extends _i1.Mock
   @override
   _i7.Future<void> addToCart(
     String? productId,
-    int? quantity,
-  ) =>
+    int? quantity, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #addToCart,
@@ -1373,6 +1374,7 @@ class MockCartRemoteDataSource extends _i1.Mock
             productId,
             quantity,
           ],
+          {#selectedOptions: selectedOptions},
         ),
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),

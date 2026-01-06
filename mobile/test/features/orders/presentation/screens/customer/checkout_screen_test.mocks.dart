@@ -393,7 +393,7 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
   @override
   _i13.Future<_i4.Order> createOrder(
     String? vendorId,
-    Map<String, int>? items, {
+    List<Map<String, dynamic>>? items, {
     String? deliveryAddressId,
     String? paymentMethod,
     String? note,
@@ -816,8 +816,9 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
   @override
   _i13.Future<void> addToCart(
     String? productId,
-    int? quantity,
-  ) =>
+    int? quantity, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #addToCart,
@@ -825,6 +826,7 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
             productId,
             quantity,
           ],
+          {#selectedOptions: selectedOptions},
         ),
         returnValue: _i13.Future<void>.value(),
         returnValueForMissingStub: _i13.Future<void>.value(),
@@ -2692,8 +2694,9 @@ class MockCartProvider extends _i1.Mock implements _i22.CartProvider {
   @override
   _i13.Future<void> addItem(
     _i3.Product? product,
-    _i24.BuildContext? context,
-  ) =>
+    _i24.BuildContext? context, {
+    List<Map<String, dynamic>>? selectedOptions,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #addItem,
@@ -2701,36 +2704,37 @@ class MockCartProvider extends _i1.Mock implements _i22.CartProvider {
             product,
             context,
           ],
+          {#selectedOptions: selectedOptions},
         ),
         returnValue: _i13.Future<void>.value(),
         returnValueForMissingStub: _i13.Future<void>.value(),
       ) as _i13.Future<void>);
 
   @override
-  _i13.Future<void> removeItem(String? productId) => (super.noSuchMethod(
+  _i13.Future<void> removeItem(String? itemId) => (super.noSuchMethod(
         Invocation.method(
           #removeItem,
-          [productId],
+          [itemId],
         ),
         returnValue: _i13.Future<void>.value(),
         returnValueForMissingStub: _i13.Future<void>.value(),
       ) as _i13.Future<void>);
 
   @override
-  _i13.Future<void> increaseQuantity(String? productId) => (super.noSuchMethod(
+  _i13.Future<void> increaseQuantity(String? itemId) => (super.noSuchMethod(
         Invocation.method(
           #increaseQuantity,
-          [productId],
+          [itemId],
         ),
         returnValue: _i13.Future<void>.value(),
         returnValueForMissingStub: _i13.Future<void>.value(),
       ) as _i13.Future<void>);
 
   @override
-  _i13.Future<void> decreaseQuantity(String? productId) => (super.noSuchMethod(
+  _i13.Future<void> decreaseQuantity(String? itemId) => (super.noSuchMethod(
         Invocation.method(
           #decreaseQuantity,
-          [productId],
+          [itemId],
         ),
         returnValue: _i13.Future<void>.value(),
         returnValueForMissingStub: _i13.Future<void>.value(),

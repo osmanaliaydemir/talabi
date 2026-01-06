@@ -31,6 +31,7 @@ public class OrderItemDetailDto
     public bool IsCancelled { get; set; } = false;
     public DateTime? CancelledAt { get; set; }
     public string? CancelReason { get; set; }
+    public List<CartItemOptionDto>? SelectedOptions { get; set; }
 }
 
 public class OrderStatusHistoryDto

@@ -2992,4 +2992,73 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get withdrawalRequests => 'Para Çekme Talepleri';
+
+  @override
+  String get vendorProductFormOptionsTitle => 'Seçenekler ve Ekstralar';
+
+  @override
+  String get vendorProductFormNoOptions => 'Henüz seçenek eklenmemiş.';
+
+  @override
+  String get vendorProductFormAddGroup => 'Grup Ekle';
+
+  @override
+  String get vendorProductFormEditGroup => 'Grubu Düzenle';
+
+  @override
+  String get vendorProductFormGroupNameLabel => 'Grup Adı (Örn: Boyut, Soslar)';
+
+  @override
+  String get vendorProductFormRequiredLabel => 'Zorunlu Seçim';
+
+  @override
+  String get vendorProductFormMultiSelectLabel => 'Çoklu Seçim';
+
+  @override
+  String get vendorProductFormSingleSelectLabel => 'Tekli Seçim';
+
+  @override
+  String get vendorProductFormRequired => 'Zorunlu';
+
+  @override
+  String get vendorProductFormOptional => 'Opsiyonel';
+
+  @override
+  String get vendorProductFormAddOption => 'Yeni Seçenek Ekle';
+
+  @override
+  String get vendorProductFormCategoryRequired => 'Kategori seçimi zorunludur';
+
+  @override
+  String get vendorProductFormCurrencyLabel => 'Para Birimi';
+
+  @override
+  String get vendorProductFormPriceAdjustment => 'Fiyat Ayarlaması';
+
+  @override
+  String get vendorProductFormMinSelection => 'Min Seçim';
+
+  @override
+  String get vendorProductFormMaxSelection => 'Max Seçim (0 = Sınırsız)';
+
+  @override
+  String get vendorProductFormAddOptionTitle => 'Seçenek Ekle';
+
+  @override
+  String get vendorProductFormEditOptionTitle => 'Seçeneği Düzenle';
+
+  @override
+  String get vendorProductFormOptionNameLabel =>
+      'Seçenek Adı (Örn: Büyük, Acı Sos)';
+
+  @override
+  String get vendorProductFormDefaultSelected => 'Varsayılan Seçili';
+
+  @override
+  String get productOptionsTitle => 'Seçenekler';
+
+  @override
+  String optionSelectionRequired(String name) {
+    return '$name seçimi zorunludur.';
+  }
 }

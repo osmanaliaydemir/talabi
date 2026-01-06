@@ -27,12 +27,23 @@ public class CartItemDto
     public int VendorType { get; set; } // 1 = Restaurant, 2 = Market
     public double? Rating { get; set; }
     public int ReviewCount { get; set; }
+    public List<CartItemOptionDto>? SelectedOptions { get; set; }
 }
 
 public class AddToCartDto
 {
     public Guid ProductId { get; set; }
     public int Quantity { get; set; } = 1;
+    public List<CartItemOptionDto>? SelectedOptions { get; set; }
+}
+
+public class CartItemOptionDto
+{
+    public Guid OptionGroupId { get; set; }
+    public string GroupName { get; set; } = string.Empty;
+    public Guid OptionValueId { get; set; }
+    public string ValueName { get; set; } = string.Empty;
+    public decimal PriceAdjustment { get; set; }
 }
 
 public class UpdateCartItemDto
