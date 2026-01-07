@@ -359,7 +359,7 @@ public class VendorProductsController : BaseController
 
         product.UpdatedAt = DateTime.UtcNow;
 
-        UnitOfWork.Products.Update(product);
+        // UnitOfWork.Products.Update(product); // Not needed as entity is tracked
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
