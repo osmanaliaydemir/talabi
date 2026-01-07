@@ -298,9 +298,9 @@ public class VendorProductsController : BaseController
                     "VENDOR_NOT_FOUND"));
             }
 
+            // Do NOT include OptionGroups to avoid tracking conflicts.
+            // We will handle them via direct DB delete + inserts.
             var product = await UnitOfWork.Products.Query()
-                .Include(p => p.OptionGroups)
-                .ThenInclude(og => og.Options)
                 .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
             if (product == null)
@@ -325,17 +325,22 @@ public class VendorProductsController : BaseController
 
             if (dto.OptionGroups != null)
             {
-                // Strategy: Clear and check, then Add new items
-                // EF Core tracking handles the deletion of cleared items due to Cascade Delete
-                if (product.OptionGroups.Any())
-                {
-                    product.OptionGroups.Clear();
-                }
+                // Strategy: 
+                // 1. Delete all existing groups directly in DB (ignoring concurrency/existence checks)
+                // 2. Add new groups as fresh inserts
+
+                await UnitOfWork.ProductOptionGroups.Query()
+                    .Where(og => og.ProductId == id)
+                    .ExecuteDeleteAsync();
+
+                // Clear the collection in memory just in case it was initialized or loaded by mistake
+                product.OptionGroups.Clear();
 
                 foreach (var groupDto in dto.OptionGroups)
                 {
                     var newGroup = new ProductOptionGroup
                     {
+                        // ProductId is automatically handled by EF when added to the navigation property
                         Name = groupDto.Name,
                         IsRequired = groupDto.IsRequired,
                         AllowMultiple = groupDto.AllowMultiple,
