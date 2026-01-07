@@ -134,44 +134,11 @@ public class VendorProductsController : BaseController
                 "VENDOR_NOT_FOUND"));
         }
 
+        // Fetch entity with Includes to ensure all related data is loaded
         var product = await UnitOfWork.Products.Query()
-            .Where(p => p.Id == id && p.VendorId == vendorId.Value)
-            .Select(p => new VendorProductDto
-            {
-                Id = p.Id,
-                VendorId = p.VendorId,
-                Name = p.Name,
-                Description = p.Description,
-                Category = p.Category,
-                Price = p.Price,
-                Currency = p.Currency,
-                ImageUrl = p.ImageUrl,
-                IsAvailable = p.IsAvailable,
-                Stock = p.Stock,
-                CategoryId = p.CategoryId,
-                PreparationTime = p.PreparationTime,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt,
-                OptionGroups = p.OptionGroups.Select(og => new ProductOptionGroupDto
-                {
-                    Id = og.Id,
-                    Name = og.Name,
-                    IsRequired = og.IsRequired,
-                    AllowMultiple = og.AllowMultiple,
-                    MinSelection = og.MinSelection,
-                    MaxSelection = og.MaxSelection,
-                    DisplayOrder = og.DisplayOrder,
-                    Options = og.Options.Select(ov => new ProductOptionValueDto
-                    {
-                        Id = ov.Id,
-                        Name = ov.Name,
-                        PriceAdjustment = ov.PriceAdjustment,
-                        IsDefault = ov.IsDefault,
-                        DisplayOrder = ov.DisplayOrder
-                    }).OrderBy(o => o.DisplayOrder).ToList()
-                }).OrderBy(g => g.DisplayOrder).ToList()
-            })
-            .FirstOrDefaultAsync();
+            .Include(p => p.OptionGroups)
+            .ThenInclude(og => og.Options)
+            .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
         if (product == null)
         {
@@ -180,8 +147,45 @@ public class VendorProductsController : BaseController
                 "PRODUCT_NOT_FOUND"));
         }
 
+        // Map to DTO in memory
+        var dto = new VendorProductDto
+        {
+            Id = product.Id,
+            VendorId = product.VendorId,
+            Name = product.Name,
+            Description = product.Description,
+            Category = product.Category,
+            Price = product.Price,
+            Currency = product.Currency,
+            ImageUrl = product.ImageUrl,
+            IsAvailable = product.IsAvailable,
+            Stock = product.Stock,
+            CategoryId = product.CategoryId,
+            PreparationTime = product.PreparationTime,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            OptionGroups = product.OptionGroups?.Select(og => new ProductOptionGroupDto
+            {
+                Id = og.Id,
+                Name = og.Name,
+                IsRequired = og.IsRequired,
+                AllowMultiple = og.AllowMultiple,
+                MinSelection = og.MinSelection,
+                MaxSelection = og.MaxSelection,
+                DisplayOrder = og.DisplayOrder,
+                Options = og.Options?.Select(ov => new ProductOptionValueDto
+                {
+                    Id = ov.Id,
+                    Name = ov.Name,
+                    PriceAdjustment = ov.PriceAdjustment,
+                    IsDefault = ov.IsDefault,
+                    DisplayOrder = ov.DisplayOrder
+                }).OrderBy(o => o.DisplayOrder).ToList() ?? new List<ProductOptionValueDto>()
+            }).OrderBy(g => g.DisplayOrder).ToList() ?? new List<ProductOptionGroupDto>()
+        };
+
         return Ok(new ApiResponse<VendorProductDto>(
-            product,
+            dto,
             LocalizationService.GetLocalizedString(ResourceName, "ProductRetrievedSuccessfully", CurrentCulture)));
     }
 
