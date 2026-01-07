@@ -296,76 +296,73 @@ public class VendorProductsController : BaseController
                 "VENDOR_NOT_FOUND"));
         }
 
-        var product = await UnitOfWork.Products.Query()
-            .Include(p => p.OptionGroups)
-            .ThenInclude(og => og.Options)
-            .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
-
-        if (product == null)
-        {
-            return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess", CurrentCulture),
-                "PRODUCT_NOT_FOUND"));
-        }
-
-        // Update only provided fields
-        if (dto.Name != null)
-            product.Name = dto.Name;
-        if (dto.Description != null)
-            product.Description = dto.Description;
-        if (dto.Category != null)
-            product.Category = dto.Category;
-        if (dto.CategoryId.HasValue)
-            product.CategoryId = dto.CategoryId.Value;
-        if (dto.Price.HasValue)
-            product.Price = dto.Price.Value;
-        if (dto.Currency.HasValue)
-            product.Currency = dto.Currency.Value;
-        if (dto.ImageUrl != null)
-            product.ImageUrl = dto.ImageUrl;
-        if (dto.IsAvailable.HasValue)
-            product.IsAvailable = dto.IsAvailable.Value;
-        if (dto.Stock.HasValue)
-            product.Stock = dto.Stock;
-        if (dto.PreparationTime.HasValue)
-            product.PreparationTime = dto.PreparationTime;
-
-        if (dto.OptionGroups != null)
-        {
-            // Update variants - Strategy: Replace all
-            // We save changes after clearing to avoid Unique Constraint violations if any (Delete-then-Insert in separate steps)
-            product.OptionGroups.Clear();
-
-            foreach (var groupDto in dto.OptionGroups)
-            {
-                var newGroup = new ProductOptionGroup
-                {
-                    Name = groupDto.Name,
-                    IsRequired = groupDto.IsRequired,
-                    AllowMultiple = groupDto.AllowMultiple,
-                    MinSelection = groupDto.MinSelection,
-                    MaxSelection = groupDto.MaxSelection,
-                    DisplayOrder = groupDto.DisplayOrder,
-                    Options = groupDto.Options?.Select(o => new ProductOptionValue
-                    {
-                        Name = o.Name,
-                        PriceAdjustment = o.PriceAdjustment,
-                        IsDefault = o.IsDefault,
-                        DisplayOrder = o.DisplayOrder
-                    }).ToList() ?? new List<ProductOptionValue>()
-                };
-                product.OptionGroups.Add(newGroup);
-            }
-        }
-
-        product.UpdatedAt = DateTime.UtcNow;
+        await UnitOfWork.BeginTransactionAsync();
 
         try
         {
+            var product = await UnitOfWork.Products.Query()
+                .Include(p => p.OptionGroups)
+                .ThenInclude(og => og.Options)
+                .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
+
+            if (product == null)
+            {
+                await UnitOfWork.RollbackTransactionAsync();
+                return NotFound(new ApiResponse<object>(
+                    LocalizationService.GetLocalizedString(ResourceName, "ProductNotFoundOrNoUpdateAccess",
+                        CurrentCulture),
+                    "PRODUCT_NOT_FOUND"));
+            }
+
+            // Update only provided fields
+            if (dto.Name != null) product.Name = dto.Name;
+            if (dto.Description != null) product.Description = dto.Description;
+            if (dto.Category != null) product.Category = dto.Category;
+            if (dto.CategoryId.HasValue) product.CategoryId = dto.CategoryId.Value;
+            if (dto.Price.HasValue) product.Price = dto.Price.Value;
+            if (dto.Currency.HasValue) product.Currency = dto.Currency.Value;
+            if (dto.ImageUrl != null) product.ImageUrl = dto.ImageUrl;
+            if (dto.IsAvailable.HasValue) product.IsAvailable = dto.IsAvailable.Value;
+            if (dto.Stock.HasValue) product.Stock = dto.Stock;
+            if (dto.PreparationTime.HasValue) product.PreparationTime = dto.PreparationTime;
+
+            if (dto.OptionGroups != null)
+            {
+                // Update variants - Strategy: Replace all
+                // We save changes after clearing to avoid Unique Constraint violations if any (Delete-then-Insert in separate steps)
+                product.OptionGroups.Clear();
+                await UnitOfWork.SaveChangesAsync();
+
+                foreach (var groupDto in dto.OptionGroups)
+                {
+                    var newGroup = new ProductOptionGroup
+                    {
+                        Name = groupDto.Name,
+                        IsRequired = groupDto.IsRequired,
+                        AllowMultiple = groupDto.AllowMultiple,
+                        MinSelection = groupDto.MinSelection,
+                        MaxSelection = groupDto.MaxSelection,
+                        DisplayOrder = groupDto.DisplayOrder,
+                        Options = groupDto.Options?.Select(o => new ProductOptionValue
+                        {
+                            Name = o.Name,
+                            PriceAdjustment = o.PriceAdjustment,
+                            IsDefault = o.IsDefault,
+                            DisplayOrder = o.DisplayOrder
+                        }).ToList() ?? new List<ProductOptionValue>()
+                    };
+                    product.OptionGroups.Add(newGroup);
+                }
+            }
+
+            product.UpdatedAt = DateTime.UtcNow;
+
             await UnitOfWork.SaveChangesAsync();
+            await UnitOfWork.CommitTransactionAsync();
         }
         catch (Exception ex)
         {
+            await UnitOfWork.RollbackTransactionAsync();
             // Capture the specific error to understand the 409 Conflict cause
             return StatusCode(500, new ApiResponse<object>(
                 $"Error updating product: {ex.Message} | Inner: {ex.InnerException?.Message}",
