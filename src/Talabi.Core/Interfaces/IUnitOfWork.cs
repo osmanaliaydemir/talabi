@@ -182,6 +182,10 @@ public interface IUnitOfWork : IDisposable
     /// </summary>
     IRepository<District> Districts { get; }
 
+    /// <summary>
+    /// ProductOptionGroup entity'leri için repository
+    /// </summary>
+    IRepository<ProductOptionGroup> ProductOptionGroups { get; }
 
 
     /// <summary>

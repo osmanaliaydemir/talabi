@@ -49,6 +49,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Campaign>? _campaigns;
     private IRepository<City>? _cities;
     private IRepository<District>? _districts;
+    private IRepository<ProductOptionGroup>? _productOptionGroups;
 
 
     /// <summary>
@@ -83,7 +84,8 @@ public class UnitOfWork : IUnitOfWork
     /// <summary>
     /// CategoryTranslation entity'leri için repository
     /// </summary>
-    public IRepository<CategoryTranslation> CategoryTranslations => _categoryTranslations ??= new Repository<CategoryTranslation>(_context);
+    public IRepository<CategoryTranslation> CategoryTranslations =>
+        _categoryTranslations ??= new Repository<CategoryTranslation>(_context);
 
     /// <summary>
     /// OrderItem entity'leri için repository
@@ -113,17 +115,20 @@ public class UnitOfWork : IUnitOfWork
     /// <summary>
     /// FavoriteProduct entity'leri için repository
     /// </summary>
-    public IRepository<FavoriteProduct> FavoriteProducts => _favoriteProducts ??= new Repository<FavoriteProduct>(_context);
+    public IRepository<FavoriteProduct> FavoriteProducts =>
+        _favoriteProducts ??= new Repository<FavoriteProduct>(_context);
 
     /// <summary>
     /// NotificationSettings entity'leri için repository
     /// </summary>
-    public IRepository<NotificationSettings> NotificationSettings => _notificationSettings ??= new Repository<NotificationSettings>(_context);
+    public IRepository<NotificationSettings> NotificationSettings =>
+        _notificationSettings ??= new Repository<NotificationSettings>(_context);
 
     /// <summary>
     /// OrderStatusHistory entity'leri için repository
     /// </summary>
-    public IRepository<OrderStatusHistory> OrderStatusHistories => _orderStatusHistories ??= new Repository<OrderStatusHistory>(_context);
+    public IRepository<OrderStatusHistory> OrderStatusHistories =>
+        _orderStatusHistories ??= new Repository<OrderStatusHistory>(_context);
 
     /// <summary>
     /// Courier entity'leri için repository
@@ -133,22 +138,26 @@ public class UnitOfWork : IUnitOfWork
     /// <summary>
     /// CourierNotification entity'leri için repository
     /// </summary>
-    public IRepository<CourierNotification> CourierNotifications => _courierNotifications ??= new Repository<CourierNotification>(_context);
+    public IRepository<CourierNotification> CourierNotifications =>
+        _courierNotifications ??= new Repository<CourierNotification>(_context);
 
     /// <summary>
     /// VendorNotification entity'leri için repository
     /// </summary>
-    public IRepository<VendorNotification> VendorNotifications => _vendorNotifications ??= new Repository<VendorNotification>(_context);
+    public IRepository<VendorNotification> VendorNotifications =>
+        _vendorNotifications ??= new Repository<VendorNotification>(_context);
 
     /// <summary>
     /// CustomerNotification entity'leri için repository
     /// </summary>
-    public IRepository<CustomerNotification> CustomerNotifications => _customerNotifications ??= new Repository<CustomerNotification>(_context);
+    public IRepository<CustomerNotification> CustomerNotifications =>
+        _customerNotifications ??= new Repository<CustomerNotification>(_context);
 
     /// <summary>
     /// UserPreferences entity'leri için repository
     /// </summary>
-    public IRepository<UserPreferences> UserPreferences => _userPreferences ??= new Repository<UserPreferences>(_context);
+    public IRepository<UserPreferences> UserPreferences =>
+        _userPreferences ??= new Repository<UserPreferences>(_context);
 
     /// <summary>
     /// Review entity'leri için repository
@@ -178,22 +187,26 @@ public class UnitOfWork : IUnitOfWork
     /// <summary>
     /// UserActivityLog entity'leri için repository
     /// </summary>
-    public IRepository<UserActivityLog> UserActivityLogs => _userActivityLogs ??= new Repository<UserActivityLog>(_context);
+    public IRepository<UserActivityLog> UserActivityLogs =>
+        _userActivityLogs ??= new Repository<UserActivityLog>(_context);
 
     /// <summary>
     /// UserDeviceToken entity'leri için repository
     /// </summary>
-    public IRepository<UserDeviceToken> UserDeviceTokens => _userDeviceTokens ??= new Repository<UserDeviceToken>(_context);
+    public IRepository<UserDeviceToken> UserDeviceTokens =>
+        _userDeviceTokens ??= new Repository<UserDeviceToken>(_context);
 
     /// <summary>
     /// PromotionalBanner entity'leri için repository
     /// </summary>
-    public IRepository<PromotionalBanner> PromotionalBanners => _promotionalBanners ??= new Repository<PromotionalBanner>(_context);
+    public IRepository<PromotionalBanner> PromotionalBanners =>
+        _promotionalBanners ??= new Repository<PromotionalBanner>(_context);
 
     /// <summary>
     /// PromotionalBannerTranslation entity'leri için repository
     /// </summary>
-    public IRepository<PromotionalBannerTranslation> PromotionalBannerTranslations => _promotionalBannerTranslations ??= new Repository<PromotionalBannerTranslation>(_context);
+    public IRepository<PromotionalBannerTranslation> PromotionalBannerTranslations => _promotionalBannerTranslations ??=
+        new Repository<PromotionalBannerTranslation>(_context);
 
     /// <summary>
     /// ErrorLog entity'leri için repository
@@ -203,17 +216,20 @@ public class UnitOfWork : IUnitOfWork
     /// <summary>
     /// VendorDeliveryZone entity'leri için repository
     /// </summary>
-    public IRepository<VendorDeliveryZone> VendorDeliveryZones => _vendorDeliveryZones ??= new Repository<VendorDeliveryZone>(_context);
+    public IRepository<VendorDeliveryZone> VendorDeliveryZones =>
+        _vendorDeliveryZones ??= new Repository<VendorDeliveryZone>(_context);
 
     /// <summary>
     /// CourierWorkingHour entity'leri için repository
     /// </summary>
-    public IRepository<CourierWorkingHour> CourierWorkingHours => _courierWorkingHours ??= new Repository<CourierWorkingHour>(_context);
+    public IRepository<CourierWorkingHour> CourierWorkingHours =>
+        _courierWorkingHours ??= new Repository<CourierWorkingHour>(_context);
 
     /// <summary>
     /// VendorWorkingHour entity'leri için repository
     /// </summary>
-    public IRepository<VendorWorkingHour> VendorWorkingHours => _vendorWorkingHours ??= new Repository<VendorWorkingHour>(_context);
+    public IRepository<VendorWorkingHour> VendorWorkingHours =>
+        _vendorWorkingHours ??= new Repository<VendorWorkingHour>(_context);
 
     /// <summary>
     /// Coupon entity'leri için repository
@@ -234,6 +250,12 @@ public class UnitOfWork : IUnitOfWork
     /// District entity'leri için repository
     /// </summary>
     public IRepository<District> Districts => _districts ??= new Repository<District>(_context);
+
+    /// <summary>
+    /// ProductOptionGroup entity'leri için repository
+    /// </summary>
+    public IRepository<ProductOptionGroup> ProductOptionGroups =>
+        _productOptionGroups ??= new Repository<ProductOptionGroup>(_context);
 
 
     /// <summary>
