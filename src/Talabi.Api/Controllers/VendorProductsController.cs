@@ -298,9 +298,11 @@ public class VendorProductsController : BaseController
                     "VENDOR_NOT_FOUND"));
             }
 
-            // Do NOT include OptionGroups to avoid tracking conflicts.
-            // We will handle them via direct DB delete + inserts.
+            // Use AsNoTracking to fetch the product. 
+            // This prevents EF from tracking it, allowing us to modifying it and call Update() 
+            // without "Optimistic Concurrency" issues related to original values.
             var product = await UnitOfWork.Products.Query()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vendorId.Value);
 
             if (product == null)
@@ -311,7 +313,7 @@ public class VendorProductsController : BaseController
                     "PRODUCT_NOT_FOUND"));
             }
 
-            // Update only provided fields
+            // Update only provided fields on the detached object
             if (dto.Name != null) product.Name = dto.Name;
             if (dto.Description != null) product.Description = dto.Description;
             if (dto.Category != null) product.Category = dto.Category;
@@ -323,24 +325,23 @@ public class VendorProductsController : BaseController
             if (dto.Stock.HasValue) product.Stock = dto.Stock;
             if (dto.PreparationTime.HasValue) product.PreparationTime = dto.PreparationTime;
 
+            product.UpdatedAt = DateTime.UtcNow;
+
+            // Handle Option Groups
             if (dto.OptionGroups != null)
             {
-                // Strategy: 
-                // 1. Delete all existing groups directly in DB (ignoring concurrency/existence checks)
-                // 2. Add new groups as fresh inserts
-
+                // 1. Direct Delete from DB
                 await UnitOfWork.ProductOptionGroups.Query()
                     .Where(og => og.ProductId == id)
                     .ExecuteDeleteAsync();
 
-                // Clear the collection in memory just in case it was initialized or loaded by mistake
-                product.OptionGroups.Clear();
-
+                // 2. Prepare new groups
+                var newGroups = new List<ProductOptionGroup>();
                 foreach (var groupDto in dto.OptionGroups)
                 {
                     var newGroup = new ProductOptionGroup
                     {
-                        // ProductId is automatically handled by EF when added to the navigation property
+                        ProductId = product.Id, // Explicitly set FK
                         Name = groupDto.Name,
                         IsRequired = groupDto.IsRequired,
                         AllowMultiple = groupDto.AllowMultiple,
@@ -355,11 +356,19 @@ public class VendorProductsController : BaseController
                             DisplayOrder = o.DisplayOrder
                         }).ToList() ?? new List<ProductOptionValue>()
                     };
-                    product.OptionGroups.Add(newGroup);
+                    newGroups.Add(newGroup);
+                }
+
+                // 3. Add new groups directly to repository
+                if (newGroups.Any())
+                {
+                    await UnitOfWork.ProductOptionGroups.AddRangeAsync(newGroups);
                 }
             }
 
-            product.UpdatedAt = DateTime.UtcNow;
+            // Mark product as Modified. 
+            // Since it's detached (AsNoTracking), this forces an update without checking original values (Concurrency-Safe way).
+            UnitOfWork.Products.Update(product);
 
             await UnitOfWork.SaveChangesAsync();
 
