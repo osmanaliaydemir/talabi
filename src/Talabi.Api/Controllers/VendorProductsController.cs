@@ -335,7 +335,6 @@ public class VendorProductsController : BaseController
             // Update variants - Strategy: Replace all
             // We save changes after clearing to avoid Unique Constraint violations if any (Delete-then-Insert in separate steps)
             product.OptionGroups.Clear();
-            await UnitOfWork.SaveChangesAsync();
 
             foreach (var groupDto in dto.OptionGroups)
             {
@@ -361,7 +360,17 @@ public class VendorProductsController : BaseController
 
         product.UpdatedAt = DateTime.UtcNow;
 
-        await UnitOfWork.SaveChangesAsync();
+        try
+        {
+            await UnitOfWork.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Capture the specific error to understand the 409 Conflict cause
+            return StatusCode(500, new ApiResponse<object>(
+                $"Error updating product: {ex.Message} | Inner: {ex.InnerException?.Message}",
+                "UPDATE_FAILED"));
+        }
 
         return Ok(new ApiResponse<object>(
             new { },
