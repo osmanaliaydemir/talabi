@@ -203,7 +203,7 @@ public class OrdersController : BaseController
     /// <returns>Sipariş listesi</returns>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<OrderDto>>>> GetOrders(
-        [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null)
+        [FromQuery] int? vendorType = null)
     {
         var userId = UserContext.GetUserId();
 
@@ -221,7 +221,8 @@ public class OrdersController : BaseController
         // VendorType filtresi
         if (vendorType.HasValue)
         {
-            query = query.Where(o => o.Vendor.Type == vendorType.Value);
+            var vType = (Talabi.Core.Enums.VendorType)vendorType.Value;
+            query = query.Where(o => o.Vendor.Type == vType);
         }
 
         IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.CreatedAt);
