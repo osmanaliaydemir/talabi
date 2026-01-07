@@ -333,7 +333,9 @@ public class VendorProductsController : BaseController
         if (dto.OptionGroups != null)
         {
             // Update variants - Strategy: Replace all
+            // We save changes after clearing to avoid Unique Constraint violations if any (Delete-then-Insert in separate steps)
             product.OptionGroups.Clear();
+            await UnitOfWork.SaveChangesAsync();
 
             foreach (var groupDto in dto.OptionGroups)
             {
@@ -359,7 +361,6 @@ public class VendorProductsController : BaseController
 
         product.UpdatedAt = DateTime.UtcNow;
 
-        // UnitOfWork.Products.Update(product); // Not needed as entity is tracked
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
