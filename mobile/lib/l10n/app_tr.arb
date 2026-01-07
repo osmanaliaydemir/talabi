@@ -3897,5 +3897,37 @@
         "type": "String"
       }
     }
+  },
+  "allReviews": "Tüm Değerlendirmeler",
+  "@allReviews": {
+    "description": "Tüm Değerlendirmeler başlığı"
+  },
+  "selectOption": "Seçiniz",
+  "@selectOption": {
+    "description": "Seçenek seçme yer tutucusu"
+  },
+  "ratingsLabel": "puan",
+  "@ratingsLabel": {
+    "description": "puan etiketi"
+  },
+  "commentsLabel": "yorum",
+  "@commentsLabel": {
+    "description": "yorum etiketi"
+  },
+  "sellerLabel": "Satıcı",
+  "@sellerLabel": {
+    "description": "Satıcı etiketi"
+  },
+  "deliveryTimeRange": "10 - 20 dk",
+  "@deliveryTimeRange": {
+    "description": "Teslimat süresi yer tutucusu"
+  },
+  "allReviewCount": "Tüm Değerlendirmeler ({count})",
+  "@allReviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

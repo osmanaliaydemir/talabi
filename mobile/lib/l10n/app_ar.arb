@@ -3897,5 +3897,37 @@
         "type": "String"
       }
     }
+  },
+  "allReviews": "كل التقييمات",
+  "@allReviews": {
+    "description": "All Reviews title"
+  },
+  "selectOption": "اختر",
+  "@selectOption": {
+    "description": "Select option placeholder"
+  },
+  "ratingsLabel": "تقييمات",
+  "@ratingsLabel": {
+    "description": "ratings label"
+  },
+  "commentsLabel": "تعليقات",
+  "@commentsLabel": {
+    "description": "comments label"
+  },
+  "sellerLabel": "البائع",
+  "@sellerLabel": {
+    "description": "Seller label"
+  },
+  "deliveryTimeRange": "10 - 20 دقيقة",
+  "@deliveryTimeRange": {
+    "description": "Delivery time range placeholder"
+  },
+  "allReviewCount": "كل التقييمات ({count})",
+  "@allReviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

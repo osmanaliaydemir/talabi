@@ -212,7 +212,9 @@ class _HomeHeaderState extends State<HomeHeader> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CartScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const CartScreen(showBackButton: true),
+                ),
               );
             },
           ),

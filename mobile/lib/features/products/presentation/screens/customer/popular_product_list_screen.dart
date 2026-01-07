@@ -8,7 +8,7 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/widgets/toast_message.dart';
-import 'package:mobile/features/home/presentation/widgets/home_header.dart';
+import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:provider/provider.dart';
 
 class PopularProductListScreen extends StatefulWidget {
@@ -193,14 +193,15 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          HomeHeader(
+          SharedHeader(
             title: localizations.picksForYou,
             subtitle: _products.isNotEmpty
                 ? localizations.productsCount(_products.length)
                 : localizations.products,
-            leadingIcon: Icons.star,
             showBackButton: true,
             showCart: true,
+            showSearch: false,
+            showNotifications: false,
           ),
           Expanded(
             child: RefreshIndicator(

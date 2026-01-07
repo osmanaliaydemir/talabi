@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
 import 'package:mobile/features/products/presentation/screens/customer/product_detail_screen.dart';
+import 'package:mobile/features/cart/data/models/cart_item.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
@@ -50,7 +51,7 @@ class _ProductCardState extends State<ProductCard> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final cart = Provider.of<CartProvider>(context, listen: true);
-    final cartItem = cart.items[widget.product.id];
+    final cartItem = _findCartItem(cart);
     final quantity = cartItem?.quantity ?? 0;
     final bool isVendorCard =
         widget.onToggleAvailability != null || widget.onDelete != null;
@@ -367,20 +368,22 @@ class _ProductCardState extends State<ProductCard> {
                                       button: true,
                                       child: GestureDetector(
                                         onTap: () async {
-                                          try {
-                                            await cart.decreaseQuantity(
-                                              widget.product.id,
-                                            );
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              ToastMessage.show(
-                                                context,
-                                                message: localizations
-                                                    .errorWithMessage(
-                                                      e.toString(),
-                                                    ),
-                                                isSuccess: false,
+                                          if (cartItem?.backendId != null) {
+                                            try {
+                                              await cart.decreaseQuantity(
+                                                cartItem!.backendId!,
                                               );
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ToastMessage.show(
+                                                  context,
+                                                  message: localizations
+                                                      .errorWithMessage(
+                                                        e.toString(),
+                                                      ),
+                                                  isSuccess: false,
+                                                );
+                                              }
                                             }
                                           }
                                         },
@@ -430,21 +433,26 @@ class _ProductCardState extends State<ProductCard> {
                                       button: true,
                                       child: GestureDetector(
                                         onTap: () async {
-                                          try {
-                                            await cart.increaseQuantity(
-                                              widget.product.id,
-                                            );
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              ToastMessage.show(
-                                                context,
-                                                message: localizations
-                                                    .errorWithMessage(
-                                                      e.toString(),
-                                                    ),
-                                                isSuccess: false,
+                                          if (cartItem?.backendId != null) {
+                                            try {
+                                              await cart.increaseQuantity(
+                                                cartItem!.backendId!,
                                               );
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ToastMessage.show(
+                                                  context,
+                                                  message: localizations
+                                                      .errorWithMessage(
+                                                        e.toString(),
+                                                      ),
+                                                  isSuccess: false,
+                                                );
+                                              }
                                             }
+                                          } else {
+                                            // Fallback for non-synced items or logic error
+                                            _handleAddTap(cart);
                                           }
                                         },
                                         child: Container(
@@ -471,31 +479,7 @@ class _ProductCardState extends State<ProductCard> {
                                   label: localizations.sepeteEkle,
                                   button: true,
                                   child: GestureDetector(
-                                    onTap: () async {
-                                      if (_isAddingToCart) return;
-
-                                      setState(() {
-                                        _isAddingToCart = true;
-                                      });
-
-                                      try {
-                                        await cart.addItem(
-                                          widget.product,
-                                          context,
-                                        );
-                                        if (mounted) {
-                                          // Toast removed as per request
-                                        }
-                                      } catch (e) {
-                                        // Error is handled by CartProvider
-                                      } finally {
-                                        if (mounted) {
-                                          setState(() {
-                                            _isAddingToCart = false;
-                                          });
-                                        }
-                                      }
-                                    },
+                                    onTap: () => _handleAddTap(cart),
                                     child: Container(
                                       width: widget.isCompact ? 22 : 28,
                                       height: widget.isCompact ? 22 : 28,
@@ -532,5 +516,65 @@ class _ProductCardState extends State<ProductCard> {
         ),
       ),
     );
+  }
+
+  CartItem? _findCartItem(CartProvider cart) {
+    if (cart.items.isEmpty) return null;
+
+    try {
+      // Find item that matches product ID AND has no selected options (base product)
+      return cart.items.values.firstWhere((item) {
+        return item.product.id == widget.product.id &&
+            (item.selectedOptions == null || item.selectedOptions!.isEmpty);
+      });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _handleAddTap(CartProvider cart) async {
+    // If product has required options or any option groups, redirect to detail
+    // For now, simplify: if has option groups, go to detail to be safe
+    // But Product model here might be summary.
+    // Ideally check if summary has optionGroups indicator or just always go to detail if options exist.
+    // Assuming simple products can be added directly.
+
+    // Better UX: Always navigate to detail if not sure, OR try to add and if validation fails catch it.
+    // Given the context of "Dragon Roll" having variations, we should probably navigate if it has variations.
+
+    // Check if we need to navigate to detail
+    if (widget.product.optionGroups.isNotEmpty) {
+      final heroTag =
+          '${widget.heroTagPrefix ?? 'product_image_'}${widget.product.id}';
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailScreen(
+            productId: widget.product.id,
+            product: widget.product,
+            heroTag: heroTag,
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (_isAddingToCart) return;
+    setState(() {
+      _isAddingToCart = true;
+    });
+
+    try {
+      await cart.addItem(widget.product, context);
+      // Toast removed as per request
+    } catch (e) {
+      // Error handled by provider (e.g. address required)
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAddingToCart = false;
+        });
+      }
+    }
   }
 }

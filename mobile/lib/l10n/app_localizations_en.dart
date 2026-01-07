@@ -3062,4 +3062,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String optionSelectionRequired(String name) {
     return 'Selection of $name is required.';
   }
+
+  @override
+  String get allReviews => 'All Reviews';
+
+  @override
+  String get selectOption => 'Select';
+
+  @override
+  String get ratingsLabel => 'ratings';
+
+  @override
+  String get commentsLabel => 'comments';
+
+  @override
+  String get sellerLabel => 'Seller';
+
+  @override
+  String get deliveryTimeRange => '10 - 20 min';
+
+  @override
+  String allReviewCount(int count) {
+    return 'All Reviews ($count)';
+  }
 }

@@ -37,6 +37,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
   File? _imageFile;
   bool _isLoading = false;
   bool _isUploading = false;
+  bool _isLoadingProduct = false;
 
   List<Map<String, dynamic>> _categories = [];
   String? _selectedCategoryId;
@@ -72,6 +73,39 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     _selectedCurrency = widget.product?.currency ?? Currency.try_;
     if (widget.product != null) {
       _optionGroups = List.from(widget.product!.optionGroups);
+      _loadProductDetails();
+    }
+  }
+
+  Future<void> _loadProductDetails() async {
+    if (widget.product == null) return;
+
+    setState(() {
+      _isLoadingProduct = true;
+    });
+
+    try {
+      final fullProduct = await _apiService.getVendorProduct(
+        widget.product!.id,
+      );
+      if (mounted) {
+        setState(() {
+          _optionGroups = List.from(fullProduct.optionGroups);
+          _isLoadingProduct = false;
+          // Full description match
+          if (_descriptionController.text.isEmpty &&
+              fullProduct.description != null) {
+            _descriptionController.text = fullProduct.description!;
+          }
+        });
+      }
+    } catch (e) {
+      LoggerService().error('Error loading product details: $e', e);
+      if (mounted) {
+        setState(() {
+          _isLoadingProduct = false;
+        });
+      }
     }
   }
 
@@ -649,7 +683,14 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        if (_optionGroups.isEmpty)
+        if (_isLoadingProduct)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else if (_optionGroups.isEmpty)
           Text(
             localizations.vendorProductFormNoOptions,
             style: TextStyle(

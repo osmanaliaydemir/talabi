@@ -331,8 +331,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed == true && context.mounted) {
-      context.read<AuthProvider>().logout();
+      final auth = context.read<AuthProvider>();
+      final role = auth.role;
+      await auth.logout();
+      if (!context.mounted) return;
+
       context.read<BottomNavProvider>().reset();
+
+      // Navigate to the correct login screen based on the previous role
+      if (role?.toLowerCase() == 'courier') {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
+      } else if (role?.toLowerCase() == 'vendor') {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
+      } else {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
     }
   }
 }

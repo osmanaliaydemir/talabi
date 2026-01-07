@@ -748,10 +748,10 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         Semantics(
                           label:
-                              '${localizations.fiyat}: ${CurrencyFormatter.format(product.price, product.currency)}',
+                              '${localizations.fiyat}: ${CurrencyFormatter.format(cartItem.unitPrice, product.currency)}',
                           child: Text(
                             CurrencyFormatter.format(
-                              product.price,
+                              cartItem.unitPrice,
                               product.currency,
                             ),
                             style: TextStyle(

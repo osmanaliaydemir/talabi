@@ -3925,5 +3925,37 @@
         "type": "String"
       }
     }
+  },
+  "allReviews": "All Reviews",
+  "@allReviews": {
+    "description": "All Reviews title"
+  },
+  "selectOption": "Select",
+  "@selectOption": {
+    "description": "Select option placeholder"
+  },
+  "ratingsLabel": "ratings",
+  "@ratingsLabel": {
+    "description": "ratings label"
+  },
+  "commentsLabel": "comments",
+  "@commentsLabel": {
+    "description": "comments label"
+  },
+  "sellerLabel": "Seller",
+  "@sellerLabel": {
+    "description": "Seller label"
+  },
+  "deliveryTimeRange": "10 - 20 min",
+  "@deliveryTimeRange": {
+    "description": "Delivery time range placeholder"
+  },
+  "allReviewCount": "All Reviews ({count})",
+  "@allReviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

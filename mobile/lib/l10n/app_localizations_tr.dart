@@ -3061,4 +3061,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String optionSelectionRequired(String name) {
     return '$name seçimi zorunludur.';
   }
+
+  @override
+  String get allReviews => 'Tüm Değerlendirmeler';
+
+  @override
+  String get selectOption => 'Seçiniz';
+
+  @override
+  String get ratingsLabel => 'puan';
+
+  @override
+  String get commentsLabel => 'yorum';
+
+  @override
+  String get sellerLabel => 'Satıcı';
+
+  @override
+  String get deliveryTimeRange => '10 - 20 dk';
+
+  @override
+  String allReviewCount(int count) {
+    return 'Tüm Değerlendirmeler ($count)';
+  }
 }

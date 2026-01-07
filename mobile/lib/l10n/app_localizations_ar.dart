@@ -3029,4 +3029,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String optionSelectionRequired(String name) {
     return 'مطلوب اختيار $name';
   }
+
+  @override
+  String get allReviews => 'كل التقييمات';
+
+  @override
+  String get selectOption => 'اختر';
+
+  @override
+  String get ratingsLabel => 'تقييمات';
+
+  @override
+  String get commentsLabel => 'تعليقات';
+
+  @override
+  String get sellerLabel => 'البائع';
+
+  @override
+  String get deliveryTimeRange => '10 - 20 دقيقة';
+
+  @override
+  String allReviewCount(int count) {
+    return 'كل التقييمات ($count)';
+  }
 }

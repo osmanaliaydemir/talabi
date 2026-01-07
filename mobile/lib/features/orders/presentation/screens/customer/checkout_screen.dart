@@ -116,7 +116,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final items = widget.cartItems.entries
           .map(
             (e) => OrderItemDto(
-              productId: e.key,
+              productId: e.value.product.id,
               quantity: e.value.quantity,
               selectedOptions: e.value.selectedOptions,
             ),

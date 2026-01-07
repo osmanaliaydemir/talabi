@@ -8,16 +8,24 @@ class CartItem {
     this.selectedOptions,
   });
 
-  double get totalPrice {
+  double get unitPrice {
     double price = product.price;
     if (selectedOptions != null) {
       for (final option in selectedOptions!) {
-        if (option['priceAdjustment'] != null) {
-          price += (option['priceAdjustment'] as num).toDouble();
+        // Handle various key formats for priceAdjustment due to backend inconsistencies
+        final adjustment =
+            option['priceAdjustment'] ?? option['PriceAdjustment'];
+
+        if (adjustment != null) {
+          price += (adjustment as num).toDouble();
         }
       }
     }
-    return price * quantity;
+    return price;
+  }
+
+  double get totalPrice {
+    return unitPrice * quantity;
   }
 
   final Product product;

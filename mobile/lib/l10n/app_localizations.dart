@@ -5721,6 +5721,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Selection of {name} is required.'**
   String optionSelectionRequired(String name);
+
+  /// All Reviews title
+  ///
+  /// In en, this message translates to:
+  /// **'All Reviews'**
+  String get allReviews;
+
+  /// Select option placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get selectOption;
+
+  /// ratings label
+  ///
+  /// In en, this message translates to:
+  /// **'ratings'**
+  String get ratingsLabel;
+
+  /// comments label
+  ///
+  /// In en, this message translates to:
+  /// **'comments'**
+  String get commentsLabel;
+
+  /// Seller label
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get sellerLabel;
+
+  /// Delivery time range placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'10 - 20 min'**
+  String get deliveryTimeRange;
+
+  /// No description provided for @allReviewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'All Reviews ({count})'**
+  String allReviewCount(int count);
 }
 
 class _AppLocalizationsDelegate
