@@ -125,6 +125,7 @@ builder.Services.AddHealthChecks()
 
 // Services
 builder.Services.AddScoped<INotificationService, FirebaseNotificationService>();
+builder.Services.AddScoped<IDashboardNotificationService, DashboardNotificationService>();
 builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
 builder.Services.AddScoped<IOrderAssignmentService, OrderAssignmentService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
