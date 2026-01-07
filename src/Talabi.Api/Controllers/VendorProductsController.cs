@@ -325,25 +325,13 @@ public class VendorProductsController : BaseController
 
             if (dto.OptionGroups != null)
             {
-                // Stratgy: Two-step update to enable clean replacement without concurrency issues
-
-                // Step 1: Remove existing items
+                // Strategy: Clear and check, then Add new items
+                // EF Core tracking handles the deletion of cleared items due to Cascade Delete
                 if (product.OptionGroups.Any())
                 {
                     product.OptionGroups.Clear();
-                    try
-                    {
-                        await UnitOfWork.SaveChangesAsync();
-                    }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        // If concurrency error happens during delete, it likely means they are already gone.
-                        // We can swallow this specific error here or log it.
-                        // Reloading logic might be needed but simplest is to continue.
-                    }
                 }
 
-                // Step 2: Add new items
                 foreach (var groupDto in dto.OptionGroups)
                 {
                     var newGroup = new ProductOptionGroup
