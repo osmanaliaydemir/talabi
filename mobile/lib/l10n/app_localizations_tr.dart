@@ -462,6 +462,33 @@ class AppLocalizationsTr extends AppLocalizations {
   String get registerFailed => 'Kayıt başarısız';
 
   @override
+  String get membershipAgreement => 'Üyelik Sözleşmesi';
+
+  @override
+  String get iReadAndAccept => 'Okudum ve kabul ediyorum';
+
+  @override
+  String get pleaseAcceptAgreement => 'Lütfen üyelik sözleşmesini kabul edin';
+
+  @override
+  String get kvkkAgreement => 'KVKK Aydınlatma Metni\'ni okudum';
+
+  @override
+  String get marketingPermission =>
+      'Kampanya, indirim ve duyurulardan haberdar olmak istiyorum';
+
+  @override
+  String get pleaseAcceptKvkk => 'Lütfen KVKK metnini onaylayın';
+
+  @override
+  String get iAcceptDistanceSalesAgreement =>
+      'Mesafeli Satış Sözleşmesi\'ni okudum ve kabul ediyorum';
+
+  @override
+  String get pleaseAcceptDistanceSales =>
+      'Lütfen Mesafeli Satış Sözleşmesi\'ni onaylayın';
+
+  @override
   String get passwordReset => 'Şifre Sıfırlama';
 
   @override
@@ -3084,4 +3111,36 @@ class AppLocalizationsTr extends AppLocalizations {
   String allReviewCount(int count) {
     return 'Tüm Değerlendirmeler ($count)';
   }
+
+  @override
+  String get deleteAccountSuccess => 'Hesabınız başarıyla silindi.';
+
+  @override
+  String get deleteMyAccount => 'Hesabımı Kalıcı Olarak Sil';
+
+  @override
+  String get deleteMyAccountConfirmationTitle =>
+      'Hesabınızı Silmek İstediğinize Emin Misiniz?';
+
+  @override
+  String get deleteMyAccountConfirmationMessage =>
+      'Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir. Devam etmek istiyor musunuz?';
+
+  @override
+  String get imprint => 'Künye ve İletişim';
+
+  @override
+  String get companyTitle => 'Firma Ünvanı';
+
+  @override
+  String get mersisNo => 'MERSİS No';
+
+  @override
+  String get contactEmail => 'İletişim E-postası';
+
+  @override
+  String get contactPhone => 'İletişim Telefonu';
+
+  @override
+  String get officialAddress => 'Resmi Adres';
 }

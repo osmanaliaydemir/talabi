@@ -460,6 +460,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String get registerFailed => 'فشل التسجيل';
 
   @override
+  String get membershipAgreement => 'اتفاقية العضوية';
+
+  @override
+  String get iReadAndAccept => 'لقد قرأت وأوافق';
+
+  @override
+  String get pleaseAcceptAgreement => 'يرجى قبول اتفاقية العضوية';
+
+  @override
+  String get kvkkAgreement => 'لقد قرأت نص إفصاح GDPR';
+
+  @override
+  String get marketingPermission =>
+      'أريد أن أكون على علم بالحملات والخصومات والخدمات';
+
+  @override
+  String get pleaseAcceptKvkk => 'يرجى قبول نص GDPR';
+
+  @override
+  String get iAcceptDistanceSalesAgreement =>
+      'لقد قرأت وأقبل اتفاقية البيع عن بعد';
+
+  @override
+  String get pleaseAcceptDistanceSales => 'يرجى قبول اتفاقية البيع عن بعد';
+
+  @override
   String get passwordReset => 'إعادة تعيين كلمة المرور';
 
   @override
@@ -3052,4 +3078,36 @@ class AppLocalizationsAr extends AppLocalizations {
   String allReviewCount(int count) {
     return 'كل التقييمات ($count)';
   }
+
+  @override
+  String get deleteAccountSuccess => 'تم حذف حسابك بنجاح.';
+
+  @override
+  String get deleteMyAccount => 'حذف حسابي نهائيًا';
+
+  @override
+  String get deleteMyAccountConfirmationTitle =>
+      'هل أنت متأكد أنك تريد حذف حسابك؟';
+
+  @override
+  String get deleteMyAccountConfirmationMessage =>
+      'لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك بشكل دائم. هل تريد الاستمرار؟';
+
+  @override
+  String get imprint => 'معلومات الشركة والاتصال';
+
+  @override
+  String get companyTitle => 'اسم الشركة الرسمي';
+
+  @override
+  String get mersisNo => 'رقم MERSIS';
+
+  @override
+  String get contactEmail => 'البريد الإلكتروني للتواصل';
+
+  @override
+  String get contactPhone => 'هاتف التواصل';
+
+  @override
+  String get officialAddress => 'العنوان الرسمي';
 }

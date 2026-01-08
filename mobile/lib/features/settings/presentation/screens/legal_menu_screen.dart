@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/features/settings/presentation/screens/legal_content_screen.dart';
+import 'package:mobile/features/settings/presentation/screens/imprint_screen.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/connectivity_banner.dart';
 
@@ -32,6 +33,7 @@ class LegalMenuScreen extends StatelessWidget {
         'title': l10n.distanceSalesAgreement,
         'icon': Icons.shopping_bag,
       },
+      {'type': 'imprint', 'title': l10n.imprint, 'icon': Icons.info},
     ];
 
     return Scaffold(
@@ -85,6 +87,15 @@ class LegalMenuScreen extends StatelessWidget {
                           color: AppTheme.textSecondary,
                         ),
                         onTap: () {
+                          if (doc['type'] == 'imprint') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ImprintScreen(),
+                              ),
+                            );
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(

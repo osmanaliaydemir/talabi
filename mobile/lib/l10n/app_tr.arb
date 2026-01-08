@@ -613,6 +613,38 @@
   "@registerFailed": {
     "description": "Kayıt başarısız"
   },
+  "membershipAgreement": "Üyelik Sözleşmesi",
+  "@membershipAgreement": {
+    "description": "Üyelik Sözleşmesi"
+  },
+  "iReadAndAccept": "Okudum ve kabul ediyorum",
+  "@iReadAndAccept": {
+    "description": "Okudum ve kabul ediyorum"
+  },
+  "pleaseAcceptAgreement": "Lütfen üyelik sözleşmesini kabul edin",
+  "@pleaseAcceptAgreement": {
+    "description": "Lütfen üyelik sözleşmesini kabul edin"
+  },
+  "kvkkAgreement": "KVKK Aydınlatma Metni'ni okudum",
+  "@kvkkAgreement": {
+    "description": "KVKK Aydınlatma Metni'ni okudum"
+  },
+  "marketingPermission": "Kampanya, indirim ve duyurulardan haberdar olmak istiyorum",
+  "@marketingPermission": {
+    "description": "Kampanya, indirim ve duyurulardan haberdar olmak istiyorum"
+  },
+  "pleaseAcceptKvkk": "Lütfen KVKK metnini onaylayın",
+  "@pleaseAcceptKvkk": {
+    "description": "Lütfen KVKK metnini onaylayın"
+  },
+  "iAcceptDistanceSalesAgreement": "Mesafeli Satış Sözleşmesi'ni okudum ve kabul ediyorum",
+  "@iAcceptDistanceSalesAgreement": {
+    "description": "Mesafeli Satış Sözleşmesi onay kutusu"
+  },
+  "pleaseAcceptDistanceSales": "Lütfen Mesafeli Satış Sözleşmesi'ni onaylayın",
+  "@pleaseAcceptDistanceSales": {
+    "description": "Lütfen Mesafeli Satış Sözleşmesi'ni onaylayın"
+  },
   "passwordReset": "Şifre Sıfırlama",
   "@passwordReset": {
     "description": "Şifre Sıfırlama"
@@ -3929,5 +3961,45 @@
         "type": "int"
       }
     }
+  },
+  "deleteAccountSuccess": "Hesabınız başarıyla silindi.",
+  "@deleteAccountSuccess": {
+    "description": "Account deletion success message"
+  },
+  "deleteMyAccount": "Hesabımı Kalıcı Olarak Sil",
+  "@deleteMyAccount": {
+    "description": "Delete user account button label"
+  },
+  "deleteMyAccountConfirmationTitle": "Hesabınızı Silmek İstediğinize Emin Misiniz?",
+  "@deleteMyAccountConfirmationTitle": {
+    "description": "Delete account confirmation dialog title"
+  },
+  "deleteMyAccountConfirmationMessage": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir. Devam etmek istiyor musunuz?",
+  "@deleteMyAccountConfirmationMessage": {
+    "description": "Delete account confirmation dialog message"
+  },
+  "imprint": "Künye ve İletişim",
+  "@imprint": {
+    "description": "Legal Notice / Imprint / Künye"
+  },
+  "companyTitle": "Firma Ünvanı",
+  "@companyTitle": {
+    "description": "Company legal name"
+  },
+  "mersisNo": "MERSİS No",
+  "@mersisNo": {
+    "description": "MERSIS identification number"
+  },
+  "contactEmail": "İletişim E-postası",
+  "@contactEmail": {
+    "description": "Contact email"
+  },
+  "contactPhone": "İletişim Telefonu",
+  "@contactPhone": {
+    "description": "Contact phone"
+  },
+  "officialAddress": "Resmi Adres",
+  "@officialAddress": {
+    "description": "Official company address"
   }
 }

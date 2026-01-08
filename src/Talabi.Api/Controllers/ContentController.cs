@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -39,11 +40,13 @@ public class ContentController : BaseController
     /// Dil ve tip bazında yasal belge içeriğini getirir
     /// </summary>
     /// <param name="type">Belge tipi: terms-of-use, privacy-policy, refund-policy, distance-sales-agreement</param>
+    /// <param name="lang">Opsiyonel dil kodu (tr, en, ar)</param>
     /// <returns>Yasal belge içeriği</returns>
     [HttpGet("legal/{type}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetLegalDocument(string type)
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<object>>> GetLegalDocument(string type, [FromQuery] string? lang = null)
     {
-        var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+        var languageCode = GetLanguageFromRequest(lang);
 
         // Cache key oluştur: legal_documents_{type}_{lang}
         var cacheKey = $"{_cacheOptions.LegalDocumentsKeyPrefix}_{type}_{languageCode}";
@@ -76,14 +79,16 @@ public class ContentController : BaseController
         if (documentDto == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentNotFound", CurrentCulture, type, languageCode),
+                LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentNotFound", CurrentCulture, type,
+                    languageCode),
                 "LEGAL_DOCUMENT_NOT_FOUND"
             ));
         }
 
         return Ok(new ApiResponse<object>(
             documentDto,
-            LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -111,6 +116,7 @@ public class ContentController : BaseController
 
         return Ok(new ApiResponse<List<string>>(
             types,
-            LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentTypesRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "LegalDocumentTypesRetrievedSuccessfully",
+                CurrentCulture)));
     }
 }

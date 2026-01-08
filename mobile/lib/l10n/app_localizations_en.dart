@@ -461,6 +461,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerFailed => 'Registration failed';
 
   @override
+  String get membershipAgreement => 'Membership Agreement';
+
+  @override
+  String get iReadAndAccept => 'I have read and accept';
+
+  @override
+  String get pleaseAcceptAgreement => 'Please accept the membership agreement';
+
+  @override
+  String get kvkkAgreement => 'I have read the GDPR Disclosure Text';
+
+  @override
+  String get marketingPermission =>
+      'I want to be informed about campaigns, discounts and announcements';
+
+  @override
+  String get pleaseAcceptKvkk => 'Please accept the GDPR text';
+
+  @override
+  String get iAcceptDistanceSalesAgreement =>
+      'I have read and accept the Distance Sales Agreement';
+
+  @override
+  String get pleaseAcceptDistanceSales =>
+      'Please accept the Distance Sales Agreement';
+
+  @override
   String get passwordReset => 'Password Reset';
 
   @override
@@ -3085,4 +3112,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String allReviewCount(int count) {
     return 'All Reviews ($count)';
   }
+
+  @override
+  String get deleteAccountSuccess =>
+      'Your account has been successfully deleted.';
+
+  @override
+  String get deleteMyAccount => 'Permanently Delete My Account';
+
+  @override
+  String get deleteMyAccountConfirmationTitle =>
+      'Are you sure you want to delete your account?';
+
+  @override
+  String get deleteMyAccountConfirmationMessage =>
+      'This action cannot be undone. All your data will be permanently deleted. Do you want to continue?';
+
+  @override
+  String get imprint => 'Legal Notice & Contact';
+
+  @override
+  String get companyTitle => 'Company Title';
+
+  @override
+  String get mersisNo => 'MERSIS No';
+
+  @override
+  String get contactEmail => 'Contact Email';
+
+  @override
+  String get contactPhone => 'Contact Phone';
+
+  @override
+  String get officialAddress => 'Official Address';
 }

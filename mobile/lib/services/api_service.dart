@@ -419,6 +419,10 @@ class ApiService {
     return _authRemoteDataSource.registerDeviceToken(token, deviceType);
   }
 
+  Future<void> deleteAccount() {
+    return _authRemoteDataSource.deleteAccount();
+  }
+
   Future<List<CustomerNotification>> getCustomerNotifications() async {
     try {
       return await _notificationRemoteDataSource.getCustomerNotifications();

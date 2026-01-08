@@ -14,6 +14,7 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
+import 'package:mobile/widgets/agreement_checkbox.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({
@@ -44,6 +45,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isLoading = false;
   List<dynamic> _addresses = [];
   bool _isLoadingAddresses = true;
+  bool _acceptedDistanceSales = false;
 
   // Calculation State
   bool _isCalculating = false;
@@ -199,6 +201,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(localizations.pleaseSelectAddress),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!_acceptedDistanceSales) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(localizations.pleaseAcceptDistanceSales),
           backgroundColor: Colors.red,
         ),
       );
@@ -420,6 +432,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 cart,
                                 _calculationResult,
                               ),
+                        const SizedBox(height: 16),
+
+                        AgreementCheckbox(
+                          value: _acceptedDistanceSales,
+                          onChanged: (val) {
+                            setState(
+                              () => _acceptedDistanceSales = val ?? false,
+                            );
+                          },
+                          agreementKey: 'DistanceSalesAgreement',
+                          agreementTitle: localizations.distanceSalesAgreement,
+                          linkText: localizations.distanceSalesAgreement,
+                          suffixText: localizations.iReadAndAccept,
+                          validator: (val) {
+                            if (val != true) {
+                              return localizations.pleaseAcceptDistanceSales;
+                            }
+                            return null;
+                          },
+                        ),
                         const SizedBox(height: 24),
 
                         Semantics(

@@ -612,6 +612,38 @@
   "@registerFailed": {
     "description": "Registration failed"
   },
+  "membershipAgreement": "Membership Agreement",
+  "@membershipAgreement": {
+    "description": "Membership Agreement"
+  },
+  "iReadAndAccept": "I have read and accept",
+  "@iReadAndAccept": {
+    "description": "I have read and accept"
+  },
+  "pleaseAcceptAgreement": "Please accept the membership agreement",
+  "@pleaseAcceptAgreement": {
+    "description": "Please accept the membership agreement"
+  },
+  "kvkkAgreement": "I have read the GDPR Disclosure Text",
+  "@kvkkAgreement": {
+    "description": "I have read the GDPR Disclosure Text"
+  },
+  "marketingPermission": "I want to be informed about campaigns, discounts and announcements",
+  "@marketingPermission": {
+    "description": "I want to be informed about campaigns, discounts and announcements"
+  },
+  "pleaseAcceptKvkk": "Please accept the GDPR text",
+  "@pleaseAcceptKvkk": {
+    "description": "Please accept the GDPR text"
+  },
+  "iAcceptDistanceSalesAgreement": "I have read and accept the Distance Sales Agreement",
+  "@iAcceptDistanceSalesAgreement": {
+    "description": "Distance Sales Agreement checkbox"
+  },
+  "pleaseAcceptDistanceSales": "Please accept the Distance Sales Agreement",
+  "@pleaseAcceptDistanceSales": {
+    "description": "Please accept the Distance Sales Agreement"
+  },
   "passwordReset": "Password Reset",
   "@passwordReset": {
     "description": "Password Reset"
@@ -3957,5 +3989,45 @@
         "type": "int"
       }
     }
+  },
+  "deleteAccountSuccess": "Your account has been successfully deleted.",
+  "@deleteAccountSuccess": {
+    "description": "Account deletion success message"
+  },
+  "deleteMyAccount": "Permanently Delete My Account",
+  "@deleteMyAccount": {
+    "description": "Delete user account button label"
+  },
+  "deleteMyAccountConfirmationTitle": "Are you sure you want to delete your account?",
+  "@deleteMyAccountConfirmationTitle": {
+    "description": "Delete account confirmation dialog title"
+  },
+  "deleteMyAccountConfirmationMessage": "This action cannot be undone. All your data will be permanently deleted. Do you want to continue?",
+  "@deleteMyAccountConfirmationMessage": {
+    "description": "Delete account confirmation dialog message"
+  },
+  "imprint": "Legal Notice & Contact",
+  "@imprint": {
+    "description": "Legal Notice / Imprint / Künye"
+  },
+  "companyTitle": "Company Title",
+  "@companyTitle": {
+    "description": "Company legal name"
+  },
+  "mersisNo": "MERSIS No",
+  "@mersisNo": {
+    "description": "MERSIS identification number"
+  },
+  "contactEmail": "Contact Email",
+  "@contactEmail": {
+    "description": "Contact email"
+  },
+  "contactPhone": "Contact Phone",
+  "@contactPhone": {
+    "description": "Contact phone"
+  },
+  "officialAddress": "Official Address",
+  "@officialAddress": {
+    "description": "Official company address"
   }
 }

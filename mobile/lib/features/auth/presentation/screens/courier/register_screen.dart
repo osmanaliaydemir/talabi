@@ -15,6 +15,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/widgets/agreement_checkbox.dart';
 
 class CourierRegisterScreen extends StatefulWidget {
   const CourierRegisterScreen({super.key});
@@ -32,6 +33,9 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   int _selectedVehicleType = 1;
+  bool _acceptedAgreement = false;
+  bool _acceptedKvkk = false;
+  bool _acceptedMarketing = false;
 
   @override
   void dispose() {
@@ -470,6 +474,51 @@ class _CourierRegisterScreenState extends State<CourierRegisterScreen> {
                         ),
                         AppTheme.verticalSpace(1.5),
 
+                        // Agreements
+                        AgreementCheckbox(
+                          value: _acceptedAgreement,
+                          onChanged: (val) {
+                            setState(() => _acceptedAgreement = val ?? false);
+                          },
+                          agreementKey: 'CourierMembershipAgreement',
+                          agreementTitle: localizations.membershipAgreement,
+                          linkText: localizations.membershipAgreement,
+                          suffixText: localizations.iReadAndAccept,
+                          validator: (val) {
+                            if (val != true) {
+                              return localizations.pleaseAcceptAgreement;
+                            }
+                            return null;
+                          },
+                        ),
+                        AppTheme.verticalSpace(1),
+                        AgreementCheckbox(
+                          value: _acceptedKvkk,
+                          onChanged: (val) {
+                            setState(() => _acceptedKvkk = val ?? false);
+                          },
+                          agreementKey: 'KvkkDisclosureText',
+                          agreementTitle: localizations.kvkkAgreement,
+                          linkText: localizations.kvkkAgreement,
+                          validator: (val) {
+                            if (val != true) {
+                              return localizations.pleaseAcceptKvkk;
+                            }
+                            return null;
+                          },
+                        ),
+                        AppTheme.verticalSpace(1),
+                        AgreementCheckbox(
+                          value: _acceptedMarketing,
+                          onChanged: (val) {
+                            setState(() => _acceptedMarketing = val ?? false);
+                          },
+                          agreementKey: 'MarketingPermissionText',
+                          agreementTitle: localizations.marketingPermission,
+                          linkText: localizations.marketingPermission,
+                          isMandatory: false,
+                        ),
+                        AppTheme.verticalSpace(2),
                         // Vehicle Type Selection
                         Text(
                           localizations.vehicleType,

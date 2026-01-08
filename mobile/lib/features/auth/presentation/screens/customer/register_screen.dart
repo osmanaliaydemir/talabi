@@ -16,6 +16,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/auth_header.dart';
+import 'package:mobile/widgets/agreement_checkbox.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -31,6 +32,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _fullNameController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _acceptedAgreement = false;
+  bool _acceptedKvkk = false;
+  bool _acceptedMarketing = false;
 
   @override
   void dispose() {
@@ -583,6 +587,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   PasswordValidationWidget(
                                     password: _passwordController.text,
                                   ),
+                                const SizedBox(height: 16),
+                                // Agreements
+                                AgreementCheckbox(
+                                  value: _acceptedAgreement,
+                                  onChanged: (val) {
+                                    setState(
+                                      () => _acceptedAgreement = val ?? false,
+                                    );
+                                  },
+                                  agreementKey: 'CustomerMembershipAgreement',
+                                  agreementTitle:
+                                      localizations.membershipAgreement,
+                                  linkText: localizations.membershipAgreement,
+                                  suffixText: localizations.iReadAndAccept,
+                                  validator: (val) {
+                                    if (val != true) {
+                                      return localizations
+                                          .pleaseAcceptAgreement;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                AgreementCheckbox(
+                                  value: _acceptedKvkk,
+                                  onChanged: (val) {
+                                    setState(
+                                      () => _acceptedKvkk = val ?? false,
+                                    );
+                                  },
+                                  agreementKey: 'KvkkDisclosureText',
+                                  agreementTitle: localizations.kvkkAgreement,
+                                  linkText: localizations.kvkkAgreement,
+                                  validator: (val) {
+                                    if (val != true) {
+                                      return localizations.pleaseAcceptKvkk;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                AgreementCheckbox(
+                                  value: _acceptedMarketing,
+                                  onChanged: (val) {
+                                    setState(
+                                      () => _acceptedMarketing = val ?? false,
+                                    );
+                                  },
+                                  agreementKey: 'MarketingPermissionText',
+                                  agreementTitle:
+                                      localizations.marketingPermission,
+                                  linkText: localizations.marketingPermission,
+                                  isMandatory: false,
+                                ),
+                                const SizedBox(height: 20),
                                 const SizedBox(height: 12),
                                 // Register Button
                                 SizedBox(

@@ -18,6 +18,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/widgets/agreement_checkbox.dart';
 
 class VendorRegisterScreen extends StatefulWidget {
   const VendorRegisterScreen({super.key});
@@ -37,6 +38,9 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
   bool _obscurePassword = true;
   int _selectedVendorType =
       1; // 1 = Restaurant, 2 = Market (default: Restaurant)
+  bool _acceptedAgreement = false;
+  bool _acceptedKvkk = false;
+  bool _acceptedMarketing = false;
 
   @override
   void dispose() {
@@ -628,6 +632,51 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
                               return null;
                             },
                           ),
+                        ),
+                        AppTheme.verticalSpace(1.5),
+                        // Agreements
+                        AgreementCheckbox(
+                          value: _acceptedAgreement,
+                          onChanged: (val) {
+                            setState(() => _acceptedAgreement = val ?? false);
+                          },
+                          agreementKey: 'VendorMembershipAgreement',
+                          agreementTitle: localizations.membershipAgreement,
+                          linkText: localizations.membershipAgreement,
+                          suffixText: localizations.iReadAndAccept,
+                          validator: (val) {
+                            if (val != true) {
+                              return localizations.pleaseAcceptAgreement;
+                            }
+                            return null;
+                          },
+                        ),
+                        AppTheme.verticalSpace(1),
+                        AgreementCheckbox(
+                          value: _acceptedKvkk,
+                          onChanged: (val) {
+                            setState(() => _acceptedKvkk = val ?? false);
+                          },
+                          agreementKey: 'KvkkDisclosureText',
+                          agreementTitle: localizations.kvkkAgreement,
+                          linkText: localizations.kvkkAgreement,
+                          validator: (val) {
+                            if (val != true) {
+                              return localizations.pleaseAcceptKvkk;
+                            }
+                            return null;
+                          },
+                        ),
+                        AppTheme.verticalSpace(1),
+                        AgreementCheckbox(
+                          value: _acceptedMarketing,
+                          onChanged: (val) {
+                            setState(() => _acceptedMarketing = val ?? false);
+                          },
+                          agreementKey: 'MarketingPermissionText',
+                          agreementTitle: localizations.marketingPermission,
+                          linkText: localizations.marketingPermission,
+                          isMandatory: false,
                         ),
                         AppTheme.verticalSpace(2),
                         // Register Button

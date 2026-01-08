@@ -613,6 +613,38 @@
   "@registerFailed": {
     "description": "فشل التسجيل"
   },
+  "membershipAgreement": "اتفاقية العضوية",
+  "@membershipAgreement": {
+    "description": "اتفاقية العضوية"
+  },
+  "iReadAndAccept": "لقد قرأت وأوافق",
+  "@iReadAndAccept": {
+    "description": "لقد قرأت وأوافق"
+  },
+  "pleaseAcceptAgreement": "يرجى قبول اتفاقية العضوية",
+  "@pleaseAcceptAgreement": {
+    "description": "يرجى قبول اتفاقية العضوية"
+  },
+  "kvkkAgreement": "لقد قرأت نص إفصاح GDPR",
+  "@kvkkAgreement": {
+    "description": "لقد قرأت نص إفصاح GDPR"
+  },
+  "marketingPermission": "أريد أن أكون على علم بالحملات والخصومات والخدمات",
+  "@marketingPermission": {
+    "description": "أريد أن أكون على علم بالحملات والخصومات والخدمات"
+  },
+  "pleaseAcceptKvkk": "يرجى قبول نص GDPR",
+  "@pleaseAcceptKvkk": {
+    "description": "يرجى قبول نص GDPR"
+  },
+  "iAcceptDistanceSalesAgreement": "لقد قرأت وأقبل اتفاقية البيع عن بعد",
+  "@iAcceptDistanceSalesAgreement": {
+    "description": " Distance Sales Agreement"
+  },
+  "pleaseAcceptDistanceSales": "يرجى قبول اتفاقية البيع عن بعد",
+  "@pleaseAcceptDistanceSales": {
+    "description": "Please accept the Distance Sales Agreement"
+  },
   "passwordReset": "إعادة تعيين كلمة المرور",
   "@passwordReset": {
     "description": "إعادة تعيين كلمة المرور"
@@ -3929,5 +3961,45 @@
         "type": "int"
       }
     }
+  },
+  "deleteAccountSuccess": "تم حذف حسابك بنجاح.",
+  "@deleteAccountSuccess": {
+    "description": "Account deletion success message"
+  },
+  "deleteMyAccount": "حذف حسابي نهائيًا",
+  "@deleteMyAccount": {
+    "description": "Delete user account button label"
+  },
+  "deleteMyAccountConfirmationTitle": "هل أنت متأكد أنك تريد حذف حسابك؟",
+  "@deleteMyAccountConfirmationTitle": {
+    "description": "Delete account confirmation dialog title"
+  },
+  "deleteMyAccountConfirmationMessage": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك بشكل دائم. هل تريد الاستمرار؟",
+  "@deleteMyAccountConfirmationMessage": {
+    "description": "Delete account confirmation dialog message"
+  },
+  "imprint": "معلومات الشركة والاتصال",
+  "@imprint": {
+    "description": "Legal Notice / Imprint / Künye"
+  },
+  "companyTitle": "اسم الشركة الرسمي",
+  "@companyTitle": {
+    "description": "Company legal name"
+  },
+  "mersisNo": "رقم MERSIS",
+  "@mersisNo": {
+    "description": "MERSIS identification number"
+  },
+  "contactEmail": "البريد الإلكتروني للتواصل",
+  "@contactEmail": {
+    "description": "Contact email"
+  },
+  "contactPhone": "هاتف التواصل",
+  "@contactPhone": {
+    "description": "Contact phone"
+  },
+  "officialAddress": "العنوان الرسمي",
+  "@officialAddress": {
+    "description": "Official company address"
   }
 }

@@ -976,6 +976,54 @@ abstract class AppLocalizations {
   /// **'Registration failed'**
   String get registerFailed;
 
+  /// Membership Agreement
+  ///
+  /// In en, this message translates to:
+  /// **'Membership Agreement'**
+  String get membershipAgreement;
+
+  /// I have read and accept
+  ///
+  /// In en, this message translates to:
+  /// **'I have read and accept'**
+  String get iReadAndAccept;
+
+  /// Please accept the membership agreement
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the membership agreement'**
+  String get pleaseAcceptAgreement;
+
+  /// I have read the GDPR Disclosure Text
+  ///
+  /// In en, this message translates to:
+  /// **'I have read the GDPR Disclosure Text'**
+  String get kvkkAgreement;
+
+  /// I want to be informed about campaigns, discounts and announcements
+  ///
+  /// In en, this message translates to:
+  /// **'I want to be informed about campaigns, discounts and announcements'**
+  String get marketingPermission;
+
+  /// Please accept the GDPR text
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the GDPR text'**
+  String get pleaseAcceptKvkk;
+
+  /// Distance Sales Agreement checkbox
+  ///
+  /// In en, this message translates to:
+  /// **'I have read and accept the Distance Sales Agreement'**
+  String get iAcceptDistanceSalesAgreement;
+
+  /// Please accept the Distance Sales Agreement
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the Distance Sales Agreement'**
+  String get pleaseAcceptDistanceSales;
+
   /// Password Reset
   ///
   /// In en, this message translates to:
@@ -5763,6 +5811,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All Reviews ({count})'**
   String allReviewCount(int count);
+
+  /// Account deletion success message
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been successfully deleted.'**
+  String get deleteAccountSuccess;
+
+  /// Delete user account button label
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently Delete My Account'**
+  String get deleteMyAccount;
+
+  /// Delete account confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete your account?'**
+  String get deleteMyAccountConfirmationTitle;
+
+  /// Delete account confirmation dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. All your data will be permanently deleted. Do you want to continue?'**
+  String get deleteMyAccountConfirmationMessage;
+
+  /// Legal Notice / Imprint / Künye
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Notice & Contact'**
+  String get imprint;
+
+  /// Company legal name
+  ///
+  /// In en, this message translates to:
+  /// **'Company Title'**
+  String get companyTitle;
+
+  /// MERSIS identification number
+  ///
+  /// In en, this message translates to:
+  /// **'MERSIS No'**
+  String get mersisNo;
+
+  /// Contact email
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Email'**
+  String get contactEmail;
+
+  /// Contact phone
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Phone'**
+  String get contactPhone;
+
+  /// Official company address
+  ///
+  /// In en, this message translates to:
+  /// **'Official Address'**
+  String get officialAddress;
 }
 
 class _AppLocalizationsDelegate
