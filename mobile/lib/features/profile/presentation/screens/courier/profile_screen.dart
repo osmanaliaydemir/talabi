@@ -8,7 +8,6 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/features/settings/presentation/screens/language_settings_screen.dart';
 import 'package:mobile/features/settings/presentation/screens/legal_menu_screen.dart';
 import 'package:mobile/services/courier_service.dart';
-import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_bottom_nav.dart';
@@ -474,8 +473,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             }
           },
         ),
-        const SizedBox(height: 16),
-        _buildDeleteAccountButton(context, localizations),
         const SizedBox(height: 32),
       ],
     );
@@ -516,93 +513,5 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildDeleteAccountButton(
-    BuildContext context,
-    AppLocalizations? localizations,
-  ) {
-    return Center(
-      child: TextButton(
-        onPressed: () => _showDeleteAccountConfirmation(context, localizations),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.grey.shade600,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-        ),
-        child: Text(
-          localizations?.deleteMyAccount ?? 'Hesabımı Kalıcı Olarak Sil',
-          style: AppTheme.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey.shade500,
-            decoration: TextDecoration.underline,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showDeleteAccountConfirmation(
-    BuildContext context,
-    AppLocalizations? localizations,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          localizations?.deleteMyAccountConfirmationTitle ??
-              'Hesabınızı Silmek İstediğinize Emin Misiniz?',
-        ),
-        content: Text(
-          localizations?.deleteMyAccountConfirmationMessage ??
-              'Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir. Devam etmek istiyor musunuz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(localizations?.cancel ?? 'İptal'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              localizations?.delete ?? 'Sil',
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      try {
-        final apiService = ApiService();
-        await apiService.deleteAccount();
-        if (!context.mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              localizations?.deleteAccountSuccess ??
-                  'Hesabınız başarıyla silindi.',
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        final auth = context.read<AuthProvider>();
-        await auth.logout();
-        if (!context.mounted) return;
-
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-          );
-        }
-      }
-    }
   }
 }

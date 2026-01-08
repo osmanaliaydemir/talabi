@@ -162,22 +162,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     BuildContext context,
     AppLocalizations localizations,
   ) {
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: () => _showDeleteAccountConfirmation(context, localizations),
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          foregroundColor: Colors.grey.shade600,
-        ),
-        child: Text(
+    return Center(
+      child: TextButton.icon(
+        onPressed: _isLoading
+            ? null
+            : () => _showDeleteAccountConfirmation(context, localizations),
+        icon: const Icon(Icons.delete_forever, color: Colors.red),
+        label: Text(
           localizations.deleteMyAccount,
-          style: AppTheme.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade600,
-            decoration: TextDecoration.underline,
-          ),
+          style: const TextStyle(color: Colors.red),
         ),
       ),
     );

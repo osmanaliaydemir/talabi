@@ -324,8 +324,6 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             _showLogoutDialog(context, authProvider, localizations);
           },
         ),
-        const SizedBox(height: 16),
-        _buildDeleteAccountButton(context, localizations),
         const SizedBox(height: 32),
       ],
     );
@@ -519,83 +517,5 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         );
       },
     );
-  }
-
-  Widget _buildDeleteAccountButton(
-    BuildContext context,
-    AppLocalizations localizations,
-  ) {
-    return Center(
-      child: TextButton(
-        onPressed: () => _showDeleteAccountConfirmation(context, localizations),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.grey.shade600,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-        ),
-        child: Text(
-          localizations.deleteMyAccount,
-          style: AppTheme.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey.shade500,
-            decoration: TextDecoration.underline,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showDeleteAccountConfirmation(
-    BuildContext context,
-    AppLocalizations localizations,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.deleteMyAccountConfirmationTitle),
-        content: Text(localizations.deleteMyAccountConfirmationMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(localizations.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              localizations.delete,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      try {
-        await _apiService.deleteAccount();
-        if (!context.mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(localizations.deleteAccountSuccess),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        final auth = context.read<AuthProvider>();
-        await auth.logout();
-        if (!context.mounted) return;
-
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-          );
-        }
-      }
-    }
   }
 }

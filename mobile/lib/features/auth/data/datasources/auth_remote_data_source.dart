@@ -287,9 +287,9 @@ class AuthRemoteDataSource {
 
   Future<void> deleteAccount() async {
     try {
-      await _networkClient.post<Map<String, dynamic>>(
+      await _networkClient.post<dynamic>(
         ApiEndpoints.deleteAccount,
-        fromJson: (json) => json as Map<String, dynamic>,
+        fromJson: (json) => json,
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error deleting account', e, stackTrace);
