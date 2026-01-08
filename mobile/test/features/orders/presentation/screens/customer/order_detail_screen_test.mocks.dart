@@ -669,6 +669,16 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
       ) as _i13.Future<void>);
 
   @override
+  _i13.Future<void> deleteAccount() => (super.noSuchMethod(
+        Invocation.method(
+          #deleteAccount,
+          [],
+        ),
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
+
+  @override
   _i13.Future<List<_i17.CustomerNotification>> getCustomerNotifications() =>
       (super.noSuchMethod(
         Invocation.method(
@@ -774,7 +784,7 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
       ) as _i13.Future<void>);
 
   @override
-  _i13.Future<List<_i3.Product>> getRecommendations({
+  _i13.Future<Map<String, dynamic>> getRecommendations({
     int? type,
     double? lat,
     double? lon,
@@ -789,8 +799,9 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
             #lon: lon,
           },
         ),
-        returnValue: _i13.Future<List<_i3.Product>>.value(<_i3.Product>[]),
-      ) as _i13.Future<List<_i3.Product>>);
+        returnValue:
+            _i13.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i13.Future<Map<String, dynamic>>);
 
   @override
   _i13.Future<Map<String, dynamic>> getProfile() => (super.noSuchMethod(
