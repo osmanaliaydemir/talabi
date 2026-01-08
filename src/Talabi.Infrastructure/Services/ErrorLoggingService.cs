@@ -34,7 +34,8 @@ public class ErrorLoggingService
     {
         if (_serviceProvider == null)
         {
-            throw new InvalidOperationException("Service provider is not set. Call ErrorLoggingService.SetServiceProvider() in Program.cs");
+            throw new InvalidOperationException(
+                "Service provider is not set. Call ErrorLoggingService.SetServiceProvider() in Program.cs");
         }
 
         using var scope = _serviceProvider.CreateScope();
@@ -51,26 +52,52 @@ public class ErrorLoggingService
                 return;
             }
 
-            var errorLogs = logs.Select(log => new ErrorLog
+            // 1. Gelen loglar içindeki mükerrer kayıtları temizle (Id'ye göre)
+            var uniqueLogs = logs
+                .GroupBy(l => l.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            // 2. Database'de zaten var olan LogId'leri bul
+            var logIds = uniqueLogs.Select(l => l.Id).ToList();
+            var existingLogIds = await dbContext.ErrorLogs
+                .Where(l => logIds.Contains(l.LogId))
+                .Select(l => l.LogId)
+                .ToListAsync();
+
+            // 3. Sadece database'de olmayanları hazırla
+            var errorLogs = uniqueLogs
+                .Where(log => !existingLogIds.Contains(log.Id))
+                .Select(log => new ErrorLog
+                {
+                    Id = Guid.NewGuid(),
+                    LogId = log.Id,
+                    Level = log.Level,
+                    Message = log.Message,
+                    Error = log.Error,
+                    StackTrace = log.StackTrace,
+                    Timestamp = log.Timestamp,
+                    Metadata = log.Metadata != null ? System.Text.Json.JsonSerializer.Serialize(log.Metadata) : null,
+                    UserId = log.UserId,
+                    DeviceInfo = log.DeviceInfo,
+                    AppVersion = log.AppVersion,
+                    CreatedAt = DateTime.UtcNow
+                }).ToList();
+
+            if (errorLogs.Any())
             {
-                Id = Guid.NewGuid(),
-                LogId = log.Id,
-                Level = log.Level,
-                Message = log.Message,
-                Error = log.Error,
-                StackTrace = log.StackTrace,
-                Timestamp = log.Timestamp,
-                Metadata = log.Metadata != null ? System.Text.Json.JsonSerializer.Serialize(log.Metadata) : null,
-                UserId = log.UserId,
-                DeviceInfo = log.DeviceInfo,
-                AppVersion = log.AppVersion,
-                CreatedAt = DateTime.UtcNow
-            }).ToList();
-
-            await dbContext.ErrorLogs.AddRangeAsync(errorLogs);
-            await dbContext.SaveChangesAsync();
-
-            logger.LogInformation("Successfully saved {Count} error logs from mobile app", errorLogs.Count);
+                await dbContext.ErrorLogs.AddRangeAsync(errorLogs);
+                await dbContext.SaveChangesAsync();
+                logger.LogInformation("Successfully saved {Count} new unique error logs from mobile app",
+                    errorLogs.Count);
+            }
+            else
+            {
+                logger.LogInformation(
+                    "No new unique logs to save. Incoming {Count} logs were all duplicates or already processed.",
+                    logs.Count);
+                return; // Yeni log yoksa email göndermeye de gerek yok
+            }
 
             // Kritik hatalar için admin'e email gönder (fatal ve error seviyesi)
             var sendEmailForErrors = configuration.GetValue<bool>("ErrorLogging:SendEmailForErrors", true);
@@ -127,14 +154,14 @@ public class ErrorLoggingService
         {
             // Admin email adresini configuration'dan al
             var adminEmail = configuration["ErrorLogging:AdminEmail"]
-                ?? configuration["Email:AdminEmail"]
-                ?? "admin@talabi.com"; // Fallback
+                             ?? configuration["Email:AdminEmail"]
+                             ?? "admin@talabi.com"; // Fallback
 
             var baseUrl = configuration["AppSettings:BaseUrl"] ?? "https://talabi.runasp.net";
 
             // Badge class'ını log seviyesine göre belirle
-            var badgeClass = logLevel.Equals("fatal", StringComparison.OrdinalIgnoreCase) 
-                ? "badge-fatal" 
+            var badgeClass = logLevel.Equals("fatal", StringComparison.OrdinalIgnoreCase)
+                ? "badge-fatal"
                 : "badge-error";
 
             // Email gönder
@@ -148,9 +175,11 @@ public class ErrorLoggingService
                     { "ErrorCount", errorCount.ToString() },
                     { "LogLevel", logLevel.ToUpper() },
                     { "BadgeClass", badgeClass },
-                    { "FirstErrorMessage", firstErrorMessage.Length > 200 
-                        ? firstErrorMessage.Substring(0, 200) + "..." 
-                        : firstErrorMessage },
+                    {
+                        "FirstErrorMessage", firstErrorMessage.Length > 200
+                            ? firstErrorMessage.Substring(0, 200) + "..."
+                            : firstErrorMessage
+                    },
                     { "Timestamp", timestamp.ToString("yyyy-MM-dd HH:mm:ss") },
                     { "ViewLogsUrl", $"{baseUrl}/api/logs/errors" }
                 },
