@@ -10,6 +10,7 @@ import 'package:mobile/features/wallet/presentation/screens/withdraw_screen.dart
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/wallet/presentation/screens/transaction_detail_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key, this.bottomNavigationBar});
@@ -280,10 +281,12 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Widget _buildTransactionList(AppLocalizations localizations, bool isVendor) {
     if (_transactions.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Text(localizations.noTransactionsYet),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: EmptyStateWidget(
+          message: localizations.noTransactionsYet,
+          iconData: Icons.account_balance_wallet_outlined,
+          isCompact: true,
         ),
       );
     }

@@ -31,11 +31,13 @@ class CartProvider with ChangeNotifier {
   final _uuid = const Uuid();
   bool _isLoading = false;
   List<Product> _recommendations = [];
+  String? _recommendationTitle;
 
   Map<String, CartItem> get items => _items;
   int get itemCount => _items.length;
   bool get isLoading => _isLoading;
   List<Product> get recommendations => _recommendations;
+  String? get recommendationTitle => _recommendationTitle;
 
   Future<void> fetchRecommendations({
     int? type,
@@ -43,11 +45,13 @@ class CartProvider with ChangeNotifier {
     double? lon,
   }) async {
     try {
-      _recommendations = await _apiService.getRecommendations(
+      final result = await _apiService.getRecommendations(
         type: type,
         lat: lat,
         lon: lon,
       );
+      _recommendations = result['products'] as List<Product>;
+      _recommendationTitle = result['message'] as String?;
       notifyListeners();
     } catch (e) {
       LoggerService().error('Error fetching recommendations in provider', e);

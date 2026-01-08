@@ -79,7 +79,8 @@ class NetworkClient {
               !options.path.contains('login') &&
               !options.path.contains('register') &&
               !options.path.contains('resend-verification-code') &&
-              !options.path.contains('verify-email')) {
+              !options.path.contains('verify-email') &&
+              !options.path.contains('logs')) {
             return handler.reject(
               DioException(
                 requestOptions: options,
@@ -229,7 +230,8 @@ class NetworkClient {
         options.path.contains('register') ||
         options.path.contains('notifications/token') ||
         options.path.contains('orders') ||
-        options.path.contains('refresh-token');
+        options.path.contains('refresh-token') ||
+        options.path.contains('logs');
   }
 
   void notifyLogout() {

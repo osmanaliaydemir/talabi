@@ -265,7 +265,8 @@ class _CartScreenState extends State<CartScreen> {
                             bottom: 16,
                           ),
                           child: Text(
-                            localizations.recommendedForYou,
+                            cart.recommendationTitle ??
+                                localizations.recommendedForYou,
                             style: AppTheme.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

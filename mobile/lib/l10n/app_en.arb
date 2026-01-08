@@ -760,6 +760,14 @@
   "@cartEmptySubMessage": {
     "description": "There are no products in your cart. Start shopping now!"
   },
+  "orderEmptySubMessage": "You don't have any orders yet.\nHow about exploring delicious food?",
+  "@orderEmptySubMessage": {
+    "description": "Sub-message shown when order history is empty"
+  },
+  "addressEmptySubMessage": "You haven't added an address yet.\nPlease add an address to place an order.",
+  "@addressEmptySubMessage": {
+    "description": "Sub-message shown when address list is empty"
+  },
   "startShopping": "Start Shopping",
   "@startShopping": {
     "description": "Start Shopping"

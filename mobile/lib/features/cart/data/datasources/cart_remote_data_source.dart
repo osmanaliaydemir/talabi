@@ -188,7 +188,7 @@ class CartRemoteDataSource {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getRecommendations({
+  Future<ApiResponse<List<Map<String, dynamic>>>> getRecommendations({
     int? type,
     double? lat,
     double? lon,
@@ -205,22 +205,16 @@ class CartRemoteDataSource {
 
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
-        final apiResponse = ApiResponse.fromJson(
+        return ApiResponse.fromJson(
           response.data as Map<String, dynamic>,
           (json) =>
               (json as List).map((e) => e as Map<String, dynamic>).toList(),
         );
-
-        if (!apiResponse.success || apiResponse.data == null) {
-          return [];
-        }
-
-        return apiResponse.data!;
       }
-      return [];
+      throw Exception('Tavsiyeler getirilemedi');
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching recommendations', e, stackTrace);
-      return [];
+      rethrow;
     }
   }
 }

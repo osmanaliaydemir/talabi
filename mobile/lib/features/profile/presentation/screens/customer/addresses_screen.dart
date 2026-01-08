@@ -7,6 +7,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
@@ -359,30 +360,22 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Widget _buildEmptyState() {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.location_off, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            l10n.noAddressesYet,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.tapToAddAddress,
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    final localizations = AppLocalizations.of(context)!;
+    return EmptyStateWidget(
+      message: localizations.noAddressesYet,
+      subMessage: localizations.addressEmptySubMessage,
+      iconData: Icons.location_off_outlined,
+      actionLabel: localizations.addAddress,
+      onAction: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddEditAddressScreen()),
+        );
+        if (result == true) {
+          _loadAddresses();
+        }
+      },
+      isCompact: true,
     );
   }
 

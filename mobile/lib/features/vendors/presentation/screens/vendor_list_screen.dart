@@ -6,6 +6,7 @@ import 'package:mobile/features/vendors/presentation/screens/vendor_detail_scree
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
@@ -147,7 +148,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
               child: _isFirstLoad
                   ? const Center(child: CircularProgressIndicator())
                   : _vendors.isEmpty
-                  ? Center(child: Text(localizations.noResultsFound))
+                  ? EmptyStateWidget(
+                      message: localizations.noResultsFound,
+                      iconData: Icons.store_outlined,
+                      isCompact: true,
+                    )
                   : ListView.separated(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(AppTheme.spacingMedium),

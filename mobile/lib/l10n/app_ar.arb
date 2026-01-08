@@ -761,6 +761,14 @@
   "@cartEmptySubMessage": {
     "description": "There are no products in your cart. Start shopping now!"
   },
+  "orderEmptySubMessage": "ليس لديك أي طلبات بعد.\nما رأيك في استكشاف بعض الطعام اللذيذ؟",
+  "@orderEmptySubMessage": {
+    "description": "Sub-message shown when order history is empty"
+  },
+  "addressEmptySubMessage": "لم تقم بإضافة عنوان بعد.\nيرجى إضافة عنوان لتقديم طلب.",
+  "@addressEmptySubMessage": {
+    "description": "Sub-message shown when address list is empty"
+  },
   "startShopping": "ابدأ التسوق",
   "@startShopping": {
     "description": "Start Shopping"

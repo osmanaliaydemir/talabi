@@ -6,7 +6,6 @@ using Talabi.Core.Interfaces;
 using AutoMapper;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
-using Talabi.Core.Enums;
 using System.Text.Json;
 
 namespace Talabi.Api.Controllers;
@@ -174,7 +173,7 @@ public class CartController(
                     .FirstOrDefaultAsync(c => c.UserId == userId);
                 if (cart == null)
                 {
-                    cart = new Core.Entities.Cart { UserId = userId };
+                    cart = new Cart { UserId = userId };
                     await UnitOfWork.Carts.AddAsync(cart);
                     // Save immediately to establish the Cart
                     await UnitOfWork.SaveChangesAsync();
@@ -203,7 +202,7 @@ public class CartController(
                 }
                 else
                 {
-                    cartItem = new Core.Entities.CartItem
+                    cartItem = new CartItem
                     {
                         CartId = cart.Id,
                         ProductId = dto.ProductId,
@@ -353,7 +352,7 @@ public class CartController(
 
         if (cart == null)
         {
-            cart = new Core.Entities.Cart { UserId = userId };
+            cart = new Cart { UserId = userId };
             await UnitOfWork.Carts.AddAsync(cart);
         }
 
@@ -511,10 +510,6 @@ public class CartController(
             LocalizationService.GetLocalizedString(ResourceName, "CartClearedSuccessfully", CurrentCulture)));
     }
 
-    /// <summary>
-    /// Kullanıcıya ürün önerileri getirir. 
-    /// Kullanıcının geçmiş siparişleri varsa oradan, yoksa konuma en yakın restoran/marketten önerir.
-    /// </summary>
     [HttpGet("recommendations")]
     public async Task<ActionResult<ApiResponse<List<ProductDto>>>> GetRecommendations([FromQuery] VendorType? type,
         [FromQuery] double? lat, [FromQuery] double? lon)
@@ -528,18 +523,20 @@ public class CartController(
         }
 
         var results = new List<Product>();
+        string messageKey = "RecommendedForYou";
 
         // 1. Önce kullanıcının eski siparişlerinden öneriler bulmaya çalış (aynı tipte)
         var previousProducts = await UnitOfWork.OrderItems.Query()
             .Include(oi => oi.Order)
             .Include(oi => oi.Product)
-            .ThenInclude(p => p.Vendor)
+            .ThenInclude(p => p!.Vendor) // Product can be null in oi
             .Where(oi => oi.Order.CustomerId == userId)
-            .Where(oi => type == null || (oi.Product.VendorType == type ||
-                                          (oi.Product.Vendor != null && oi.Product.Vendor.Type == type)))
+            .Where(oi => oi.Product != null && (type == null || (oi.Product.VendorType == type ||
+                                                                 (oi.Product.Vendor != null &&
+                                                                  oi.Product.Vendor.Type == type))))
             .OrderByDescending(oi => oi.Order.CreatedAt)
             .Select(oi => oi.Product)
-            .Where(p => p != null && p.IsAvailable)
+            .Where(p => p != null && p!.IsAvailable)
             .Distinct()
             .Take(10)
             .ToListAsync();
@@ -547,11 +544,11 @@ public class CartController(
         if (previousProducts.Any())
         {
             results.AddRange(previousProducts.OfType<Product>());
+            messageKey = "RecommendedForYou";
         }
-
-        // 2. Eğer 10 üründen az varsa konuma en yakın restoran/marketin ürünlerini ekle
-        if (results.Count < 10)
+        else
         {
+            // 2. Eğer hiç siparişi yoksa konuma en yakın restoran/marketin ürünlerini getir
             double? targetLat = lat;
             double? targetLon = lon;
 
@@ -578,7 +575,7 @@ public class CartController(
             Vendor? nearestVendor = null;
             if (targetLat.HasValue && targetLon.HasValue)
             {
-                // Basit mesafe sıralaması
+                // Basit mesafe sıralaması (Öklid karesi yeterli)
                 nearestVendor = await vendorsQuery
                     .OrderBy(v =>
                         (v.Latitude - targetLat.Value) * (v.Latitude - targetLat.Value) +
@@ -594,21 +591,18 @@ public class CartController(
 
             if (nearestVendor != null)
             {
-                var remainingCount = 10 - results.Count;
-                var excludeIds = results.Select(r => r.Id).ToList();
-
-                var recommendedProducts = await UnitOfWork.Products.Query()
+                results = await UnitOfWork.Products.Query()
                     .Include(p => p.Vendor)
-                    .Where(p => p.VendorId == nearestVendor.Id && p.IsAvailable && !excludeIds.Contains(p.Id))
-                    .Take(remainingCount)
+                    .Where(p => p.VendorId == nearestVendor.Id && p.IsAvailable)
+                    .Take(10)
                     .ToListAsync();
 
-                results.AddRange(recommendedProducts);
+                messageKey = "NearestDeliciousness";
             }
         }
 
         var dtos = _mapper.Map<List<ProductDto>>(results);
         return Ok(new ApiResponse<List<ProductDto>>(dtos,
-            LocalizationService.GetLocalizedString(ResourceName, "Success", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, messageKey, CurrentCulture)));
     }
 }

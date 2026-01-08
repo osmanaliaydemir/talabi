@@ -761,6 +761,14 @@
   "@cartEmptySubMessage": {
     "description": "Sepetinde ürün bulunmamaktadır. Hemen alışverişe başla!"
   },
+  "orderEmptySubMessage": "Henüz bir siparişiniz bulunmamaktadır.\nLezzetli yemekleri keşfetmeye ne dersiniz?",
+  "@orderEmptySubMessage": {
+    "description": "Sipariş geçmişi boş olduğunda gösterilen alt mesaj"
+  },
+  "addressEmptySubMessage": "Henüz bir adres eklemediniz.\nSipariş verebilmek için bir adres ekleyin.",
+  "@addressEmptySubMessage": {
+    "description": "Adres listesi boş olduğunda gösterilen alt mesaj"
+  },
   "startShopping": "Alışverişe Başla",
   "@startShopping": {
     "description": "Alışverişe Başla"

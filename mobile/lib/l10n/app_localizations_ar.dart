@@ -579,6 +579,14 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا توجد منتجات في سلتك.\nابدأ التسوق الآن!';
 
   @override
+  String get orderEmptySubMessage =>
+      'ليس لديك أي طلبات بعد.\nما رأيك في استكشاف بعض الطعام اللذيذ؟';
+
+  @override
+  String get addressEmptySubMessage =>
+      'لم تقم بإضافة عنوان بعد.\nيرجى إضافة عنوان لتقديم طلب.';
+
+  @override
   String get startShopping => 'ابدأ التسوق';
 
   @override

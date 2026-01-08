@@ -515,21 +515,27 @@ class ApiService {
     }
   }
 
-  Future<List<Product>> getRecommendations({
+  Future<Map<String, dynamic>> getRecommendations({
     int? type,
     double? lat,
     double? lon,
   }) async {
     try {
-      final list = await _cartRemoteDataSource.getRecommendations(
+      final apiResponse = await _cartRemoteDataSource.getRecommendations(
         type: type,
         lat: lat,
         lon: lon,
       );
-      return list.map((e) => Product.fromJson(e)).toList();
+
+      final products =
+          (apiResponse.data as List?)
+              ?.map((e) => Product.fromJson(e))
+              .toList() ??
+          [];
+      return {'products': products, 'message': apiResponse.message};
     } catch (e, stackTrace) {
-      LoggerService().error('Error mapping recommendations', e, stackTrace);
-      return [];
+      LoggerService().error('Error fetching recommendations', e, stackTrace);
+      return {'products': <Product>[], 'message': null};
     }
   }
 

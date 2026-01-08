@@ -86,4 +86,10 @@
   <data name="CartClearedSuccessfully" xml:space="preserve">
     <value>تم إفراغ السلة بنجاح</value>
   </data>
+  <data name="RecommendedForYou" xml:space="preserve">
+    <value>مقترح لك</value>
+  </data>
+  <data name="NearestDeliciousness" xml:space="preserve">
+    <value>أقرب المأكولات إليك</value>
+  </data>
 </root>

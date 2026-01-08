@@ -1198,6 +1198,18 @@ abstract class AppLocalizations {
   /// **'There are no products in your cart.\nStart shopping now!'**
   String get cartEmptySubMessage;
 
+  /// Sub-message shown when order history is empty
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any orders yet.\nHow about exploring delicious food?'**
+  String get orderEmptySubMessage;
+
+  /// Sub-message shown when address list is empty
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t added an address yet.\nPlease add an address to place an order.'**
+  String get addressEmptySubMessage;
+
   /// Start Shopping
   ///
   /// In en, this message translates to:

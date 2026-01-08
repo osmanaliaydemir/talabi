@@ -581,6 +581,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'There are no products in your cart.\nStart shopping now!';
 
   @override
+  String get orderEmptySubMessage =>
+      'You don\'t have any orders yet.\nHow about exploring delicious food?';
+
+  @override
+  String get addressEmptySubMessage =>
+      'You haven\'t added an address yet.\nPlease add an address to place an order.';
+
+  @override
   String get startShopping => 'Start Shopping';
 
   @override

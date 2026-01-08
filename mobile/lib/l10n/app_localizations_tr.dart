@@ -585,6 +585,14 @@ class AppLocalizationsTr extends AppLocalizations {
       'Sepetinde ürün bulunmamaktadır.\nHemen alışverişe başla!';
 
   @override
+  String get orderEmptySubMessage =>
+      'Henüz bir siparişiniz bulunmamaktadır.\nLezzetli yemekleri keşfetmeye ne dersiniz?';
+
+  @override
+  String get addressEmptySubMessage =>
+      'Henüz bir adres eklemediniz.\nSipariş verebilmek için bir adres ekleyin.';
+
+  @override
   String get startShopping => 'Alışverişe Başla';
 
   @override

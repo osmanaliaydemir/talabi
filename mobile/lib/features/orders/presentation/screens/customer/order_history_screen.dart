@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 
+import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:get_it/get_it.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
@@ -124,27 +125,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   : _orders.isEmpty
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(vertical: 80),
                       children: [
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.shopping_bag_outlined,
-                                size: 64,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(context)!.noOrdersYet,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 60),
+                        EmptyStateWidget(
+                          message: localizations.noOrdersYet,
+                          subMessage: localizations.orderEmptySubMessage,
+                          iconData: Icons.shopping_bag_outlined,
+                          actionLabel: localizations.startShopping,
+                          onAction: () {
+                            Provider.of<BottomNavProvider>(
+                              context,
+                              listen: false,
+                            ).setIndex(0);
+                          },
+                          isCompact: true,
                         ),
                       ],
                     )
