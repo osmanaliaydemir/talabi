@@ -6,21 +6,28 @@ namespace Talabi.Api.Data;
 
 public static class DataSeeder
 {
-    public static async Task SeedAsync(TalabiDbContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+    public static async Task SeedAsync(TalabiDbContext context, UserManager<AppUser> userManager,
+        RoleManager<IdentityRole> roleManager)
     {
+        // Seed infrastructure data (countries, cities, legal documents, system settings)
+        await TalabiDbContextSeed.SeedAsync(context);
+
         // Create roles if they don't exist
         if (!await roleManager.RoleExistsAsync("Vendor"))
         {
             await roleManager.CreateAsync(new IdentityRole("Vendor"));
         }
+
         if (!await roleManager.RoleExistsAsync("Customer"))
         {
             await roleManager.CreateAsync(new IdentityRole("Customer"));
         }
+
         if (!await roleManager.RoleExistsAsync("Courier"))
         {
             await roleManager.CreateAsync(new IdentityRole("Courier"));
         }
+
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
@@ -39,7 +46,8 @@ public static class DataSeeder
             var result = await userManager.CreateAsync(user, "Talabi123!");
             if (!result.Succeeded)
             {
-                throw new Exception($"Failed to create seed user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                throw new Exception(
+                    $"Failed to create seed user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
 
             // Assign Vendor role
@@ -176,9 +184,5 @@ public static class DataSeeder
         }
 
         if (context.Vendors.Any()) return;
-
-       
-
-
     }
 }
