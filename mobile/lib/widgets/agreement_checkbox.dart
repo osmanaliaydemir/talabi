@@ -48,8 +48,8 @@ class AgreementCheckbox extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: 22,
-                  width: 22,
+                  height: 20,
+                  width: 20,
                   child: Checkbox(
                     value: value,
                     onChanged: (val) {
@@ -57,26 +57,30 @@ class AgreementCheckbox extends StatelessWidget {
                       state.didChange(val);
                     },
                     activeColor: AppTheme.primaryOrange,
+                    side: const BorderSide(
+                      color: AppTheme.borderColor,
+                      width: 1.5,
+                    ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 12),
                 Expanded(
                   child: RichText(
                     text: TextSpan(
                       style: AppTheme.poppins(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary,
-                        height: 1.4,
+                        fontSize: 13,
+                        color: AppTheme.textPrimary.withValues(alpha: 0.8),
+                        height: 1.5,
                       ),
                       children: [
                         if (prefixText != null) TextSpan(text: '$prefixText '),
                         TextSpan(
                           text: linkText,
                           style: AppTheme.poppins(
-                            fontSize: 12,
+                            fontSize: 13,
                             color: AppTheme.primaryOrange,
                             fontWeight: FontWeight.w600,
                             decoration: TextDecoration.underline,

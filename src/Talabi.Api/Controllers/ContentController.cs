@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Options;
@@ -59,9 +58,15 @@ public class ContentController : BaseController
                 var document = await UnitOfWork.LegalDocuments.Query()
                     .FirstOrDefaultAsync(d => d.Type == type && d.LanguageCode == languageCode);
 
+                if (document == null && languageCode != "tr")
+                {
+                    document = await UnitOfWork.LegalDocuments.Query()
+                        .FirstOrDefaultAsync(d => d.Type == type && d.LanguageCode == "tr");
+                }
+
                 if (document == null)
                 {
-                    return null; // Return null to indicate not found
+                    return null;
                 }
 
                 return (object)new

@@ -78,30 +78,118 @@ public class TalabiDbContextSeed
                     Group = "CompanyInfo", Description = "Resmi Adres"
                 },
 
-                // Agreements Summary (for registration checkboxes)
+                // Agreements Summary (for registration checkboxes) - Localized
+                // TR
                 new()
                 {
-                    Key = "MembershipAgreement", Value = "Talabi Kullanıcı Sözleşmesi'ni okudum ve kabul ediyorum.",
-                    Group = "Agreements", Description = "Üyelik Sözleşmesi Onay Metni"
+                    Key = "CustomerMembershipAgreement_tr",
+                    Value = "Talabi Kullanıcı Sözleşmesi'ni okudum ve kabul ediyorum.", Group = "Agreements",
+                    Description = "Müşteri Üyelik Sözleşmesi Onay Metni (TR)"
                 },
                 new()
                 {
-                    Key = "KvkkDisclosureText",
+                    Key = "VendorMembershipAgreement_tr",
+                    Value = "Talabi Satıcı Sözleşmesi'ni okudum ve kabul ediyorum.", Group = "Agreements",
+                    Description = "Satıcı Üyelik Sözleşmesi Onay Metni (TR)"
+                },
+                new()
+                {
+                    Key = "CourierMembershipAgreement_tr",
+                    Value = "Talabi Kurye Sözleşmesi'ni okudum ve kabul ediyorum.", Group = "Agreements",
+                    Description = "Kurye Üyelik Sözleşmesi Onay Metni (TR)"
+                },
+                new()
+                {
+                    Key = "KvkkDisclosureText_tr",
                     Value = "KVKK Aydınlatma Metni kapsamında verilerimin işlenmesini kabul ediyorum.",
-                    Group = "Agreements", Description = "KVKK Aydınlatma Metni"
+                    Group = "Agreements", Description = "KVKK Aydınlatma Metni (TR)"
                 },
                 new()
                 {
-                    Key = "MarketingPermissionText",
+                    Key = "MarketingPermissionText_tr",
                     Value =
                         "Kampanya ve duyurulardan haberdar olmak için ticari elektronik ileti gönderilmesini kabul ediyorum.",
-                    Group = "Agreements", Description = "Pazarlama İzin Metni"
+                    Group = "Agreements", Description = "Pazarlama İzin Metni (TR)"
                 },
                 new()
                 {
-                    Key = "DistanceSalesAgreement",
+                    Key = "DistanceSalesAgreement_tr",
                     Value = "Mesafeli Satış Sözleşmesi ve Ön Bilgilendirme Formu'nu okudum, kabul ediyorum.",
-                    Group = "Agreements", Description = "Mesafeli Satış Sözleşmesi Onay Metni"
+                    Group = "Agreements", Description = "Mesafeli Satış Sözleşmesi Onay Metni (TR)"
+                },
+
+                // EN
+                new()
+                {
+                    Key = "CustomerMembershipAgreement_en",
+                    Value = "I have read and agree to the Talabi User Agreement.", Group = "Agreements",
+                    Description = "Customer Membership Agreement Approval Text (EN)"
+                },
+                new()
+                {
+                    Key = "VendorMembershipAgreement_en",
+                    Value = "I have read and agree to the Talabi Vendor Agreement.", Group = "Agreements",
+                    Description = "Vendor Membership Agreement Approval Text (EN)"
+                },
+                new()
+                {
+                    Key = "CourierMembershipAgreement_en",
+                    Value = "I have read and agree to the Talabi Courier Agreement.", Group = "Agreements",
+                    Description = "Courier Membership Agreement Approval Text (EN)"
+                },
+                new()
+                {
+                    Key = "KvkkDisclosureText_en",
+                    Value = "I consent to the processing of my data within the scope of the GDPR Disclosure.",
+                    Group = "Agreements", Description = "GDPR Disclosure (EN)"
+                },
+                new()
+                {
+                    Key = "MarketingPermissionText_en",
+                    Value =
+                        "I agree to receive commercial electronic messages to be informed about campaigns and announcements.",
+                    Group = "Agreements", Description = "Marketing Permission Text (EN)"
+                },
+                new()
+                {
+                    Key = "DistanceSalesAgreement_en",
+                    Value = "I have read and agree to the Distance Sales Agreement and Preliminary Information Form.",
+                    Group = "Agreements", Description = "Distance Sales Agreement Approval Text (EN)"
+                },
+
+                // AR
+                new()
+                {
+                    Key = "CustomerMembershipAgreement_ar", Value = "لقد قرأت وأوافق على اتفاقية مستخدم Talabi.",
+                    Group = "Agreements", Description = "نص الموافقة على اتفاقية عضوية العميل (AR)"
+                },
+                new()
+                {
+                    Key = "VendorMembershipAgreement_ar", Value = "لقد قرأت وأوافق على اتفاقية بائع Talabi.",
+                    Group = "Agreements", Description = "نص الموافقة على اتفاقية عضوية البائع (AR)"
+                },
+                new()
+                {
+                    Key = "CourierMembershipAgreement_ar", Value = "لقد قرأت وأوافق على اتفاقية ساعي Talabi.",
+                    Group = "Agreements", Description = "نص الموافقة على اتفاقية عضوية الساعي (AR)"
+                },
+                new()
+                {
+                    Key = "KvkkDisclosureText_ar",
+                    Value = "أوافق على معالجة بياناتي في إطار بيان حماية البيانات الشخصية.", Group = "Agreements",
+                    Description = "بيان حماية البيانات الشخصية (AR)"
+                },
+                new()
+                {
+                    Key = "MarketingPermissionText_ar",
+                    Value = "أوافق على تلقي الرسائل الإلكترونية التجارية للبقاء على اطلاع بالحمالت والإعلانات.",
+                    Group = "Agreements", Description = "نص إذن التسويق (AR)"
+                },
+                new()
+                {
+                    Key = "DistanceSalesAgreement_ar",
+                    Value = "لقد قرأت وأوافق على اتفاقية البيع عن بعد ونموذج المعلومات الأولية.", Group = "Agreements",
+                    Description = "نص الموافقة على اتفاقية البيع عن بعد (AR)"
                 }
             };
 
