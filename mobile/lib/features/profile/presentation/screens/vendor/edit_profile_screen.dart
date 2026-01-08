@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/services/api_service.dart';
-//Todo: remove this import OAA
 import 'package:mobile/features/profile/presentation/screens/customer/address_picker_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
-
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-// Added imports
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
 
 class VendorEditProfileScreen extends StatefulWidget {
   const VendorEditProfileScreen({super.key, this.isOnboarding = false});
@@ -231,6 +232,46 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             ),
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _showDeleteAccountConfirmation() async {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations.deleteMyAccountConfirmationTitle,
+        message: localizations.deleteMyAccountConfirmationMessage,
+        confirmText: localizations.delete,
+        cancelText: localizations.vazgec,
+        onConfirm: () => Navigator.pop(context, true),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await _apiService.deleteAccount();
+        if (mounted) {
+          final auth = context.read<AuthProvider>();
+          await auth.logout();
+          if (!mounted) return;
+
+          context.read<BottomNavProvider>().reset();
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/vendor/login', (route) => false);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.errorWithMessage(e.toString())),
+            ),
+          );
+        }
       }
     }
   }
@@ -577,6 +618,17 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: _isSaving
+                        ? null
+                        : _showDeleteAccountConfirmation,
+                    icon: const Icon(Icons.delete_forever, color: Colors.red),
+                    label: Text(
+                      localizations?.deleteMyAccount ?? 'Hesabımı Sil',
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ),
                 ],
               ),

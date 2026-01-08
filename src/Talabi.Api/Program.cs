@@ -300,7 +300,8 @@ var passwordPolicy = builder.Configuration.GetSection("PasswordPolicy").Get<Pass
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     {
         options.SignIn.RequireConfirmedEmail = true;
-        options.User.RequireUniqueEmail = true;
+        options.User.RequireUniqueEmail =
+            false; // Soft delete senaryosu için false yapıldı. Uniqueness kontrolü servis katmanında yapılacak.
 
         // Password Policy
         options.Password.RequireDigit = passwordPolicy.RequireDigit;

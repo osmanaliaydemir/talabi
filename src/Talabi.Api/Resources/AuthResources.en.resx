@@ -200,7 +200,12 @@
     <value>Talabi - Email Verification Code</value>
   </data>
   <data name="ResetPasswordSubject" xml:space="preserve">
-    <value>Talabi - Password Reset</value>
+    <value>Talabi - Reset Password</value>
+  </data>
+  <data name="AccountDeletedSuccessfully" xml:space="preserve">
+    <value>Your account has been successfully deleted. We hope to see you again.</value>
+  </data>
+  <data name="AccountDeletionSubject" xml:space="preserve">
+    <value>Talabi Go - Account Deleted</value>
   </data>
 </root>
-

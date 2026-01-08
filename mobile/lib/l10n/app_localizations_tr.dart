@@ -219,6 +219,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get cancel => 'İptal';
 
   @override
+  String get vazgec => 'Vazgeç';
+
+  @override
   String get products => 'Ürünler';
 
   @override
@@ -475,7 +478,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get marketingPermission =>
-      'Kampanya, indirim ve duyurulardan haberdar olmak istiyorum';
+      'Kampanya ve duyurulardan haberdar olmak istiyorum';
 
   @override
   String get pleaseAcceptKvkk => 'Lütfen KVKK metnini onaylayın';

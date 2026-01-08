@@ -5,6 +5,10 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key, required this.profile});
@@ -107,6 +111,76 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     }
+  }
+
+  Future<void> _showDeleteAccountConfirmation(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations.deleteMyAccountConfirmationTitle,
+        message: localizations.deleteMyAccountConfirmationMessage,
+        confirmText: localizations.delete,
+        cancelText: localizations.vazgec,
+        onConfirm: () => Navigator.pop(context, true),
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        await _apiService.deleteAccount();
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(localizations.deleteAccountSuccess),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        final auth = context.read<AuthProvider>();
+        await auth.logout();
+        if (!context.mounted) return;
+
+        context.read<BottomNavProvider>().reset();
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildDeleteAccountButton(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: () => _showDeleteAccountConfirmation(context, localizations),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          foregroundColor: Colors.grey.shade600,
+        ),
+        child: Text(
+          localizations.deleteMyAccount,
+          style: AppTheme.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -324,6 +398,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   ),
                           ),
                         ),
+                        const SizedBox(height: AppTheme.spacingMedium),
+                        _buildDeleteAccountButton(context, localizations),
+                        const SizedBox(height: AppTheme.spacingLarge),
                       ],
                     ),
                   ),

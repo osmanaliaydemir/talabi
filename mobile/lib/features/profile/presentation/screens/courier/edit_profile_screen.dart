@@ -7,6 +7,11 @@ import 'package:mobile/features/dashboard/presentation/widgets/courier_bottom_na
 import 'package:mobile/features/dashboard/presentation/widgets/courier_header.dart';
 import 'package:mobile/features/vendors/data/models/working_hour.dart';
 import 'package:mobile/widgets/working_days_selection_widget.dart';
+import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/services/api_service.dart';
 
 class CourierEditProfileScreen extends StatefulWidget {
   const CourierEditProfileScreen({super.key});
@@ -252,6 +257,47 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
     }
   }
 
+  Future<void> _showDeleteAccountConfirmation() async {
+    final localizations = AppLocalizations.of(context);
+    if (localizations == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => CustomConfirmationDialog(
+        title: localizations.deleteMyAccountConfirmationTitle,
+        message: localizations.deleteMyAccountConfirmationMessage,
+        confirmText: localizations.delete,
+        cancelText: localizations.vazgec,
+        onConfirm: () => Navigator.pop(context, true),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final apiService = ApiService();
+        await apiService.deleteAccount();
+        if (mounted) {
+          final auth = context.read<AuthProvider>();
+          await auth.logout();
+          if (!mounted) return;
+
+          context.read<BottomNavProvider>().reset();
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/courier/login', (route) => false);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.errorWithMessage(e.toString())),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -479,6 +525,19 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
           ),
         ),
       ),
+      persistentFooterButtons: [
+        SizedBox(
+          width: double.infinity,
+          child: TextButton.icon(
+            onPressed: _isSaving ? null : _showDeleteAccountConfirmation,
+            icon: const Icon(Icons.delete_forever, color: Colors.red),
+            label: Text(
+              localizations?.deleteMyAccount ?? 'Hesabımı Sil',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -496,6 +496,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// Cancel
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get vazgec;
+
   /// Products
   ///
   /// In en, this message translates to:

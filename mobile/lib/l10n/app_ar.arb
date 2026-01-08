@@ -293,6 +293,10 @@
   "@cancel": {
     "description": "إلغاء"
   },
+  "vazgec": "إلغاء",
+  "@vazgec": {
+    "description": "إلغاء"
+  },
   "products": "المنتجات",
   "@products": {
     "description": "المنتجات"

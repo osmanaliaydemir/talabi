@@ -49,5 +49,10 @@ public interface IAuthService
     /// Courier kaydı oluşturur
     /// </summary>
     Task<object> CourierRegisterAsync(CourierRegisterDto dto, CultureInfo culture);
+
+    /// <summary>
+    /// Kullanıcı hesabını siler
+    /// </summary>
+    Task DeleteAccountAsync(string userId);
 }
 

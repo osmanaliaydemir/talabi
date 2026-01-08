@@ -202,5 +202,11 @@
   <data name="ResetPasswordSubject" xml:space="preserve">
     <value>Talabi - Şifre Sıfırlama</value>
   </data>
+  <data name="AccountDeletedSuccessfully" xml:space="preserve">
+    <value>Hesabınız başarıyla silindi. Sizi tekrar aramızda görmeyi umuyoruz.</value>
+  </data>
+  <data name="AccountDeletionSubject" xml:space="preserve">
+    <value>Talabi Go - Hesabınız Silindi</value>
+  </data>
 </root>
 

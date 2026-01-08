@@ -293,6 +293,10 @@
   "@cancel": {
     "description": "İptal"
   },
+  "vazgec": "Vazgeç",
+  "@vazgec": {
+    "description": "Vazgeç"
+  },
   "products": "Ürünler",
   "@products": {
     "description": "Ürünler"
@@ -629,9 +633,9 @@
   "@kvkkAgreement": {
     "description": "KVKK Aydınlatma Metni'ni okudum"
   },
-  "marketingPermission": "Kampanya, indirim ve duyurulardan haberdar olmak istiyorum",
+  "marketingPermission": "Kampanya ve duyurulardan haberdar olmak istiyorum",
   "@marketingPermission": {
-    "description": "Kampanya, indirim ve duyurulardan haberdar olmak istiyorum"
+    "description": "Kampanya ve duyurulardan haberdar olmak istiyorum"
   },
   "pleaseAcceptKvkk": "Lütfen KVKK metnini onaylayın",
   "@pleaseAcceptKvkk": {

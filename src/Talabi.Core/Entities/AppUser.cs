@@ -12,4 +12,6 @@ public class AppUser : IdentityUser
     public string? RefreshToken { get; set; }
     public DateTime RefreshTokenExpiryTime { get; set; }
     public UserRole Role { get; set; } = UserRole.Customer;
+    public bool IsDeleted { get; set; } = false;
+    public bool IsActive { get; set; } = true;
 }

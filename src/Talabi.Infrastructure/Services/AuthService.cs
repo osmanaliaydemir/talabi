@@ -91,7 +91,8 @@ public class AuthService : IAuthService
             if (vendor != null)
             {
                 var hasWorkingHours = await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
-                hasDeliveryZones = await _unitOfWork.VendorDeliveryZones.ExistsAsync(z => z.VendorId == vendor.Id && z.IsActive);
+                hasDeliveryZones =
+                    await _unitOfWork.VendorDeliveryZones.ExistsAsync(z => z.VendorId == vendor.Id && z.IsActive);
 
                 isActive = vendor.IsActive;
                 isProfileComplete = !string.IsNullOrWhiteSpace(vendor.Address) &&
@@ -114,7 +115,7 @@ public class AuthService : IAuthService
         // Add role claims
         foreach (var role in roles)
         {
-            claims.Add(new Claim(System.Security.Claims.ClaimTypes.Role, role));
+            claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!));
@@ -156,13 +157,16 @@ public class AuthService : IAuthService
             ValidateIssuer = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
-            ValidateLifetime = false // Here we are validating that the token is expired, so we don't care about lifetime
+            ValidateLifetime =
+                false // Here we are validating that the token is expired, so we don't care about lifetime
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
 
-        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                StringComparison.InvariantCultureIgnoreCase))
             throw new SecurityTokenException("Invalid token");
 
         return principal;
@@ -212,8 +216,10 @@ public class AuthService : IAuthService
             ? CultureInfo.CurrentCulture
             : new CultureInfo(languageCode);
 
-        var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
+        var user = await _userManager.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == dto.Email && !u.IsDeleted);
+
+        if (user == null || !user.IsActive)
         {
             var errorMessage = _localizationService.GetLocalizedString(ResourceName, "InvalidCredentials", culture);
             throw new UnauthorizedAccessException(errorMessage);
@@ -261,8 +267,10 @@ public class AuthService : IAuthService
                 var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
                 if (vendor != null)
                 {
-                    var hasWorkingHours = await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
-                    var hasDeliveryZones = await _unitOfWork.VendorDeliveryZones.ExistsAsync(z => z.VendorId == vendor.Id && z.IsActive);
+                    var hasWorkingHours =
+                        await _unitOfWork.VendorWorkingHours.ExistsAsync(wh => wh.VendorId == vendor.Id);
+                    var hasDeliveryZones =
+                        await _unitOfWork.VendorDeliveryZones.ExistsAsync(z => z.VendorId == vendor.Id && z.IsActive);
 
                     response.IsActive = vendor.IsActive;
                     // Check profile completeness (Address, Lat, Lng, Name required AND WorkingHours)
@@ -301,19 +309,21 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task<object> RegisterAsync(RegisterDto dto, CultureInfo culture)
     {
-        // Check if user exists
-        var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+        // Check if user exists (only active ones)
+        var existingUser = await _userManager.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == dto.Email && !u.IsDeleted);
         if (existingUser != null)
         {
             if (await _userManager.IsEmailConfirmedAsync(existingUser))
             {
-                throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "DuplicateEmail", culture));
+                throw new InvalidOperationException(
+                    _localizationService.GetLocalizedString(ResourceName, "DuplicateEmail", culture));
             }
             else
             {
                 // Email not confirmed, send new code
                 await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
-                return new { Email = dto.Email };
+                return new { dto.Email };
             }
         }
 
@@ -325,7 +335,8 @@ public class AuthService : IAuthService
         catch (Exception emailEx)
         {
             _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "EmailSendFailedWithDetails", culture));
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "EmailSendFailedWithDetails", culture));
         }
 
         // Create user
@@ -347,11 +358,13 @@ public class AuthService : IAuthService
                 await _unitOfWork.Customers.AddAsync(customer);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new { Email = user.Email };
+                return new { user.Email };
             }
             catch (Exception dbEx)
             {
-                _logger.LogError(dbEx, "Kullanıcı oluşturuldu ancak Customer entity veya role ataması başarısız. UserId: {UserId}", user.Id);
+                _logger.LogError(dbEx,
+                    "Kullanıcı oluşturuldu ancak Customer entity veya role ataması başarısız. UserId: {UserId}",
+                    user.Id);
 
                 // Rollback - delete user
                 await _userManager.DeleteAsync(user);
@@ -360,7 +373,8 @@ public class AuthService : IAuthService
                 var cacheKey = $"verification_code_{dto.Email}";
                 _memoryCache.Remove(cacheKey);
 
-                throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "UserCreationError", culture));
+                throw new InvalidOperationException(
+                    _localizationService.GetLocalizedString(ResourceName, "UserCreationError", culture));
             }
         }
 
@@ -368,8 +382,8 @@ public class AuthService : IAuthService
         var cacheKey2 = $"verification_code_{dto.Email}";
         _memoryCache.Remove(cacheKey2);
 
-        var errorMessages = result.Errors.Select(e => e.Description).ToList();
-        throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "UserCreationFailed", culture));
+        throw new InvalidOperationException(
+            _localizationService.GetLocalizedString(ResourceName, "UserCreationFailed", culture));
     }
 
     /// <summary>
@@ -377,19 +391,21 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task<object> VendorRegisterAsync(VendorRegisterDto dto, CultureInfo culture)
     {
-        // Check if user exists
-        var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+        // Check if user exists (only active ones)
+        var existingUser = await _userManager.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == dto.Email && !u.IsDeleted);
         if (existingUser != null)
         {
             if (await _userManager.IsEmailConfirmedAsync(existingUser))
             {
-                throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "DuplicateEmail", culture));
+                throw new InvalidOperationException(
+                    _localizationService.GetLocalizedString(ResourceName, "DuplicateEmail", culture));
             }
             else
             {
                 // Email not confirmed, send new code
                 await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
-                return new { Email = dto.Email };
+                return new { dto.Email };
             }
         }
 
@@ -401,7 +417,8 @@ public class AuthService : IAuthService
         catch (Exception emailEx)
         {
             _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "EmailSendFailedWithDetails", culture));
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "EmailSendFailedWithDetails", culture));
         }
 
         // Create user
@@ -436,7 +453,7 @@ public class AuthService : IAuthService
                 await _unitOfWork.Vendors.AddAsync(vendor);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new { Email = user.Email };
+                return new { user.Email };
             }
             catch (Exception dbEx)
             {
@@ -449,7 +466,8 @@ public class AuthService : IAuthService
                 var cacheKey = $"verification_code_{dto.Email}";
                 _memoryCache.Remove(cacheKey);
 
-                throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "VendorCreationError", culture));
+                throw new InvalidOperationException(
+                    _localizationService.GetLocalizedString(ResourceName, "VendorCreationError", culture));
             }
         }
 
@@ -457,8 +475,8 @@ public class AuthService : IAuthService
         var cacheKey2 = $"verification_code_{dto.Email}";
         _memoryCache.Remove(cacheKey2);
 
-        var errorMessages = result.Errors.Select(e => e.Description).ToList();
-        throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "VendorCreationFailed", culture));
+        throw new InvalidOperationException(
+            _localizationService.GetLocalizedString(ResourceName, "VendorCreationFailed", culture));
     }
 
     /// <summary>
@@ -466,19 +484,21 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task<object> CourierRegisterAsync(CourierRegisterDto dto, CultureInfo culture)
     {
-        // Check if user exists
-        var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+        // Check if user exists (only active ones)
+        var existingUser = await _userManager.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == dto.Email && !u.IsDeleted);
         if (existingUser != null)
         {
             if (await _userManager.IsEmailConfirmedAsync(existingUser))
             {
-                throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "DuplicateEmail", culture));
+                throw new InvalidOperationException(
+                    _localizationService.GetLocalizedString(ResourceName, "DuplicateEmail", culture));
             }
             else
             {
                 // Email not confirmed, send new code
                 await SendVerificationCodeAsync(dto.Email, dto.FullName, dto.Language);
-                return new { Email = dto.Email };
+                return new { dto.Email };
             }
         }
 
@@ -490,7 +510,8 @@ public class AuthService : IAuthService
         catch (Exception emailEx)
         {
             _logger.LogError(emailEx, "Email gönderimi başarısız. Email: {Email}", dto.Email);
-            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "EmailSendFailedWithDetails", culture));
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "EmailSendFailedWithDetails", culture));
         }
 
         // Create user
@@ -524,7 +545,7 @@ public class AuthService : IAuthService
                 await _unitOfWork.Couriers.AddAsync(courier);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new { Email = user.Email };
+                return new { user.Email };
             }
             catch (Exception dbEx)
             {
@@ -537,7 +558,8 @@ public class AuthService : IAuthService
                 var cacheKey = $"verification_code_{dto.Email}";
                 _memoryCache.Remove(cacheKey);
 
-                throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "CourierCreationError", culture));
+                throw new InvalidOperationException(
+                    _localizationService.GetLocalizedString(ResourceName, "CourierCreationError", culture));
             }
         }
 
@@ -545,8 +567,8 @@ public class AuthService : IAuthService
         var cacheKey2 = $"verification_code_{dto.Email}";
         _memoryCache.Remove(cacheKey2);
 
-        var errorMessages = result.Errors.Select(e => e.Description).ToList();
-        throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "CourierCreationFailed", culture));
+        throw new InvalidOperationException(
+            _localizationService.GetLocalizedString(ResourceName, "CourierCreationFailed", culture));
     }
 
     /// <summary>
@@ -577,6 +599,94 @@ public class AuthService : IAuthService
             "ar" or "arabic" or "ar-sa" or "ar-SA" => "ar",
             _ => "tr" // Default fallback
         };
+    }
+
+    public async Task DeleteAccountAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new Exception("Kullanıcı bulunamadı");
+        }
+
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            // Set AppUser flags
+            user.IsDeleted = true;
+            user.IsActive = false;
+
+            // Role specific status update instead of physical deletion
+            if (user.Role == UserRole.Vendor)
+            {
+                var vendor = await _unitOfWork.Vendors.Query().FirstOrDefaultAsync(v => v.OwnerId == user.Id);
+                if (vendor != null)
+                {
+                    vendor.IsActive = false;
+                }
+            }
+            else if (user.Role == UserRole.Courier)
+            {
+                var courier = await _unitOfWork.Couriers.Query().FirstOrDefaultAsync(c => c.UserId == user.Id);
+                if (courier != null)
+                {
+                    courier.IsActive = false;
+                }
+            }
+            // Customer doesn't have an IsActive field currently, but its link remains on the User.
+
+            await _unitOfWork.SaveChangesAsync();
+
+            // Finally update the identity user instead of deleting
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Hesap pasifleştirilemedi: {errors}");
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
+
+            // Send account deletion email
+            try
+            {
+                // Try to get language from UserPreferences
+                var languageCode = "tr"; // Default
+                var userPreferences = await _unitOfWork.UserPreferences.Query()
+                    .FirstOrDefaultAsync(up => up.UserId == user.Id);
+                if (userPreferences != null)
+                {
+                    languageCode = userPreferences.Language;
+                }
+
+                var lang = NormalizeLanguageCode(languageCode);
+                var culture = new CultureInfo(lang);
+                var subject = _localizationService.GetLocalizedString(ResourceName, "AccountDeletionSubject", culture);
+
+                await _emailSender.SendEmailAsync(new EmailTemplateRequest
+                {
+                    To = user.Email!,
+                    Subject = subject,
+                    TemplateName = EmailTemplateNames.AccountDeleted,
+                    LanguageCode = lang,
+                    Variables = new Dictionary<string, string>
+                    {
+                        ["fullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.Email! : user.FullName
+                    }
+                });
+            }
+            catch (Exception emailEx)
+            {
+                // Log but don't fail the deletion if email fails
+                _logger.LogWarning(emailEx, "Hesap silme maili gönderilemedi. UserId: {UserId}", userId);
+            }
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _logger.LogError(ex, "Hesap silme sırasında hata oluştu. UserId: {UserId}", userId);
+            throw;
+        }
     }
 }
 

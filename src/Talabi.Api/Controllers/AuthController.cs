@@ -1,12 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Email;
@@ -14,6 +11,7 @@ using Talabi.Core.Email;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Talabi.Core.Services;
 
 namespace Talabi.Api.Controllers;
@@ -825,6 +823,41 @@ public class AuthController : BaseController
                 LocalizationService.GetLocalizedString(ResourceName, "ExternalLoginError", CurrentCulture),
                 "INTERNAL_ERROR",
                 new List<string> { ex.Message }
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Kullanıcı hesabını siler
+    /// </summary>
+    [HttpPost("delete-account")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ApiResponse<string>(
+                    LocalizationService.GetLocalizedString(ResourceName, "UserNotFound", CurrentCulture),
+                    "UNAUTHORIZED"));
+            }
+
+            await _authService.DeleteAccountAsync(userId);
+
+            return Ok(new ApiResponse<string>(
+                data: string.Empty,
+                message: LocalizationService.GetLocalizedString(ResourceName, "AccountDeletedSuccessfully",
+                    CurrentCulture)));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Account deletion failed");
+            return StatusCode(500, new ApiResponse<string>(
+                message: LocalizationService.GetLocalizedString(ResourceName, "AccountDeletionError", CurrentCulture),
+                errorCode: "INTERNAL_ERROR",
+                errors: new List<string> { ex.Message }
             ));
         }
     }

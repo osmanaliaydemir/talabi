@@ -292,6 +292,10 @@
   "@cancel": {
     "description": "Cancel"
   },
+  "vazgec": "Cancel",
+  "@vazgec": {
+    "description": "Cancel"
+  },
   "products": "Products",
   "@products": {
     "description": "Products"

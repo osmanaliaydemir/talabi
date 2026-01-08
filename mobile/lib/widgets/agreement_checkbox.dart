@@ -71,7 +71,7 @@ class AgreementCheckbox extends StatelessWidget {
                   child: RichText(
                     text: TextSpan(
                       style: AppTheme.poppins(
-                        fontSize: 13,
+                        fontSize: 11,
                         color: AppTheme.textPrimary.withValues(alpha: 0.8),
                         height: 1.5,
                       ),
@@ -80,13 +80,14 @@ class AgreementCheckbox extends StatelessWidget {
                         TextSpan(
                           text: linkText,
                           style: AppTheme.poppins(
-                            fontSize: 13,
+                            fontSize: 11,
                             color: AppTheme.primaryOrange,
                             fontWeight: FontWeight.w600,
                             decoration: TextDecoration.underline,
                           ),
                           recognizer: TapGestureRecognizer()
-                            ..onTap = () => _showAgreementDialog(context),
+                            ..onTap = () =>
+                                _showAgreementDialog(context, state),
                         ),
                         if (suffixText != null) TextSpan(text: ' $suffixText'),
                       ],
@@ -109,12 +110,20 @@ class AgreementCheckbox extends StatelessWidget {
     );
   }
 
-  void _showAgreementDialog(BuildContext context) async {
-    showDialog(
+  void _showAgreementDialog(
+    BuildContext context,
+    FormFieldState<bool> state,
+  ) async {
+    final accepted = await showDialog<bool>(
       context: context,
       builder: (context) =>
           _AgreementDialog(agreementKey: agreementKey, title: agreementTitle),
     );
+
+    if (accepted == true) {
+      onChanged(true);
+      state.didChange(true);
+    }
   }
 }
 
@@ -155,6 +164,25 @@ class _AgreementDialogState extends State<_AgreementDialog> {
         });
       }
     }
+  }
+
+  String _getAcceptButtonText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final lang = Localizations.localeOf(context).languageCode;
+
+    // Temizleme işlemi (eğer başlık "okudum ve kabul ediyorum" gibi ekler içeriyorsa)
+    String cleanTitle = widget.title;
+    if (lang == 'tr') {
+      cleanTitle = cleanTitle
+          .replaceAll('\'ni okudum', '')
+          .replaceAll('\'ı okudum', '')
+          .replaceAll(' okudum', '')
+          .replaceAll(' okudum ve kabul ediyorum', '')
+          .trim();
+      return "$cleanTitle'nı Kabul Et";
+    }
+
+    return "${l10n.accept} $cleanTitle";
   }
 
   @override
@@ -213,15 +241,23 @@ class _AgreementDialogState extends State<_AgreementDialog> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryOrange,
                   foregroundColor: AppTheme.textOnPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
                 ),
-                child: Text(AppLocalizations.of(context)!.back),
+                child: Text(
+                  _getAcceptButtonText(context),
+                  textAlign: TextAlign.center,
+                  style: AppTheme.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
           ],

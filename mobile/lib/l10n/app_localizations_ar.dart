@@ -217,6 +217,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cancel => 'إلغاء';
 
   @override
+  String get vazgec => 'إلغاء';
+
+  @override
   String get products => 'المنتجات';
 
   @override

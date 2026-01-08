@@ -202,5 +202,11 @@
   <data name="ResetPasswordSubject" xml:space="preserve">
     <value>Talabi - إعادة تعيين كلمة المرور</value>
   </data>
+  <data name="AccountDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف حسابك بنجاح. نأمل أن نراك مرة أخرى.</value>
+  </data>
+  <data name="AccountDeletionSubject" xml:space="preserve">
+    <value>Talabi Go - تم حذف حسابك</value>
+  </data>
 </root>
 

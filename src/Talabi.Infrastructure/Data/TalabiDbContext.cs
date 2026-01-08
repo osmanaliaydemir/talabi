@@ -104,6 +104,9 @@ public class TalabiDbContext : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(builder);
 
+        // Soft delete filter for AppUser
+        builder.Entity<AppUser>().HasQueryFilter(u => !u.IsDeleted);
+
         // Additional configuration if needed
         builder.Entity<Product>()
             .Property(p => p.Price)

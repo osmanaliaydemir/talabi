@@ -218,6 +218,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get vazgec => 'Cancel';
+
+  @override
   String get products => 'Products';
 
   @override
