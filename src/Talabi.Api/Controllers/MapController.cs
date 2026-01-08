@@ -23,8 +23,10 @@ public class MapController : BaseController
     /// <summary>
     /// MapController constructor
     /// </summary>
-    public MapController(IUnitOfWork unitOfWork, ILogger<MapController> logger, ILocalizationService localizationService,
-        IUserContextService userContext, IMapper mapper, IConfiguration configuration) : base(unitOfWork, logger, localizationService, userContext)
+    public MapController(IUnitOfWork unitOfWork, ILogger<MapController> logger,
+        ILocalizationService localizationService,
+        IUserContextService userContext, IMapper mapper, IConfiguration configuration) : base(unitOfWork, logger,
+        localizationService, userContext)
     {
         _mapper = mapper;
         _configuration = configuration;
@@ -37,10 +39,11 @@ public class MapController : BaseController
     /// <param name="userLongitude">Kullanıcı boylamı (opsiyonel)</param>
     /// <returns>Satıcı harita bilgileri listesi</returns>
     [HttpGet("vendors")]
-    public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap([FromQuery] double? userLatitude, [FromQuery] double? userLongitude)
+    public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap([FromQuery] double? userLatitude,
+        [FromQuery] double? userLongitude)
     {
         var vendors = await UnitOfWork.Vendors.Query()
-            .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
             .ToListAsync();
 
         var vendorMapDtos = vendors.Select(v =>
@@ -56,6 +59,7 @@ public class MapController : BaseController
                     v.Longitude.Value
                 );
             }
+
             return dto;
         }).ToList();
 
@@ -65,7 +69,9 @@ public class MapController : BaseController
             vendorMapDtos = vendorMapDtos.OrderBy(v => v.DistanceInKm).ToList();
         }
 
-        return Ok(new ApiResponse<List<VendorMapDto>>(vendorMapDtos, LocalizationService.GetLocalizedString(ResourceName, "VendorMapInfoRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<List<VendorMapDto>>(vendorMapDtos,
+            LocalizationService.GetLocalizedString(ResourceName, "VendorMapInfoRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -84,7 +90,9 @@ public class MapController : BaseController
 
         if (order == null)
         {
-            return NotFound(new ApiResponse<DeliveryTrackingDto>(LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture), "ORDER_NOT_FOUND"));
+            return NotFound(new ApiResponse<DeliveryTrackingDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "OrderNotFound", CurrentCulture),
+                "ORDER_NOT_FOUND"));
         }
 
         var userId = UserContext.GetUserId();
@@ -101,7 +109,8 @@ public class MapController : BaseController
             !order.DeliveryAddress.Longitude.HasValue)
         {
             return BadRequest(new ApiResponse<DeliveryTrackingDto>(
-                LocalizationService.GetLocalizedString(ResourceName, "DeliveryAddressLocationNotAvailable", CurrentCulture),
+                LocalizationService.GetLocalizedString(ResourceName, "DeliveryAddressLocationNotAvailable",
+                    CurrentCulture),
                 "DELIVERY_ADDRESS_LOCATION_NOT_AVAILABLE"
             ));
         }
@@ -146,7 +155,9 @@ public class MapController : BaseController
             tracking.CourierLastUpdate = activeOrderCourier.Courier.LastLocationUpdate;
         }
 
-        return Ok(new ApiResponse<DeliveryTrackingDto>(tracking, LocalizationService.GetLocalizedString(ResourceName, "DeliveryTrackingRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<DeliveryTrackingDto>(tracking,
+            LocalizationService.GetLocalizedString(ResourceName, "DeliveryTrackingRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -161,7 +172,8 @@ public class MapController : BaseController
             if (_configuration == null)
             {
                 Logger?.LogError("Configuration service is null");
-                return StatusCode(500, new ApiResponse<object>("Configuration service is not available", "INTERNAL_SERVER_ERROR"));
+                return StatusCode(500,
+                    new ApiResponse<object>("Configuration service is not available", "INTERNAL_SERVER_ERROR"));
             }
 
             var apiKey = _configuration["GoogleMaps:ApiKey"];
@@ -175,9 +187,9 @@ public class MapController : BaseController
         catch (Exception ex)
         {
             Logger?.LogError(ex, "Error retrieving Google Maps API key: {Error}", ex.Message);
-            return StatusCode(500, new ApiResponse<object>("An error occurred while retrieving the API key", "INTERNAL_SERVER_ERROR"));
+            return StatusCode(500,
+                new ApiResponse<object>("An error occurred while retrieving the API key", "INTERNAL_SERVER_ERROR"));
         }
     }
-
 }
 

@@ -623,6 +623,16 @@ public class AuthService : IAuthService
                 if (vendor != null)
                 {
                     vendor.IsActive = false;
+
+                    // Deactivate all products of the vendor
+                    var products = await _unitOfWork.Products.Query()
+                        .Where(p => p.VendorId == vendor.Id)
+                        .ToListAsync();
+
+                    foreach (var product in products)
+                    {
+                        product.IsAvailable = false;
+                    }
                 }
             }
             else if (user.Role == UserRole.Courier)

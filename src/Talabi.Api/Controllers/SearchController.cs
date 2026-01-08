@@ -48,7 +48,8 @@ public class SearchController : BaseController
         var searchQuery = query.Trim();
 
         var productResults = await UnitOfWork.Products.Query()
-            .Where(p => p.Name.Contains(searchQuery))
+            .Include(p => p.Vendor)
+            .Where(p => p.Name.Contains(searchQuery) && (p.Vendor == null || p.Vendor.IsActive))
             .Take(5)
             .Select(p => new AutocompleteResultDto
             {
@@ -60,7 +61,7 @@ public class SearchController : BaseController
             .ToListAsync();
 
         var vendorResults = await UnitOfWork.Vendors.Query()
-            .Where(v => v.Name.Contains(searchQuery))
+            .Where(v => v.IsActive && v.Name.Contains(searchQuery))
             .Take(5)
             .Select(v => new AutocompleteResultDto
             {
@@ -74,6 +75,7 @@ public class SearchController : BaseController
         var combined = productResults.Concat(vendorResults).ToList();
         return Ok(new ApiResponse<List<AutocompleteResultDto>>(
             combined,
-            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "AutocompleteResultsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 }
