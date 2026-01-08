@@ -347,44 +347,39 @@ Talabi.Infrastructure.Services.ErrorLoggingService.SetServiceProvider(app.Servic
 Talabi.Infrastructure.Services.ActivityLoggingService.SetServiceProvider(app.Services);
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Seed Data (only if database is accessible)
+using (var scope = app.Services.CreateScope())
 {
-    // Seed Data (only if database is accessible)
-    using (var scope = app.Services.CreateScope())
+    try
     {
-        try
+        var context = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
+
+        // Apply migrations and test connection
+        await context.Database.MigrateAsync();
+
+        if (await context.Database.CanConnectAsync())
         {
-            var context = scope.ServiceProvider.GetRequiredService<TalabiDbContext>();
-
-            // Apply migrations and test connection
-            await context.Database.MigrateAsync();
-
-            if (await context.Database.CanConnectAsync())
-            {
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                await Talabi.Api.Data.DataSeeder.SeedAsync(context, userManager, roleManager);
-            }
-            else
-            {
-                Console.WriteLine("Warning: Cannot connect to database. Skipping seed data.");
-            }
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            await Talabi.Api.Data.DataSeeder.SeedAsync(context, userManager, roleManager);
         }
-        catch (Exception ex)
+        else
         {
-            // Log but don't fail the application startup
-            Console.WriteLine($"Warning: Seeding skipped - {ex.GetType().Name}: {ex.Message}");
-            if (ex.InnerException != null)
-            {
-                Console.WriteLine($"Inner: {ex.InnerException.Message}");
-            }
+            Console.WriteLine("Warning: Cannot connect to database. Skipping seed data.");
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log but don't fail the application startup
+        Console.WriteLine($"Warning: Seeding skipped - {ex.GetType().Name}: {ex.Message}");
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"Inner: {ex.InnerException.Message}");
         }
     }
 }
-else
-{
-    app.UseHsts();
-}
+
+app.UseHsts();
 
 app.UseHttpsRedirection();
 
