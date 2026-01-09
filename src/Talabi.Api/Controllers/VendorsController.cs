@@ -43,12 +43,16 @@ public class VendorsController : BaseController
     /// Tüm satıcıları getirir
     /// </summary>
     /// <param name="vendorType">Satıcı türü filtresi (opsiyonel)</param>
+    /// <param name="userLatitude">Kullanıcı enlemi (opsiyonel - mesafe filtresi için)</param>
+    /// <param name="userLongitude">Kullanıcı boylamı (opsiyonel - mesafe filtresi için)</param>
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış satıcı listesi</returns>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PagedResultDto<VendorDto>>>> GetVendors(
         [FromQuery] Talabi.Core.Enums.VendorType? vendorType = null,
+        [FromQuery] double? userLatitude = null,
+        [FromQuery] double? userLongitude = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
@@ -66,11 +70,45 @@ public class VendorsController : BaseController
             query = query.Where(v => v.Type == vendorType.Value);
         }
 
+        // Distance filter (REQUIRED: user location must be provided)
+        if (!userLatitude.HasValue || !userLongitude.HasValue)
+        {
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            var emptyResult = new PagedResultDto<VendorDto>
+            {
+                Items = new List<VendorDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<VendorDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForVendorList", CurrentCulture)));
+        }
+
+        var userLat = userLatitude.Value;
+        var userLon = userLongitude.Value;
+
+        // Filter: Is the user within the vendor's delivery radius?
+        // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+        // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
+        query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
+                                 GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+                                     v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
+
         IOrderedQueryable<Vendor> orderedQuery = query.OrderBy(v => v.Name);
 
         // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
-        var pagedResult = await orderedQuery.ToPagedResultAsync(
-            v => new VendorDto
+        var vendors = await orderedQuery
+            .Paginate(page, pageSize)
+            .ToListAsync();
+
+        // Calculate distance and map to DTOs
+        var items = vendors.Select(v =>
+        {
+            var dto = new VendorDto
             {
                 Id = v.Id,
                 Type = v.Type,
@@ -80,21 +118,36 @@ public class VendorsController : BaseController
                 City = v.City,
                 Rating = v.Rating,
                 RatingCount = v.RatingCount,
-                DeliveryRadiusInKm = v.DeliveryRadiusInKm,
+                // DeliveryRadiusInKm = 0 ise, 5 km olarak göster (default)
+                DeliveryRadiusInKm = v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm,
                 Latitude = v.Latitude.HasValue ? (double)v.Latitude.Value : null,
                 Longitude = v.Longitude.HasValue ? (double)v.Longitude.Value : null
-            },
-            page,
-            pageSize);
+            };
 
-        // PagedResult'ı PagedResultDto'ya çevir
+            // Calculate distance if user location provided
+            if (userLatitude.HasValue && userLongitude.HasValue &&
+                v.Latitude.HasValue && v.Longitude.HasValue)
+            {
+                dto.DistanceInKm = GeoHelper.CalculateDistance(
+                    userLatitude.Value,
+                    userLongitude.Value,
+                    v.Latitude.Value,
+                    v.Longitude.Value);
+            }
+
+            return dto;
+        }).ToList();
+
+        // Total count hesapla
+        var totalCount = await query.CountAsync();
+
         var result = new PagedResultDto<VendorDto>
         {
-            Items = pagedResult.Items,
-            TotalCount = pagedResult.TotalCount,
-            Page = pagedResult.Page,
-            PageSize = pagedResult.PageSize,
-            TotalPages = pagedResult.TotalPages
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
         };
 
         return Ok(new ApiResponse<PagedResultDto<VendorDto>>(
@@ -319,25 +372,40 @@ public class VendorsController : BaseController
             query = query.Where(v => v.Rating.HasValue && v.Rating >= request.MinRating.Value);
         }
 
-        // Distance filter (if user location provided)
-        if (request.UserLatitude.HasValue && request.UserLongitude.HasValue)
+        // Distance filter (REQUIRED: user location must be provided)
+        if (!request.UserLatitude.HasValue || !request.UserLongitude.HasValue)
         {
-            var userLat = request.UserLatitude.Value;
-            var userLon = request.UserLongitude.Value;
-
-            // Primary filter: Is the user within the vendor's own delivery radius?
-            query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                                     GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                                         v.Longitude!.Value) <= v.DeliveryRadiusInKm);
-
-            // Optional secondary filter: User's own max distance preference
-            if (request.MaxDistanceInKm.HasValue)
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            var emptyResult = new PagedResultDto<VendorDto>
             {
-                var maxDistance = request.MaxDistanceInKm.Value;
-                query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                                         GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                                             v.Longitude!.Value) <= maxDistance);
-            }
+                Items = new List<VendorDto>(),
+                TotalCount = 0,
+                Page = request.Page,
+                PageSize = request.PageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<VendorDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForVendorSearch", CurrentCulture)));
+        }
+
+        var userLat = request.UserLatitude.Value;
+        var userLon = request.UserLongitude.Value;
+
+        // Filter: Is the user within the vendor's delivery radius?
+        // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+        // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
+        query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
+                                 GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+                                     v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
+
+        // Optional secondary filter: User's own max distance preference
+        if (request.MaxDistanceInKm.HasValue)
+        {
+            var maxDistance = request.MaxDistanceInKm.Value;
+            query = query.Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+                v.Longitude!.Value) <= maxDistance);
         }
 
         // Sorting
@@ -373,7 +441,8 @@ public class VendorsController : BaseController
                 City = v.City,
                 Rating = v.Rating,
                 RatingCount = v.RatingCount,
-                DeliveryRadiusInKm = v.DeliveryRadiusInKm,
+                // DeliveryRadiusInKm = 0 ise, 5 km olarak göster (default)
+                DeliveryRadiusInKm = v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm,
                 Latitude = v.Latitude,
                 Longitude = v.Longitude
             };

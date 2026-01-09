@@ -42,9 +42,27 @@ public class MapController : BaseController
     public async Task<ActionResult<ApiResponse<List<VendorMapDto>>>> GetVendorsForMap([FromQuery] double? userLatitude,
         [FromQuery] double? userLongitude)
     {
-        var vendors = await UnitOfWork.Vendors.Query()
-            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
-            .ToListAsync();
+        var query = UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue);
+
+        // Distance filter (REQUIRED: user location must be provided)
+        if (!userLatitude.HasValue || !userLongitude.HasValue)
+        {
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            return Ok(new ApiResponse<List<VendorMapDto>>(new List<VendorMapDto>(),
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForMapVendors", CurrentCulture)));
+        }
+
+        var userLat = userLatitude.Value;
+        var userLon = userLongitude.Value;
+
+        // Filter: Is the user within the vendor's delivery radius?
+        // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+        // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
+        query = query.Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+            v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
+
+        var vendors = await query.ToListAsync();
 
         var vendorMapDtos = vendors.Select(v =>
         {

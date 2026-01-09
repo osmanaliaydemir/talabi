@@ -6,12 +6,15 @@ Rastgele "5 km kare" mantığı yerine, her işletmenin kendi kapasitesine göre
 
 Bu aşama, sistemin "sabit 5 km" mantığından "dinamik mesafe" mantığına geçişi için zorunludur.
 
-- [ ] **Entity Güncellemesi (`Vendor`):**
+- [x] **Entity Güncellemesi (`Vendor`):**
   - `DeliveryRadiusInKm` (int) sütunu eklenecek.
   - **Varsayılan Değer:** `5` (km).
   - *Açıklama:* Her restoranın varsayılan olarak 5 km menzili olacak, ancak bu değer panelden değiştirilebilecek.
-- [ ] **Veritabanı Migration:**
+  - ✅ **Durum:** `Vendor.cs` dosyasında satır 18'de `public int DeliveryRadiusInKm { get; set; } = 5;` olarak tanımlı.
+- [x] **Veritabanı Migration:**
   - `dotnet ef migrations add AddDeliveryRadiusToVendor` işlemi ve veritabanı güncellemesi.
+  - ✅ **Durum:** Migration dosyası mevcut: `20260109090508_AddDeliveryRadiusToVendor.cs`
+  - ⚠️ **Not:** Migration'da `defaultValue: 0` olarak ayarlanmış, ancak entity'de varsayılan değer 5. Mevcut kayıtlar için veri güncellemesi gerekebilir.
 - [x] **DTO Güncellemeleri:**
   - `VendorDto` (Okuma) ve `UpdateVendorDto` (Yazma) nesnelerine bu alanın eklenmesi.
 - [x] **API Endpoint Güncellemesi:**
@@ -43,7 +46,10 @@ Temel yapı oturduktan sonra, sistemin kârlılığını korumak için eklenecek
 
 - [x] **Kademeli Teslimat Ücreti (Tiered Delivery Fee):** Mesafe arttıkça kuryeye ödenecek rakamın ve müşteriden alınacak ücretin artması (Örn: 0-2 km: Ücretsiz | 2-5 km: 20 TL | 5+ km: 35 TL).
 - [x] **Dinamik Minimum Sepet Tutarı (Dynamic Threshold):** Yakın mesafe (0-2 km) için 100 TL, uzak mesafe (5+ km) için 300 TL gibi kurallar.
-- [ ] **Yol Mesafesi Doğrulaması (Router Check):** Harita API entegrasyonu ile kuş uçuşu yerine gerçek yol mesafesi kontrolü./nehir/otoban gibi engeller için Google Maps API ile gerçek sürüş rotasının kontrol edilmesi.
+- [x] **Yol Mesafesi Doğrulaması (Router Check):** Harita API entegrasyonu ile kuş uçuşu yerine gerçek yol mesafesi kontrolü./nehir/otoban gibi engeller için Google Maps API ile gerçek sürüş rotasının kontrol edilmesi.
+  - ✅ **Durum:** `GoogleMapService` implementasyonu mevcut ve `GetRoadDistanceAsync` metodu Google Maps Distance Matrix API kullanıyor.
+  - ✅ **Kullanım:** `OrderAssignmentService.CalculateDeliveryFee` metodunda gerçek yol mesafesi hesaplanıyor (satır 861-866).
+  - ✅ **Fallback:** API hatası durumunda kuş uçuşu mesafesi (`crowFlyDistance`) kullanılıyor (satır 868).
 
 ## Teknik Notlar
 
