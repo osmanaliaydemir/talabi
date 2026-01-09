@@ -149,7 +149,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : _vendors.isEmpty
                   ? EmptyStateWidget(
-                      message: localizations.noResultsFound,
+                      message: localizations.noVendorsInArea,
+                      subMessage: localizations.noVendorsInAreaSub,
                       iconData: Icons.store_outlined,
                       isCompact: true,
                     )

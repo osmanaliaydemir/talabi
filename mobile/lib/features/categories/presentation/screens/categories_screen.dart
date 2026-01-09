@@ -6,6 +6,7 @@ import 'package:mobile/features/categories/presentation/screens/category_product
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:provider/provider.dart';
 
 class CategoriesScreen extends StatefulWidget {
@@ -243,23 +244,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         !snapshot.hasData ||
                         snapshot.data!.isEmpty) {
                       return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.category_outlined,
-                              size: 64,
-                              color: AppTheme.textSecondary,
-                            ),
-                            const SizedBox(height: AppTheme.spacingMedium),
-                            Text(
-                              localizations.categoryNotFound,
-                              style: AppTheme.poppins(
-                                fontSize: 16,
-                                color: AppTheme.textSecondary,
-                              ),
-                            ),
-                          ],
+                        child: EmptyStateWidget(
+                          message: localizations.noCategoriesInArea,
+                          subMessage: localizations.noCategoriesInAreaSub,
+                          iconData: Icons.category_outlined,
+                          isCompact: true,
                         ),
                       );
                     }

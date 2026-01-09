@@ -2837,6 +2837,30 @@
   "@noProductsYet": {
     "description": "Henüz ürün yok."
   },
+  "noVendorsInArea": "Bu bölgede satıcı bulunmuyor",
+  "@noVendorsInArea": {
+    "description": "No vendors in delivery area message"
+  },
+  "noVendorsInAreaSub": "Teslimat yarıçapınız içinde satıcı bulunmuyor. Lütfen farklı bir konum seçin.",
+  "@noVendorsInAreaSub": {
+    "description": "No vendors in delivery area sub message"
+  },
+  "noProductsInArea": "Bu bölgede ürün bulunmuyor",
+  "@noProductsInArea": {
+    "description": "No products in delivery area message"
+  },
+  "noProductsInAreaSub": "Teslimat yarıçapınız içinde ürün bulunmuyor. Lütfen farklı bir konum seçin.",
+  "@noProductsInAreaSub": {
+    "description": "No products in delivery area sub message"
+  },
+  "noCategoriesInArea": "Bu bölgede kategori bulunmuyor",
+  "@noCategoriesInArea": {
+    "description": "No categories in delivery area message"
+  },
+  "noCategoriesInAreaSub": "Teslimat yarıçapınız içinde kategori bulunmuyor. Lütfen farklı bir konum seçin.",
+  "@noCategoriesInAreaSub": {
+    "description": "No categories in delivery area sub message"
+  },
   "productLoadFailed": "Ürün yüklenemedi: {error}",
   "@productLoadFailed": {
     "placeholders": {

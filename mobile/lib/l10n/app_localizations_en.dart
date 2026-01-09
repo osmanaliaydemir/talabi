@@ -2210,6 +2210,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noProductsYet => 'No products yet.';
 
   @override
+  String get noVendorsInArea => 'No vendors in this area';
+
+  @override
+  String get noVendorsInAreaSub =>
+      'No vendors found within your delivery radius. Please select a different location.';
+
+  @override
+  String get noProductsInArea => 'No products in this area';
+
+  @override
+  String get noProductsInAreaSub =>
+      'No products found within your delivery radius. Please select a different location.';
+
+  @override
+  String get noCategoriesInArea => 'No categories in this area';
+
+  @override
+  String get noCategoriesInAreaSub =>
+      'No categories found within your delivery radius. Please select a different location.';
+
+  @override
   String productLoadFailed(Object error) {
     return 'Failed to load product: $error';
   }

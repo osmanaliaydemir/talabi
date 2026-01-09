@@ -11,6 +11,11 @@ public class ProductSearchRequestDto
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
     public Guid? VendorId { get; set; }
+    
+    // Distance filtering (REQUIRED: user location must be provided)
+    public double? UserLatitude { get; set; }
+    public double? UserLongitude { get; set; }
+    
     public string? SortBy { get; set; } // "price_asc", "price_desc", "name", "newest"
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;

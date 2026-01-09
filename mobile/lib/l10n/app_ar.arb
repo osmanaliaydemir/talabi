@@ -2757,6 +2757,30 @@
   "@noProductsYet": {
     "description": "لا توجد منتجات بعد."
   },
+  "noVendorsInArea": "لا يوجد بائعون في هذه المنطقة",
+  "@noVendorsInArea": {
+    "description": "No vendors in delivery area message"
+  },
+  "noVendorsInAreaSub": "لم يتم العثور على بائعين ضمن نصف قطر التوصيل الخاص بك. يرجى اختيار موقع مختلف.",
+  "@noVendorsInAreaSub": {
+    "description": "No vendors in delivery area sub message"
+  },
+  "noProductsInArea": "لا توجد منتجات في هذه المنطقة",
+  "@noProductsInArea": {
+    "description": "No products in delivery area message"
+  },
+  "noProductsInAreaSub": "لم يتم العثور على منتجات ضمن نصف قطر التوصيل الخاص بك. يرجى اختيار موقع مختلف.",
+  "@noProductsInAreaSub": {
+    "description": "No products in delivery area sub message"
+  },
+  "noCategoriesInArea": "لا توجد فئات في هذه المنطقة",
+  "@noCategoriesInArea": {
+    "description": "No categories in delivery area message"
+  },
+  "noCategoriesInAreaSub": "لم يتم العثور على فئات ضمن نصف قطر التوصيل الخاص بك. يرجى اختيار موقع مختلف.",
+  "@noCategoriesInAreaSub": {
+    "description": "No categories in delivery area sub message"
+  },
   "productLoadFailed": "فشل تحميل المنتج: {error}",
   "@productLoadFailed": {
     "placeholders": {

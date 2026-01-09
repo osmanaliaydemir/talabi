@@ -78,16 +78,36 @@ class HomeScreenState extends State<HomeScreen> {
     }
     final locale = AppLocalizations.of(context)?.localeName;
 
+    // Get location from selected address
+    double? userLatitude;
+    double? userLongitude;
+    if (_selectedAddress != null) {
+      userLatitude = _selectedAddress!['latitude'] != null
+          ? double.tryParse(_selectedAddress!['latitude'].toString())
+          : null;
+      userLongitude = _selectedAddress!['longitude'] != null
+          ? double.tryParse(_selectedAddress!['longitude'].toString())
+          : null;
+    }
+
     setState(() {
-      _vendorsFuture = _apiService.getVendors(vendorType: vendorType);
+      _vendorsFuture = _apiService.getVendors(
+        vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
+      );
       _popularProductsFuture = _apiService.getPopularProducts(
         page: 1,
         pageSize: 8,
         vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
       _categoriesFuture = _apiService.getCategories(
         language: locale,
         vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
     });
     _loadCampaigns(vendorType: vendorType);

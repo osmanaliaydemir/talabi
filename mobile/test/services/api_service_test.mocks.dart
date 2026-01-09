@@ -727,6 +727,8 @@ class MockProductRemoteDataSource extends _i1.Mock
     int? page = 1,
     int? pageSize = 6,
     int? vendorType,
+    double? userLatitude,
+    double? userLongitude,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -736,6 +738,8 @@ class MockProductRemoteDataSource extends _i1.Mock
             #page: page,
             #pageSize: pageSize,
             #vendorType: vendorType,
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
           },
         ),
         returnValue: _i8.Future<List<_i3.Product>>.value(<_i3.Product>[]),
@@ -1159,6 +1163,8 @@ class MockVendorRemoteDataSource extends _i1.Mock
     int? vendorType,
     int? page = 1,
     int? pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1168,6 +1174,8 @@ class MockVendorRemoteDataSource extends _i1.Mock
             #vendorType: vendorType,
             #page: page,
             #pageSize: pageSize,
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
           },
         ),
         returnValue: _i8.Future<List<_i10.Vendor>>.value(<_i10.Vendor>[]),

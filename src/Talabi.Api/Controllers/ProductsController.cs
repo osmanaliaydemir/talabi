@@ -60,9 +60,55 @@ public class ProductsController : BaseController
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search(
         [FromQuery] ProductSearchRequestDto request)
     {
+        // Distance filter (REQUIRED: user location must be provided)
+        if (!request.UserLatitude.HasValue || !request.UserLongitude.HasValue)
+        {
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            var emptyResult = new PagedResultDto<ProductDto>
+            {
+                Items = new List<ProductDto>(),
+                TotalCount = 0,
+                Page = request.Page,
+                PageSize = request.PageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForProductSearch", CurrentCulture)));
+        }
+
+        var userLat = request.UserLatitude.Value;
+        var userLon = request.UserLongitude.Value;
+
+        // Önce yarıçap içindeki vendor'ları bul
+        var vendorsInRadius = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue &&
+                        GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                        (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToListAsync();
+
+        if (!vendorsInRadius.Any())
+        {
+            // Yarıçap içinde vendor yoksa boş liste döndür
+            var emptyResult = new PagedResultDto<ProductDto>
+            {
+                Items = new List<ProductDto>(),
+                TotalCount = 0,
+                Page = request.Page,
+                PageSize = request.PageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
+        }
+
         IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
-            .Where(p => p.Vendor == null || p.Vendor.IsActive); // Sadece aktif vendor'ların ürünleri
+            .Where(p => p.Vendor != null && p.Vendor.IsActive && vendorsInRadius.Contains(p.VendorId)); // Sadece yarıçap içindeki aktif vendor'ların ürünleri
 
         // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
@@ -158,6 +204,8 @@ public class ProductsController : BaseController
     /// </summary>
     /// <param name="lang">Dil kodu (tr, en, ar) - Opsiyonel, header yoksa kullanılır</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
+    /// <param name="userLatitude">Kullanıcı enlemi (ZORUNLU - mesafe filtresi için)</param>
+    /// <param name="userLongitude">Kullanıcı boylamı (ZORUNLU - mesafe filtresi için)</param>
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <returns>Sayfalanmış kategori listesi</returns>
@@ -165,6 +213,8 @@ public class ProductsController : BaseController
     public async Task<ActionResult<ApiResponse<PagedResultDto<CategoryDto>>>> GetCategories(
         [FromQuery] string? lang = null,
         [FromQuery] VendorType? vendorType = null,
+        [FromQuery] double? userLatitude = null,
+        [FromQuery] double? userLongitude = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6)
     {
@@ -173,20 +223,75 @@ public class ProductsController : BaseController
             ? NormalizeLanguageCode(lang)
             : CurrentCulture.TwoLetterISOLanguageName;
 
+        // Distance filter (REQUIRED: user location must be provided)
+        if (!userLatitude.HasValue || !userLongitude.HasValue)
+        {
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            var emptyResult = new PagedResultDto<CategoryDto>
+            {
+                Items = new List<CategoryDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForCategories", CurrentCulture)));
+        }
+
+        var userLat = userLatitude.Value;
+        var userLon = userLongitude.Value;
+
+        // Önce yarıçap içindeki vendor'ları bul
+        var vendorsInRadius = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue &&
+                        GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                        (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToListAsync();
+
+        if (!vendorsInRadius.Any())
+        {
+            // Yarıçap içinde vendor yoksa boş liste döndür
+            var emptyResult = new PagedResultDto<CategoryDto>
+            {
+                Items = new List<CategoryDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
+        }
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        // Cache key oluştur: categories_{vendorType}_{lang}_{page}_{pageSize}
+        // Cache key oluştur: categories_{vendorType}_{lang}_{userLat}_{userLon}_{page}_{pageSize}
         var vendorTypeStr = vendorType?.ToString() ?? "all";
-        var cacheKey = $"{_cacheOptions.CategoriesKeyPrefix}_{vendorTypeStr}_{languageCode}_{page}_{pageSize}";
+        var cacheKey = $"{_cacheOptions.CategoriesKeyPrefix}_{vendorTypeStr}_{languageCode}_{userLat}_{userLon}_{page}_{pageSize}";
 
         // Cache-aside pattern: Önce cache'den kontrol et
         var result = await _cacheService.GetOrSetAsync(
             cacheKey,
             async () =>
             {
-                // Base query - Include kullanmadan direkt Select ile projection yapıyoruz (daha performanslı)
-                IQueryable<Category> baseQuery = UnitOfWork.Categories.Query();
+                // Sadece yarıçap içindeki vendor'ların ürünlerine sahip kategorileri getir
+                var categoriesWithProducts = await UnitOfWork.Products.Query()
+                    .Where(p => vendorsInRadius.Contains(p.VendorId) && 
+                                p.CategoryId.HasValue)
+                    .Select(p => p.CategoryId!.Value)
+                    .Distinct()
+                    .ToListAsync();
+
+                // Base query - Sadece yarıçap içindeki vendor'ların kategorileri
+                IQueryable<Category> baseQuery = UnitOfWork.Categories.Query()
+                    .Where(c => categoriesWithProducts.Contains(c.Id));
 
                 // VendorType filtresi
                 if (vendorType.HasValue)
@@ -251,6 +356,8 @@ public class ProductsController : BaseController
                 LocalizationService.GetLocalizedString(ResourceName, "NoResultsFound", CurrentCulture)));
         }
 
+        // Autocomplete için konum filtresi yok (hızlı arama için)
+        // Ama yine de aktif vendor kontrolü yapıyoruz
         var results = await UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Name.Contains(query) &&
@@ -275,19 +382,69 @@ public class ProductsController : BaseController
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
     /// <param name="vendorType">Vendor türü filtresi (opsiyonel)</param>
+    /// <param name="userLatitude">Kullanıcı enlemi (ZORUNLU - mesafe filtresi için)</param>
+    /// <param name="userLongitude">Kullanıcı boylamı (ZORUNLU - mesafe filtresi için)</param>
     /// <returns>Sayfalanmış popüler ürün listesi</returns>
     [HttpGet("popular")]
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetPopularProducts(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 6,
-        [FromQuery] VendorType? vendorType = null)
+        [FromQuery] VendorType? vendorType = null,
+        [FromQuery] double? userLatitude = null,
+        [FromQuery] double? userLongitude = null)
     {
+        // Distance filter (REQUIRED: user location must be provided)
+        if (!userLatitude.HasValue || !userLongitude.HasValue)
+        {
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            var emptyResult = new PagedResultDto<ProductDto>
+            {
+                Items = new List<ProductDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForPopularProducts", CurrentCulture)));
+        }
+
+        var userLat = userLatitude.Value;
+        var userLon = userLongitude.Value;
+
+        // Önce yarıçap içindeki vendor'ları bul
+        var vendorsInRadius = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue &&
+                        GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                        (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToListAsync();
+
+        if (!vendorsInRadius.Any())
+        {
+            // Yarıçap içinde vendor yoksa boş liste döndür
+            var emptyResult = new PagedResultDto<ProductDto>
+            {
+                Items = new List<ProductDto>(),
+                TotalCount = 0,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = 0
+            };
+
+            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                emptyResult,
+                LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
+        }
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        // Cache key: popular_products_{vendorType}_{page}_{pageSize}
+        // Cache key: popular_products_{vendorType}_{userLat}_{userLon}_{page}_{pageSize}
         var vendorTypeStr = vendorType?.ToString() ?? "all";
-        var cacheKey = $"{_cacheOptions.PopularProductsKeyPrefix}_{vendorTypeStr}_{page}_{pageSize}";
+        var cacheKey = $"{_cacheOptions.PopularProductsKeyPrefix}_{vendorTypeStr}_{userLat}_{userLon}_{page}_{pageSize}";
 
         // Cache-aside pattern: Önce cache'den kontrol et
         var result = await _cacheService.GetOrSetAsync(
@@ -296,7 +453,7 @@ public class ProductsController : BaseController
             {
                 var query = UnitOfWork.Products.Query()
                     .Include(p => p.Vendor)
-                    .Where(p => p.Vendor == null || p.Vendor.IsActive) // Sadece aktif vendor'ların ürünleri
+                    .Where(p => p.Vendor != null && p.Vendor.IsActive && vendorsInRadius.Contains(p.VendorId)) // Sadece yarıçap içindeki aktif vendor'ların ürünleri
                     .AsQueryable();
 
                 if (vendorType.HasValue)

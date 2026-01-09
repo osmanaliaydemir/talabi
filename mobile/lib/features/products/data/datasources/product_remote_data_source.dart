@@ -67,10 +67,16 @@ class ProductRemoteDataSource {
     int page = 1,
     int pageSize = 6,
     int? vendorType,
+    double? userLatitude,
+    double? userLongitude,
   }) async {
     final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
     if (vendorType != null) {
       queryParams['vendorType'] = vendorType;
+    }
+    if (userLatitude != null && userLongitude != null) {
+      queryParams['userLatitude'] = userLatitude;
+      queryParams['userLongitude'] = userLongitude;
     }
     final response = await _networkClient.dio.get(
       ApiEndpoints.popularProducts,

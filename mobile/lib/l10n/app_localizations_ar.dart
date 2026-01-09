@@ -2185,6 +2185,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noProductsYet => 'لا توجد منتجات بعد.';
 
   @override
+  String get noVendorsInArea => 'لا يوجد بائعون في هذه المنطقة';
+
+  @override
+  String get noVendorsInAreaSub =>
+      'لم يتم العثور على بائعين ضمن نصف قطر التوصيل الخاص بك. يرجى اختيار موقع مختلف.';
+
+  @override
+  String get noProductsInArea => 'لا توجد منتجات في هذه المنطقة';
+
+  @override
+  String get noProductsInAreaSub =>
+      'لم يتم العثور على منتجات ضمن نصف قطر التوصيل الخاص بك. يرجى اختيار موقع مختلف.';
+
+  @override
+  String get noCategoriesInArea => 'لا توجد فئات في هذه المنطقة';
+
+  @override
+  String get noCategoriesInAreaSub =>
+      'لم يتم العثور على فئات ضمن نصف قطر التوصيل الخاص بك. يرجى اختيار موقع مختلف.';
+
+  @override
   String productLoadFailed(Object error) {
     return 'فشل تحميل المنتج: $error';
   }

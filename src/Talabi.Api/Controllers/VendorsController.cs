@@ -390,22 +390,22 @@ public class VendorsController : BaseController
                 LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForVendorSearch", CurrentCulture)));
         }
 
-        var userLat = request.UserLatitude.Value;
-        var userLon = request.UserLongitude.Value;
+            var userLat = request.UserLatitude.Value;
+            var userLon = request.UserLongitude.Value;
 
         // Filter: Is the user within the vendor's delivery radius?
         // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
         // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
-        query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                                 GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+            query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
+                                     GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
                                      v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
 
-        // Optional secondary filter: User's own max distance preference
-        if (request.MaxDistanceInKm.HasValue)
-        {
-            var maxDistance = request.MaxDistanceInKm.Value;
+            // Optional secondary filter: User's own max distance preference
+            if (request.MaxDistanceInKm.HasValue)
+            {
+                var maxDistance = request.MaxDistanceInKm.Value;
             query = query.Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                v.Longitude!.Value) <= maxDistance);
+                                             v.Longitude!.Value) <= maxDistance);
         }
 
         // Sorting

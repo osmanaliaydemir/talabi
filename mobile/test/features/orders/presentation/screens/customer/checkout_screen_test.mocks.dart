@@ -211,6 +211,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
     int? vendorType,
     int? page = 1,
     int? pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -220,6 +222,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
             #vendorType: vendorType,
             #page: page,
             #pageSize: pageSize,
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
           },
         ),
         returnValue: _i13.Future<List<_i14.Vendor>>.value(<_i14.Vendor>[]),
@@ -252,6 +256,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
     int? page = 1,
     int? pageSize = 6,
     int? vendorType,
+    double? userLatitude,
+    double? userLongitude,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -261,6 +267,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
             #page: page,
             #pageSize: pageSize,
             #vendorType: vendorType,
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
           },
         ),
         returnValue: _i13.Future<List<_i3.Product>>.value(<_i3.Product>[]),
@@ -1334,6 +1342,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
     int? vendorType,
     int? page = 1,
     int? pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1344,6 +1354,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
             #vendorType: vendorType,
             #page: page,
             #pageSize: pageSize,
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
           },
         ),
         returnValue: _i13.Future<List<Map<String, dynamic>>>.value(

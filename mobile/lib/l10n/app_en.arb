@@ -2839,6 +2839,30 @@
   "@noProductsYet": {
     "description": "No products yet."
   },
+  "noVendorsInArea": "No vendors in this area",
+  "@noVendorsInArea": {
+    "description": "No vendors in delivery area message"
+  },
+  "noVendorsInAreaSub": "No vendors found within your delivery radius. Please select a different location.",
+  "@noVendorsInAreaSub": {
+    "description": "No vendors in delivery area sub message"
+  },
+  "noProductsInArea": "No products in this area",
+  "@noProductsInArea": {
+    "description": "No products in delivery area message"
+  },
+  "noProductsInAreaSub": "No products found within your delivery radius. Please select a different location.",
+  "@noProductsInAreaSub": {
+    "description": "No products in delivery area sub message"
+  },
+  "noCategoriesInArea": "No categories in this area",
+  "@noCategoriesInArea": {
+    "description": "No categories in delivery area message"
+  },
+  "noCategoriesInAreaSub": "No categories found within your delivery radius. Please select a different location.",
+  "@noCategoriesInAreaSub": {
+    "description": "No categories in delivery area sub message"
+  },
   "productLoadFailed": "Failed to load product: {error}",
   "@productLoadFailed": {
     "placeholders": {

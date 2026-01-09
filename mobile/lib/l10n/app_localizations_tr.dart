@@ -2211,6 +2211,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noProductsYet => 'Henüz ürün yok.';
 
   @override
+  String get noVendorsInArea => 'Bu bölgede satıcı bulunmuyor';
+
+  @override
+  String get noVendorsInAreaSub =>
+      'Teslimat yarıçapınız içinde satıcı bulunmuyor. Lütfen farklı bir konum seçin.';
+
+  @override
+  String get noProductsInArea => 'Bu bölgede ürün bulunmuyor';
+
+  @override
+  String get noProductsInAreaSub =>
+      'Teslimat yarıçapınız içinde ürün bulunmuyor. Lütfen farklı bir konum seçin.';
+
+  @override
+  String get noCategoriesInArea => 'Bu bölgede kategori bulunmuyor';
+
+  @override
+  String get noCategoriesInAreaSub =>
+      'Teslimat yarıçapınız içinde kategori bulunmuyor. Lütfen farklı bir konum seçin.';
+
+  @override
   String productLoadFailed(Object error) {
     return 'Ürün yüklenemedi: $error';
   }

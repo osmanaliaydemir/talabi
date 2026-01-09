@@ -81,12 +81,16 @@ class ApiService {
     int? vendorType,
     int page = 1,
     int pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) async {
     try {
       final vendors = await _vendorRemoteDataSource.getVendors(
         vendorType: vendorType,
         page: page,
         pageSize: pageSize,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
 
       if (page == 1) {
@@ -157,12 +161,16 @@ class ApiService {
     int page = 1,
     int pageSize = 6,
     int? vendorType,
+    double? userLatitude,
+    double? userLongitude,
   }) async {
     try {
       return await _productRemoteDataSource.getPopularProducts(
         page: page,
         pageSize: pageSize,
         vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching popular products', e, stackTrace);
@@ -1167,6 +1175,8 @@ class ApiService {
     int? vendorType,
     int page = 1,
     int pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) async {
     try {
       // Try network first
@@ -1176,6 +1186,10 @@ class ApiService {
       }
       if (vendorType != null) {
         queryParams['vendorType'] = vendorType;
+      }
+      if (userLatitude != null && userLongitude != null) {
+        queryParams['userLatitude'] = userLatitude;
+        queryParams['userLongitude'] = userLongitude;
       }
       final response = await dio.get(
         '/products/categories',

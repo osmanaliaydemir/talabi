@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/vendors/data/models/vendor.dart';
 import 'package:mobile/features/vendors/presentation/screens/vendor_detail_screen.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class HomeVendorSection extends StatelessWidget {
   const HomeVendorSection({
@@ -44,7 +45,18 @@ class HomeVendorSection extends StatelessWidget {
 
         final vendors = snapshot.data!;
         if (vendors.isEmpty) {
-          return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: AppTheme.spacingLarge,
+            ),
+            child: EmptyStateWidget(
+              message: localizations.noVendorsInArea,
+              subMessage: localizations.noVendorsInAreaSub,
+              iconData: Icons.store_outlined,
+              isCompact: true,
+            ),
+          );
         }
 
         return Column(

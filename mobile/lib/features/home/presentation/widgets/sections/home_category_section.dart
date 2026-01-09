@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/categories/presentation/screens/category_products_screen.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class HomeCategorySection extends StatelessWidget {
   const HomeCategorySection({
@@ -24,8 +25,23 @@ class HomeCategorySection extends StatelessWidget {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: categoriesFuture,
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox.shrink();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: AppTheme.spacingLarge,
+            ),
+            child: EmptyStateWidget(
+              message: localizations.noCategoriesInArea,
+              subMessage: localizations.noCategoriesInAreaSub,
+              iconData: Icons.category_outlined,
+              isCompact: true,
+            ),
+          );
         }
 
         final categories = snapshot.data!;

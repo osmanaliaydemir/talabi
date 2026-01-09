@@ -4156,6 +4156,42 @@ abstract class AppLocalizations {
   /// **'No products yet.'**
   String get noProductsYet;
 
+  /// No vendors in delivery area message
+  ///
+  /// In en, this message translates to:
+  /// **'No vendors in this area'**
+  String get noVendorsInArea;
+
+  /// No vendors in delivery area sub message
+  ///
+  /// In en, this message translates to:
+  /// **'No vendors found within your delivery radius. Please select a different location.'**
+  String get noVendorsInAreaSub;
+
+  /// No products in delivery area message
+  ///
+  /// In en, this message translates to:
+  /// **'No products in this area'**
+  String get noProductsInArea;
+
+  /// No products in delivery area sub message
+  ///
+  /// In en, this message translates to:
+  /// **'No products found within your delivery radius. Please select a different location.'**
+  String get noProductsInAreaSub;
+
+  /// No categories in delivery area message
+  ///
+  /// In en, this message translates to:
+  /// **'No categories in this area'**
+  String get noCategoriesInArea;
+
+  /// No categories in delivery area sub message
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found within your delivery radius. Please select a different location.'**
+  String get noCategoriesInAreaSub;
+
   /// No description provided for @productLoadFailed.
   ///
   /// In en, this message translates to:

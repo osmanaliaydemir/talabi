@@ -9,6 +9,7 @@ import 'package:mobile/features/products/presentation/widgets/product_card.dart'
 import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:provider/provider.dart';
 
 class PopularProductListScreen extends StatefulWidget {
@@ -255,25 +256,11 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
                     )
                   : _products.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.star_outline,
-                            size: 64,
-                            color: AppTheme.textSecondary.withValues(
-                              alpha: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: AppTheme.spacingMedium),
-                          Text(
-                            localizations.noProductsYet,
-                            style: AppTheme.poppins(
-                              color: AppTheme.textSecondary,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
+                      child: EmptyStateWidget(
+                        message: localizations.noProductsInArea,
+                        subMessage: localizations.noProductsInAreaSub,
+                        iconData: Icons.shopping_bag_outlined,
+                        isCompact: true,
                       ),
                     )
                   : CustomScrollView(

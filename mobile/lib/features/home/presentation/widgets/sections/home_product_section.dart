@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class HomeProductSection extends StatelessWidget {
   const HomeProductSection({
@@ -47,7 +48,18 @@ class HomeProductSection extends StatelessWidget {
 
         final products = snapshot.data!;
         if (products.isEmpty) {
-          return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: AppTheme.spacingLarge,
+            ),
+            child: EmptyStateWidget(
+              message: localizations.noProductsInArea,
+              subMessage: localizations.noProductsInAreaSub,
+              iconData: Icons.shopping_bag_outlined,
+              isCompact: true,
+            ),
+          );
         }
 
         return Column(
