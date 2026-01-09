@@ -182,7 +182,7 @@ class _AgreementDialogState extends State<_AgreementDialog> {
       return "$cleanTitle'nı Kabul Et";
     }
 
-    return "${l10n.accept} $cleanTitle";
+    return '${l10n.accept} $cleanTitle';
   }
 
   @override
