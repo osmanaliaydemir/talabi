@@ -1264,6 +1264,14 @@
   "@deliveryFee": {
     "description": "Teslimat Ücreti"
   },
+  "deliveryRadius": "Teslimat Yarıçapı (km)",
+  "@deliveryRadius": {
+    "description": "Teslimat yarıçapı ayarı etiketi"
+  },
+  "deliveryRadiusHint": "Restoranınızın kaç km mesafeye kadar gönderim yapacağını belirleyin.",
+  "@deliveryRadiusHint": {
+    "description": "Teslimat yarıçapı ayarı ipucu"
+  },
   "addressRequiredTitle": "Adres Gerekli",
   "@addressRequiredTitle": {
     "description": "Adres Gerekli"

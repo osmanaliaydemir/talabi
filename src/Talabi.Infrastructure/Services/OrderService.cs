@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Helpers;
 using Talabi.Core.Models;
 
 namespace Talabi.Infrastructure.Services;
@@ -15,27 +15,27 @@ namespace Talabi.Infrastructure.Services;
 public class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<OrderService> _logger;
     private readonly ILocalizationService _localizationService;
     private readonly INotificationService _notificationService;
     private readonly IRuleValidatorService _ruleValidatorService;
     private readonly ISystemSettingsService _systemSettingsService;
+    private readonly IMapService _mapService;
     private const string ResourceName = "OrderResources";
 
     public OrderService(
         IUnitOfWork unitOfWork,
-        ILogger<OrderService> logger,
         ILocalizationService localizationService,
         INotificationService notificationService,
         IRuleValidatorService ruleValidatorService,
-        ISystemSettingsService systemSettingsService)
+        ISystemSettingsService systemSettingsService,
+        IMapService mapService)
     {
         _unitOfWork = unitOfWork;
-        _logger = logger;
         _localizationService = localizationService;
         _notificationService = notificationService;
         _ruleValidatorService = ruleValidatorService;
         _systemSettingsService = systemSettingsService;
+        _mapService = mapService;
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ public class OrderService : IOrderService
             });
         }
 
-        // 3. Validate Delivery Address and Zone
+        // 3. Validate Delivery Address and Distance
         if (!dto.DeliveryAddressId.HasValue)
         {
             throw new ArgumentException(
@@ -148,6 +148,53 @@ public class OrderService : IOrderService
         {
             throw new KeyNotFoundException(
                 _localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
+        }
+
+        // Distance and Radius Check (Crow-fly)
+        double crowFlyDistance = GeoHelper.CalculateDistance(
+            vendor.Latitude ?? 0,
+            vendor.Longitude ?? 0,
+            userAddress.Latitude ?? 0,
+            userAddress.Longitude ?? 0
+        );
+
+        if (crowFlyDistance > vendor.DeliveryRadiusInKm)
+        {
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
+        }
+
+        // Router Check (Real Road Distance)
+        double roadDistance = await _mapService.GetRoadDistanceAsync(
+            vendor.Latitude ?? 0,
+            vendor.Longitude ?? 0,
+            userAddress.Latitude ?? 0,
+            userAddress.Longitude ?? 0
+        );
+
+        double orderDistance = roadDistance > 0 ? roadDistance : crowFlyDistance;
+
+        if (orderDistance > vendor.DeliveryRadiusInKm)
+        {
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
+        }
+
+        // Dynamic Minimum Order Amount Check
+        decimal dynamicMinAmount = vendor.MinimumOrderAmount ?? 0;
+        if (orderDistance > 5)
+        {
+            dynamicMinAmount = Math.Max(dynamicMinAmount, 300.00m);
+        }
+        else if (orderDistance > 2)
+        {
+            dynamicMinAmount = Math.Max(dynamicMinAmount, 200.00m);
+        }
+
+        if (totalAmount < dynamicMinAmount)
+        {
+            throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName,
+                "MinimumOrderAmountNotMet", culture, dynamicMinAmount));
         }
 
         // Fetch Delivery Fee and Free Delivery Threshold from System Settings
@@ -168,22 +215,6 @@ public class OrderService : IOrderService
                 deliveryFee = 0;
             }
         }
-
-        // Delivery Zone checks disabled - allow all addresses
-        /*
-        var deliveryZone = await _unitOfWork.VendorDeliveryZones.Query()
-            .FirstOrDefaultAsync(z => z.VendorId == dto.VendorId && z.DistrictId == userAddress.DistrictId && z.IsActive);
-
-        if (deliveryZone == null)
-        {
-             throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryZone", culture));
-        }
-
-        if (totalAmount < deliveryZone.MinimumOrderAmount)
-        {
-             throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName, "MinimumOrderAmountNotMet", culture, deliveryZone.MinimumOrderAmount));
-        }
-        */
 
         // 4. Validate and Apply Coupon (if provided)
         decimal discountAmount = 0;
@@ -263,7 +294,7 @@ public class OrderService : IOrderService
 
                 if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
                 {
-                    decimal campaignDiscount = 0;
+                    decimal campaignDiscount;
                     if (campaign.DiscountType == DiscountType.Percentage)
                     {
                         campaignDiscount = totalAmount * (campaign.DiscountValue / 100);
@@ -331,7 +362,7 @@ public class OrderService : IOrderService
             order.Id);
 
         // Send Firebase push notification to vendor
-        if (vendor != null && !string.IsNullOrEmpty(vendor.OwnerId))
+        if (!string.IsNullOrEmpty(vendor.OwnerId))
         {
             var languageCode = culture.TwoLetterISOLanguageName;
             await _notificationService.SendOrderStatusUpdateNotificationAsync(vendor.OwnerId, order.Id, "Pending",
@@ -441,7 +472,7 @@ public class OrderService : IOrderService
             OrderId = orderId,
             Status = OrderStatus.Cancelled,
             Note = $"Cancelled: {dto.Reason}",
-            CreatedBy = userId ?? "System",
+            CreatedBy = userId,
             CreatedAt = now
         });
 
@@ -561,7 +592,7 @@ public class OrderService : IOrderService
             OrderId = order.Id,
             Status = newStatus,
             Note = dto.Note,
-            CreatedBy = userId ?? "System"
+            CreatedBy = userId
         });
 
         _unitOfWork.Orders.Update(order);
@@ -666,8 +697,6 @@ public class OrderService : IOrderService
             OrderStatus.Assigned => next is OrderStatus.Accepted or OrderStatus.Cancelled,
             OrderStatus.Accepted => next is OrderStatus.OutForDelivery or OrderStatus.Cancelled,
             OrderStatus.OutForDelivery => next is OrderStatus.Delivered,
-            OrderStatus.Delivered => false,
-            OrderStatus.Cancelled => false,
             _ => false
         };
     }
@@ -735,7 +764,7 @@ public class OrderService : IOrderService
             });
         }
 
-        // 3. Calculate Delivery Fee
+        // 3. Calculate Delivery Fee and Validate Distance
         decimal deliveryFee = 0;
 
         // Fetch Base Delivery Fee
@@ -754,6 +783,61 @@ public class OrderService : IOrderService
             if (subtotal >= threshold)
             {
                 deliveryFee = 0;
+            }
+        }
+
+        // Validate Distance and Min Amount if address provided
+        if (dto.DeliveryAddressId.HasValue)
+        {
+            var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
+            if (userAddress != null)
+            {
+                // Distance and Radius Check (Crow-fly first)
+                double crowFlyDistance = GeoHelper.CalculateDistance(
+                    vendor.Latitude ?? 0,
+                    vendor.Longitude ?? 0,
+                    userAddress.Latitude ?? 0,
+                    userAddress.Longitude ?? 0
+                );
+
+                if (crowFlyDistance > vendor.DeliveryRadiusInKm)
+                {
+                    throw new InvalidOperationException(
+                        _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
+                }
+
+                // Router Check (Real Road Distance)
+                double roadDistance = await _mapService.GetRoadDistanceAsync(
+                    vendor.Latitude ?? 0,
+                    vendor.Longitude ?? 0,
+                    userAddress.Latitude ?? 0,
+                    userAddress.Longitude ?? 0
+                );
+
+                double orderDistance = roadDistance > 0 ? roadDistance : crowFlyDistance;
+
+                if (orderDistance > vendor.DeliveryRadiusInKm)
+                {
+                    throw new InvalidOperationException(
+                        _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
+                }
+
+                // Dynamic Minimum Order Amount Check
+                decimal dynamicMinAmount = vendor.MinimumOrderAmount ?? 0;
+                if (orderDistance > 5)
+                {
+                    dynamicMinAmount = Math.Max(dynamicMinAmount, 300.00m);
+                }
+                else if (orderDistance > 2)
+                {
+                    dynamicMinAmount = Math.Max(dynamicMinAmount, 200.00m);
+                }
+
+                if (subtotal < dynamicMinAmount)
+                {
+                    throw new InvalidOperationException(_localizationService.GetLocalizedString(ResourceName,
+                        "MinimumOrderAmountNotMet", culture, dynamicMinAmount));
+                }
             }
         }
 
@@ -843,7 +927,7 @@ public class OrderService : IOrderService
             {
                 if (_ruleValidatorService.ValidateCampaign(campaign, validationContext, out var _))
                 {
-                    decimal campaignDiscount = 0;
+                    decimal campaignDiscount;
                     if (campaign.DiscountType == DiscountType.Percentage)
                     {
                         campaignDiscount = subtotal * (campaign.DiscountValue / 100);

@@ -70,6 +70,7 @@ public class VendorProfileController : BaseController
             ShamCashAccountNumber = vendor.ShamCashAccountNumber,
             Rating = vendor.Rating,
             RatingCount = vendor.RatingCount,
+            DeliveryRadiusInKm = vendor.DeliveryRadiusInKm,
             BusyStatus = vendor.BusyStatus,
             Type = vendor.Type,
             WorkingHours = vendor.WorkingHours.Select(wh => new WorkingHourDto
@@ -134,6 +135,7 @@ public class VendorProfileController : BaseController
                 if (dto.Longitude.HasValue) vendor.Longitude = dto.Longitude.Value;
                 if (dto.PhoneNumber != null) vendor.PhoneNumber = dto.PhoneNumber;
                 if (dto.Description != null) vendor.Description = dto.Description;
+                if (dto.DeliveryRadiusInKm.HasValue) vendor.DeliveryRadiusInKm = dto.DeliveryRadiusInKm.Value;
                 if (dto.ShamCashAccountNumber != null) vendor.ShamCashAccountNumber = dto.ShamCashAccountNumber;
 
                 // 3. Handle Working Hours (Nuclear Option)
@@ -235,6 +237,7 @@ public class VendorProfileController : BaseController
             MinimumOrderAmount = vendor.MinimumOrderAmount,
             DeliveryFee = vendor.DeliveryFee,
             EstimatedDeliveryTime = vendor.EstimatedDeliveryTime,
+            DeliveryRadiusInKm = vendor.DeliveryRadiusInKm,
             IsActive = vendor.IsActive,
             OpeningHours = vendor.OpeningHours
         };
@@ -281,6 +284,11 @@ public class VendorProfileController : BaseController
         if (dto.EstimatedDeliveryTime.HasValue)
         {
             vendor.EstimatedDeliveryTime = dto.EstimatedDeliveryTime.Value;
+        }
+
+        if (dto.DeliveryRadiusInKm.HasValue)
+        {
+            vendor.DeliveryRadiusInKm = dto.DeliveryRadiusInKm.Value;
         }
 
         if (dto.IsActive.HasValue)

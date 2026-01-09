@@ -111,6 +111,12 @@
   <data name="OrderItemCancellationFailed" xml:space="preserve">
     <value>حدث خطأ أثناء إلغاء عنصر الطلب</value>
   </data>
+  <data name="OutOfDeliveryRadius" xml:space="preserve">
+    <value>عذرًا، أنت خارج منطقة توصيل هذا المطعم.</value>
+  </data>
+  <data name="MinimumOrderAmountNotMet" xml:space="preserve">
+    <value>المبلغ الأدنى للطلب هو {0} ₺.</value>
+  </data>
   
   <!-- Success Messages -->
   <data name="OrderCreatedSuccessfully" xml:space="preserve">

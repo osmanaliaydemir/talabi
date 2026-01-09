@@ -10,45 +10,42 @@ using Talabi.Api.Controllers;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
+using Talabi.Core.DTOs;
 using Xunit;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
 public class UploadControllerTests
 {
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly Mock<ILocalizationService> _mockLocalizationService;
-    private readonly Mock<IUserContextService> _mockUserContextService;
-    private readonly Mock<IWebHostEnvironment> _mockEnvironment;
-    private readonly Mock<IFileUploadSecurityService> _mockSecurityService;
     private readonly UploadController _controller;
 
     public UploadControllerTests()
     {
-        _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
-        _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
-        _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
-        _mockEnvironment = new Mock<IWebHostEnvironment>();
-        _mockSecurityService = new Mock<IFileUploadSecurityService>();
+        var mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
+        var mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
+        var mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
+        var mockEnvironment = new Mock<IWebHostEnvironment>();
+        var mockSecurityService = new Mock<IFileUploadSecurityService>();
 
         // Mock web root path
-        _mockEnvironment.Setup(x => x.WebRootPath).Returns(Path.GetTempPath());
+        mockEnvironment.Setup(x => x.WebRootPath).Returns(Path.GetTempPath());
 
         // Mock security service
-        _mockSecurityService.Setup(x => x.IsAllowedExtension(It.IsAny<string>())).Returns(true);
-        _mockSecurityService.Setup(x => x.IsValidFileSize(It.IsAny<long>())).Returns(true);
-        _mockSecurityService.Setup(x => x.IsValidFileContentAsync(It.IsAny<Stream>(), It.IsAny<string>())).ReturnsAsync(true);
-        _mockSecurityService.Setup(x => x.SanitizeFileName(It.IsAny<string>())).Returns<string>(x => x);
+        mockSecurityService.Setup(x => x.IsAllowedExtension(It.IsAny<string>())).Returns(true);
+        mockSecurityService.Setup(x => x.IsValidFileSize(It.IsAny<long>())).Returns(true);
+        mockSecurityService.Setup(x => x.IsValidFileContentAsync(It.IsAny<Stream>(), It.IsAny<string>()))
+            .ReturnsAsync(true);
+        mockSecurityService.Setup(x => x.SanitizeFileName(It.IsAny<string>())).Returns<string>(x => x);
 
         var logger = ControllerTestHelpers.CreateMockLogger<UploadController>();
 
         _controller = new UploadController(
-            _mockUnitOfWork.Object,
+            mockUnitOfWork.Object,
             logger,
-            _mockLocalizationService.Object,
-            _mockUserContextService.Object,
-            _mockEnvironment.Object,
-            _mockSecurityService.Object
+            mockLocalizationService.Object,
+            mockUserContextService.Object,
+            mockEnvironment.Object,
+            mockSecurityService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -90,35 +87,28 @@ public class UploadControllerTests
     {
         // Arrange
         var content = "test content";
-        var fileName = "test.jpg";
-        var memoryStream = new MemoryStream();
-        var writer = new StreamWriter(memoryStream);
-        writer.Write(content);
-        writer.Flush();
-        memoryStream.Position = 0;
+        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
 
         var mockFile = new Mock<IFormFile>();
-        mockFile.Setup(x => x.FileName).Returns(fileName);
-        mockFile.Setup(x => x.Length).Returns(memoryStream.Length);
-        mockFile.Setup(x => x.OpenReadStream()).Returns(memoryStream);
-        mockFile.Setup(x => x.CopyToAsync(It.IsAny<Stream>(), It.IsAny<System.Threading.CancellationToken>()))
-                .Callback<Stream, System.Threading.CancellationToken>((s, c) => memoryStream.CopyTo(s))
-                .Returns(Task.CompletedTask);
+        mockFile.Setup(x => x.FileName).Returns("test.jpg");
+        mockFile.Setup(x => x.Length).Returns(bytes.Length);
+        mockFile.Setup(x => x.OpenReadStream()).Returns(() => new MemoryStream(bytes));
 
         // Act
         var result = await _controller.Upload(mockFile.Object);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var value = okResult.Value;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<object>>().Subject;
+        var data = apiResponse.Data;
 
-        // We can use reflection or dynamic to check 'Url' property
-        value.Should().NotBeNull();
-        var type = value!.GetType();
+        // We can use reflection or dynamic to check 'Url' property on Data object
+        data.Should().NotBeNull();
+        var type = data!.GetType();
         var urlProp = type.GetProperty("Url");
         urlProp.Should().NotBeNull();
 
-        var urlValue = urlProp!.GetValue(value) as string;
+        var urlValue = urlProp!.GetValue(data) as string;
         urlValue.Should().StartWith("http://localhost/images/");
         urlValue.Should().EndWith(".jpg");
     }

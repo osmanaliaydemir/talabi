@@ -41,6 +41,10 @@ public class VendorOrdersControllerTests
         _mockNotificationService = new Mock<INotificationService>();
         _mockMapper = new Mock<IMapper>();
         _mockHubContext = new Mock<IHubContext<NotificationHub>>();
+        var mockClients = new Mock<IHubClients>();
+        var mockClientProxy = new Mock<IClientProxy>();
+        mockClients.Setup(x => x.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
+        _mockHubContext.Setup(x => x.Clients).Returns(mockClients.Object);
 
         var logger = ControllerTestHelpers.CreateMockLogger<VendorOrdersController>();
 
@@ -155,8 +159,7 @@ public class VendorOrdersControllerTests
 
         // Mock for customer notification logic
         var customers = new List<Customer>
-            { new Customer { UserId = "cust-1", Id = Guid.NewGuid() } }; // Match CustomerId from order? 
-        // Logic uses order.CustomerId as UserId lookup in AddCustomerNotificationAsync
+            { new Customer { UserId = "cust-1", Id = Guid.NewGuid() } };
         var mockCustomerRepo = new Mock<IRepository<Customer>>();
         mockCustomerRepo.Setup(x => x.Query()).Returns(customers.BuildMock());
         _mockUnitOfWork.Setup(x => x.Customers).Returns(mockCustomerRepo.Object);
@@ -205,15 +208,11 @@ public class VendorOrdersControllerTests
         _mockUnitOfWork.Setup(x => x.CustomerNotifications)
             .Returns(new Mock<IRepository<CustomerNotification>>().Object);
         _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(new Mock<IRepository<OrderStatusHistory>>().Object);
-        // Customer repo needs to be mocked for AddCustomerNotificationAsync, even if customer is null (it handles creating it)
-        // But here order doesn't have CustomerId or it's null?
-        // RejectOrder code: if (!string.IsNullOrEmpty(order.CustomerId) && order.CustomerId != "anonymous")
-        // In this test setup, order has Status=Pending, but I didn't set CustomerId. Default is null?
-        // Let's check constructor of Order... CustomerId defaults to string.Empty.
-        // So IsNullOrEmpty(string.Empty) is true. So it skips AddCustomerNotificationAsync.
-        // BUT it DOES add to OrderStatusHistories.
-        // So only OrderStatusHistories is strictly required if CustomerId is empty.
-        // But let's mock both to be safe and consistent.
+
+        // Mock Customers repo as it's needed for notification logic
+        var mockCustomerRepo = new Mock<IRepository<Customer>>();
+        mockCustomerRepo.Setup(x => x.Query()).Returns(new List<Customer>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Customers).Returns(mockCustomerRepo.Object);
 
         var rejectDto = new RejectOrderDto { Reason = "Out of stock - sorry" }; // > 10 chars
 
@@ -252,6 +251,11 @@ public class VendorOrdersControllerTests
         _mockUnitOfWork.Setup(x => x.CustomerNotifications)
             .Returns(new Mock<IRepository<CustomerNotification>>().Object);
         _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(new Mock<IRepository<OrderStatusHistory>>().Object);
+
+        // Mock Customers repo as it's needed for notification logic
+        var mockCustomerRepo = new Mock<IRepository<Customer>>();
+        mockCustomerRepo.Setup(x => x.Query()).Returns(new List<Customer>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Customers).Returns(mockCustomerRepo.Object);
 
         var updateDto = new UpdateOrderStatusDto { Status = "Preparing" }; // Valid transition from Pending
 

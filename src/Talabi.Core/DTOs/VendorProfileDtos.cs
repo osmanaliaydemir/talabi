@@ -19,6 +19,7 @@ public class VendorProfileDto
     public string? ShamCashAccountNumber { get; set; }
     public decimal? Rating { get; set; }
     public int RatingCount { get; set; }
+    public int DeliveryRadiusInKm { get; set; }
     public BusyStatus BusyStatus { get; set; }
     public VendorType Type { get; set; }
     public List<WorkingHourDto> WorkingHours { get; set; } = new List<WorkingHourDto>();
@@ -35,6 +36,9 @@ public class UpdateVendorProfileDto
     [JsonPropertyName("phoneNumber")] public string? PhoneNumber { get; set; }
     [JsonPropertyName("description")] public string? Description { get; set; }
 
+    [JsonPropertyName("deliveryRadiusInKm")]
+    public int? DeliveryRadiusInKm { get; set; }
+
     [JsonPropertyName("shamCashAccountNumber")]
     public string? ShamCashAccountNumber { get; set; }
 
@@ -46,6 +50,7 @@ public class VendorSettingsDto
     public decimal? MinimumOrderAmount { get; set; }
     public decimal? DeliveryFee { get; set; }
     public int? EstimatedDeliveryTime { get; set; }
+    public int DeliveryRadiusInKm { get; set; }
     public bool IsActive { get; set; }
     public string? OpeningHours { get; set; }
 }
@@ -56,6 +61,7 @@ public class UpdateVendorSettingsDto
     public decimal? DeliveryFee { get; set; }
     public int? EstimatedDeliveryTime { get; set; }
     public bool? IsActive { get; set; }
+    public int? DeliveryRadiusInKm { get; set; }
     public string? OpeningHours { get; set; }
 }
 

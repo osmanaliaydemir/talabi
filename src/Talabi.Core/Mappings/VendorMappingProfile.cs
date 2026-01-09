@@ -14,7 +14,8 @@ public class VendorMappingProfile : Profile
         // Vendor -> VendorDto
         CreateMap<Vendor, VendorDto>()
             .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Rating ?? 0))
-            .ForMember(dest => dest.RatingCount, opt => opt.MapFrom(src => src.RatingCount));
+            .ForMember(dest => dest.RatingCount, opt => opt.MapFrom(src => src.RatingCount))
+            .ForMember(dest => dest.DeliveryRadiusInKm, opt => opt.MapFrom(src => src.DeliveryRadiusInKm));
 
         // Vendor -> VendorMapDto
         CreateMap<Vendor, VendorMapDto>()

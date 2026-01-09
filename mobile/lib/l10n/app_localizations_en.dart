@@ -975,6 +975,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deliveryFee => 'Delivery Fee';
 
   @override
+  String get deliveryRadius => 'Delivery Radius (km)';
+
+  @override
+  String get deliveryRadiusHint =>
+      'Set the maximum distance (in km) your restaurant can deliver to.';
+
+  @override
   String get addressRequiredTitle => 'Address Required';
 
   @override

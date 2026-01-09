@@ -968,6 +968,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get deliveryFee => 'رسوم التوصيل';
 
   @override
+  String get deliveryRadius => 'نطاق التوصيل (كم)';
+
+  @override
+  String get deliveryRadiusHint =>
+      'حدد المسافة القصوى (بالكيلومترات) التي يمكن لمطعمك التوصيل إليها.';
+
+  @override
   String get addressRequiredTitle => 'العنوان مطلوب';
 
   @override

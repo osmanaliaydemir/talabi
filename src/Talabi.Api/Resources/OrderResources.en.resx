@@ -111,6 +111,12 @@
   <data name="OrderItemCancellationFailed" xml:space="preserve">
     <value>An error occurred while cancelling the order item</value>
   </data>
+  <data name="OutOfDeliveryRadius" xml:space="preserve">
+    <value>Sorry, you are outside of this restaurant's delivery area.</value>
+  </data>
+  <data name="MinimumOrderAmountNotMet" xml:space="preserve">
+    <value>The minimum order amount of ₺{0} has not been met.</value>
+  </data>
   
   <!-- Success Messages -->
   <data name="OrderCreatedSuccessfully" xml:space="preserve">

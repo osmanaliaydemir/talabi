@@ -96,6 +96,14 @@ public class ProductsControllerTests
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockRepository.Object);
         _mockMapper.Setup(x => x.Map<ProductDto>(It.IsAny<Product>())).Returns(productDto);
 
+        var mockOrderItemsRepo = new Mock<IRepository<OrderItem>>();
+        mockOrderItemsRepo.Setup(x => x.Query()).Returns(new List<OrderItem>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemsRepo.Object);
+
+        var mockReviewsRepo = new Mock<IRepository<Review>>();
+        mockReviewsRepo.Setup(x => x.Query()).Returns(new List<Review>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockReviewsRepo.Object);
+
         // Act
         var result = await _controller.GetProduct(productId);
 
@@ -167,6 +175,14 @@ public class ProductsControllerTests
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockRepository.Object);
         _mockMapper.Setup(x => x.Map<ProductDto>(It.IsAny<Product>())).Returns(productDto);
 
+        var mockOrderItemsRepo = new Mock<IRepository<OrderItem>>();
+        mockOrderItemsRepo.Setup(x => x.Query()).Returns(new List<OrderItem>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemsRepo.Object);
+
+        var mockReviewsRepo = new Mock<IRepository<Review>>();
+        mockReviewsRepo.Setup(x => x.Query()).Returns(new List<Review>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockReviewsRepo.Object);
+
         // Act
         var result = await _controller.GetProduct(productId);
 
@@ -177,6 +193,7 @@ public class ProductsControllerTests
         apiResponse.Success.Should().BeTrue();
         apiResponse.Data.Should().NotBeNull();
     }
+
     [Fact]
     public async Task Search_WhenCalled_ReturnsPagedProducts()
     {
@@ -190,13 +207,27 @@ public class ProductsControllerTests
 
         var products = new List<Product>
         {
-            new Product { Id = Guid.NewGuid(), Name = "Test Product 1", Price = 10, Vendor = new Vendor { IsActive = true } },
-            new Product { Id = Guid.NewGuid(), Name = "Other Product", Price = 20, Vendor = new Vendor { IsActive = true } }
+            new Product
+            {
+                Id = Guid.NewGuid(), Name = "Test Product 1", Price = 10, Vendor = new Vendor { IsActive = true }
+            },
+            new Product
+            {
+                Id = Guid.NewGuid(), Name = "Other Product", Price = 20, Vendor = new Vendor { IsActive = true }
+            }
         };
 
         var mockRepo = new Mock<IRepository<Product>>();
         mockRepo.Setup(x => x.Query()).Returns(products.BuildMock());
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockRepo.Object);
+
+        var mockOrderItemsRepo = new Mock<IRepository<OrderItem>>();
+        mockOrderItemsRepo.Setup(x => x.Query()).Returns(new List<OrderItem>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemsRepo.Object);
+
+        var mockReviewsRepo = new Mock<IRepository<Review>>();
+        mockReviewsRepo.Setup(x => x.Query()).Returns(new List<Review>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockReviewsRepo.Object);
 
         // Act
         var result = await _controller.Search(request);
@@ -223,7 +254,9 @@ public class ProductsControllerTests
         _mockUnitOfWork.Setup(x => x.Categories).Returns(mockRepo.Object);
 
         // Mock Cache to execute callback
-        _mockCacheService.Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<CategoryDto>>>>(), It.IsAny<int>()))
+        _mockCacheService.Setup(x =>
+                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<CategoryDto>>>>(),
+                    It.IsAny<int>()))
             .Returns<string, Func<Task<PagedResultDto<CategoryDto>>>, int>((key, func, ttl) => func());
 
         // Act
@@ -279,14 +312,20 @@ public class ProductsControllerTests
         {
             new OrderItem { ProductId = prod1.Id },
             new OrderItem { ProductId = prod1.Id }, // 2 sales
-            new OrderItem { ProductId = prod2.Id }  // 1 sale
+            new OrderItem { ProductId = prod2.Id } // 1 sale
         };
         var mockOrderItemRepo = new Mock<IRepository<OrderItem>>();
-        mockOrderItemRepo.Setup(x => x.Query()).Returns(orderItems.BuildMock());
+        mockOrderItemRepo.Setup(x => x.Query()).Returns(orderItems.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemRepo.Object);
 
+        var mockReviewsRepo = new Mock<IRepository<Review>>();
+        mockReviewsRepo.Setup(x => x.Query()).Returns(new List<Review>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockReviewsRepo.Object);
+
         // Mock Cache to execute callback
-        _mockCacheService.Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<ProductDto>>>>(), It.IsAny<int>()))
+        _mockCacheService.Setup(x =>
+                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<ProductDto>>>>(),
+                    It.IsAny<int>()))
             .Returns<string, Func<Task<PagedResultDto<ProductDto>>>, int>((key, func, ttl) => func());
 
         // Act
@@ -308,14 +347,29 @@ public class ProductsControllerTests
         var currentProdId = Guid.NewGuid();
         var otherProdId = Guid.NewGuid();
 
-        var currentProd = new Product { Id = currentProdId, CategoryId = categoryId, IsAvailable = true, Vendor = new Vendor { IsActive = true } };
-        var otherProd = new Product { Id = otherProdId, CategoryId = categoryId, IsAvailable = true, Vendor = new Vendor { IsActive = true }, Name = "Similar One" };
+        var currentProd = new Product
+        {
+            Id = currentProdId, CategoryId = categoryId, IsAvailable = true, Vendor = new Vendor { IsActive = true }
+        };
+        var otherProd = new Product
+        {
+            Id = otherProdId, CategoryId = categoryId, IsAvailable = true, Vendor = new Vendor { IsActive = true },
+            Name = "Similar One"
+        };
 
         var products = new List<Product> { currentProd, otherProd };
 
         var mockProductRepo = new Mock<IRepository<Product>>();
         mockProductRepo.Setup(x => x.Query()).Returns(products.BuildMock());
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        var mockOrderItemsRepo = new Mock<IRepository<OrderItem>>();
+        mockOrderItemsRepo.Setup(x => x.Query()).Returns(new List<OrderItem>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemsRepo.Object);
+
+        var mockReviewsRepo = new Mock<IRepository<Review>>();
+        mockReviewsRepo.Setup(x => x.Query()).Returns(new List<Review>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockReviewsRepo.Object);
 
         // Act
         var result = await _controller.GetSimilarProducts(currentProdId);
@@ -328,4 +382,3 @@ public class ProductsControllerTests
         apiResponse.Data.Items.Should().NotContain(p => p.Id == currentProdId); // Should exclude current
     }
 }
-

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,44 +16,40 @@ namespace Talabi.Api.Tests.Unit.Controllers;
 
 public class AuthControllerTests
 {
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly Mock<ILocalizationService> _mockLocalizationService;
-    private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<IAuthService> _mockAuthService;
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
-    private readonly Mock<IMemoryCache> _mockMemoryCache;
-    private readonly Mock<Talabi.Core.Services.IEmailSender> _mockEmailSender;
-    private readonly Mock<IExternalAuthTokenVerifier> _mockTokenVerifier;
-    private readonly Mock<IVerificationCodeSecurityService> _mockVerificationSecurity;
+    private readonly Mock<IEmailSender> _mockEmailSender;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
     {
-        _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
-        _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
-        _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
+        var mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
+        var mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
+        var mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockAuthService = new Mock<IAuthService>();
 
         var userStore = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null, null, null, null, null, null, null, null);
+        _mockUserManager =
+            new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        _mockMemoryCache = new Mock<IMemoryCache>();
-        _mockEmailSender = new Mock<Talabi.Core.Services.IEmailSender>();
-        _mockTokenVerifier = new Mock<IExternalAuthTokenVerifier>();
-        _mockVerificationSecurity = new Mock<IVerificationCodeSecurityService>();
+        var mockMemoryCache = new Mock<IMemoryCache>();
+        mockMemoryCache.Setup(m => m.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+        _mockEmailSender = new Mock<IEmailSender>();
+        var mockTokenVerifier = new Mock<IExternalAuthTokenVerifier>();
+        var mockVerificationSecurity = new Mock<IVerificationCodeSecurityService>();
         var logger = ControllerTestHelpers.CreateMockLogger<AuthController>();
 
         _controller = new AuthController(
             _mockAuthService.Object,
             _mockUserManager.Object,
-            _mockMemoryCache.Object,
+            mockMemoryCache.Object,
             _mockEmailSender.Object,
-            _mockTokenVerifier.Object,
-            _mockVerificationSecurity.Object,
-            _mockUnitOfWork.Object,
+            mockTokenVerifier.Object,
+            mockVerificationSecurity.Object,
+            mockUnitOfWork.Object,
             logger,
-            _mockLocalizationService.Object,
-            _mockUserContextService.Object
+            mockLocalizationService.Object,
+            mockUserContextService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -68,7 +61,8 @@ public class AuthControllerTests
     {
         // Arrange
         var dto = new RegisterDto { Email = "test@test.com", Password = "Password123", FullName = "Test User" };
-        _mockAuthService.Setup(x => x.RegisterAsync(It.IsAny<RegisterDto>(), It.IsAny<System.Globalization.CultureInfo>()))
+        _mockAuthService.Setup(x =>
+                x.RegisterAsync(It.IsAny<RegisterDto>(), It.IsAny<System.Globalization.CultureInfo>()))
             .ReturnsAsync(new { UserId = "123" });
 
         // Act
@@ -88,7 +82,7 @@ public class AuthControllerTests
         var dto = new LoginDto { Email = "test@test.com", Password = "Password123" };
         var response = new LoginResponseDto { Token = "token", RefreshToken = "refresh" };
 
-        _mockAuthService.Setup(x => x.LoginAsync(It.IsAny<LoginDto>(), null))
+        _mockAuthService.Setup(x => x.LoginAsync(It.IsAny<LoginDto>(), It.IsAny<string>()))
             .ReturnsAsync(response);
 
         // Act
@@ -117,6 +111,7 @@ public class AuthControllerTests
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
 
-        _mockEmailSender.Verify(x => x.SendEmailAsync(It.Is<EmailTemplateRequest>(r => r.To == email), default), Times.Once);
+        _mockEmailSender.Verify(x => x.SendEmailAsync(It.Is<EmailTemplateRequest>(r => r.To == email), default),
+            Times.Once);
     }
 }

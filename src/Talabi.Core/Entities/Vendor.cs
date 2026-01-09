@@ -14,6 +14,9 @@ public class Vendor : BaseEntity
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
 
+    // Delivery settings
+    public int DeliveryRadiusInKm { get; set; } = 5; // Default: 5 km radius
+
     // Rating (average rating from orders/reviews)
     public decimal? Rating { get; set; }
     public int RatingCount { get; set; } = 0;

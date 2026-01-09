@@ -977,6 +977,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deliveryFee => 'Teslimat Ücreti';
 
   @override
+  String get deliveryRadius => 'Teslimat Yarıçapı (km)';
+
+  @override
+  String get deliveryRadiusHint =>
+      'Restoranınızın kaç km mesafeye kadar gönderim yapacağını belirleyin.';
+
+  @override
   String get addressRequiredTitle => 'Adres Gerekli';
 
   @override

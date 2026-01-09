@@ -1263,6 +1263,14 @@
   "@deliveryFee": {
     "description": "Delivery Fee"
   },
+  "deliveryRadius": "Delivery Radius (km)",
+  "@deliveryRadius": {
+    "description": "Label for delivery radius setting"
+  },
+  "deliveryRadiusHint": "Set the maximum distance (in km) your restaurant can deliver to.",
+  "@deliveryRadiusHint": {
+    "description": "Hint for delivery radius setting"
+  },
   "addressRequiredTitle": "Address Required",
   "@addressRequiredTitle": {
     "description": "Address Required"

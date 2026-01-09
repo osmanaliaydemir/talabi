@@ -1208,6 +1208,14 @@
   "@deliveryFee": {
     "description": "رسوم التوصيل"
   },
+  "deliveryRadius": "نطاق التوصيل (كم)",
+  "@deliveryRadius": {
+    "description": "تسمية إعداد نطاق التوصيل"
+  },
+  "deliveryRadiusHint": "حدد المسافة القصوى (بالكيلومترات) التي يمكن لمطعمك التوصيل إليها.",
+  "@deliveryRadiusHint": {
+    "description": "تلميح إعداد نطاق التوصيل"
+  },
   "addressRequiredTitle": "العنوان مطلوب",
   "@addressRequiredTitle": {
     "description": "العنوان مطلوب"

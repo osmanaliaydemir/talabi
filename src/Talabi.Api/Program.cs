@@ -16,10 +16,8 @@ using Talabi.Core.Interfaces;
 using Talabi.Core.Services;
 using Talabi.Core.Mappings;
 using Talabi.Infrastructure.Data;
-using AutoMapper;
 using Talabi.Infrastructure.Repositories;
 using Talabi.Infrastructure.Services;
-using Microsoft.Extensions.FileProviders;
 using Talabi.Core.Options;
 using Scalar.AspNetCore;
 using Hangfire;
@@ -111,6 +109,9 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 // Password Policy Settings
 builder.Services.Configure<PasswordPolicyOptions>(builder.Configuration.GetSection("PasswordPolicy"));
 
+// Google Maps Settings
+builder.Services.Configure<GoogleMapsOptions>(builder.Configuration.GetSection("GoogleMaps"));
+
 // Cache Settings
 builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection("Cache"));
 
@@ -144,6 +145,8 @@ builder.Services.AddScoped<ICampaignCalculator, CampaignCalculator>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 // External Auth Token Verifier
 builder.Services.AddHttpClient<IExternalAuthTokenVerifier, ExternalAuthTokenVerifier>();
+// Map Service
+builder.Services.AddHttpClient<IMapService, GoogleMapService>();
 // File Upload Security Service
 builder.Services.Configure<FileUploadSecurityOptions>(builder.Configuration.GetSection("FileUploadSecurity"));
 builder.Services.AddScoped<IFileUploadSecurityService, FileUploadSecurityService>();
@@ -247,12 +250,12 @@ else
     allowedOrigins = corsSettings.GetSection("Local:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 }
 
-var allowCredentials = corsSettings.GetValue<bool>("AllowCredentials", true);
+var allowCredentials = corsSettings.GetValue("AllowCredentials", true);
 var allowedMethods = corsSettings.GetSection("AllowedMethods").Get<string[]>() ??
                      new[] { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
 var allowedHeaders = corsSettings.GetSection("AllowedHeaders").Get<string[]>() ?? new[] { "*" };
 var exposedHeaders = corsSettings.GetSection("ExposedHeaders").Get<string[]>() ?? new[] { "*" };
-var maxAge = corsSettings.GetValue<int>("MaxAge", 3600);
+var maxAge = corsSettings.GetValue("MaxAge", 3600);
 
 builder.Services.AddCors(options =>
 {
@@ -344,8 +347,8 @@ builder.Services.AddAuthentication(options =>
 var app = builder.Build();
 
 // ActivityLoggingService ve ErrorLoggingService için service provider'ı set et (Hangfire job'ları için gerekli)
-Talabi.Infrastructure.Services.ErrorLoggingService.SetServiceProvider(app.Services);
-Talabi.Infrastructure.Services.ActivityLoggingService.SetServiceProvider(app.Services);
+ErrorLoggingService.SetServiceProvider(app.Services);
+ActivityLoggingService.SetServiceProvider(app.Services);
 
 // Configure the HTTP request pipeline.
 // Seed Data (only if database is accessible)
@@ -423,7 +426,7 @@ app.Use(async (context, next) =>
 
         // Basic auth decode et
         var encodedCredentials = authHeader.Substring("Basic ".Length).Trim();
-        var credentials = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+        var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
         var parts = credentials.Split(':', 2);
 
         var username = parts[0];
@@ -520,7 +523,7 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = _ => false, // Sadece uygulamanın çalıştığını kontrol et
-    ResponseWriter = async (context, report) =>
+    ResponseWriter = async (context, _) =>
     {
         context.Response.ContentType = "application/json";
         var result = System.Text.Json.JsonSerializer.Serialize(new

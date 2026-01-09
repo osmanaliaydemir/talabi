@@ -22,6 +22,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   late TextEditingController _minimumOrderController;
   late TextEditingController _deliveryFeeController;
   late TextEditingController _deliveryTimeController;
+  late TextEditingController _deliveryRadiusController;
 
   bool _isActive = true;
   bool _isLoading = true;
@@ -34,6 +35,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
     _minimumOrderController = TextEditingController();
     _deliveryFeeController = TextEditingController();
     _deliveryTimeController = TextEditingController();
+    _deliveryRadiusController = TextEditingController();
     _loadSettings();
   }
 
@@ -42,6 +44,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
     _minimumOrderController.dispose();
     _deliveryFeeController.dispose();
     _deliveryTimeController.dispose();
+    _deliveryRadiusController.dispose();
     super.dispose();
   }
 
@@ -61,6 +64,8 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
         _deliveryFeeController.text = settings['deliveryFee']?.toString() ?? '';
         _deliveryTimeController.text =
             settings['estimatedDeliveryTime']?.toString() ?? '';
+        _deliveryRadiusController.text =
+            settings['deliveryRadiusInKm']?.toString() ?? '5';
         _isActive = settings['isActive'] ?? true;
         _isLoading = false;
       });
@@ -100,17 +105,18 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
 
     try {
       final data = {
-        'minimumOrderAmount': 0, // Disabled feature
-        /*_minimumOrderController.text.isEmpty
-            ? null
-            : double.parse(_minimumOrderController.text),*/
-        'deliveryFee': 0, // Disabled feature
-        /*_deliveryFeeController.text.isEmpty
-            ? null
-            : double.parse(_deliveryFeeController.text),*/
+        'minimumOrderAmount': _minimumOrderController.text.isEmpty
+            ? 0
+            : double.parse(_minimumOrderController.text),
+        'deliveryFee': _deliveryFeeController.text.isEmpty
+            ? 0
+            : double.parse(_deliveryFeeController.text),
         'estimatedDeliveryTime': _deliveryTimeController.text.isEmpty
-            ? null
+            ? 30
             : int.parse(_deliveryTimeController.text),
+        'deliveryRadiusInKm': _deliveryRadiusController.text.isEmpty
+            ? 5.0
+            : double.parse(_deliveryRadiusController.text),
         'isActive': _isActive,
       };
 
@@ -260,8 +266,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    /*
-                    // Minimum order amount - DISABLING AS PER REQUEST
+                    // Minimum order amount
                     TextFormField(
                       controller: _minimumOrderController,
                       decoration: AppTheme.inputDecoration(
@@ -269,7 +274,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                             localizations?.minimumOrderAmount ??
                             'Minimum Sipariş Tutarı',
                         hint: localizations?.optional ?? 'Opsiyonel',
-                        prefixIcon: const Icon(Icons.attach_money),
+                        prefixIcon: const Icon(Icons.shopping_basket),
                         fillColor: AppTheme.surfaceColor,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
@@ -286,10 +291,8 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                       },
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
-                    */
 
-                    /*
-                    // Delivery fee - DISABLING AS PER REQUEST
+                    // Delivery fee
                     TextFormField(
                       controller: _deliveryFeeController,
                       decoration: AppTheme.inputDecoration(
@@ -312,7 +315,6 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                       },
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
-                    */
 
                     // Delivery time
                     TextFormField(
@@ -335,6 +337,62 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    // Delivery Radius Slider
+                    Text(
+                      localizations?.deliveryRadius ?? 'Teslimat Yarıçapı (km)',
+                      style: AppTheme.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacingSmall),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider(
+                            value:
+                                double.tryParse(
+                                  _deliveryRadiusController.text,
+                                ) ??
+                                5.0,
+                            min: 1.0,
+                            max: 50.0,
+                            divisions: 49,
+                            label:
+                                '${double.tryParse(_deliveryRadiusController.text)?.round() ?? 5} km',
+                            activeColor: AppTheme.vendorPrimary,
+                            onChanged: (value) {
+                              setState(() {
+                                _deliveryRadiusController.text = value
+                                    .toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        ),
+                        Container(
+                          width: 60,
+                          alignment: Alignment.center,
+                          child: Text(
+                            '${double.tryParse(_deliveryRadiusController.text)?.round() ?? 5} km',
+                            style: AppTheme.poppins(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.vendorPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      localizations?.deliveryRadiusHint ??
+                          'Restoranınızın kaç km mesafeye kadar gönderim yapacağını belirleyin.',
+                      style: AppTheme.poppins(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: AppTheme.spacingMedium),
 

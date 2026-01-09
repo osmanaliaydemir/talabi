@@ -11,8 +11,6 @@ using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
 using Xunit;
-using System.Linq;
-using System.Threading;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
 
@@ -22,29 +20,25 @@ namespace Talabi.Api.Tests.Unit.Controllers;
 public class CartControllerTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly ILogger<CartController> _logger;
-    private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
-    private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<ICampaignCalculator> _mockCampaignCalculator;
     private readonly CartController _controller;
 
     public CartControllerTests()
     {
         _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
-        _logger = ControllerTestHelpers.CreateMockLogger<CartController>();
-        _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
+        var mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
-        _mockMapper = new Mock<IMapper>();
-        _mockCampaignCalculator = new Mock<ICampaignCalculator>();
+        var mockMapper = new Mock<IMapper>();
+        var mockCampaignCalculator = new Mock<ICampaignCalculator>();
+        var logger = ControllerTestHelpers.CreateMockLogger<CartController>();
 
         _controller = new CartController(
             _mockUnitOfWork.Object,
-            _logger,
-            _mockLocalizationService.Object,
+            logger,
+            mockLocalizationService.Object,
             _mockUserContextService.Object,
-            _mockMapper.Object,
-            _mockCampaignCalculator.Object
+            mockMapper.Object,
+            mockCampaignCalculator.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -91,7 +85,6 @@ public class CartControllerTests
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
 
-        var startCount = 0; // Capture count to fix Moq issue
         var dto = new AddToCartDto { ProductId = Guid.NewGuid(), Quantity = 1 };
 
         // Act

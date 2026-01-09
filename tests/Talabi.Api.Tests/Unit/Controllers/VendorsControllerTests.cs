@@ -128,6 +128,15 @@ public class VendorsControllerTests
         mockProductRepo.Setup(x => x.Query()).Returns(products.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
 
+        // Mock OrderItems and Reviews for ProductDto projection
+        var mockOrderItemsRepo = new Mock<IRepository<OrderItem>>();
+        mockOrderItemsRepo.Setup(x => x.Query()).Returns(new List<OrderItem>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockOrderItemsRepo.Object);
+
+        var mockReviewsRepo = new Mock<IRepository<Review>>();
+        mockReviewsRepo.Setup(x => x.Query()).Returns(new List<Review>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Reviews).Returns(mockReviewsRepo.Object);
+
         // Act
         var result = await _controller.GetProductsByVendor(vendorId);
 
@@ -161,7 +170,8 @@ public class VendorsControllerTests
         var apiResponse = createdResult.Value.Should().BeOfType<ApiResponse<VendorDto>>().Subject;
 
         apiResponse.Data!.Name.Should().Be("New Vendor");
-        mockRepo.Verify(x => x.AddAsync(It.IsAny<Vendor>(), It.IsAny<System.Threading.CancellationToken>()), Times.Once);
+        mockRepo.Verify(x => x.AddAsync(It.IsAny<Vendor>(), It.IsAny<System.Threading.CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -170,8 +180,16 @@ public class VendorsControllerTests
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor { Id = Guid.NewGuid(), Name = "Pizza Place", IsActive = true, Address = "Pizza St", Orders = new List<Order>() },
-            new Vendor { Id = Guid.NewGuid(), Name = "Burger Joint", IsActive = true, Address = "Second St", Orders = new List<Order>() }
+            new Vendor
+            {
+                Id = Guid.NewGuid(), Name = "Pizza Place", IsActive = true, Address = "Pizza St",
+                Orders = new List<Order>()
+            },
+            new Vendor
+            {
+                Id = Guid.NewGuid(), Name = "Burger Joint", IsActive = true, Address = "Second St",
+                Orders = new List<Order>()
+            }
         };
 
         var mockRepo = new Mock<IRepository<Vendor>>();
@@ -207,7 +225,8 @@ public class VendorsControllerTests
         _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
         // Mock CacheService to execute the factory
-        _mockCacheService.Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>>>>(), It.IsAny<int>()))
+        _mockCacheService.Setup(x =>
+                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>>>>(), It.IsAny<int>()))
             .Returns<string, Func<Task<List<string>>>, int>(async (key, factory, ttl) => await factory());
 
         // Act

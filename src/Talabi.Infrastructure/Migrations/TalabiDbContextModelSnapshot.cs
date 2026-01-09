@@ -2130,6 +2130,9 @@ namespace Talabi.Infrastructure.Migrations
                     b.Property<decimal?>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("DeliveryRadiusInKm")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 

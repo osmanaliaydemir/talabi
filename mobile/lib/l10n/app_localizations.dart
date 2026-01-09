@@ -1906,6 +1906,18 @@ abstract class AppLocalizations {
   /// **'Delivery Fee'**
   String get deliveryFee;
 
+  /// Label for delivery radius setting
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Radius (km)'**
+  String get deliveryRadius;
+
+  /// Hint for delivery radius setting
+  ///
+  /// In en, this message translates to:
+  /// **'Set the maximum distance (in km) your restaurant can deliver to.'**
+  String get deliveryRadiusHint;
+
   /// Address Required
   ///
   /// In en, this message translates to:

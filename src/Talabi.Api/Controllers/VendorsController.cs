@@ -80,6 +80,7 @@ public class VendorsController : BaseController
                 City = v.City,
                 Rating = v.Rating,
                 RatingCount = v.RatingCount,
+                DeliveryRadiusInKm = v.DeliveryRadiusInKm,
                 Latitude = v.Latitude.HasValue ? (double)v.Latitude.Value : null,
                 Longitude = v.Longitude.HasValue ? (double)v.Longitude.Value : null
             },
@@ -137,7 +138,8 @@ public class VendorsController : BaseController
             Address = vendor.Address,
             City = vendor.City,
             Rating = vendor.Rating,
-            RatingCount = vendor.RatingCount
+            RatingCount = vendor.RatingCount,
+            DeliveryRadiusInKm = vendor.DeliveryRadiusInKm
         };
 
         return CreatedAtAction(
@@ -318,15 +320,24 @@ public class VendorsController : BaseController
         }
 
         // Distance filter (if user location provided)
-        if (request.UserLatitude.HasValue && request.UserLongitude.HasValue && request.MaxDistanceInKm.HasValue)
+        if (request.UserLatitude.HasValue && request.UserLongitude.HasValue)
         {
             var userLat = request.UserLatitude.Value;
             var userLon = request.UserLongitude.Value;
-            var maxDistance = request.MaxDistanceInKm.Value;
 
+            // Primary filter: Is the user within the vendor's own delivery radius?
             query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
                                      GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                                         v.Longitude!.Value) <= maxDistance);
+                                         v.Longitude!.Value) <= v.DeliveryRadiusInKm);
+
+            // Optional secondary filter: User's own max distance preference
+            if (request.MaxDistanceInKm.HasValue)
+            {
+                var maxDistance = request.MaxDistanceInKm.Value;
+                query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
+                                         GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+                                             v.Longitude!.Value) <= maxDistance);
+            }
         }
 
         // Sorting
@@ -362,6 +373,7 @@ public class VendorsController : BaseController
                 City = v.City,
                 Rating = v.Rating,
                 RatingCount = v.RatingCount,
+                DeliveryRadiusInKm = v.DeliveryRadiusInKm,
                 Latitude = v.Latitude,
                 Longitude = v.Longitude
             };
