@@ -162,6 +162,9 @@ class _CartScreenState extends State<CartScreen> {
           // Adres yüklenemediyse devam et (backend default adresi kullanacak)
         }
 
+        // Async gap'ten sonra mounted kontrolü yap
+        if (!mounted) return;
+
         Provider.of<CartProvider>(context, listen: false).fetchRecommendations(
           type: vendorType,
           lat: userLatitude,

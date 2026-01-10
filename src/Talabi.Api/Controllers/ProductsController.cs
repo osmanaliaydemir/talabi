@@ -62,17 +62,36 @@ public class ProductsController : BaseController
     {
         // Query string'den categoryId parametresini manuel olarak oku ve Guid'e parse et
         // (camelCase query string parametreleri için ve Guid parse güvenilirliği için)
-        if (Request.Query.ContainsKey("categoryId") && Guid.TryParse(Request.Query["categoryId"].ToString(), out var parsedCategoryId))
+        if (Request.Query.ContainsKey("categoryId"))
         {
-            request.CategoryId = parsedCategoryId;
+            var categoryIdStr = Request.Query["categoryId"].ToString();
+            if (!string.IsNullOrWhiteSpace(categoryIdStr))
+            {
+                if (Guid.TryParse(categoryIdStr, out var parsedCategoryId))
+                {
+                    request.CategoryId = parsedCategoryId;
+                    Logger.LogWarning($"[PRODUCT_SEARCH] CategoryId parsed successfully: {parsedCategoryId}");
+                }
+                else
+                {
+                    Logger.LogWarning($"[PRODUCT_SEARCH] CategoryId parse failed: '{categoryIdStr}'");
+                }
+            }
         }
 
         // Query string'den category parametresini manuel olarak oku
         // (camelCase query string parametreleri için - fallback için gerekli)
-        if (Request.Query.ContainsKey("category") && !string.IsNullOrWhiteSpace(Request.Query["category"].ToString()))
+        if (Request.Query.ContainsKey("category"))
         {
-            request.Category = Request.Query["category"].ToString();
+            var categoryStr = Request.Query["category"].ToString();
+            if (!string.IsNullOrWhiteSpace(categoryStr))
+            {
+                request.Category = categoryStr;
+                Logger.LogWarning($"[PRODUCT_SEARCH] Category string: '{categoryStr}'");
+            }
         }
+        
+        Logger.LogWarning($"[PRODUCT_SEARCH] Final request - CategoryId: {request.CategoryId}, Category: '{request.Category}'");
 
         // Query string'den userLatitude ve userLongitude parametrelerini manuel olarak oku
         // (camelCase query string parametreleri için)
@@ -107,42 +126,12 @@ public class ProductsController : BaseController
         var userLat = request.UserLatitude.Value;
         var userLon = request.UserLongitude.Value;
 
-        // Önce aktif vendor'ları ve koordinatları olanları database'den çek
-        // Entity Framework, GeoHelper.CalculateDistance'i SQL'e çeviremediği için
-        // önce memory'ye alıp sonra filtreliyoruz
-        var allVendors = await UnitOfWork.Vendors.Query()
-            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
-            .ToListAsync();
-
-        // Memory'de mesafe hesaplayarak filtrele
-        var vendorsInRadius = allVendors
-            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
-                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
-            .Select(v => v.Id)
-            .ToList();
-
-        if (!vendorsInRadius.Any())
-        {
-            // Yarıçap içinde vendor yoksa boş liste döndür
-            var emptyResult = new PagedResultDto<ProductDto>
-            {
-                Items = new List<ProductDto>(),
-                TotalCount = 0,
-                Page = request.Page,
-                PageSize = request.PageSize,
-                TotalPages = 0
-            };
-
-            return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
-                emptyResult,
-                LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
-        }
-
+        // ÖNEMLİ: Category filtresini ÖNCE uygula, SONRA vendor radius kontrolü yap
+        // Base query - sadece aktif ve müsait ürünler
         IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.IsAvailable && // Ürün müsait olmalı
-                       p.Vendor != null && p.Vendor.IsActive && 
-                       vendorsInRadius.Contains(p.VendorId)); // Sadece yarıçap içindeki aktif vendor'ların ürünleri
+                       p.Vendor != null && p.Vendor.IsActive); // Aktif vendor kontrolü
 
         // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
@@ -177,33 +166,39 @@ public class ProductsController : BaseController
             query = query.Where(p => p.VendorId == request.VendorId.Value);
         }
 
-        // Category filter
-        // ÖNEMLİ: CategoryId database'de filtrele, Category string memory'de filtrele (EF Core string fonksiyonları çevrilemiyor)
-        // OR mantığı: CategoryId eşleşen VEYA Category string eşleşen
+        // Vendor delivery radius kontrolü için vendor listesini hazırla (kategori filtresinden SONRA kullanılacak)
+        var allVendors = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
+            .ToListAsync();
+
+        var vendorsInRadius = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToList();
+
+        // Category filter - HER ZAMAN memory'de filtrele (Category string eşleşmesi için gerekli)
+        // CategoryId ve Category string OR mantığı ile çalışmalı
         bool needsCategoryFilterInMemory = false;
         string? categoryNameToMatch = null;
         Guid? categoryIdToMatch = null;
 
         if (request.CategoryId.HasValue || !string.IsNullOrWhiteSpace(request.Category))
         {
-            if (request.CategoryId.HasValue && !string.IsNullOrWhiteSpace(request.Category))
+            // CategoryId varsa kullan
+            if (request.CategoryId.HasValue)
             {
-                // Hem CategoryId hem de Category string gönderilmişse: OR mantığı için memory'de filtrele
                 categoryIdToMatch = request.CategoryId.Value;
-                categoryNameToMatch = request.Category.Trim();
-                needsCategoryFilterInMemory = true;
             }
-            else if (request.CategoryId.HasValue)
+            
+            // Category string varsa normalize et ve kullan
+            if (!string.IsNullOrWhiteSpace(request.Category))
             {
-                // Sadece CategoryId gönderilmişse: Database'de filtrele
-                query = query.Where(p => p.CategoryId.HasValue && p.CategoryId.Value == request.CategoryId.Value);
-            }
-            else if (!string.IsNullOrWhiteSpace(request.Category))
-            {
-                // Sadece Category string gönderilmişse: Memory'de filtrele
                 categoryNameToMatch = request.Category.Trim();
-                needsCategoryFilterInMemory = true;
             }
+            
+            // CategoryId veya Category string'den biri varsa memory'de filtrele
+            needsCategoryFilterInMemory = true;
         }
 
         // Category filtrelemesi ve sayfalama
@@ -212,28 +207,81 @@ public class ProductsController : BaseController
         if (needsCategoryFilterInMemory)
         {
             // Category filtrelemesi memory'de yapılacaksa, tüm işlemi memory'de yap
-            // Tüm ürünleri memory'ye al
+            // ÖNCE kategori filtresini uygula, SONRA vendor radius kontrolü yap
             var allProducts = await query.ToListAsync();
             
             // OR mantığı ile filtrele: CategoryId eşleşen VEYA Category string eşleşen
-            var filteredProducts = allProducts.Where(p =>
+            Logger.LogWarning($"[PRODUCT_SEARCH] Filtering {allProducts.Count} products. CategoryId: {categoryIdToMatch}, Category: '{categoryNameToMatch}'");
+            
+            // Önce tüm ürünlerin CategoryId ve Category değerlerini logla
+            foreach (var p in allProducts.Take(10))
             {
+                Logger.LogWarning($"[PRODUCT_SEARCH] Product: {p.Name} | CategoryId: {p.CategoryId} | Category: '{p.Category}' | VendorId: {p.VendorId}");
+            }
+            
+            var categoryFilteredProducts = allProducts.Where(p =>
+            {
+                bool categoryIdMatch = false;
+                bool categoryStringMatch = false;
+                
                 // CategoryId eşleşiyorsa dahil et
                 if (categoryIdToMatch.HasValue && p.CategoryId.HasValue && p.CategoryId.Value == categoryIdToMatch.Value)
                 {
-                    return true;
+                    categoryIdMatch = true;
                 }
                 
-                // Category string eşleşiyorsa dahil et
-                if (!string.IsNullOrWhiteSpace(categoryNameToMatch) && p.Category != null)
+                // Category string eşleşiyorsa dahil et (case-insensitive, trim, normalize)
+                if (!string.IsNullOrWhiteSpace(categoryNameToMatch) && !string.IsNullOrWhiteSpace(p.Category))
                 {
-                    var productCategory = p.Category.Trim();
-                    var requestedCategory = categoryNameToMatch.Trim();
-                    return productCategory.Equals(requestedCategory, StringComparison.OrdinalIgnoreCase);
+                    // Normalize: trim + remove extra spaces
+                    var productCategory = p.Category.Trim().Replace("  ", " ").Replace("&", "&").Replace("&amp;", "&");
+                    var requestedCategory = categoryNameToMatch.Trim().Replace("  ", " ").Replace("&", "&").Replace("&amp;", "&");
+                    
+                    // Exact match (case-insensitive)
+                    if (productCategory.Equals(requestedCategory, StringComparison.OrdinalIgnoreCase))
+                    {
+                        categoryStringMatch = true;
+                    }
+                    // Contains match (fallback - kısmi eşleşme için)
+                    else if (productCategory.Contains(requestedCategory, StringComparison.OrdinalIgnoreCase) ||
+                             requestedCategory.Contains(productCategory, StringComparison.OrdinalIgnoreCase))
+                    {
+                        categoryStringMatch = true;
+                    }
                 }
                 
-                return false;
+                return categoryIdMatch || categoryStringMatch;
             }).ToList();
+            
+            Logger.LogWarning($"[PRODUCT_SEARCH] After category filter: {categoryFilteredProducts.Count} products");
+            
+            // Eşleşen ürünleri logla
+            foreach (var p in categoryFilteredProducts.Take(10))
+            {
+                Logger.LogWarning($"[PRODUCT_SEARCH] Category matched product: {p.Name} | CategoryId: {p.CategoryId} | Category: '{p.Category}'");
+            }
+            
+            // ŞİMDİ vendor delivery radius kontrolünü uygula
+            var filteredProducts = categoryFilteredProducts
+                .Where(p => vendorsInRadius.Contains(p.VendorId))
+                .ToList();
+            
+            if (!filteredProducts.Any())
+            {
+                // Yarıçap içinde kategori eşleşen ürün yoksa boş liste döndür
+                var emptyResult = new PagedResultDto<ProductDto>
+                {
+                    Items = new List<ProductDto>(),
+                    TotalCount = 0,
+                    Page = request.Page,
+                    PageSize = request.PageSize,
+                    TotalPages = 0
+                };
+
+                return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                    emptyResult,
+                    LocalizationService.GetLocalizedString(ResourceName, "NoProductsInDeliveryRadius", CurrentCulture)));
+            }
             
             // Sorting (memory'de)
             var orderedProducts = request.SortBy?.ToLower() switch
@@ -284,6 +332,26 @@ public class ProductsController : BaseController
         }
         else
         {
+            // Category filtresi YOK - sadece vendor radius kontrolü yap
+            query = query.Where(p => vendorsInRadius.Contains(p.VendorId));
+            
+            if (!vendorsInRadius.Any())
+            {
+                // Yarıçap içinde vendor yoksa boş liste döndür
+                var emptyResult = new PagedResultDto<ProductDto>
+                {
+                    Items = new List<ProductDto>(),
+                    TotalCount = 0,
+                    Page = request.Page,
+                    PageSize = request.PageSize,
+                    TotalPages = 0
+                };
+
+                return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                    emptyResult,
+                    LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
+            }
+            
             // Normal database query - EF Core ile sayfalama
             // Sorting
             IOrderedQueryable<Product> orderedQuery = request.SortBy?.ToLower() switch
