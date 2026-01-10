@@ -93,17 +93,24 @@ public class VendorsController : BaseController
 
         // Filter: Is the user within the vendor's delivery radius?
         // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
-        // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
-        query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                                 GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                                     v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
-
-        IOrderedQueryable<Vendor> orderedQuery = query.OrderBy(v => v.Name);
-
-        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
-        var vendors = await orderedQuery
-            .Paginate(page, pageSize)
+        // Entity Framework, GeoHelper.CalculateDistance'i SQL'e çeviremediği için
+        // önce memory'ye alıp sonra filtreliyoruz
+        var allVendors = await query
+            .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
             .ToListAsync();
+
+        // Memory'de mesafe hesaplayarak filtrele
+        var vendorsInRadius = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .ToList();
+
+        // Sıralama ve sayfalama
+        var orderedVendors = vendorsInRadius.OrderBy(v => v.Name);
+        var vendors = orderedVendors
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
 
         // Calculate distance and map to DTOs
         var items = vendors.Select(v =>
@@ -138,8 +145,8 @@ public class VendorsController : BaseController
             return dto;
         }).ToList();
 
-        // Total count hesapla
-        var totalCount = await query.CountAsync();
+        // Total count hesapla (filtrelenmiş vendor sayısı)
+        var totalCount = vendorsInRadius.Count;
 
         var result = new PagedResultDto<VendorDto>
         {
@@ -390,43 +397,50 @@ public class VendorsController : BaseController
                 LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForVendorSearch", CurrentCulture)));
         }
 
-            var userLat = request.UserLatitude.Value;
-            var userLon = request.UserLongitude.Value;
+        var userLat = request.UserLatitude.Value;
+        var userLon = request.UserLongitude.Value;
 
         // Filter: Is the user within the vendor's delivery radius?
         // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
-        // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
-            query = query.Where(v => v.Latitude.HasValue && v.Longitude.HasValue &&
-                                     GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                                     v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
+        // Entity Framework, GeoHelper.CalculateDistance'i SQL'e çeviremediği için
+        // önce memory'ye alıp sonra filtreliyoruz
+        var allVendors = await query
+            .Where(v => v.Latitude.HasValue && v.Longitude.HasValue)
+            .ToListAsync();
 
-            // Optional secondary filter: User's own max distance preference
-            if (request.MaxDistanceInKm.HasValue)
-            {
-                var maxDistance = request.MaxDistanceInKm.Value;
-            query = query.Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-                                             v.Longitude!.Value) <= maxDistance);
+        // Memory'de mesafe hesaplayarak filtrele
+        var vendorsInRadius = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .ToList();
+
+        // Optional secondary filter: User's own max distance preference
+        IEnumerable<Vendor> filteredVendors = vendorsInRadius;
+        if (request.MaxDistanceInKm.HasValue)
+        {
+            var maxDistance = request.MaxDistanceInKm.Value;
+            filteredVendors = filteredVendors
+                .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= maxDistance)
+                .ToList();
         }
 
         // Sorting
-        IOrderedQueryable<Vendor> orderedQuery = request.SortBy?.ToLower() switch
+        IOrderedEnumerable<Vendor> orderedVendors = request.SortBy?.ToLower() switch
         {
-            "name" => query.OrderBy(v => v.Name),
-            "newest" => query.OrderByDescending(v => v.CreatedAt),
-            "rating_desc" => query.OrderByDescending(v => v.Rating ?? 0),
-            "popularity" => query.OrderByDescending(v => v.Orders.Count),
-            "distance" when request.UserLatitude.HasValue && request.UserLongitude.HasValue =>
-                query.OrderBy(v => v.Latitude.HasValue && v.Longitude.HasValue
-                    ? GeoHelper.CalculateDistance(request.UserLatitude!.Value, request.UserLongitude!.Value,
-                        v.Latitude!.Value, v.Longitude!.Value)
-                    : double.MaxValue),
-            _ => query.OrderBy(v => v.Name)
+            "name" => filteredVendors.OrderBy(v => v.Name),
+            "newest" => filteredVendors.OrderByDescending(v => v.CreatedAt),
+            "rating_desc" => filteredVendors.OrderByDescending(v => v.Rating ?? 0),
+            "popularity" => filteredVendors.OrderByDescending(v => v.Orders.Count),
+            "distance" => filteredVendors.OrderBy(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value)),
+            _ => filteredVendors.OrderBy(v => v.Name)
         };
 
-        // Pagination - Gelişmiş query helper kullanımı
-        var vendors = await orderedQuery
-            .Paginate(request.Page, request.PageSize)
-            .ToListAsync();
+        // Pagination
+        var totalCount = filteredVendors.Count();
+        var vendors = orderedVendors
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToList();
 
         // Calculate distance and map to DTOs
         var items = vendors.Select(v =>
@@ -460,9 +474,6 @@ public class VendorsController : BaseController
 
             return dto;
         }).ToList();
-
-        // Total count hesapla
-        var totalCount = await query.CountAsync();
 
         var result = new PagedResultDto<VendorDto>
         {

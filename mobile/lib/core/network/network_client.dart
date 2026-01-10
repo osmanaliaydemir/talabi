@@ -90,17 +90,12 @@ class NetworkClient {
             );
           }
 
-          LoggerService().debug(
-            '📤 [HTTP REQUEST] ${options.method} ${options.uri}',
-          );
-          LoggerService().debug('📤 [HTTP REQUEST] Data: ${options.data}');
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           return handler.next(options);
         },
         onResponse: (response, handler) {
           _releasePermit(response.requestOptions);
-          LoggerService().debug(
-            '📥 [HTTP RESPONSE] ${response.statusCode} ${response.requestOptions.uri}',
-          );
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           return handler.next(response);
         },
         onError: (error, handler) async {
@@ -137,9 +132,7 @@ class NetworkClient {
                     );
 
                     _refreshCompleter!.complete(newTokens);
-                    LoggerService().debug(
-                      '🔄 [AUTH] Token refreshed successfully. Retrying request...',
-                    );
+                    // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
                   } catch (e) {
                     _handleAuthFailure();
                     _refreshCompleter!.completeError(e);
@@ -210,7 +203,7 @@ class NetworkClient {
   void _handleAuthFailure() {
     if (!_isRedirectingToLogin) {
       _isRedirectingToLogin = true;
-      LoggerService().debug('🔒 [AUTH] Initiating redirect to login...');
+      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
       NavigationService.navigateToRemoveUntil('/login', (route) => false);
       Future.delayed(const Duration(seconds: 2), () {
         _isRedirectingToLogin = false;

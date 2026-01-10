@@ -39,9 +39,7 @@ class ConnectivityService {
       if (hasConnection != _isOnline) {
         _isOnline = hasConnection;
         _connectivityController.add(_isOnline);
-        LoggerService().debug(
-          '📡 [CONNECTIVITY] Device status: ${_isOnline ? "ONLINE" : "OFFLINE"}',
-        );
+        // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
       }
 
       return _isOnline;

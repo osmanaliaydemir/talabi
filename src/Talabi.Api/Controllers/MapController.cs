@@ -58,11 +58,15 @@ public class MapController : BaseController
 
         // Filter: Is the user within the vendor's delivery radius?
         // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
-        // Sadece yarıçap içindeki vendor'ları göster, dışındakileri gösterme
-        query = query.Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
-            v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm));
+        // Entity Framework, GeoHelper.CalculateDistance'i SQL'e çeviremediği için
+        // önce memory'ye alıp sonra filtreliyoruz
+        var allVendors = await query.ToListAsync();
 
-        var vendors = await query.ToListAsync();
+        // Memory'de mesafe hesaplayarak filtrele
+        var vendors = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value,
+                v.Longitude!.Value) <= (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .ToList();
 
         var vendorMapDtos = vendors.Select(v =>
         {

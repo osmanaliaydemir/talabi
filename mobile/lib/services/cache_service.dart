@@ -29,7 +29,7 @@ class CacheService {
       // Delay removed for faster startup - Hive.initFlutter() handles platform channels internally
       await Hive.initFlutter();
       _initialized = true;
-      LoggerService().info('✅ [CACHE] Hive initialized successfully');
+      // Info logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       LoggerService().error('❌ [CACHE] Error initializing Hive', e, stackTrace);
       // Don't rethrow - app can still work without cache

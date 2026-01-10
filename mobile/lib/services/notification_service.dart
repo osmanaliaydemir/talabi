@@ -80,13 +80,13 @@ class NotificationService {
           const Duration(seconds: 5),
         );
 
-        LoggerService().debug('🔥 FCM Token: $token');
+        // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
 
         if (token != null) {
           try {
             final deviceType = Platform.isIOS ? 'iOS' : 'Android';
             await ApiService().registerDeviceToken(token, deviceType);
-            LoggerService().info('✅ Device token registered with API');
+            // Info logları kaldırıldı - sadece warning ve error logları gösteriliyor
           } catch (e, stackTrace) {
             LoggerService().error(
               '❌ Failed to register device token',
@@ -167,9 +167,7 @@ class NotificationService {
       initSettings,
       onDidReceiveNotificationResponse: (details) async {
         // Handle local notification tap
-        LoggerService().debug(
-          '🔔 Local Notification Tapped: ${details.payload}',
-        );
+        // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
 
         if (details.payload != null) {
           try {
@@ -184,10 +182,7 @@ class NotificationService {
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    LoggerService().debug(
-      '🔔 Foreground Message: ${message.notification?.title}',
-    );
-    LoggerService().debug('🔔 Message Data: ${message.data}');
+    // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
 
     // Check if this is an order assignment notification
     if (message.data.containsKey('orderId') &&
@@ -196,9 +191,7 @@ class NotificationService {
       if (type == 'order_assigned' || type == 'ORDER_ASSIGNED') {
         final orderId = int.tryParse(message.data['orderId'].toString());
         if (orderId != null && onOrderAssigned != null) {
-          LoggerService().debug(
-            '🔔 Triggering onOrderAssigned callback for order #$orderId',
-          );
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           onOrderAssigned!(orderId);
         }
       }
@@ -210,7 +203,7 @@ class NotificationService {
   }
 
   Future<void> _handleBackgroundMessageTap(RemoteMessage message) async {
-    LoggerService().debug('🔔 Background Message Tapped: ${message.data}');
+    // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     await _handleDataTap(message.data);
   }
 
@@ -218,12 +211,9 @@ class NotificationService {
   Future<void> _handleDataTap(Map<String, dynamic> data) async {
     if (data.containsKey('orderId')) {
       final orderId = data['orderId'].toString();
-      final type = data['type']?.toString();
 
       final role = await SecureStorageService.instance.getRole();
-      LoggerService().info(
-        '🔔 Deep linking for role: $role, orderId: $orderId, type: $type',
-      );
+      // Info logları kaldırıldı - sadece warning ve error logları gösteriliyor
 
       if (role == null) {
         LoggerService().warning('🔔 No role found, cannot deep link');

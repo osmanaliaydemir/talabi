@@ -26,9 +26,7 @@ class AssetPreloaderService {
         _preloadImage(context, Assets.images.location.path),
       ], eagerError: false);
 
-      LoggerService().info(
-        '✅ [ASSET_PRELOADER] Critical assets preload completed',
-      );
+      // Info logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       // Asset preloading failures shouldn't block app startup
       LoggerService().warning(
@@ -47,7 +45,7 @@ class AssetPreloaderService {
     try {
       // Load asset into Flutter's ImageCache (decoded)
       await precacheImage(AssetImage(assetPath), context);
-      LoggerService().debug('✅ [ASSET_PRELOADER] Preloaded: $assetPath');
+      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       // Individual asset failures shouldn't block preloading
       LoggerService().warning(
@@ -64,8 +62,6 @@ class AssetPreloaderService {
     // Google Fonts package handles font preloading automatically
     // If custom fonts are added to pubspec.yaml, they can be preloaded here
     // For now, this is a placeholder for future custom font support
-    LoggerService().debug(
-      '✅ [ASSET_PRELOADER] Fonts preloaded (Google Fonts handled automatically)',
-    );
+    // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
   }
 }

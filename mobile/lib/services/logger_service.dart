@@ -108,7 +108,7 @@ class LoggerService {
         printEmojis: true,
         dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
       ),
-      level: kDebugMode ? Level.debug : Level.warning,
+      level: Level.warning, // Sadece warning ve error logları göster
     );
 
     // Hive box'ı aç (offline storage için)
@@ -162,7 +162,7 @@ class LoggerService {
     try {
       final offlineLogs = _logBox!.values.toList();
       if (offlineLogs.isNotEmpty) {
-        _loggerInstance.i('📦 Loading ${offlineLogs.length} offline logs');
+        // Info log kaldırıldı - sadece warning ve error gösteriliyor
         for (final logMap in offlineLogs) {
           final logEntry = _mapToLogEntry(logMap);
           if (logEntry != null) {
@@ -219,21 +219,19 @@ class LoggerService {
         printEmojis: true,
         dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
       ),
-      level: kDebugMode ? Level.debug : Level.warning,
+      level: Level.warning, // Sadece warning ve error logları göster
     );
     return _logger!;
   }
 
-  /// Debug log
+  /// Debug log - Kaldırıldı (sadece warning ve error logları gösteriliyor)
   void debug(String message, [dynamic error, StackTrace? stackTrace]) {
-    if (kDebugMode) {
-      _loggerInstance.d(message, error: error, stackTrace: stackTrace);
-    }
+    // Info ve debug logları kaldırıldı - sadece warning ve error gösteriliyor
   }
 
-  /// Info log
+  /// Info log - Kaldırıldı (sadece warning ve error logları gösteriliyor)
   void info(String message) {
-    _loggerInstance.i(message);
+    // Info ve debug logları kaldırıldı - sadece warning ve error gösteriliyor
   }
 
   /// Warning log

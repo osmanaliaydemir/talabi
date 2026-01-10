@@ -70,9 +70,7 @@ class SyncService {
       final box = await Hive.openBox(_queueBoxName);
       await box.put(action.id, jsonEncode(action.toJson()));
       await box.close();
-      LoggerService().debug(
-        '📦 [SYNC] Action queued: ${action.type} (${action.id})',
-      );
+      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       LoggerService().error('Error adding to sync queue', e, stackTrace);
     }
@@ -115,15 +113,15 @@ class SyncService {
 
   Future<void> processQueue() async {
     if (!_connectivityService.isOnline) {
-      LoggerService().debug('📦 [SYNC] Skipping queue processing - offline');
+      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
       return;
     }
 
-    LoggerService().debug('📦 [SYNC] Processing queue...');
+    // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     final actions = await getQueuedActions();
 
     if (actions.isEmpty) {
-      LoggerService().debug('📦 [SYNC] Queue is empty');
+      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
       return;
     }
 
@@ -136,9 +134,7 @@ class SyncService {
 
         if (success) {
           await removeFromQueue(action.id);
-          LoggerService().debug(
-            '✅ [SYNC] Action synced: ${action.type} (${action.id})',
-          );
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
         } else {
           // Increment retry count
           final updatedAction = SyncAction(
@@ -158,9 +154,7 @@ class SyncService {
           } else {
             // Update retry count
             await addToQueue(updatedAction);
-            LoggerService().debug(
-              '🔄 [SYNC] Action retry queued: ${action.type} (${action.id}) - Retry ${updatedAction.retryCount}/$_maxRetries',
-            );
+            // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           }
         }
       } catch (e, stackTrace) {
@@ -234,7 +228,7 @@ class SyncService {
   Future<void> clearQueue() async {
     try {
       await Hive.deleteBoxFromDisk(_queueBoxName);
-      LoggerService().debug('📦 [SYNC] Queue cleared');
+      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       LoggerService().error('Error clearing sync queue', e, stackTrace);
     }

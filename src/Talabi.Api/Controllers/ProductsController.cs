@@ -93,13 +93,19 @@ public class ProductsController : BaseController
         var userLat = request.UserLatitude.Value;
         var userLon = request.UserLongitude.Value;
 
-        // Önce yarıçap içindeki vendor'ları bul
-        var vendorsInRadius = await UnitOfWork.Vendors.Query()
-            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue &&
-                        GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
-                        (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
-            .Select(v => v.Id)
+        // Önce aktif vendor'ları ve koordinatları olanları database'den çek
+        // Entity Framework, GeoHelper.CalculateDistance'i SQL'e çeviremediği için
+        // önce memory'ye alıp sonra filtreliyoruz
+        var allVendors = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
             .ToListAsync();
+
+        // Memory'de mesafe hesaplayarak filtrele
+        var vendorsInRadius = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
+                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToList();
 
         if (!vendorsInRadius.Any())
         {

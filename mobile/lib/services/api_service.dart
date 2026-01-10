@@ -107,7 +107,7 @@ class ApiService {
               e.type == DioExceptionType.connectionError)) {
         final cachedVendors = await _cacheService.getCachedVendors();
         if (cachedVendors != null && cachedVendors.isNotEmpty) {
-          LoggerService().debug('📦 [CACHE] Returning cached vendors');
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           return cachedVendors;
         }
       }
@@ -145,7 +145,7 @@ class ApiService {
               e.type == DioExceptionType.connectionError)) {
         final cachedProducts = await _cacheService.getCachedProducts();
         if (cachedProducts != null && cachedProducts.isNotEmpty) {
-          LoggerService().debug('📦 [CACHE] Returning cached products');
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           return cachedProducts;
         }
       }
@@ -592,7 +592,7 @@ class ApiService {
           e.type == DioExceptionType.connectionError) {
         final cachedProfile = await _cacheService.getCachedProfile();
         if (cachedProfile != null) {
-          LoggerService().debug('📦 [CACHE] Returning cached profile');
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           return cachedProfile;
         }
       }
@@ -1242,7 +1242,7 @@ class ApiService {
           e.type == DioExceptionType.connectionError) {
         final cachedCategories = await _cacheService.getCachedCategories();
         if (cachedCategories != null && cachedCategories.isNotEmpty) {
-          LoggerService().debug('📦 [CACHE] Returning cached categories');
+          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
           return cachedCategories;
         }
       }
