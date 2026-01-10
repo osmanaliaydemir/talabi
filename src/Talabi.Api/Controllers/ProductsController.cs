@@ -160,40 +160,6 @@ public class ProductsController : BaseController
             query = query.Where(p => p.Vendor != null && p.Vendor.Type == request.VendorType.Value);
         }
 
-        // Category filter
-        // ÖNEMLİ: Hem CategoryId hem de Category string ile filtreleme yap
-        // Çünkü bazı ürünlerde CategoryId null olabilir veya eski Category string kullanılıyor olabilir
-        if (request.CategoryId.HasValue || !string.IsNullOrWhiteSpace(request.Category))
-        {
-            if (request.CategoryId.HasValue)
-            {
-                // CategoryId gönderilmişse: Önce CategoryId ile filtrele
-                // Eğer Category string de gönderilmişse, onu da dikkate al (fallback için)
-                if (!string.IsNullOrWhiteSpace(request.Category))
-                {
-                    // Hem CategoryId hem de Category string gönderilmişse: OR mantığı ile filtrele
-                    // Böylece CategoryId null olan ama Category string'i eşleşen ürünler de gelir
-                    // EF Core string fonksiyonlarını kullan (SQL'e çevrilebilir)
-                    var categoryName = request.Category.Trim().ToLower();
-                    query = query.Where(p => (p.CategoryId.HasValue && p.CategoryId.Value == request.CategoryId.Value) || 
-                                            (p.Category != null && 
-                                             p.Category.Trim().ToLower() == categoryName));
-                }
-                else
-                {
-                    // Sadece CategoryId gönderilmişse: CategoryId ile filtrele
-                    query = query.Where(p => p.CategoryId.HasValue && p.CategoryId.Value == request.CategoryId.Value);
-                }
-            }
-            else if (!string.IsNullOrWhiteSpace(request.Category))
-            {
-                // Sadece Category string gönderilmişse: Category string ile filtrele (deprecated)
-                var categoryName = request.Category.Trim().ToLower();
-                query = query.Where(p => p.Category != null && 
-                                        p.Category.Trim().ToLower() == categoryName);
-            }
-        }
-
         // Price range filter
         if (request.MinPrice.HasValue)
         {
@@ -211,19 +177,85 @@ public class ProductsController : BaseController
             query = query.Where(p => p.VendorId == request.VendorId.Value);
         }
 
-        // Sorting
-        IOrderedQueryable<Product> orderedQuery = request.SortBy?.ToLower() switch
-        {
-            "price_asc" => query.OrderBy(p => p.Price),
-            "price_desc" => query.OrderByDescending(p => p.Price),
-            "name" => query.OrderBy(p => p.Name),
-            "newest" => query.OrderByDescending(p => p.CreatedAt),
-            _ => query.OrderBy(p => p.Name)
-        };
+        // Category filter
+        // ÖNEMLİ: CategoryId database'de filtrele, Category string memory'de filtrele (EF Core string fonksiyonları çevrilemiyor)
+        // OR mantığı: CategoryId eşleşen VEYA Category string eşleşen
+        bool needsCategoryFilterInMemory = false;
+        string? categoryNameToMatch = null;
+        Guid? categoryIdToMatch = null;
 
-        // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
-        var pagedResult = await orderedQuery.ToPagedResultAsync(
-            p => new ProductDto
+        if (request.CategoryId.HasValue || !string.IsNullOrWhiteSpace(request.Category))
+        {
+            if (request.CategoryId.HasValue && !string.IsNullOrWhiteSpace(request.Category))
+            {
+                // Hem CategoryId hem de Category string gönderilmişse: OR mantığı için memory'de filtrele
+                categoryIdToMatch = request.CategoryId.Value;
+                categoryNameToMatch = request.Category.Trim();
+                needsCategoryFilterInMemory = true;
+            }
+            else if (request.CategoryId.HasValue)
+            {
+                // Sadece CategoryId gönderilmişse: Database'de filtrele
+                query = query.Where(p => p.CategoryId.HasValue && p.CategoryId.Value == request.CategoryId.Value);
+            }
+            else if (!string.IsNullOrWhiteSpace(request.Category))
+            {
+                // Sadece Category string gönderilmişse: Memory'de filtrele
+                categoryNameToMatch = request.Category.Trim();
+                needsCategoryFilterInMemory = true;
+            }
+        }
+
+        // Category filtrelemesi ve sayfalama
+        PagedResultDto<ProductDto> result;
+        
+        if (needsCategoryFilterInMemory)
+        {
+            // Category filtrelemesi memory'de yapılacaksa, tüm işlemi memory'de yap
+            // Tüm ürünleri memory'ye al
+            var allProducts = await query.ToListAsync();
+            
+            // OR mantığı ile filtrele: CategoryId eşleşen VEYA Category string eşleşen
+            var filteredProducts = allProducts.Where(p =>
+            {
+                // CategoryId eşleşiyorsa dahil et
+                if (categoryIdToMatch.HasValue && p.CategoryId.HasValue && p.CategoryId.Value == categoryIdToMatch.Value)
+                {
+                    return true;
+                }
+                
+                // Category string eşleşiyorsa dahil et
+                if (!string.IsNullOrWhiteSpace(categoryNameToMatch) && p.Category != null)
+                {
+                    var productCategory = p.Category.Trim();
+                    var requestedCategory = categoryNameToMatch.Trim();
+                    return productCategory.Equals(requestedCategory, StringComparison.OrdinalIgnoreCase);
+                }
+                
+                return false;
+            }).ToList();
+            
+            // Sorting (memory'de)
+            var orderedProducts = request.SortBy?.ToLower() switch
+            {
+                "price_asc" => filteredProducts.OrderBy(p => p.Price),
+                "price_desc" => filteredProducts.OrderByDescending(p => p.Price),
+                "name" => filteredProducts.OrderBy(p => p.Name),
+                "newest" => filteredProducts.OrderByDescending(p => p.CreatedAt),
+                _ => filteredProducts.OrderBy(p => p.Name)
+            };
+            
+            // Pagination (memory'de)
+            var totalCount = filteredProducts.Count;
+            var page = request.Page < 1 ? 1 : request.Page;
+            var pageSize = request.PageSize < 1 ? 20 : request.PageSize;
+            var pagedProducts = orderedProducts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            
+            // DTO mapping
+            var items = pagedProducts.Select(p => new ProductDto
             {
                 Id = p.Id,
                 VendorId = p.VendorId,
@@ -231,6 +263,7 @@ public class ProductsController : BaseController
                 Name = p.Name,
                 Description = p.Description,
                 Category = p.Category,
+                CategoryId = p.CategoryId,
                 Price = p.Price,
                 Currency = p.Currency,
                 ImageUrl = p.ImageUrl,
@@ -238,19 +271,62 @@ public class ProductsController : BaseController
                 ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
                 Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
                     .Select(r => (double?)r.Rating).Average()
-            },
-            request.Page,
-            request.PageSize);
-
-        // PagedResult'ı PagedResultDto'ya çevir
-        var result = new PagedResultDto<ProductDto>
+            }).ToList();
+            
+            result = new PagedResultDto<ProductDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+        }
+        else
         {
-            Items = pagedResult.Items,
-            TotalCount = pagedResult.TotalCount,
-            Page = pagedResult.Page,
-            PageSize = pagedResult.PageSize,
-            TotalPages = pagedResult.TotalPages
-        };
+            // Normal database query - EF Core ile sayfalama
+            // Sorting
+            IOrderedQueryable<Product> orderedQuery = request.SortBy?.ToLower() switch
+            {
+                "price_asc" => query.OrderBy(p => p.Price),
+                "price_desc" => query.OrderByDescending(p => p.Price),
+                "name" => query.OrderBy(p => p.Name),
+                "newest" => query.OrderByDescending(p => p.CreatedAt),
+                _ => query.OrderBy(p => p.Name)
+            };
+
+            // Pagination ve DTO mapping - Gelişmiş query helper kullanımı
+            var pagedResult = await orderedQuery.ToPagedResultAsync(
+                p => new ProductDto
+                {
+                    Id = p.Id,
+                    VendorId = p.VendorId,
+                    VendorName = p.Vendor != null ? p.Vendor.Name : null,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Category = p.Category,
+                    CategoryId = p.CategoryId,
+                    Price = p.Price,
+                    Currency = p.Currency,
+                    ImageUrl = p.ImageUrl,
+                    IsBestSeller = UnitOfWork.OrderItems.Query().Count(oi => oi.ProductId == p.Id) > 10,
+                    ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == p.Id && r.IsApproved),
+                    Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == p.Id && r.IsApproved)
+                        .Select(r => (double?)r.Rating).Average()
+                },
+                request.Page,
+                request.PageSize);
+
+            // PagedResult'ı PagedResultDto'ya çevir
+            result = new PagedResultDto<ProductDto>
+            {
+                Items = pagedResult.Items,
+                TotalCount = pagedResult.TotalCount,
+                Page = pagedResult.Page,
+                PageSize = pagedResult.PageSize,
+                TotalPages = pagedResult.TotalPages
+            };
+        }
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(result,
             LocalizationService.GetLocalizedString(ResourceName, "ProductsRetrievedSuccessfully", CurrentCulture)));
