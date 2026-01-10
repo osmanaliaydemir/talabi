@@ -262,13 +262,17 @@ public class ProductsController : BaseController
         var userLat = userLatitude.Value;
         var userLon = userLongitude.Value;
 
-        // Önce yarıçap içindeki vendor'ları bul
-        var vendorsInRadius = await UnitOfWork.Vendors.Query()
-            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue &&
-                        GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
-                        (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
-            .Select(v => v.Id)
+        // Önce tüm aktif vendor'ları ve konum bilgilerini belleğe al
+        var allVendors = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
             .ToListAsync();
+
+        // Bellekte yarıçap içindeki vendor'ları filtrele
+        var vendorsInRadius = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <=
+                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToList();
 
         if (!vendorsInRadius.Any())
         {
@@ -432,13 +436,17 @@ public class ProductsController : BaseController
         var userLat = userLatitude.Value;
         var userLon = userLongitude.Value;
 
-        // Önce yarıçap içindeki vendor'ları bul
-        var vendorsInRadius = await UnitOfWork.Vendors.Query()
-            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue &&
-                        GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
-                        (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
-            .Select(v => v.Id)
+        // Önce tüm aktif vendor'ları ve konum bilgilerini belleğe al
+        var allVendors = await UnitOfWork.Vendors.Query()
+            .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
             .ToListAsync();
+
+        // Bellekte yarıçap içindeki vendor'ları filtrele
+        var vendorsInRadius = allVendors
+            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <=
+                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Select(v => v.Id)
+            .ToList();
 
         if (!vendorsInRadius.Any())
         {
