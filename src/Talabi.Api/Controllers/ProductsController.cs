@@ -60,6 +60,13 @@ public class ProductsController : BaseController
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search(
         [FromQuery] ProductSearchRequestDto request)
     {
+        // Query string'den categoryId parametresini manuel olarak oku ve Guid'e parse et
+        // (camelCase query string parametreleri için ve Guid parse güvenilirliği için)
+        if (Request.Query.ContainsKey("categoryId") && Guid.TryParse(Request.Query["categoryId"].ToString(), out var parsedCategoryId))
+        {
+            request.CategoryId = parsedCategoryId;
+        }
+
         // Query string'den userLatitude ve userLongitude parametrelerini manuel olarak oku
         // (camelCase query string parametreleri için)
         if (Request.Query.ContainsKey("userLatitude") && double.TryParse(Request.Query["userLatitude"].ToString(), out var parsedLat))

@@ -110,11 +110,13 @@ class HomeCategorySection extends StatelessWidget {
                     child: InkWell(
                       onTap: () {
                         if (category['id'] != null) {
+                          // categoryId'yi String olarak gönder (backend Guid.TryParse ile parse edecek)
+                          final categoryIdString = category['id'].toString();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => CategoryProductsScreen(
-                                categoryId: category['id'],
+                                categoryId: categoryIdString,
                                 categoryName: category['name'] ?? '',
                                 imageUrl:
                                     imageUrl, // Pass the resolved image URL

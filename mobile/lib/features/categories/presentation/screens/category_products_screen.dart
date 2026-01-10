@@ -35,12 +35,55 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   late Future<List<Product>> _productsFuture;
   final Map<String, bool> _favoriteStatus = {};
   int? _productCount;
+  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    // Initialize future with empty list to prevent null errors
+    _productsFuture = Future.value(<Product>[]);
+    _loadAddresses();
     _loadFavoriteStatus();
+  }
+
+  Future<void> _loadAddresses() async {
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            selectedAddress = addresses.first;
+          }
+        }
+
+        setState(() {
+          _selectedAddress = selectedAddress;
+        });
+
+        // Adresler yüklendikten sonra ürünleri yükle (setState sonrası)
+        // WidgetsBinding.instance.addPostFrameCallback kullanarak setState'in tamamlanmasını bekle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadProducts();
+          }
+        });
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading addresses', e, stackTrace);
+      // Hata olsa bile ürünleri yüklemeyi dene (konum olmadan)
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadProducts();
+          }
+        });
+      }
+    }
   }
 
   void _loadProducts() {
@@ -48,6 +91,19 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
         ? 1
         : 2;
+
+    // Get location from selected address
+    double? userLatitude;
+    double? userLongitude;
+    if (_selectedAddress != null) {
+      userLatitude = _selectedAddress!['latitude'] != null
+          ? double.tryParse(_selectedAddress!['latitude'].toString())
+          : null;
+      userLongitude = _selectedAddress!['longitude'] != null
+          ? double.tryParse(_selectedAddress!['longitude'].toString())
+          : null;
+    }
+
     _productsFuture = _apiService
         .searchProducts(
           ProductSearchRequestDto(
@@ -55,6 +111,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             categoryId: widget.categoryId,
             vendorType: vendorType,
             pageSize: 50, // Fetch more items for the category page
+            userLatitude: userLatitude,
+            userLongitude: userLongitude,
           ),
         )
         .then((pagedResult) {
