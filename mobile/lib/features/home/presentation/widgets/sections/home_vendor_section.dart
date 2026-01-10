@@ -11,10 +11,12 @@ class HomeVendorSection extends StatelessWidget {
     super.key,
     required this.vendorsFuture,
     required this.onViewAll,
+    this.onVendorsLoaded,
   });
 
   final Future<List<Vendor>> vendorsFuture;
   final VoidCallback onViewAll;
+  final Function(bool hasVendors)? onVendorsLoaded;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +46,16 @@ class HomeVendorSection extends StatelessWidget {
         }
 
         final vendors = snapshot.data!;
-        if (vendors.isEmpty) {
+        final hasVendors = vendors.isNotEmpty;
+        
+        // Notify parent about vendor state
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (onVendorsLoaded != null) {
+            onVendorsLoaded!(hasVendors);
+          }
+        });
+        
+        if (!hasVendors) {
           return Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spacingMedium,

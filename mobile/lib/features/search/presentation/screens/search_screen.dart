@@ -66,6 +66,9 @@ class _SearchScreenState extends State<SearchScreen> {
   // Flag to ensure filter options are loaded only once
   bool _hasLoadedFilterOptions = false;
 
+  // Selected address for location-based filtering
+  Map<String, dynamic>? _selectedAddress;
+
   Color get _primaryColor {
     final bottomNav = Provider.of<BottomNavProvider>(context);
     return bottomNav.selectedCategory == MainCategory.restaurant
@@ -78,11 +81,31 @@ class _SearchScreenState extends State<SearchScreen> {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _loadSearchHistory();
+    _loadAddresses();
     _searchController
       ..addListener(_onSearchChanged)
       ..addListener(() {
         setState(() {}); // Rebuild to show/hide clear button
       });
+  }
+
+  Future<void> _loadAddresses() async {
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (mounted && addresses.isNotEmpty) {
+        setState(() {
+          try {
+            _selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            _selectedAddress = addresses.first;
+          }
+        });
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading addresses', e, stackTrace);
+    }
   }
 
   void _scrollListener() {
@@ -217,6 +240,18 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     try {
+      // Get location from selected address
+      double? userLatitude;
+      double? userLongitude;
+      if (_selectedAddress != null) {
+        userLatitude = _selectedAddress!['latitude'] != null
+            ? double.tryParse(_selectedAddress!['latitude'].toString())
+            : null;
+        userLongitude = _selectedAddress!['longitude'] != null
+            ? double.tryParse(_selectedAddress!['longitude'].toString())
+            : null;
+      }
+
       final request = ProductSearchRequestDto(
         query: _currentQuery.isEmpty ? null : _currentQuery,
         categoryId: _selectedCategoryId,
@@ -225,6 +260,8 @@ class _SearchScreenState extends State<SearchScreen> {
         sortBy: _sortBy,
         page: _productCurrentPage,
         pageSize: _productPageSize,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
 
       final results = await _apiService.searchProducts(request);

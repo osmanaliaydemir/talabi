@@ -11,10 +11,14 @@ class HomeCategorySection extends StatelessWidget {
     super.key,
     required this.categoriesFuture,
     required this.onViewAll,
+    this.hasVendors = true,
+    this.hasProducts = true,
   });
 
   final Future<List<Map<String, dynamic>>> categoriesFuture;
   final VoidCallback onViewAll;
+  final bool hasVendors;
+  final bool hasProducts;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +30,11 @@ class HomeCategorySection extends StatelessWidget {
       future: categoriesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox.shrink();
+        }
+
+        // If no vendors or products, don't show category empty state
+        if (!hasVendors || !hasProducts) {
           return const SizedBox.shrink();
         }
 

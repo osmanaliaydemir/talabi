@@ -14,6 +14,8 @@ class ProductSearchRequestDto {
     this.sortBy,
     this.page = 1,
     this.pageSize = 20,
+    this.userLatitude,
+    this.userLongitude,
   });
   final String? query;
   final String? category;
@@ -25,6 +27,8 @@ class ProductSearchRequestDto {
   final String? sortBy; // "price_asc", "price_desc", "name", "newest"
   final int page;
   final int pageSize;
+  final double? userLatitude;
+  final double? userLongitude;
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{'page': page, 'pageSize': pageSize};
 
@@ -51,6 +55,12 @@ class ProductSearchRequestDto {
     }
     if (sortBy != null && sortBy!.isNotEmpty) {
       map['sortBy'] = sortBy;
+    }
+    if (userLatitude != null) {
+      map['userLatitude'] = userLatitude;
+    }
+    if (userLongitude != null) {
+      map['userLongitude'] = userLongitude;
     }
 
     return map;

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Talabi.Core.Enums;
 
 namespace Talabi.Core.DTOs;
@@ -13,7 +14,10 @@ public class ProductSearchRequestDto
     public Guid? VendorId { get; set; }
     
     // Distance filtering (REQUIRED: user location must be provided)
+    [JsonPropertyName("userLatitude")]
     public double? UserLatitude { get; set; }
+    
+    [JsonPropertyName("userLongitude")]
     public double? UserLongitude { get; set; }
     
     public string? SortBy { get; set; } // "price_asc", "price_desc", "name", "newest"
@@ -29,8 +33,13 @@ public class VendorSearchRequestDto
     public decimal? MinRating { get; set; }
 
     // Distance filtering (requires user location)
+    [JsonPropertyName("userLatitude")]
     public double? UserLatitude { get; set; }
+    
+    [JsonPropertyName("userLongitude")]
     public double? UserLongitude { get; set; }
+    
+    [JsonPropertyName("maxDistanceInKm")]
     public double? MaxDistanceInKm { get; set; }
 
     public string? SortBy { get; set; } // "name", "newest", "rating_desc", "popularity", "distance"

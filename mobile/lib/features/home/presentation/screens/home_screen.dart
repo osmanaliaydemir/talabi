@@ -41,6 +41,10 @@ class HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? _selectedAddress;
   bool _isAddressesLoading = true;
 
+  // Track vendor/product states for conditional rendering
+  bool _hasVendors = false;
+  bool _hasProducts = false;
+
   final Map<String, bool> _favoriteStatus =
       {}; // Track favorite status for each product
 
@@ -53,6 +57,10 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize futures with empty lists to prevent null errors
+    _vendorsFuture = Future.value(<Vendor>[]);
+    _popularProductsFuture = Future.value(<Product>[]);
+    _categoriesFuture = Future.value(<Map<String, dynamic>>[]);
     _loadAddresses();
     _loadFavoriteStatus();
 
@@ -183,13 +191,9 @@ class HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Context hazır olduğunda verileri yükle (sadece ilk kez)
-    if (_lastCategory == null) {
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-      final currentCategory = bottomNav.selectedCategory;
-      final vendorType = currentCategory == MainCategory.restaurant ? 1 : 2;
-      _loadData(vendorType: vendorType);
-      _lastCategory = currentCategory;
-    } else if (_banners.isEmpty) {
+    // Adresler yüklendikten sonra verileri yükle - _loadAddresses içinde yapılıyor
+    // Burada sadece banner'ları kontrol et
+    if (_banners.isEmpty && !_isAddressesLoading) {
       // Banner'lar yüklenmemiş - sadece banner'ları yükle
       final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
       final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
@@ -377,10 +381,12 @@ class HomeScreenState extends State<HomeScreen> {
             const SliverToBoxAdapter(
               child: SizedBox(height: AppTheme.spacingSmall),
             ),
-            // Categories Section
+            // Categories Section (only show if vendors and products exist)
             SliverToBoxAdapter(
               child: HomeCategorySection(
                 categoriesFuture: _categoriesFuture,
+                hasVendors: _hasVendors,
+                hasProducts: _hasProducts,
                 onViewAll: () {
                   Navigator.push(
                     context,
@@ -391,11 +397,17 @@ class HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            // Picks For You Section (Popular Products)
+            // Picks For You Section (Popular Products) (only show if vendors exist)
             SliverToBoxAdapter(
               child: HomeProductSection(
                 productsFuture: _popularProductsFuture,
                 favoriteStatus: _favoriteStatus,
+                hasVendors: _hasVendors,
+                onProductsLoaded: (hasProducts) {
+                  setState(() {
+                    _hasProducts = hasProducts;
+                  });
+                },
                 onViewAll: () {
                   Navigator.push(
                     context,
@@ -437,6 +449,11 @@ class HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: HomeVendorSection(
                 vendorsFuture: _vendorsFuture,
+                onVendorsLoaded: (hasVendors) {
+                  setState(() {
+                    _hasVendors = hasVendors;
+                  });
+                },
                 onViewAll: () {
                   Navigator.push(
                     context,

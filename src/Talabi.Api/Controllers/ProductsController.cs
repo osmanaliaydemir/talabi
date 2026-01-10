@@ -60,6 +60,18 @@ public class ProductsController : BaseController
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search(
         [FromQuery] ProductSearchRequestDto request)
     {
+        // Query string'den userLatitude ve userLongitude parametrelerini manuel olarak oku
+        // (camelCase query string parametreleri için)
+        if (Request.Query.ContainsKey("userLatitude") && double.TryParse(Request.Query["userLatitude"].ToString(), out var parsedLat))
+        {
+            request.UserLatitude = parsedLat;
+        }
+        
+        if (Request.Query.ContainsKey("userLongitude") && double.TryParse(Request.Query["userLongitude"].ToString(), out var parsedLon))
+        {
+            request.UserLongitude = parsedLon;
+        }
+        
         // Distance filter (REQUIRED: user location must be provided)
         if (!request.UserLatitude.HasValue || !request.UserLongitude.HasValue)
         {

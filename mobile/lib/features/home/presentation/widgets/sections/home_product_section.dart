@@ -12,12 +12,16 @@ class HomeProductSection extends StatelessWidget {
     required this.favoriteStatus,
     required this.onFavoriteToggle,
     required this.onViewAll,
+    this.hasVendors = true,
+    this.onProductsLoaded,
   });
 
   final Future<List<Product>> productsFuture;
   final Map<String, bool> favoriteStatus;
   final Function(Product) onFavoriteToggle;
   final VoidCallback onViewAll;
+  final bool hasVendors;
+  final Function(bool hasProducts)? onProductsLoaded;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +51,21 @@ class HomeProductSection extends StatelessWidget {
         }
 
         final products = snapshot.data!;
-        if (products.isEmpty) {
+        final hasProducts = products.isNotEmpty;
+
+        // Notify parent about product state
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (onProductsLoaded != null) {
+            onProductsLoaded!(hasProducts);
+          }
+        });
+
+        // If no vendors, don't show product empty state (vendor empty state will be shown)
+        if (!hasVendors) {
+          return const SizedBox.shrink();
+        }
+
+        if (!hasProducts) {
           return Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spacingMedium,
