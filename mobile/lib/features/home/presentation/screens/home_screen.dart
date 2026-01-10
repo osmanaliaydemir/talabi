@@ -221,21 +221,29 @@ class HomeScreenState extends State<HomeScreen> {
     try {
       final addresses = await _apiService.getAddresses();
       if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            selectedAddress = addresses.first;
+          }
+        }
+
         setState(() {
           _addresses = addresses;
-          // Find default address or use first one
-          if (addresses.isNotEmpty) {
-            try {
-              _selectedAddress = addresses.firstWhere(
-                (addr) => addr['isDefault'] == true,
-              );
-            } catch (_) {
-              _selectedAddress = addresses.first;
-            }
-          } else {
-            _selectedAddress = null;
-          }
+          _selectedAddress = selectedAddress;
           _isAddressesLoading = false;
+        });
+
+        // Adresler yüklendikten sonra verileri yükle (konum bilgisi için gerekli)
+        // WidgetsBinding.instance.addPostFrameCallback kullanarak setState'in tamamlanmasını bekle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadData();
+          }
         });
       }
     } catch (e, stackTrace) {
@@ -243,6 +251,12 @@ class HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _isAddressesLoading = false;
+        });
+        // Hata olsa bile verileri yüklemeyi dene (konum olmadan)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadData();
+          }
         });
       }
     }

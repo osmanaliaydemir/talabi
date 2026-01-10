@@ -629,22 +629,18 @@ public class CartController(
                 "UNAUTHORIZED"));
         }
 
-        // Kullanıcının default adresini al (konum kontrolü için)
-        var defaultAddress = await UnitOfWork.UserAddresses.Query()
-            .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
-
-        // Konum bilgisini belirle (query parametreleri veya default adres)
-        double? targetLat = lat;
-        double? targetLon = lon;
-
-        if (targetLat == null || targetLon == null)
+        // Konum bilgisini belirle (query parametreleri zorunlu - ana sayfa ile tutarlılık için)
+        // Ana sayfada (GetVendors, GetPopularProducts, GetCategories) kullanıcı konumu zorunlu
+        // Burada da aynı kuralı uyguluyoruz
+        if (!lat.HasValue || !lon.HasValue)
         {
-            if (defaultAddress != null)
-            {
-                targetLat = defaultAddress.Latitude;
-                targetLon = defaultAddress.Longitude;
-            }
+            // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(),
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForRecommendations", CurrentCulture) ?? "Kullanıcı konumu gerekli"));
         }
+
+        var targetLat = lat.Value;
+        var targetLon = lon.Value;
 
         var results = new List<Product>();
         string messageKey = "RecommendedForYou";
@@ -678,17 +674,12 @@ public class CartController(
 
                 var vendor = product.Vendor;
 
-                // Konum kontrolü: Kullanıcı adresi ve vendor konumu varsa kontrol et
-                if (!targetLat.HasValue || !targetLon.HasValue)
-                {
-                    // Kullanıcı konumu yoksa - ürünü gösterme (konum kuralı zorunlu)
-                    continue;
-                }
-
+                // Konum kontrolü: Vendor konumu varsa kontrol et
+                // targetLat ve targetLon zaten null kontrolü yapıldı (yukarıda), burada kesinlikle değer var
                 if (vendor.Latitude.HasValue && vendor.Longitude.HasValue)
                 {
-                    var userLat = targetLat.Value;
-                    var userLon = targetLon.Value;
+                    var userLat = targetLat;
+                    var userLon = targetLon;
                     var vendorLat = vendor.Latitude.Value;
                     var vendorLon = vendor.Longitude.Value;
 
@@ -714,13 +705,6 @@ public class CartController(
         // 2. Eğer önceki siparişlerden ürün bulunamadıysa, konuma en yakın restoran/marketin ürünlerini getir
         if (!results.Any())
         {
-            if (!targetLat.HasValue || !targetLon.HasValue)
-            {
-                // Kullanıcı konumu yoksa boş liste döndür
-                return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(),
-                    LocalizationService.GetLocalizedString(ResourceName, messageKey, CurrentCulture)));
-            }
-
             // Tüm aktif vendor'ları al (konum kontrolü için memory'de filtreleme yapacağız)
             var allVendors = await UnitOfWork.Vendors.Query()
                 .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
@@ -733,8 +717,8 @@ public class CartController(
 
             // Konum kuralı: Delivery radius içindeki vendor'ları filtrele
             // targetLat ve targetLon zaten null kontrolü yapıldı (yukarıda), burada kesinlikle değer var
-            var userLat = targetLat.Value;
-            var userLon = targetLon.Value;
+            var userLat = targetLat;
+            var userLon = targetLon;
 
             var vendorsInRadius = allVendors
                 .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <=
