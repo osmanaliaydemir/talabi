@@ -679,8 +679,13 @@ public class CartController(
                 var vendor = product.Vendor;
 
                 // Konum kontrolü: Kullanıcı adresi ve vendor konumu varsa kontrol et
-                if (targetLat.HasValue && targetLon.HasValue &&
-                    vendor.Latitude.HasValue && vendor.Longitude.HasValue)
+                if (!targetLat.HasValue || !targetLon.HasValue)
+                {
+                    // Kullanıcı konumu yoksa - ürünü gösterme (konum kuralı zorunlu)
+                    continue;
+                }
+
+                if (vendor.Latitude.HasValue && vendor.Longitude.HasValue)
                 {
                     var userLat = targetLat.Value;
                     var userLon = targetLon.Value;
@@ -695,11 +700,6 @@ public class CartController(
                     {
                         validProducts.Add(product);
                     }
-                }
-                else if (!targetLat.HasValue || !targetLon.HasValue)
-                {
-                    // Kullanıcı konumu yoksa, tüm ürünleri göster (geriye dönük uyumluluk)
-                    validProducts.Add(product);
                 }
                 // Kullanıcı konumu var ama vendor konumu yok - ürünü gösterme
             }

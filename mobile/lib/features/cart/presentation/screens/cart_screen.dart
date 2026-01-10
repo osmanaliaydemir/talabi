@@ -129,11 +129,44 @@ class _CartScreenState extends State<CartScreen> {
     if (_currentVendorType != vendorType) {
       _currentVendorType = vendorType;
       // Fetch recommendations when vendor type changes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Provider.of<CartProvider>(
-          context,
-          listen: false,
-        ).fetchRecommendations(type: vendorType);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Kullanıcının default adresini al (konum kontrolü için)
+        double? userLatitude;
+        double? userLongitude;
+        try {
+          final addresses = await ApiService().getAddresses();
+          if (addresses.isNotEmpty) {
+            Map<String, dynamic>? defaultAddress;
+            try {
+              defaultAddress =
+                  addresses.firstWhere(
+                        (addr) =>
+                            addr['isDefault'] == true ||
+                            addr['IsDefault'] == true,
+                      )
+                      as Map<String, dynamic>?;
+            } catch (_) {
+              defaultAddress = addresses.first as Map<String, dynamic>;
+            }
+
+            if (defaultAddress != null) {
+              userLatitude = defaultAddress['latitude'] != null
+                  ? double.tryParse(defaultAddress['latitude'].toString())
+                  : null;
+              userLongitude = defaultAddress['longitude'] != null
+                  ? double.tryParse(defaultAddress['longitude'].toString())
+                  : null;
+            }
+          }
+        } catch (e) {
+          // Adres yüklenemediyse devam et (backend default adresi kullanacak)
+        }
+
+        Provider.of<CartProvider>(context, listen: false).fetchRecommendations(
+          type: vendorType,
+          lat: userLatitude,
+          lon: userLongitude,
+        );
       });
     }
   }
