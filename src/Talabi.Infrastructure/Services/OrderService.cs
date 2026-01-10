@@ -150,15 +150,31 @@ public class OrderService : IOrderService
                 _localizationService.GetLocalizedString(ResourceName, "AddressNotFound", culture));
         }
 
+        // Validate vendor and address locations are available
+        if (!vendor.Latitude.HasValue || !vendor.Longitude.HasValue)
+        {
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "VendorLocationNotAvailable", culture));
+        }
+
+        if (!userAddress.Latitude.HasValue || !userAddress.Longitude.HasValue)
+        {
+            throw new InvalidOperationException(
+                _localizationService.GetLocalizedString(ResourceName, "AddressLocationNotAvailable", culture));
+        }
+
         // Distance and Radius Check (Crow-fly)
+        // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+        var deliveryRadius = vendor.DeliveryRadiusInKm == 0 ? 5 : vendor.DeliveryRadiusInKm;
+        
         double crowFlyDistance = GeoHelper.CalculateDistance(
-            vendor.Latitude ?? 0,
-            vendor.Longitude ?? 0,
-            userAddress.Latitude ?? 0,
-            userAddress.Longitude ?? 0
+            vendor.Latitude.Value,
+            vendor.Longitude.Value,
+            userAddress.Latitude.Value,
+            userAddress.Longitude.Value
         );
 
-        if (crowFlyDistance > vendor.DeliveryRadiusInKm)
+        if (crowFlyDistance > deliveryRadius)
         {
             throw new InvalidOperationException(
                 _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
@@ -166,15 +182,15 @@ public class OrderService : IOrderService
 
         // Router Check (Real Road Distance)
         double roadDistance = await _mapService.GetRoadDistanceAsync(
-            vendor.Latitude ?? 0,
-            vendor.Longitude ?? 0,
-            userAddress.Latitude ?? 0,
-            userAddress.Longitude ?? 0
+            vendor.Latitude.Value,
+            vendor.Longitude.Value,
+            userAddress.Latitude.Value,
+            userAddress.Longitude.Value
         );
 
         double orderDistance = roadDistance > 0 ? roadDistance : crowFlyDistance;
 
-        if (orderDistance > vendor.DeliveryRadiusInKm)
+        if (orderDistance > deliveryRadius)
         {
             throw new InvalidOperationException(
                 _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
@@ -792,15 +808,31 @@ public class OrderService : IOrderService
             var userAddress = await _unitOfWork.UserAddresses.GetByIdAsync(dto.DeliveryAddressId.Value);
             if (userAddress != null)
             {
+                // Validate vendor and address locations are available
+                if (!vendor.Latitude.HasValue || !vendor.Longitude.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        _localizationService.GetLocalizedString(ResourceName, "VendorLocationNotAvailable", culture));
+                }
+
+                if (!userAddress.Latitude.HasValue || !userAddress.Longitude.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        _localizationService.GetLocalizedString(ResourceName, "AddressLocationNotAvailable", culture));
+                }
+
                 // Distance and Radius Check (Crow-fly first)
+                // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+                var deliveryRadius = vendor.DeliveryRadiusInKm == 0 ? 5 : vendor.DeliveryRadiusInKm;
+                
                 double crowFlyDistance = GeoHelper.CalculateDistance(
-                    vendor.Latitude ?? 0,
-                    vendor.Longitude ?? 0,
-                    userAddress.Latitude ?? 0,
-                    userAddress.Longitude ?? 0
+                    vendor.Latitude.Value,
+                    vendor.Longitude.Value,
+                    userAddress.Latitude.Value,
+                    userAddress.Longitude.Value
                 );
 
-                if (crowFlyDistance > vendor.DeliveryRadiusInKm)
+                if (crowFlyDistance > deliveryRadius)
                 {
                     throw new InvalidOperationException(
                         _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));
@@ -808,15 +840,15 @@ public class OrderService : IOrderService
 
                 // Router Check (Real Road Distance)
                 double roadDistance = await _mapService.GetRoadDistanceAsync(
-                    vendor.Latitude ?? 0,
-                    vendor.Longitude ?? 0,
-                    userAddress.Latitude ?? 0,
-                    userAddress.Longitude ?? 0
+                    vendor.Latitude.Value,
+                    vendor.Longitude.Value,
+                    userAddress.Latitude.Value,
+                    userAddress.Longitude.Value
                 );
 
                 double orderDistance = roadDistance > 0 ? roadDistance : crowFlyDistance;
 
-                if (orderDistance > vendor.DeliveryRadiusInKm)
+                if (orderDistance > deliveryRadius)
                 {
                     throw new InvalidOperationException(
                         _localizationService.GetLocalizedString(ResourceName, "OutOfDeliveryRadius", culture));

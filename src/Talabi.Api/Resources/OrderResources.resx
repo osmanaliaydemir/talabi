@@ -111,6 +111,21 @@
   <data name="OrderItemCancellationFailed" xml:space="preserve">
     <value>An error occurred while cancelling the order item</value>
   </data>
+  <data name="AddressNotFound" xml:space="preserve">
+    <value>Delivery address not found</value>
+  </data>
+  <data name="OutOfDeliveryRadius" xml:space="preserve">
+    <value>Delivery address is outside the vendor's delivery radius</value>
+  </data>
+  <data name="MinimumOrderAmountNotMet" xml:space="preserve">
+    <value>Minimum order amount is {0}. Please add more items to your cart.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>Vendor location information is not available</value>
+  </data>
+  <data name="AddressLocationNotAvailable" xml:space="preserve">
+    <value>Delivery address location information is not available</value>
+  </data>
   
   <!-- Success Messages -->
   <data name="OrderCreatedSuccessfully" xml:space="preserve">
@@ -133,6 +148,9 @@
   </data>
   <data name="OrderItemCancelledSuccessfully" xml:space="preserve">
     <value>Order item cancelled successfully</value>
+  </data>
+  <data name="OrderCalculatedSuccessfully" xml:space="preserve">
+    <value>Order calculated successfully</value>
   </data>
   
   <!-- Notification Messages -->

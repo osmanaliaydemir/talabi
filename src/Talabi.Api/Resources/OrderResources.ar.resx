@@ -111,11 +111,20 @@
   <data name="OrderItemCancellationFailed" xml:space="preserve">
     <value>حدث خطأ أثناء إلغاء عنصر الطلب</value>
   </data>
+  <data name="AddressNotFound" xml:space="preserve">
+    <value>عنوان التسليم غير موجود</value>
+  </data>
   <data name="OutOfDeliveryRadius" xml:space="preserve">
     <value>عذرًا، أنت خارج منطقة توصيل هذا المطعم.</value>
   </data>
   <data name="MinimumOrderAmountNotMet" xml:space="preserve">
     <value>المبلغ الأدنى للطلب هو {0} ₺.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>معلومات موقع البائع غير متاحة</value>
+  </data>
+  <data name="AddressLocationNotAvailable" xml:space="preserve">
+    <value>معلومات موقع عنوان التسليم غير متاحة</value>
   </data>
   
   <!-- Success Messages -->
@@ -139,6 +148,9 @@
   </data>
   <data name="OrderItemCancelledSuccessfully" xml:space="preserve">
     <value>تم إلغاء عنصر الطلب بنجاح</value>
+  </data>
+  <data name="OrderCalculatedSuccessfully" xml:space="preserve">
+    <value>تم حساب الطلب بنجاح</value>
   </data>
   
   <!-- Notification Messages -->

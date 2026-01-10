@@ -111,11 +111,20 @@
   <data name="OrderItemCancellationFailed" xml:space="preserve">
     <value>Sipariş ürünü iptal edilirken bir hata oluştu</value>
   </data>
+  <data name="AddressNotFound" xml:space="preserve">
+    <value>Teslimat adresi bulunamadı</value>
+  </data>
   <data name="OutOfDeliveryRadius" xml:space="preserve">
     <value>Üzgünüz, bu restoranın gönderim alanı dışındasınız.</value>
   </data>
   <data name="MinimumOrderAmountNotMet" xml:space="preserve">
     <value>Minimum sipariş tutarı olan ₺{0} tutarına ulaşamadınız.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>Satıcı konum bilgisi mevcut değil</value>
+  </data>
+  <data name="AddressLocationNotAvailable" xml:space="preserve">
+    <value>Teslimat adresi konum bilgisi mevcut değil</value>
   </data>
   
   <!-- Success Messages -->
@@ -139,6 +148,9 @@
   </data>
   <data name="OrderItemCancelledSuccessfully" xml:space="preserve">
     <value>Sipariş ürünü başarıyla iptal edildi</value>
+  </data>
+  <data name="OrderCalculatedSuccessfully" xml:space="preserve">
+    <value>Sipariş başarıyla hesaplandı</value>
   </data>
   
   <!-- Notification Messages -->
