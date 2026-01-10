@@ -140,7 +140,9 @@ public class ProductsController : BaseController
 
         IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
-            .Where(p => p.Vendor != null && p.Vendor.IsActive && vendorsInRadius.Contains(p.VendorId)); // Sadece yarıçap içindeki aktif vendor'ların ürünleri
+            .Where(p => p.IsAvailable && // Ürün müsait olmalı
+                       p.Vendor != null && p.Vendor.IsActive && 
+                       vendorsInRadius.Contains(p.VendorId)); // Sadece yarıçap içindeki aktif vendor'ların ürünleri
 
         // Text search
         if (!string.IsNullOrWhiteSpace(request.Query))
@@ -161,28 +163,35 @@ public class ProductsController : BaseController
         // Category filter
         // ÖNEMLİ: Hem CategoryId hem de Category string ile filtreleme yap
         // Çünkü bazı ürünlerde CategoryId null olabilir veya eski Category string kullanılıyor olabilir
-        if (request.CategoryId.HasValue)
+        if (request.CategoryId.HasValue || !string.IsNullOrWhiteSpace(request.Category))
         {
-            // CategoryId gönderildiğinde: Hem CategoryId hem de Category string ile filtreleme yap
-            // Böylece CategoryId null olan ama Category string'i eşleşen ürünler de gelir
-            if (!string.IsNullOrWhiteSpace(request.Category))
+            if (request.CategoryId.HasValue)
             {
-                // Hem CategoryId hem de Category string ile filtreleme yap
-                var categoryName = request.Category;
-                query = query.Where(p => p.CategoryId == request.CategoryId.Value || 
-                                        (!string.IsNullOrWhiteSpace(p.Category) && 
-                                         p.Category.Equals(categoryName, StringComparison.OrdinalIgnoreCase)));
+                // CategoryId gönderilmişse: Önce CategoryId ile filtrele
+                // Eğer Category string de gönderilmişse, onu da dikkate al (fallback için)
+                if (!string.IsNullOrWhiteSpace(request.Category))
+                {
+                    // Hem CategoryId hem de Category string gönderilmişse: OR mantığı ile filtrele
+                    // Böylece CategoryId null olan ama Category string'i eşleşen ürünler de gelir
+                    // EF Core string fonksiyonlarını kullan (SQL'e çevrilebilir)
+                    var categoryName = request.Category.Trim().ToLower();
+                    query = query.Where(p => (p.CategoryId.HasValue && p.CategoryId.Value == request.CategoryId.Value) || 
+                                            (p.Category != null && 
+                                             p.Category.Trim().ToLower() == categoryName));
+                }
+                else
+                {
+                    // Sadece CategoryId gönderilmişse: CategoryId ile filtrele
+                    query = query.Where(p => p.CategoryId.HasValue && p.CategoryId.Value == request.CategoryId.Value);
+                }
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(request.Category))
             {
-                // Sadece CategoryId ile filtreleme yap
-                query = query.Where(p => p.CategoryId == request.CategoryId.Value);
+                // Sadece Category string gönderilmişse: Category string ile filtrele (deprecated)
+                var categoryName = request.Category.Trim().ToLower();
+                query = query.Where(p => p.Category != null && 
+                                        p.Category.Trim().ToLower() == categoryName);
             }
-        }
-        else if (!string.IsNullOrWhiteSpace(request.Category))
-        {
-            // Fallback to string match (deprecated)
-            query = query.Where(p => p.Category == request.Category);
         }
 
         // Price range filter
@@ -509,7 +518,9 @@ public class ProductsController : BaseController
             {
                 var query = UnitOfWork.Products.Query()
                     .Include(p => p.Vendor)
-                    .Where(p => p.Vendor != null && p.Vendor.IsActive && vendorsInRadius.Contains(p.VendorId)) // Sadece yarıçap içindeki aktif vendor'ların ürünleri
+                    .Where(p => p.IsAvailable && // Ürün müsait olmalı
+                               p.Vendor != null && p.Vendor.IsActive && 
+                               vendorsInRadius.Contains(p.VendorId)) // Sadece yarıçap içindeki aktif vendor'ların ürünleri
                     .AsQueryable();
 
                 if (vendorType.HasValue)
