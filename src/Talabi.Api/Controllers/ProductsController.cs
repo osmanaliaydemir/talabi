@@ -67,6 +67,13 @@ public class ProductsController : BaseController
             request.CategoryId = parsedCategoryId;
         }
 
+        // Query string'den category parametresini manuel olarak oku
+        // (camelCase query string parametreleri için - fallback için gerekli)
+        if (Request.Query.ContainsKey("category") && !string.IsNullOrWhiteSpace(Request.Query["category"].ToString()))
+        {
+            request.Category = Request.Query["category"].ToString();
+        }
+
         // Query string'den userLatitude ve userLongitude parametrelerini manuel olarak oku
         // (camelCase query string parametreleri için)
         if (Request.Query.ContainsKey("userLatitude") && double.TryParse(Request.Query["userLatitude"].ToString(), out var parsedLat))
@@ -152,9 +159,25 @@ public class ProductsController : BaseController
         }
 
         // Category filter
+        // ÖNEMLİ: Hem CategoryId hem de Category string ile filtreleme yap
+        // Çünkü bazı ürünlerde CategoryId null olabilir veya eski Category string kullanılıyor olabilir
         if (request.CategoryId.HasValue)
         {
-            query = query.Where(p => p.CategoryId == request.CategoryId.Value);
+            // CategoryId gönderildiğinde: Hem CategoryId hem de Category string ile filtreleme yap
+            // Böylece CategoryId null olan ama Category string'i eşleşen ürünler de gelir
+            if (!string.IsNullOrWhiteSpace(request.Category))
+            {
+                // Hem CategoryId hem de Category string ile filtreleme yap
+                var categoryName = request.Category;
+                query = query.Where(p => p.CategoryId == request.CategoryId.Value || 
+                                        (!string.IsNullOrWhiteSpace(p.Category) && 
+                                         p.Category.Equals(categoryName, StringComparison.OrdinalIgnoreCase)));
+            }
+            else
+            {
+                // Sadece CategoryId ile filtreleme yap
+                query = query.Where(p => p.CategoryId == request.CategoryId.Value);
+            }
         }
         else if (!string.IsNullOrWhiteSpace(request.Category))
         {

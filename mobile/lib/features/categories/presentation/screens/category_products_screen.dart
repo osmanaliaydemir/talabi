@@ -107,7 +107,10 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     _productsFuture = _apiService
         .searchProducts(
           ProductSearchRequestDto(
-            category: widget.categoryId == null ? widget.categoryName : null,
+            // Hem categoryId hem de categoryName gönder (backend'de fallback için)
+            // categoryId varsa öncelik verilir, yoksa category string kullanılır
+            category: widget
+                .categoryName, // Category name'i de gönder (fallback için)
             categoryId: widget.categoryId,
             vendorType: vendorType,
             pageSize: 50, // Fetch more items for the category page
