@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Helpers;
 using AutoMapper;
 using Talabi.Core.Entities;
 using Talabi.Core.Enums;
@@ -59,6 +60,10 @@ public class CartController(
             .ThenInclude(cmp => cmp!.CampaignCategories) // Load related categories
             .FirstOrDefaultAsync(c => c.UserId == userId);
 
+        // Kullanıcının default adresini al (konum kontrolü için)
+        var defaultAddress = await UnitOfWork.UserAddresses.Query()
+            .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
+
         CartDto cartDto;
         if (cart == null)
         {
@@ -76,16 +81,60 @@ public class CartController(
             cartDto.CouponCode = cart.Coupon?.Code;
             cartDto.CampaignTitle = cart.Campaign?.Title;
 
-            // Populate Rating and ReviewCount for each item
+            // Konum kuralı: Vendor'ın delivery radius içindeki item'ları filtrele
+            var validItems = new List<CartItemDto>();
+            var itemsToRemove = new List<Guid>(); // Sepetten kaldırılacak item'lar
+
             foreach (var item in cartDto.Items)
             {
+                var cartItemEntity = cart.CartItems.FirstOrDefault(ci => ci.Id == item.Id);
+                if (cartItemEntity?.Product?.Vendor == null)
+                {
+                    // Vendor bilgisi yoksa item'ı kaldır
+                    itemsToRemove.Add(item.Id);
+                    continue;
+                }
+
+                var vendor = cartItemEntity.Product.Vendor;
+
+                // Konum kontrolü: Kullanıcı adresi ve vendor konumu varsa kontrol et
+                if (defaultAddress?.Latitude.HasValue == true &&
+                    defaultAddress.Longitude.HasValue == true &&
+                    vendor.Latitude.HasValue &&
+                    vendor.Longitude.HasValue)
+                {
+                    var userLat = defaultAddress.Latitude.Value;
+                    var userLon = defaultAddress.Longitude.Value;
+                    var vendorLat = vendor.Latitude.Value;
+                    var vendorLon = vendor.Longitude.Value;
+
+                    // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+                    var deliveryRadius = vendor.DeliveryRadiusInKm == 0 ? 5 : vendor.DeliveryRadiusInKm;
+                    var distance = GeoHelper.CalculateDistance(userLat, userLon, vendorLat, vendorLon);
+
+                    if (distance > deliveryRadius)
+                    {
+                        // Vendor'ın delivery radius dışında - item'ı sepetten kaldır
+                        itemsToRemove.Add(item.Id);
+                        continue;
+                    }
+                }
+                else if (defaultAddress?.Latitude.HasValue == true &&
+                         defaultAddress.Longitude.HasValue == true)
+                {
+                    // Kullanıcı konumu var ama vendor konumu yok - item'ı kaldır
+                    itemsToRemove.Add(item.Id);
+                    continue;
+                }
+                // Eğer kullanıcı konumu yoksa, tüm item'ları göster (geriye dönük uyumluluk)
+
+                // Rating ve ReviewCount'u ekle
                 item.ReviewCount = UnitOfWork.Reviews.Query().Count(r => r.ProductId == item.ProductId && r.IsApproved);
                 item.Rating = UnitOfWork.Reviews.Query().Where(r => r.ProductId == item.ProductId && r.IsApproved)
                     .Select(r => (double?)r.Rating).Average();
 
                 // Deserialize options
-                var cartItemEntity = cart.CartItems.FirstOrDefault(ci => ci.Id == item.Id);
-                if (!string.IsNullOrEmpty(cartItemEntity?.SelectedOptions))
+                if (!string.IsNullOrEmpty(cartItemEntity.SelectedOptions))
                 {
                     try
                     {
@@ -97,7 +146,23 @@ public class CartController(
                         // Ignore deserialization errors
                     }
                 }
+
+                validItems.Add(item);
             }
+
+            // Sepetten kaldırılacak item'ları database'den sil
+            if (itemsToRemove.Any())
+            {
+                var cartItemsToRemove = cart.CartItems.Where(ci => itemsToRemove.Contains(ci.Id)).ToList();
+                foreach (var cartItemToRemove in cartItemsToRemove)
+                {
+                    UnitOfWork.CartItems.Remove(cartItemToRemove);
+                }
+                await UnitOfWork.SaveChangesAsync();
+            }
+
+            // CartDto'yu güncelle - sadece geçerli item'ları tut
+            cartDto.Items = validItems;
 
             // Calculate Campaign Discount
             if (cart.Campaign != null)
@@ -160,13 +225,55 @@ public class CartController(
                 }
 
                 // Verify product exists
-                var product = await UnitOfWork.Products.GetByIdAsync(dto.ProductId);
+                var product = await UnitOfWork.Products.Query()
+                    .Include(p => p.Vendor)
+                    .FirstOrDefaultAsync(p => p.Id == dto.ProductId);
+                
                 if (product == null)
                 {
                     return NotFound(new ApiResponse<object>(
                         LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
                         "PRODUCT_NOT_FOUND"));
                 }
+
+                // Konum kuralı: Vendor'ın delivery radius kontrolü
+                var defaultAddress = await UnitOfWork.UserAddresses.Query()
+                    .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
+
+                if (defaultAddress?.Latitude.HasValue == true &&
+                    defaultAddress.Longitude.HasValue == true &&
+                    product.Vendor != null &&
+                    product.Vendor.Latitude.HasValue &&
+                    product.Vendor.Longitude.HasValue)
+                {
+                    var userLat = defaultAddress.Latitude.Value;
+                    var userLon = defaultAddress.Longitude.Value;
+                    var vendorLat = product.Vendor.Latitude.Value;
+                    var vendorLon = product.Vendor.Longitude.Value;
+
+                    // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+                    var deliveryRadius = product.Vendor.DeliveryRadiusInKm == 0 ? 5 : product.Vendor.DeliveryRadiusInKm;
+                    var distance = GeoHelper.CalculateDistance(userLat, userLon, vendorLat, vendorLon);
+
+                    if (distance > deliveryRadius)
+                    {
+                        // Vendor'ın delivery radius dışında - ürün eklenemez
+                        return BadRequest(new ApiResponse<object>(
+                            LocalizationService.GetLocalizedString(ResourceName, "ProductOutOfDeliveryRadius",
+                                CurrentCulture) ?? $"Bu ürün teslimat yarıçapınız ({deliveryRadius} km) dışında. Mesafe: {distance:F2} km",
+                            "PRODUCT_OUT_OF_DELIVERY_RADIUS"));
+                    }
+                }
+                else if (defaultAddress?.Latitude.HasValue == true &&
+                         defaultAddress.Longitude.HasValue == true)
+                {
+                    // Kullanıcı konumu var ama vendor konumu yok - ürün eklenemez
+                    return BadRequest(new ApiResponse<object>(
+                        LocalizationService.GetLocalizedString(ResourceName, "VendorLocationNotAvailable",
+                            CurrentCulture) ?? "Satıcı konum bilgisi mevcut değil",
+                        "VENDOR_LOCATION_NOT_AVAILABLE"));
+                }
+                // Eğer kullanıcı konumu yoksa, ürün eklenebilir (geriye dönük uyumluluk)
 
                 // 1. Get or Create Cart
                 var cart = await UnitOfWork.Carts.Query()
@@ -522,6 +629,23 @@ public class CartController(
                 "UNAUTHORIZED"));
         }
 
+        // Kullanıcının default adresini al (konum kontrolü için)
+        var defaultAddress = await UnitOfWork.UserAddresses.Query()
+            .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
+
+        // Konum bilgisini belirle (query parametreleri veya default adres)
+        double? targetLat = lat;
+        double? targetLon = lon;
+
+        if (targetLat == null || targetLon == null)
+        {
+            if (defaultAddress != null)
+            {
+                targetLat = defaultAddress.Latitude;
+                targetLon = defaultAddress.Longitude;
+            }
+        }
+
         var results = new List<Product>();
         string messageKey = "RecommendedForYou";
 
@@ -530,11 +654,11 @@ public class CartController(
             .Include(oi => oi.Order)
             .Include(oi => oi.Product)
             .ThenInclude(p => p!.Vendor) // Product can be null in oi
-            .Where(oi => oi.Order.CustomerId == userId)
+            .Where(oi => oi.Order != null && oi.Order.CustomerId == userId)
             .Where(oi => oi.Product != null && (type == null || (oi.Product.VendorType == type ||
                                                                  (oi.Product.Vendor != null &&
                                                                   oi.Product.Vendor.Type == type))))
-            .OrderByDescending(oi => oi.Order.CreatedAt)
+            .OrderByDescending(oi => oi.Order != null ? oi.Order.CreatedAt : DateTime.MinValue)
             .Select(oi => oi.Product)
             .Where(p => p != null && p!.IsAvailable)
             .Distinct()
@@ -543,51 +667,91 @@ public class CartController(
 
         if (previousProducts.Any())
         {
-            results.AddRange(previousProducts.OfType<Product>());
-            messageKey = "RecommendedForYou";
-        }
-        else
-        {
-            // 2. Eğer hiç siparişi yoksa konuma en yakın restoran/marketin ürünlerini getir
-            double? targetLat = lat;
-            double? targetLon = lon;
-
-            if (targetLat == null || targetLon == null)
+            // Konum kuralı: Vendor'ın delivery radius kontrolü
+            var validProducts = new List<Product>();
+            foreach (var product in previousProducts.OfType<Product>())
             {
-                var defaultAddress = await UnitOfWork.UserAddresses.Query()
-                    .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
-                if (defaultAddress != null)
+                if (product.Vendor == null)
                 {
-                    targetLat = defaultAddress.Latitude;
-                    targetLon = defaultAddress.Longitude;
+                    continue;
                 }
+
+                var vendor = product.Vendor;
+
+                // Konum kontrolü: Kullanıcı adresi ve vendor konumu varsa kontrol et
+                if (targetLat.HasValue && targetLon.HasValue &&
+                    vendor.Latitude.HasValue && vendor.Longitude.HasValue)
+                {
+                    var userLat = targetLat.Value;
+                    var userLon = targetLon.Value;
+                    var vendorLat = vendor.Latitude.Value;
+                    var vendorLon = vendor.Longitude.Value;
+
+                    // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
+                    var deliveryRadius = vendor.DeliveryRadiusInKm == 0 ? 5 : vendor.DeliveryRadiusInKm;
+                    var distance = GeoHelper.CalculateDistance(userLat, userLon, vendorLat, vendorLon);
+
+                    if (distance <= deliveryRadius)
+                    {
+                        validProducts.Add(product);
+                    }
+                }
+                else if (!targetLat.HasValue || !targetLon.HasValue)
+                {
+                    // Kullanıcı konumu yoksa, tüm ürünleri göster (geriye dönük uyumluluk)
+                    validProducts.Add(product);
+                }
+                // Kullanıcı konumu var ama vendor konumu yok - ürünü gösterme
             }
 
-            // En yakın vendor'u bul
-            var vendorsQuery = UnitOfWork.Vendors.Query()
-                .Where(v => v.IsActive);
+            if (validProducts.Any())
+            {
+                results.AddRange(validProducts);
+                messageKey = "RecommendedForYou";
+            }
+        }
+
+        // 2. Eğer önceki siparişlerden ürün bulunamadıysa, konuma en yakın restoran/marketin ürünlerini getir
+        if (!results.Any())
+        {
+            if (!targetLat.HasValue || !targetLon.HasValue)
+            {
+                // Kullanıcı konumu yoksa boş liste döndür
+                return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(),
+                    LocalizationService.GetLocalizedString(ResourceName, messageKey, CurrentCulture)));
+            }
+
+            // Tüm aktif vendor'ları al (konum kontrolü için memory'de filtreleme yapacağız)
+            var allVendors = await UnitOfWork.Vendors.Query()
+                .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
+                .ToListAsync();
 
             if (type.HasValue)
             {
-                vendorsQuery = vendorsQuery.Where(v => v.Type == type.Value);
+                allVendors = allVendors.Where(v => v.Type == type.Value).ToList();
             }
 
-            Vendor? nearestVendor = null;
-            if (targetLat.HasValue && targetLon.HasValue)
+            // Konum kuralı: Delivery radius içindeki vendor'ları filtrele
+            // targetLat ve targetLon zaten null kontrolü yapıldı (yukarıda), burada kesinlikle değer var
+            var userLat = targetLat.Value;
+            var userLon = targetLon.Value;
+
+            var vendorsInRadius = allVendors
+                .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <=
+                           (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+                .ToList();
+
+            if (!vendorsInRadius.Any())
             {
-                // Basit mesafe sıralaması (Öklid karesi yeterli)
-                nearestVendor = await vendorsQuery
-                    .OrderBy(v =>
-                        (v.Latitude - targetLat.Value) * (v.Latitude - targetLat.Value) +
-                        (v.Longitude - targetLon.Value) * (v.Longitude - targetLon.Value))
-                    .FirstOrDefaultAsync();
+                // Delivery radius içinde vendor yoksa boş liste döndür
+                return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(),
+                    LocalizationService.GetLocalizedString(ResourceName, messageKey, CurrentCulture)));
             }
-            else
-            {
-                nearestVendor = await vendorsQuery
-                    .OrderByDescending(v => v.Rating)
-                    .FirstOrDefaultAsync();
-            }
+
+            // En yakın vendor'u bul (delivery radius içindeki vendor'lar arasından)
+            var nearestVendor = vendorsInRadius
+                .OrderBy(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value))
+                .FirstOrDefault();
 
             if (nearestVendor != null)
             {

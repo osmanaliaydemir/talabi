@@ -86,4 +86,28 @@
   <data name="CartClearedSuccessfully" xml:space="preserve">
     <value>Cart cleared successfully</value>
   </data>
+  <data name="RecommendedForYou" xml:space="preserve">
+    <value>Recommended For You</value>
+  </data>
+  <data name="NearestDeliciousness" xml:space="preserve">
+    <value>Nearest Delicacies</value>
+  </data>
+  <data name="ProductOutOfDeliveryRadius" xml:space="preserve">
+    <value>This product is outside your delivery radius. Please select a different address or remove it from your cart.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>Vendor location information is not available</value>
+  </data>
+  <data name="CartUpdatedSuccessfully" xml:space="preserve">
+    <value>Cart updated successfully</value>
+  </data>
+  <data name="PromotionsCleared" xml:space="preserve">
+    <value>Promotions cleared successfully</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Unauthorized</value>
+  </data>
+  <data name="CartNotFound" xml:space="preserve">
+    <value>Cart not found</value>
+  </data>
 </root>

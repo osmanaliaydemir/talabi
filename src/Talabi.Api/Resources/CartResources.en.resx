@@ -92,4 +92,10 @@
   <data name="NearestDeliciousness" xml:space="preserve">
     <value>Nearest Delicacies</value>
   </data>
+  <data name="ProductOutOfDeliveryRadius" xml:space="preserve">
+    <value>This product is outside your delivery radius. Please select a different address or remove it from your cart.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>Vendor location information is not available</value>
+  </data>
 </root>

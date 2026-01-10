@@ -92,4 +92,10 @@
   <data name="NearestDeliciousness" xml:space="preserve">
     <value>Size En Yakın Lezzetler</value>
   </data>
+  <data name="ProductOutOfDeliveryRadius" xml:space="preserve">
+    <value>Bu ürün teslimat yarıçapınız dışında bulunuyor. Lütfen farklı bir adres seçin veya sepetinizden çıkarın.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>Satıcı konum bilgisi mevcut değil</value>
+  </data>
 </root>

@@ -92,4 +92,10 @@
   <data name="NearestDeliciousness" xml:space="preserve">
     <value>أقرب المأكولات إليك</value>
   </data>
+  <data name="ProductOutOfDeliveryRadius" xml:space="preserve">
+    <value>هذا المنتج خارج نطاق التوصيل الخاص بك. يرجى اختيار عنوان مختلف أو إزالته من السلة.</value>
+  </data>
+  <data name="VendorLocationNotAvailable" xml:space="preserve">
+    <value>معلومات موقع البائع غير متاحة</value>
+  </data>
 </root>
