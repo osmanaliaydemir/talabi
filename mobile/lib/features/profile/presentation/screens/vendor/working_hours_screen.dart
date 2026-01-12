@@ -111,12 +111,12 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
       LoggerService().error('Error saving working hours', e);
       if (mounted) {
         setState(() => _isSaving = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)?.workingHoursSaveError(e.toString()) ??
+              AppLocalizations.of(
+                    context,
+                  )?.workingHoursSaveError(e.toString()) ??
                   'Çalışma saatleri kaydedilirken hata oluştu: $e',
             ),
           ),
@@ -188,7 +188,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                 ],
               ),
             ),
-      bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
+      bottomNavigationBar: const VendorBottomNav(currentIndex: 4),
     );
   }
 }

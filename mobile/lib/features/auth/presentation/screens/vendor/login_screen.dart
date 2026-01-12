@@ -9,7 +9,6 @@ import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/register_screen.dart';
-import 'package:mobile/features/profile/presentation/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/widgets/auth_header.dart';
 import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/widgets/toast_message.dart';

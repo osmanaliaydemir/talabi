@@ -640,7 +640,7 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
             ),
       bottomNavigationBar: widget.isOnboarding
           ? null
-          : const VendorBottomNav(currentIndex: 3),
+          : const VendorBottomNav(currentIndex: 4),
     );
   }
 }

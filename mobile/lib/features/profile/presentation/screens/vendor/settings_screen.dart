@@ -451,7 +451,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: const VendorBottomNav(currentIndex: 3),
+      bottomNavigationBar: const VendorBottomNav(currentIndex: 4),
     );
   }
 }
