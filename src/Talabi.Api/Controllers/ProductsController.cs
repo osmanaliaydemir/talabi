@@ -219,7 +219,9 @@ public class ProductsController : BaseController
         if (needsCategoryFilterInMemory)
         {
             // Category filtrelemesi memory'de yapılacaksa, tüm işlemi memory'de yap
-            // ÖNCE kategori filtresini uygula, SONRA vendor radius kontrolü yap
+            // ÖNCE vendor radius kontrolünü database query'sine ekle (performans için)
+            // SONRA kategori filtresini memory'de uygula
+            query = query.Where(p => vendorsInRadius.Contains(p.VendorId));
             var allProducts = await query.ToListAsync();
             
             // OR mantığı ile filtrele: CategoryId eşleşen VEYA Category string eşleşen
@@ -273,25 +275,16 @@ public class ProductsController : BaseController
                 Logger.LogWarning($"[PRODUCT_SEARCH] Category matched product: {p.Name} | CategoryId: {p.CategoryId} | Category: '{p.Category}' | VendorId: {p.VendorId}");
             }
             
-            // Vendor radius kontrolü için debug log
-            Logger.LogWarning($"[PRODUCT_SEARCH] Vendors in radius: {vendorsInRadius.Count} vendors");
-            Logger.LogWarning($"[PRODUCT_SEARCH] User location: Lat={userLat}, Lon={userLon}");
+            // Vendor radius kontrolü zaten query'de uygulandı (performans için)
+            // Kategori filtresi uygulanmış ürünler zaten yarıçap içindeki vendor'lara ait
+            var filteredProducts = categoryFilteredProducts;
             
-            // Kategori eşleşen ürünlerin vendor ID'lerini logla
-            var categoryMatchedVendorIds = categoryFilteredProducts.Select(p => p.VendorId).Distinct().ToList();
-            Logger.LogWarning($"[PRODUCT_SEARCH] Category matched products have {categoryMatchedVendorIds.Count} unique vendors: {string.Join(", ", categoryMatchedVendorIds.Take(10))}");
-            
-            // ŞİMDİ vendor delivery radius kontrolünü uygula
-            var filteredProducts = categoryFilteredProducts
-                .Where(p => vendorsInRadius.Contains(p.VendorId))
-                .ToList();
-            
-            Logger.LogWarning($"[PRODUCT_SEARCH] After vendor radius filter: {filteredProducts.Count} products");
+            Logger.LogWarning($"[PRODUCT_SEARCH] Final filtered products count: {filteredProducts.Count}");
             
             if (!filteredProducts.Any())
             {
-                // Yarıçap içinde kategori eşleşen ürün yoksa boş liste döndür
-                Logger.LogWarning($"[PRODUCT_SEARCH] No products in delivery radius! Category matched {categoryFilteredProducts.Count} products but none are in radius.");
+                // Kategori eşleşen ürün yoksa boş liste döndür
+                Logger.LogWarning($"[PRODUCT_SEARCH] No products found matching category filter.");
                 
                 var emptyResult = new PagedResultDto<ProductDto>
                 {
