@@ -86,7 +86,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     }
   }
 
-  void _loadProducts() {
+  Future<void> _loadProducts() async {
     final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
     final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
         ? 1
@@ -104,29 +104,55 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           : null;
     }
 
-    _productsFuture = _apiService
-        .searchProducts(
-          ProductSearchRequestDto(
-            // Hem categoryId hem de categoryName gönder (backend'de fallback için)
-            // categoryId varsa öncelik verilir, yoksa category string kullanılır
-            category: widget
-                .categoryName, // Category name'i de gönder (fallback için)
-            categoryId: widget.categoryId,
-            vendorType: vendorType,
-            pageSize: 50, // Fetch more items for the category page
-            userLatitude: userLatitude,
-            userLongitude: userLongitude,
-          ),
-        )
-        .then((pagedResult) {
-          final products = pagedResult.items.map((e) => e.toProduct()).toList();
-          if (mounted) {
-            setState(() {
-              _productCount = products.length;
-            });
-          }
-          return products;
+    LoggerService().error(
+      '[CATEGORY_PRODUCTS] Loading products for category: id=${widget.categoryId}, name=${widget.categoryName}, vendorType=$vendorType, lat=$userLatitude, lon=$userLongitude',
+    );
+
+    try {
+      final pagedResult = await _apiService.searchProducts(
+        ProductSearchRequestDto(
+          // Hem categoryId hem de categoryName gönder (backend'de fallback için)
+          // categoryId varsa öncelik verilir, yoksa category string kullanılır
+          category:
+              widget.categoryName, // Category name'i de gönder (fallback için)
+          categoryId: widget.categoryId,
+          vendorType: vendorType,
+          pageSize: 50, // Fetch more items for the category page
+          userLatitude: userLatitude,
+          userLongitude: userLongitude,
+        ),
+      );
+
+      LoggerService().error(
+        '[CATEGORY_PRODUCTS] Received ${pagedResult.items.length} products (total: ${pagedResult.totalCount})',
+      );
+
+      if (pagedResult.items.isEmpty) {
+        LoggerService().error(
+          '[CATEGORY_PRODUCTS] No products found! Check backend logs for [PRODUCT_SEARCH] messages',
+        );
+      }
+
+      if (mounted) {
+        final products = pagedResult.items.map((e) => e.toProduct()).toList();
+        setState(() {
+          _productsFuture = Future.value(products);
+          _productCount = products.length;
         });
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error loading category products: $e',
+        e,
+        stackTrace,
+      );
+      if (mounted) {
+        setState(() {
+          _productsFuture = Future.value(<Product>[]);
+          _productCount = 0;
+        });
+      }
+    }
   }
 
   Future<void> _loadFavoriteStatus() async {

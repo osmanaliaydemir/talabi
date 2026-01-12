@@ -33,12 +33,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
   int? _currentVendorType;
   late ScrollController _scrollController;
+  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
+    _loadAddresses();
   }
 
   @override
@@ -66,7 +68,48 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
     if (_currentVendorType != vendorType) {
       _currentVendorType = vendorType;
-      _loadVendors(isRefresh: true);
+      // Adresler yüklendikten sonra vendor'ları yükle
+      if (_selectedAddress != null) {
+        _loadVendors(isRefresh: true);
+      }
+    }
+  }
+
+  Future<void> _loadAddresses() async {
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            selectedAddress = addresses.first;
+          }
+        }
+
+        setState(() {
+          _selectedAddress = selectedAddress;
+        });
+
+        // Adresler yüklendikten sonra vendor'ları yükle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _currentVendorType != null) {
+            _loadVendors(isRefresh: true);
+          }
+        });
+      }
+    } catch (e) {
+      // Hata olsa bile vendor'ları yüklemeyi dene (konum olmadan)
+      if (mounted && _currentVendorType != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadVendors(isRefresh: true);
+          }
+        });
+      }
     }
   }
 
@@ -80,11 +123,25 @@ class _VendorListScreenState extends State<VendorListScreen> {
       });
     }
 
+    // Get location from selected address
+    double? userLatitude;
+    double? userLongitude;
+    if (_selectedAddress != null) {
+      userLatitude = _selectedAddress!['latitude'] != null
+          ? double.tryParse(_selectedAddress!['latitude'].toString())
+          : null;
+      userLongitude = _selectedAddress!['longitude'] != null
+          ? double.tryParse(_selectedAddress!['longitude'].toString())
+          : null;
+    }
+
     try {
       final vendors = await _apiService.getVendors(
         vendorType: _currentVendorType,
         page: _currentPage,
         pageSize: _pageSize,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
 
       if (mounted) {
@@ -144,7 +201,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
           Expanded(
             child: RefreshIndicator(
               color: Theme.of(context).colorScheme.primary,
-              onRefresh: () => _loadVendors(isRefresh: true),
+              onRefresh: () async {
+                await _loadAddresses();
+                _loadVendors(isRefresh: true);
+              },
               child: _isFirstLoad
                   ? const Center(child: CircularProgressIndicator())
                   : _vendors.isEmpty

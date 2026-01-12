@@ -32,16 +32,16 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
   bool _isFirstLoad = true;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
-  int? _currentVendorType;
   bool _hasError = false;
   String? _errorMessage;
+  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
-    _loadProducts(isRefresh: true);
+    _loadAddresses();
     _loadFavoriteStatus();
   }
 
@@ -60,20 +60,40 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
-    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
-        ? 1
-        : 2;
+  Future<void> _loadAddresses() async {
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            selectedAddress = addresses.first;
+          }
+        }
 
-    if (_currentVendorType != vendorType) {
-      _currentVendorType = vendorType;
-      // Vendor type değiştiğinde sayfayı yenile
-      // Ancak ilk açılışta initState zaten çalışıyor, tekrar çağırmamak için kontrol.
-      if (!_isFirstLoad) {
-        _loadProducts(isRefresh: true);
+        setState(() {
+          _selectedAddress = selectedAddress;
+        });
+
+        // Adresler yüklendikten sonra ürünleri yükle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadProducts(isRefresh: true);
+          }
+        });
+      }
+    } catch (e) {
+      // Hata olsa bile ürünleri yüklemeyi dene (konum olmadan)
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadProducts(isRefresh: true);
+          }
+        });
       }
     }
   }
@@ -95,12 +115,25 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
       final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
           ? 1
           : 2;
-      _currentVendorType = vendorType;
+
+      // Get location from selected address
+      double? userLatitude;
+      double? userLongitude;
+      if (_selectedAddress != null) {
+        userLatitude = _selectedAddress!['latitude'] != null
+            ? double.tryParse(_selectedAddress!['latitude'].toString())
+            : null;
+        userLongitude = _selectedAddress!['longitude'] != null
+            ? double.tryParse(_selectedAddress!['longitude'].toString())
+            : null;
+      }
 
       final products = await _apiService.getPopularProducts(
         page: _currentPage,
         pageSize: _pageSize,
         vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
 
       if (mounted) {
@@ -208,7 +241,7 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
             child: RefreshIndicator(
               color: colorScheme.primary,
               onRefresh: () async {
-                await _loadProducts(isRefresh: true);
+                await _loadAddresses();
                 await _loadFavoriteStatus();
               },
               child: _isFirstLoad

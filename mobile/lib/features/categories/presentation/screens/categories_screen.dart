@@ -19,16 +19,52 @@ class CategoriesScreen extends StatefulWidget {
 class _CategoriesScreenState extends State<CategoriesScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Map<String, dynamic>>> _categoriesFuture;
+  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
+    // Initialize future with empty list to prevent null errors
+    _categoriesFuture = Future.value(<Map<String, dynamic>>[]);
+    _loadAddresses();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadCategories();
+  Future<void> _loadAddresses() async {
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            selectedAddress = addresses.first;
+          }
+        }
+
+        setState(() {
+          _selectedAddress = selectedAddress;
+        });
+
+        // Adresler yüklendikten sonra kategorileri yükle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadCategories();
+          }
+        });
+      }
+    } catch (e) {
+      // Hata olsa bile kategorileri yüklemeyi dene (konum olmadan)
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadCategories();
+          }
+        });
+      }
+    }
   }
 
   void _loadCategories() {
@@ -37,10 +73,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ? 1
         : 2;
     final locale = AppLocalizations.of(context)?.localeName;
-    _categoriesFuture = _apiService.getCategories(
-      language: locale,
-      vendorType: vendorType,
-    );
+
+    // Get location from selected address
+    double? userLatitude;
+    double? userLongitude;
+    if (_selectedAddress != null) {
+      userLatitude = _selectedAddress!['latitude'] != null
+          ? double.tryParse(_selectedAddress!['latitude'].toString())
+          : null;
+      userLongitude = _selectedAddress!['longitude'] != null
+          ? double.tryParse(_selectedAddress!['longitude'].toString())
+          : null;
+    }
+
+    setState(() {
+      _categoriesFuture = _apiService.getCategories(
+        language: locale,
+        vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
+      );
+    });
   }
 
   IconData? _getIconFromString(String? iconString) {
@@ -210,13 +263,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     return Consumer<BottomNavProvider>(
       builder: (context, bottomNav, _) {
-        // Kategori değiştiğinde verileri yeniden yükle
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _loadCategories();
-          }
-        });
-
         return Scaffold(
           backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           body: Column(
@@ -270,9 +316,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     return RefreshIndicator(
                       color: colorScheme.primary,
                       onRefresh: () async {
-                        setState(() {
-                          _loadCategories();
-                        });
+                        await _loadAddresses();
+                        _loadCategories();
                       },
                       child: GridView.builder(
                         padding: const EdgeInsets.all(AppTheme.spacingMedium),

@@ -501,68 +501,58 @@ public class ProductsController : BaseController
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
 
-        // Cache key oluştur: categories_{vendorType}_{lang}_{userLat}_{userLon}_{page}_{pageSize}
-        var vendorTypeStr = vendorType?.ToString() ?? "all";
-        var cacheKey = $"{_cacheOptions.CategoriesKeyPrefix}_{vendorTypeStr}_{languageCode}_{userLat}_{userLon}_{page}_{pageSize}";
+        // Sadece yarıçap içindeki vendor'ların ürünlerine sahip kategorileri getir
+        // CategoryId olan ürünlerin kategorilerini al (Product.CategoryId ile Category.Id eşleştir)
+        var categoriesWithProducts = await UnitOfWork.Products.Query()
+            .Where(p => vendorsInRadius.Contains(p.VendorId) && 
+                        p.IsAvailable &&
+                        p.CategoryId.HasValue)
+            .Select(p => p.CategoryId!.Value)
+            .Distinct()
+            .ToListAsync();
 
-        // Cache-aside pattern: Önce cache'den kontrol et
-        var result = await _cacheService.GetOrSetAsync(
-            cacheKey,
-            async () =>
+        // Base query - Sadece yarıçap içindeki vendor'ların kategorileri
+        IQueryable<Category> baseQuery = UnitOfWork.Categories.Query()
+            .Where(c => categoriesWithProducts.Contains(c.Id));
+
+        // VendorType filtresi
+        if (vendorType.HasValue)
+        {
+            baseQuery = baseQuery.Where(c => c.VendorType == vendorType.Value);
+        }
+
+        // Database seviyesinde pagination ve projection
+        // Translation'ı subquery ile alıyoruz (left join benzeri)
+        var query = baseQuery
+            .OrderBy(c => c.DisplayOrder)
+            .ThenBy(c => c.Name)
+            .Select(c => new CategoryDto
             {
-                // Sadece yarıçap içindeki vendor'ların ürünlerine sahip kategorileri getir
-                var categoriesWithProducts = await UnitOfWork.Products.Query()
-                    .Where(p => vendorsInRadius.Contains(p.VendorId) && 
-                                p.CategoryId.HasValue)
-                    .Select(p => p.CategoryId!.Value)
-                    .Distinct()
-                    .ToListAsync();
+                Id = c.Id,
+                VendorType = c.VendorType,
+                // Translation varsa onu kullan, yoksa default name'i kullan
+                Name = c.Translations
+                    .Where(t => t.LanguageCode == languageCode)
+                    .Select(t => t.Name)
+                    .FirstOrDefault() ?? c.Name,
+                Icon = c.Icon,
+                Color = c.Color,
+                ImageUrl = c.ImageUrl,
+                DisplayOrder = c.DisplayOrder
+            });
 
-                // Base query - Sadece yarıçap içindeki vendor'ların kategorileri
-                IQueryable<Category> baseQuery = UnitOfWork.Categories.Query()
-                    .Where(c => categoriesWithProducts.Contains(c.Id));
+        // Database seviyesinde pagination - ToPagedResultAsync kullanıyoruz
+        var pagedResult = await query.ToPagedResultAsync(page, pageSize);
 
-                // VendorType filtresi
-                if (vendorType.HasValue)
-                {
-                    baseQuery = baseQuery.Where(c => c.VendorType == vendorType.Value);
-                }
-
-                // Database seviyesinde pagination ve projection
-                // Translation'ı subquery ile alıyoruz (left join benzeri)
-                var query = baseQuery
-                    .OrderBy(c => c.DisplayOrder)
-                    .ThenBy(c => c.Name)
-                    .Select(c => new CategoryDto
-                    {
-                        Id = c.Id,
-                        VendorType = c.VendorType,
-                        // Translation varsa onu kullan, yoksa default name'i kullan
-                        Name = c.Translations
-                            .Where(t => t.LanguageCode == languageCode)
-                            .Select(t => t.Name)
-                            .FirstOrDefault() ?? c.Name,
-                        Icon = c.Icon,
-                        Color = c.Color,
-                        ImageUrl = c.ImageUrl,
-                        DisplayOrder = c.DisplayOrder
-                    });
-
-                // Database seviyesinde pagination - ToPagedResultAsync kullanıyoruz
-                var pagedResult = await query.ToPagedResultAsync(page, pageSize);
-
-                // PagedResult'ı PagedResultDto'ya çevir
-                return new PagedResultDto<CategoryDto>
-                {
-                    Items = pagedResult.Items,
-                    TotalCount = pagedResult.TotalCount,
-                    Page = pagedResult.Page,
-                    PageSize = pagedResult.PageSize,
-                    TotalPages = pagedResult.TotalPages
-                };
-            },
-            _cacheOptions.CategoriesCacheTTLMinutes
-        );
+        // PagedResult'ı PagedResultDto'ya çevir
+        var result = new PagedResultDto<CategoryDto>
+        {
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
+        };
 
         return Ok(new ApiResponse<PagedResultDto<CategoryDto>>(result,
             LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
