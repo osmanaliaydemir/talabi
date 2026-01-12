@@ -29,6 +29,7 @@ public class AuthController : BaseController
     private readonly IEmailSender _emailSender;
     private readonly IExternalAuthTokenVerifier _tokenVerifier;
     private readonly IVerificationCodeSecurityService _verificationSecurity;
+    private readonly INotificationService _notificationService;
     private const string ResourceName = "AuthResources";
 
     /// <summary>
@@ -41,6 +42,7 @@ public class AuthController : BaseController
         IEmailSender emailSender,
         IExternalAuthTokenVerifier tokenVerifier,
         IVerificationCodeSecurityService verificationSecurity,
+        INotificationService notificationService,
         IUnitOfWork unitOfWork,
         ILogger<AuthController> logger,
         ILocalizationService localizationService,
@@ -53,6 +55,7 @@ public class AuthController : BaseController
         _emailSender = emailSender;
         _tokenVerifier = tokenVerifier;
         _verificationSecurity = verificationSecurity;
+        _notificationService = notificationService;
     }
 
 
@@ -861,4 +864,32 @@ public class AuthController : BaseController
             ));
         }
     }
+
+    /// <summary>
+    /// Cihaz token'ını kaydeder
+    /// </summary>
+    /// <param name="request">Cihaz kayıt bilgileri</param>
+    /// <returns>İşlem sonucu</returns>
+    [HttpPost("register-device")]
+    [AllowAnonymous] // Allow device registration without authentication
+    public async Task<ActionResult<ApiResponse<object>>> RegisterDevice(
+        [FromBody] RegisterDeviceRequest request)
+    {
+        // If user is authenticated, use their ID; otherwise use the token as a guest identifier
+        var userId = UserContext.GetUserId() ?? $"guest_{request.Token.GetHashCode()}";
+
+        await _notificationService.RegisterDeviceTokenAsync(userId, request.Token, request.DeviceType);
+        return Ok(new ApiResponse<object>(
+            new { }, 
+            LocalizationService.GetLocalizedString("NotificationResources", "DeviceRegisteredSuccessfully", CurrentCulture)));
+    }
+}
+
+/// <summary>
+/// Cihaz kayıt isteği DTO'su
+/// </summary>
+public class RegisterDeviceRequest
+{
+    public string Token { get; set; } = string.Empty;
+    public string DeviceType { get; set; } = string.Empty;
 }

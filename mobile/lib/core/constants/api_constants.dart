@@ -16,7 +16,7 @@ class ApiEndpoints {
   static const String vendorRegister = '/auth/vendor-register';
   static const String courierRegister = '/auth/courier-register';
   static const String externalLogin = '/auth/external-login';
-  static const String registerDeviceToken = '/notification/register-device';
+  static const String registerDeviceToken = '/auth/register-device';
   static const String banners = '/banners';
   static const String upload = '/upload';
 
@@ -79,7 +79,7 @@ class ApiEndpoints {
 
   // Notifications
   static const String notifications = '/notifications';
-  static const String notificationSettings = '/notifications/settings';
+  static const String notificationSettings = '/profile/notification-settings';
   static const String customerNotifications = '/customer/notifications';
   static const String markAllNotificationsRead = '/notifications/read-all';
   static const String courierNotifications =
