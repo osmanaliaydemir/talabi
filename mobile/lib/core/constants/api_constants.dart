@@ -82,20 +82,10 @@ class ApiEndpoints {
   static const String notificationSettings = '/notifications/settings';
   static const String customerNotifications = '/customer/notifications';
   static const String markAllNotificationsRead = '/notifications/read-all';
-  static const String courierNotifications = '/courier/notifications';
+  static const String courierNotifications =
+      '/courier/notifications'; // Route name only
 
-  // Courier
-  static const String courierProfile = '/courier/profile';
-  static const String courierStatus = '/courier/status';
-  static const String courierStatistics = '/courier/statistics';
-  static const String courierActiveOrders = '/courier/orders/active';
-  static const String courierOrders =
-      '/courier/orders'; // Base for order details, actions
-  static const String courierEarningsToday = '/courier/earnings/today';
-  static const String courierEarningsWeek = '/courier/earnings/week';
-  static const String courierEarningsMonth = '/courier/earnings/month';
-  static const String courierEarningsHistory = '/courier/earnings/history';
-  static const String courierCheckAvailability = '/courier/check-availability';
-  static const String courierOrdersHistory = '/courier/orders/history';
-  static const String courierVehicleTypes = '/courier/vehicle-types';
+  // Courier (Customer-facing endpoints only - dashboard endpoints moved to courier_api_constants.dart)
+  // Note: courierProfile and courierNotifications are still used as route names in courier_router.dart
+  static const String courierProfile = '/courier/profile'; // Route name only
 }

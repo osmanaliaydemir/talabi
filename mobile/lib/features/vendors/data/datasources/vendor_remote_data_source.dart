@@ -245,7 +245,7 @@ class VendorRemoteDataSource {
         ? VendorApiEndpoints.notificationRead(id)
         : type == 'customer'
         ? '/customer/notifications/$id/read'
-        : '/courier/notifications/$id/read';
+        : '/couriers/dashboard/notifications/$id/read';
 
     // Note: This dynamic endpoint building is fine, ApiEndpoints doesn't need to cover every dynamic permuration if logic is here.
     // Or we could have ApiEndpoints.markRead(type, id) method. Keeping existing logic.
@@ -269,7 +269,7 @@ class VendorRemoteDataSource {
         ? VendorApiEndpoints.notificationsReadAll
         : type == 'customer'
         ? '/customer/notifications/read-all'
-        : '/courier/notifications/read-all';
+        : '/couriers/dashboard/notifications/read-all';
 
     final response = await _networkClient.dio.post(endpoint);
 
