@@ -6,6 +6,7 @@ import 'package:mobile/features/orders/presentation/screens/vendor/orders_screen
 import 'package:mobile/features/products/presentation/screens/vendor/products_screen.dart';
 import 'package:mobile/features/reports/presentation/screens/vendor/reports_screen.dart';
 import 'package:mobile/features/reviews/presentation/screens/vendor/reviews_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/vendor/edit_profile_screen.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/utils/navigation_logger.dart';
@@ -29,11 +30,76 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _summary;
   bool _isLoading = true;
+  bool _isCheckingProfile = true;
 
   @override
   void initState() {
     super.initState();
-    _loadSummary();
+    _checkProfileAndLoad();
+  }
+
+  /// Zorunlu profil alanlarını kontrol eder
+  bool _isProfileComplete(Map<String, dynamic> profile) {
+    // Zorunlu alanlar:
+    // 1. İşletme Adı (name)
+    // 2. Konum (latitude, longitude)
+    // 3. Açık Adres (address)
+    // 4. Şehir (city)
+    // 5. Telefon Numarası (phoneNumber)
+
+    final name = profile['name'] as String?;
+    final latitude = profile['latitude'];
+    final longitude = profile['longitude'];
+    final address = profile['address'] as String?;
+    final city = profile['city'] as String?;
+    final phoneNumber = profile['phoneNumber'] as String?;
+
+    // Tüm zorunlu alanların dolu olup olmadığını kontrol et
+    final isNameValid = name != null && name.trim().isNotEmpty;
+    final isLocationValid = latitude != null && longitude != null;
+    final isAddressValid = address != null && address.trim().isNotEmpty;
+    final isCityValid = city != null && city.trim().isNotEmpty;
+    final isPhoneValid = phoneNumber != null && phoneNumber.trim().isNotEmpty;
+
+    return isNameValid &&
+        isLocationValid &&
+        isAddressValid &&
+        isCityValid &&
+        isPhoneValid;
+  }
+
+  Future<void> _checkProfileAndLoad() async {
+    try {
+      // Önce profil bilgilerini çek
+      final profile = await _apiService.getVendorProfile();
+
+      // Zorunlu alanları kontrol et
+      if (!_isProfileComplete(profile)) {
+        // Profil eksikse tamamlama ekranına yönlendir
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            NoSlidePageRoute(
+              builder: (context) =>
+                  const VendorEditProfileScreen(isOnboarding: true),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Profil tamamsa dashboard'u yükle
+      setState(() {
+        _isCheckingProfile = false;
+      });
+      _loadSummary();
+    } catch (e) {
+      // Profil yüklenirken hata oluşursa, dashboard'u yüklemeyi dene
+      // (belki profil zaten tamamlanmıştır)
+      setState(() {
+        _isCheckingProfile = false;
+      });
+      _loadSummary();
+    }
   }
 
   Future<void> _loadSummary() async {
@@ -65,6 +131,16 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
 
     if (!auth.isActive) {
       return const PendingApprovalWidget();
+    }
+
+    // Profil kontrolü yapılıyorsa loading göster
+    if (_isCheckingProfile) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.deepPurple),
+        ),
+      );
     }
 
     // Use TRY as default currency for vendor dashboard revenue

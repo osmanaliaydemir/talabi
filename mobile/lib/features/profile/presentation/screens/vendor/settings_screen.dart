@@ -115,8 +115,8 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
             ? 30
             : int.parse(_deliveryTimeController.text),
         'deliveryRadiusInKm': _deliveryRadiusController.text.isEmpty
-            ? 5.0
-            : double.parse(_deliveryRadiusController.text),
+            ? 5
+            : int.parse(_deliveryRadiusController.text),
         'isActive': _isActive,
       };
 

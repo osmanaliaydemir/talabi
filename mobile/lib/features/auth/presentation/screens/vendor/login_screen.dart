@@ -55,20 +55,11 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
       );
 
       if (mounted) {
-        if (!authProvider.isProfileComplete) {
-          Navigator.of(context).pushReplacement(
-            NoSlidePageRoute(
-              builder: (context) =>
-                  const VendorEditProfileScreen(isOnboarding: true),
-            ),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            NoSlidePageRoute(
-              builder: (context) => const VendorDashboardScreen(),
-            ),
-          );
-        }
+        // Vendor dashboard will check profile completeness on its own
+        // This avoids duplicate API calls and ensures real-time validation
+        Navigator.of(context).pushReplacement(
+          NoSlidePageRoute(builder: (context) => const VendorDashboardScreen()),
+        );
       }
     } on RoleMismatchException catch (e) {
       if (mounted) {

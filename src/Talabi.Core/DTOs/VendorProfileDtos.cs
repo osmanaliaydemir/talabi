@@ -57,11 +57,22 @@ public class VendorSettingsDto
 
 public class UpdateVendorSettingsDto
 {
+    [JsonPropertyName("minimumOrderAmount")]
     public decimal? MinimumOrderAmount { get; set; }
+
+    [JsonPropertyName("deliveryFee")]
     public decimal? DeliveryFee { get; set; }
+
+    [JsonPropertyName("estimatedDeliveryTime")]
     public int? EstimatedDeliveryTime { get; set; }
+
+    [JsonPropertyName("isActive")]
     public bool? IsActive { get; set; }
+
+    [JsonPropertyName("deliveryRadiusInKm")]
     public int? DeliveryRadiusInKm { get; set; }
+
+    [JsonPropertyName("openingHours")]
     public string? OpeningHours { get; set; }
 }
 

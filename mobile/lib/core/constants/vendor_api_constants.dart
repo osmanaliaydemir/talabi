@@ -1,34 +1,33 @@
 class VendorApiEndpoints {
   // Vendor Dashboard - Products
-  static const String products = '/api/vendors/dashboard/products';
+  static const String products = '/vendors/dashboard/products';
   static const String productCategories =
-      '/api/vendors/dashboard/products/categories';
+      '/vendors/dashboard/products/categories';
 
   // Vendor Dashboard - Account
-  static const String profile = '/api/vendors/dashboard/account/profile';
-  static const String profileImage =
-      '/api/vendors/dashboard/account/profile/image';
-  static const String settings = '/api/vendors/dashboard/account/settings';
+  static const String profile = '/vendors/dashboard/account/profile';
+  static const String profileImage = '/vendors/dashboard/account/profile/image';
+  static const String settings = '/vendors/dashboard/account/settings';
   static const String settingsActive =
-      '/api/vendors/dashboard/account/settings/active';
+      '/vendors/dashboard/account/settings/active';
   static const String settingsStatus =
-      '/api/vendors/dashboard/account/settings/status';
+      '/vendors/dashboard/account/settings/status';
 
   // Vendor Dashboard - Orders
-  static const String orders = '/api/vendors/dashboard/orders';
+  static const String orders = '/vendors/dashboard/orders';
 
   // Vendor Dashboard - Reports
-  static const String reportsSales = '/api/vendors/dashboard/reports/sales';
-  static const String reportsSummary = '/api/vendors/dashboard/reports/summary';
+  static const String reportsSales = '/vendors/dashboard/reports/sales';
+  static const String reportsSummary = '/vendors/dashboard/reports/summary';
   static const String reportsHourlySales =
-      '/api/vendors/dashboard/reports/hourly-sales';
-  static const String reportsAlerts = '/api/vendors/dashboard/reports/alerts';
+      '/vendors/dashboard/reports/hourly-sales';
+  static const String reportsAlerts = '/vendors/dashboard/reports/alerts';
 
   // Vendor Dashboard - Notifications
-  static const String notifications = '/api/vendors/dashboard/notifications';
+  static const String notifications = '/vendors/dashboard/notifications';
 
   // Vendor Dashboard - Delivery Zones
-  static const String deliveryZones = '/api/vendors/dashboard/delivery-zones';
+  static const String deliveryZones = '/vendors/dashboard/delivery-zones';
 
   // Helper methods for dynamic endpoints
   static String order(String orderId) => '$orders/$orderId';
