@@ -1,0 +1,2489 @@
+{
+	"info": {
+		"_postman_id": "talabi-api-collection",
+		"name": "Talabi API Collection",
+		"description": "Complete API collection for Talabi platform - All endpoints from all controllers",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"John Doe\",\n  \"phoneNumber\": \"+905551234567\",\n  \"language\": \"tr\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Vendor Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"vendor@example.com\",\n  \"password\": \"Password123!\",\n  \"name\": \"My Restaurant\",\n  \"phoneNumber\": \"+905551234567\",\n  \"language\": \"tr\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/vendor-register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "vendor-register"]
+						}
+					}
+				},
+				{
+					"name": "Courier Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"courier@example.com\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"Courier Name\",\n  \"phoneNumber\": \"+905551234567\",\n  \"language\": \"tr\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/courier-register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "courier-register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"{{accessToken}}\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/refresh-token",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "refresh-token"]
+						}
+					}
+				},
+				{
+					"name": "External Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"provider\": \"Google\",\n  \"idToken\": \"token_here\",\n  \"email\": \"user@example.com\",\n  \"fullName\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/external-login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "external-login"]
+						}
+					}
+				},
+				{
+					"name": "Verify Email Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/verify-email-code",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "verify-email-code"]
+						}
+					}
+				},
+				{
+					"name": "Resend Verification Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/resend-verification-code",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "resend-verification-code"]
+						}
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "forgot-password"]
+						}
+					}
+				},
+				{
+					"name": "Verify Reset Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/verify-reset-code",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "verify-reset-code"]
+						}
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/reset-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "reset-password"]
+						}
+					}
+				},
+				{
+					"name": "Confirm Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/confirm-email?token={{token}}&email={{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "confirm-email"],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "email",
+									"value": "{{email}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/delete-account",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "delete-account"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Search Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/search?page=1&pageSize=50&categoryId={{categoryId}}&category=Kebap%20%26%20Döner&vendorType=1&userLatitude=40.981753363733255&userLongitude=29.151309728622437",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "search"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "50"
+								},
+								{
+									"key": "categoryId",
+									"value": "{{categoryId}}"
+								},
+								{
+									"key": "category",
+									"value": "Kebap & Döner"
+								},
+								{
+									"key": "vendorType",
+									"value": "1"
+								},
+								{
+									"key": "userLatitude",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "userLongitude",
+									"value": "29.151309728622437"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/categories?vendorType=1&userLatitude=40.981753363733255&userLongitude=29.151309728622437&page=1&pageSize=6&lang=tr",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "categories"],
+							"query": [
+								{
+									"key": "vendorType",
+									"value": "1"
+								},
+								{
+									"key": "userLatitude",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "userLongitude",
+									"value": "29.151309728622437"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								},
+								{
+									"key": "lang",
+									"value": "tr"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Popular Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/popular?page=1&pageSize=6&vendorType=1&userLatitude=40.981753363733255&userLongitude=29.151309728622437",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "popular"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								},
+								{
+									"key": "vendorType",
+									"value": "1"
+								},
+								{
+									"key": "userLatitude",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "userLongitude",
+									"value": "29.151309728622437"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Similar Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}/similar?page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}", "similar"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Autocomplete",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/autocomplete?query=pizza",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "autocomplete"],
+							"query": [
+								{
+									"key": "query",
+									"value": "pizza"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Vendors",
+			"item": [
+				{
+					"name": "Get Vendors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendors?vendorType=1&userLatitude=40.981753363733255&userLongitude=29.151309728622437&page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendors"],
+							"query": [
+								{
+									"key": "vendorType",
+									"value": "1"
+								},
+								{
+									"key": "userLatitude",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "userLongitude",
+									"value": "29.151309728622437"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Vendors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendors/search?query=restaurant&vendorType=1&userLatitude=40.981753363733255&userLongitude=29.151309728622437&page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendors", "search"],
+							"query": [
+								{
+									"key": "query",
+									"value": "restaurant"
+								},
+								{
+									"key": "vendorType",
+									"value": "1"
+								},
+								{
+									"key": "userLatitude",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "userLongitude",
+									"value": "29.151309728622437"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Vendor Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendors/{{vendorId}}/products?page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendors", "{{vendorId}}", "products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendors/cities?page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendors", "cities"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Vendor Autocomplete",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendors/autocomplete?query=rest",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendors", "autocomplete"],
+							"query": [
+								{
+									"key": "query",
+									"value": "rest"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Vendor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Restaurant\",\n  \"address\": \"Address\",\n  \"city\": \"Istanbul\",\n  \"phoneNumber\": \"+905551234567\",\n  \"type\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendors",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendors"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Get Cart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart"]
+						}
+					}
+				},
+				{
+					"name": "Add to Cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/items",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "items"]
+						}
+					}
+				},
+				{
+					"name": "Update Cart Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/items/{{itemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "items", "{{itemId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove from Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/items/{{itemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "items", "{{itemId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Cart Promotions",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"couponCode\": \"DISCOUNT10\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/promotions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "promotions"]
+						}
+					}
+				},
+				{
+					"name": "Clear Promotions",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/promotions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "promotions"]
+						}
+					}
+				},
+				{
+					"name": "Clear Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart"]
+						}
+					}
+				},
+				{
+					"name": "Get Recommendations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/recommendations?type=1&lat=40.981753363733255&lon=29.151309728622437",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "cart", "recommendations"],
+							"query": [
+								{
+									"key": "type",
+									"value": "1"
+								},
+								{
+									"key": "lat",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "lon",
+									"value": "29.151309728622437"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vendorId\": \"{{vendorId}}\",\n  \"deliveryAddressId\": \"{{addressId}}\",\n  \"paymentMethod\": 1,\n  \"note\": \"Delivery note\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders"]
+						}
+					}
+				},
+				{
+					"name": "Calculate Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vendorId\": \"{{vendorId}}\",\n  \"deliveryAddressId\": \"{{addressId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/calculate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "calculate"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders?vendorType=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders"],
+							"query": [
+								{
+									"key": "vendorType",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/{{orderId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "{{orderId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Order Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/{{orderId}}/detail",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "{{orderId}}", "detail"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"John Doe\",\n  \"phoneNumber\": \"+905551234567\",\n  \"profileImageUrl\": \"https://example.com/image.jpg\",\n  \"dateOfBirth\": \"1990-01-01\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"OldPassword123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "profile", "password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Addresses",
+			"item": [
+				{
+					"name": "Get Addresses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/addresses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "addresses"]
+						}
+					}
+				},
+				{
+					"name": "Create Address",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Home\",\n  \"fullAddress\": \"Full address\",\n  \"cityId\": \"{{cityId}}\",\n  \"districtId\": \"{{districtId}}\",\n  \"localityId\": \"{{localityId}}\",\n  \"postalCode\": \"34000\",\n  \"latitude\": 40.981753363733255,\n  \"longitude\": 29.151309728622437\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/addresses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "addresses"]
+						}
+					}
+				},
+				{
+					"name": "Update Address",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Home\",\n  \"fullAddress\": \"Updated address\",\n  \"cityId\": \"{{cityId}}\",\n  \"districtId\": \"{{districtId}}\",\n  \"localityId\": \"{{localityId}}\",\n  \"postalCode\": \"34000\",\n  \"latitude\": 40.981753363733255,\n  \"longitude\": 29.151309728622437\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/addresses/{{addressId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "addresses", "{{addressId}}"]
+						}
+					}
+				},
+				{
+					"name": "Set Default Address",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/addresses/{{addressId}}/set-default",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "addresses", "{{addressId}}", "set-default"]
+						}
+					}
+				},
+				{
+					"name": "Delete Address",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/addresses/{{addressId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "addresses", "{{addressId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Create Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetType\": \"Product\",\n  \"targetId\": \"{{productId}}\",\n  \"rating\": 5,\n  \"comment\": \"Great product!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reviews",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reviews"]
+						}
+					}
+				},
+				{
+					"name": "Get Reviews",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reviews?targetType=Product&targetId={{productId}}&page=1&pageSize=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reviews"],
+							"query": [
+								{
+									"key": "targetType",
+									"value": "Product"
+								},
+								{
+									"key": "targetId",
+									"value": "{{productId}}"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Favorites",
+			"item": [
+				{
+					"name": "Get Favorites",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favorites?page=1&pageSize=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "favorites"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add to Favorites",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favorites/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "favorites", "{{productId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove from Favorites",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favorites/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "favorites", "{{productId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Favorite",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favorites/check/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "favorites", "check", "{{productId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Campaigns",
+			"item": [
+				{
+					"name": "Get Campaigns",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/campaigns?vendorType=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "campaigns"],
+							"query": [
+								{
+									"key": "vendorType",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Campaign by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/campaigns/{{campaignId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "campaigns", "{{campaignId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Campaign Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/campaigns/{{campaignId}}/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "campaigns", "{{campaignId}}", "products"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Coupons",
+			"item": [
+				{
+					"name": "Get Coupons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/coupons",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "coupons"]
+						}
+					}
+				},
+				{
+					"name": "Validate Coupon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"DISCOUNT10\",\n  \"cityId\": \"{{cityId}}\",\n  \"districtId\": \"{{districtId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/coupons/validate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "coupons", "validate"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Banners",
+			"item": [
+				{
+					"name": "Get Banners",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/banners?vendorType=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "banners"],
+							"query": [
+								{
+									"key": "vendorType",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Banner by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/banners/{{bannerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "banners", "{{bannerId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Locations",
+			"item": [
+				{
+					"name": "Get Countries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/locations/countries",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "locations", "countries"]
+						}
+					}
+				},
+				{
+					"name": "Get Cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/locations/cities/{{countryId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "locations", "cities", "{{countryId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Districts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/locations/districts/{{cityId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "locations", "districts", "{{cityId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Localities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/locations/localities/{{districtId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "locations", "localities", "{{districtId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Map",
+			"item": [
+				{
+					"name": "Get Vendors for Map",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/map/vendors?userLatitude=40.981753363733255&userLongitude=29.151309728622437",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "map", "vendors"],
+							"query": [
+								{
+									"key": "userLatitude",
+									"value": "40.981753363733255"
+								},
+								{
+									"key": "userLongitude",
+									"value": "29.151309728622437"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Delivery Tracking",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/map/delivery-tracking/{{orderId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "map", "delivery-tracking", "{{orderId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get API Key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/map/api-key",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "map", "api-key"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Autocomplete",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/search/autocomplete?query=pizza",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "search", "autocomplete"],
+							"query": [
+								{
+									"key": "query",
+									"value": "pizza"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Content",
+			"item": [
+				{
+					"name": "Get Legal Document",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/content/legal/terms-of-use?lang=tr",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "content", "legal", "terms-of-use"],
+							"query": [
+								{
+									"key": "lang",
+									"value": "tr"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Legal Document Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/content/legal/types",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "content", "legal", "types"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "System Settings",
+			"item": [
+				{
+					"name": "Get Settings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/system-settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "system-settings"]
+						}
+					}
+				},
+				{
+					"name": "Get Setting by Key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/system-settings/{{key}}?lang=tr",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "system-settings", "{{key}}"],
+							"query": [
+								{
+									"key": "lang",
+									"value": "tr"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Version Settings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/system-settings/version-check",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "system-settings", "version-check"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Wallet",
+			"item": [
+				{
+					"name": "Get Wallet",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "wallet"]
+						}
+					}
+				},
+				{
+					"name": "Get Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet/transactions?page=1&pageSize=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "wallet", "transactions"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Deposit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 100.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet/deposit",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "wallet", "deposit"]
+						}
+					}
+				},
+				{
+					"name": "Withdraw",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 50.00,\n  \"iban\": \"TR330006100519786457841326\",\n  \"bankAccountName\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet/withdraw",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "wallet", "withdraw"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get Notification Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "settings"]
+						}
+					}
+				},
+				{
+					"name": "Update Notification Settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderUpdates\": true,\n  \"promotions\": true,\n  \"newProducts\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "settings"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Upload",
+			"item": [
+				{
+					"name": "Upload File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/upload",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "upload"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Vendor Profile",
+			"item": [
+				{
+					"name": "Get Vendor Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Vendor Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Restaurant\",\n  \"address\": \"Address\",\n  \"city\": \"Istanbul\",\n  \"phoneNumber\": \"+905551234567\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Vendor Image",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"imageUrl\": \"https://example.com/image.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile/image",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile", "image"]
+						}
+					}
+				},
+				{
+					"name": "Get Vendor Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile/settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile", "settings"]
+						}
+					}
+				},
+				{
+					"name": "Update Vendor Settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deliveryRadiusInKm\": 10\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile/settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile", "settings"]
+						}
+					}
+				},
+				{
+					"name": "Update Active Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile/settings/active",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile", "settings", "active"]
+						}
+					}
+				},
+				{
+					"name": "Update Busy Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isBusy\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/profile/settings/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "profile", "settings", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Vendor Products",
+			"item": [
+				{
+					"name": "Get Vendor Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/products?page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Vendor Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Product Name\",\n  \"description\": \"Description\",\n  \"category\": \"Category\",\n  \"price\": 100.00,\n  \"currency\": 1,\n  \"isAvailable\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "products"]
+						}
+					}
+				},
+				{
+					"name": "Update Vendor Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Product Name\",\n  \"price\": 150.00,\n  \"isAvailable\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "products", "{{productId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Vendor Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "products", "{{productId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Vendor Orders",
+			"item": [
+				{
+					"name": "Get Vendor Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/orders?page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "orders"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Accept Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/orders/{{orderId}}/accept",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "orders", "{{orderId}}", "accept"]
+						}
+					}
+				},
+				{
+					"name": "Reject Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/orders/{{orderId}}/reject",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "orders", "{{orderId}}", "reject"]
+						}
+					}
+				},
+				{
+					"name": "Ready for Delivery",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/vendor/orders/{{orderId}}/ready",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "vendor", "orders", "{{orderId}}", "ready"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Courier",
+			"item": [
+				{
+					"name": "Get Courier Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Courier Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Courier Name\",\n  \"phoneNumber\": \"+905551234567\",\n  \"vehicleType\": \"Motor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Get Available Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/orders/available",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "orders", "available"]
+						}
+					}
+				},
+				{
+					"name": "Get Courier Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/orders?status=Assigned&page=1&pageSize=6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "orders"],
+							"query": [
+								{
+									"key": "status",
+									"value": "Assigned"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "6"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Accept Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/orders/{{orderId}}/accept",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "orders", "{{orderId}}", "accept"]
+						}
+					}
+				},
+				{
+					"name": "Update Location",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"latitude\": 40.981753363733255,\n  \"longitude\": 29.151309728622437\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/location",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "location"]
+						}
+					}
+				},
+				{
+					"name": "Update Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Online\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/courier/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courier", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Bank Account",
+			"item": [
+				{
+					"name": "Get Bank Accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/bankaccount",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bankaccount"]
+						}
+					}
+				},
+				{
+					"name": "Add Bank Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"iban\": \"TR330006100519786457841326\",\n  \"bankAccountName\": \"John Doe\",\n  \"bankName\": \"Bank Name\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bankaccount",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bankaccount"]
+						}
+					}
+				},
+				{
+					"name": "Update Bank Account",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"{{bankAccountId}}\",\n  \"iban\": \"TR330006100519786457841326\",\n  \"bankAccountName\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bankaccount",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bankaccount"]
+						}
+					}
+				},
+				{
+					"name": "Delete Bank Account",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/bankaccount/{{bankAccountId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bankaccount", "{{bankAccountId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Withdrawal",
+			"item": [
+				{
+					"name": "Get Withdrawal Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/withdrawal/requests",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "withdrawal", "requests"]
+						}
+					}
+				},
+				{
+					"name": "Create Withdrawal Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 100.00,\n  \"iban\": \"TR330006100519786457841326\",\n  \"bankAccountName\": \"John Doe\",\n  \"note\": \"Withdrawal note\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/withdrawal/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "withdrawal", "request"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://talabi.runasp.net",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "vendorId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "addressId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "categoryId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "campaignId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bannerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "itemId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "cityId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "districtId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "localityId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "countryId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bankAccountId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -14,6 +14,7 @@ import 'package:injectable/injectable.dart' hide Order;
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/features/vendors/data/models/delivery_zone_models.dart';
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/core/constants/vendor_api_constants.dart';
 import 'package:mobile/features/coupons/data/models/coupon.dart';
 import 'package:mobile/features/campaigns/data/models/campaign.dart';
 import 'package:mobile/features/settings/data/models/version_settings_model.dart';
@@ -1622,7 +1623,7 @@ class ApiService {
 
   Future<void> acceptOrder(String orderId) async {
     try {
-      final response = await dio.post('/vendor/orders/$orderId/accept');
+      final response = await dio.post(VendorApiEndpoints.orderAccept(orderId));
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1644,7 +1645,7 @@ class ApiService {
   Future<void> rejectOrder(String orderId, String reason) async {
     try {
       final response = await dio.post(
-        '/vendor/orders/$orderId/reject',
+        VendorApiEndpoints.orderReject(orderId),
         data: {'reason': reason},
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -1672,7 +1673,7 @@ class ApiService {
   }) async {
     try {
       final response = await dio.put(
-        '/vendor/orders/$orderId/status',
+        VendorApiEndpoints.orderStatus(orderId),
         data: {'status': status, 'note': note},
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -1701,7 +1702,7 @@ class ApiService {
   ) async {
     try {
       final response = await dio.get(
-        '/vendor/orders/$orderId/available-couriers',
+        VendorApiEndpoints.orderAvailableCouriers(orderId),
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
@@ -1732,7 +1733,7 @@ class ApiService {
   Future<void> assignCourierToOrder(String orderId, String courierId) async {
     try {
       final response = await dio.post(
-        '/vendor/orders/$orderId/assign-courier',
+        VendorApiEndpoints.orderAssignCourier(orderId),
         data: {'courierId': courierId},
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -1757,7 +1758,7 @@ class ApiService {
   Future<Map<String, dynamic>> autoAssignCourier(String orderId) async {
     try {
       final response = await dio.post(
-        '/vendor/orders/$orderId/auto-assign-courier',
+        VendorApiEndpoints.orderAutoAssignCourier(orderId),
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
@@ -1819,7 +1820,7 @@ class ApiService {
       }
 
       final response = await dio.get(
-        '/vendor/reports/sales',
+        VendorApiEndpoints.reportsSales,
         queryParameters: queryParams,
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -1851,7 +1852,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getVendorSummary() async {
     try {
-      final response = await dio.get('/vendor/reports/summary');
+      final response = await dio.get(VendorApiEndpoints.reportsSummary);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1883,7 +1884,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getHourlySales() async {
     try {
-      final response = await dio.get('/vendor/reports/hourly-sales');
+      final response = await dio.get(VendorApiEndpoints.reportsHourlySales);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1910,7 +1911,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getDashboardAlerts() async {
     try {
-      final response = await dio.get('/vendor/reports/alerts');
+      final response = await dio.get(VendorApiEndpoints.reportsAlerts);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -1949,7 +1950,7 @@ class ApiService {
       if (pageSize != null) queryParams['pageSize'] = pageSize;
 
       final response = await dio.get(
-        '/vendor/products',
+        VendorApiEndpoints.products,
         queryParameters: queryParams,
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -2001,7 +2002,7 @@ class ApiService {
 
   Future<Product> getVendorProduct(String productId) async {
     try {
-      final response = await dio.get('/vendor/products/$productId');
+      final response = await dio.get(VendorApiEndpoints.product(productId));
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2031,7 +2032,7 @@ class ApiService {
 
   Future<Product> createProduct(Map<String, dynamic> data) async {
     try {
-      final response = await dio.post('/vendor/products', data: data);
+      final response = await dio.post(VendorApiEndpoints.products, data: data);
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2064,7 +2065,10 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await dio.put('/vendor/products/$productId', data: data);
+      final response = await dio.put(
+        VendorApiEndpoints.product(productId),
+        data: data,
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2085,7 +2089,7 @@ class ApiService {
 
   Future<void> deleteProduct(String productId) async {
     try {
-      final response = await dio.delete('/vendor/products/$productId');
+      final response = await dio.delete(VendorApiEndpoints.product(productId));
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2110,7 +2114,7 @@ class ApiService {
   ) async {
     try {
       final response = await dio.put(
-        '/vendor/products/$productId/availability',
+        VendorApiEndpoints.productAvailability(productId),
         data: {'isAvailable': isAvailable},
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -2140,7 +2144,7 @@ class ApiService {
   Future<void> updateProductPrice(String productId, double price) async {
     try {
       final response = await dio.put(
-        '/vendor/products/$productId/price',
+        VendorApiEndpoints.productPrice(productId),
         data: {'price': price},
       );
       // Backend artık ApiResponse<T> formatında döndürüyor

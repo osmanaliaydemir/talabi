@@ -172,8 +172,20 @@ public class ProductsController : BaseController
             .ToListAsync();
 
         var vendorsInRadius = allVendors
-            .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <= 
-                       (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+            .Where(v => 
+            {
+                var distance = GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value);
+                var radius = v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm;
+                var isInRadius = distance <= radius;
+                
+                // Debug: İlk 5 vendor için log
+                if (allVendors.IndexOf(v) < 5)
+                {
+                    Logger.LogWarning($"[PRODUCT_SEARCH] Vendor: {v.Name} | Lat={v.Latitude.Value}, Lon={v.Longitude.Value} | Radius={radius}km | Distance={distance:F2}km | InRadius={isInRadius}");
+                }
+                
+                return isInRadius;
+            })
             .Select(v => v.Id)
             .ToList();
 
@@ -258,17 +270,29 @@ public class ProductsController : BaseController
             // Eşleşen ürünleri logla
             foreach (var p in categoryFilteredProducts.Take(10))
             {
-                Logger.LogWarning($"[PRODUCT_SEARCH] Category matched product: {p.Name} | CategoryId: {p.CategoryId} | Category: '{p.Category}'");
+                Logger.LogWarning($"[PRODUCT_SEARCH] Category matched product: {p.Name} | CategoryId: {p.CategoryId} | Category: '{p.Category}' | VendorId: {p.VendorId}");
             }
+            
+            // Vendor radius kontrolü için debug log
+            Logger.LogWarning($"[PRODUCT_SEARCH] Vendors in radius: {vendorsInRadius.Count} vendors");
+            Logger.LogWarning($"[PRODUCT_SEARCH] User location: Lat={userLat}, Lon={userLon}");
+            
+            // Kategori eşleşen ürünlerin vendor ID'lerini logla
+            var categoryMatchedVendorIds = categoryFilteredProducts.Select(p => p.VendorId).Distinct().ToList();
+            Logger.LogWarning($"[PRODUCT_SEARCH] Category matched products have {categoryMatchedVendorIds.Count} unique vendors: {string.Join(", ", categoryMatchedVendorIds.Take(10))}");
             
             // ŞİMDİ vendor delivery radius kontrolünü uygula
             var filteredProducts = categoryFilteredProducts
                 .Where(p => vendorsInRadius.Contains(p.VendorId))
                 .ToList();
             
+            Logger.LogWarning($"[PRODUCT_SEARCH] After vendor radius filter: {filteredProducts.Count} products");
+            
             if (!filteredProducts.Any())
             {
                 // Yarıçap içinde kategori eşleşen ürün yoksa boş liste döndür
+                Logger.LogWarning($"[PRODUCT_SEARCH] No products in delivery radius! Category matched {categoryFilteredProducts.Count} products but none are in radius.");
+                
                 var emptyResult = new PagedResultDto<ProductDto>
                 {
                     Items = new List<ProductDto>(),

@@ -135,6 +135,12 @@ builder.Services.AddScoped<ICourierService, CourierService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<Talabi.Core.Interfaces.IWalletService, Talabi.Infrastructure.Services.WalletService>();
 
+// Email Service
+builder.Services.Configure<Talabi.Core.Options.EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<Talabi.Core.Services.IEmailSender, Talabi.Infrastructure.Services.EmailSender>();
+builder.Services.AddScoped<Talabi.Infrastructure.Services.IEmailTemplateRenderer, Talabi.Infrastructure.Services.EmailTemplateRenderer>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // File Upload & Storage
 builder.Services.Configure<Talabi.Infrastructure.Services.FileUploadSecurityOptions>(options =>
 {

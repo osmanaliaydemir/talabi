@@ -11,5 +11,14 @@ public class EmailSettings
     public required string SenderPassword { get; init; }
     public string SenderName { get; init; } = "Talabi";
 
+    // SSL/TLS Settings
+    public bool UseSsl { get; init; } = true;
+    public bool UseTls { get; init; } = false;
+
+    // Timeout
+    public int Timeout { get; init; } = 30000;
+
+    // Admin Email
+    public string? AdminEmail { get; init; }
 }
 

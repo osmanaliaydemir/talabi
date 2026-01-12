@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart' hide Order;
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/core/constants/vendor_api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/orders/data/models/order.dart';
@@ -181,7 +182,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      ApiEndpoints.vendorOrders,
+      VendorApiEndpoints.orders,
       queryParameters: queryParams,
     );
 
@@ -208,7 +209,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      ApiEndpoints.vendorOrders,
+      VendorApiEndpoints.orders,
       queryParameters: queryParams,
     );
 
@@ -228,7 +229,7 @@ class OrderRemoteDataSource {
 
   Future<Map<String, dynamic>> getVendorOrder(String orderId) async {
     final response = await _networkClient.dio.get(
-      '${ApiEndpoints.vendorOrders}/$orderId',
+      VendorApiEndpoints.order(orderId),
     );
 
     // Unwrap the ApiResponse to return the Order DTO directly
@@ -246,7 +247,7 @@ class OrderRemoteDataSource {
 
   Future<void> acceptOrder(String orderId) async {
     final response = await _networkClient.dio.post(
-      '${ApiEndpoints.vendorOrders}/$orderId/accept',
+      VendorApiEndpoints.orderAccept(orderId),
     );
 
     final apiResponse = ApiResponse.fromJson(
@@ -261,7 +262,7 @@ class OrderRemoteDataSource {
 
   Future<void> rejectOrder(String orderId, String reason) async {
     final response = await _networkClient.dio.post(
-      '${ApiEndpoints.vendorOrders}/$orderId/reject',
+      VendorApiEndpoints.orderReject(orderId),
       data: {'reason': reason},
     );
 
@@ -286,7 +287,7 @@ class OrderRemoteDataSource {
     }
 
     final response = await _networkClient.dio.put(
-      '${ApiEndpoints.vendorOrders}/$orderId/status',
+      VendorApiEndpoints.orderStatus(orderId),
       data: data,
     );
 

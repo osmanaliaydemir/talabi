@@ -120,86 +120,161 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
       _isLoadingCategories = true;
     });
     final localeName = AppLocalizations.of(context)?.localeName;
+
     try {
-      // First fetch vendor profile to get vendor type
-      final vendorProfile = await _apiService.getVendorProfile();
+      // First fetch vendor profile to get vendor type and location
       int? vendorType;
-      if (vendorProfile.containsKey('type')) {
-        vendorType = vendorProfile['type'];
-        LoggerService().debug('Vendor Type found: $vendorType');
+      double? vendorLatitude;
+      double? vendorLongitude;
+
+      try {
+        final vendorProfile = await _apiService.getVendorProfile();
+
+        // Get vendor type
+        if (vendorProfile.containsKey('type') &&
+            vendorProfile['type'] != null) {
+          vendorType = vendorProfile['type'] is int
+              ? vendorProfile['type']
+              : int.tryParse(vendorProfile['type'].toString());
+          LoggerService().debug('Vendor Type found: $vendorType');
+        } else {
+          LoggerService().debug(
+            'Vendor Type not found in profile, will fetch all categories',
+          );
+        }
+
+        // Get vendor location (required by backend API)
+        if (vendorProfile.containsKey('latitude') &&
+            vendorProfile['latitude'] != null &&
+            vendorProfile.containsKey('longitude') &&
+            vendorProfile['longitude'] != null) {
+          vendorLatitude = vendorProfile['latitude'] is double
+              ? vendorProfile['latitude']
+              : (vendorProfile['latitude'] as num).toDouble();
+          vendorLongitude = vendorProfile['longitude'] is double
+              ? vendorProfile['longitude']
+              : (vendorProfile['longitude'] as num).toDouble();
+          LoggerService().debug(
+            'Vendor Location found: $vendorLatitude, $vendorLongitude',
+          );
+        } else {
+          LoggerService().warning(
+            'Vendor location not found in profile. Categories may not load.',
+          );
+        }
+      } catch (e) {
+        LoggerService().error('Error fetching vendor profile: $e', e);
+        // Continue without vendor type - will try to fetch categories anyway
       }
 
       final categories = await _apiService.getCategories(
         language: localeName,
         pageSize: 100,
         vendorType: vendorType,
+        userLatitude: vendorLatitude,
+        userLongitude: vendorLongitude,
       );
 
       LoggerService().debug(
         'LoadCategories: Fetched ${categories.length} categories using VendorType: $vendorType',
       );
 
-      setState(() {
-        _categories = categories;
-        _isLoadingCategories = false;
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _isLoadingCategories = false;
 
-        // Try to match existing category
-        if (widget.product != null) {
-          LoggerService().debug(
-            'Product Data - ID: ${widget.product!.id}, CategoryID: ${widget.product!.categoryId}, CategoryName: ${widget.product!.category}',
-          );
-        }
+          // Try to match existing category
+          if (widget.product != null) {
+            LoggerService().debug(
+              'Product Data - ID: ${widget.product!.id}, CategoryID: ${widget.product!.categoryId}, CategoryName: ${widget.product!.category}',
+            );
+          }
 
-        if (widget.product?.categoryId != null) {
-          final exists = categories.any(
-            (c) => c['id'].toString() == widget.product!.categoryId,
-          );
-          LoggerService().debug(
-            'Category ID match check: $exists for ${widget.product!.categoryId}',
-          );
+          if (widget.product?.categoryId != null) {
+            final exists = categories.any(
+              (c) => c['id'].toString() == widget.product!.categoryId,
+            );
+            LoggerService().debug(
+              'Category ID match check: $exists for ${widget.product!.categoryId}',
+            );
 
-          if (exists) {
-            _selectedCategoryId = widget.product!.categoryId;
-          } else {
-            // Fallback: Try Name Match if ID match failed?
-            // Logic: Maybe ID changed or is inconsistent?
-            // Let's check name match if ID fails
-            final nameMatch = categories.firstWhere(
+            if (exists) {
+              _selectedCategoryId = widget.product!.categoryId;
+            } else {
+              // Fallback: Try Name Match if ID match failed?
+              // Logic: Maybe ID changed or is inconsistent?
+              // Let's check name match if ID fails
+              final nameMatch = categories.firstWhere(
+                (c) => c['name'] == widget.product!.category,
+                orElse: () => {},
+              );
+              if (nameMatch.isNotEmpty) {
+                LoggerService().debug(
+                  'Found category by name fallback: ${nameMatch['name']} -> ${nameMatch['id']}',
+                );
+                _selectedCategoryId = nameMatch['id'].toString();
+              } else {
+                _selectedCategoryId = null; // Reset if category not found
+              }
+            }
+          } else if (widget.product?.category != null) {
+            LoggerService().debug(
+              'Looking up by Category Name: ${widget.product!.category}',
+            );
+            final existing = categories.firstWhere(
               (c) => c['name'] == widget.product!.category,
               orElse: () => {},
             );
-            if (nameMatch.isNotEmpty) {
-              LoggerService().debug(
-                'Found category by name fallback: ${nameMatch['name']} -> ${nameMatch['id']}',
-              );
-              _selectedCategoryId = nameMatch['id'].toString();
-            } else {
-              _selectedCategoryId = null; // Reset if category not found
+            if (existing.isNotEmpty) {
+              _selectedCategoryId = existing['id'].toString();
+              LoggerService().debug('Found by name: $_selectedCategoryId');
             }
           }
-        } else if (widget.product?.category != null) {
-          LoggerService().debug(
-            'Looking up by Category Name: ${widget.product!.category}',
+        });
+
+        // Show warning if no categories found
+        if (categories.isEmpty && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Kategori bulunamadı. Lütfen daha sonra tekrar deneyin.',
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
           );
-          final existing = categories.firstWhere(
-            (c) => c['name'] == widget.product!.category,
-            orElse: () => {},
-          );
-          if (existing.isNotEmpty) {
-            _selectedCategoryId = existing['id'].toString();
-            LoggerService().debug('Found by name: $_selectedCategoryId');
-          }
         }
-      });
+      }
     } catch (e) {
       LoggerService().error(
         'Kategoriler yüklenemedi: $e',
         e,
         StackTrace.current,
       );
-      setState(() {
-        _isLoadingCategories = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+
+        // Show error to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Kategoriler yüklenemedi. Lütfen tekrar deneyin.',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Tekrar Dene',
+              textColor: Colors.white,
+              onPressed: () {
+                _loadCategories();
+              },
+            ),
+          ),
+        );
+      }
     }
   }
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Başvuru Onaylandı</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 32px auto; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 15px 35px rgba(0,0,0,0.07); }
+        .header { background-color: #1cc88a; color: white; padding: 24px; text-align: center; border-radius: 12px 12px 0 0; margin: -32px -32px 24px -32px; }
+        .title { font-size: 24px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
+        .text { font-size: 15px; line-height: 24px; color: #334155; margin-bottom: 24px; }
+        .success-box { background-color: #d1fae5; border-left: 4px solid #1cc88a; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .success-box strong { color: #1cc88a; }
+        .footer { font-size: 12px; color: #94a3b8; margin-top: 32px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">Başvurunuz Onaylandı!</h1>
+        </div>
+        <div class="title">Sayın {{vendorName}},</div>
+        <div class="text">
+            Vendor başvurunuz incelenmiş ve <strong style="color: #1cc88a;">onaylanmıştır</strong>. Artık Talabi platformunda satış yapmaya başlayabilirsiniz.
+        </div>
+        <div class="success-box">
+            <p style="margin: 0; font-size: 14px;">
+                <strong>Sonraki Adımlar:</strong><br>
+                • Portal'a giriş yaparak ürünlerinizi ekleyebilirsiniz<br>
+                • Profil bilgilerinizi tamamlayabilirsiniz<br>
+                • Siparişleri yönetmeye başlayabilirsiniz
+            </p>
+        </div>
+        <div class="text">
+            Sorularınız için bizimle iletişime geçmekten çekinmeyin.
+        </div>
+        <div class="text" style="margin-top: 30px;">
+            Saygılarımızla,<br>
+            <strong>Talabi Ekibi</strong>
+        </div>
+        <div class="footer">
+            Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayın.
+        </div>
+    </div>
+</body>
+</html>

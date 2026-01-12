@@ -11,11 +11,19 @@ public class VendorService : IVendorService
 {
     private readonly IRepository<Vendor> _vendorRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<VendorService> _logger;
 
-    public VendorService(IRepository<Vendor> vendorRepository, IUnitOfWork unitOfWork)
+    public VendorService(
+        IRepository<Vendor> vendorRepository, 
+        IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        ILogger<VendorService> logger)
     {
         _vendorRepository = vendorRepository;
         _unitOfWork = unitOfWork;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<PagedResult<VendorListDto>> GetVendorsAsync(int page, int pageSize, string? search, string? sortColumn, string? sortDirection)
@@ -119,11 +127,88 @@ public class VendorService : IVendorService
 
     public async Task<bool> ApproveVendorAsync(string id)
     {
-        return await UpdateVendorStatusAsync(id, true);
+        if (!Guid.TryParse(id, out var guidId)) return false;
+
+        var vendor = await _vendorRepository.Query()
+            .Include(v => v.Owner)
+            .FirstOrDefaultAsync(v => v.Id == guidId);
+
+        if (vendor == null || vendor.Owner == null) return false;
+
+        vendor.IsActive = true;
+        _vendorRepository.Update(vendor);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Get user language preference
+        var userLanguage = await GetUserLanguageAsync(vendor.OwnerId);
+
+        // Send approval email
+        try
+        {
+            await _emailService.SendVendorApprovalEmailAsync(
+                vendor.Owner.Email!,
+                vendor.Name,
+                userLanguage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send approval email to vendor {VendorId}", id);
+            // Don't fail the approval if email fails
+        }
+
+        return true;
     }
 
     public async Task<bool> RejectVendorAsync(string id)
     {
-        return await UpdateVendorStatusAsync(id, false);
+        if (!Guid.TryParse(id, out var guidId)) return false;
+
+        var vendor = await _vendorRepository.Query()
+            .Include(v => v.Owner)
+            .FirstOrDefaultAsync(v => v.Id == guidId);
+
+        if (vendor == null || vendor.Owner == null) return false;
+
+        vendor.IsActive = false;
+        _vendorRepository.Update(vendor);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Get user language preference
+        var userLanguage = await GetUserLanguageAsync(vendor.OwnerId);
+
+        // Send rejection email
+        try
+        {
+            await _emailService.SendVendorRejectionEmailAsync(
+                vendor.Owner.Email!,
+                vendor.Name,
+                userLanguage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send rejection email to vendor {VendorId}", id);
+            // Don't fail the rejection if email fails
+        }
+
+        return true;
+    }
+
+    private async Task<string> GetUserLanguageAsync(string userId)
+    {
+        try
+        {
+            var userPreference = await _unitOfWork.UserPreferences.Query()
+                .Where(up => up.UserId == userId)
+                .Select(up => up.Language)
+                .FirstOrDefaultAsync();
+
+            // Return user's language preference or default to "en" if not found
+            return !string.IsNullOrWhiteSpace(userPreference) ? userPreference : "en";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get user language preference for user {UserId}, defaulting to 'en'", userId);
+            return "en"; // Default to English if we can't determine the language
+        }
     }
 }

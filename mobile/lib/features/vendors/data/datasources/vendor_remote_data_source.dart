@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/core/constants/vendor_api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/vendors/data/models/vendor.dart';
@@ -87,7 +88,7 @@ class VendorRemoteDataSource {
     if (pageSize != null) queryParams['pageSize'] = pageSize;
 
     final response = await _networkClient.dio.get(
-      ApiEndpoints.vendorOrders,
+      VendorApiEndpoints.orders,
       queryParameters: queryParams,
     );
     // Backend artık ApiResponse<PagedResultDto> formatında döndürüyor
@@ -114,7 +115,7 @@ class VendorRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getVendorProfile() async {
-    final response = await _networkClient.dio.get(ApiEndpoints.vendorProfile);
+    final response = await _networkClient.dio.get(VendorApiEndpoints.profile);
 
     if (response.data is Map<String, dynamic> &&
         response.data.containsKey('success')) {
@@ -136,7 +137,7 @@ class VendorRemoteDataSource {
 
   Future<void> updateVendorBusyStatus(bool isBusy) async {
     final response = await _networkClient.dio.put(
-      ApiEndpoints.vendorSettingsStatus,
+      VendorApiEndpoints.settingsStatus,
       data: {'isBusy': isBusy},
     );
 
@@ -158,7 +159,7 @@ class VendorRemoteDataSource {
     // If ApiService handled file upload, we might need to look closer.
 
     final response = await _networkClient.dio.put(
-      ApiEndpoints.vendorProfile,
+      VendorApiEndpoints.profile,
       data: data,
     );
 
@@ -174,7 +175,7 @@ class VendorRemoteDataSource {
 
   Future<void> updateVendorSettings(Map<String, dynamic> settings) async {
     final response = await _networkClient.dio.put(
-      ApiEndpoints.vendorSettings,
+      VendorApiEndpoints.settings,
       data: settings,
     );
 
@@ -189,7 +190,7 @@ class VendorRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getVendorSettings() async {
-    final response = await _networkClient.dio.get(ApiEndpoints.vendorSettings);
+    final response = await _networkClient.dio.get(VendorApiEndpoints.settings);
 
     if (response.data is Map<String, dynamic> &&
         response.data.containsKey('success')) {
@@ -210,7 +211,7 @@ class VendorRemoteDataSource {
 
   Future<void> toggleVendorActive(bool isActive) async {
     final response = await _networkClient.dio.put(
-      ApiEndpoints.vendorSettingsActive,
+      VendorApiEndpoints.settingsActive,
       data: {'isActive': isActive},
     );
 
@@ -228,7 +229,7 @@ class VendorRemoteDataSource {
 
   Future<List<dynamic>> getVendorNotifications() async {
     final response = await _networkClient.dio.get(
-      ApiEndpoints.vendorNotifications,
+      VendorApiEndpoints.notifications,
     );
 
     if (response.data is Map<String, dynamic> &&
@@ -241,7 +242,7 @@ class VendorRemoteDataSource {
 
   Future<void> markNotificationAsRead(String type, String id) async {
     final endpoint = type == 'vendor'
-        ? '/vendor/notifications/$id/read'
+        ? VendorApiEndpoints.notificationRead(id)
         : type == 'customer'
         ? '/customer/notifications/$id/read'
         : '/courier/notifications/$id/read';
@@ -265,7 +266,7 @@ class VendorRemoteDataSource {
 
   Future<void> markAllNotificationsAsRead(String type) async {
     final endpoint = type == 'vendor'
-        ? '/vendor/notifications/read-all'
+        ? VendorApiEndpoints.notificationsReadAll
         : type == 'customer'
         ? '/customer/notifications/read-all'
         : '/courier/notifications/read-all';
@@ -291,7 +292,7 @@ class VendorRemoteDataSource {
     }
 
     final response = await _networkClient.dio.get(
-      ApiEndpoints.vendorDeliveryZones,
+      VendorApiEndpoints.deliveryZones,
       queryParameters: queryParams.isNotEmpty ? queryParams : null,
     );
 
@@ -315,7 +316,7 @@ class VendorRemoteDataSource {
 
   Future<void> syncDeliveryZones(DeliveryZoneSyncDto dto) async {
     final response = await _networkClient.dio.put(
-      ApiEndpoints.vendorDeliveryZones,
+      VendorApiEndpoints.deliveryZones,
       data: dto.toJson(),
     );
 
@@ -331,7 +332,7 @@ class VendorRemoteDataSource {
 
   Future<List<String>> getVendorProductCategories() async {
     final response = await _networkClient.dio.get(
-      ApiEndpoints.vendorCategories,
+      VendorApiEndpoints.productCategories,
     );
 
     if (response.data is Map<String, dynamic> &&
@@ -353,7 +354,7 @@ class VendorRemoteDataSource {
 
   Future<void> updateVendorImage(String imageUrl) async {
     final response = await _networkClient.dio.put(
-      ApiEndpoints.vendorProfileImage,
+      VendorApiEndpoints.profileImage,
       data: {'imageUrl': imageUrl},
     );
 

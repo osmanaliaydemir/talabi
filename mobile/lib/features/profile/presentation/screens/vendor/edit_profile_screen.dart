@@ -7,6 +7,7 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/profile/presentation/screens/customer/address_picker_screen.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
+import 'package:mobile/features/dashboard/presentation/screens/vendor_dashboard_screen.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
@@ -209,11 +210,15 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
         );
 
         if (widget.isOnboarding) {
-          // Profile completed, skip Delivery Zones and go to dashboard/home
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/', // Or vendor dashboard route if different
-            (route) => false,
-          );
+          // Profile completed, navigate to vendor dashboard
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              NoSlidePageRoute(
+                builder: (context) => const VendorDashboardScreen(),
+              ),
+              (route) => false,
+            );
+          }
         } else {
           Navigator.pop(context, true);
         }

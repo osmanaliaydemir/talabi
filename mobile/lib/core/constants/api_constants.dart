@@ -34,24 +34,14 @@ class ApiEndpoints {
   // Actually I need to match specific block.
   // Let's target Products block first.
 
-  // Vendors
+  // Vendors (Customer-facing endpoints only)
   static const String vendors = '/vendors';
-  static const String vendorProducts = '/vendor/products';
-  static const String vendorCategories = '/vendor/products/categories';
-  static const String vendorProfile = '/vendor/profile';
-  static const String vendorProfileImage = '/vendor/profile/image';
-  static const String vendorSettingsStatus = '/vendor/profile/status';
-  static const String vendorSettings = '/vendor/profile/settings';
-  static const String vendorSettingsActive = '/vendor/profile/settings/active';
   static const String vendorCities = '/vendors/cities';
   static const String mapVendors = '/map/vendors';
-  static const String vendorDeliveryZones = '/vendor/delivery-zones';
-  static const String vendorNotifications = '/vendor/notifications';
 
   // Orders
   static const String orders = '/orders';
   static const String createOrder = '/orders';
-  static const String vendorOrders = '/vendor/orders';
   static const String cancelOrder = '/orders/cancel';
   static const String cancelOrderItem = '/orders/items/cancel';
 

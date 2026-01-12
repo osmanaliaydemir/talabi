@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/core/constants/vendor_api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:dio/dio.dart';
@@ -189,7 +190,7 @@ class ProductRemoteDataSource {
 
   Future<Product> createProduct(Map<String, dynamic> data) async {
     final response = await _networkClient.dio.post(
-      ApiEndpoints.vendorProducts,
+      VendorApiEndpoints.products,
       data: data,
     );
 
@@ -207,7 +208,7 @@ class ProductRemoteDataSource {
 
   Future<void> updateProductPrice(String productId, double price) async {
     final response = await _networkClient.dio.put(
-      '${ApiEndpoints.vendorProducts}/$productId/price',
+      VendorApiEndpoints.productPrice(productId),
       data: {'price': price},
     );
 
@@ -226,7 +227,7 @@ class ProductRemoteDataSource {
     bool isAvailable,
   ) async {
     final response = await _networkClient.dio.put(
-      '${ApiEndpoints.vendorProducts}/$productId/availability',
+      VendorApiEndpoints.productAvailability(productId),
       data: {'isAvailable': isAvailable},
     );
 
@@ -244,7 +245,7 @@ class ProductRemoteDataSource {
 
   Future<void> deleteProduct(String productId) async {
     final response = await _networkClient.dio.delete(
-      '${ApiEndpoints.vendorProducts}/$productId',
+      VendorApiEndpoints.product(productId),
     );
 
     final apiResponse = ApiResponse.fromJson(
