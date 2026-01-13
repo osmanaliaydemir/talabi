@@ -69,6 +69,9 @@ class _SearchScreenState extends State<SearchScreen> {
   // Selected address for location-based filtering
   Map<String, dynamic>? _selectedAddress;
 
+  // Flag to track if addresses are being loaded
+  bool _isLoadingAddresses = false;
+
   Color get _primaryColor {
     final bottomNav = Provider.of<BottomNavProvider>(context);
     return bottomNav.selectedCategory == MainCategory.restaurant
@@ -90,21 +93,61 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _loadAddresses() async {
+    if (_isLoadingAddresses) return; // Prevent multiple simultaneous loads
+
+    setState(() {
+      _isLoadingAddresses = true;
+    });
+
     try {
       final addresses = await _apiService.getAddresses();
-      if (mounted && addresses.isNotEmpty) {
-        setState(() {
+      if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
           try {
-            _selectedAddress = addresses.firstWhere(
+            selectedAddress = addresses.firstWhere(
               (addr) => addr['isDefault'] == true,
             );
           } catch (_) {
-            _selectedAddress = addresses.first;
+            selectedAddress = addresses.first;
           }
+        }
+
+        setState(() {
+          _selectedAddress = selectedAddress;
+          _isLoadingAddresses = false;
         });
+
+        // Adresler yüklendikten sonra filter options'ı yükle (eğer henüz yüklenmediyse)
+        if (!_hasLoadedFilterOptions) {
+          _hasLoadedFilterOptions = true;
+          _loadFilterOptions();
+        }
+
+        // Adresler yüklendikten sonra, eğer aktif bir arama varsa yeniden ara
+        if (_currentQuery.isNotEmpty || _hasActiveFilters()) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _searchProducts(isRefresh: true);
+            }
+          });
+        }
       }
     } catch (e, stackTrace) {
       LoggerService().error('Error loading addresses', e, stackTrace);
+      if (mounted) {
+        setState(() {
+          _isLoadingAddresses = false;
+        });
+        // Hata olsa bile, eğer aktif bir arama varsa konum olmadan dene
+        if (_currentQuery.isNotEmpty || _hasActiveFilters()) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _searchProducts(isRefresh: true);
+            }
+          });
+        }
+      }
     }
   }
 
@@ -121,8 +164,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Load filter options after context is available
-    if (!_hasLoadedFilterOptions) {
+    // Load filter options after context is available and addresses are loaded
+    if (!_hasLoadedFilterOptions && _selectedAddress != null) {
       _hasLoadedFilterOptions = true;
       _loadFilterOptions();
     }
@@ -154,8 +197,28 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _loadFilterOptions() async {
     try {
+      // Get location from selected address for categories
+      double? userLatitude;
+      double? userLongitude;
+      if (_selectedAddress != null) {
+        userLatitude = _selectedAddress!['latitude'] != null
+            ? double.tryParse(_selectedAddress!['latitude'].toString())
+            : null;
+        userLongitude = _selectedAddress!['longitude'] != null
+            ? double.tryParse(_selectedAddress!['longitude'].toString())
+            : null;
+      }
+
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
+
       final categories = await _apiService.getCategories(
         language: AppLocalizations.of(context)?.localeName ?? 'en',
+        vendorType: vendorType,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
       final cities = await _apiService.getCities();
       setState(() {
@@ -226,6 +289,21 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
+    // Eğer adresler henüz yükleniyorsa, yüklenene kadar bekle
+    if (_isLoadingAddresses) {
+      // Adresler yüklenene kadar bekle
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (_isLoadingAddresses && mounted) {
+        // Hala yükleniyorsa, tekrar dene
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (mounted && !_isLoadingAddresses) {
+            _searchProducts(isRefresh: isRefresh);
+          }
+        });
+        return;
+      }
+    }
+
     if (isRefresh) {
       setState(() {
         _isLoadingProducts = true;
@@ -252,11 +330,38 @@ class _SearchScreenState extends State<SearchScreen> {
             : null;
       }
 
+      // Konum bilgisi yoksa ve adresler yüklenmemişse, adresleri yükle ve tekrar dene
+      if ((userLatitude == null || userLongitude == null) &&
+          !_isLoadingAddresses) {
+        // Adresleri yükle
+        _loadAddresses();
+        // Adresler yüklendikten sonra otomatik arama yapılacak (_loadAddresses içinde)
+        if (mounted) {
+          setState(() {
+            _isLoadingProducts = false;
+            _isLoadingMoreProducts = false;
+          });
+        }
+        return;
+      }
+
+      // Get vendorType from bottomNav
+      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+          ? 1
+          : 2;
+
+      // Debug: Konum bilgisini logla
+      LoggerService().error(
+        '[SEARCH] Searching products with location: lat=$userLatitude, lon=$userLongitude, query=$_currentQuery, vendorType=$vendorType',
+      );
+
       final request = ProductSearchRequestDto(
         query: _currentQuery.isEmpty ? null : _currentQuery,
         categoryId: _selectedCategoryId,
         minPrice: _minPrice,
         maxPrice: _maxPrice,
+        vendorType: vendorType,
         sortBy: _sortBy,
         page: _productCurrentPage,
         pageSize: _productPageSize,
@@ -264,7 +369,15 @@ class _SearchScreenState extends State<SearchScreen> {
         userLongitude: userLongitude,
       );
 
+      // Debug: Request parametrelerini logla
+      LoggerService().error('[SEARCH] Request params: ${request.toJson()}');
+
       final results = await _apiService.searchProducts(request);
+
+      // Debug: Sonuçları logla
+      LoggerService().error(
+        '[SEARCH] Received ${results.items.length} products (total: ${results.totalCount})',
+      );
       if (mounted) {
         setState(() {
           if (isRefresh) {
@@ -370,8 +483,23 @@ class _SearchScreenState extends State<SearchScreen> {
 
     _saveToSearchHistory(query);
     AnalyticsService.logSearch(searchTerm: query);
-    _searchProducts();
-    _searchVendors();
+
+    // Eğer adresler henüz yüklenmemişse, yüklenene kadar bekle
+    if (_isLoadingAddresses) {
+      // Adresler yüklenene kadar bekle, sonra arama yap
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && !_isLoadingAddresses) {
+          _searchProducts();
+          _searchVendors();
+        } else if (mounted) {
+          // Hala yükleniyorsa, adresler yüklendikten sonra otomatik arama yapılacak
+          // (_loadAddresses içinde zaten var)
+        }
+      });
+    } else {
+      _searchProducts();
+      _searchVendors();
+    }
   }
 
   void _onAutocompleteSelected(AutocompleteResultDto result) {

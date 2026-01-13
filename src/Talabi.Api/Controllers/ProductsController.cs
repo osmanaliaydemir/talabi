@@ -96,28 +96,51 @@ public class ProductsController : BaseController
         // Query string'den userLatitude ve userLongitude parametrelerini manuel olarak oku
         // (camelCase query string parametreleri için)
         // InvariantCulture kullanarak parse et (nokta/virgül sorununu önlemek için)
-        if (Request.Query.ContainsKey("userLatitude") && double.TryParse(
-            Request.Query["userLatitude"].ToString(), 
-            System.Globalization.NumberStyles.Float, 
-            System.Globalization.CultureInfo.InvariantCulture, 
-            out var parsedLat))
+        if (Request.Query.ContainsKey("userLatitude"))
         {
-            request.UserLatitude = parsedLat;
+            var latStr = Request.Query["userLatitude"].ToString();
+            Logger.LogWarning($"[PRODUCT_SEARCH] Raw userLatitude from query: '{latStr}'");
+            if (double.TryParse(
+                latStr, 
+                System.Globalization.NumberStyles.Float, 
+                System.Globalization.CultureInfo.InvariantCulture, 
+                out var parsedLat))
+            {
+                request.UserLatitude = parsedLat;
+                Logger.LogWarning($"[PRODUCT_SEARCH] Parsed userLatitude: {parsedLat}");
+            }
+            else
+            {
+                Logger.LogWarning($"[PRODUCT_SEARCH] Failed to parse userLatitude: '{latStr}'");
+            }
         }
         
-        if (Request.Query.ContainsKey("userLongitude") && double.TryParse(
-            Request.Query["userLongitude"].ToString(), 
-            System.Globalization.NumberStyles.Float, 
-            System.Globalization.CultureInfo.InvariantCulture, 
-            out var parsedLon))
+        if (Request.Query.ContainsKey("userLongitude"))
         {
-            request.UserLongitude = parsedLon;
+            var lonStr = Request.Query["userLongitude"].ToString();
+            Logger.LogWarning($"[PRODUCT_SEARCH] Raw userLongitude from query: '{lonStr}'");
+            if (double.TryParse(
+                lonStr, 
+                System.Globalization.NumberStyles.Float, 
+                System.Globalization.CultureInfo.InvariantCulture, 
+                out var parsedLon))
+            {
+                request.UserLongitude = parsedLon;
+                Logger.LogWarning($"[PRODUCT_SEARCH] Parsed userLongitude: {parsedLon}");
+            }
+            else
+            {
+                Logger.LogWarning($"[PRODUCT_SEARCH] Failed to parse userLongitude: '{lonStr}'");
+            }
         }
+        
+        Logger.LogWarning($"[PRODUCT_SEARCH] Final location - UserLatitude: {request.UserLatitude}, UserLongitude: {request.UserLongitude}");
         
         // Distance filter (REQUIRED: user location must be provided)
         if (!request.UserLatitude.HasValue || !request.UserLongitude.HasValue)
         {
             // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
+            Logger.LogWarning($"[PRODUCT_SEARCH] User location is missing! UserLatitude: {request.UserLatitude}, UserLongitude: {request.UserLongitude}");
             var emptyResult = new PagedResultDto<ProductDto>
             {
                 Items = new List<ProductDto>(),
