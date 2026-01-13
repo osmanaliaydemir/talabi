@@ -60,6 +60,9 @@ public class ProductsController : BaseController
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> Search(
         [FromQuery] ProductSearchRequestDto request)
     {
+        // Debug: Request parametrelerini logla
+        Logger.LogWarning($"[PRODUCT_SEARCH] Received request - Query: '{request.Query}', VendorType: {request.VendorType}, Page: {request.Page}, PageSize: {request.PageSize}");
+        
         // Query string'den categoryId parametresini manuel olarak oku ve Guid'e parse et
         // (camelCase query string parametreleri için ve Guid parse güvenilirliği için)
         if (Request.Query.ContainsKey("categoryId"))
@@ -171,8 +174,13 @@ public class ProductsController : BaseController
             // Query is already sanitized by InputSanitizationActionFilter
             // But we trim and normalize for search
             var q = request.Query.Trim().ToLower();
+            Logger.LogWarning($"[PRODUCT_SEARCH] Applying text search filter: '{q}'");
             query = query.Where(p => p.Name.ToLower().Contains(q) ||
                                      (p.Description != null && p.Description.ToLower().Contains(q)));
+        }
+        else
+        {
+            Logger.LogWarning($"[PRODUCT_SEARCH] No text search query provided");
         }
 
         // VendorType filter (Vendor üzerinden - performans için)
@@ -222,6 +230,19 @@ public class ProductsController : BaseController
             .ToList();
             
         Logger.LogWarning($"[PRODUCT_SEARCH] Total vendors: {allVendors.Count}, Vendors in radius: {vendorsInRadius.Count}, User location: Lat={userLat.ToString(System.Globalization.CultureInfo.InvariantCulture)}, Lon={userLon.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+        
+        // Eğer yarıçap içinde vendor yoksa, detaylı log
+        if (!vendorsInRadius.Any())
+        {
+            Logger.LogWarning($"[PRODUCT_SEARCH] ⚠️ NO VENDORS IN RADIUS! User location: Lat={userLat}, Lon={userLon}");
+            Logger.LogWarning($"[PRODUCT_SEARCH] Checking first 5 vendors for debugging:");
+            foreach (var v in allVendors.Take(5))
+            {
+                var distance = GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value);
+                var radius = v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm;
+                Logger.LogWarning($"[PRODUCT_SEARCH]   - Vendor: {v.Name} | Distance: {distance:F2}km | Radius: {radius}km | InRadius: {distance <= radius}");
+            }
+        }
 
         // Category filter - HER ZAMAN memory'de filtrele (Category string eşleşmesi için gerekli)
         // CategoryId ve Category string OR mantığı ile çalışmalı
@@ -413,11 +434,12 @@ public class ProductsController : BaseController
         else
         {
             // Category filtresi YOK - sadece vendor radius kontrolü yap
-            query = query.Where(p => vendorsInRadius.Contains(p.VendorId));
+            Logger.LogWarning($"[PRODUCT_SEARCH] No category filter - applying vendor radius filter. Vendors in radius: {vendorsInRadius.Count}");
             
             if (!vendorsInRadius.Any())
             {
                 // Yarıçap içinde vendor yoksa boş liste döndür
+                Logger.LogWarning($"[PRODUCT_SEARCH] ⚠️ No vendors in radius - returning empty result");
                 var emptyResult = new PagedResultDto<ProductDto>
                 {
                     Items = new List<ProductDto>(),
@@ -430,6 +452,68 @@ public class ProductsController : BaseController
                 return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
                     emptyResult,
                     LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
+            }
+            
+            query = query.Where(p => vendorsInRadius.Contains(p.VendorId));
+            
+            // Debug: Query'den kaç ürün gelecek kontrol et
+            var productCountBeforePaging = await query.CountAsync();
+            Logger.LogWarning($"[PRODUCT_SEARCH] Products matching query (before pagination): {productCountBeforePaging}");
+            
+            // Eğer 0 ürün varsa, debug için vendor'ların ürünlerini kontrol et
+            if (productCountBeforePaging == 0)
+            {
+                Logger.LogWarning($"[PRODUCT_SEARCH] ⚠️ No products found! Checking vendors in radius:");
+                foreach (var vendorId in vendorsInRadius)
+                {
+                    var vendor = allVendors.FirstOrDefault(v => v.Id == vendorId);
+                    if (vendor != null)
+                    {
+                        var vendorProducts = await UnitOfWork.Products.Query()
+                            .Where(p => p.VendorId == vendorId && p.IsAvailable)
+                            .CountAsync();
+                        Logger.LogWarning($"[PRODUCT_SEARCH]   - Vendor: {vendor.Name} (Type: {vendor.Type}) | Products: {vendorProducts}");
+                        
+                        // TÜM ürün isimlerini logla (text search olmasa bile)
+                        var allProductNames = await UnitOfWork.Products.Query()
+                            .Where(p => p.VendorId == vendorId && p.IsAvailable)
+                            .Select(p => p.Name)
+                            .Take(10)
+                            .ToListAsync();
+                        Logger.LogWarning($"[PRODUCT_SEARCH]     All product names: {string.Join(", ", allProductNames)}");
+                        
+                        // Eğer text search varsa, o vendor'ın ürünlerinde arama yap
+                        if (!string.IsNullOrWhiteSpace(request.Query))
+                        {
+                            var searchQuery = request.Query.Trim().ToLower();
+                            var matchingProducts = await UnitOfWork.Products.Query()
+                                .Where(p => p.VendorId == vendorId && p.IsAvailable && 
+                                           (p.Name.ToLower().Contains(searchQuery) ||
+                                            (p.Description != null && p.Description.ToLower().Contains(searchQuery))))
+                                .Select(p => p.Name)
+                                .Take(5)
+                                .ToListAsync();
+                            Logger.LogWarning($"[PRODUCT_SEARCH]     Matching products for '{searchQuery}': {string.Join(", ", matchingProducts)}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Eğer ürün bulunduysa, hangi vendor'lardan geldiğini logla
+                Logger.LogWarning($"[PRODUCT_SEARCH] ✅ Found {productCountBeforePaging} products! Listing first 5:");
+                var sampleProducts = await query
+                    .Take(5)
+                    .Select(p => new { p.Name, VendorName = p.Vendor != null ? p.Vendor.Name : "Unknown", p.VendorId })
+                    .ToListAsync();
+                foreach (var product in sampleProducts)
+                {
+                    var vendor = allVendors.FirstOrDefault(v => v.Id == product.VendorId);
+                    var distance = vendor != null && vendor.Latitude.HasValue && vendor.Longitude.HasValue
+                        ? GeoHelper.CalculateDistance(userLat, userLon, vendor.Latitude.Value, vendor.Longitude.Value)
+                        : (double?)null;
+                    Logger.LogWarning($"[PRODUCT_SEARCH]   - Product: {product.Name} | Vendor: {product.VendorName} | Distance: {(distance.HasValue ? distance.Value.ToString("F2") : "N/A")}km");
+                }
             }
             
             // Normal database query - EF Core ile sayfalama
