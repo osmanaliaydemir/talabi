@@ -808,17 +808,21 @@ public class ProductsController : BaseController
     }
 
     /// <summary>
-    /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler
+    /// Benzer ürünleri getirir - Aynı kategorideki diğer ürünler (5 km yarıçap içinde)
     /// </summary>
     /// <param name="id">Mevcut ürün ID'si</param>
     /// <param name="page">Sayfa numarası (varsayılan: 1)</param>
     /// <param name="pageSize">Sayfa boyutu (varsayılan: 6)</param>
+    /// <param name="userLatitude">Kullanıcı enlemi (latitude)</param>
+    /// <param name="userLongitude">Kullanıcı boylamı (longitude)</param>
     /// <returns>Sayfalanmış benzer ürün listesi</returns>
     [HttpGet("{id}/similar")]
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetSimilarProducts(
         Guid id,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 6)
+        [FromQuery] int pageSize = 6,
+        [FromQuery] double? userLatitude = null,
+        [FromQuery] double? userLongitude = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 6;
@@ -835,13 +839,31 @@ public class ProductsController : BaseController
                 "PRODUCT_NOT_FOUND"));
         }
 
+        // Distance filter (REQUIRED: user location must be provided for radius filtering)
+        List<Guid> vendorsInRadius = new List<Guid>();
+        if (userLatitude.HasValue && userLongitude.HasValue)
+        {
+            var userLat = userLatitude.Value;
+            var userLon = userLongitude.Value;
+
+            // Önce tüm aktif vendor'ları ve konum bilgilerini belleğe al
+            var allVendors = await UnitOfWork.Vendors.Query()
+                .Where(v => v.IsActive && v.Latitude.HasValue && v.Longitude.HasValue)
+                .ToListAsync();
+
+            // Bellekte yarıçap içindeki vendor'ları filtrele
+            vendorsInRadius = allVendors
+                .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <=
+                           (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+                .Select(v => v.Id)
+                .ToList();
+        }
+
         // Aynı kategorideki diğer ürünleri getir
         IQueryable<Product> query = UnitOfWork.Products.Query()
             .Include(p => p.Vendor)
             .Where(p => p.Id != id && p.IsAvailable &&
-                        (p.Vendor == null ||
-                         p.Vendor
-                             .IsActive)); // Mevcut ürünü hariç tut, sadece müsait olanları ve aktif vendor'ların ürünlerini getir
+                        (p.Vendor == null || p.Vendor.IsActive)); // Mevcut ürünü hariç tut, sadece müsait olanları ve aktif vendor'ların ürünlerini getir
 
         // CategoryId varsa ona göre filtrele (öncelikli)
         if (currentProduct.CategoryId.HasValue)
@@ -867,6 +889,28 @@ public class ProductsController : BaseController
             return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
                 emptyResult,
                 LocalizationService.GetLocalizedString(ResourceName, "SimilarProductsNotFound", CurrentCulture)));
+        }
+
+        // Vendor delivery radius kontrolü (kullanıcı konumu verilmişse)
+        if (userLatitude.HasValue && userLongitude.HasValue)
+        {
+            if (!vendorsInRadius.Any())
+            {
+                // Yarıçap içinde vendor yoksa boş liste döndür
+                var emptyResult = new PagedResultDto<ProductDto>
+                {
+                    Items = new List<ProductDto>(),
+                    TotalCount = 0,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalPages = 0
+                };
+                return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
+                    emptyResult,
+                    LocalizationService.GetLocalizedString(ResourceName, "NoVendorsInDeliveryRadius", CurrentCulture)));
+            }
+
+            query = query.Where(p => vendorsInRadius.Contains(p.VendorId));
         }
 
         IOrderedQueryable<Product> orderedQuery = query.OrderByDescending(p => p.CreatedAt); // En yeni ürünler önce

@@ -49,10 +49,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   List<Product> _similarProducts = [];
   bool _isLoadingSimilarProducts = false;
   Map<String, Set<String>> _selectedOptions = {};
+  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
+    _loadAddresses();
     if (widget.product != null) {
       _product = widget.product;
       _isLoading = false;
@@ -61,7 +63,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // Load related data immediately for better UX
       _checkFavorite();
       _loadReviews();
-      _loadSimilarProducts();
+      // Similar products will be loaded after addresses are loaded
       // Log view_item
       AnalyticsService.logViewItem(product: widget.product!);
 
@@ -89,6 +91,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  Future<void> _loadAddresses() async {
+    try {
+      final addresses = await _apiService.getAddresses();
+      if (mounted) {
+        Map<String, dynamic>? selectedAddress;
+        if (addresses.isNotEmpty) {
+          try {
+            selectedAddress = addresses.firstWhere(
+              (addr) => addr['isDefault'] == true,
+            );
+          } catch (_) {
+            selectedAddress = addresses.first;
+          }
+        }
+
+        setState(() {
+          _selectedAddress = selectedAddress;
+        });
+
+        // Adresler yüklendikten sonra benzer ürünleri yükle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadSimilarProducts();
+          }
+        });
+      }
+    } catch (e, stackTrace) {
+      LoggerService().error('Error loading addresses', e, stackTrace);
+      // Hata olsa bile benzer ürünleri yüklemeyi dene (konum olmadan)
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _loadSimilarProducts();
+          }
+        });
+      }
+    }
+  }
+
   Future<void> _loadProduct({bool refreshOnly = false}) async {
     try {
       final product = await _apiService.getProduct(widget.productId);
@@ -102,7 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       if (!refreshOnly) {
         _checkFavorite();
         _loadReviews();
-        _loadSimilarProducts();
+        // Similar products will be loaded after addresses are loaded
         // Log view_item
         AnalyticsService.logViewItem(product: product);
       }
@@ -522,10 +563,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _isLoadingSimilarProducts = true;
     });
     try {
-      // API'den aynı kategorideki benzer ürünleri getir
+      // Get location from selected address
+      double? userLatitude;
+      double? userLongitude;
+      if (_selectedAddress != null) {
+        userLatitude = _selectedAddress!['latitude'] != null
+            ? double.tryParse(_selectedAddress!['latitude'].toString())
+            : null;
+        userLongitude = _selectedAddress!['longitude'] != null
+            ? double.tryParse(_selectedAddress!['longitude'].toString())
+            : null;
+      }
+
+      // API'den aynı kategorideki benzer ürünleri getir (5 km yarıçap içinde)
       final similar = await _apiService.getSimilarProducts(
         _product!.id,
         pageSize: 5,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
 
       if (!mounted || !context.mounted) return;

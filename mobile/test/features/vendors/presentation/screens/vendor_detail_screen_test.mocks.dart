@@ -382,6 +382,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
     String? productId, {
     int? page = 1,
     int? pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -390,6 +392,8 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
           {
             #page: page,
             #pageSize: pageSize,
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
           },
         ),
         returnValue: _i13.Future<List<_i3.Product>>.value(<_i3.Product>[]),

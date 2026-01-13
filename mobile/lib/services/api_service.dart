@@ -246,12 +246,16 @@ class ApiService {
     String productId, {
     int page = 1,
     int pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) async {
     try {
       return await _productRemoteDataSource.getSimilarProducts(
         productId,
         page: page,
         pageSize: pageSize,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching similar products', e, stackTrace);

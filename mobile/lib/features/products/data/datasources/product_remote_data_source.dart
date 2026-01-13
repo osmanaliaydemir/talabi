@@ -131,10 +131,17 @@ class ProductRemoteDataSource {
     String productId, {
     int page = 1,
     int pageSize = 6,
+    double? userLatitude,
+    double? userLongitude,
   }) async {
+    final queryParams = <String, dynamic>{'page': page, 'pageSize': pageSize};
+    if (userLatitude != null && userLongitude != null) {
+      queryParams['userLatitude'] = userLatitude;
+      queryParams['userLongitude'] = userLongitude;
+    }
     final response = await _networkClient.dio.get(
       '${ApiEndpoints.products}/$productId/similar',
-      queryParameters: {'page': page, 'pageSize': pageSize},
+      queryParameters: queryParams,
     );
 
     final apiResponse = ApiResponse.fromJson(
