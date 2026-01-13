@@ -286,11 +286,27 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     try {
+      // Debug: Autocomplete parametrelerini logla
+      LoggerService().error(
+        '[AUTOCOMPLETE] Searching with location: lat=$userLatitude, lon=$userLongitude, query=$query',
+      );
+
       final results = await _apiService.autocomplete(
         query,
         userLatitude: userLatitude,
         userLongitude: userLongitude,
       );
+
+      // Debug: Autocomplete sonuçlarını logla
+      LoggerService().error(
+        '[AUTOCOMPLETE] Received ${results.length} results',
+      );
+      for (final result in results.take(5)) {
+        LoggerService().error(
+          '[AUTOCOMPLETE]   - ${result.type}: ${result.name} (id: ${result.id})',
+        );
+      }
+
       setState(() {
         _autocompleteResults = results;
         _showAutocomplete = true;
