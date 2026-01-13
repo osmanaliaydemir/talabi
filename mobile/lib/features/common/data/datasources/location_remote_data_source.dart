@@ -188,11 +188,20 @@ class LocationRemoteDataSource {
     }
   }
 
-  Future<List<Map<String, dynamic>>> autocomplete(String query) async {
+  Future<List<Map<String, dynamic>>> autocomplete(
+    String query, {
+    double? userLatitude,
+    double? userLongitude,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{'query': query};
+      if (userLatitude != null && userLongitude != null) {
+        queryParams['userLatitude'] = userLatitude;
+        queryParams['userLongitude'] = userLongitude;
+      }
       final response = await _networkClient.dio.get(
         ApiEndpoints.apiAutocomplete,
-        queryParameters: {'query': query},
+        queryParameters: queryParams,
       );
 
       if (response.data is Map<String, dynamic> &&

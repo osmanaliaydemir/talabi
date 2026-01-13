@@ -1388,11 +1388,19 @@ class MockApiService extends _i1.Mock implements _i12.ApiService {
       ) as _i13.Future<List<String>>);
 
   @override
-  _i13.Future<List<_i6.AutocompleteResultDto>> autocomplete(String? query) =>
+  _i13.Future<List<_i6.AutocompleteResultDto>> autocomplete(
+    String? query, {
+    double? userLatitude,
+    double? userLongitude,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #autocomplete,
           [query],
+          {
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
+          },
         ),
         returnValue: _i13.Future<List<_i6.AutocompleteResultDto>>.value(
             <_i6.AutocompleteResultDto>[]),

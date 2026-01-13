@@ -1676,11 +1676,19 @@ class MockLocationRemoteDataSource extends _i1.Mock
       ) as _i8.Future<List<String>>);
 
   @override
-  _i8.Future<List<Map<String, dynamic>>> autocomplete(String? query) =>
+  _i8.Future<List<Map<String, dynamic>>> autocomplete(
+    String? query, {
+    double? userLatitude,
+    double? userLongitude,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #autocomplete,
           [query],
+          {
+            #userLatitude: userLatitude,
+            #userLongitude: userLongitude,
+          },
         ),
         returnValue: _i8.Future<List<Map<String, dynamic>>>.value(
             <Map<String, dynamic>>[]),

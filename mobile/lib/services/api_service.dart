@@ -1272,9 +1272,17 @@ class ApiService {
     }
   }
 
-  Future<List<AutocompleteResultDto>> autocomplete(String query) async {
+  Future<List<AutocompleteResultDto>> autocomplete(
+    String query, {
+    double? userLatitude,
+    double? userLongitude,
+  }) async {
     try {
-      final results = await _locationRemoteDataSource.autocomplete(query);
+      final results = await _locationRemoteDataSource.autocomplete(
+        query,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
+      );
       return results.map((e) => AutocompleteResultDto.fromJson(e)).toList();
     } catch (e, stackTrace) {
       LoggerService().error('Error during autocomplete', e, stackTrace);

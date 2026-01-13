@@ -265,8 +265,32 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _performAutocomplete(String query) async {
+    // Eğer adresler henüz yükleniyorsa, autocomplete'i konum olmadan yap veya bekle
+    if (_isLoadingAddresses) {
+      // Optionally, you could delay or perform autocomplete without location
+      // For now, we'll proceed without location if it's still loading
+      LoggerService().warning(
+        'Addresses still loading, performing autocomplete without location.',
+      );
+    }
+
+    double? userLatitude;
+    double? userLongitude;
+    if (_selectedAddress != null) {
+      userLatitude = _selectedAddress!['latitude'] != null
+          ? double.tryParse(_selectedAddress!['latitude'].toString())
+          : null;
+      userLongitude = _selectedAddress!['longitude'] != null
+          ? double.tryParse(_selectedAddress!['longitude'].toString())
+          : null;
+    }
+
     try {
-      final results = await _apiService.autocomplete(query);
+      final results = await _apiService.autocomplete(
+        query,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
+      );
       setState(() {
         _autocompleteResults = results;
         _showAutocomplete = true;
