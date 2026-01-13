@@ -265,15 +265,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _performAutocomplete(String query) async {
-    // Eğer adresler henüz yükleniyorsa, autocomplete'i konum olmadan yap veya bekle
-    if (_isLoadingAddresses) {
-      // Optionally, you could delay or perform autocomplete without location
-      // For now, we'll proceed without location if it's still loading
-      LoggerService().warning(
-        'Addresses still loading, performing autocomplete without location.',
-      );
-    }
-
     double? userLatitude;
     double? userLongitude;
     if (_selectedAddress != null) {
@@ -286,26 +277,11 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     try {
-      // Debug: Autocomplete parametrelerini logla
-      LoggerService().error(
-        '[AUTOCOMPLETE] Searching with location: lat=$userLatitude, lon=$userLongitude, query=$query',
-      );
-
       final results = await _apiService.autocomplete(
         query,
         userLatitude: userLatitude,
         userLongitude: userLongitude,
       );
-
-      // Debug: Autocomplete sonuçlarını logla
-      LoggerService().error(
-        '[AUTOCOMPLETE] Received ${results.length} results',
-      );
-      for (final result in results.take(5)) {
-        LoggerService().error(
-          '[AUTOCOMPLETE]   - ${result.type}: ${result.name} (id: ${result.id})',
-        );
-      }
 
       setState(() {
         _autocompleteResults = results;
@@ -391,11 +367,6 @@ class _SearchScreenState extends State<SearchScreen> {
           ? 1
           : 2;
 
-      // Debug: Konum bilgisini logla
-      LoggerService().error(
-        '[SEARCH] Searching products with location: lat=$userLatitude, lon=$userLongitude, query=$_currentQuery, vendorType=$vendorType',
-      );
-
       final request = ProductSearchRequestDto(
         query: _currentQuery.isEmpty ? null : _currentQuery,
         categoryId: _selectedCategoryId,
@@ -409,15 +380,7 @@ class _SearchScreenState extends State<SearchScreen> {
         userLongitude: userLongitude,
       );
 
-      // Debug: Request parametrelerini logla
-      LoggerService().error('[SEARCH] Request params: ${request.toJson()}');
-
       final results = await _apiService.searchProducts(request);
-
-      // Debug: Sonuçları logla
-      LoggerService().error(
-        '[SEARCH] Received ${results.items.length} products (total: ${results.totalCount})',
-      );
       if (mounted) {
         setState(() {
           if (isRefresh) {
