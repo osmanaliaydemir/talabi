@@ -109,19 +109,23 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     );
 
     try {
-      final pagedResult = await _apiService.searchProducts(
-        ProductSearchRequestDto(
-          // Hem categoryId hem de categoryName gönder (backend'de fallback için)
-          // categoryId varsa öncelik verilir, yoksa category string kullanılır
-          category:
-              widget.categoryName, // Category name'i de gönder (fallback için)
-          categoryId: widget.categoryId,
-          vendorType: vendorType,
-          pageSize: 50, // Fetch more items for the category page
-          userLatitude: userLatitude,
-          userLongitude: userLongitude,
-        ),
+      final request = ProductSearchRequestDto(
+        // Hem categoryId hem de categoryName gönder (backend'de fallback için)
+        // categoryId varsa öncelik verilir, yoksa category string kullanılır
+        category:
+            widget.categoryName, // Category name'i de gönder (fallback için)
+        categoryId: widget.categoryId,
+        vendorType: vendorType,
+        pageSize: 50, // Fetch more items for the category page
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
       );
+
+      LoggerService().error(
+        '[CATEGORY_PRODUCTS] Request params: ${request.toJson()}',
+      );
+
+      final pagedResult = await _apiService.searchProducts(request);
 
       LoggerService().error(
         '[CATEGORY_PRODUCTS] Received ${pagedResult.items.length} products (total: ${pagedResult.totalCount})',

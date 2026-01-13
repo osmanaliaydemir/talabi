@@ -95,12 +95,21 @@ public class ProductsController : BaseController
 
         // Query string'den userLatitude ve userLongitude parametrelerini manuel olarak oku
         // (camelCase query string parametreleri için)
-        if (Request.Query.ContainsKey("userLatitude") && double.TryParse(Request.Query["userLatitude"].ToString(), out var parsedLat))
+        // InvariantCulture kullanarak parse et (nokta/virgül sorununu önlemek için)
+        if (Request.Query.ContainsKey("userLatitude") && double.TryParse(
+            Request.Query["userLatitude"].ToString(), 
+            System.Globalization.NumberStyles.Float, 
+            System.Globalization.CultureInfo.InvariantCulture, 
+            out var parsedLat))
         {
             request.UserLatitude = parsedLat;
         }
         
-        if (Request.Query.ContainsKey("userLongitude") && double.TryParse(Request.Query["userLongitude"].ToString(), out var parsedLon))
+        if (Request.Query.ContainsKey("userLongitude") && double.TryParse(
+            Request.Query["userLongitude"].ToString(), 
+            System.Globalization.NumberStyles.Float, 
+            System.Globalization.CultureInfo.InvariantCulture, 
+            out var parsedLon))
         {
             request.UserLongitude = parsedLon;
         }
@@ -178,16 +187,18 @@ public class ProductsController : BaseController
                 var radius = v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm;
                 var isInRadius = distance <= radius;
                 
-                // Debug: İlk 5 vendor için log
-                if (allVendors.IndexOf(v) < 5)
+                // Debug: İlk 10 vendor için log
+                if (allVendors.IndexOf(v) < 10)
                 {
-                    Logger.LogWarning($"[PRODUCT_SEARCH] Vendor: {v.Name} | Lat={v.Latitude.Value}, Lon={v.Longitude.Value} | Radius={radius}km | Distance={distance:F2}km | InRadius={isInRadius}");
+                    Logger.LogWarning($"[PRODUCT_SEARCH] Vendor: {v.Name} | Lat={v.Latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}, Lon={v.Longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)} | Radius={radius}km | Distance={distance.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}km | InRadius={isInRadius}");
                 }
                 
                 return isInRadius;
             })
             .Select(v => v.Id)
             .ToList();
+            
+        Logger.LogWarning($"[PRODUCT_SEARCH] Total vendors: {allVendors.Count}, Vendors in radius: {vendorsInRadius.Count}, User location: Lat={userLat.ToString(System.Globalization.CultureInfo.InvariantCulture)}, Lon={userLon.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
 
         // Category filter - HER ZAMAN memory'de filtrele (Category string eşleşmesi için gerekli)
         // CategoryId ve Category string OR mantığı ile çalışmalı
@@ -224,6 +235,13 @@ public class ProductsController : BaseController
             query = query.Where(p => vendorsInRadius.Contains(p.VendorId));
             var allProducts = await query.ToListAsync();
             
+            Logger.LogWarning($"[PRODUCT_SEARCH] Products after vendor radius filter: {allProducts.Count}");
+            
+            if (!allProducts.Any())
+            {
+                Logger.LogWarning($"[PRODUCT_SEARCH] No products found in vendor radius. Vendors in radius: {vendorsInRadius.Count}");
+            }
+            
             // OR mantığı ile filtrele: CategoryId eşleşen VEYA Category string eşleşen
             Logger.LogWarning($"[PRODUCT_SEARCH] Filtering {allProducts.Count} products. CategoryId: {categoryIdToMatch}, Category: '{categoryNameToMatch}'");
             
@@ -242,25 +260,47 @@ public class ProductsController : BaseController
                 if (categoryIdToMatch.HasValue && p.CategoryId.HasValue && p.CategoryId.Value == categoryIdToMatch.Value)
                 {
                     categoryIdMatch = true;
+                    Logger.LogWarning($"[PRODUCT_SEARCH] CategoryId match: Product '{p.Name}' (CategoryId: {p.CategoryId.Value}) matches requested CategoryId: {categoryIdToMatch.Value}");
                 }
                 
                 // Category string eşleşiyorsa dahil et (case-insensitive, trim, normalize)
                 if (!string.IsNullOrWhiteSpace(categoryNameToMatch) && !string.IsNullOrWhiteSpace(p.Category))
                 {
-                    // Normalize: trim + remove extra spaces
-                    var productCategory = p.Category.Trim().Replace("  ", " ").Replace("&", "&").Replace("&amp;", "&");
-                    var requestedCategory = categoryNameToMatch.Trim().Replace("  ", " ").Replace("&", "&").Replace("&amp;", "&");
+                    // Normalize: trim + remove extra spaces + normalize HTML entities
+                    var productCategory = p.Category.Trim()
+                        .Replace("  ", " ")
+                        .Replace("&amp;", "&")
+                        .Replace("&nbsp;", " ")
+                        .Replace("&quot;", "\"")
+                        .Replace("&apos;", "'");
+                    
+                    var requestedCategory = categoryNameToMatch.Trim()
+                        .Replace("  ", " ")
+                        .Replace("&amp;", "&")
+                        .Replace("&nbsp;", " ")
+                        .Replace("&quot;", "\"")
+                        .Replace("&apos;", "'");
                     
                     // Exact match (case-insensitive)
                     if (productCategory.Equals(requestedCategory, StringComparison.OrdinalIgnoreCase))
                     {
                         categoryStringMatch = true;
+                        Logger.LogWarning($"[PRODUCT_SEARCH] Category string exact match: Product '{p.Name}' (Category: '{p.Category}') matches requested: '{categoryNameToMatch}'");
                     }
                     // Contains match (fallback - kısmi eşleşme için)
                     else if (productCategory.Contains(requestedCategory, StringComparison.OrdinalIgnoreCase) ||
                              requestedCategory.Contains(productCategory, StringComparison.OrdinalIgnoreCase))
                     {
                         categoryStringMatch = true;
+                        Logger.LogWarning($"[PRODUCT_SEARCH] Category string partial match: Product '{p.Name}' (Category: '{p.Category}') partially matches requested: '{categoryNameToMatch}'");
+                    }
+                    else
+                    {
+                        // Debug: Neden eşleşmediğini logla (sadece ilk 5 ürün için)
+                        if (allProducts.IndexOf(p) < 5)
+                        {
+                            Logger.LogWarning($"[PRODUCT_SEARCH] Category string NO match: Product '{p.Name}' | ProductCategory: '{productCategory}' | RequestedCategory: '{requestedCategory}'");
+                        }
                     }
                 }
                 
