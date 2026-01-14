@@ -16,7 +16,7 @@ import 'package:mobile/features/reviews/presentation/screens/customer/user_revie
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
-import 'package:mobile/services/api_service.dart';
+import 'package:mobile/features/profile/presentation/providers/profile_provider.dart';
 import 'package:mobile/features/wallet/presentation/screens/wallet_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -27,37 +27,19 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final ApiService _apiService = ApiService();
-  Map<String, dynamic>? _profile;
-  bool _isLoadingProfile = false;
-
   @override
   void initState() {
     super.initState();
-    _fetchProfile();
-  }
-
-  Future<void> _fetchProfile() async {
-    setState(() => _isLoadingProfile = true);
-    try {
-      final profile = await _apiService.getProfile();
-      if (mounted) {
-        setState(() {
-          _profile = profile;
-          _isLoadingProfile = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingProfile = false);
-      }
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().fetchProfile();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final authProvider = Provider.of<AuthProvider>(context);
+    final profileProvider = Provider.of<ProfileProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -79,20 +61,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: Icons.person_outline,
                   title: localizations.editProfile,
                   subtitle: localizations.editProfile,
-                  onTap: () {
-                    if (_profile != null) {
-                      Navigator.push(
+                  onTap: () async {
+                    final profile = profileProvider.profile;
+                    if (profile != null) {
+                      final updated = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              EditProfileScreen(profile: _profile!),
+                              EditProfileScreen(profile: profile),
                         ),
-                      ).then((updated) {
-                        if (updated == true) _fetchProfile();
-                      });
+                      );
+
+                      if (context.mounted && updated == true) {
+                        context.read<ProfileProvider>().fetchProfile();
+                      }
                     }
                   },
-                  trailing: _isLoadingProfile
+                  trailing: profileProvider.isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,

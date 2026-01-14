@@ -9,7 +9,6 @@ import 'package:mobile/features/auth/presentation/screens/customer/forgot_passwo
 import 'package:mobile/features/auth/presentation/screens/customer/register_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/courier/login_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/login_screen.dart';
-import 'package:mobile/services/social_auth_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
@@ -39,29 +38,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-    setState(() {
-      _isLoading = true;
-    });
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     try {
-      final socialAuthService = SocialAuthService();
-      final response = await socialAuthService.signInWithGoogle();
+      await authProvider.signInWithGoogle();
 
-      if (response == null) {
-        return;
-      }
-
-      if (mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.setAuthData(
-          response['token'],
-          response['refreshToken'],
-          response['userId'],
-          response['role'],
-        );
-
-        if (!mounted) return;
-
+      if (mounted && authProvider.isAuthenticated) {
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
@@ -73,39 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
           isSuccess: false,
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
   Future<void> _signInWithFacebook() async {
-    setState(() {
-      _isLoading = true;
-    });
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     try {
-      final socialAuthService = SocialAuthService();
-      final response = await socialAuthService.signInWithFacebook();
+      await authProvider.signInWithFacebook();
 
-      if (response == null) {
-        return;
-      }
-
-      if (mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.setAuthData(
-          response['token'],
-          response['refreshToken'],
-          response['userId'],
-          response['role'],
-        );
-
-        if (!mounted) return;
-
+      if (mounted && authProvider.isAuthenticated) {
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
@@ -116,12 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
           message: localizations.facebookLoginFailed(e.toString()),
           isSuccess: false,
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
@@ -239,6 +192,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isLoading = _isLoading || authProvider.isLoading;
 
     return Scaffold(
       body: Container(
@@ -492,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton(
-                                    onPressed: _isLoading ? () {} : _login,
+                                    onPressed: isLoading ? () {} : _login,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.primaryOrange,
                                       foregroundColor: AppTheme.textOnPrimary,
@@ -504,7 +459,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       elevation: 0,
                                     ),
-                                    child: _isLoading
+                                    child: isLoading
                                         ? const SizedBox(
                                             height: 20,
                                             width: 20,
@@ -558,7 +513,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       child: _buildSocialButton(
                                         icon: Icons.g_mobiledata,
                                         label: localizations.google,
-                                        onPressed: _isLoading
+                                        onPressed: isLoading
                                             ? () {}
                                             : _signInWithGoogle,
                                       ),
@@ -568,7 +523,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       child: _buildSocialButton(
                                         icon: Icons.facebook,
                                         label: localizations.facebook,
-                                        onPressed: _isLoading
+                                        onPressed: isLoading
                                             ? () {}
                                             : _signInWithFacebook,
                                         isFacebook: true,

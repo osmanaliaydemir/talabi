@@ -13,6 +13,8 @@ import 'package:get_it/get_it.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:mobile/features/orders/presentation/providers/order_detail_provider.dart';
+
 import 'order_detail_screen_test.mocks.dart';
 
 @GenerateMocks([ApiService])
@@ -42,6 +44,9 @@ void main() {
           value: bottomNavProvider,
         ),
         ChangeNotifierProvider<CartProvider>.value(value: cartProvider),
+        ChangeNotifierProvider<OrderDetailProvider>(
+          create: (_) => OrderDetailProvider(apiService: mockApiService),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: const [
@@ -52,7 +57,7 @@ void main() {
         ],
         supportedLocales: const [Locale('tr')],
         locale: const Locale('tr'),
-        home: OrderDetailScreen(orderId: orderId, apiService: mockApiService),
+        home: OrderDetailScreen(orderId: orderId),
       ),
     );
   }

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/profile/data/models/address.dart';
 import 'package:mobile/features/profile/presentation/screens/customer/add_edit_address_screen.dart';
-import 'package:mobile/services/api_service.dart';
+import 'package:mobile/features/profile/presentation/providers/address_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
@@ -18,9 +19,6 @@ class AddressesScreen extends StatefulWidget {
 
 class _AddressesScreenState extends State<AddressesScreen>
     with TickerProviderStateMixin {
-  final ApiService _apiService = ApiService();
-  List<Address> _addresses = [];
-  bool _isLoading = true;
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late AnimationController _scaleController;
@@ -31,7 +29,9 @@ class _AddressesScreenState extends State<AddressesScreen>
   @override
   void initState() {
     super.initState();
-    _loadAddresses();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AddressProvider>().loadAddresses();
+    });
 
     _fadeController = AnimationController(
       vsync: this,
@@ -64,10 +64,10 @@ class _AddressesScreenState extends State<AddressesScreen>
 
     _fadeController.forward();
     Future.delayed(const Duration(milliseconds: 200), () {
-      _slideController.forward();
+      if (mounted) _slideController.forward();
     });
     Future.delayed(const Duration(milliseconds: 400), () {
-      _scaleController.forward();
+      if (mounted) _scaleController.forward();
     });
   }
 
@@ -77,30 +77,6 @@ class _AddressesScreenState extends State<AddressesScreen>
     _slideController.dispose();
     _scaleController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadAddresses() async {
-    try {
-      final addressesData = await _apiService.getAddresses();
-      setState(() {
-        _addresses = addressesData
-            .map((data) => Address.fromJson(data))
-            .toList();
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: '${l10n.addressesLoadFailed}: $e',
-          isSuccess: false,
-        );
-      }
-    }
   }
 
   Future<void> _deleteAddress(String id) async {
@@ -121,10 +97,9 @@ class _AddressesScreenState extends State<AddressesScreen>
       ),
     );
 
-    if (confirm == true) {
+    if (confirm == true && mounted) {
       try {
-        await _apiService.deleteAddress(id);
-        await _loadAddresses();
+        await context.read<AddressProvider>().deleteAddress(id);
         if (mounted) {
           ToastMessage.show(
             context,
@@ -148,8 +123,7 @@ class _AddressesScreenState extends State<AddressesScreen>
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      await _apiService.setDefaultAddress(id);
-      _loadAddresses();
+      await context.read<AddressProvider>().setDefaultAddress(id);
       if (mounted) {
         ToastMessage.show(
           context,
@@ -176,170 +150,192 @@ class _AddressesScreenState extends State<AddressesScreen>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // Header
-          SharedHeader(
-            title: localizations.myAddresses,
-            subtitle: _addresses.length == 1
-                ? localizations.addressCountSingular
-                : localizations.addressCountPlural(_addresses.length),
-            icon: Icons.location_on,
-            showBackButton: true,
-          ),
-          // Main Content
-          Expanded(
-            child: Container(
-              color: Colors.white,
-              child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: colorScheme.primary,
-                      ),
-                    )
-                  : _addresses.isEmpty
-                  ? _buildEmptyState()
-                  : SingleChildScrollView(
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: SlideTransition(
-                          position: _slideAnimation,
-                          child: ScaleTransition(
-                            scale: _scaleAnimation,
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 20),
-                                  // Animated Logo/Icon
-                                  TweenAnimationBuilder<double>(
-                                    tween: Tween(begin: 0.0, end: 1.0),
-                                    duration: const Duration(
-                                      milliseconds: 1200,
-                                    ),
-                                    curve: Curves.elasticOut,
-                                    builder: (context, value, child) {
-                                      final colorScheme = Theme.of(
-                                        context,
-                                      ).colorScheme;
-                                      return Transform.scale(
-                                        scale: value,
-                                        child: Transform.rotate(
-                                          angle: (1 - value) * 2 * math.pi,
-                                          child: Container(
-                                            width: 90,
-                                            height: 90,
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.primary
-                                                  .withValues(alpha: 0.1),
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
+      body: Consumer<AddressProvider>(
+        builder: (context, provider, child) {
+          final addresses = provider.addresses;
+          final isLoading = provider.isLoading;
+
+          return Column(
+            children: [
+              // Header
+              SharedHeader(
+                title: localizations.myAddresses,
+                subtitle: addresses.length == 1
+                    ? localizations.addressCountSingular
+                    : localizations.addressCountPlural(addresses.length),
+                icon: Icons.location_on,
+                showBackButton: true,
+              ),
+              // Main Content
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  child: isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: colorScheme.primary,
+                          ),
+                        )
+                      : addresses.isEmpty
+                      ? _buildEmptyState()
+                      : SingleChildScrollView(
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: SlideTransition(
+                              position: _slideAnimation,
+                              child: ScaleTransition(
+                                scale: _scaleAnimation,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 20),
+                                      // Animated Logo/Icon
+                                      TweenAnimationBuilder<double>(
+                                        tween: Tween(begin: 0.0, end: 1.0),
+                                        duration: const Duration(
+                                          milliseconds: 1200,
+                                        ),
+                                        curve: Curves.elasticOut,
+                                        builder: (context, value, child) {
+                                          final colorScheme = Theme.of(
+                                            context,
+                                          ).colorScheme;
+                                          return Transform.scale(
+                                            scale: value,
+                                            child: Transform.rotate(
+                                              angle: (1 - value) * 2 * math.pi,
+                                              child: Container(
+                                                width: 90,
+                                                height: 90,
+                                                decoration: BoxDecoration(
+                                                  color: colorScheme.primary
                                                       .withValues(alpha: 0.1),
-                                                  blurRadius: 15,
-                                                  spreadRadius: 3,
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withValues(
+                                                            alpha: 0.1,
+                                                          ),
+                                                      blurRadius: 15,
+                                                      spreadRadius: 3,
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              Icons.location_on,
-                                              size: 40,
-                                              color: colorScheme.primary,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 32),
-                                  // Title
-                                  TweenAnimationBuilder<double>(
-                                    tween: Tween(begin: 0.0, end: 1.0),
-                                    duration: const Duration(milliseconds: 800),
-                                    curve: Curves.easeOut,
-                                    builder: (context, value, child) {
-                                      return Opacity(
-                                        opacity: value,
-                                        child: Transform.translate(
-                                          offset: Offset(0, 20 * (1 - value)),
-                                          child: Text(
-                                            localizations.myAddresses,
-                                            style: const TextStyle(
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                              letterSpacing: 1.0,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 12),
-                                  TweenAnimationBuilder<double>(
-                                    tween: Tween(begin: 0.0, end: 1.0),
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    curve: Curves.easeOut,
-                                    builder: (context, value, child) {
-                                      return Opacity(
-                                        opacity: value,
-                                        child: Transform.translate(
-                                          offset: Offset(0, 20 * (1 - value)),
-                                          child: Text(
-                                            localizations
-                                                .manageDeliveryAddresses,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                              letterSpacing: 0.5,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 40),
-                                  // Address Cards
-                                  ...List.generate(
-                                    _addresses.length,
-                                    (index) => TweenAnimationBuilder<double>(
-                                      tween: Tween(begin: 0.0, end: 1.0),
-                                      duration: Duration(
-                                        milliseconds: 600 + (index * 150),
-                                      ),
-                                      curve: Curves.easeOutCubic,
-                                      builder: (context, value, child) {
-                                        return Opacity(
-                                          opacity: value,
-                                          child: Transform.translate(
-                                            offset: Offset(50 * (1 - value), 0),
-                                            child: Transform.scale(
-                                              scale: 0.8 + (0.2 * value),
-                                              child: _buildAddressCard(
-                                                _addresses[index],
-                                                index,
+                                                child: Icon(
+                                                  Icons.location_on,
+                                                  size: 40,
+                                                  color: colorScheme.primary,
+                                                ),
                                               ),
                                             ),
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 32),
+                                      // Title
+                                      TweenAnimationBuilder<double>(
+                                        tween: Tween(begin: 0.0, end: 1.0),
+                                        duration: const Duration(
+                                          milliseconds: 800,
+                                        ),
+                                        curve: Curves.easeOut,
+                                        builder: (context, value, child) {
+                                          return Opacity(
+                                            opacity: value,
+                                            child: Transform.translate(
+                                              offset: Offset(
+                                                0,
+                                                20 * (1 - value),
+                                              ),
+                                              child: Text(
+                                                localizations.myAddresses,
+                                                style: const TextStyle(
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                  letterSpacing: 1.0,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 12),
+                                      TweenAnimationBuilder<double>(
+                                        tween: Tween(begin: 0.0, end: 1.0),
+                                        duration: const Duration(
+                                          milliseconds: 1000,
+                                        ),
+                                        curve: Curves.easeOut,
+                                        builder: (context, value, child) {
+                                          return Opacity(
+                                            opacity: value,
+                                            child: Transform.translate(
+                                              offset: Offset(
+                                                0,
+                                                20 * (1 - value),
+                                              ),
+                                              child: Text(
+                                                localizations
+                                                    .manageDeliveryAddresses,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[600],
+                                                  letterSpacing: 0.5,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 40),
+                                      // Address Cards
+                                      ...List.generate(
+                                        addresses.length,
+                                        (
+                                          index,
+                                        ) => TweenAnimationBuilder<double>(
+                                          tween: Tween(begin: 0.0, end: 1.0),
+                                          duration: Duration(
+                                            milliseconds: 600 + (index * 150),
                                           ),
-                                        );
-                                      },
-                                    ),
+                                          curve: Curves.easeOutCubic,
+                                          builder: (context, value, child) {
+                                            return Opacity(
+                                              opacity: value,
+                                              child: Transform.translate(
+                                                offset: Offset(
+                                                  50 * (1 - value),
+                                                  0,
+                                                ),
+                                                child: Transform.scale(
+                                                  scale: 0.8 + (0.2 * value),
+                                                  child: _buildAddressCard(
+                                                    addresses[index],
+                                                    index,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-            ),
-          ),
-        ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -350,7 +346,8 @@ class _AddressesScreenState extends State<AddressesScreen>
             ),
           );
           if (result == true) {
-            _loadAddresses();
+            // context.read<AddressProvider>().loadAddresses();
+            // Provider handles reload automatically if logic is there, but for safety in nav back
           }
         },
         backgroundColor: colorScheme.primary,
@@ -372,7 +369,7 @@ class _AddressesScreenState extends State<AddressesScreen>
           MaterialPageRoute(builder: (context) => const AddEditAddressScreen()),
         );
         if (result == true) {
-          _loadAddresses();
+          // context.read<AddressProvider>().loadAddresses();
         }
       },
       isCompact: true,
@@ -394,7 +391,7 @@ class _AddressesScreenState extends State<AddressesScreen>
               ),
             );
             if (result == true) {
-              _loadAddresses();
+              // context.read<AddressProvider>().loadAddresses();
             }
           },
           borderRadius: BorderRadius.circular(20),
@@ -565,7 +562,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                             ),
                           );
                           if (result == true) {
-                            _loadAddresses();
+                            // context.read<AddressProvider>().loadAddresses();
                           }
                         } else if (value == 'default') {
                           _setDefaultAddress(address.id);

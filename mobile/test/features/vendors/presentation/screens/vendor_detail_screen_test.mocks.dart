@@ -2726,6 +2726,46 @@ class MockCartProvider extends _i1.Mock implements _i24.CartProvider {
       ) as bool);
 
   @override
+  _i25.CartItem? getCartItem(String? productId) => (super.noSuchMethod(
+        Invocation.method(
+          #getCartItem,
+          [productId],
+        ),
+        returnValueForMissingStub: null,
+      ) as _i25.CartItem?);
+
+  @override
+  _i13.Future<void> loadCartWithDependencies({
+    required int? vendorType,
+    double? lat,
+    double? lon,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #loadCartWithDependencies,
+          [],
+          {
+            #vendorType: vendorType,
+            #lat: lat,
+            #lon: lon,
+          },
+        ),
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
+
+  @override
+  _i13.Future<void> checkUpsellOpportunities(int? vendorType) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #checkUpsellOpportunities,
+          [vendorType],
+        ),
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
+
+  @override
   _i13.Future<void> fetchRecommendations({
     int? type,
     double? lat,

@@ -19,6 +19,9 @@ import 'package:mobile/features/home/presentation/providers/home_provider.dart';
 import 'package:mobile/features/categories/presentation/providers/categories_provider.dart';
 import 'package:mobile/features/cart/presentation/providers/cart_ui_provider.dart';
 import 'package:mobile/features/orders/presentation/providers/checkout_provider.dart';
+import 'package:mobile/features/orders/presentation/providers/order_detail_provider.dart';
+import 'package:mobile/features/profile/presentation/providers/address_provider.dart';
+import 'package:mobile/features/profile/presentation/providers/profile_provider.dart';
 import 'package:mobile/features/auth/presentation/screens/customer/login_screen.dart';
 import 'package:mobile/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:mobile/routers/app_router.dart';
@@ -108,6 +111,9 @@ class MyApp extends StatelessWidget {
           lazy: true,
         ),
         ChangeNotifierProvider(create: (context) => CheckoutProvider()),
+        ChangeNotifierProvider(create: (context) => OrderDetailProvider()),
+        ChangeNotifierProvider(create: (context) => AddressProvider()),
+        ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],
       child: Consumer3<LocalizationProvider, ThemeProvider, BottomNavProvider>(
         builder: (context, localization, themeProvider, bottomNav, _) {
@@ -126,7 +132,7 @@ class MyApp extends StatelessWidget {
           });
 
           return MaterialApp(
-            title: 'Talabi',
+            title: 'Talaby Go',
             debugShowCheckedModeBanner: false,
             locale: localization.locale,
             navigatorKey: NavigationService.navigatorKey,

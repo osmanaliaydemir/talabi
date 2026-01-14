@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/features/profile/presentation/screens/customer/addresses_screen.dart';
-import 'package:mobile/services/api_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
+// ignore: depend_on_referenced_packages
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/features/profile/presentation/providers/address_provider.dart';
+import 'package:mobile/features/profile/data/models/address.dart';
 import 'package:provider/provider.dart';
 
 import 'addresses_screen_test.mocks.dart';
 
-@GenerateMocks([ApiService, NotificationProvider])
+@GenerateMocks([NotificationProvider, AddressProvider])
 void main() {
-  late MockApiService mockApiService;
   late MockNotificationProvider mockNotificationProvider;
+  late MockAddressProvider mockAddressProvider;
 
   setUp(() async {
     await GetIt.instance.reset();
-    mockApiService = MockApiService();
     mockNotificationProvider = MockNotificationProvider();
-
-    GetIt.instance.registerSingleton<ApiService>(mockApiService);
+    mockAddressProvider = MockAddressProvider();
 
     // Stub NotificationProvider basic properties
     when(mockNotificationProvider.unreadCount).thenReturn(0);
     when(mockNotificationProvider.notifications).thenReturn([]);
     when(mockNotificationProvider.isLoading).thenReturn(false);
     when(mockNotificationProvider.error).thenReturn(null);
+
+    // Stub AddressProvider basic properties
+    when(mockAddressProvider.isLoading).thenReturn(false);
+    when(mockAddressProvider.addresses).thenReturn([]);
+    when(mockAddressProvider.error).thenReturn(null);
 
     ToastMessage.isTestMode = true;
     AnalyticsService.isTestMode = true;
@@ -42,6 +47,9 @@ void main() {
       providers: [
         ChangeNotifierProvider<NotificationProvider>.value(
           value: mockNotificationProvider,
+        ),
+        ChangeNotifierProvider<AddressProvider>.value(
+          value: mockAddressProvider,
         ),
       ],
       child: const MaterialApp(
@@ -62,26 +70,31 @@ void main() {
     testWidgets('should render loading indicator initially', (
       WidgetTester tester,
     ) async {
-      when(mockApiService.getAddresses()).thenAnswer((_) async {
-        await Future.delayed(const Duration(seconds: 1));
-        return [];
-      });
+      when(mockAddressProvider.isLoading).thenReturn(true);
+      when(mockAddressProvider.loadAddresses()).thenAnswer((_) async {});
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump(); // Start animation
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      await tester.pumpAndSettle();
+
+      // Flush timers (200ms and 400ms in initState)
+      await tester.pump(const Duration(milliseconds: 1000));
     });
 
     testWidgets('should render empty state when no addresses', (
       WidgetTester tester,
     ) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
-      when(mockApiService.getAddresses()).thenAnswer((_) async => []);
+      when(mockAddressProvider.isLoading).thenReturn(false);
+      when(mockAddressProvider.addresses).thenReturn([]);
+      when(mockAddressProvider.loadAddresses()).thenAnswer((_) async {});
 
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle();
+      // Wait for initial build
+      await tester.pump();
+      // Account for delayed animations
+      await tester.pump(const Duration(milliseconds: 1000));
 
       expect(find.text('Henüz adres eklenmemiş'), findsOneWidget);
     });
@@ -91,27 +104,36 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
       final addresses = [
-        {
-          'id': '1',
-          'title': 'Ev',
-          'fullAddress': 'Test Mahallesi No:1',
-          'city': 'İstanbul',
-          'district': 'Kadıköy',
-          'isDefault': true,
-        },
-        {
-          'id': '2',
-          'title': 'İş',
-          'fullAddress': 'Plaza Kat:5',
-          'city': 'İstanbul',
-          'district': 'Levent',
-          'isDefault': false,
-        },
+        Address(
+          id: '1',
+          title: 'Ev',
+          fullAddress: 'Test Mahallesi No:1',
+          cityId: '34',
+          cityName: 'İstanbul',
+          districtId: '1',
+          districtName: 'Kadıköy',
+          isDefault: true,
+        ),
+        Address(
+          id: '2',
+          title: 'İş',
+          fullAddress: 'Plaza Kat:5',
+          cityId: '34',
+          cityName: 'İstanbul',
+          districtId: '2',
+          districtName: 'Levent',
+          isDefault: false,
+        ),
       ];
 
-      when(mockApiService.getAddresses()).thenAnswer((_) async => addresses);
+      when(mockAddressProvider.isLoading).thenReturn(false);
+      when(mockAddressProvider.addresses).thenReturn(addresses);
+      when(mockAddressProvider.loadAddresses()).thenAnswer((_) async {});
 
       await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+      // Allow animations to complete (max duration is around 1200ms + stagger)
+      await tester.pump(const Duration(milliseconds: 2000));
       await tester.pumpAndSettle();
 
       // Check titles
@@ -127,22 +149,23 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
       final addresses = [
-        {
-          'id': '1',
-          'title': 'Ev',
-          'fullAddress': 'Test Mahallesi No:1',
-          'isDefault': false,
-        },
+        Address(
+          id: '1',
+          title: 'Ev',
+          fullAddress: 'Test Mahallesi No:1',
+          isDefault: false,
+        ),
       ];
 
-      when(mockApiService.getAddresses()).thenAnswer((_) async => addresses);
-      when(mockApiService.deleteAddress('1')).thenAnswer((_) async => true);
+      when(mockAddressProvider.isLoading).thenReturn(false);
+      when(mockAddressProvider.addresses).thenReturn(addresses);
+      when(mockAddressProvider.loadAddresses()).thenAnswer((_) async {});
+      when(mockAddressProvider.deleteAddress('1')).thenAnswer((_) async {});
 
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump(); // Start animations
-      await tester.pump(
-        const Duration(seconds: 3),
-      ); // Wait for all animations to complete
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 2000));
+      await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.more_vert), findsOneWidget);
 
@@ -175,7 +198,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify delete called
-      verify(mockApiService.deleteAddress('1')).called(1);
+      verify(mockAddressProvider.deleteAddress('1')).called(1);
     });
   });
 }

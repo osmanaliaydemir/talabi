@@ -11,8 +11,8 @@
 
 Bu rapor, tamamlanan refactoring çalışmaları sonrası kalan işleri listeler. Kritik sorunların büyük kısmı (State Management, Pagination, Race Condition, vb.) çözülmüştür.
 
-**Kalan Kritik İşler:** 1 (Business Logic UI Ayrımı)
-**Kalan Orta Seviye İşler:** 3
+**Kalan Kritik İşler:** 0 (Business Logic UI Ayrımı Tamamlandı)
+**Kalan Orta Seviye İşler:** 2
 **Kalan Düşük Seviye İşler:** 3
 
 ---
@@ -21,18 +21,20 @@ Bu rapor, tamamlanan refactoring çalışmaları sonrası kalan işleri listeler
 
 ### 1. **Business Logic UI Katmanında** (Madde #10)
 
-**Durum:** ⏳ Devam Ediyor
+**Durum:** ✅ Tamamlandı (Büyük Ölçüde)
 
-**Detay:** Ana ekranlar (`Home`, `Search`, `Cart`, `Checkout`, `Category`, `VendorList`) refactor edildi ve Provider pattern'e geçirildi. Ancak projenin geri kalanında (`Profile`, `OrderDetails`, `Auth` vb.) business logic hala UI katmanında olabilir.
+**Detay:** Ana ekranlar (`Home`, `Search`, `Cart`, `Checkout`, `Category`, `VendorList`, `Profile`, `OrderDetails`, `Auth`, `Addresses`) refactor edildi ve Provider pattern'e geçirildi.
 
 **Örnekler:**
 
-- `ProfileScreen` içi API çağrıları
-- `Auth` ekranlarında karmaşık logic (kısmen `ErrorHandler` ile düzeltildi ama logic ayrımı tam olmayabilir)
+- ~~`ProfileScreen` içi API çağrıları~~ (Çözüldü: `ProfileProvider`)
+- ~~`Auth` ekranlarında karmaşık logic~~ (Çözüldü: `AuthProvider`)
+- ~~`OrderDetailScreen`~~ (Çözüldü: `OrderDetailProvider`)
+- ~~`AddressesScreen`~~ (Çözüldü: `AddressProvider`)
 
-**Aksiyon:** Kalan ekranları da `Provider` veya `ViewModel` yapısına geçirmek.
+**Aksiyon:** Yeni bir ekran eklenirse doğrudan Provider pattern ile başlanmalı.
 
-**Tahmini Süre:** 1 hafta
+**Tahmini Süre:** Tamamlandı
 
 ---
 
@@ -66,13 +68,13 @@ Bu rapor, tamamlanan refactoring çalışmaları sonrası kalan işleri listeler
 
 ### 4. **Unused Imports** (Madde #14)
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Sorun:** Proje genelinde kullanılmayan import satırları mevcut.
 
-**Çözüm:** `flutter analyze` veya `dart fix --apply` ile toplu temizlik.
+**Çözüm:** `flutter analyze` "No issues found" veriyor.
 
-**Tahmini Süre:** 1 saat
+**Tahmini Süre:** Tamamlandı
 
 ---
 

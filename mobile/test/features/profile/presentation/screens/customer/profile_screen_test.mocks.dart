@@ -56,6 +56,12 @@ class MockAuthProvider extends _i1.Mock implements _i2.AuthProvider {
       ) as bool);
 
   @override
+  bool get isLoading => (super.noSuchMethod(
+        Invocation.getter(#isLoading),
+        returnValue: false,
+      ) as bool);
+
+  @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
@@ -103,6 +109,26 @@ class MockAuthProvider extends _i1.Mock implements _i2.AuthProvider {
             password,
             fullName,
           ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> signInWithGoogle() => (super.noSuchMethod(
+        Invocation.method(
+          #signInWithGoogle,
+          [],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> signInWithFacebook() => (super.noSuchMethod(
+        Invocation.method(
+          #signInWithFacebook,
+          [],
         ),
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),

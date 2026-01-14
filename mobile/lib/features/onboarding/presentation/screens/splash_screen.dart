@@ -300,7 +300,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 24),
               // App Name
               Text(
-                'Talabi',
+                'Talaby Go',
                 style: AppTheme.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,

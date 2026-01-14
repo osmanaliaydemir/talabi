@@ -6,6 +6,8 @@ import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
 
+import 'package:mobile/services/social_auth_service.dart';
+
 class AuthProvider with ChangeNotifier {
   AuthProvider({ApiService? apiService, SecureStorageService? secureStorage})
     : _apiService = apiService ?? ApiService(),
@@ -23,6 +25,7 @@ class AuthProvider with ChangeNotifier {
   bool _isProfileComplete = true;
   bool _hasDeliveryZones =
       false; // Default false until proven otherwise for vendors
+  bool _isLoading = false;
 
   bool get isAuthenticated => _token != null;
   String? get token => _token;
@@ -34,6 +37,7 @@ class AuthProvider with ChangeNotifier {
   bool get isActive => _isActive;
   bool get isProfileComplete => _isProfileComplete;
   bool get hasDeliveryZones => _hasDeliveryZones;
+  bool get isLoading => _isLoading;
 
   void updateHasDeliveryZones(bool value) {
     _hasDeliveryZones = value;
@@ -162,6 +166,54 @@ class AuthProvider with ChangeNotifier {
         stackTrace,
       );
       rethrow;
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final socialAuthService = SocialAuthService();
+      final response = await socialAuthService.signInWithGoogle();
+
+      if (response == null) {
+        return;
+      }
+
+      await setAuthData(
+        response['token'],
+        response['refreshToken'],
+        response['userId'],
+        response['role'],
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> signInWithFacebook() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final socialAuthService = SocialAuthService();
+      final response = await socialAuthService.signInWithFacebook();
+
+      if (response == null) {
+        return;
+      }
+
+      await setAuthData(
+        response['token'],
+        response['refreshToken'],
+        response['userId'],
+        response['role'],
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

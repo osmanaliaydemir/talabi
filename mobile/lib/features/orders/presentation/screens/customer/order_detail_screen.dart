@@ -2,8 +2,7 @@
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/features/orders/data/models/order_detail.dart';
 import 'package:mobile/features/orders/presentation/screens/customer/delivery_tracking_screen.dart';
-import 'package:mobile/services/api_service.dart';
-import 'package:mobile/features/products/data/models/product.dart';
+
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
 import 'package:intl/intl.dart';
@@ -14,65 +13,25 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/features/reviews/presentation/screens/order_feedback_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:get_it/get_it.dart';
+
+import 'package:mobile/features/orders/presentation/providers/order_detail_provider.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  const OrderDetailScreen({
-    super.key,
-    required this.orderId,
-    ApiService? apiService,
-  }) : _apiService = apiService;
+  const OrderDetailScreen({super.key, required this.orderId});
 
   final String orderId;
-  final ApiService? _apiService;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  late final ApiService _apiService;
-  OrderDetail? _orderDetail;
-  Map<String, dynamic>? _reviewStatus;
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _apiService = widget._apiService ?? GetIt.instance<ApiService>();
-    _loadOrderDetail();
-  }
-
-  Future<void> _loadOrderDetail() async {
-    try {
-      final data = await _apiService.getOrderDetailFull(widget.orderId);
-      final order = OrderDetail.fromJson(data);
-
-      Map<String, dynamic>? status;
-      if (order.status == 'Delivered') {
-        try {
-          status = await _apiService.getOrderReviewStatus(widget.orderId);
-        } catch (_) {}
-      }
-
-      setState(() {
-        _orderDetail = order;
-        _reviewStatus = status;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: localizations.failedToLoadOrderDetail,
-          isSuccess: false,
-        );
-      }
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<OrderDetailProvider>().loadOrderDetail(widget.orderId);
+    });
   }
 
   Future<void> _cancelOrder() async {
@@ -119,9 +78,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ),
     );
 
-    if (confirmed == true && reasonController.text.isNotEmpty) {
+    if (confirmed == true && reasonController.text.isNotEmpty && mounted) {
       try {
-        await _apiService.cancelOrder(widget.orderId, reasonController.text);
+        await context.read<OrderDetailProvider>().cancelOrder(
+          widget.orderId,
+          reasonController.text,
+        );
         if (mounted) {
           final localizations = AppLocalizations.of(context)!;
           ToastMessage.show(
@@ -129,7 +91,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             message: localizations.orderCancelled,
             isSuccess: true,
           );
-          _loadOrderDetail(); // Reload to show updated status
         }
       } catch (e) {
         if (mounted) {
@@ -194,10 +155,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ),
     );
 
-    if (confirmed == true && reasonController.text.isNotEmpty) {
+    if (confirmed == true && reasonController.text.isNotEmpty && mounted) {
       try {
-        await _apiService.cancelOrderItem(
-          item.customerOrderItemId,
+        await context.read<OrderDetailProvider>().cancelOrderItem(
+          widget.orderId,
+          item,
           reasonController.text,
         );
         if (mounted) {
@@ -206,7 +168,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             message: localizations.itemCancelSuccess,
             isSuccess: true,
           );
-          _loadOrderDetail(); // Reload to show updated status
         }
       } catch (e) {
         if (mounted) {
@@ -239,27 +200,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _reorder() async {
-    setState(() => _isLoading = true);
+    final provider = context.read<OrderDetailProvider>();
+    final order = provider.orderDetail;
+    if (order == null) return;
+
     try {
       final cart = Provider.of<CartProvider>(context, listen: false);
+      // We pass the cart provider to the order provider to handle logic, or do it here.
+      // Since reorder logic involves CartProvider, and OrderDetailProvider is for OrderDetail,
+      // it's cleaner to keep simple logic here or move all to provider.
+      // The implementation plan said "reorder(OrderDetail order, CartProvider cartProvider)".
+      // Let's use the provider method.
 
-      for (final item in _orderDetail!.items) {
-        final product = Product(
-          id: item.productId,
-          vendorId: _orderDetail!.vendorId,
-          vendorName: _orderDetail!.vendorName,
-          name: item.productName,
-          price: item.unitPrice,
-          imageUrl: item.productImageUrl,
-          description: '',
-          isAvailable: true,
-        );
-
-        // Add item quantity times (since addItem adds 1)
-        for (int i = 0; i < item.quantity; i++) {
-          await cart.addItem(product, context);
-        }
-      }
+      await provider.reorder(order, cart, context);
 
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
@@ -286,10 +239,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           message: localizations.errorWithMessage(e.toString()),
           isSuccess: false,
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
       }
     }
   }
@@ -325,16 +274,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final customerOrderId = _orderDetail?.customerOrderId;
+
+    // Consume Provider
+    final provider = context.watch<OrderDetailProvider>();
+    final orderDetail = provider.orderDetail;
+    final reviewStatus = provider.reviewStatus;
+    final isLoading = provider.isLoading;
+
+    final customerOrderId = orderDetail?.customerOrderId;
     final title = (customerOrderId != null && customerOrderId.isNotEmpty)
         ? '${localizations.orderDetail} #$customerOrderId'
         : localizations.orderDetail;
 
     Widget? action;
-    if (_orderDetail != null &&
-        (_orderDetail!.status == 'Preparing' ||
-            _orderDetail!.status == 'OnTheWay' ||
-            _orderDetail!.status == 'Delivered')) {
+    if (orderDetail != null &&
+        (orderDetail.status == 'Preparing' ||
+            orderDetail.status == 'OnTheWay' ||
+            orderDetail.status == 'Delivered')) {
       action = GestureDetector(
         onTap: () {
           Navigator.push(
@@ -362,19 +318,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           SharedHeader(
             title: title,
-            subtitle: _orderDetail?.vendorName,
+            subtitle: orderDetail?.vendorName,
             icon: Icons.receipt_long,
             showBackButton: true,
             action: action,
           ),
           Expanded(
-            child: _isLoading
+            child: isLoading
                 ? Center(
                     child: CircularProgressIndicator(
                       color: colorScheme.primary,
                     ),
                   )
-                : _orderDetail == null
+                : orderDetail == null
                 ? Center(
                     child: Text(
                       localizations.orderNotFound,
@@ -382,11 +338,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                   )
                 : RefreshIndicator(
-                    onRefresh: _loadOrderDetail,
+                    onRefresh: () => provider.loadOrderDetail(widget.orderId),
                     color: colorScheme.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(AppTheme.spacingMedium),
+
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -419,7 +376,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _orderDetail!.vendorName,
+                                        orderDetail.vendorName,
                                         style: AppTheme.poppins(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -429,7 +386,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       Text(
                                         DateFormat(
                                           'dd MMM yyyy, HH:mm',
-                                        ).format(_orderDetail!.createdAt),
+                                        ).format(orderDetail.createdAt),
                                         style: AppTheme.poppins(
                                           fontSize: 14,
                                           color: AppTheme.textSecondary,
@@ -445,22 +402,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: _getStatusColor(
-                                      _orderDetail!.status,
+                                      orderDetail.status,
                                       context,
                                     ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: _getStatusColor(
-                                        _orderDetail!.status,
+                                        orderDetail.status,
                                         context,
                                       ),
                                     ),
                                   ),
                                   child: Text(
-                                    _getStatusText(_orderDetail!.status),
+                                    _getStatusText(orderDetail.status),
                                     style: AppTheme.poppins(
                                       color: _getStatusColor(
-                                        _orderDetail!.status,
+                                        orderDetail.status,
                                         context,
                                       ),
                                       fontWeight: FontWeight.bold,
@@ -488,22 +445,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             child: ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: _orderDetail!.items.length,
+                              itemCount: orderDetail.items.length,
                               separatorBuilder: (context, index) =>
                                   const Divider(
                                     height: 1,
                                     color: AppTheme.borderColor,
                                   ),
                               itemBuilder: (context, index) {
-                                final item = _orderDetail!.items[index];
+                                final item = orderDetail.items[index];
                                 final localizations = AppLocalizations.of(
                                   context,
                                 )!;
                                 final canCancelItem =
                                     !item.isCancelled &&
-                                    (_orderDetail!.status == 'Pending' ||
-                                        _orderDetail!.status == 'Preparing') &&
-                                    _orderDetail!.items.length > 1;
+                                    (orderDetail.status == 'Pending' ||
+                                        orderDetail.status == 'Preparing') &&
+                                    orderDetail.items.length > 1;
 
                                 return Container(
                                   decoration: item.isCancelled
@@ -789,7 +746,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       ),
                                     ),
                                     Text(
-                                      '₺${_orderDetail!.totalAmount.toStringAsFixed(2)}',
+                                      '₺${orderDetail.totalAmount.toStringAsFixed(2)}',
                                       style: AppTheme.poppins(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -804,7 +761,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           const SizedBox(height: AppTheme.spacingMedium),
 
                           // Status History Timeline
-                          if (_orderDetail!.statusHistory.isNotEmpty) ...[
+                          if (orderDetail.statusHistory.isNotEmpty) ...[
                             Text(
                               AppLocalizations.of(context)!.orderHistory,
                               style: AppTheme.poppins(
@@ -820,7 +777,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                               decoration: AppTheme.cardDecoration(),
                               child: Column(
-                                children: _orderDetail!.statusHistory
+                                children: orderDetail.statusHistory
                                     .asMap()
                                     .entries
                                     .map((entry) {
@@ -828,8 +785,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       final history = entry.value;
                                       final isLast =
                                           index ==
-                                          _orderDetail!.statusHistory.length -
-                                              1;
+                                          orderDetail.statusHistory.length - 1;
                                       return Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -936,9 +892,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_orderDetail != null &&
-                      (_orderDetail!.status == 'Pending' ||
-                          _orderDetail!.status == 'Preparing'))
+                  if (orderDetail != null &&
+                      (orderDetail.status == 'Pending' ||
+                          orderDetail.status == 'Preparing'))
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -962,22 +918,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                       ),
                     ),
-                  if (_orderDetail != null &&
-                      _orderDetail!.status == 'Delivered')
+                  if (orderDetail != null && orderDetail.status == 'Delivered')
                     Column(
                       children: [
                         Builder(
                           builder: (context) {
                             bool isFullyReviewed = false;
-                            if (_reviewStatus != null) {
+                            if (reviewStatus != null) {
                               final isVR =
-                                  _reviewStatus?['isVendorReviewed'] as bool? ??
+                                  reviewStatus['isVendorReviewed'] as bool? ??
                                   false;
                               final hasC =
-                                  _reviewStatus?['hasCourier'] as bool? ??
-                                  false;
+                                  reviewStatus['hasCourier'] as bool? ?? false;
                               final isCR =
-                                  _reviewStatus?['isCourierRated'] as bool? ??
+                                  reviewStatus['isCourierRated'] as bool? ??
                                   false;
                               isFullyReviewed = isVR && (!hasC || isCR);
                             }
@@ -990,14 +944,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => OrderFeedbackScreen(
-                                        orderDetail: _orderDetail!,
-                                        reviewStatus: _reviewStatus,
+                                        orderDetail: orderDetail,
+                                        reviewStatus: reviewStatus,
                                       ),
                                     ),
                                   );
                                   if (result == true) {
                                     // Refresh order detail
-                                    _loadOrderDetail();
+                                    provider.loadOrderDetail(widget.orderId);
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
