@@ -44,6 +44,11 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Logs in the user with email and password.
+  ///
+  /// [email] and [password] are required.
+  /// [requiredRole] ensures that the logged-in user has the expected role (e.g., 'Vendor').
+  /// Throws [RoleMismatchException] if the role does not match.
   Future<void> login(
     String email,
     String password, {
@@ -117,6 +122,10 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Registers a new customer user.
+  ///
+  /// Takes [email], [password], and [fullName].
+  /// If registration returns a token immediately (no verification flow), it logs the user in.
   Future<void> register(String email, String password, String fullName) async {
     try {
       final response =
@@ -169,6 +178,10 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Initiates Google Sign-In flow.
+  ///
+  /// Uses [SocialAuthService] to authenticate with Google.
+  /// Updates auth state upon success.
   Future<void> signInWithGoogle() async {
     _isLoading = true;
     notifyListeners();
@@ -193,6 +206,10 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Initiates Facebook Sign-In flow.
+  ///
+  /// Uses [SocialAuthService] to authenticate with Facebook.
+  /// Updates auth state upon success.
   Future<void> signInWithFacebook() async {
     _isLoading = true;
     notifyListeners();
@@ -217,6 +234,10 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Logs out the current user.
+  ///
+  /// Clears tokens, user data, and secure storage.
+  /// Returns the role of the user before logout to facilitate navigation.
   Future<String?> logout() async {
     // Logout öncesi role bilgisini sakla
     final roleBeforeLogout = _role;
@@ -251,6 +272,9 @@ class AuthProvider with ChangeNotifier {
     return roleBeforeLogout;
   }
 
+  /// Attempts to auto-login using the stored token.
+  ///
+  /// Checks SecureStorage for a valid token. If found, restores user session.
   Future<void> tryAutoLogin() async {
     final storedToken = await _secureStorage.getToken();
 

@@ -27,6 +27,9 @@ class AddressProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get localities => _localities;
   bool get isLoadingLocations => _isLoadingLocations;
 
+  /// Loads the user's addresses from the backend.
+  /// Sets [isLoading] to true while fetching and updates [_addresses].
+  /// If an error occurs, [_error] is updated.
   Future<void> loadAddresses() async {
     _isLoading = true;
     _error = null;
@@ -43,6 +46,8 @@ class AddressProvider extends ChangeNotifier {
     }
   }
 
+  /// Deletes an address by its [id].
+  /// Reloads the address list upon success.
   Future<void> deleteAddress(String id) async {
     _isLoading = true;
     _error = null;
@@ -59,6 +64,9 @@ class AddressProvider extends ChangeNotifier {
     }
   }
 
+  /// Sets an address as the default delivery address.
+  /// [id] is the address identifier.
+  /// Reloads the address list upon success.
   Future<void> setDefaultAddress(String id) async {
     _isLoading = true;
     _error = null;
@@ -75,6 +83,10 @@ class AddressProvider extends ChangeNotifier {
     }
   }
 
+  /// Creates or updates an address.
+  /// If [id] is null, a new address is created with [data].
+  /// If [id] is provided, the existing address is updated.
+  /// [data] should contain address fields matched to the backend API.
   Future<void> saveAddress(Map<String, dynamic> data, {String? id}) async {
     _isLoading = true;
     _error = null;

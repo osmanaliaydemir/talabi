@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/config/app_constants.dart';
 
 class ToastMessage {
   static bool isTestMode = false;
@@ -76,7 +77,7 @@ class _ToastWidgetState extends State<_ToastWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: AppConstants.animationDurationShort,
       vsync: this,
     );
 
@@ -93,7 +94,7 @@ class _ToastWidgetState extends State<_ToastWidget>
     _controller.forward();
 
     if (!ToastMessage.isTestMode) {
-      Future.delayed(widget.duration - const Duration(milliseconds: 300), () {
+      Future.delayed(widget.duration - AppConstants.animationDurationShort, () {
         if (mounted) {
           _controller.reverse();
         }

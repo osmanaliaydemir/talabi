@@ -167,7 +167,7 @@ class _AgreementDialogState extends State<_AgreementDialog> {
   }
 
   String _getAcceptButtonText(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context)!;
     final lang = Localizations.localeOf(context).languageCode;
 
     // Temizleme işlemi (eğer başlık "okudum ve kabul ediyorum" gibi ekler içeriyorsa)
@@ -182,7 +182,7 @@ class _AgreementDialogState extends State<_AgreementDialog> {
       return "$cleanTitle'nı Kabul Et";
     }
 
-    return '${l10n.accept} $cleanTitle';
+    return '${localizations.accept} $cleanTitle';
   }
 
   @override

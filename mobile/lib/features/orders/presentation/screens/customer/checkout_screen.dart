@@ -151,7 +151,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             message:
                 'Lütfen bilgilerinizi kontrol edip tekrar deneyin.\nHata: ${e.toString().replaceAll('Exception: ', '')}',
             confirmText: localizations.ok,
-            cancelText: '',
+            cancelText: null,
             icon: Icons.error_outline,
             iconColor: Colors.red,
             confirmButtonColor: AppTheme.primaryOrange,
@@ -772,8 +772,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ],
       ),
-      child: InkWell(
-        onTap: () => _showAddressSelector(localizations),
+      child: Container(
+        padding: EdgeInsets.zero,
         child: Row(
           children: [
             Container(
@@ -847,7 +847,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
           ],
         ),
       ),

@@ -184,10 +184,10 @@ class _SearchScreenState extends State<SearchScreen> {
         );
       } catch (e) {
         if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
+          final localizations = AppLocalizations.of(context)!;
           ToastMessage.show(
             context,
-            message: l10n.searchError(e.toString()),
+            message: localizations.searchError(e.toString()),
             isSuccess: false,
           );
         }
@@ -251,7 +251,7 @@ class _SearchScreenState extends State<SearchScreen> {
   // UI Builders...
   // I need to include _buildSearchBar and _buildVendorCard and _buildEmptyState since I don't want to create separate files for them yet (task only asked for logic cleanup, but Filters was huge)
 
-  Widget _buildVendorCard(Vendor vendor, AppLocalizations l10n) {
+  Widget _buildVendorCard(Vendor vendor, AppLocalizations localizations) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -337,7 +337,10 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildEmptyState(AppLocalizations l10n, SearchProvider provider) {
+  Widget _buildEmptyState(
+    AppLocalizations localizations,
+    SearchProvider provider,
+  ) {
     // Show history or just empty message
     if (provider.searchHistory.isNotEmpty) {
       return ListView.builder(
@@ -364,7 +367,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Center(
       child: EmptyStateWidget(
-        message: l10n.checkSearchHistory,
+        message: localizations.checkSearchHistory,
         iconData: Icons.search,
         isCompact: false,
         usePrimaryColor:
@@ -375,7 +378,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context)!;
     final bottomNav = context.watch<BottomNavProvider>();
     final primaryColor = bottomNav.selectedCategory == MainCategory.restaurant
         ? AppTheme.primaryOrange
@@ -392,7 +395,7 @@ class _SearchScreenState extends State<SearchScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),
             ),
-            title: _buildSearchBar(l10n),
+            title: _buildSearchBar(localizations),
             actions: [
               IconButton(
                 icon: Stack(
@@ -445,80 +448,13 @@ class _SearchScreenState extends State<SearchScreen> {
                         searchProvider.productItems.isEmpty &&
                         searchProvider.vendorItems.isEmpty)
                       SliverFillRemaining(
-                        child: _buildEmptyState(l10n, searchProvider),
+                        child: _buildEmptyState(localizations, searchProvider),
                       )
                     else ...[
-                      if (searchProvider.vendorItems.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              l10n.vendors,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (ctx, idx) => Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: _buildVendorCard(
-                                searchProvider.vendorItems[idx].toVendor(),
-                                l10n,
-                              ),
-                            ),
-                            childCount: searchProvider.vendorItems.length,
-                          ),
-                        ),
-                      ],
-                      if (searchProvider.productItems.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              l10n.products,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.75,
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 16,
-                                ),
-                            delegate: SliverChildBuilderDelegate((ctx, idx) {
-                              final product = searchProvider.productItems[idx]
-                                  .toProduct();
-                              return ProductCard(
-                                product: product,
-                                width: null,
-                                heroTagPrefix: 'search_${product.id}',
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ProductDetailScreen(
-                                      productId: product.id,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }, childCount: searchProvider.productItems.length),
-                          ),
-                        ),
-                      ],
+                      if (searchProvider.vendorItems.isNotEmpty)
+                        _buildVendorsList(searchProvider, localizations),
+                      if (searchProvider.productItems.isNotEmpty)
+                        _buildProductsGrid(searchProvider, localizations),
                       if (searchProvider.isLoadingProducts ||
                           searchProvider.isLoadingVendors ||
                           searchProvider.isLoadingMoreProducts)
@@ -538,11 +474,86 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSearchBar(AppLocalizations l10n) {
+  Widget _buildVendorsList(
+    SearchProvider searchProvider,
+    AppLocalizations localizations,
+  ) {
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              localizations.vendors,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (ctx, idx) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildVendorCard(
+                searchProvider.vendorItems[idx].toVendor(),
+                localizations,
+              ),
+            ),
+            childCount: searchProvider.vendorItems.length,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductsGrid(
+    SearchProvider searchProvider,
+    AppLocalizations localizations,
+  ) {
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              localizations.products,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.75,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+            ),
+            delegate: SliverChildBuilderDelegate((ctx, idx) {
+              final product = searchProvider.productItems[idx].toProduct();
+              return ProductCard(
+                product: product,
+                width: null,
+                heroTagPrefix: 'search_${product.id}',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProductDetailScreen(productId: product.id),
+                  ),
+                ),
+              );
+            }, childCount: searchProvider.productItems.length),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar(AppLocalizations localizations) {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        hintText: l10n.search,
+        hintText: localizations.search,
         prefixIcon: const Icon(Icons.search),
         filled: true,
         fillColor: Colors.grey[200],

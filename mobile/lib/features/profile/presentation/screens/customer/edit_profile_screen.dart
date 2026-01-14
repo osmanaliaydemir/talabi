@@ -87,20 +87,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
 
       if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: l10n.profileUpdated,
+          message: localizations.profileUpdated,
           isSuccess: true,
         );
         Navigator.pop(context, true); // Return true to indicate update
       }
     } catch (e) {
       if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
+        final localizations = AppLocalizations.of(context)!;
         ToastMessage.show(
           context,
-          message: '${l10n.error}: $e',
+          message: '${localizations.error}: $e',
           isSuccess: false,
         );
       }

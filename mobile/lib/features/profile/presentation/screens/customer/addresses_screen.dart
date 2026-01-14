@@ -9,6 +9,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/config/app_constants.dart';
 
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
@@ -35,7 +36,7 @@ class _AddressesScreenState extends State<AddressesScreen>
 
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: AppConstants.animationDurationLong,
     );
 
     _slideController = AnimationController(
@@ -45,7 +46,7 @@ class _AddressesScreenState extends State<AddressesScreen>
 
     _scaleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: AppConstants.animationDurationMedium,
     );
 
     _fadeAnimation = Tween<double>(
@@ -80,15 +81,15 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Future<void> _deleteAddress(String id) async {
-    final l10n = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context)!;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => CustomConfirmationDialog(
-        title: l10n.deleteAddressTitle,
-        message: l10n.deleteAddressConfirm,
-        confirmText: l10n.delete,
-        cancelText: l10n.cancel,
+        title: localizations.deleteAddressTitle,
+        message: localizations.deleteAddressConfirm,
+        confirmText: localizations.delete,
+        cancelText: localizations.cancel,
         icon: Icons.delete_outline,
         iconColor: Colors.red,
         confirmButtonColor: Colors.red,
@@ -103,7 +104,7 @@ class _AddressesScreenState extends State<AddressesScreen>
         if (mounted) {
           ToastMessage.show(
             context,
-            message: l10n.addressDeleted,
+            message: localizations.addressDeleted,
             isSuccess: true,
           );
         }
@@ -111,7 +112,7 @@ class _AddressesScreenState extends State<AddressesScreen>
         if (mounted) {
           ToastMessage.show(
             context,
-            message: '${l10n.error}: $e',
+            message: '${localizations.error}: $e',
             isSuccess: false,
           );
         }
@@ -120,14 +121,14 @@ class _AddressesScreenState extends State<AddressesScreen>
   }
 
   Future<void> _setDefaultAddress(String id) async {
-    final l10n = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context)!;
 
     try {
       await context.read<AddressProvider>().setDefaultAddress(id);
       if (mounted) {
         ToastMessage.show(
           context,
-          message: l10n.defaultAddressUpdated,
+          message: localizations.defaultAddressUpdated,
           isSuccess: true,
         );
       }
@@ -135,7 +136,7 @@ class _AddressesScreenState extends State<AddressesScreen>
       if (mounted) {
         ToastMessage.show(
           context,
-          message: '${l10n.error}: $e',
+          message: '${localizations.error}: $e',
           isSuccess: false,
         );
       }
@@ -467,7 +468,9 @@ class _AddressesScreenState extends State<AddressesScreen>
                           if (address.isDefault)
                             Builder(
                               builder: (context) {
-                                final l10n = AppLocalizations.of(context)!;
+                                final localizations = AppLocalizations.of(
+                                  context,
+                                )!;
                                 final cardColorScheme = Theme.of(
                                   context,
                                 ).colorScheme;
@@ -481,7 +484,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    l10n.defaultLabel,
+                                    localizations.defaultLabel,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -509,7 +512,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                 // Menu Button
                 Builder(
                   builder: (context) {
-                    final l10n = AppLocalizations.of(context)!;
+                    final localizations = AppLocalizations.of(context)!;
                     return PopupMenuButton(
                       icon: Icon(Icons.more_vert, color: Colors.grey[600]),
                       itemBuilder: (context) => [
@@ -519,7 +522,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                             children: [
                               const Icon(Icons.edit, size: 20),
                               const SizedBox(width: 8),
-                              Text(l10n.edit),
+                              Text(localizations.edit),
                             ],
                           ),
                         ),
@@ -530,7 +533,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                               children: [
                                 const Icon(Icons.check, size: 20),
                                 const SizedBox(width: 8),
-                                Text(l10n.setAsDefault),
+                                Text(localizations.setAsDefault),
                               ],
                             ),
                           ),
@@ -545,7 +548,7 @@ class _AddressesScreenState extends State<AddressesScreen>
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                l10n.delete,
+                                localizations.delete,
                                 style: const TextStyle(color: Colors.red),
                               ),
                             ],

@@ -568,7 +568,14 @@ class _ProductCardState extends State<ProductCard> {
       await cart.addItem(widget.product, context);
       // Toast removed as per request
     } catch (e) {
-      // Error handled by provider (e.g. address required)
+      if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
+        ToastMessage.show(
+          context,
+          message: localizations.errorWithMessage(e.toString()),
+          isSuccess: false,
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
