@@ -16,6 +16,7 @@ import 'package:mobile/widgets/cached_network_image_widget.dart';
 
 import 'package:provider/provider.dart';
 import 'package:mobile/features/search/presentation/widgets/search_filter_sheet.dart';
+import 'package:mobile/widgets/empty_state_widget.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -250,25 +251,6 @@ class _SearchScreenState extends State<SearchScreen> {
   // UI Builders...
   // I need to include _buildSearchBar and _buildVendorCard and _buildEmptyState since I don't want to create separate files for them yet (task only asked for logic cleanup, but Filters was huge)
 
-  Widget _buildSearchBar(AppLocalizations l10n) {
-    return TextField(
-      controller: _searchController,
-      decoration: InputDecoration(
-        hintText: l10n.search,
-        prefixIcon: const Icon(Icons.search),
-        filled: true,
-        fillColor: Colors.grey[200],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      ),
-      textInputAction: TextInputAction.search,
-      onSubmitted: _onSearchSubmitted,
-    );
-  }
-
   Widget _buildVendorCard(Vendor vendor, AppLocalizations l10n) {
     return GestureDetector(
       onTap: () {
@@ -381,16 +363,12 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search, size: 64, color: Colors.grey[300]),
-          const SizedBox(height: 16),
-          Text(
-            'Or check your search history',
-            style: TextStyle(color: Colors.grey[500], fontSize: 16),
-          ),
-        ],
+      child: EmptyStateWidget(
+        message: l10n.checkSearchHistory,
+        iconData: Icons.search,
+        isCompact: false,
+        usePrimaryColor:
+            false, // Keep it grey/neutral as per original design intention
       ),
     );
   }
@@ -557,6 +535,25 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSearchBar(AppLocalizations l10n) {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: l10n.search,
+        prefixIcon: const Icon(Icons.search),
+        filled: true,
+        fillColor: Colors.grey[200],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      ),
+      textInputAction: TextInputAction.search,
+      onSubmitted: _onSearchSubmitted,
     );
   }
 }

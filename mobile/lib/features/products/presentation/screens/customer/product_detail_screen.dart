@@ -4,6 +4,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
+import 'package:mobile/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
@@ -619,186 +620,188 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                                 const SizedBox(height: 24),
 
                                 // Reviews
-                                if (provider.reviewsSummary != null)
-                                  Container(
-                                    key: _reviewsSectionKey,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              l10n.reviews(
-                                                provider
-                                                        .reviewsSummary
-                                                        ?.totalRatings ??
-                                                    0,
-                                              ),
-                                              style: AppTheme.poppins(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
+                                // Reviews
+                                Container(
+                                  key: _reviewsSectionKey,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            l10n.reviews(
+                                              provider
+                                                      .reviewsSummary
+                                                      ?.totalRatings ??
+                                                  0,
+                                            ),
+                                            style: AppTheme.poppins(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          if (provider.isLoadingReviews)
+                                            const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
                                               ),
                                             ),
-                                            if (provider.isLoadingReviews)
-                                              const SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              ),
-                                          ],
-                                        ),
-                                        if (provider
-                                            .reviewsSummary!
-                                            .reviews
-                                            .isNotEmpty) ...[
-                                          const SizedBox(height: 12),
-                                          // Display up to 3 reviews
-                                          ...provider.reviewsSummary!.reviews
-                                              .take(3)
-                                              .map(
-                                                (review) => Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        bottom: 12,
-                                                      ),
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(
+                                        ],
+                                      ),
+                                      if (provider
+                                              .reviewsSummary
+                                              ?.reviews
+                                              .isNotEmpty ??
+                                          false) ...[
+                                        const SizedBox(height: 12),
+                                        // Display up to 3 reviews
+                                        ...(provider.reviewsSummary?.reviews ??
+                                                [])
+                                            .take(3)
+                                            .map(
+                                              (review) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 12,
+                                                ),
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
                                                           12,
                                                         ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          CircleAvatar(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .grey[200],
+                                                            radius: 16,
+                                                            child: Icon(
+                                                              Icons.person,
+                                                              size: 16,
+                                                              color: Colors
+                                                                  .grey[500],
+                                                            ),
                                                           ),
-                                                    ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            CircleAvatar(
-                                                              backgroundColor:
-                                                                  Colors
-                                                                      .grey[200],
-                                                              radius: 16,
-                                                              child: Icon(
-                                                                Icons.person,
-                                                                size: 16,
-                                                                color: Colors
-                                                                    .grey[500],
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 8,
-                                                            ),
-                                                            Text(
-                                                              review
-                                                                  .userFullName,
-                                                              style: AppTheme.poppins(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 14,
-                                                              ),
-                                                            ),
-                                                            const Spacer(),
-                                                            const Icon(
-                                                              Icons.star,
-                                                              size: 14,
-                                                              color:
-                                                                  Colors.amber,
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 2,
-                                                            ),
-                                                            Text(
-                                                              review.rating
-                                                                  .toString(),
-                                                              style: AppTheme.poppins(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        if (review
-                                                            .comment
-                                                            .isNotEmpty)
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  top: 8,
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
+                                                          Text(
+                                                            review.userFullName,
+                                                            style:
+                                                                AppTheme.poppins(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 14,
                                                                 ),
-                                                            child: Text(
-                                                              review.comment,
-                                                              style: AppTheme.poppins(
-                                                                fontSize: 14,
-                                                                color: Colors
-                                                                    .grey[700],
-                                                              ),
-                                                            ),
                                                           ),
-                                                      ],
-                                                    ),
+                                                          const Spacer(),
+                                                          const Icon(
+                                                            Icons.star,
+                                                            size: 14,
+                                                            color: Colors.amber,
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 2,
+                                                          ),
+                                                          Text(
+                                                            review.rating
+                                                                .toString(),
+                                                            style:
+                                                                AppTheme.poppins(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      if (review
+                                                          .comment
+                                                          .isNotEmpty)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                top: 8,
+                                                              ),
+                                                          child: Text(
+                                                            review.comment,
+                                                            style:
+                                                                AppTheme.poppins(
+                                                                  fontSize: 14,
+                                                                  color: Colors
+                                                                      .grey[700],
+                                                                ),
+                                                          ),
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
                                               ),
-                                        ],
-                                        if (provider
-                                            .reviewsSummary!
-                                            .reviews
-                                            .isEmpty)
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 20,
                                             ),
-                                            child: Text(
-                                              l10n.noReviewsYet,
-                                              style: AppTheme.poppins(
-                                                color: Colors.grey[500],
-                                                fontStyle: FontStyle.italic,
-                                              ),
-                                            ),
-                                          ),
-                                        const SizedBox(height: 12),
-                                        TextButton(
-                                          onPressed: _handleWriteReview,
-                                          style: TextButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 12,
-                                              horizontal: 24,
-                                            ),
-                                            backgroundColor: AppTheme
-                                                .primaryOrange
-                                                .withValues(alpha: 0.1),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
+                                      ],
+                                      if (provider
+                                              .reviewsSummary
+                                              ?.reviews
+                                              .isEmpty ??
+                                          true)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 20,
                                           ),
                                           child: Text(
-                                            l10n.writeAReview,
-                                            style: const TextStyle(
-                                              color: AppTheme.primaryOrange,
-                                              fontWeight: FontWeight.w600,
+                                            l10n.noReviewsYet,
+                                            style: AppTheme.poppins(
+                                              color: Colors.grey[500],
+                                              fontStyle: FontStyle.italic,
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      const SizedBox(height: 12),
+                                      TextButton(
+                                        onPressed: _handleWriteReview,
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 24,
+                                          ),
+                                          backgroundColor: AppTheme
+                                              .primaryOrange
+                                              .withValues(alpha: 0.1),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          l10n.writeAReview,
+                                          style: const TextStyle(
+                                            color: AppTheme.primaryOrange,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                ),
                               ],
                             ),
                           ),
@@ -881,51 +884,122 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                       const SizedBox(width: 20),
                       Expanded(
                         flex: 3,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final cartProvider = context.read<CartProvider>();
-                            final selectedOptionsList =
-                                <Map<String, dynamic>>[];
-                            for (final group in product.optionGroups) {
-                              final selectedIds =
-                                  provider.selectedOptions[group.id];
-                              if (selectedIds != null) {
-                                for (final option in group.options) {
-                                  if (selectedIds.contains(option.id)) {
-                                    selectedOptionsList.add({
-                                      'groupId': group.id,
-                                      'groupName': group.name,
-                                      'optionId': option.id,
-                                      'valueName': option.name,
-                                      'priceAdjustment': option.priceAdjustment,
-                                    });
-                                  }
-                                }
-                              }
+                        child: Consumer<CartProvider>(
+                          builder: (context, cartProvider, child) {
+                            final cartItem = cartProvider.getCartItem(
+                              product.id,
+                            );
+
+                            if (cartItem != null) {
+                              return Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey[300]!),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        cartProvider.decreaseQuantity(
+                                          cartItem.backendId ?? '',
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 56,
+                                        height: double.infinity,
+                                        color: colorScheme.primary,
+                                        child: const Icon(
+                                          Icons.remove,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          '${cartItem.quantity}',
+                                          style: AppTheme.poppins(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        cartProvider.increaseQuantity(
+                                          cartItem.backendId ?? '',
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 56,
+                                        height: double.infinity,
+                                        color: colorScheme.primary,
+                                        child: const Icon(
+                                          Icons.add,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
                             }
 
-                            cartProvider.addItem(
-                              product,
-                              context,
-                              selectedOptions: selectedOptionsList,
+                            return ElevatedButton(
+                              onPressed: () {
+                                // Calculate options inside onPressed to ensure latest state
+                                final selectedOptionsList =
+                                    <Map<String, dynamic>>[];
+                                for (final group in product.optionGroups) {
+                                  final selectedIds =
+                                      provider.selectedOptions[group.id];
+                                  if (selectedIds != null) {
+                                    for (final option in group.options) {
+                                      if (selectedIds.contains(option.id)) {
+                                        selectedOptionsList.add({
+                                          'groupId': group.id,
+                                          'groupName': group.name,
+                                          'optionId': option.id,
+                                          'valueName': option.name,
+                                          'priceAdjustment':
+                                              option.priceAdjustment,
+                                        });
+                                      }
+                                    }
+                                  }
+                                }
+
+                                cartProvider.addItem(
+                                  product,
+                                  context,
+                                  selectedOptions: selectedOptionsList,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: Text(
+                                l10n.addToCart,
+                                style: AppTheme.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             );
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            l10n.addToCart,
-                            style: AppTheme.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                         ),
                       ),
                     ],
@@ -980,6 +1054,9 @@ class PoolingHeader extends StatelessWidget {
   final VoidCallback onShareTap;
   @override
   Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
+    final cartItemCount = cartProvider.itemCount;
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -994,6 +1071,49 @@ class PoolingHeader extends StatelessWidget {
                 icon: isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: isFavorite ? Colors.red : Colors.black,
                 onTap: onFavoriteTap,
+              ),
+              const SizedBox(width: 12),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _buildCircleButton(
+                    icon: Icons.shopping_cart_outlined,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const CartScreen(showBackButton: true),
+                        ),
+                      );
+                    },
+                  ),
+                  if (cartItemCount > 0)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          '$cartItemCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

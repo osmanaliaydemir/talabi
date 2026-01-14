@@ -9,6 +9,9 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get checkSearchHistory => 'ما الذي تبحث عنه؟';
+
+  @override
   String get myWallet => 'محفظتي';
 
   @override

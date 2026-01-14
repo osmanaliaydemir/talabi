@@ -1,5 +1,9 @@
 {
   "@@locale": "ar",
+  "checkSearchHistory": "ما الذي تبحث عنه؟",
+  "@checkSearchHistory": {
+    "description": "Prompt to check search history when no results/query"
+  },
   "myWallet": "محفظتي",
   "@myWallet": {
     "description": "My Wallet title"

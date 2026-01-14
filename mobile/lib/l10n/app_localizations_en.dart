@@ -9,6 +9,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get checkSearchHistory => 'What are you looking for?';
+
+  @override
   String get myWallet => 'My Wallet';
 
   @override

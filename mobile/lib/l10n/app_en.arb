@@ -1,5 +1,9 @@
 {
   "@@locale": "en",
+  "checkSearchHistory": "What are you looking for?",
+  "@checkSearchHistory": {
+    "description": "Prompt to check search history when no results/query"
+  },
   "myWallet": "My Wallet",
   "@myWallet": {
     "description": "My Wallet title"

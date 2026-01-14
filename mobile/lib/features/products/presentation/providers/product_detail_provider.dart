@@ -74,8 +74,13 @@ class ProductDetailProvider with ChangeNotifier {
 
       if (!refreshOnly) {
         AnalyticsService.logViewItem(product: product);
-        checkFavorite();
-        loadReviews();
+      }
+
+      // Always check favorites and load reviews, effectively "refreshing" this data
+      checkFavorite();
+      loadReviews();
+
+      if (!refreshOnly) {
         // Similar products should be called explicitly with location if needed
       }
     } catch (e) {

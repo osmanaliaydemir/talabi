@@ -100,6 +100,12 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// Prompt to check search history when no results/query
+  ///
+  /// In en, this message translates to:
+  /// **'What are you looking for?'**
+  String get checkSearchHistory;
+
   /// My Wallet title
   ///
   /// In en, this message translates to:

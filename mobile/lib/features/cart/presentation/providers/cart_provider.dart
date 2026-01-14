@@ -39,6 +39,14 @@ class CartProvider with ChangeNotifier {
   List<Product> get recommendations => _recommendations;
   String? get recommendationTitle => _recommendationTitle;
 
+  CartItem? getCartItem(String productId) {
+    try {
+      return _items.values.firstWhere((item) => item.product.id == productId);
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Upsell state
   Campaign? _upsellCampaign;
   double? _upsellRemainingAmount;

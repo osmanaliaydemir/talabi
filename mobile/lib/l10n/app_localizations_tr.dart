@@ -9,6 +9,9 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get checkSearchHistory => 'Ne aramak istersiniz?';
+
+  @override
   String get myWallet => 'Cüzdanım';
 
   @override
