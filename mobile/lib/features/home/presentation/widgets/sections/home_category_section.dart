@@ -5,20 +5,23 @@ import 'package:mobile/features/categories/presentation/screens/category_product
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
 
 class HomeCategorySection extends StatelessWidget {
   const HomeCategorySection({
     super.key,
-    required this.categoriesFuture,
+    required this.categories,
     required this.onViewAll,
     this.hasVendors = true,
     this.hasProducts = true,
+    this.isLoading = false,
   });
 
-  final Future<List<Map<String, dynamic>>> categoriesFuture;
+  final List<Map<String, dynamic>> categories;
   final VoidCallback onViewAll;
   final bool hasVendors;
   final bool hasProducts;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -26,168 +29,206 @@ class HomeCategorySection extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: categoriesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox.shrink();
-        }
-
-        // If no vendors or products, don't show category empty state
-        if (!hasVendors || !hasProducts) {
-          return const SizedBox.shrink();
-        }
-
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Padding(
+    // Show skeleton if loading
+    if (isLoading) {
+      return Column(
+        children: [
+          Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spacingMedium,
-              vertical: AppTheme.spacingLarge,
+              vertical: AppTheme.spacingSmall,
             ),
-            child: EmptyStateWidget(
-              message: localizations.noCategoriesInArea,
-              subMessage: localizations.noCategoriesInAreaSub,
-              iconData: Icons.category_outlined,
-              isCompact: true,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  localizations.categories,
+                  style: AppTheme.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
             ),
-          );
-        }
-
-        final categories = snapshot.data!;
-        // Show only first 8 categories on home screen
-        final displayCategories = categories.take(8).toList();
-
-        return Column(
-          children: [
-            Padding(
+          ),
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.spacingMedium,
-                vertical: AppTheme.spacingSmall,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    localizations.categories,
-                    style: AppTheme.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
+              scrollDirection: Axis.horizontal,
+              itemCount: 8,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 70,
+                  margin: const EdgeInsets.only(right: 12),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SkeletonLoader(width: 60, height: 60, borderRadius: 30),
+                      SizedBox(height: 8),
+                      SkeletonLoader(width: 50, height: 10),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: onViewAll,
-                    child: Text(localizations.viewAll),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-            SizedBox(
-              height: 100,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMedium,
+          ),
+        ],
+      );
+    }
+
+    // If no vendors or products, don't show category empty state
+    if (!hasVendors || !hasProducts) {
+      return const SizedBox.shrink();
+    }
+
+    if (categories.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMedium,
+          vertical: AppTheme.spacingLarge,
+        ),
+        child: EmptyStateWidget(
+          message: localizations.noCategoriesInArea,
+          subMessage: localizations.noCategoriesInAreaSub,
+          iconData: Icons.category_outlined,
+          isCompact: true,
+        ),
+      );
+    }
+
+    // Show only first 8 categories on home screen
+    final displayCategories = categories.take(8).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingSmall,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                localizations.categories,
+                style: AppTheme.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
                 ),
-                scrollDirection: Axis.horizontal,
-                itemCount: displayCategories.length,
-                itemBuilder: (context, index) {
-                  final category = displayCategories[index];
-                  final style = _getCategoryStyle(
-                    category,
-                    primaryColor: colorScheme.primary,
-                  );
-
-                  // Try multiple keys for image
-                  final imageUrl =
-                      category['image'] ??
-                      category['imageUrl'] ??
-                      category['imgUrl'] ??
-                      category['img'];
-
-                  return Container(
-                    width: 70,
-                    margin: const EdgeInsets.only(right: 12),
-                    child: InkWell(
-                      onTap: () {
-                        if (category['id'] != null) {
-                          // categoryId'yi String olarak gönder (backend Guid.TryParse ile parse edecek)
-                          final categoryIdString = category['id'].toString();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CategoryProductsScreen(
-                                categoryId: categoryIdString,
-                                categoryName: category['name'] ?? '',
-                                imageUrl:
-                                    imageUrl, // Pass the resolved image URL
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            padding: imageUrl != null
-                                ? EdgeInsets.zero
-                                : const EdgeInsets.all(AppTheme.spacingSmall),
-                            decoration: BoxDecoration(
-                              color: imageUrl != null
-                                  ? Colors.transparent
-                                  : (style['color'] as Color).withValues(
-                                      alpha: 0.1,
-                                    ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: ClipOval(
-                              child: imageUrl != null
-                                  ? CachedNetworkImageWidget(
-                                      imageUrl: imageUrl,
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                      maxWidth: 120, // Optimize memory
-                                      maxHeight: 120,
-                                      errorWidget: Icon(
-                                        style['icon'] as IconData,
-                                        color: style['color'] as Color,
-                                        size: 24,
-                                      ),
-                                    )
-                                  : Icon(
-                                      style['icon'] as IconData,
-                                      color: style['color'] as Color,
-                                      size: 24,
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            category['name'] ?? '',
-                            style: AppTheme.poppins(
-                              fontSize: 11,
-                              color: AppTheme.textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
               ),
+              TextButton(
+                onPressed: onViewAll,
+                child: Text(localizations.viewAll),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
             ),
-          ],
-        );
-      },
+            scrollDirection: Axis.horizontal,
+            itemCount: displayCategories.length,
+            itemBuilder: (context, index) {
+              final category = displayCategories[index];
+              final style = _getCategoryStyle(
+                category,
+                primaryColor: colorScheme.primary,
+              );
+
+              // Try multiple keys for image
+              final imageUrl =
+                  category['image'] ??
+                  category['imageUrl'] ??
+                  category['imgUrl'] ??
+                  category['img'];
+
+              return Container(
+                width: 70,
+                margin: const EdgeInsets.only(right: 12),
+                child: InkWell(
+                  onTap: () {
+                    if (category['id'] != null) {
+                      // categoryId'yi String olarak gönder (backend Guid.TryParse ile parse edecek)
+                      final categoryIdString = category['id'].toString();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryProductsScreen(
+                            categoryId: categoryIdString,
+                            categoryName: category['name'] ?? '',
+                            imageUrl: imageUrl, // Pass the resolved image URL
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        padding: imageUrl != null
+                            ? EdgeInsets.zero
+                            : const EdgeInsets.all(AppTheme.spacingSmall),
+                        decoration: BoxDecoration(
+                          color: imageUrl != null
+                              ? Colors.transparent
+                              : (style['color'] as Color).withValues(
+                                  alpha: 0.1,
+                                ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(
+                          child: imageUrl != null
+                              ? CachedNetworkImageWidget(
+                                  imageUrl: imageUrl,
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                  maxWidth: 120, // Optimize memory
+                                  maxHeight: 120,
+                                  errorWidget: Icon(
+                                    style['icon'] as IconData,
+                                    color: style['color'] as Color,
+                                    size: 24,
+                                  ),
+                                )
+                              : Icon(
+                                  style['icon'] as IconData,
+                                  color: style['color'] as Color,
+                                  size: 24,
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        category['name'] ?? '',
+                        style: AppTheme.poppins(
+                          fontSize: 11,
+                          color: AppTheme.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

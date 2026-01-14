@@ -12,7 +12,13 @@ import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/providers/theme_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
 import 'package:mobile/features/vendors/presentation/providers/vendor_provider.dart';
+import 'package:mobile/features/vendors/presentation/providers/vendor_list_provider.dart';
 import 'package:mobile/features/coupons/presentation/providers/coupon_provider.dart';
+import 'package:mobile/features/search/presentation/providers/search_provider.dart';
+import 'package:mobile/features/home/presentation/providers/home_provider.dart';
+import 'package:mobile/features/categories/presentation/providers/categories_provider.dart';
+import 'package:mobile/features/cart/presentation/providers/cart_ui_provider.dart';
+import 'package:mobile/features/orders/presentation/providers/checkout_provider.dart';
 import 'package:mobile/features/auth/presentation/screens/customer/login_screen.dart';
 import 'package:mobile/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:mobile/routers/app_router.dart';
@@ -83,7 +89,25 @@ class MyApp extends StatelessWidget {
           create: (context) => VendorProvider(),
           lazy: true,
         ),
+        ChangeNotifierProvider(
+          create: (context) => VendorListProvider(),
+          lazy: true,
+        ),
         ChangeNotifierProvider(create: (context) => CouponProvider()),
+        ChangeNotifierProvider(
+          create: (context) => SearchProvider(),
+          lazy: true,
+        ),
+        ChangeNotifierProvider(create: (context) => HomeProvider(), lazy: true),
+        ChangeNotifierProvider(
+          create: (context) => CategoriesProvider(),
+          lazy: true,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CartUiProvider(),
+          lazy: true,
+        ),
+        ChangeNotifierProvider(create: (context) => CheckoutProvider()),
       ],
       child: Consumer3<LocalizationProvider, ThemeProvider, BottomNavProvider>(
         builder: (context, localization, themeProvider, bottomNav, _) {

@@ -136,12 +136,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
           vendorType = vendorProfile['type'] is int
               ? vendorProfile['type']
               : int.tryParse(vendorProfile['type'].toString());
-          LoggerService().debug('Vendor Type found: $vendorType');
-        } else {
-          LoggerService().debug(
-            'Vendor Type not found in profile, will fetch all categories',
-          );
-        }
+        } else {}
 
         // Get vendor location (required by backend API)
         if (vendorProfile.containsKey('latitude') &&
@@ -154,9 +149,6 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
           vendorLongitude = vendorProfile['longitude'] is double
               ? vendorProfile['longitude']
               : (vendorProfile['longitude'] as num).toDouble();
-          LoggerService().debug(
-            'Vendor Location found: $vendorLatitude, $vendorLongitude',
-          );
         } else {
           LoggerService().warning(
             'Vendor location not found in profile. Categories may not load.',
@@ -175,28 +167,17 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
         userLongitude: vendorLongitude,
       );
 
-      LoggerService().debug(
-        'LoadCategories: Fetched ${categories.length} categories using VendorType: $vendorType',
-      );
-
       if (mounted) {
         setState(() {
           _categories = categories;
           _isLoadingCategories = false;
 
           // Try to match existing category
-          if (widget.product != null) {
-            LoggerService().debug(
-              'Product Data - ID: ${widget.product!.id}, CategoryID: ${widget.product!.categoryId}, CategoryName: ${widget.product!.category}',
-            );
-          }
+          if (widget.product != null) {}
 
           if (widget.product?.categoryId != null) {
             final exists = categories.any(
               (c) => c['id'].toString() == widget.product!.categoryId,
-            );
-            LoggerService().debug(
-              'Category ID match check: $exists for ${widget.product!.categoryId}',
             );
 
             if (exists) {
@@ -210,25 +191,18 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                 orElse: () => {},
               );
               if (nameMatch.isNotEmpty) {
-                LoggerService().debug(
-                  'Found category by name fallback: ${nameMatch['name']} -> ${nameMatch['id']}',
-                );
                 _selectedCategoryId = nameMatch['id'].toString();
               } else {
                 _selectedCategoryId = null; // Reset if category not found
               }
             }
           } else if (widget.product?.category != null) {
-            LoggerService().debug(
-              'Looking up by Category Name: ${widget.product!.category}',
-            );
             final existing = categories.firstWhere(
               (c) => c['name'] == widget.product!.category,
               orElse: () => {},
             );
             if (existing.isNotEmpty) {
               _selectedCategoryId = existing['id'].toString();
-              LoggerService().debug('Found by name: $_selectedCategoryId');
             }
           }
         });

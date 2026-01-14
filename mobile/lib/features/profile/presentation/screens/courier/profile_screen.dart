@@ -29,18 +29,15 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierProfileScreen: initState called');
+
     _loadProfile();
   }
 
   Future<void> _loadProfile() async {
-    LoggerService().debug('CourierProfileScreen: Loading profile...');
     setState(() => _isLoading = true);
     try {
       final courier = await _courierService.getProfile();
-      LoggerService().debug(
-        'CourierProfileScreen: Profile loaded - Name: ${courier.name}, Status: ${courier.status}',
-      );
+
       if (!mounted) return;
       setState(() {
         _courier = courier;
@@ -71,14 +68,9 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
   }
 
   Future<void> _updateStatus(String newStatus) async {
-    LoggerService().debug(
-      'CourierProfileScreen: Updating status to $newStatus',
-    );
     try {
       await _courierService.updateStatus(newStatus);
-      LoggerService().debug(
-        'CourierProfileScreen: Status updated successfully to $newStatus',
-      );
+
       await _loadProfile(); // Reload to confirm
       if (!mounted) return;
       final localizations = AppLocalizations.of(context);
@@ -341,7 +333,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
-            LoggerService().debug('CourierProfileScreen: Edit profile tapped');
             final result = await Navigator.of(
               context,
             ).pushNamed('/courier/profile/edit');
@@ -359,9 +350,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug(
-              'CourierProfileScreen: Availability tile tapped',
-            );
             Navigator.of(context).pushNamed('/courier/availability');
           },
         ),
@@ -371,9 +359,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           subtitle: Text(currentLanguage),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug(
-              'CourierProfileScreen: Language settings tapped',
-            );
             Navigator.of(context).push(
               NoSlidePageRoute(
                 builder: (context) => const LanguageSettingsScreen(),
@@ -394,9 +379,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug(
-              'CourierProfileScreen: Location management tapped',
-            );
             Navigator.of(context).pushNamed('/courier/location-management');
           },
         ),
@@ -409,9 +391,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug(
-              'CourierProfileScreen: Navigation app tile tapped',
-            );
             Navigator.of(context).pushNamed('/courier/navigation-settings');
           },
         ),
@@ -420,9 +399,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
           title: Text(localizations?.legalDocuments ?? 'Yasal Belgeler'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug(
-              'CourierProfileScreen: Legal documents tapped',
-            );
             Navigator.of(context).push(
               NoSlidePageRoute(builder: (context) => const LegalMenuScreen()),
             );
@@ -435,7 +411,6 @@ class _CourierProfileScreenState extends State<CourierProfileScreen> {
             style: const TextStyle(color: Colors.red),
           ),
           onTap: () async {
-            LoggerService().debug('CourierProfileScreen: Logout tapped');
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => CustomConfirmationDialog(

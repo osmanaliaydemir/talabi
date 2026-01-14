@@ -2,7 +2,6 @@ import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/dashboard/presentation/screens/vendor_dashboard_screen.dart';
-import 'package:mobile/services/logger_service.dart';
 
 class VendorBottomNav extends StatelessWidget {
   const VendorBottomNav({super.key, required this.currentIndex});
@@ -19,7 +18,6 @@ class VendorBottomNav extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       currentIndex: currentIndex,
       onTap: (index) {
-        LoggerService().debug('VendorBottomNav: tapped index $index');
         if (index == currentIndex) {
           return;
         }

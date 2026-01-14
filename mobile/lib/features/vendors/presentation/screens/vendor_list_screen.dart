@@ -3,13 +3,13 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/vendors/data/models/vendor.dart';
 import 'package:mobile/features/vendors/presentation/screens/vendor_detail_screen.dart';
-import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
-
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:mobile/features/vendors/presentation/providers/vendor_list_provider.dart';
+import 'package:mobile/features/home/presentation/providers/home_provider.dart';
 
 class VendorListScreen extends StatefulWidget {
   const VendorListScreen({super.key});
@@ -19,28 +19,32 @@ class VendorListScreen extends StatefulWidget {
 }
 
 class _VendorListScreenState extends State<VendorListScreen> {
-  final ApiService _apiService = ApiService();
-
-  // Data
-  List<Vendor> _vendors = [];
-
-  // Pagination State
-  int _currentPage = 1;
-  static const int _pageSize = 6;
-  bool _isFirstLoad = true;
-  bool _isLoadingMore = false;
-  bool _hasMoreData = true;
-
   int? _currentVendorType;
   late ScrollController _scrollController;
-  Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
-    _loadAddresses();
+
+    // Initial load check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initData();
+      }
+    });
+  }
+
+  void _initData() {
+    final homeProvider = context.read<HomeProvider>();
+    if (homeProvider.addresses.isEmpty) {
+      homeProvider.loadAddresses().then((_) {
+        if (mounted) _loadVendors(isRefresh: true);
+      });
+    } else {
+      _loadVendors(isRefresh: true);
+    }
   }
 
   @override
@@ -50,10 +54,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   void _scrollListener() {
+    final vendorListProvider = context.read<VendorListProvider>();
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
-        !_isLoadingMore &&
-        _hasMoreData) {
+        !vendorListProvider.isLoadingMore &&
+        vendorListProvider.hasMoreData) {
       _loadMoreVendors();
     }
   }
@@ -61,179 +66,111 @@ class _VendorListScreenState extends State<VendorListScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final bottomNav = Provider.of<BottomNavProvider>(context, listen: true);
+    final bottomNav = context.watch<BottomNavProvider>();
     final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
         ? 1
         : 2;
 
     if (_currentVendorType != vendorType) {
       _currentVendorType = vendorType;
-      // Adresler yüklendikten sonra vendor'ları yükle
-      if (_selectedAddress != null) {
+      // Load vendors if addresses are already ready
+      final homeProvider = context.read<HomeProvider>();
+      if (homeProvider.addresses.isNotEmpty) {
         _loadVendors(isRefresh: true);
       }
     }
   }
 
-  Future<void> _loadAddresses() async {
-    try {
-      final addresses = await _apiService.getAddresses();
-      if (mounted) {
-        Map<String, dynamic>? selectedAddress;
-        if (addresses.isNotEmpty) {
-          try {
-            selectedAddress = addresses.firstWhere(
-              (addr) => addr['isDefault'] == true,
-            );
-          } catch (_) {
-            selectedAddress = addresses.first;
-          }
-        }
-
-        setState(() {
-          _selectedAddress = selectedAddress;
-        });
-
-        // Adresler yüklendikten sonra vendor'ları yükle
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _currentVendorType != null) {
-            _loadVendors(isRefresh: true);
-          }
-        });
-      }
-    } catch (e) {
-      // Hata olsa bile vendor'ları yüklemeyi dene (konum olmadan)
-      if (mounted && _currentVendorType != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _loadVendors(isRefresh: true);
-          }
-        });
-      }
-    }
-  }
-
   Future<void> _loadVendors({bool isRefresh = false}) async {
-    if (isRefresh) {
-      setState(() {
-        _isFirstLoad = true;
-        _currentPage = 1;
-        _hasMoreData = true;
-        _vendors.clear();
-      });
-    }
+    if (_currentVendorType == null) return;
 
-    // Get location from selected address
-    double? userLatitude;
-    double? userLongitude;
-    if (_selectedAddress != null) {
-      userLatitude = _selectedAddress!['latitude'] != null
-          ? double.tryParse(_selectedAddress!['latitude'].toString())
-          : null;
-      userLongitude = _selectedAddress!['longitude'] != null
-          ? double.tryParse(_selectedAddress!['longitude'].toString())
-          : null;
-    }
+    final homeProvider = context.read<HomeProvider>();
+    final vendorListProvider = context.read<VendorListProvider>();
 
-    try {
-      final vendors = await _apiService.getVendors(
-        vendorType: _currentVendorType,
-        page: _currentPage,
-        pageSize: _pageSize,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
-      );
-
-      if (mounted) {
-        setState(() {
-          if (isRefresh) {
-            _vendors = vendors;
-          } else {
-            _vendors.addAll(vendors);
-          }
-
-          _isFirstLoad = false;
-          _isLoadingMore = false;
-
-          if (vendors.length < _pageSize) {
-            _hasMoreData = false;
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isFirstLoad = false;
-          _isLoadingMore = false;
-        });
-      }
-    }
+    await vendorListProvider.loadVendors(
+      vendorType: _currentVendorType!,
+      selectedAddress: homeProvider.selectedAddress,
+      isRefresh: isRefresh,
+    );
   }
 
   Future<void> _loadMoreVendors() async {
-    if (_isLoadingMore || !_hasMoreData) return;
+    if (_currentVendorType == null) return;
 
-    setState(() {
-      _isLoadingMore = true;
-      _currentPage++;
-    });
+    final homeProvider = context.read<HomeProvider>();
+    final vendorListProvider = context.read<VendorListProvider>();
 
-    await _loadVendors(isRefresh: false);
+    await vendorListProvider.loadVendors(
+      vendorType: _currentVendorType!,
+      selectedAddress: homeProvider.selectedAddress,
+      isRefresh: false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Column(
-        children: [
-          SharedHeader(
-            title: localizations.popularVendors,
-            subtitle: _vendors.isNotEmpty
-                ? localizations.vendorsCount(_vendors.length)
-                : null,
-            showBackButton: true,
-            onBack: () => Navigator.of(context).pop(),
-            icon: Icons.store,
+    return Consumer<VendorListProvider>(
+      builder: (context, vendorListProvider, _) {
+        final vendors = vendorListProvider.vendors;
+        final isFirstLoad = vendorListProvider.isFirstLoad;
+        final isLoadingMore = vendorListProvider.isLoadingMore;
+
+        return Scaffold(
+          backgroundColor: AppTheme.backgroundColor,
+          body: Column(
+            children: [
+              SharedHeader(
+                title: localizations.popularVendors,
+                subtitle: vendors.isNotEmpty
+                    ? localizations.vendorsCount(vendors.length)
+                    : null,
+                showBackButton: true,
+                onBack: () => Navigator.of(context).pop(),
+                icon: Icons.store,
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                  onRefresh: () async {
+                    // Update addresses via HomeProvider
+                    await context.read<HomeProvider>().loadAddresses();
+                    _loadVendors(isRefresh: true);
+                  },
+                  child: isFirstLoad
+                      ? const Center(child: CircularProgressIndicator())
+                      : vendors.isEmpty
+                      ? EmptyStateWidget(
+                          message: localizations.noVendorsInArea,
+                          subMessage: localizations.noVendorsInAreaSub,
+                          iconData: Icons.store_outlined,
+                          isCompact: true,
+                        )
+                      : ListView.separated(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                          itemCount: vendors.length + (isLoadingMore ? 1 : 0),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: AppTheme.spacingMedium),
+                          itemBuilder: (context, index) {
+                            if (index == vendors.length) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24.0),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            return _buildVendorCard(vendors[index]);
+                          },
+                        ),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: RefreshIndicator(
-              color: Theme.of(context).colorScheme.primary,
-              onRefresh: () async {
-                await _loadAddresses();
-                _loadVendors(isRefresh: true);
-              },
-              child: _isFirstLoad
-                  ? const Center(child: CircularProgressIndicator())
-                  : _vendors.isEmpty
-                  ? EmptyStateWidget(
-                      message: localizations.noVendorsInArea,
-                      subMessage: localizations.noVendorsInAreaSub,
-                      iconData: Icons.store_outlined,
-                      isCompact: true,
-                    )
-                  : ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                      itemCount: _vendors.length + (_isLoadingMore ? 1 : 0),
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: AppTheme.spacingMedium),
-                      itemBuilder: (context, index) {
-                        if (index == _vendors.length) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24.0),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        return _buildVendorCard(_vendors[index]);
-                      },
-                    ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

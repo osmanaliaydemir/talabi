@@ -3,11 +3,12 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/categories/presentation/screens/category_products_screen.dart';
-import 'package:mobile/services/api_service.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/features/categories/presentation/providers/categories_provider.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -18,14 +19,11 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   final ApiService _apiService = ApiService();
-  late Future<List<Map<String, dynamic>>> _categoriesFuture;
   Map<String, dynamic>? _selectedAddress;
 
   @override
   void initState() {
     super.initState();
-    // Initialize future with empty list to prevent null errors
-    _categoriesFuture = Future.value(<Map<String, dynamic>>[]);
     _loadAddresses();
   }
 
@@ -68,32 +66,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   void _loadCategories() {
+    final categoriesProvider = Provider.of<CategoriesProvider>(
+      context,
+      listen: false,
+    );
     final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
     final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
         ? 1
         : 2;
     final locale = AppLocalizations.of(context)?.localeName;
 
-    // Get location from selected address
-    double? userLatitude;
-    double? userLongitude;
-    if (_selectedAddress != null) {
-      userLatitude = _selectedAddress!['latitude'] != null
-          ? double.tryParse(_selectedAddress!['latitude'].toString())
-          : null;
-      userLongitude = _selectedAddress!['longitude'] != null
-          ? double.tryParse(_selectedAddress!['longitude'].toString())
-          : null;
-    }
-
-    setState(() {
-      _categoriesFuture = _apiService.getCategories(
-        language: locale,
-        vendorType: vendorType,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
-      );
-    });
+    categoriesProvider.loadCategories(
+      vendorType: vendorType,
+      locale: locale,
+      selectedAddress: _selectedAddress,
+    );
   }
 
   IconData? _getIconFromString(String? iconString) {
@@ -261,8 +248,24 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Consumer<BottomNavProvider>(
-      builder: (context, bottomNav, _) {
+    return Consumer2<BottomNavProvider, CategoriesProvider>(
+      builder: (context, bottomNav, categoriesProvider, _) {
+        final categories = categoriesProvider.categories;
+        final isLoading = categoriesProvider.isLoading;
+
+        // Sort by displayOrder if available, then by name
+        final sortedCategories = List<Map<String, dynamic>>.from(categories)
+          ..sort((a, b) {
+            final orderA = a['displayOrder'] as int? ?? 999;
+            final orderB = b['displayOrder'] as int? ?? 999;
+            if (orderA != orderB) {
+              return orderA.compareTo(orderB);
+            }
+            final nameA = (a['name'] as String).toLowerCase();
+            final nameB = (b['name'] as String).toLowerCase();
+            return nameA.compareTo(nameB);
+          });
+
         return Scaffold(
           backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           body: Column(
@@ -275,71 +278,46 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 isCompact: true,
               ),
               Expanded(
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: _categoriesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
+                child: isLoading && sortedCategories.isEmpty
+                    ? Center(
                         child: CircularProgressIndicator(
                           color: colorScheme.primary,
                         ),
-                      );
-                    }
-
-                    if (snapshot.hasError ||
-                        !snapshot.hasData ||
-                        snapshot.data!.isEmpty) {
-                      return Center(
+                      )
+                    : sortedCategories.isEmpty
+                    ? Center(
                         child: EmptyStateWidget(
                           message: localizations.noCategoriesInArea,
                           subMessage: localizations.noCategoriesInAreaSub,
                           iconData: Icons.category_outlined,
                           isCompact: true,
                         ),
-                      );
-                    }
-
-                    final categories = snapshot.data!;
-                    // Sort by displayOrder if available, then by name
-                    final sortedCategories =
-                        List<Map<String, dynamic>>.from(categories)
-                          ..sort((a, b) {
-                            final orderA = a['displayOrder'] as int? ?? 999;
-                            final orderB = b['displayOrder'] as int? ?? 999;
-                            if (orderA != orderB) {
-                              return orderA.compareTo(orderB);
-                            }
-                            final nameA = (a['name'] as String).toLowerCase();
-                            final nameB = (b['name'] as String).toLowerCase();
-                            return nameA.compareTo(nameB);
-                          });
-                    return RefreshIndicator(
-                      color: colorScheme.primary,
-                      onRefresh: () async {
-                        await _loadAddresses();
-                        _loadCategories();
-                      },
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 1,
-                              childAspectRatio: 2.1,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                            ),
-                        itemCount: sortedCategories.length,
-                        itemBuilder: (context, index) {
-                          final category = sortedCategories[index];
-                          return _buildCategoryCard(
-                            category,
-                            colorScheme: colorScheme,
-                          );
+                      )
+                    : RefreshIndicator(
+                        color: colorScheme.primary,
+                        onRefresh: () async {
+                          await _loadAddresses();
+                          _loadCategories();
                         },
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 1,
+                                childAspectRatio: 2.1,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                          itemCount: sortedCategories.length,
+                          itemBuilder: (context, index) {
+                            final category = sortedCategories[index];
+                            return _buildCategoryCard(
+                              category,
+                              colorScheme: colorScheme,
+                            );
+                          },
+                        ),
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),

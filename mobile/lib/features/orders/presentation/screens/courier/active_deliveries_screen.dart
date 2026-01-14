@@ -44,7 +44,6 @@ class _CourierActiveDeliveriesScreenState
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierActiveDeliveriesScreen: initState');
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -62,19 +61,10 @@ class _CourierActiveDeliveriesScreenState
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
-      LoggerService().debug(
-        'CourierActiveDeliveriesScreen: Tab changed to ${_tabController.index}',
-      );
       // Tab değiştiğinde ilgili tab'ın verilerini yeniden yükle
       if (_tabController.index == 0) {
-        LoggerService().debug(
-          'CourierActiveDeliveriesScreen: Reloading active orders',
-        );
         _loadActiveOrders();
       } else if (_tabController.index == 1) {
-        LoggerService().debug(
-          'CourierActiveDeliveriesScreen: Reloading delivery history',
-        );
         _loadHistory(reset: true);
       }
     }
@@ -89,9 +79,6 @@ class _CourierActiveDeliveriesScreenState
   }
 
   Future<void> _loadActiveOrders() async {
-    LoggerService().debug(
-      'CourierActiveDeliveriesScreen: Loading active orders...',
-    );
     setState(() {
       _isLoadingActive = true;
       _errorActive = null;
@@ -106,10 +93,6 @@ class _CourierActiveDeliveriesScreenState
       final ongoing = <CourierOrder>[];
 
       for (final order in orders) {
-        LoggerService().debug(
-          'Order #${order.id}: status=${order.status}, courierStatus=${order.courierStatus}, acceptedAt=${order.courierAcceptedAt}',
-        );
-
         // If the order is explicitly assigned (enum or string) or hasn't been accepted yet, treat it as an offer
         if (order.courierStatus == OrderCourierStatus.assigned ||
             order.status.toLowerCase() == 'assigned' ||
@@ -125,9 +108,6 @@ class _CourierActiveDeliveriesScreenState
         _ongoingDeliveries = ongoing;
         _isLoadingActive = false;
       });
-      LoggerService().debug(
-        'CourierActiveDeliveriesScreen: Loaded ${orders.length} active orders',
-      );
     } catch (e, stackTrace) {
       LoggerService().error(
         'CourierActiveDeliveriesScreen: ERROR loading orders',
@@ -158,9 +138,6 @@ class _CourierActiveDeliveriesScreenState
     });
 
     try {
-      LoggerService().debug(
-        'CourierActiveDeliveriesScreen: Loading history page $_currentPage...',
-      );
       final result = await _courierService.getOrderHistory(
         page: _currentPage,
         pageSize: 20,
@@ -177,9 +154,6 @@ class _CourierActiveDeliveriesScreenState
           _currentPage++;
         }
       });
-      LoggerService().debug(
-        'CourierActiveDeliveriesScreen: Loaded ${items.length} history items, total: ${_historyOrders.length}',
-      );
     } catch (e, stackTrace) {
       LoggerService().error(
         'CourierActiveDeliveriesScreen: ERROR loading history',
@@ -613,9 +587,6 @@ class _CourierActiveDeliveriesScreenState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
-          LoggerService().debug(
-            'CourierActiveDeliveriesScreen: Tapped order #${order.id}, navigating to detail',
-          );
           final result = await Navigator.of(
             context,
           ).pushNamed('/courier/order-detail', arguments: order.id);

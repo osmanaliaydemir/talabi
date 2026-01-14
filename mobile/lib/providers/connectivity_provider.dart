@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mobile/services/connectivity_service.dart';
-import 'package:mobile/services/logger_service.dart';
 
 class ConnectivityProvider with ChangeNotifier {
   ConnectivityProvider(this._connectivityService) {
@@ -25,9 +24,6 @@ class ConnectivityProvider with ChangeNotifier {
           _lastOnlineTime = DateTime.now();
         }
         notifyListeners();
-        LoggerService().debug(
-          '📡 [CONNECTIVITY] Status changed: ${isOnline ? "ONLINE" : "OFFLINE"}',
-        );
       }
     });
 
@@ -37,9 +33,6 @@ class ConnectivityProvider with ChangeNotifier {
       _lastOnlineTime = DateTime.now();
     }
     notifyListeners();
-    LoggerService().debug(
-      '📡 [CONNECTIVITY] Initial status: ${_isOnline ? "ONLINE" : "OFFLINE"}',
-    );
   }
 
   Future<void> checkConnectivity() async {

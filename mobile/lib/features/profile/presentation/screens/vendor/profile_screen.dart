@@ -256,7 +256,6 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(localizations.editProfileDescription),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
-            LoggerService().debug('VendorProfileScreen: Edit profile tapped');
             final result = await Navigator.of(context).push(
               NoSlidePageRoute(
                 builder: (context) => const VendorEditProfileScreen(),
@@ -273,7 +272,6 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(localizations.businessSettingsSubtitle),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug('VendorProfileScreen: Settings tapped');
             Navigator.of(context).push(
               NoSlidePageRoute(
                 builder: (context) => const VendorSettingsScreen(),
@@ -288,7 +286,6 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(localizations.deliveryZonesDescription),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug('VendorProfileScreen: Delivery Zones tapped');
             Navigator.of(context).push(
               NoSlidePageRoute(
                 builder: (context) => const DeliveryZonesScreen(),
@@ -303,9 +300,6 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           subtitle: Text(currentLanguage),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            LoggerService().debug(
-              'VendorProfileScreen: Language settings tapped',
-            );
             Navigator.of(context).push(
               NoSlidePageRoute(
                 builder: (context) => const LanguageSettingsScreen(),
@@ -320,7 +314,6 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
             style: const TextStyle(color: Colors.red),
           ),
           onTap: () {
-            LoggerService().debug('VendorProfileScreen: Logout tapped');
             _showLogoutDialog(context, authProvider, localizations);
           },
         ),

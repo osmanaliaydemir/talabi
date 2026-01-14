@@ -10,6 +10,7 @@ import 'package:mobile/widgets/skeleton_loader.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/utils/location_extractor.dart';
 import 'package:provider/provider.dart';
 
 class PopularProductListScreen extends StatefulWidget {
@@ -117,16 +118,9 @@ class _PopularProductListScreenState extends State<PopularProductListScreen> {
           : 2;
 
       // Get location from selected address
-      double? userLatitude;
-      double? userLongitude;
-      if (_selectedAddress != null) {
-        userLatitude = _selectedAddress!['latitude'] != null
-            ? double.tryParse(_selectedAddress!['latitude'].toString())
-            : null;
-        userLongitude = _selectedAddress!['longitude'] != null
-            ? double.tryParse(_selectedAddress!['longitude'].toString())
-            : null;
-      }
+      final location = LocationExtractor.fromAddress(_selectedAddress);
+      final userLatitude = location.latitude;
+      final userLongitude = location.longitude;
 
       final products = await _apiService.getPopularProducts(
         page: _currentPage,

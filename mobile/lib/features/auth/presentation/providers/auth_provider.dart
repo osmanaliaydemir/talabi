@@ -115,19 +115,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> register(String email, String password, String fullName) async {
     try {
-      LoggerService().debug('🟡 [AUTH_PROVIDER] Register called');
-      LoggerService().debug('🟡 [AUTH_PROVIDER] Email: $email');
-      LoggerService().debug('🟡 [AUTH_PROVIDER] FullName: $fullName');
-
       final response =
           await (_apiService..resetLogout()) // Ensure we can make requests
               .register(email, password, fullName);
-
-      LoggerService().debug('🟢 [AUTH_PROVIDER] Register response received');
-      LoggerService().debug(
-        '🟢 [AUTH_PROVIDER] Response keys: ${response.keys}',
-      );
-      LoggerService().debug('🟢 [AUTH_PROVIDER] Response: $response');
 
       // Note: Register usually doesn't return tokens if email verification is required
       // But if it does, we handle it.
@@ -147,14 +137,6 @@ class AuthProvider with ChangeNotifier {
           _refreshToken = response['refreshToken'];
         }
 
-        LoggerService().debug(
-          '🟢 [AUTH_PROVIDER] Token: ${_token != null ? "Set" : "Null"}',
-        );
-        LoggerService().debug('🟢 [AUTH_PROVIDER] UserId: $_userId');
-        LoggerService().debug('🟢 [AUTH_PROVIDER] Email: $_email');
-        LoggerService().debug('🟢 [AUTH_PROVIDER] FullName: $_fullName');
-        LoggerService().debug('🟢 [AUTH_PROVIDER] Role: $_role');
-
         // Save to secure storage
         await _secureStorage.setToken(_token!);
         if (_refreshToken != null) {
@@ -166,10 +148,6 @@ class AuthProvider with ChangeNotifier {
         if (_role != null) {
           await _secureStorage.setRole(_role!);
         }
-
-        LoggerService().debug(
-          '🟢 [AUTH_PROVIDER] Data saved to Secure Storage',
-        );
 
         // Analytics
         await AnalyticsService.setUserId(_userId!);

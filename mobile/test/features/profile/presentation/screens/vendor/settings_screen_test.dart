@@ -17,10 +17,6 @@ import '../../../../orders/presentation/screens/customer/order_detail_screen_tes
 
 class MockLoggerService extends Mock implements LoggerService {
   @override
-  void debug(String? message, [dynamic error, StackTrace? stackTrace]) {}
-  @override
-  void info(String? message) {}
-  @override
   void warning(String? message, [dynamic error, StackTrace? stackTrace]) {}
   @override
   void error(String? message, [dynamic error, StackTrace? stackTrace]) {}

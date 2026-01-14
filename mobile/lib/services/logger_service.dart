@@ -224,16 +224,6 @@ class LoggerService {
     return _logger!;
   }
 
-  /// Debug log - Kaldırıldı (sadece warning ve error logları gösteriliyor)
-  void debug(String message, [dynamic error, StackTrace? stackTrace]) {
-    // Info ve debug logları kaldırıldı - sadece warning ve error gösteriliyor
-  }
-
-  /// Info log - Kaldırıldı (sadece warning ve error logları gösteriliyor)
-  void info(String message) {
-    // Info ve debug logları kaldırıldı - sadece warning ve error gösteriliyor
-  }
-
   /// Warning log
   void warning(String message, [dynamic error, StackTrace? stackTrace]) {
     _loggerInstance.w(message, error: error, stackTrace: stackTrace);

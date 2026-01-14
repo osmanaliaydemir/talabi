@@ -79,18 +79,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               context,
               listen: false,
             );
-            LoggerService().info(
-              '🛒 [SYNC] Cart items count: ${cartProvider.items.length}',
-            );
 
             if (cartProvider.items.isNotEmpty) {
               final firstItem = cartProvider.items.values.first;
               // VendorType: 1 = Restaurant, 2 = Market
               final vendorType = firstItem.product.vendorType;
-
-              LoggerService().info(
-                '🛒 [SYNC] First item: ${firstItem.product.name}, VendorType: $vendorType',
-              );
 
               if (vendorType != null) {
                 final bottomNav = Provider.of<BottomNavProvider>(
@@ -98,19 +91,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   listen: false,
                 );
 
-                LoggerService().info(
-                  '🛒 [SYNC] Current Category: ${bottomNav.selectedCategory}, Target VendorType: $vendorType',
-                );
-
                 if (vendorType == 1 &&
                     bottomNav.selectedCategory != MainCategory.restaurant) {
-                  LoggerService().info(
-                    '🛒 [SYNC] Switching to Restaurant mode',
-                  );
                   bottomNav.setCategory(MainCategory.restaurant);
                 } else if (vendorType == 2 &&
                     bottomNav.selectedCategory != MainCategory.market) {
-                  LoggerService().info('🛒 [SYNC] Switching to Market mode');
                   bottomNav.setCategory(MainCategory.market);
                 }
               }

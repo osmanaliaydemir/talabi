@@ -22,7 +22,6 @@ class _CourierNavigationSettingsScreenState
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierNavigationSettingsScreen: initState');
     _loadPreference();
   }
 
@@ -30,9 +29,6 @@ class _CourierNavigationSettingsScreenState
     try {
       final prefs = await SharedPreferences.getInstance();
       final value = prefs.getString('courier_navigation_app') ?? 'google_maps';
-      LoggerService().debug(
-        'CourierNavigationSettingsScreen: Loaded navigation app preference: $value',
-      );
       if (mounted) {
         setState(() {
           _selectedApp = value;
@@ -54,9 +50,6 @@ class _CourierNavigationSettingsScreenState
   }
 
   Future<void> _savePreference(String value) async {
-    LoggerService().debug(
-      'CourierNavigationSettingsScreen: Saving navigation app: $value',
-    );
     setState(() {
       _selectedApp = value;
     });
@@ -117,7 +110,6 @@ class _CourierNavigationSettingsScreenState
         leadingIcon: Icons.map_outlined,
         showBackButton: true,
         onBack: () {
-          LoggerService().debug('CourierNavigationSettingsScreen: Back tapped');
           Navigator.of(context).pop();
         },
         showRefresh: false,

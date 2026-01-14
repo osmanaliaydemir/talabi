@@ -38,14 +38,8 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
   }
 
   Future<void> _takePhoto() async {
-    LoggerService().debug(
-      'DeliveryProofScreen: Taking photo - OrderId: ${widget.orderId}',
-    );
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
     if (photo != null) {
-      LoggerService().debug(
-        'DeliveryProofScreen: Photo taken - Path: ${photo.path}',
-      );
       setState(() {
         _image = File(photo.path);
       });
@@ -53,9 +47,6 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
   }
 
   Future<void> _submitProof() async {
-    LoggerService().debug(
-      'DeliveryProofScreen: Submitting proof - OrderId: ${widget.orderId}',
-    );
     if (!_formKey.currentState!.validate()) {
       LoggerService().warning('DeliveryProofScreen: Form validation failed');
       return;
@@ -93,16 +84,11 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
       final courierService = CourierService();
 
       // Upload image
-      LoggerService().debug('DeliveryProofScreen: Uploading image...');
       final String photoUrl = await courierService.uploadImage(_image!);
-      LoggerService().debug(
-        'DeliveryProofScreen: Image uploaded - URL: $photoUrl',
-      );
 
       // Process and upload signature
       String? signatureUrl;
       if (_signatureController.isNotEmpty) {
-        LoggerService().debug('DeliveryProofScreen: Processing signature...');
         final Uint8List? data = await _signatureController.toPngBytes();
         if (data != null) {
           final tempDir = await getTemporaryDirectory();
@@ -111,24 +97,14 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
           ).create();
           await file.writeAsBytes(data);
           signatureUrl = await courierService.uploadImage(file);
-          LoggerService().debug(
-            'DeliveryProofScreen: Signature uploaded - URL: $signatureUrl',
-          );
         }
       }
 
-      LoggerService().debug(
-        'DeliveryProofScreen: Submitting proof to backend...',
-      );
       await courierService.submitProof(
         widget.orderId,
         photoUrl,
         signatureUrl,
         _notesController.text.isEmpty ? null : _notesController.text,
-      );
-
-      LoggerService().debug(
-        'DeliveryProofScreen: Proof submitted successfully - OrderId: ${widget.orderId}',
       );
       if (mounted) {
         final localizations = AppLocalizations.of(context);
@@ -177,7 +153,6 @@ class _DeliveryProofScreenState extends State<DeliveryProofScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            LoggerService().debug('DeliveryProofScreen: Back button pressed');
             Navigator.of(context).pop();
           },
         ),

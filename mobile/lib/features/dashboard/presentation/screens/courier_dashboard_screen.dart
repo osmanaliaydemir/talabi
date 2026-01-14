@@ -40,7 +40,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierDashboardScreen: initState called');
+
     _locationService = LocationService(_courierService);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -81,44 +81,23 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   }
 
   Future<void> _loadData() async {
-    LoggerService().debug('CourierDashboardScreen: Loading data...');
     setState(() {
       _isLoading = true;
     });
 
     try {
-      LoggerService().debug('CourierDashboardScreen: Fetching profile...');
       final courier = await _courierService.getProfile();
-      LoggerService().debug(
-        'CourierDashboardScreen: Profile loaded - ${courier.name}, Status: ${courier.status}',
-      );
 
       // Start location tracking if courier is available
       if (courier.status == 'Available') {
-        LoggerService().debug(
-          'CourierDashboardScreen: Courier is available, starting location tracking...',
-        );
         await _locationService.startLocationTracking();
       } else {
-        LoggerService().debug(
-          'CourierDashboardScreen: Courier is ${courier.status}, stopping location tracking...',
-        );
         _locationService.stopLocationTracking();
       }
 
-      LoggerService().debug('CourierDashboardScreen: Fetching statistics...');
       final statistics = await _courierService.getStatistics();
-      LoggerService().debug(
-        'CourierDashboardScreen: Statistics loaded - Total: ${statistics.totalDeliveries}, Earnings: ${statistics.totalEarnings}',
-      );
 
-      LoggerService().debug(
-        'CourierDashboardScreen: Fetching active orders...',
-      );
       final orders = await _courierService.getActiveOrders();
-      LoggerService().debug(
-        'CourierDashboardScreen: Active orders loaded - Count: ${orders.length}',
-      );
 
       if (mounted) {
         setState(() {
@@ -127,15 +106,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           _activeOrders = orders;
           _isLoading = false;
         });
-        LoggerService().debug(
-          'CourierDashboardScreen: Data loaded successfully',
-        );
 
         // Check if vehicle type is not selected
         if (courier.vehicleType == null || courier.vehicleType!.isEmpty) {
-          LoggerService().debug(
-            'CourierDashboardScreen: Vehicle type not selected, showing selection bottom sheet',
-          );
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showVehicleTypeBottomSheet();
           });
@@ -143,9 +116,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         // Check if working hours are not set
         else if (courier.workingHoursStart == null ||
             courier.workingHoursEnd == null) {
-          LoggerService().debug(
-            'CourierDashboardScreen: Working hours not set, showing working hours bottom sheet',
-          );
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showWorkingHoursBottomSheet();
           });
@@ -153,9 +123,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         // Check if location is not set (only if vehicle type is already selected)
         else if (courier.currentLatitude == null ||
             courier.currentLongitude == null) {
-          LoggerService().debug(
-            'CourierDashboardScreen: Location not set, showing location selection bottom sheet',
-          );
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showLocationSelectionBottomSheet();
           });
@@ -195,29 +162,18 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     }
 
     final newStatus = value ? 'Available' : 'Offline';
-    LoggerService().debug(
-      'CourierDashboardScreen: Toggling status to $newStatus',
-    );
+
     setState(() {
       _isStatusUpdating = true;
     });
 
     try {
       await _courierService.updateStatus(newStatus);
-      LoggerService().debug(
-        'CourierDashboardScreen: Status updated successfully to $newStatus',
-      );
 
       // Handle location tracking based on new status
       if (value) {
-        LoggerService().debug(
-          'CourierDashboardScreen: Starting location tracking...',
-        );
         await _locationService.startLocationTracking();
       } else {
-        LoggerService().debug(
-          'CourierDashboardScreen: Stopping location tracking...',
-        );
         _locationService.stopLocationTracking();
       }
 
@@ -1529,9 +1485,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     Icons.delivery_dining,
                     Colors.teal,
                     () {
-                      LoggerService().debug(
-                        'CourierDashboardScreen: Quick Action -> Active Deliveries',
-                      );
                       Navigator.of(
                         context,
                       ).pushNamed('/courier/active-deliveries');
@@ -1561,9 +1514,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     Icons.history,
                     Colors.purple,
                     () {
-                      LoggerService().debug(
-                        'CourierDashboardScreen: Quick Action -> Delivery History',
-                      );
                       Navigator.of(
                         context,
                       ).pushNamed('/courier/active-deliveries', arguments: 1);
@@ -2171,9 +2121,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
         return;
       }
 
-      LoggerService().debug(
-        'CourierDashboardScreen: Order action successful - $successMessage',
-      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(successMessage), backgroundColor: Colors.teal),
       );

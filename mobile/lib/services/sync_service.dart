@@ -56,10 +56,14 @@ class SyncService {
   final ApiService _apiService = ApiService();
   final ConnectivityService _connectivityService;
 
+  // Flag to prevent concurrent processing
+  bool _isProcessing = false;
+
   Future<void> _init() async {
     // Listen to connectivity changes and process queue when online
     _connectivityService.connectivityStream.listen((isOnline) {
       if (isOnline) {
+        // Use unawaited to prevent blocking, but processQueue handles concurrency
         processQueue();
       }
     });
@@ -70,7 +74,6 @@ class SyncService {
       final box = await Hive.openBox(_queueBoxName);
       await box.put(action.id, jsonEncode(action.toJson()));
       await box.close();
-      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       LoggerService().error('Error adding to sync queue', e, stackTrace);
     }
@@ -112,31 +115,64 @@ class SyncService {
   }
 
   Future<void> processQueue() async {
+    // Prevent concurrent processing
+    if (_isProcessing) {
+      return;
+    }
+
     if (!_connectivityService.isOnline) {
-      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
       return;
     }
 
-    // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
-    final actions = await getQueuedActions();
+    // Set processing flag before async operations
+    _isProcessing = true;
 
-    if (actions.isEmpty) {
-      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
-      return;
-    }
+    try {
+      final actions = await getQueuedActions();
 
-    // Sort by timestamp (oldest first)
-    actions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      // Early return if no actions, but finally will still execute
+      if (actions.isEmpty) {
+        return;
+      }
 
-    for (final action in actions) {
-      try {
-        final success = await _executeAction(action);
+      // Sort by timestamp (oldest first)
+      actions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-        if (success) {
-          await removeFromQueue(action.id);
-          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
-        } else {
-          // Increment retry count
+      for (final action in actions) {
+        try {
+          final success = await _executeAction(action);
+
+          if (success) {
+            await removeFromQueue(action.id);
+          } else {
+            // Increment retry count
+            final updatedAction = SyncAction(
+              id: action.id,
+              type: action.type,
+              data: action.data,
+              timestamp: action.timestamp,
+              retryCount: action.retryCount + 1,
+            );
+
+            if (updatedAction.retryCount >= _maxRetries) {
+              // Remove after max retries
+              await removeFromQueue(action.id);
+              LoggerService().warning(
+                '❌ [SYNC] Action failed after max retries: ${action.type} (${action.id})',
+              );
+            } else {
+              // Update retry count
+              await addToQueue(updatedAction);
+            }
+          }
+        } catch (e, stackTrace) {
+          LoggerService().error(
+            '❌ [SYNC] Error processing action ${action.id}',
+            e,
+            stackTrace,
+          );
+
+          // Increment retry count on error
           final updatedAction = SyncAction(
             id: action.id,
             type: action.type,
@@ -145,40 +181,16 @@ class SyncService {
             retryCount: action.retryCount + 1,
           );
 
-          if (updatedAction.retryCount >= _maxRetries) {
-            // Remove after max retries
-            await removeFromQueue(action.id);
-            LoggerService().warning(
-              '❌ [SYNC] Action failed after max retries: ${action.type} (${action.id})',
-            );
-          } else {
-            // Update retry count
+          if (updatedAction.retryCount < _maxRetries) {
             await addToQueue(updatedAction);
-            // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
+          } else {
+            await removeFromQueue(action.id);
           }
         }
-      } catch (e, stackTrace) {
-        LoggerService().error(
-          '❌ [SYNC] Error processing action ${action.id}',
-          e,
-          stackTrace,
-        );
-
-        // Increment retry count on error
-        final updatedAction = SyncAction(
-          id: action.id,
-          type: action.type,
-          data: action.data,
-          timestamp: action.timestamp,
-          retryCount: action.retryCount + 1,
-        );
-
-        if (updatedAction.retryCount < _maxRetries) {
-          await addToQueue(updatedAction);
-        } else {
-          await removeFromQueue(action.id);
-        }
       }
+    } finally {
+      // Always reset processing flag, even if an error occurs
+      _isProcessing = false;
     }
   }
 
@@ -228,7 +240,6 @@ class SyncService {
   Future<void> clearQueue() async {
     try {
       await Hive.deleteBoxFromDisk(_queueBoxName);
-      // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
     } catch (e, stackTrace) {
       LoggerService().error('Error clearing sync queue', e, stackTrace);
     }

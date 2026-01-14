@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/services/logger_service.dart';
+
 import 'package:provider/provider.dart';
 import 'package:mobile/features/vendors/presentation/providers/vendor_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
@@ -49,7 +49,6 @@ class _VendorHeaderState extends State<VendorHeader> {
   }
 
   Future<void> _openNotifications() async {
-    LoggerService().debug('VendorHeader: Notifications icon tapped');
     await Navigator.of(context).pushNamed('/vendor/notifications');
     if (mounted) {
       context.read<NotificationProvider>().loadVendorNotifications(force: true);
@@ -155,7 +154,6 @@ class _VendorHeaderState extends State<VendorHeader> {
       return IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () {
-          LoggerService().debug('VendorHeader: Back button pressed');
           if (widget.onBack != null) {
             widget.onBack!();
           } else {
@@ -304,7 +302,6 @@ class _VendorHeaderState extends State<VendorHeader> {
                     size: 24,
                   ),
                   onPressed: () {
-                    LoggerService().debug('VendorHeader: Refresh icon pressed');
                     widget.onRefresh?.call();
                   },
                 ),

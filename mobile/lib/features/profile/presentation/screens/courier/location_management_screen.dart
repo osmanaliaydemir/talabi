@@ -30,7 +30,6 @@ class _CourierLocationManagementScreenState
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierLocationManagementScreen: initState called');
     _loadProfile();
     _getCurrentLocation();
   }
@@ -42,9 +41,6 @@ class _CourierLocationManagementScreenState
   }
 
   Future<void> _loadProfile() async {
-    LoggerService().debug(
-      'CourierLocationManagementScreen: Loading profile...',
-    );
     setState(() => _isLoading = true);
     try {
       final courier = await _courierService.getProfile();

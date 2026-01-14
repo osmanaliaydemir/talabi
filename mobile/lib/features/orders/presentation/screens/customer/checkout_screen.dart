@@ -11,8 +11,9 @@ import 'package:mobile/features/orders/presentation/screens/customer/order_succe
 import 'package:mobile/features/campaigns/presentation/widgets/campaign_selection_bottom_sheet.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
-import 'package:mobile/services/analytics_service.dart';
+
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/features/orders/presentation/providers/checkout_provider.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
 import 'package:mobile/widgets/agreement_checkbox.dart';
 
@@ -37,35 +38,29 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  final ApiService _apiService = ApiService();
   final TextEditingController _noteController = TextEditingController();
-
-  Map<String, dynamic>? _selectedAddress;
-  String _selectedPaymentMethod = 'Cash';
-  bool _isLoading = false;
-  List<dynamic> _addresses = [];
-  bool _isLoadingAddresses = true;
-  bool _acceptedDistanceSales = false;
-
-  // Calculation State
-  bool _isCalculating = false;
-  bool _isInitializing = true;
-  OrderCalculationResult? _calculationResult;
-  String? _calculationError;
   late CartProvider _cartProvider;
+  late CheckoutProvider _checkoutProvider;
+  bool _isInitializing = true;
 
   @override
   void initState() {
     super.initState();
     _cartProvider = Provider.of<CartProvider>(context, listen: false);
-    _loadAddresses();
+    _checkoutProvider = Provider.of<CheckoutProvider>(context, listen: false);
+
+    // Initialize provider logic
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkoutProvider.init().then((_) {
+        if (mounted) _calculateOrder();
+      });
+    });
 
     // Listen to cart changes for coupon/campaign updates
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Clear any previously selected promotions when entering checkout
-      // User requested: "Ödeme ekranına girdiğimde daha önceden kampanya veya kupon seçilmişse sepet tablosundan silsin sıfırlasın"
       try {
-        await _apiService.clearCartPromotions();
+        await ApiService().clearCartPromotions();
         // Clear local state
         await _cartProvider.removeCampaign();
         await _cartProvider.removeCoupon();
@@ -76,12 +71,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       // Add listener AFTER clearing initial promotions to avoid unnecessary calculations
       if (mounted) {
         _cartProvider.addListener(_onCartChanged);
-        // Force calculation to update summary to non-discounted state
-        await _calculateOrder();
+        // Force calculation
+        _calculateOrder();
 
-        // Mark initialization as complete so UI can show the correct non-discounted state
         if (mounted) {
           setState(() {
+            // UI state for initialization completeness
             _isInitializing = false;
           });
         }
@@ -106,183 +101,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _calculateOrder() async {
     if (!mounted) return;
-
-    setState(() {
-      _isCalculating = true;
-      _calculationError = null;
-    });
-
-    try {
-      // Use the stored _cartProvider instead of looking up context again
-
-      final items = widget.cartItems.entries
-          .map(
-            (e) => OrderItemDto(
-              productId: e.value.product.id,
-              quantity: e.value.quantity,
-              selectedOptions: e.value.selectedOptions,
-            ),
-          )
-          .toList();
-
-      final request = CalculateOrderRequest(
-        vendorId: widget.vendorId,
-        items: items,
-        deliveryAddressId: _selectedAddress?['id']?.toString(),
-        couponCode: _cartProvider.appliedCoupon?.code,
-        campaignId: _cartProvider.selectedCampaign?.id,
-      );
-
-      final result = await _apiService.calculateOrder(request);
-
-      if (!mounted) return;
-      setState(() {
-        _calculationResult = result;
-        _isCalculating = false;
-      });
-    } catch (e) {
-      LoggerService().error('Order calculation failed', e);
-      if (!mounted) return;
-      setState(() {
-        _calculationError = e.toString().replaceAll('Exception: ', '');
-        _isCalculating = false;
-      });
-    }
-  }
-
-  Future<void> _loadAddresses() async {
-    setState(() {
-      _isLoadingAddresses = true;
-    });
-
-    try {
-      final addresses = await _apiService.getAddresses();
-      if (!mounted) return;
-      setState(() {
-        _addresses = addresses;
-        // Auto-select default address if available
-        Map<String, dynamic>? defaultAddress;
-        if (addresses.isNotEmpty) {
-          try {
-            final found = addresses.firstWhere(
-              (addr) =>
-                  addr['isDefault'] == true ||
-                  addr['IsDefault'] == true ||
-                  addr['isDefault'] == 'true' ||
-                  addr['IsDefault'] == 'true',
-            );
-            defaultAddress = found as Map<String, dynamic>;
-          } catch (e) {
-            defaultAddress = addresses.first as Map<String, dynamic>;
-          }
-        }
-        _selectedAddress = defaultAddress;
-        _isLoadingAddresses = false;
-        LoggerService().debug(
-          'Selected address: ${_selectedAddress?['title'] ?? 'null'}',
-        );
-      });
-
-      // Calculate after loading addresses
-      _calculateOrder();
-    } catch (e) {
-      LoggerService().error('Error loading addresses: $e', e);
-      setState(() {
-        _isLoadingAddresses = false;
-      });
-    }
+    await _checkoutProvider.calculateOrder(
+      vendorId: widget.vendorId,
+      cartItems: widget.cartItems,
+      couponCode: _cartProvider.appliedCoupon?.code,
+      campaignId: _cartProvider.selectedCampaign?.id,
+    );
   }
 
   Future<void> _createOrder() async {
     final localizations = AppLocalizations.of(context)!;
 
-    // Validation
-    if (_selectedAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(localizations.pleaseSelectAddress),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (!_acceptedDistanceSales) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(localizations.pleaseAcceptDistanceSales),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Prevent ordering if calculation failed mechanism
-    if (_calculationResult == null && !_isCalculating) {
-      // If no calculation result but we are not calculating, try calculating again or warn
-      // But if items are empty or other issue, we should handle it.
-      // Assuming items not empty since passed in.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lütfen fiyat hesaplamasının tamamlanmasını bekleyin.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      _calculateOrder();
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final orderItems = <Map<String, dynamic>>[];
-      for (final item in widget.cartItems.values) {
-        final Map<String, dynamic> itemData = {
-          'productId': item.product.id,
-          'quantity': item.quantity,
-        };
-        if (item.selectedOptions != null) {
-          itemData['selectedOptions'] = item.selectedOptions;
-        }
-        orderItems.add(itemData);
-      }
-
-      final addressId = _selectedAddress!['id'];
-      final addressIdString = addressId?.toString();
-
-      final cartProvider = Provider.of<CartProvider>(context, listen: false);
-      final couponCode = cartProvider.appliedCoupon?.code;
-
-      final order = await _apiService.createOrder(
-        widget.vendorId,
-        orderItems,
-        deliveryAddressId: addressIdString,
-        paymentMethod: _selectedPaymentMethod,
+      final order = await _checkoutProvider.createOrder(
+        vendorId: widget.vendorId,
+        items: widget.cartItems,
+        defaultTotal: _cartProvider.totalAmount + widget.deliveryFee,
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
-        couponCode: couponCode,
-        campaignId: cartProvider.selectedCampaign?.id,
+        couponCode: _cartProvider.appliedCoupon?.code,
+        campaignId: _cartProvider.selectedCampaign?.id,
+        currencyCode: widget.cartItems.values.first.product.currency.code,
       );
 
-      await AnalyticsService.logPurchase(
-        orderId: order.customerOrderId,
-        totalAmount:
-            _calculationResult?.totalAmount ??
-            (cartProvider.totalAmount + widget.deliveryFee),
-        currency: widget.cartItems.values.first.product.currency.code,
-        cartItems: widget.cartItems.values.toList(),
-        shippingAddress:
-            '${_selectedAddress!['city']} / ${_selectedAddress!['district']}',
-      );
-
+      // Clear cart
       if (mounted) {
-        final cart = Provider.of<CartProvider>(context, listen: false);
-        await cart.clear();
+        await _cartProvider.clear();
       }
 
+      // Iterate
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -293,7 +141,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
       }
     } catch (e) {
-      LoggerService().error('Error creating order: $e', e);
+      // Error handling handled by provider rethrow hopefully, or we catch here to show dialog
+      // The provider rethrows so we can show dialog here.
       if (mounted) {
         showDialog(
           context: context,
@@ -311,12 +160,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -324,12 +167,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final cart = Provider.of<CartProvider>(context);
+    final checkout = Provider.of<CheckoutProvider>(context);
 
     final Currency displayCurrency = widget.cartItems.isNotEmpty
         ? widget.cartItems.values.first.product.currency
         : Currency.try_;
 
-    final double? totalAmount = _calculationResult?.totalAmount;
+    final double? totalAmount = checkout.calculationResult?.totalAmount;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -353,7 +197,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
           Expanded(
-            child: _isLoadingAddresses
+            child: checkout.isLoadingAddresses
                 ? const Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryOrange,
@@ -398,7 +242,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const SizedBox(height: 12),
 
                         // Error handling for calculation
-                        if (_calculationError != null)
+                        if (checkout.calculationError != null)
                           Container(
                             padding: const EdgeInsets.all(8),
                             color: Colors.red.shade50,
@@ -408,7 +252,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Fiyat hesaplanamadı: $_calculationError',
+                                    'Fiyat hesaplanamadı: ${checkout.calculationError}',
                                   ),
                                 ),
                                 IconButton(
@@ -430,16 +274,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 localizations,
                                 displayCurrency,
                                 cart,
-                                _calculationResult,
+                                checkout.calculationResult,
                               ),
                         const SizedBox(height: 16),
 
                         AgreementCheckbox(
-                          value: _acceptedDistanceSales,
+                          value: checkout.acceptedDistanceSales,
                           onChanged: (val) {
-                            setState(
-                              () => _acceptedDistanceSales = val ?? false,
-                            );
+                            checkout.setAcceptedDistanceSales(val ?? false);
                           },
                           agreementKey: 'DistanceSalesAgreement',
                           agreementTitle: localizations.distanceSalesAgreement,
@@ -463,9 +305,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             height: 56,
                             child: ElevatedButton(
                               onPressed:
-                                  (_isLoading ||
-                                      _isCalculating ||
-                                      _calculationResult == null)
+                                  (checkout.isLoading ||
+                                      checkout.isCalculating ||
+                                      checkout.calculationResult == null)
                                   ? null
                                   : _createOrder,
                               style: ElevatedButton.styleFrom(
@@ -475,7 +317,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: (_isLoading || _isCalculating)
+                              child:
+                                  (checkout.isLoading || checkout.isCalculating)
                                   ? const SizedBox(
                                       height: 24,
                                       width: 24,
@@ -825,7 +668,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildAddressCard(AppLocalizations localizations) {
-    if (_addresses.isEmpty) {
+    final checkout = Provider.of<CheckoutProvider>(context);
+    // If selected address is null but addresses exist, provider should handle it or we show selector
+    // Provider init usually handles default selection.
+
+    if (checkout.addresses.isEmpty) {
       return Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -843,7 +690,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ElevatedButton.icon(
                 onPressed: () async {
                   await Navigator.pushNamed(context, '/customer/add-address');
-                  _loadAddresses();
+                  _checkoutProvider.init();
                 },
                 icon: const Icon(Icons.add),
                 label: Text(localizations.addNewAddress),
@@ -858,58 +705,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
     }
 
-    if (_selectedAddress == null && _addresses.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _selectedAddress = _addresses.first;
-        });
-        _calculateOrder();
-      });
-      final tempAddress = _addresses.first;
-      final fullAddress =
-          tempAddress['fullAddress']?.toString() ??
-          tempAddress['FullAddress']?.toString() ??
-          '';
-      final displayTitle =
-          tempAddress['title']?.toString() ??
-          tempAddress['Title']?.toString() ??
-          'Adres';
-      final city =
-          tempAddress['city']?.toString() ??
-          tempAddress['City']?.toString() ??
-          '';
-      final district =
-          tempAddress['district']?.toString() ??
-          tempAddress['District']?.toString() ??
-          '';
-      return _buildAddressCardContent(
-        localizations,
-        displayTitle,
-        fullAddress,
-        city,
-        district,
+    if (checkout.selectedAddress == null) {
+      // If addresses exist but none selected (shouldn't happen with init logic usually)
+      // We can show "Select Address" card
+      return InkWell(
+        onTap: () => _showAddressSelector(localizations),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                const Icon(Icons.add_location),
+                const SizedBox(width: 8),
+                Text(localizations.selectAddress),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
-    if (_selectedAddress == null) {
-      return const SizedBox.shrink();
-    }
-
     final fullAddress =
-        _selectedAddress?['fullAddress']?.toString() ??
-        _selectedAddress?['FullAddress']?.toString() ??
+        checkout.selectedAddress?['fullAddress']?.toString() ??
+        checkout.selectedAddress?['FullAddress']?.toString() ??
         '';
     final displayTitle =
-        _selectedAddress?['title']?.toString() ??
-        _selectedAddress?['Title']?.toString() ??
+        checkout.selectedAddress?['title']?.toString() ??
+        checkout.selectedAddress?['Title']?.toString() ??
         'Adres';
     final city =
-        _selectedAddress?['city']?.toString() ??
-        _selectedAddress?['City']?.toString() ??
+        checkout.selectedAddress?['city']?.toString() ??
+        checkout.selectedAddress?['City']?.toString() ??
         '';
     final district =
-        _selectedAddress?['district']?.toString() ??
-        _selectedAddress?['District']?.toString() ??
+        checkout.selectedAddress?['district']?.toString() ??
+        checkout.selectedAddress?['District']?.toString() ??
         '';
 
     return _buildAddressCardContent(
@@ -1025,6 +855,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _showAddressSelector(AppLocalizations localizations) {
+    final checkout = Provider.of<CheckoutProvider>(context, listen: false);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1076,7 +908,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
               // Address List
-              if (_addresses.isEmpty)
+              if (checkout.addresses.isEmpty)
                 Padding(
                   padding: const EdgeInsets.all(40),
                   child: Column(
@@ -1122,11 +954,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Flexible(
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: _addresses.length,
+                    itemCount: checkout.addresses.length,
                     itemBuilder: (context, index) {
-                      final address = _addresses[index];
+                      final address = checkout.addresses[index];
                       final isSelected =
-                          _selectedAddress?['id'] == address['id'];
+                          checkout.selectedAddress?['id'] == address['id'];
                       final isDefault = address['isDefault'] == true;
 
                       // Adres bilgilerini çıkar
@@ -1149,9 +981,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                       return InkWell(
                         onTap: () {
-                          setState(() {
-                            _selectedAddress = address;
-                          });
+                          checkout.setSelectedAddress(address);
                           Navigator.pop(context);
                           _calculateOrder();
                         },
@@ -1297,9 +1127,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildPaymentMethods(AppLocalizations localizations) {
+    final checkout = Provider.of<CheckoutProvider>(context);
     final paymentMethods = _getPaymentMethods(localizations);
     final selectedMethod = paymentMethods.firstWhere(
-      (m) => m['value'] == _selectedPaymentMethod,
+      (m) => m['value'] == checkout.selectedPaymentMethod,
     );
 
     return Container(
@@ -1396,91 +1227,108 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     List<Map<String, dynamic>> paymentMethods,
     AppLocalizations localizations,
   ) {
+    // Need listen: false because we are in a callback/dialog building but
+    // if it rebuilds its fine. But we access current state.
+    // Actually we can pass checkout from parent. Or use context.read in callbacks.
+    // But for "isSelected" check inside builder we need valid state.
+    // Context here is from builder so we can look up provider.
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Text(
-              localizations.paymentMethod,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            ...paymentMethods.map((method) {
-              final isSelected = _selectedPaymentMethod == method['value'];
-              final isEnabled = method['enabled'] as bool;
+      builder: (context) {
+        // Redefine checkout here to listen to changes if selector stays open (unlikely to change from outside)
+        // or just read.
+        final checkout = Provider.of<CheckoutProvider>(context);
 
-              return ListTile(
-                enabled: isEnabled,
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.primaryOrange.withValues(alpha: 0.1)
-                        : Colors.grey[100],
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    method['icon'] as IconData,
-                    color: isEnabled
-                        ? (isSelected
-                              ? AppTheme.primaryOrange
-                              : Colors.grey[600])
-                        : Colors.grey[400],
-                    size: 20,
-                  ),
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                title: Text(
-                  method['label'] as String,
-                  style: TextStyle(
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: isEnabled ? Colors.black87 : Colors.grey[400],
-                  ),
+              ),
+              Text(
+                localizations.paymentMethod,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                subtitle: method['description'] != null
-                    ? Text(
-                        method['description'] as String,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      )
-                    : null,
-                trailing: isSelected
-                    ? const Icon(
-                        Icons.check_circle,
-                        color: AppTheme.primaryOrange,
-                      )
-                    : null,
-                onTap: isEnabled
-                    ? () {
-                        setState(() {
-                          _selectedPaymentMethod = method['value'] as String;
-                        });
-                        Navigator.pop(context);
-                      }
-                    : null,
-              );
-            }),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+              ),
+              const SizedBox(height: 20),
+              ...paymentMethods.map((method) {
+                final isSelected =
+                    checkout.selectedPaymentMethod == method['value'];
+                final isEnabled = method['enabled'] as bool;
+
+                return ListTile(
+                  enabled: isEnabled,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+                          : Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      method['icon'] as IconData,
+                      color: isEnabled
+                          ? (isSelected
+                                ? AppTheme.primaryOrange
+                                : Colors.grey[600])
+                          : Colors.grey[400],
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    method['label'] as String,
+                    style: TextStyle(
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: isEnabled ? Colors.black87 : Colors.grey[400],
+                    ),
+                  ),
+                  subtitle: method['description'] != null
+                      ? Text(
+                          method['description'] as String,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        )
+                      : null,
+                  trailing: isSelected
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: AppTheme.primaryOrange,
+                        )
+                      : null,
+                  onTap: isEnabled
+                      ? () {
+                          checkout.setPaymentMethod(method['value'] as String);
+                          Navigator.pop(context);
+                        }
+                      : null,
+                );
+              }),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 

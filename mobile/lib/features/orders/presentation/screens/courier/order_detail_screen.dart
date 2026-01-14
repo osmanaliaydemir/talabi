@@ -25,25 +25,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
-    LoggerService().debug(
-      'OrderDetailScreen: initState - OrderId: ${widget.orderId}',
-    );
     _loadOrderDetail();
   }
 
   Future<void> _loadOrderDetail() async {
-    LoggerService().debug(
-      'OrderDetailScreen: Loading order detail - OrderId: ${widget.orderId}',
-    );
     setState(() {
       _isLoading = true;
     });
 
     try {
       final order = await _courierService.getOrderDetail(widget.orderId);
-      LoggerService().debug(
-        'OrderDetailScreen: Order loaded - Status: ${order.status}, Vendor: ${order.vendorName}',
-      );
       if (mounted) {
         setState(() {
           _order = order;
@@ -99,9 +90,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _acceptOrder() async {
-    LoggerService().debug(
-      'OrderDetailScreen: Attempting to accept order ${widget.orderId}',
-    );
     setState(() {
       _isProcessing = true;
     });
@@ -109,7 +97,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.acceptOrder(widget.orderId);
       if (success && mounted) {
-        LoggerService().debug('OrderDetailScreen: Order accepted successfully');
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -222,9 +209,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _rejectOrder(String reason) async {
-    LoggerService().debug(
-      'OrderDetailScreen: Attempting to reject order ${widget.orderId}',
-    );
     setState(() {
       _isProcessing = true;
     });
@@ -232,7 +216,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.rejectOrder(widget.orderId, reason);
       if (success && mounted) {
-        LoggerService().debug('OrderDetailScreen: Order rejected successfully');
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -270,9 +253,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _pickupOrder() async {
-    LoggerService().debug(
-      'OrderDetailScreen: Attempting to pick up order ${widget.orderId}',
-    );
     setState(() {
       _isProcessing = true;
     });
@@ -280,9 +260,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.pickupOrder(widget.orderId);
       if (success && mounted) {
-        LoggerService().debug(
-          'OrderDetailScreen: Order picked up successfully',
-        );
         final localizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -323,9 +300,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _deliverOrder() async {
-    LoggerService().debug(
-      'OrderDetailScreen: Attempting to deliver order ${widget.orderId}',
-    );
     setState(() {
       _isProcessing = true;
     });
@@ -333,16 +307,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final success = await _courierService.deliverOrder(widget.orderId);
       if (success && mounted) {
-        LoggerService().debug(
-          'OrderDetailScreen: Order delivered, navigating to proof screen',
-        );
         // Navigate to delivery proof screen
         final proofSubmitted = await Navigator.of(
           context,
         ).pushNamed('/courier/delivery-proof', arguments: widget.orderId);
 
         if (proofSubmitted == true && mounted) {
-          LoggerService().debug('OrderDetailScreen: Delivery proof submitted');
           final localizations = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -355,9 +325,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           );
           Navigator.of(context).pop(true); // Return to dashboard
         } else if (mounted) {
-          LoggerService().debug(
-            'OrderDetailScreen: Order delivered without proof submission',
-          );
           // Proof not submitted, but order is delivered
           Navigator.of(context).pop(true);
         }
@@ -643,7 +610,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
                 TextButton.icon(
                   onPressed: () {
-                    LoggerService().debug('OrderDetailScreen: View map tapped');
                     Navigator.of(
                       context,
                     ).pushNamed('/courier/order-map', arguments: _order!);

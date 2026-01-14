@@ -37,25 +37,18 @@ class _EarningsScreenState extends State<EarningsScreen>
   }
 
   Future<void> _loadEarnings() async {
-    LoggerService().debug('EarningsScreen: Loading earnings...');
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      LoggerService().debug(
-        'EarningsScreen: Fetching today, weekly, and monthly earnings...',
-      );
       final results = await Future.wait([
         _courierService.getTodayEarnings(),
         _courierService.getWeeklyEarnings(),
         _courierService.getMonthlyEarnings(),
       ]);
 
-      LoggerService().debug(
-        'EarningsScreen: Earnings loaded - Today: ${results[0].totalEarnings}, Week: ${results[1].totalEarnings}, Month: ${results[2].totalEarnings}',
-      );
       if (mounted) {
         setState(() {
           _todayEarnings = results[0];

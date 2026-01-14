@@ -5,123 +5,175 @@ import 'package:mobile/features/vendors/data/models/vendor.dart';
 import 'package:mobile/features/vendors/presentation/screens/vendor_detail_screen.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
 
 class HomeVendorSection extends StatelessWidget {
   const HomeVendorSection({
     super.key,
-    required this.vendorsFuture,
+    required this.vendors,
     required this.onViewAll,
     this.onVendorsLoaded,
+    this.isLoading = false,
   });
 
-  final Future<List<Vendor>> vendorsFuture;
+  final List<Vendor> vendors;
   final VoidCallback onViewAll;
   final Function(bool hasVendors)? onVendorsLoaded;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
-    return FutureBuilder<List<Vendor>>(
-      future: vendorsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Column(
+    // Show skeleton if loading
+    if (isLoading) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppTheme.spacingSmall),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: AppTheme.spacingSmall,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  localizations.popularVendors,
+                  style: AppTheme.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 220,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingSmall,
+              ),
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 280,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingSmall,
+                  ),
+                  child: Container(
+                    decoration: AppTheme.cardDecoration(
+                      color: Theme.of(context).cardColor,
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonLoader(
+                          width: double.infinity,
+                          height: 120,
+                          borderRadius: 0,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(AppTheme.spacingSmall),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SkeletonLoader(width: 150, height: 18),
+                              SizedBox(height: 8),
+                              SkeletonLoader(width: 200, height: 14),
+                              SizedBox(height: 8),
+                              SkeletonLoader(width: 80, height: 14),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    final hasVendors = vendors.isNotEmpty;
+
+    // Notify parent about vendor state
+    if (onVendorsLoaded != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onVendorsLoaded!(hasVendors);
+      });
+    }
+
+    if (!hasVendors) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMedium,
+          vertical: AppTheme.spacingLarge,
+        ),
+        child: EmptyStateWidget(
+          message: localizations.noVendorsInArea,
+          subMessage: localizations.noVendorsInAreaSub,
+          iconData: Icons.store_outlined,
+          isCompact: true,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppTheme.spacingSmall),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingSmall,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(height: AppTheme.spacingSmall),
-              SizedBox(
-                height: 200,
-                child: Center(
-                  child: CircularProgressIndicator(color: colorScheme.primary),
+              Text(
+                localizations.popularVendors,
+                style: AppTheme.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              TextButton(
+                onPressed: onViewAll,
+                child: Text(
+                  localizations.viewAll,
+                  style: AppTheme.poppins(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
-          );
-        }
-
-        if (snapshot.hasError || !snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
-
-        final vendors = snapshot.data!;
-        final hasVendors = vendors.isNotEmpty;
-        
-        // Notify parent about vendor state
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (onVendorsLoaded != null) {
-            onVendorsLoaded!(hasVendors);
-          }
-        });
-        
-        if (!hasVendors) {
-          return Padding(
+          ),
+        ),
+        SizedBox(
+          height: 220,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingMedium,
-              vertical: AppTheme.spacingLarge,
+              horizontal: AppTheme.spacingSmall,
             ),
-            child: EmptyStateWidget(
-              message: localizations.noVendorsInArea,
-              subMessage: localizations.noVendorsInAreaSub,
-              iconData: Icons.store_outlined,
-              isCompact: true,
-            ),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppTheme.spacingSmall),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingMedium,
-                vertical: AppTheme.spacingSmall,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    localizations.popularVendors,
-                    style: AppTheme.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: onViewAll,
-                    child: Text(
-                      localizations.viewAll,
-                      style: AppTheme.poppins(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 220,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSmall,
-                ),
-                itemExtent: 296.0, // 280 width + 16 margin
-                cacheExtent: 200.0,
-                addRepaintBoundaries: true,
-                itemCount: vendors.length,
-                itemBuilder: (context, index) {
-                  return _buildVendorCardHorizontal(context, vendors[index]);
-                },
-              ),
-            ),
-          ],
-        );
-      },
+            itemExtent: 296.0, // 280 width + 16 margin
+            cacheExtent: 200.0,
+            addRepaintBoundaries: true,
+            itemCount: vendors.length,
+            itemBuilder: (context, index) {
+              return _buildVendorCardHorizontal(context, vendors[index]);
+            },
+          ),
+        ),
+      ],
     );
   }
 

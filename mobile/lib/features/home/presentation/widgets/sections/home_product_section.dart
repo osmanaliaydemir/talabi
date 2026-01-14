@@ -4,24 +4,27 @@ import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/widgets/empty_state_widget.dart';
+import 'package:mobile/widgets/skeleton_loader.dart';
 
 class HomeProductSection extends StatelessWidget {
   const HomeProductSection({
     super.key,
-    required this.productsFuture,
+    required this.products,
     required this.favoriteStatus,
     required this.onFavoriteToggle,
     required this.onViewAll,
     this.hasVendors = true,
     this.onProductsLoaded,
+    this.isLoading = false,
   });
 
-  final Future<List<Product>> productsFuture;
+  final List<Product> products;
   final Map<String, bool> favoriteStatus;
   final Function(Product) onFavoriteToggle;
   final VoidCallback onViewAll;
   final bool hasVendors;
   final Function(bool hasProducts)? onProductsLoaded;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -29,132 +32,135 @@ class HomeProductSection extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return FutureBuilder<List<Product>>(
-      future: productsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Column(
+    // Show skeleton if loading
+    if (isLoading) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppTheme.spacingSmall),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingMedium,
+              vertical: AppTheme.spacingSmall,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  localizations.picksForYou,
+                  style: AppTheme.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 220,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingSmall,
+              ),
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                return const ProductSkeletonItem();
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Notify parent about product state (if needed, but provider already knows)
+    if (onProductsLoaded != null) {
+      // Defer to next frame to avoid build phase errors if setState is called
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onProductsLoaded!(products.isNotEmpty);
+      });
+    }
+
+    // If no vendors, don't show product empty state
+    if (!hasVendors) {
+      return const SizedBox.shrink();
+    }
+
+    if (products.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMedium,
+          vertical: AppTheme.spacingLarge,
+        ),
+        child: EmptyStateWidget(
+          message: localizations.noProductsInArea,
+          subMessage: localizations.noProductsInAreaSub,
+          iconData: Icons.shopping_bag_outlined,
+          isCompact: true,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppTheme.spacingSmall),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingMedium,
+            vertical: AppTheme.spacingSmall,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(height: AppTheme.spacingSmall),
-              SizedBox(
-                height: 200,
-                child: Center(
-                  child: CircularProgressIndicator(color: colorScheme.primary),
+              Text(
+                localizations.picksForYou,
+                style: AppTheme.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              TextButton(
+                onPressed: onViewAll,
+                child: Text(
+                  localizations.viewAll,
+                  style: AppTheme.poppins(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
-          );
-        }
-
-        if (snapshot.hasError || !snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
-
-        final products = snapshot.data!;
-        final hasProducts = products.isNotEmpty;
-
-        // Notify parent about product state
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (onProductsLoaded != null) {
-            onProductsLoaded!(hasProducts);
-          }
-        });
-
-        // If no vendors, don't show product empty state (vendor empty state will be shown)
-        if (!hasVendors) {
-          return const SizedBox.shrink();
-        }
-
-        if (!hasProducts) {
-          return Padding(
+          ),
+        ),
+        SizedBox(
+          height: 220,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.spacingMedium,
-              vertical: AppTheme.spacingLarge,
+              horizontal: AppTheme.spacingSmall,
             ),
-            child: EmptyStateWidget(
-              message: localizations.noProductsInArea,
-              subMessage: localizations.noProductsInAreaSub,
-              iconData: Icons.shopping_bag_outlined,
-              isCompact: true,
-            ),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppTheme.spacingSmall),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingMedium,
-                vertical: AppTheme.spacingSmall,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    localizations.picksForYou,
-                    style: AppTheme.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: onViewAll,
-                    child: Text(
-                      localizations.viewAll,
-                      style: AppTheme.poppins(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 220,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSmall,
-                ),
-                itemExtent: 216.0, // 200 width + 16 margin
-                cacheExtent: 200.0,
-                addRepaintBoundaries: true,
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  // RepaintBoundary is now redundant if itemExtent is used (mostly),
-                  // but good to keep for complex cards.
-                  // However, itemExtent implies fixed size logic.
-                  // Removing explicit RepaintBoundary wrapper here because
-                  // itemExtent optimizations often cover layout.
-                  // But repaint isolation is still valid.
-                  // I'll keep the wrapper logic but simplified?
-                  // Actually, ref above removed RepaintBoundary in HomeVendorSection.
-                  // I should be consistent.
-                  // The RepaintBoundary was added in previous step.
-                  // Let's keep it if performance plan says so.
-                  // Ideally, RepaintBoundary is inside the item or checks dirty rects.
-                  // I will remove the explicit wrapper closure to keep code clean if I can.
-                  // Wait, ListView sends constraints.
-                  return ProductCard(
-                    product: product,
-                    width: 200,
-                    heroTagPrefix: 'home_picks_',
-                    isFavorite: favoriteStatus[product.id] ?? false,
-                    rating: '4.7',
-                    ratingCount: '2.3k',
-                    onFavoriteTap: () => onFavoriteToggle(product),
-                  );
-                },
-              ),
-            ),
-          ],
-        );
-      },
+            itemExtent: 216.0, // 200 width + 16 margin
+            cacheExtent: 200.0,
+            addRepaintBoundaries: true,
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return ProductCard(
+                product: product,
+                width: 200,
+                heroTagPrefix: 'home_picks_',
+                isFavorite: favoriteStatus[product.id] ?? false,
+                rating: '4.7',
+                ratingCount: '2.3k',
+                onFavoriteTap: () => onFavoriteToggle(product),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

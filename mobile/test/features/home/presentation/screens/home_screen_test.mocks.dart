@@ -2562,33 +2562,6 @@ class MockLoggerService extends _i1.Mock implements _i22.LoggerService {
       ) as _i13.Future<void>);
 
   @override
-  void debug(
-    String? message, [
-    dynamic error,
-    StackTrace? stackTrace,
-  ]) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #debug,
-          [
-            message,
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void info(String? message) => super.noSuchMethod(
-        Invocation.method(
-          #info,
-          [message],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   void warning(
     String? message, [
     dynamic error,

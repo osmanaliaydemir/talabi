@@ -29,16 +29,10 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   }
 
   Future<void> _initializeMap() async {
-    LoggerService().debug(
-      'OrderMapScreen: Initializing map - OrderId: ${widget.order.id}',
-    );
     // Get current location
     try {
       _currentPosition = await LocationPermissionService.getCurrentLocation(
         context,
-      );
-      LoggerService().debug(
-        'OrderMapScreen: Current location obtained - Lat: ${_currentPosition?.latitude}, Lng: ${_currentPosition?.longitude}',
       );
     } catch (e, stackTrace) {
       LoggerService().error(
@@ -52,7 +46,6 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
       setState(() {
         _setupMarkers();
       });
-      LoggerService().debug('OrderMapScreen: Map initialized with markers');
     }
   }
 

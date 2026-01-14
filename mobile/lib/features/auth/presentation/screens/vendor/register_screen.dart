@@ -1,7 +1,8 @@
 import 'package:mobile/utils/custom_routes.dart';
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/utils/error_handler.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/features/auth/presentation/screens/courier/login_screen.dart';
@@ -103,12 +104,6 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
       final businessName = _businessNameController.text.trim();
       final phone = _phoneController.text.trim();
 
-      LoggerService().debug('🟡 [VENDOR_REGISTER] Calling vendorRegister API');
-      LoggerService().debug('🟡 [VENDOR_REGISTER] Email: $email');
-      LoggerService().debug('🟡 [VENDOR_REGISTER] BusinessName: $businessName');
-      LoggerService().debug('🟡 [VENDOR_REGISTER] FullName: $fullName');
-      LoggerService().debug('🟡 [VENDOR_REGISTER] Phone: $phone');
-
       // Get user's language preference
       final localizationProvider = Provider.of<LocalizationProvider>(
         context,
@@ -127,8 +122,6 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
         language: languageCode,
         vendorType: _selectedVendorType,
       );
-
-      LoggerService().debug('🟢 [VENDOR_REGISTER] Register successful!');
 
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir
@@ -152,36 +145,11 @@ class _VendorRegisterScreenState extends State<VendorRegisterScreen> {
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
 
-        String errorMessage = e.toString().replaceAll('Exception: ', '');
-        if (e is DioException && e.response?.data != null) {
-          final responseData = e.response!.data;
-
-          if (responseData is Map) {
-            if (responseData.containsKey('errors') &&
-                responseData['errors'] is List) {
-              final errors = responseData['errors'] as List;
-              final duplicateError = errors.firstWhere(
-                (error) =>
-                    error is Map &&
-                    (error['code'] == 'DuplicateEmail' ||
-                        error['code'] == 'DuplicateUserName'),
-                orElse: () => null,
-              );
-
-              if (duplicateError != null) {
-                errorMessage = localizations.emailAlreadyExists;
-              } else if (responseData.containsKey('message')) {
-                errorMessage = responseData['message'].toString();
-              }
-            } else if (responseData.containsKey('message')) {
-              errorMessage = responseData['message'].toString();
-            }
-          }
-        }
-
-        final displayMessage = errorMessage.isNotEmpty
-            ? errorMessage
-            : localizations.registerFailed;
+        // Parse error message using centralized error handler
+        final displayMessage = ErrorHandler.parseSimpleRegisterError(
+          e,
+          localizations,
+        );
 
         ToastMessage.show(
           context,

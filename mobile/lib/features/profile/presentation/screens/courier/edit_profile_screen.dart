@@ -215,7 +215,6 @@ class _CourierEditProfileScreenState extends State<CourierEditProfileScreen> {
         data['workingHoursEnd'] = null;
       }
 
-      LoggerService().debug('CourierEditProfileScreen: Saving profile $data');
       await _courierService.updateProfile(data);
 
       if (!mounted) return;

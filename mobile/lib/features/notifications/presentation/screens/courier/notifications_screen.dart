@@ -28,7 +28,6 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierNotificationsScreen: initState called');
     _tabController = TabController(length: 3, vsync: this);
     _loadNotifications();
   }
@@ -40,9 +39,6 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
   }
 
   Future<void> _loadNotifications() async {
-    LoggerService().debug(
-      'CourierNotificationsScreen: Loading notifications...',
-    );
     setState(() {
       _isLoading = true;
       _isError = false;
@@ -59,9 +55,6 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
         _unreadCount = response.unreadCount;
         _isLoading = false;
       });
-      LoggerService().debug(
-        'CourierNotificationsScreen: Loaded ${response.items.length} notifications. Unread: ${response.unreadCount}',
-      );
     } catch (e, stackTrace) {
       LoggerService().error(
         'CourierNotificationsScreen: ERROR loading notifications',
@@ -78,15 +71,11 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
   }
 
   Future<void> _handleRefresh() async {
-    LoggerService().debug('CourierNotificationsScreen: Refresh triggered');
     await _loadNotifications();
   }
 
   Future<void> _markAsRead(String id) async {
     try {
-      LoggerService().debug(
-        'CourierNotificationsScreen: Marking notification $id as read',
-      );
       await _courierService.markNotificationRead(id);
       await _loadNotifications();
     } catch (e, stackTrace) {
@@ -117,9 +106,6 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
   }
 
   void _handleNotificationTap(CourierNotification notification) async {
-    LoggerService().debug(
-      'CourierNotificationsScreen: Notification tapped - ${notification.id}',
-    );
     if (!notification.isRead) {
       await _markAsRead(notification.id);
     }
@@ -128,9 +114,6 @@ class _CourierNotificationsScreenState extends State<CourierNotificationsScreen>
 
     if (notification.orderId != null && notification.orderId!.isNotEmpty) {
       final orderId = notification.orderId.toString();
-      LoggerService().debug(
-        'CourierNotificationsScreen: Navigating to order detail with orderId: $orderId',
-      );
       // Use direct navigation to ensure correct screen is opened
       Navigator.of(context).push(
         MaterialPageRoute(

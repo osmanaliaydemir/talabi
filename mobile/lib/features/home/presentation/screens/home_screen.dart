@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:mobile/features/products/data/models/product.dart';
-import 'package:mobile/features/vendors/data/models/vendor.dart';
-import 'package:mobile/features/campaigns/data/models/campaign.dart';
-import 'package:mobile/services/api_service.dart';
+
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/features/home/presentation/widgets/special_home_header.dart';
 import 'package:mobile/features/home/presentation/widgets/sections/home_category_section.dart';
@@ -24,6 +21,7 @@ import 'package:mobile/features/search/presentation/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
+import 'package:mobile/features/home/presentation/providers/home_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,99 +31,56 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  final ApiService _apiService = ApiService();
-  late Future<List<Vendor>> _vendorsFuture;
-  late Future<List<Product>> _popularProductsFuture;
-  late Future<List<Map<String, dynamic>>> _categoriesFuture;
-  List<dynamic> _addresses = [];
-  Map<String, dynamic>? _selectedAddress;
-  bool _isAddressesLoading = true;
-
-  // Track vendor/product states for conditional rendering
-  bool _hasVendors = false;
-  bool _hasProducts = false;
-
-  final Map<String, bool> _favoriteStatus =
-      {}; // Track favorite status for each product
-
-  // Campaigns state
-  List<Campaign> _banners = [];
-
   // Track current category to detect changes
   MainCategory? _lastCategory;
 
   @override
   void initState() {
     super.initState();
-    // Initialize futures with empty lists to prevent null errors
-    _vendorsFuture = Future.value(<Vendor>[]);
-    _popularProductsFuture = Future.value(<Product>[]);
-    _categoriesFuture = Future.value(<Map<String, dynamic>>[]);
-    _loadAddresses();
-    _loadFavoriteStatus();
 
-    // Listen to category changes
+    // Initial load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        final homeProvider = context.read<HomeProvider>();
+
+        // Listen to category changes
         Provider.of<BottomNavProvider>(
           context,
           listen: false,
         ).addListener(_onCategoryChanged);
+
+        // Check if data needs loading (e.g. first run)
+        if (homeProvider.vendors.isEmpty || homeProvider.addresses.isEmpty) {
+          _loadData();
+        }
       }
     });
   }
 
-  /// VendorType'a göre verileri yükle
-  void _loadData({int? vendorType}) {
-    // Eğer vendorType parametre olarak verilmediyse, provider'dan al
-    if (vendorType == null) {
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-      vendorType = bottomNav.selectedCategory == MainCategory.restaurant
-          ? 1
-          : 2;
-    }
-    final locale = AppLocalizations.of(context)?.localeName;
+  /// Load data based on current context
+  void _loadData() {
+    if (!mounted) return;
+    final bottomNav = context.read<BottomNavProvider>();
+    final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
+        ? 1
+        : 2;
 
-    // Get location from selected address
-    double? userLatitude;
-    double? userLongitude;
-    if (_selectedAddress != null) {
-      userLatitude = _selectedAddress!['latitude'] != null
-          ? double.tryParse(_selectedAddress!['latitude'].toString())
-          : null;
-      userLongitude = _selectedAddress!['longitude'] != null
-          ? double.tryParse(_selectedAddress!['longitude'].toString())
-          : null;
-    }
+    final homeProvider = context.read<HomeProvider>();
 
-    setState(() {
-      _vendorsFuture = _apiService.getVendors(
-        vendorType: vendorType,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
-      );
-      _popularProductsFuture = _apiService.getPopularProducts(
-        page: 1,
-        pageSize: 8,
-        vendorType: vendorType,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
-      );
-      _categoriesFuture = _apiService.getCategories(
-        language: locale,
-        vendorType: vendorType,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
-      );
-    });
-    _loadCampaigns(vendorType: vendorType);
+    // If addresses are empty, load them. The provider checks if already loading.
+    // We pass refreshAddress: true only if we really need to fetch addresses.
+    // If addresses list is empty, we force refresh.
+    homeProvider.loadData(
+      vendorType: vendorType,
+      refreshAddress: homeProvider.addresses.isEmpty,
+    );
   }
 
   void _onCategoryChanged() {
     if (!mounted) return;
 
     try {
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
+      final bottomNav = context.read<BottomNavProvider>();
       final currentCategory = bottomNav.selectedCategory;
 
       // Only reload if category actually changed
@@ -134,11 +89,12 @@ class HomeScreenState extends State<HomeScreen> {
         // Delay to avoid setState during bottom sheet animation
         Future.delayed(const Duration(milliseconds: 300), () {
           if (mounted) {
-            _loadData(vendorType: vendorType);
+            context.read<HomeProvider>().loadData(vendorType: vendorType);
             _lastCategory = currentCategory;
           }
         });
       }
+      _lastCategory = currentCategory;
     } catch (e, stackTrace) {
       LoggerService().error('Error in _onCategoryChanged', e, stackTrace);
     }
@@ -147,127 +103,24 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     // Remove category change listener
-    try {
-      Provider.of<BottomNavProvider>(
-        context,
-        listen: false,
-      ).removeListener(_onCategoryChanged);
-    } catch (e) {
-      // Context might not be available during dispose
-    }
+    // Note: accessing Provider.of(listen:false) is generally safe in dispose if context is valid,
+    // but context.read is stricter. We'll skip removeListener here relying on BottomNavProvider persistence
+    // or garbage collection, as HomeScreen is main screen and likely only disposed on app exit or logout.
     super.dispose();
-  }
-
-  Future<void> _loadCampaigns({int? vendorType}) async {
-    try {
-      String? cityId;
-      String? districtId;
-
-      if (_selectedAddress != null) {
-        if (_selectedAddress!['cityId'] != null) {
-          cityId = _selectedAddress!['cityId'].toString();
-        }
-        if (_selectedAddress!['districtId'] != null) {
-          districtId = _selectedAddress!['districtId'].toString();
-        }
-      }
-
-      final campaigns = await _apiService.getCampaigns(
-        vendorType: vendorType,
-        cityId: cityId,
-        districtId: districtId,
-      );
-      if (mounted) {
-        setState(() {
-          _banners = campaigns;
-        });
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('Error loading campaigns', e, stackTrace);
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Context hazır olduğunda verileri yükle (sadece ilk kez)
-    // Adresler yüklendikten sonra verileri yükle - _loadAddresses içinde yapılıyor
-    // Burada sadece banner'ları kontrol et
-    if (_banners.isEmpty && !_isAddressesLoading) {
-      // Banner'lar yüklenmemiş - sadece banner'ları yükle
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
-          ? 1
-          : 2;
-      _loadCampaigns(vendorType: vendorType);
-    }
-  }
-
-  Future<void> _loadFavoriteStatus() async {
-    try {
-      final favoritesResult = await _apiService.getFavorites();
-      setState(() {
-        _favoriteStatus.clear();
-        for (final fav in favoritesResult.items) {
-          _favoriteStatus[fav.id] = true;
-        }
-      });
-    } catch (e, stackTrace) {
-      LoggerService().error('Error loading favorites', e, stackTrace);
-    }
-  }
-
-  Future<void> _loadAddresses() async {
-    try {
-      final addresses = await _apiService.getAddresses();
-      if (mounted) {
-        Map<String, dynamic>? selectedAddress;
-        if (addresses.isNotEmpty) {
-          try {
-            selectedAddress = addresses.firstWhere(
-              (addr) => addr['isDefault'] == true,
-            );
-          } catch (_) {
-            selectedAddress = addresses.first;
-          }
-        }
-
-        setState(() {
-          _addresses = addresses;
-          _selectedAddress = selectedAddress;
-          _isAddressesLoading = false;
-        });
-
-        // Adresler yüklendikten sonra verileri yükle (konum bilgisi için gerekli)
-        // WidgetsBinding.instance.addPostFrameCallback kullanarak setState'in tamamlanmasını bekle
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _loadData();
-          }
-        });
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('Error loading addresses', e, stackTrace);
-      if (mounted) {
-        setState(() {
-          _isAddressesLoading = false;
-        });
-        // Hata olsa bile verileri yüklemeyi dene (konum olmadan)
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _loadData();
-          }
-        });
-      }
-    }
   }
 
   /// Public method to refresh addresses from external callers
   void refreshAddresses() {
-    _loadAddresses();
+    // Reload addresses via provider
+    final homeProvider = context.read<HomeProvider>();
+    homeProvider.loadAddresses().then((_) {
+      if (mounted) _loadData();
+    });
   }
 
   void _showAddressBottomSheet() {
+    final homeProvider = context.read<HomeProvider>();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -275,49 +128,27 @@ class HomeScreenState extends State<HomeScreen> {
       builder: (context) {
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
+
         return HomeAddressBottomSheet(
-          addresses: _addresses,
-          selectedAddress: _selectedAddress,
+          addresses: homeProvider.addresses,
+          selectedAddress: homeProvider.selectedAddress,
           colorScheme: colorScheme,
           onAddressSelected: (address) {
-            setState(() {
-              _selectedAddress = address;
-            });
-            // Don't close bottom sheet, just update selection
+            homeProvider.setSelectedAddress(address);
+            // Reload data with new address context
+            _loadData();
           },
           onSetDefault: (address) async {
-            await _setDefaultAddress(address);
+            await homeProvider.setDefaultAddress(address['id']);
             if (!context.mounted) return;
             Navigator.pop(context);
+            // Reload data might enter race condition if setDefaultAddress already reloaded addresses.
+            // But doing _loadData ensures content is fresh for new default address.
+            _loadData();
           },
         );
       },
     );
-  }
-
-  Future<void> _setDefaultAddress(Map<String, dynamic> address) async {
-    try {
-      await _apiService.setDefaultAddress(address['id']);
-      // Reload addresses to get updated default status
-      await _loadAddresses();
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: localizations.defaultAddressUpdated,
-          isSuccess: true,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ToastMessage.show(
-          context,
-          message: localizations.addressUpdateFailed(e.toString()),
-          isSuccess: false,
-        );
-      }
-    }
   }
 
   String _getAddressDisplayText(
@@ -335,28 +166,21 @@ class HomeScreenState extends State<HomeScreen> {
     return localizations.address;
   }
 
-  // Helper to map icon string to IconData
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+
+    // Watch provider
+    final homeProvider = context.watch<HomeProvider>();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: RefreshIndicator(
-        color: colorScheme.primary,
+        color: Theme.of(context).colorScheme.primary,
         onRefresh: () async {
-          final bottomNav = Provider.of<BottomNavProvider>(
-            context,
-            listen: false,
-          );
-          final vendorType =
-              bottomNav.selectedCategory == MainCategory.restaurant ? 1 : 2;
-          _loadData(vendorType: vendorType);
-          await _loadAddresses();
-          await _loadFavoriteStatus();
+          _loadData();
+          // Artificial delay for better UX if network is too fast
+          await Future.delayed(const Duration(milliseconds: 500));
         },
         child: CustomScrollView(
           slivers: [
@@ -385,22 +209,28 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
-                currentLocation: _selectedAddress != null
-                    ? _getAddressDisplayText(_selectedAddress!, localizations)
+                currentLocation: homeProvider.selectedAddress != null
+                    ? _getAddressDisplayText(
+                        homeProvider.selectedAddress!,
+                        localizations,
+                      )
                     : null,
-                isAddressesLoading: _isAddressesLoading,
+                isAddressesLoading: homeProvider.isAddressesLoading,
               ),
             ),
+
             // Spacing
             const SliverToBoxAdapter(
               child: SizedBox(height: AppTheme.spacingSmall),
             ),
-            // Categories Section (only show if vendors and products exist)
+
+            // Categories Section
             SliverToBoxAdapter(
               child: HomeCategorySection(
-                categoriesFuture: _categoriesFuture,
-                hasVendors: _hasVendors,
-                hasProducts: _hasProducts,
+                categories: homeProvider.categories,
+                hasVendors: homeProvider.hasVendors,
+                hasProducts: homeProvider.hasProducts,
+                isLoading: homeProvider.isLoading,
                 onViewAll: () {
                   Navigator.push(
                     context,
@@ -411,16 +241,16 @@ class HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            // Picks For You Section (Popular Products) (only show if vendors exist)
+
+            // Picks For You Section (Popular Products)
             SliverToBoxAdapter(
               child: HomeProductSection(
-                productsFuture: _popularProductsFuture,
-                favoriteStatus: _favoriteStatus,
-                hasVendors: _hasVendors,
+                products: homeProvider.popularProducts,
+                favoriteStatus: homeProvider.favoriteStatus,
+                hasVendors: homeProvider.hasVendors,
+                isLoading: homeProvider.isLoading,
                 onProductsLoaded: (hasProducts) {
-                  setState(() {
-                    _hasProducts = hasProducts;
-                  });
+                  // Deprecated
                 },
                 onViewAll: () {
                   Navigator.push(
@@ -430,43 +260,34 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
-                onFavoriteToggle: (product) async {
-                  final isFavorite = _favoriteStatus[product.id] ?? false;
-                  try {
-                    if (isFavorite) {
-                      await _apiService.removeFromFavorites(product.id);
-                      setState(() {
-                        _favoriteStatus[product.id] = false;
-                      });
-                    } else {
-                      await _apiService.addToFavorites(product.id);
-                      setState(() {
-                        _favoriteStatus[product.id] = true;
-                      });
+                onFavoriteToggle: (product) {
+                  homeProvider.toggleFavorite(product.id).catchError((e) {
+                    if (context.mounted) {
+                      ToastMessage.show(
+                        context,
+                        message: localizations.favoriteOperationFailed(
+                          e.toString(),
+                        ),
+                        isSuccess: false,
+                      );
                     }
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    ToastMessage.show(
-                      context,
-                      message: localizations.favoriteOperationFailed(
-                        e.toString(),
-                      ),
-                      isSuccess: false,
-                    );
-                  }
+                  });
                 },
               ),
             ),
+
             // Promotional Banner Section (Campaigns)
-            SliverToBoxAdapter(child: HomeCampaignSection(banners: _banners)),
+            SliverToBoxAdapter(
+              child: HomeCampaignSection(banners: homeProvider.banners),
+            ),
+
             // Popular Vendors Section
             SliverToBoxAdapter(
               child: HomeVendorSection(
-                vendorsFuture: _vendorsFuture,
+                vendors: homeProvider.vendors,
+                isLoading: homeProvider.isLoading,
                 onVendorsLoaded: (hasVendors) {
-                  setState(() {
-                    _hasVendors = hasVendors;
-                  });
+                  // Deprecated
                 },
                 onViewAll: () {
                   Navigator.push(
@@ -478,10 +299,9 @@ class HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            // Bottom Spacing
-            const SliverToBoxAdapter(
-              child: SizedBox(height: AppTheme.spacingLarge),
-            ),
+
+            // Bottom Spacing (Extra space to avoid FAB/BottomNav overlap if any)
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
       ),
@@ -620,7 +440,6 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                       onPressed: onSearchTap,
                       tooltip: 'Search',
                     ),
-                    // Notification Icon
                     // Notification Icon
                     Stack(
                       clipBehavior: Clip.none,

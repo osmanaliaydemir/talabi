@@ -1,7 +1,7 @@
 import 'package:mobile/utils/custom_routes.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:mobile/utils/error_handler.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/providers/localization_provider.dart';
@@ -91,15 +91,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final password = _passwordController.text;
       final fullName = _fullNameController.text.trim();
 
-      LoggerService().debug(
-        '🟡 [REGISTER_SCREEN] Calling authProvider.register',
-      );
-      LoggerService().debug('🟡 [REGISTER_SCREEN] Email: $email');
-      LoggerService().debug('🟡 [REGISTER_SCREEN] FullName: $fullName');
-      LoggerService().debug(
-        '🟡 [REGISTER_SCREEN] Password length: ${password.length}',
-      );
-
       // Get user's language preference
       final localizationProvider = Provider.of<LocalizationProvider>(
         context,
@@ -114,8 +105,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         fullName,
         language: languageCode,
       );
-
-      LoggerService().debug('🟢 [REGISTER_SCREEN] Register successful!');
 
       if (mounted) {
         // Email kod doğrulama ekranına yönlendir (password ile otomatik login için)
@@ -139,77 +128,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
 
-        // Hata mesajını parse et
-        String errorMessage = e.toString().replaceAll('Exception: ', '');
-        if (e is DioException && e.response?.data != null) {
-          final responseData = e.response!.data;
-
-          // Duplicate email/username hatası için özel mesaj
-          if (responseData is Map) {
-            String? specificError;
-
-            // 1. Check for 'errors' object
-            if (responseData.containsKey('errors')) {
-              final errors = responseData['errors'];
-
-              // Case A: Errors is a List (e.g. DuplicateEmail)
-              if (errors is List) {
-                final duplicateError = errors.firstWhere(
-                  (error) =>
-                      error is Map &&
-                      (error['code'] == 'DuplicateEmail' ||
-                          error['code'] == 'DuplicateUserName'),
-                  orElse: () => null,
-                );
-
-                if (duplicateError != null) {
-                  specificError = localizations.duplicateEmail;
-                }
-              }
-              // Case B: Errors is a Map (Validation errors)
-              else if (errors is Map) {
-                // Check for 'Password' or 'password' key
-                final passwordErrors = errors['Password'] ?? errors['password'];
-
-                if (passwordErrors != null) {
-                  if (passwordErrors is List) {
-                    specificError = passwordErrors.join('\n');
-                  } else {
-                    specificError = passwordErrors.toString();
-                  }
-                }
-
-                // If no password specific error, look for other errors
-                if (specificError == null && errors.isNotEmpty) {
-                  final List<String> errorMessages = [];
-                  errors.forEach((key, value) {
-                    if (value is List) {
-                      errorMessages.addAll(value.map((e) => e.toString()));
-                    } else {
-                      errorMessages.add(value.toString());
-                    }
-                  });
-                  if (errorMessages.isNotEmpty) {
-                    specificError = errorMessages.join('\n');
-                  }
-                }
-              }
-            }
-
-            // 2. Set errorMessage
-            if (specificError != null) {
-              errorMessage = specificError;
-            } else if (responseData.containsKey('message')) {
-              // Fallback to generic message if no specific error found
-              errorMessage = responseData['message'].toString();
-            }
-          }
-        }
-
-        // Hata mesajını göster - kod ekranına yönlendirme YOK
-        final displayMessage = errorMessage.isNotEmpty
-            ? errorMessage
-            : localizations.registerFailed;
+        // Parse error message using centralized error handler
+        final displayMessage = ErrorHandler.parseRegisterError(
+          e,
+          localizations,
+        );
 
         ToastMessage.show(
           context,

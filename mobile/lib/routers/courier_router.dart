@@ -50,9 +50,7 @@ class CourierRouter {
           );
           return null;
         }
-        LoggerService().info(
-          'CourierRouter: Creating OrderDetailScreen with orderId: $orderId',
-        );
+
         return NoSlidePageRoute(
           builder: (context) => OrderDetailScreen(orderId: orderId),
         );

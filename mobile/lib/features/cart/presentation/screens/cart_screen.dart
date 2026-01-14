@@ -16,9 +16,10 @@ import 'package:mobile/services/version_check_service.dart';
 import 'package:mobile/providers/bottom_nav_provider.dart';
 import 'package:mobile/features/products/presentation/widgets/product_card.dart';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/services/logger_service.dart';
-import 'package:mobile/widgets/toast_message.dart';
-import 'package:mobile/features/campaigns/data/models/campaign.dart';
+import 'package:mobile/utils/location_extractor.dart';
+import 'package:mobile/features/cart/presentation/providers/cart_ui_provider.dart';
+import 'package:mobile/features/home/presentation/providers/home_provider.dart';
+
 import 'package:mobile/features/cart/data/models/cart_item.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 
@@ -33,21 +34,14 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   int? _currentVendorType;
-  Campaign? _upsellCampaign;
-  double? _upsellRemainingAmount;
-  final Map<String, bool> _favoriteStatus = {};
-  bool _isLoadingFavorites = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Analytics view_cart moved to after load or consumer?
+      // Keeping it here is fine as it logs the event of opening the screen.
       final cart = Provider.of<CartProvider>(context, listen: false);
-      // Main load handling moved to didChangeDependencies to support switching
-      await cart.loadCart();
-      _loadFavorites();
-      _checkUpsellOpportunities(cart); // Check for upsell after load
-
       if (mounted) {
         final currency = cart.items.isNotEmpty
             ? cart.items.values.first.product.currency.code
@@ -62,62 +56,6 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
-  Future<void> _checkUpsellOpportunities(CartProvider cart) async {
-    if (cart.items.isEmpty) return;
-
-    // If a campaign is already selected, maybe don't upsell?
-    // Or upsell a better one? For now, if no campaign selected.
-    if (cart.selectedCampaign != null) {
-      if (mounted) {
-        setState(() {
-          _upsellCampaign = null;
-        });
-      }
-      return;
-    }
-
-    try {
-      final bottomNav = Provider.of<BottomNavProvider>(context, listen: false);
-      final vendorType = bottomNav.selectedCategory == MainCategory.restaurant
-          ? 1
-          : 2;
-
-      // We need city/district for correct campaigns usually, but let's try generic fetch or use stored location
-      // ApiService.getCampaigns takes optional city/district.
-      // Ideally we get them from address or user location.
-      // For simplicity/speed, let's just fetch by vendorType for now as "Discovery".
-      // Backend validates anyway.
-      final campaigns = await ApiService().getCampaigns(vendorType: vendorType);
-
-      Campaign? bestCandidate;
-      double minRemaining = double.infinity;
-
-      for (final c in campaigns) {
-        if (c.minCartAmount != null && c.minCartAmount! > cart.totalAmount) {
-          final remaining = c.minCartAmount! - cart.totalAmount;
-          // Threshold: Suggest if within 30% or 200 units?
-          // Let's say if remaining is < 50% of current total or < 200.
-          if (remaining > 0 && remaining < 200) {
-            // Simple threshold check
-            if (remaining < minRemaining) {
-              minRemaining = remaining;
-              bestCandidate = c;
-            }
-          }
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _upsellCampaign = bestCandidate;
-          _upsellRemainingAmount = minRemaining;
-        });
-      }
-    } catch (e) {
-      // Ignore errors silently for upsell
-    }
-  }
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -128,101 +66,45 @@ class _CartScreenState extends State<CartScreen> {
 
     if (_currentVendorType != vendorType) {
       _currentVendorType = vendorType;
-      // Fetch recommendations when vendor type changes
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        // Kullanıcının default adresini al (konum kontrolü için)
-        double? userLatitude;
-        double? userLongitude;
-        try {
-          final addresses = await ApiService().getAddresses();
-          if (addresses.isNotEmpty) {
-            Map<String, dynamic>? defaultAddress;
-            try {
-              defaultAddress =
-                  addresses.firstWhere(
-                        (addr) =>
-                            addr['isDefault'] == true ||
-                            addr['IsDefault'] == true,
-                      )
-                      as Map<String, dynamic>?;
-            } catch (_) {
-              defaultAddress = addresses.first as Map<String, dynamic>;
-            }
-
-            if (defaultAddress != null) {
-              userLatitude = defaultAddress['latitude'] != null
-                  ? double.tryParse(defaultAddress['latitude'].toString())
-                  : null;
-              userLongitude = defaultAddress['longitude'] != null
-                  ? double.tryParse(defaultAddress['longitude'].toString())
-                  : null;
-            }
-          }
-        } catch (e) {
-          // Adres yüklenemediyse devam et (backend default adresi kullanacak)
-        }
-
-        // Async gap'ten sonra mounted kontrolü yap
-        if (!mounted) return;
-
-        Provider.of<CartProvider>(context, listen: false).fetchRecommendations(
-          type: vendorType,
-          lat: userLatitude,
-          lon: userLongitude,
-        );
+      // Fetch cart and recommendations when vendor type changes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadCartData(vendorType);
       });
     }
   }
 
+  void _loadCartData(int vendorType) {
+    if (!mounted) return;
+
+    final homeProvider = context.read<HomeProvider>();
+    // Ensure addresses are loaded if possible, though HomeProvider usually handles it
+    // If we assume HomeProvider is the source of truth for location:
+    final location = LocationExtractor.fromAddress(
+      homeProvider.selectedAddress,
+    );
+
+    context.read<CartProvider>().loadCartWithDependencies(
+      vendorType: vendorType,
+      lat: location.latitude,
+      lon: location.longitude,
+    );
+
+    _loadFavorites();
+  }
+
   Future<void> _loadFavorites() async {
-    if (_isLoadingFavorites) return;
-    setState(() => _isLoadingFavorites = true);
-    try {
-      final favoritesResult = await ApiService().getFavorites();
-      if (mounted) {
-        setState(() {
-          _favoriteStatus.clear();
-          for (final fav in favoritesResult.items) {
-            _favoriteStatus[fav.id.toString()] = true;
-          }
-        });
-      }
-    } catch (e, stackTrace) {
-      LoggerService().error('Error loading favorites in cart', e, stackTrace);
-    } finally {
-      if (mounted) setState(() => _isLoadingFavorites = false);
-    }
+    final ui = Provider.of<CartUiProvider>(context, listen: false);
+    await ui.loadFavorites();
   }
 
   Future<void> _toggleFavorite(Product product) async {
-    final productId = product.id.toString();
-    final isFav = _favoriteStatus[productId] ?? false;
-
-    try {
-      if (isFav) {
-        await ApiService().removeFromFavorites(productId);
-      } else {
-        await ApiService().addToFavorites(productId);
-      }
-      if (mounted) {
-        setState(() {
-          _favoriteStatus[productId] = !isFav;
-        });
-        ToastMessage.show(
-          context,
-          message: !isFav ? 'Favorilere eklendi' : 'Favorilerden çıkarıldı',
-          isSuccess: true,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ToastMessage.show(context, message: 'Hata: $e', isSuccess: false);
-      }
-    }
+    final ui = Provider.of<CartUiProvider>(context, listen: false);
+    await ui.toggleFavorite(context, product);
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartUi = Provider.of<CartUiProvider>(context);
     final cart = Provider.of<CartProvider>(context);
     final localizations = AppLocalizations.of(context)!;
 
@@ -345,7 +227,9 @@ class _CartScreenState extends State<CartScreen> {
                                   },
                                   onFavorite: () => _toggleFavorite(product),
                                   isFavorite:
-                                      _favoriteStatus[product.id] ?? false,
+                                      cartUi.favoriteStatus[product.id
+                                          .toString()] ??
+                                      false,
                                   child: _buildCartItem(
                                     context,
                                     cartItem,
@@ -379,8 +263,8 @@ class _CartScreenState extends State<CartScreen> {
                         displayCurrency,
                       ),
 
-                      if (_upsellCampaign != null &&
-                          _upsellRemainingAmount != null)
+                      if (cart.upsellCampaign != null &&
+                          cart.upsellRemainingAmount != null)
                         Container(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -406,7 +290,7 @@ class _CartScreenState extends State<CartScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _upsellCampaign!.title,
+                                      cart.upsellCampaign!.title,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
@@ -415,7 +299,7 @@ class _CartScreenState extends State<CartScreen> {
                                     Text(
                                       localizations.upsellMessage(
                                         CurrencyFormatter.format(
-                                          _upsellRemainingAmount!,
+                                          cart.upsellRemainingAmount!,
                                           displayCurrency,
                                         ),
                                       ),
@@ -724,14 +608,17 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        _favoriteStatus[product.id.toString()] ?? false
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: _favoriteStatus[product.id.toString()] ?? false
-                            ? Colors.red
-                            : Colors.grey.shade400,
-                        size: 18,
+                      child: Consumer<CartUiProvider>(
+                        builder: (context, cartUi, _) {
+                          final isFav =
+                              cartUi.favoriteStatus[product.id.toString()] ??
+                              false;
+                          return Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.red : Colors.grey.shade400,
+                            size: 18,
+                          );
+                        },
                       ),
                     ),
                   ),

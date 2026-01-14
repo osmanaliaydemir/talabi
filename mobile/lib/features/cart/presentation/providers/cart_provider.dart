@@ -39,6 +39,70 @@ class CartProvider with ChangeNotifier {
   List<Product> get recommendations => _recommendations;
   String? get recommendationTitle => _recommendationTitle;
 
+  // Upsell state
+  Campaign? _upsellCampaign;
+  double? _upsellRemainingAmount;
+  Campaign? get upsellCampaign => _upsellCampaign;
+  double? get upsellRemainingAmount => _upsellRemainingAmount;
+
+  Future<void> loadCartWithDependencies({
+    required int vendorType,
+    double? lat,
+    double? lon,
+  }) async {
+    await loadCart();
+    await Future.wait([
+      fetchRecommendations(type: vendorType, lat: lat, lon: lon),
+      checkUpsellOpportunities(vendorType),
+    ]);
+  }
+
+  Future<void> checkUpsellOpportunities(int vendorType) async {
+    // If a campaign is already selected or cart is empty, do not upsell
+    if (_items.isEmpty || _selectedCampaign != null) {
+      _upsellCampaign = null;
+      _upsellRemainingAmount = null;
+      notifyListeners();
+      return;
+    }
+
+    try {
+      // Fetch campaigns for the current vendor type
+      final campaigns = await _apiService.getCampaigns(vendorType: vendorType);
+
+      Campaign? bestCandidate;
+      double minRemaining = double.infinity;
+      final currentTotal = totalAmount;
+
+      for (final c in campaigns) {
+        if (c.minCartAmount != null && c.minCartAmount! > currentTotal) {
+          final remaining = c.minCartAmount! - currentTotal;
+          // Threshold: Suggest if within 200 units (currency agnostic for now, roughly 200 TL)
+          if (remaining > 0 && remaining < 200) {
+            if (remaining < minRemaining) {
+              minRemaining = remaining;
+              bestCandidate = c;
+            }
+          }
+        }
+      }
+
+      _upsellCampaign = bestCandidate;
+      _upsellRemainingAmount = minRemaining == double.infinity
+          ? null
+          : minRemaining;
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Error checking upsell opportunities',
+        e,
+        stackTrace,
+      );
+      // Fail silently for UI
+    }
+  }
+
   Future<void> fetchRecommendations({
     int? type,
     double? lat,
@@ -471,7 +535,6 @@ class CartProvider with ChangeNotifier {
         actions: [
           TextButton(
             onPressed: () {
-              LoggerService().debug('🟡 [CART] Address dialog: Cancel clicked');
               Navigator.of(dialogContext).pop(false);
             },
             child: Text(
@@ -481,9 +544,6 @@ class CartProvider with ChangeNotifier {
           ),
           ElevatedButton(
             onPressed: () {
-              LoggerService().debug(
-                '🟢 [CART] Address dialog: Add Address clicked',
-              );
               Navigator.of(dialogContext).pop(true);
             },
             style: ElevatedButton.styleFrom(
@@ -496,8 +556,6 @@ class CartProvider with ChangeNotifier {
       ),
     );
 
-    LoggerService().debug('🟡 [CART] Address dialog result: $result');
-
     if (result == true) {
       // Use a small delay to ensure dialog is fully closed before navigation
       await Future.delayed(const Duration(milliseconds: 100));
@@ -509,28 +567,20 @@ class CartProvider with ChangeNotifier {
         return;
       }
 
-      LoggerService().debug('🟢 [CART] Navigating to AddEditAddressScreen');
       // Navigate to add address screen
-      final addressResult = await Navigator.of(context).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => const AddEditAddressScreen()),
-      );
-
-      LoggerService().debug(
-        '🟡 [CART] Returned from AddEditAddressScreen: $addressResult',
       );
 
       // After returning from address screen, try to add to cart again
       if (context.mounted) {
-        LoggerService().debug('🟢 [CART] Retrying addItem after address added');
         await addItem(product, context);
       } else {
         LoggerService().warning(
           '🔴 [CART] Context not mounted after address screen',
         );
       }
-    } else {
-      LoggerService().debug('🟡 [CART] User cancelled address dialog');
-    }
+    } else {}
   }
 
   Future<void> removeItem(String itemId) async {
@@ -561,7 +611,6 @@ class CartProvider with ChangeNotifier {
             data: {'itemId': cartItem.backendId!},
           );
           await _syncService.addToQueue(action);
-          // LoggerService().debug('📦 [CART] Action queued: removeFromCart');
         }
       }
     } else if (!isOnline && cartItem != null && cartItem.backendId != null) {
@@ -573,7 +622,6 @@ class CartProvider with ChangeNotifier {
           data: {'itemId': cartItem.backendId!},
         );
         await _syncService.addToQueue(action);
-        // LoggerService().debug('📦 [CART] Offline - Action queued: removeFromCart');
       }
     }
   }
@@ -608,7 +656,6 @@ class CartProvider with ChangeNotifier {
             },
           );
           await _syncService.addToQueue(action);
-          LoggerService().debug('📦 [CART] Action queued: updateCartItem');
         }
       }
     } else if (!isOnline && cartItem.backendId != null) {
@@ -620,9 +667,6 @@ class CartProvider with ChangeNotifier {
           data: {'itemId': cartItem.backendId!, 'quantity': cartItem.quantity},
         );
         await _syncService.addToQueue(action);
-        LoggerService().debug(
-          '📦 [CART] Offline - Action queued: updateCartItem',
-        );
       }
     }
   }
@@ -658,7 +702,6 @@ class CartProvider with ChangeNotifier {
               },
             );
             await _syncService.addToQueue(action);
-            LoggerService().debug('📦 [CART] Action queued: updateCartItem');
           }
         }
       } else if (!isOnline && cartItem.backendId != null) {
@@ -673,9 +716,6 @@ class CartProvider with ChangeNotifier {
             },
           );
           await _syncService.addToQueue(action);
-          LoggerService().debug(
-            '📦 [CART] Offline - Action queued: updateCartItem',
-          );
         }
       }
     } else {

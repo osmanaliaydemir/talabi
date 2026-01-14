@@ -425,9 +425,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                     ),
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        LoggerService().debug(
-                          'VendorEditProfileScreen: Map selection tapped',
-                        );
                         await Navigator.of(context).push(
                           NoSlidePageRoute(
                             builder: (context) => AddressPickerScreen(
@@ -441,9 +438,6 @@ class _VendorEditProfileScreenState extends State<VendorEditProfileScreen> {
                                     latitude,
                                     longitude,
                                   ) {
-                                    LoggerService().debug(
-                                      'VendorEditProfileScreen: Address selected from map',
-                                    );
                                     setState(() {
                                       _latitude = latitude;
                                       _longitude = longitude;

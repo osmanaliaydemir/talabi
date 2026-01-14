@@ -27,12 +27,10 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('CourierAvailabilityScreen: initState');
     _loadAvailability();
   }
 
   Future<void> _loadAvailability() async {
-    LoggerService().debug('CourierAvailabilityScreen: Loading availability...');
     setState(() {
       _isLoading = true;
       _error = null;
@@ -59,10 +57,6 @@ class _CourierAvailabilityScreenState extends State<CourierAvailabilityScreen> {
         _reasons = (reasons as List).map((e) => e.toString()).toList();
         _isLoading = false;
       });
-
-      LoggerService().debug(
-        'CourierAvailabilityScreen: isAvailable=$_isAvailable, status=$_status, current=$_currentActiveOrders, max=$_maxActiveOrders',
-      );
     } catch (e, stackTrace) {
       LoggerService().error(
         'CourierAvailabilityScreen: ERROR loading availability',

@@ -31,7 +31,7 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    LoggerService().debug('VendorSettingsScreen: initState');
+
     _minimumOrderController = TextEditingController();
     _deliveryFeeController = TextEditingController();
     _deliveryTimeController = TextEditingController();
@@ -49,15 +49,12 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    LoggerService().debug('VendorSettingsScreen: Loading settings...');
     setState(() {
       _isLoading = true;
     });
     try {
       final settings = await _apiService.getVendorSettings();
-      LoggerService().debug(
-        'VendorSettingsScreen: Settings loaded successfully',
-      );
+
       setState(() {
         _minimumOrderController.text =
             settings['minimumOrderAmount']?.toString() ?? '';
@@ -98,7 +95,6 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
       return;
     }
 
-    LoggerService().debug('VendorSettingsScreen: Saving settings...');
     setState(() {
       _isSaving = true;
     });
@@ -121,9 +117,6 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
       };
 
       await _apiService.updateVendorSettings(data);
-      LoggerService().debug(
-        'VendorSettingsScreen: Settings saved successfully',
-      );
 
       if (mounted) {
         final localizations = AppLocalizations.of(context);
@@ -241,9 +234,6 @@ class _VendorSettingsScreenState extends State<VendorSettingsScreen> {
                           Switch(
                             value: _isActive,
                             onChanged: (value) {
-                              LoggerService().debug(
-                                'VendorSettingsScreen: Active status changed to $value',
-                              );
                               setState(() {
                                 _isActive = value;
                               });
