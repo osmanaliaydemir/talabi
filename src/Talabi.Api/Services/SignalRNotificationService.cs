@@ -4,19 +4,12 @@ using Talabi.Core.Interfaces;
 
 namespace Talabi.Api.Services;
 
-public class SignalRNotificationService : INotificationService
+public class SignalRNotificationService(IHubContext<NotificationHub> hubContext) : ISignalRNotificationService
 {
-    private readonly IHubContext<NotificationHub> _hubContext;
-
-    public SignalRNotificationService(IHubContext<NotificationHub> hubContext)
-    {
-        _hubContext = hubContext;
-    }
-
     public async Task SendNotificationAsync(string token, string title, string body, object? data = null)
     {
         // SignalR uses userId instead of token, so we'll treat token as userId
-        await _hubContext.Clients.User(token).SendAsync("ReceiveNotification", new
+        await hubContext.Clients.User(token).SendAsync("ReceiveNotification", new
         {
             title,
             body,
@@ -24,7 +17,8 @@ public class SignalRNotificationService : INotificationService
         });
     }
 
-    public async Task SendMulticastNotificationAsync(List<string> tokens, string title, string body, object? data = null)
+    public async Task SendMulticastNotificationAsync(List<string> tokens, string title, string body,
+        object? data = null)
     {
         // Send to multiple users
         foreach (var token in tokens)
@@ -42,16 +36,17 @@ public class SignalRNotificationService : INotificationService
 
     public async Task SendOrderAssignmentNotificationAsync(string userId, Guid orderId, string? languageCode = null)
     {
-        await _hubContext.Clients.User(userId).SendAsync("ReceiveOrderAssignment", new
+        await hubContext.Clients.User(userId).SendAsync("ReceiveOrderAssignment", new
         {
             orderId,
             languageCode
         });
     }
 
-    public async Task SendOrderStatusUpdateNotificationAsync(string userId, Guid orderId, string status, string? languageCode = null)
+    public async Task SendOrderStatusUpdateNotificationAsync(string userId, Guid orderId, string status,
+        string? languageCode = null)
     {
-        await _hubContext.Clients.User(userId).SendAsync("ReceiveOrderStatusUpdate", new
+        await hubContext.Clients.User(userId).SendAsync("ReceiveOrderStatusUpdate", new
         {
             orderId,
             status,
@@ -61,7 +56,7 @@ public class SignalRNotificationService : INotificationService
 
     public async Task SendNewOrderNotificationAsync(string userId, Guid orderId, string? languageCode = null)
     {
-        await _hubContext.Clients.User(userId).SendAsync("ReceiveNewOrder", new
+        await hubContext.Clients.User(userId).SendAsync("ReceiveNewOrder", new
         {
             orderId,
             languageCode
@@ -70,7 +65,7 @@ public class SignalRNotificationService : INotificationService
 
     public async Task SendCourierAcceptedNotificationAsync(string userId, Guid orderId, string? languageCode = null)
     {
-        await _hubContext.Clients.User(userId).SendAsync("ReceiveCourierAccepted", new
+        await hubContext.Clients.User(userId).SendAsync("ReceiveCourierAccepted", new
         {
             orderId,
             languageCode

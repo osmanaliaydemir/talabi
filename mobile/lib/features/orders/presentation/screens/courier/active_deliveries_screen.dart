@@ -9,6 +9,8 @@ import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_bottom_nav.dart';
+import 'package:mobile/services/notification_service.dart';
+import 'dart:async';
 
 class CourierActiveDeliveriesScreen extends StatefulWidget {
   const CourierActiveDeliveriesScreen({super.key, this.initialTabIndex});
@@ -41,6 +43,9 @@ class _CourierActiveDeliveriesScreenState
   bool _hasMore = true;
   bool _isLoadingMore = false;
 
+  final NotificationService _notificationService = NotificationService();
+  StreamSubscription? _orderAssignedSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +55,14 @@ class _CourierActiveDeliveriesScreenState
       initialIndex: widget.initialTabIndex ?? 0,
     );
     _tabController.addListener(_onTabChanged);
+
+    // Subscribe to notifications for real-time updates
+    _orderAssignedSubscription = _notificationService.orderAssignedStream.listen((
+      orderId,
+    ) {
+      // Refresh active orders tab if we are on it, or just in background to keep data fresh
+      _loadActiveOrders();
+    });
 
     // İlk yükleme
     if (widget.initialTabIndex == 1) {
@@ -72,6 +85,7 @@ class _CourierActiveDeliveriesScreenState
 
   @override
   void dispose() {
+    _orderAssignedSubscription?.cancel();
     _tabController
       ..removeListener(_onTabChanged)
       ..dispose();

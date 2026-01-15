@@ -18,6 +18,7 @@ using Talabi.Core.Mappings;
 using Talabi.Infrastructure.Data;
 using Talabi.Infrastructure.Repositories;
 using Talabi.Infrastructure.Services;
+using Talabi.Api.Services;
 using Talabi.Core.Options;
 using Scalar.AspNetCore;
 using Hangfire;
@@ -127,6 +128,7 @@ builder.Services.AddHealthChecks()
 // Services
 builder.Services.AddScoped<INotificationService, FirebaseNotificationService>();
 builder.Services.AddScoped<IDashboardNotificationService, DashboardNotificationService>();
+builder.Services.AddScoped<ISignalRNotificationService, SignalRNotificationService>();
 builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
 builder.Services.AddScoped<IOrderAssignmentService, OrderAssignmentService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

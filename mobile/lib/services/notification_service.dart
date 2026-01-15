@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mobile/services/api_service.dart';
@@ -21,8 +22,12 @@ class NotificationService {
 
   bool get isFirebaseAvailable => _firebaseMessaging != null;
 
-  // Callback for order assignment notifications
-  void Function(int orderId)? onOrderAssigned;
+  // Broadcast stream for order assignment notifications
+  final _orderAssignedController = StreamController<int>.broadcast();
+  Stream<int> get orderAssignedStream => _orderAssignedController.stream;
+
+  // Callback for order assignment notifications (Deprecated - use stream)
+  // void Function(int orderId)? onOrderAssigned;
 
   /// Initialize the notification service
   Future<void> init() async {
@@ -31,7 +36,7 @@ class NotificationService {
 
   /// Stop the notification service (cleanup)
   void stop() {
-    onOrderAssigned = null;
+    // onOrderAssigned = null;
     // Additional cleanup if needed
   }
 
@@ -190,9 +195,9 @@ class NotificationService {
       final type = message.data['type'];
       if (type == 'order_assigned' || type == 'ORDER_ASSIGNED') {
         final orderId = int.tryParse(message.data['orderId'].toString());
-        if (orderId != null && onOrderAssigned != null) {
-          // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
-          onOrderAssigned!(orderId);
+        if (orderId != null) {
+          // Add to stream instead of callback
+          _orderAssignedController.add(orderId);
         }
       }
     }

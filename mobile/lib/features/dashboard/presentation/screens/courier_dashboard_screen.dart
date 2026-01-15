@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:mobile/config/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -15,8 +16,9 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_bottom_nav.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
+import 'package:mobile/config/injection.dart';
+import 'package:mobile/services/signalr_service.dart';
 import 'package:provider/provider.dart';
-
 import 'package:mobile/widgets/pending_approval_widget.dart';
 
 class CourierDashboardScreen extends StatefulWidget {
@@ -29,6 +31,8 @@ class CourierDashboardScreen extends StatefulWidget {
 class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   final CourierService _courierService = CourierService();
   final NotificationService _notificationService = NotificationService();
+  final SignalRService _signalRService = getIt<SignalRService>();
+
   late final LocationService _locationService;
   Courier? _courier;
   CourierStatistics? _statistics;
@@ -36,6 +40,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   bool _isLoading = true;
   bool _isStatusUpdating = false;
   final Set<String> _processingOrders = {};
+
+  StreamSubscription? _orderAssignedSubscription;
+  StreamSubscription? _signalRSubscription;
 
   @override
   void initState() {
@@ -53,28 +60,52 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
   void _initializeNotifications() async {
     await _notificationService.init();
-    _notificationService.onOrderAssigned = (orderId) {
-      // Reload data when new order is assigned
-      _loadData();
-      // Show snackbar
-      if (mounted) {
-        final localizations = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              localizations?.newOrderAssigned(orderId) ??
-                  'New order #$orderId assigned!',
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+
+    // Listen to the broadcast stream (FCM)
+    _orderAssignedSubscription = _notificationService.orderAssignedStream
+        .listen((orderId) {
+          _handleNewOrder(orderId.toString());
+        });
+
+    // Listen to SignalR stream (Real-time)
+    _signalRSubscription = _signalRService.onOrderAssigned.listen((data) {
+      if (data.containsKey('orderId')) {
+        _handleNewOrder(data['orderId'].toString());
       }
-    };
+    });
+  }
+
+  void _handleNewOrder(String orderId) {
+    // Reload data when new order is assigned
+    _loadData();
+    // Show snackbar
+    if (mounted) {
+      final localizations = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations?.newOrderAssigned(orderId) ??
+                'New order #$orderId assigned!',
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'View',
+            textColor: Colors.white,
+            onPressed: () {
+              // Navigate to order details if needed, or just let them see the updated list
+              // For now, reloading the list is enough as it appears in "Active Orders" section usually
+            },
+          ),
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
+    _orderAssignedSubscription?.cancel();
+    _signalRSubscription?.cancel();
     _notificationService.stop();
     _locationService.stopLocationTracking();
     super.dispose();

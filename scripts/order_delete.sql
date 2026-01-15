@@ -25,6 +25,9 @@ BEGIN TRY
     DELETE FROM [CourierNotifications] WHERE [OrderId] IS NOT NULL;
     -- Satıcı bildirimleri (OrderId RelatedEntityId içinde saklanıyor olabilir)
     DELETE FROM [VendorNotifications] WHERE [Type] IN ('NewOrder', 'OrderCancelled', 'OrderAccepted');
+    -- 6.5 Sipariş Değerlendirmelerini Sil
+    PRINT 'Reviews siliniyor...';
+    DELETE FROM [Reviews];
     -- 7. Ana Sipariş Tablosunu Sil
     PRINT 'Orders siliniyor...';
     DELETE FROM [Orders];

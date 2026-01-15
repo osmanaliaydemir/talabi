@@ -13,6 +13,7 @@ public class OrderAssignmentService(
     IUnitOfWork unitOfWork,
     ILogger<OrderAssignmentService> logger,
     INotificationService notificationService,
+    ISignalRNotificationService signalRNotificationService,
     ILocalizationService localizationService,
     IHttpContextAccessor httpContextAccessor,
     IWalletService walletService,
@@ -21,6 +22,9 @@ public class OrderAssignmentService(
 {
     private readonly IWalletService _walletService = walletService;
     private const string ResourceName = "OrderAssignmentResources";
+
+// ... (rest of the methods) ...
+
 
     private string GetLanguageFromRequest()
     {
@@ -86,7 +90,7 @@ public class OrderAssignmentService(
         }
     }
 
-    // ...
+// ...
 
     public async Task<bool> AssignOrderToCourierAsync(Guid orderId, Guid courierId)
     {
@@ -193,6 +197,8 @@ public class OrderAssignmentService(
         if (!string.IsNullOrEmpty(courier.UserId))
         {
             await notificationService.SendOrderAssignmentNotificationAsync(courier.UserId, orderId);
+            // Send SignalR notification (Real-time)
+            await signalRNotificationService.SendOrderAssignmentNotificationAsync(courier.UserId, orderId);
         }
 
         // Send notification to customer
@@ -316,10 +322,13 @@ public class OrderAssignmentService(
             await unitOfWork.OrderCouriers.AddAsync(offer);
             offerCount++;
 
+
             // Send notification to courier
             if (!string.IsNullOrEmpty(item.Courier.UserId))
             {
                 await notificationService.SendOrderAssignmentNotificationAsync(item.Courier.UserId, orderId);
+                // Send SignalR notification (Real-time)
+                await signalRNotificationService.SendOrderAssignmentNotificationAsync(item.Courier.UserId, orderId);
             }
         }
 
@@ -329,7 +338,6 @@ public class OrderAssignmentService(
 
         return offerCount;
     }
-
 
     public async Task<bool> AcceptOrderAsync(Guid orderId, Guid courierId)
     {
@@ -938,7 +946,6 @@ public class OrderAssignmentService(
         });
     }
 
-
     internal async Task<decimal> CalculateDeliveryFee(Order order, Courier courier)
     {
         decimal baseFee = 15.00m; // Base delivery fee
@@ -1012,7 +1019,7 @@ public class OrderAssignmentService(
         return totalFee;
     }
 
-    // Helper method to get active OrderCourier for an order
+// Helper method to get active OrderCourier for an order
     private async Task<OrderCourier?> GetActiveOrderCourierAsync(Guid orderId)
     {
         return await unitOfWork.OrderCouriers.Query()
@@ -1020,7 +1027,7 @@ public class OrderAssignmentService(
             .FirstOrDefaultAsync(oc => oc.OrderId == orderId && oc.IsActive);
     }
 
-    // Helper method to deactivate previous assignments
+// Helper method to deactivate previous assignments
     private async Task DeactivatePreviousAssignmentsAsync(Guid orderId)
     {
         var previousAssignments = await unitOfWork.OrderCouriers.Query()

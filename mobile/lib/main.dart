@@ -34,7 +34,12 @@ import 'package:provider/provider.dart';
 import 'package:mobile/config/injection.dart';
 import 'package:mobile/bootstrap.dart';
 
+import 'package:mobile/services/signalr_service.dart';
+
 Future<void> main() async {
+  // Register SignalRService manually (since we are avoiding code generation for now)
+  getIt.registerLazySingleton<SignalRService>(() => SignalRService());
+
   await bootstrap(() => const MyApp());
 }
 

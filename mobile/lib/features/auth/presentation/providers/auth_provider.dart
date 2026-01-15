@@ -5,16 +5,23 @@ import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/services/analytics_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/secure_storage_service.dart';
-
 import 'package:mobile/services/social_auth_service.dart';
+import 'package:mobile/services/signalr_service.dart';
+import 'package:mobile/config/injection.dart';
 
 class AuthProvider with ChangeNotifier {
-  AuthProvider({ApiService? apiService, SecureStorageService? secureStorage})
-    : _apiService = apiService ?? ApiService(),
-      _secureStorage = secureStorage ?? SecureStorageService.instance;
+  AuthProvider({
+    ApiService? apiService,
+    SecureStorageService? secureStorage,
+    SignalRService? signalRService,
+  }) : _apiService = apiService ?? ApiService(),
+       _secureStorage = secureStorage ?? SecureStorageService.instance,
+       _signalRService = signalRService ?? getIt<SignalRService>();
 
   final ApiService _apiService;
   final SecureStorageService _secureStorage;
+  final SignalRService _signalRService;
+
   String? _token;
   String? _refreshToken;
   String? _userId;
@@ -118,6 +125,15 @@ class AuthProvider with ChangeNotifier {
     // Analytics
     await AnalyticsService.setUserId(_userId!);
     await AnalyticsService.logLogin(method: 'email');
+
+    // Start SignalR connection if user is a courier
+    if (_role == 'Courier') {
+      // Removed Driver check as we might specificy Courier only, or enable for both. Keeping strict 'Courier' for now based on context.
+      // Delay slightly to ensure token is fully persisted/available if needed by other components
+      Future.delayed(const Duration(seconds: 1), () {
+        _signalRService.startConnection();
+      });
+    }
 
     notifyListeners();
   }
@@ -263,6 +279,9 @@ class AuthProvider with ChangeNotifier {
     // await prefs.remove('token');
     // await prefs.remove('refreshToken');
 
+    // Stop SignalR connection
+    await _signalRService.stopConnection();
+
     // Analytics - clear user id
     await AnalyticsService.setUserId('');
 
@@ -306,6 +325,13 @@ class AuthProvider with ChangeNotifier {
       await AnalyticsService.setUserId(_userId!);
     }
 
+    // Start SignalR connection if user is a courier (Auto-login case)
+    if (_role == 'Courier') {
+      Future.delayed(const Duration(seconds: 1), () {
+        _signalRService.startConnection();
+      });
+    }
+
     notifyListeners();
   }
 
@@ -329,6 +355,13 @@ class AuthProvider with ChangeNotifier {
     await _secureStorage.setRefreshToken(refreshToken);
     await _secureStorage.setUserId(userId);
     await _secureStorage.setRole(role);
+
+    // Start SignalR if courier
+    if (_role == 'Courier') {
+      Future.delayed(const Duration(seconds: 1), () {
+        _signalRService.startConnection();
+      });
+    }
 
     notifyListeners();
   }
