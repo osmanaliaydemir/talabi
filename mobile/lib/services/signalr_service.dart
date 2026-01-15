@@ -21,7 +21,7 @@ class SignalRService {
     if (token == null) return;
 
     final hubUrl =
-        '${NetworkClient.baseUrl.replaceAll('/api', '')}/notificationhub';
+        '${NetworkClient.baseUrl.replaceAll('/api', '')}/hubs/notifications';
 
     _hubConnection = HubConnectionBuilder()
         .withUrl(
