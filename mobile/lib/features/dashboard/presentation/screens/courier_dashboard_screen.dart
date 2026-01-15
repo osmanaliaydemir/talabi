@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:mobile/config/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/l10n/app_localizations.dart';
@@ -70,7 +71,15 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     // Listen to SignalR stream (Real-time)
     _signalRSubscription = _signalRService.onOrderAssigned.listen((data) {
       if (data.containsKey('orderId')) {
-        _handleNewOrder(data['orderId'].toString());
+        final orderId = data['orderId'].toString();
+        _handleNewOrder(orderId);
+
+        // Trigger sound and vibration via local notification
+        _notificationService.showManualNotification(
+          title: 'Yeni Sipariş!',
+          body: 'Sipariş #$orderId size atandı. Hemen inceleyin!',
+          payload: json.encode({'orderId': orderId, 'type': 'order_assigned'}),
+        );
       }
     });
   }

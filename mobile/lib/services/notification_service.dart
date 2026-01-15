@@ -248,27 +248,51 @@ class NotificationService {
     }
   }
 
-  Future<void> _showLocalNotification(RemoteMessage message) async {
-    final notification = message.notification;
-    final android = message.notification?.android;
+  Future<void> showManualNotification({
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'order_updates_channel', // Changed ID to ensure fresh channel config
+      'Order Updates',
+      channelDescription: 'Notifications for new and updated orders',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      icon: '@mipmap/ic_launcher',
+    );
 
-    if (notification != null && android != null) {
-      await _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel', // id
-            'High Importance Notifications', // title
-            channelDescription:
-                'This channel is used for important notifications.',
-            importance: Importance.max,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(),
-        ),
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      // presentBanner: true, // dependent on iOS version/settings
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _localNotifications.show(
+      DateTime.now().millisecond, // unique ID
+      title,
+      body,
+      details,
+      payload: payload,
+    );
+  }
+
+  Future<void> _showLocalNotification(RemoteMessage message) async {
+    // ... existing implementation reused or refactored
+    final notification = message.notification;
+    // ...
+    if (notification != null) {
+      await showManualNotification(
+        title: notification.title ?? '',
+        body: notification.body ?? '',
         payload: json.encode(message.data),
       );
     }
