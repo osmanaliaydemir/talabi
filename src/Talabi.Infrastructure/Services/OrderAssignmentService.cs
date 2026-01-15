@@ -781,7 +781,10 @@ public class OrderAssignmentService(
 
     public async Task<List<Order>> GetActiveOrdersForCourierAsync(Guid courierId)
     {
-        return await unitOfWork.Orders.Query()
+        var courier = await unitOfWork.Couriers.GetByIdAsync(courierId);
+        if (courier == null) return new List<Order>();
+
+        var orders = await unitOfWork.Orders.Query()
             .Include(o => o.Vendor)
             .Include(o => o.Customer)
             .Include(o => o.DeliveryAddress)
@@ -793,6 +796,58 @@ public class OrderAssignmentService(
                         && o.Status != OrderStatus.Cancelled)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
+
+        // Safety Filter: Even if assigned, if the courier is NOT 'Accepted', 'OutForDelivery' etc.
+        // And the distance is > 5km, hide it. This cleans up stale assignments/offers or illegal manual assignments.
+
+        var filteredOrders = new List<Order>();
+        foreach (var order in orders)
+        {
+            var myAssignment = order.OrderCouriers.FirstOrDefault(oc => oc.CourierId == courierId && oc.IsActive);
+
+            // If already accepted/picked up/out for delivery, show it regardless of distance (contract is made)
+            if (myAssignment != null && (myAssignment.Status == OrderCourierStatus.Accepted ||
+                                         myAssignment.Status == OrderCourierStatus.OutForDelivery ||
+                                         myAssignment.Status == OrderCourierStatus.PickedUp))
+            {
+                filteredOrders.Add(order);
+                continue;
+            }
+
+            // For 'Assigned' (Manual) or 'Offered' (Broadcast), verify distance again
+            if (courier.CurrentLatitude.HasValue && courier.CurrentLongitude.HasValue &&
+                order.Vendor != null && order.Vendor.Latitude.HasValue && order.Vendor.Longitude.HasValue)
+            {
+                var dist = GeoHelper.CalculateDistance(
+                    order.Vendor.Latitude.Value,
+                    order.Vendor.Longitude.Value,
+                    courier.CurrentLatitude.Value,
+                    courier.CurrentLongitude.Value);
+
+                // Strict 5.5km visibility limit (5.0 + buffer)
+                if (dist <= 5.5)
+                {
+                    filteredOrders.Add(order);
+                }
+            }
+            else
+            {
+                // If coordinates are missing, deciding to HIDE pending offers for safety?
+                // Or show them? Given the strict requirement "onun dışındakiler çıkmasın", 
+                // if we can't verify it's inside 5km, we should probably hide it or show it?
+                // Let's assume Valid Location is required for visibility.
+                // BUT, if the location update failed, maybe we shouldn't punish?
+                // Let's show it if location is missing to avoid "Disappearing orders" bugs, 
+                // trusting the Assignment logic blocked it if needed. 
+                // Wait, user said "haritada 5km dışında". So location EXISTS.
+                // So if location exists and > 5.5, we skipped the `if` above.
+                // If location is missing, we fall here.
+                // Let's safe-guard: Only hide if we KNOW it's far.
+                filteredOrders.Add(order);
+            }
+        }
+
+        return filteredOrders;
     }
 
     /// <summary>
