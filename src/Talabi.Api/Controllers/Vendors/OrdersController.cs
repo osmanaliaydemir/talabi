@@ -574,7 +574,7 @@ public class OrdersController : BaseController
                     c.CurrentLongitude!.Value
                 )
             })
-            .Where(x => x.Distance <= 10)
+            .Where(x => x.Distance <= 5)
             .OrderBy(x => x.Distance)
             .Select(x =>
             {

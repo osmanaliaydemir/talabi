@@ -145,6 +145,34 @@ public class OrderAssignmentService(
             CreatedBy = "System"
         });
 
+        // Validation: Courier must be within 5km of the vendor for Manual Assignment too
+        if (order.Vendor != null)
+        {
+            // If vendor wasn't loaded in the query above (it is not included by default in initial query), load it now
+            // Optimization: We could include it in the query, but let's check null to be safe or reload
+            // Actually lines 93-95 does not Includes Vendor.
+            var vendor = await unitOfWork.Vendors.GetByIdAsync(order.VendorId);
+
+            if (vendor != null && vendor.Latitude.HasValue && vendor.Longitude.HasValue &&
+                courier.CurrentLatitude.HasValue && courier.CurrentLongitude.HasValue)
+            {
+                var distance = GeoHelper.CalculateDistance(
+                    vendor.Latitude.Value,
+                    vendor.Longitude.Value,
+                    courier.CurrentLatitude.Value,
+                    courier.CurrentLongitude.Value);
+
+                // 5 km limit + small buffer (0.5 km) for GPS inaccuracies = 5.5 km
+                if (distance > 5.5)
+                {
+                    logger.LogWarning(
+                        "Manual assignment failed: Courier {CourierId} is too far ({Distance}km) from vendor {VendorId}",
+                        courierId, distance, order.VendorId);
+                    return false; // Or throw specific exception if we want to give better error message
+                }
+            }
+        }
+
         // Update courier
         courier.Status = CourierStatus.Assigned;
         unitOfWork.Couriers.Update(courier);
@@ -325,6 +353,27 @@ public class OrderAssignmentService(
         if (!isStandardAssignment && !isOfferAcceptance) return false;
 
         if (courier.CurrentActiveOrders >= courier.MaxActiveOrders) return false;
+
+        // Validation: Courier must be within 5km of the vendor to accept the order
+        // This prevents accepting orders if the courier moved too far away after receiving the offer
+        var vendorLoc = await unitOfWork.Vendors.GetByIdAsync(order.VendorId);
+        if (vendorLoc != null && vendorLoc.Latitude.HasValue && vendorLoc.Longitude.HasValue &&
+            courier.CurrentLatitude.HasValue && courier.CurrentLongitude.HasValue)
+        {
+            var distance = GeoHelper.CalculateDistance(
+                vendorLoc.Latitude.Value,
+                vendorLoc.Longitude.Value,
+                courier.CurrentLatitude.Value,
+                courier.CurrentLongitude.Value);
+
+            // 5 km limit + small buffer (0.5 km) for GPS inaccuracies = 5.5 km
+            if (distance > 5.5)
+            {
+                logger.LogWarning("Courier {CourierId} tried to accept order {OrderId} but is too far ({Distance}km)",
+                    courierId, orderId, distance);
+                return false;
+            }
+        }
 
         // If this was an offer acceptance, we need to handle "Race Condition" / "Winner Takes All"
         if (isOfferAcceptance)
