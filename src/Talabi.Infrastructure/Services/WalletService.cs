@@ -12,11 +12,19 @@ public class WalletService : IWalletService
 {
     private readonly TalabiDbContext _context;
     private readonly ILocalizationService _localizationService;
+    private readonly IRepository<SystemSetting> _systemSettingRepository;
+    private readonly Microsoft.Extensions.Caching.Memory.IMemoryCache _cache;
 
-    public WalletService(TalabiDbContext context, ILocalizationService localizationService)
+    public WalletService(
+        TalabiDbContext context,
+        ILocalizationService localizationService,
+        IRepository<SystemSetting> systemSettingRepository,
+        Microsoft.Extensions.Caching.Memory.IMemoryCache cache)
     {
         _context = context;
         _localizationService = localizationService;
+        _systemSettingRepository = systemSettingRepository;
+        _cache = cache;
     }
 
     public async Task<Wallet> GetWalletByUserIdAsync(string userId)
@@ -173,7 +181,16 @@ public class WalletService : IWalletService
         // Get culture from thread or default
         var culture = CultureInfo.CurrentUICulture;
 
-        // 1. Sync Courier Earnings
+        // 1. Get Fixed Courier Fee
+        var courierFeeSetting = await _systemSettingRepository.Query()
+            .FirstOrDefaultAsync(s => s.Key == "CourierDeliveryFee");
+        decimal courierFee = 5000; // Default fallback
+        if (courierFeeSetting != null && decimal.TryParse(courierFeeSetting.Value, out var parsedFee))
+        {
+            courierFee = parsedFee;
+        }
+
+        // 2. Sync Courier Earnings
         var pendingCourier = await _context.CourierEarnings
             .Include(ce => ce.Courier)
             .Include(ce => ce.Order)
@@ -187,7 +204,7 @@ public class WalletService : IWalletService
             {
                 await AddEarningAsync(
                     earning.Courier!.UserId,
-                    earning.TotalEarning,
+                    courierFee, // Use fixed fee instead of earning.TotalEarning
                     earning.OrderId.ToString(),
                     earning.Order?.CustomerOrderId ?? earning.OrderId.ToString(),
                     _localizationService.GetLocalizedString("OrderAssignmentResources", "EarningDescription", culture,
@@ -195,6 +212,8 @@ public class WalletService : IWalletService
 
                 earning.IsPaid = true;
                 earning.PaidAt = DateTime.UtcNow;
+                // Optionally update the total earning record to reflect what was actually paid?
+                // earning.TotalEarning = courierFee; 
                 _context.CourierEarnings.Update(earning);
 
                 await _context.SaveChangesAsync();
@@ -227,13 +246,44 @@ public class WalletService : IWalletService
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    // 1. Calculate base earning (Total - Delivery Fee)
+                    var vendorEarning = order.TotalAmount - order.DeliveryFee;
+
                     await AddEarningAsync(
                         order.Vendor.OwnerId,
-                        order.TotalAmount,
+                        vendorEarning, // Use net earning, not total amount
                         order.Id.ToString(),
                         order.CustomerOrderId,
                         _localizationService.GetLocalizedString("WalletResources", "VendorSaleEarning", culture,
                             order.CustomerOrderId));
+
+                    // 2. Calculate and Deduct Commission
+                    if (order.Vendor.CommissionRate > 0)
+                    {
+                        var commissionAmount = vendorEarning * (order.Vendor.CommissionRate / 100);
+                        if (commissionAmount > 0)
+                        {
+                            // Create Commission Transaction
+                            // Wallet instance from outer scope is used
+
+                            wallet.Balance -= commissionAmount;
+                            wallet.UpdatedAt = DateTime.UtcNow;
+
+                            var commissionTx = new WalletTransaction
+                            {
+                                WalletId = wallet.Id,
+                                Amount = commissionAmount,
+                                TransactionType = TransactionType.Commission,
+                                ReferenceId = order.Id.ToString(),
+                                CustomerOrderId = order.CustomerOrderId,
+                                Description = _localizationService.GetLocalizedString("WalletResources",
+                                    "CommissionDeduction", culture, order.CustomerOrderId, order.Vendor.CommissionRate),
+                                TransactionDate = DateTime.UtcNow
+                            };
+
+                            _context.WalletTransactions.Add(commissionTx);
+                        }
+                    }
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();

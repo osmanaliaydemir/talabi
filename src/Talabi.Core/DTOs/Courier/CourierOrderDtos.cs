@@ -17,8 +17,13 @@ public class CourierOrderDto
     public double DeliveryLongitude { get; set; }
 
     public decimal TotalAmount { get; set; }
+    public decimal? TotalAmountTl { get; set; } // Added for multi-currency
+    public decimal? TotalAmountUsd { get; set; } // Added for multi-currency
+    public decimal? ExchangeRateTl { get; set; } // Added for multi-currency
+    public decimal? ExchangeRateUsd { get; set; } // Added for multi-currency
     public decimal DeliveryFee { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 
     public List<CourierOrderItemDto> Items { get; set; } = new List<CourierOrderItemDto>();

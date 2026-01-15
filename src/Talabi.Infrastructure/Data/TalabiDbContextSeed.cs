@@ -185,6 +185,23 @@ public class TalabiDbContextSeed
                 Key = "DistanceSalesAgreement_ar",
                 Value = "لقد قرأت وأوافق على اتفاقية البيع عن بعد ونموذج المعلومات الأولية.", Group = "Agreements",
                 Description = "نص الموافقة على اتفاقية البيع عن بعد (AR)"
+            },
+
+            // Courier & Payment Settings
+            new()
+            {
+                Key = "CourierDeliveryFee", Value = "5000", Group = "Payment",
+                Description = "Kurye Sabit Teslimat Ücreti (SYP)"
+            },
+            new()
+            {
+                Key = "ExchangeRate_TL", Value = "450", Group = "Payment",
+                Description = "1 TL'nin SYP karşılığı"
+            },
+            new()
+            {
+                Key = "ExchangeRate_USD", Value = "15000", Group = "Payment",
+                Description = "1 USD'nin SYP karşılığı"
             }
         };
 

@@ -19,9 +19,10 @@ namespace Talabi.Api.Controllers.Couriers;
 [Authorize(Roles = "Courier")]
 public class OrdersController : BaseController
 {
-    private readonly UserManager<AppUser> _userManager;
     private readonly IMapper _mapper;
     private readonly IOrderAssignmentService _assignmentService;
+    private readonly IRepository<SystemSetting> _systemSettingRepository;
+    private readonly IRepository<WalletTransaction> _walletTransactionRepository;
     private const string ResourceName = "CourierResources";
 
     /// <summary>
@@ -29,17 +30,19 @@ public class OrdersController : BaseController
     /// </summary>
     public OrdersController(
         IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager,
         ILogger<OrdersController> logger,
         ILocalizationService localizationService,
         IUserContextService userContext,
         IMapper mapper,
-        IOrderAssignmentService assignmentService)
+        IOrderAssignmentService assignmentService,
+        IRepository<SystemSetting> systemSettingRepository,
+        IRepository<WalletTransaction> walletTransactionRepository)
         : base(unitOfWork, logger, localizationService, userContext)
     {
-        _userManager = userManager;
         _mapper = mapper;
         _assignmentService = assignmentService;
+        _systemSettingRepository = systemSettingRepository;
+        _walletTransactionRepository = walletTransactionRepository;
     }
 
     private async Task<Courier?> GetCurrentCourierAsync()
@@ -53,6 +56,66 @@ public class OrdersController : BaseController
         var courier = await UnitOfWork.Couriers.Query()
             .FirstOrDefaultAsync(c => c.UserId == userId);
         return courier;
+    }
+
+    /// <summary>
+    /// Helper to enrich orders with payment info and multi-currency data
+    /// </summary>
+    private async Task EnrichOrderWithPaymentInfo(List<CourierOrderDto> dtos)
+    {
+        if (dtos == null || !dtos.Any()) return;
+
+        // 1. Fetch System Settings for Exchange Rates
+        decimal rateTl = 450;
+        decimal rateUsd = 15000;
+
+        var settings = await _systemSettingRepository.Query()
+            .Where(s => s.Key == "ExchangeRate_TL" || s.Key == "ExchangeRate_USD")
+            .ToListAsync();
+
+        var setTl = settings.FirstOrDefault(s => s.Key == "ExchangeRate_TL");
+        if (setTl != null && decimal.TryParse(setTl.Value, out var parsedTl)) rateTl = parsedTl;
+
+        var setUsd = settings.FirstOrDefault(s => s.Key == "ExchangeRate_USD");
+        if (setUsd != null && decimal.TryParse(setUsd.Value, out var parsedUsd)) rateUsd = parsedUsd;
+
+        // 2. Identify Payment Method (Cash vs Online)
+        // If there is a WalletTransaction of type Payment for this order, it's Online. Otherwise Cash.
+        var orderIds = dtos.Select(d => d.Id.ToString()).ToList();
+        var paymentTransactions = await _walletTransactionRepository.Query()
+            .Where(t => orderIds.Contains(t.ReferenceId) && t.TransactionType == TransactionType.Payment)
+            .Select(t => t.ReferenceId)
+            .ToListAsync();
+
+        foreach (var dto in dtos)
+        {
+            // Determine Payment Method
+            bool isOnline = paymentTransactions.Contains(dto.Id.ToString());
+            dto.PaymentMethod = isOnline ? "Online" : "Cash";
+
+            // Calculate Multi-Currency if Cash
+            if (dto.PaymentMethod == "Cash")
+            {
+                // Logic: Description says "1 TL'nin SYP karşılığı" (e.g. 450). 
+                // So 1 TL = 450 SYP -> AmountTL = TotalAmount / 450? 
+                // Wait. If 1 USD = 15000 SYP. 150 USD * 15000 = X SYP.
+                // Usually ExchangeRate is "How many BaseUnits is 1 ForeignUnit".
+                // Base is SYP. Foreign is USD.
+                // So AmountForeign = AmountBase / Rate.
+
+                if (rateTl > 0)
+                {
+                    dto.TotalAmountTl = Math.Round(dto.TotalAmount / rateTl, 2);
+                    dto.ExchangeRateTl = rateTl;
+                }
+
+                if (rateUsd > 0)
+                {
+                    dto.TotalAmountUsd = Math.Round(dto.TotalAmount / rateUsd, 2);
+                    dto.ExchangeRateUsd = rateUsd;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -99,6 +162,9 @@ public class OrdersController : BaseController
 
             return dto;
         }).ToList();
+
+        // Enrich with Payment Info & Multi-Currency
+        await EnrichOrderWithPaymentInfo(orderDtos);
 
         return Ok(new ApiResponse<List<CourierOrderDto>>(orderDtos,
             LocalizationService.GetLocalizedString(ResourceName, "ActiveOrdersRetrievedSuccessfully", CurrentCulture)));
@@ -148,7 +214,11 @@ public class OrdersController : BaseController
                               && oc.Order.Status == OrderStatus.Delivered
                               && oc.DeliveredAt.HasValue);
 
-        var orderDtos = _mapper.Map<List<CourierOrderDto>>(orderCouriers.Select(oc => oc.Order).Where(o => o != null).ToList()!);
+        var orderDtos =
+            _mapper.Map<List<CourierOrderDto>>(orderCouriers.Select(oc => oc.Order).Where(o => o != null).ToList()!);
+
+        // Enrich with Payment Info & Multi-Currency
+        await EnrichOrderWithPaymentInfo(orderDtos);
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
         var result = new
@@ -244,6 +314,9 @@ public class OrdersController : BaseController
             orderDto.DeliveredAt = orderCourier.DeliveredAt;
             orderDto.CourierTip = orderCourier.CourierTip;
         }
+
+        // Enrich with Payment Info & Multi-Currency
+        await EnrichOrderWithPaymentInfo(new List<CourierOrderDto> { orderDto });
 
         return Ok(new ApiResponse<CourierOrderDto>(orderDto,
             LocalizationService.GetLocalizedString(ResourceName, "OrderDetailsRetrievedSuccessfully", CurrentCulture)));

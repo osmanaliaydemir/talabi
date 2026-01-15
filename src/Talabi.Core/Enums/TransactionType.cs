@@ -6,5 +6,6 @@ public enum TransactionType
     Withdrawal = 2,
     Payment = 3,
     Refund = 4,
-    Earning = 5
+    Earning = 5,
+    Commission = 6
 }

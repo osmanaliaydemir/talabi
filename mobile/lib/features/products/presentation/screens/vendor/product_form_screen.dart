@@ -70,7 +70,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     );
     _isAvailable = widget.product?.isAvailable ?? true;
     _imageUrl = widget.product?.imageUrl;
-    _selectedCurrency = widget.product?.currency ?? Currency.try_;
+    _selectedCurrency = widget.product?.currency ?? Currency.syp;
     if (widget.product != null) {
       _optionGroups = List.from(widget.product!.optionGroups);
       _loadProductDetails();
@@ -572,13 +572,8 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
                   child: Text('${currency.symbol} ${currency.code}'),
                 );
               }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedCurrency = value;
-                  });
-                }
-              },
+              // Disable currency selection
+              onChanged: null,
             ),
             const SizedBox(height: 16),
 

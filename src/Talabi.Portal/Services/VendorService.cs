@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Entities;
 using Talabi.Core.Interfaces;
 using Talabi.Portal.Models;
-
 using Talabi.Core.Helpers; // Added for PagedResult
 
 namespace Talabi.Portal.Services;
@@ -15,7 +14,7 @@ public class VendorService : IVendorService
     private readonly ILogger<VendorService> _logger;
 
     public VendorService(
-        IRepository<Vendor> vendorRepository, 
+        IRepository<Vendor> vendorRepository,
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         ILogger<VendorService> logger)
@@ -26,7 +25,8 @@ public class VendorService : IVendorService
         _logger = logger;
     }
 
-    public async Task<PagedResult<VendorListDto>> GetVendorsAsync(int page, int pageSize, string? search, string? sortColumn, string? sortDirection)
+    public async Task<PagedResult<VendorListDto>> GetVendorsAsync(int page, int pageSize, string? search,
+        string? sortColumn, string? sortDirection)
     {
         var query = _vendorRepository.Query()
             .Include(v => v.Owner)
@@ -36,8 +36,8 @@ public class VendorService : IVendorService
         if (!string.IsNullOrEmpty(search))
         {
             search = search.ToLower();
-            query = query.Where(v => 
-                v.Name.ToLower().Contains(search) || 
+            query = query.Where(v =>
+                v.Name.ToLower().Contains(search) ||
                 (v.Owner != null && v.Owner.Email!.ToLower().Contains(search)) ||
                 (v.PhoneNumber != null && v.PhoneNumber.Contains(search))
             );
@@ -48,10 +48,16 @@ public class VendorService : IVendorService
         {
             "name" => sortDirection == "desc" ? query.OrderByDescending(v => v.Name) : query.OrderBy(v => v.Name),
             "type" => sortDirection == "desc" ? query.OrderByDescending(v => v.Type) : query.OrderBy(v => v.Type),
-            "email" => sortDirection == "desc" ? query.OrderByDescending(v => v.Owner!.Email) : query.OrderBy(v => v.Owner!.Email),
-            "isActive" => sortDirection == "desc" ? query.OrderByDescending(v => v.IsActive) : query.OrderBy(v => v.IsActive),
-            "createdDate" => sortDirection == "desc" ? query.OrderByDescending(v => v.CreatedAt) : query.OrderBy(v => v.CreatedAt),
-            _ => query.OrderByDescending(v => v.CreatedAt) 
+            "email" => sortDirection == "desc"
+                ? query.OrderByDescending(v => v.Owner!.Email)
+                : query.OrderBy(v => v.Owner!.Email),
+            "isActive" => sortDirection == "desc"
+                ? query.OrderByDescending(v => v.IsActive)
+                : query.OrderBy(v => v.IsActive),
+            "createdDate" => sortDirection == "desc"
+                ? query.OrderByDescending(v => v.CreatedAt)
+                : query.OrderBy(v => v.CreatedAt),
+            _ => query.OrderByDescending(v => v.CreatedAt)
         };
 
         var totalCount = await query.CountAsync();
@@ -61,6 +67,7 @@ public class VendorService : IVendorService
                 Id = v.Id.ToString(),
                 Name = v.Name,
                 Type = v.Type.ToString(),
+                CommissionRate = v.CommissionRate, // Map CommissionRate
                 Email = v.Owner != null ? v.Owner.Email : null,
                 PhoneNumber = v.PhoneNumber,
                 IsActive = v.IsActive,
@@ -96,6 +103,7 @@ public class VendorService : IVendorService
             Description = vendor.Description,
             // ItemsDescription = vendor.ItemsDescription, // Entity doesn't have checks, skipping or mapping null
             Type = vendor.Type.ToString(),
+            CommissionRate = vendor.CommissionRate, // Map CommissionRate
             Email = vendor.Owner?.Email,
             PhoneNumber = vendor.PhoneNumber,
             Address = vendor.Address,
@@ -193,6 +201,20 @@ public class VendorService : IVendorService
         return true;
     }
 
+    public async Task<bool> UpdateCommissionRateAsync(string id, decimal rate)
+    {
+        if (!Guid.TryParse(id, out var guidId)) return false;
+
+        var vendor = await _vendorRepository.GetByIdAsync(guidId);
+        if (vendor == null) return false;
+
+        vendor.CommissionRate = rate;
+        _vendorRepository.Update(vendor);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+    }
+
     private async Task<string> GetUserLanguageAsync(string userId)
     {
         try
@@ -207,7 +229,8 @@ public class VendorService : IVendorService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to get user language preference for user {UserId}, defaulting to 'en'", userId);
+            _logger.LogWarning(ex, "Failed to get user language preference for user {UserId}, defaulting to 'en'",
+                userId);
             return "en"; // Default to English if we can't determine the language
         }
     }

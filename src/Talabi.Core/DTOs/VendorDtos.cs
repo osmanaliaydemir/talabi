@@ -16,6 +16,7 @@ public class VendorDto
     public double? Longitude { get; set; }
     public double? DistanceInKm { get; set; }
     public int DeliveryRadiusInKm { get; set; }
+    public decimal CommissionRate { get; set; }
 }
 
 public class CreateVendorDto

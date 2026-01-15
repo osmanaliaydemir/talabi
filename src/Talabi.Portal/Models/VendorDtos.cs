@@ -12,6 +12,7 @@ public class VendorListDto
     public string Address { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public DateTime CreatedDate { get; set; }
+    public decimal CommissionRate { get; set; } // Added copmpp
     public string? ImageUrl { get; set; }
 }
 
@@ -32,6 +33,7 @@ public class VendorDetailDto
     public string? CoverImageUrl { get; set; } // Added
     public decimal? MinimumOrderAmount { get; set; } // Added
     public int? DeliveryTimeMinutes { get; set; } // Added
+    public decimal CommissionRate { get; set; } // Added
     public bool IsActive { get; set; }
     public DateTime CreatedDate { get; set; }
 }

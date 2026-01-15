@@ -47,17 +47,25 @@
                         <label class="small text-muted">@LocalizationService.GetString("Phone")</label>
                         <div class="h6">@Model.PhoneNumber</div>
                     </div>
-                     <div class="mb-3">
+                    <div class="mb-3">
                         <label class="small text-muted">@LocalizationService.GetString("Type")</label>
                         <div class="h6">@Model.Type</div>
                     </div>
-                     <div class="mb-3">
+                    <div class="mb-3">
                         <label class="small text-muted">@LocalizationService.GetString("Address")</label>
                         <div class="h6">@Model.Address @(Model.City != null ? $", {Model.City}" : "")</div>
                     </div>
-                     <div class="mb-3">
-                        <label class="small text-muted">@LocalizationService.GetString("Description")</label>
+                    <div class="mb-3">
                         <div class="h6">@Model.Description</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted">@LocalizationService.GetString("CommissionRate") (%)</label>
+                        <div class="input-group">
+                            <input type="number" id="commissionRate" class="form-control" value="@Model.CommissionRate" step="0.01" min="0" max="100">
+                            <button onclick="updateCommissionRate('@Model.Id')" class="btn btn-primary">
+                                @LocalizationService.GetString("Update")
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -65,7 +73,7 @@
 
         <!-- Status Info -->
         <div class="col-md-6 mb-4">
-             <div class="card shadow h-100">
+            <div class="card shadow h-100">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">@LocalizationService.GetString("Status")</h6>
                 </div>
@@ -73,7 +81,7 @@
                     <div class="mb-3">
                         <label class="small text-muted">@LocalizationService.GetString("Status")</label>
                         <div>
-                             @if (Model.IsActive)
+                            @if (Model.IsActive)
                             {
                                 <span class="badge bg-success fs-6">@LocalizationService.GetString("Active")</span>
                             }
@@ -132,6 +140,32 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.post('/Vendors/Reject', { id: id }, function(response) {
+                        if (response.success) {
+                             Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('@LocalizationService.GetString("Error")', response.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+    <script>
+        function updateCommissionRate(id) {
+            var rate = $('#commissionRate').val();
+            Swal.fire({
+                title: '@LocalizationService.GetString("Update")',
+                text: '@LocalizationService.GetString("AreYouSureUpdateCommissionRate")',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4e73df',
+                confirmButtonText: '@LocalizationService.GetString("Update")',
+                cancelButtonText: '@LocalizationService.GetString("Cancel")'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Vendors/UpdateCommissionRate', { id: id, rate: rate }, function(response) {
                         if (response.success) {
                              Swal.fire('@LocalizationService.GetString("Success")', '', 'success').then(() => {
                                 location.reload();

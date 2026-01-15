@@ -34,6 +34,9 @@ public class Vendor : BaseEntity
     public bool IsActive { get; set; } = true;
     public string? OpeningHours { get; set; } // JSON format
 
+    // Commission Settings
+    public decimal CommissionRate { get; set; } = 20; // Usage: 20 for 20% commission
+
     public string OwnerId { get; set; } = string.Empty;
     public AppUser? Owner { get; set; }
 

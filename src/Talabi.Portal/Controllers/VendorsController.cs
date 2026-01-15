@@ -89,4 +89,14 @@ public class VendorsController : Controller
 
         return Json(new { success = false, message = _localizationService.GetString("Error") });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateCommissionRate(string id, decimal rate)
+    {
+        var success = await _vendorService.UpdateCommissionRateAsync(id, rate);
+        if (success)
+            return Json(new { success = true, message = _localizationService.GetString("Success") });
+
+        return Json(new { success = false, message = _localizationService.GetString("Error") });
+    }
 }
