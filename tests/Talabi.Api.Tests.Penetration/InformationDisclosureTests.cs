@@ -9,12 +9,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// <summary>
 /// Information Disclosure testleri
 /// </summary>
-public class InformationDisclosureTests : IClassFixture<WebApplicationFactory<Program>>
+public class InformationDisclosureTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public InformationDisclosureTests(WebApplicationFactory<Program> factory)
+    public InformationDisclosureTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

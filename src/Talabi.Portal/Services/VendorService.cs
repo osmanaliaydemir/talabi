@@ -68,7 +68,7 @@ public class VendorService : IVendorService
                 Name = v.Name,
                 Type = v.Type.ToString(),
                 CommissionRate = v.CommissionRate, // Map CommissionRate
-                Email = v.Owner != null ? v.Owner.Email : null,
+                Email = v.Owner != null ? (v.Owner.Email ?? string.Empty) : string.Empty,
                 PhoneNumber = v.PhoneNumber,
                 IsActive = v.IsActive,
                 CreatedDate = v.CreatedAt,
@@ -104,7 +104,7 @@ public class VendorService : IVendorService
             // ItemsDescription = vendor.ItemsDescription, // Entity doesn't have checks, skipping or mapping null
             Type = vendor.Type.ToString(),
             CommissionRate = vendor.CommissionRate, // Map CommissionRate
-            Email = vendor.Owner?.Email,
+            Email = vendor.Owner?.Email ?? string.Empty,
             PhoneNumber = vendor.PhoneNumber,
             Address = vendor.Address,
             City = vendor.City,

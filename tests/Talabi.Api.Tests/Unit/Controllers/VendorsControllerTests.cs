@@ -62,8 +62,8 @@ public class VendorsControllerTests
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor { Id = Guid.NewGuid(), Name = "Vendor A", IsActive = true, Type = VendorType.Restaurant },
-            new Vendor { Id = Guid.NewGuid(), Name = "Vendor B", IsActive = true, Type = VendorType.Market }
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor A", IsActive = true, Type = VendorType.Restaurant, Latitude = 41.0, Longitude = 29.0, DeliveryRadiusInKm = 50 },
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor B", IsActive = true, Type = VendorType.Market, Latitude = 41.01, Longitude = 29.01, DeliveryRadiusInKm = 50 }
         };
 
         var mockRepo = new Mock<IRepository<Vendor>>();
@@ -71,7 +71,7 @@ public class VendorsControllerTests
         _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
         // Act
-        var result = await _controller.GetVendors();
+        var result = await _controller.GetVendors(userLatitude: 41.0, userLongitude: 29.0);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -88,8 +88,8 @@ public class VendorsControllerTests
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor { Id = Guid.NewGuid(), Name = "Vendor A", IsActive = true, Type = VendorType.Restaurant },
-            new Vendor { Id = Guid.NewGuid(), Name = "Vendor B", IsActive = true, Type = VendorType.Market }
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor A", IsActive = true, Type = VendorType.Restaurant, Latitude = 41.0, Longitude = 29.0, DeliveryRadiusInKm = 50 },
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor B", IsActive = true, Type = VendorType.Market, Latitude = 41.01, Longitude = 29.01, DeliveryRadiusInKm = 50 }
         };
 
         var mockRepo = new Mock<IRepository<Vendor>>();
@@ -97,7 +97,7 @@ public class VendorsControllerTests
         _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
         // Act
-        var result = await _controller.GetVendors(vendorType: VendorType.Restaurant);
+        var result = await _controller.GetVendors(vendorType: VendorType.Restaurant, userLatitude: 41.0, userLongitude: 29.0);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -183,12 +183,14 @@ public class VendorsControllerTests
             new Vendor
             {
                 Id = Guid.NewGuid(), Name = "Pizza Place", IsActive = true, Address = "Pizza St",
-                Orders = new List<Order>()
+                Orders = new List<Order>(),
+                Latitude = 41.0, Longitude = 29.0, DeliveryRadiusInKm = 50
             },
             new Vendor
             {
                 Id = Guid.NewGuid(), Name = "Burger Joint", IsActive = true, Address = "Second St",
-                Orders = new List<Order>()
+                Orders = new List<Order>(),
+                Latitude = 41.01, Longitude = 29.01, DeliveryRadiusInKm = 50
             }
         };
 
@@ -196,7 +198,7 @@ public class VendorsControllerTests
         mockRepo.Setup(x => x.Query()).Returns(vendors.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockRepo.Object);
 
-        var request = new VendorSearchRequestDto { Query = "Pizza" };
+        var request = new VendorSearchRequestDto { Query = "Pizza", UserLatitude = 41.0, UserLongitude = 29.0 };
 
         // Act
         var result = await _controller.Search(request);
@@ -226,8 +228,8 @@ public class VendorsControllerTests
 
         // Mock CacheService to execute the factory
         _mockCacheService.Setup(x =>
-                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>>>>(), It.IsAny<int>()))
-            .Returns<string, Func<Task<List<string>>>, int>(async (key, factory, ttl) => await factory());
+                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>?>>>(), It.IsAny<int>()))
+            .Returns<string, Func<Task<List<string>?>>, int>(async (key, factory, ttl) => await factory());
 
         // Act
         var result = await _controller.GetCities();

@@ -10,12 +10,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// <summary>
 /// SQL Injection ve XSS testleri
 /// </summary>
-public class InjectionTests : IClassFixture<WebApplicationFactory<Program>>
+public class InjectionTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public InjectionTests(WebApplicationFactory<Program> factory)
+    public InjectionTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

@@ -43,11 +43,11 @@ public class ContentControllerTests
 
         // Setup CacheService to return fixed object for testing
         _mockCacheService
-            .Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<object>>>(), It.IsAny<int>()))
-            .Returns((string k, Func<Task<object>> f, int t) =>
+            .Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<object?>>>(), It.IsAny<int>()))
+            .Returns((string k, Func<Task<object?>> f, int t) =>
             {
-                if (k.Contains("non-existent")) return Task.FromResult<object>(null!);
-                return Task.FromResult((object)new { Type = "terms-of-use", LanguageCode = "en", Title = "Title", Content = "Content", LastUpdated = DateTime.Now });
+                if (k.Contains("non-existent")) return Task.FromResult<object?>(null);
+                return Task.FromResult<object?>((object)new { Type = "terms-of-use", LanguageCode = "en", Title = "Title", Content = "Content", LastUpdated = DateTime.Now });
             });
 
         // Generic version setup if needed (GetOrSetAsync is generic usually? In the code it looked like it returns object for single doc but List<string> for types)
@@ -56,8 +56,8 @@ public class ContentControllerTests
         // So I should mock the generic generic method if ICacheService has one method with generic.
         // Let's assume generic.
         _mockCacheService
-            .Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>>>>(), It.IsAny<int>()))
-            .Returns<string, Func<Task<List<string>>>, int>((k, f, t) => f());
+            .Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<string>?>>>(), It.IsAny<int>()))
+            .Returns<string, Func<Task<List<string>?>>, int>((k, f, t) => f());
 
         var logger = ControllerTestHelpers.CreateMockLogger<ContentController>();
 

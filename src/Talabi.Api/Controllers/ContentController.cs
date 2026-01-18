@@ -51,7 +51,7 @@ public class ContentController : BaseController
         var cacheKey = $"{_cacheOptions.LegalDocumentsKeyPrefix}_{type}_{languageCode}";
 
         // Cache-aside pattern: Önce cache'den kontrol et
-        var documentDto = await _cacheService.GetOrSetAsync(
+        object? documentDto = await _cacheService.GetOrSetAsync<object>(
             cacheKey,
             async () =>
             {
@@ -117,7 +117,7 @@ public class ContentController : BaseController
                     .ToListAsync();
             },
             _cacheOptions.LegalDocumentsCacheTTLMinutes
-        );
+        ) ?? new List<string>();
 
         return Ok(new ApiResponse<List<string>>(
             types,

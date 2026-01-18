@@ -366,11 +366,11 @@ public class ReportsController : BaseController
             Items = o.OrderItems.Select(i => new VendorOrderItemDto
             {
                 ProductId = i.ProductId,
-                ProductName = i.Product.Name,
+                ProductName = i.Product?.Name ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 TotalPrice = i.UnitPrice * i.Quantity,
-                ProductImageUrl = i.Product.ImageUrl
+                ProductImageUrl = i.Product?.ImageUrl
             }).ToList()
         }).ToList();
 

@@ -59,6 +59,11 @@ public class CartControllerTests
         mockCartRepo.Setup(x => x.Query()).Returns(mockQueryable);
         _mockUnitOfWork.Setup(x => x.Carts).Returns(mockCartRepo.Object);
 
+        // CartController always queries default address for location checks
+        var mockAddressRepo = new Mock<IRepository<UserAddress>>();
+        mockAddressRepo.Setup(x => x.Query()).Returns(new List<UserAddress>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
+
         // Act
         var result = await _controller.GetCart();
 
@@ -68,8 +73,8 @@ public class CartControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<CartDto>>().Subject;
 
         apiResponse.Data.Should().NotBeNull();
-        apiResponse.Data.Items.Should().BeEmpty();
-        apiResponse.Data.UserId.Should().Be(userId);
+        apiResponse.Data!.Items.Should().BeEmpty();
+        apiResponse.Data!.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -109,9 +114,14 @@ public class CartControllerTests
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
 
-        // Product not found
-        _mockUnitOfWork.Setup(x => x.Products.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Product?)null);
+        // Product not found (CartController uses Products.Query)
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(new List<Product>().AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        // Vendor lookup (CartController may call Vendors.GetByIdAsync)
+        _mockUnitOfWork.Setup(x => x.Vendors.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Vendor?)null);
 
         var dto = new AddToCartDto { ProductId = Guid.NewGuid(), Quantity = 1 };
 
@@ -137,10 +147,15 @@ public class CartControllerTests
         mockAddressRepo.Setup(x => x.Query()).Returns(addresses.BuildMock());
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
 
-        // Product exists
-        var product = new Product { Id = Guid.NewGuid(), Name = "Test Product" };
-        _mockUnitOfWork.Setup(x => x.Products.GetByIdAsync(product.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(product);
+        // Product exists (CartController uses Products.Query)
+        var product = new Product { Id = Guid.NewGuid(), Name = "Test Product", VendorId = Guid.NewGuid() };
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(new List<Product> { product }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        // Vendor lookup (not used unless default address has lat/lon)
+        _mockUnitOfWork.Setup(x => x.Vendors.GetByIdAsync(product.VendorId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Vendor { Id = product.VendorId, IsActive = true });
 
         // Cart exists but empty
         var cart = new Cart { Id = Guid.NewGuid(), UserId = userId };
@@ -184,9 +199,13 @@ public class CartControllerTests
         _mockUnitOfWork.Setup(x => x.UserAddresses).Returns(mockAddressRepo.Object);
 
         var productId = Guid.NewGuid();
-        var product = new Product { Id = productId, Name = "Test Product" };
-        _mockUnitOfWork.Setup(x => x.Products.GetByIdAsync(productId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(product);
+        var product = new Product { Id = productId, Name = "Test Product", VendorId = Guid.NewGuid() };
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(new List<Product> { product }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        _mockUnitOfWork.Setup(x => x.Vendors.GetByIdAsync(product.VendorId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Vendor { Id = product.VendorId, IsActive = true });
 
         var cart = new Cart { Id = Guid.NewGuid(), UserId = userId };
         var mockCartRepo = new Mock<IRepository<Cart>>();

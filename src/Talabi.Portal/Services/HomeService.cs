@@ -173,11 +173,15 @@ public class HomeService : IHomeService
             // Assuming we can access OrderItems directly via UnitOfWork.
             var categoryData = await _unitOfWork.OrderItems.Query()
                 .Include(oi => oi.Product)
-                .ThenInclude(p => p.ProductCategory)
+                .ThenInclude(p => p!.ProductCategory)
                 .Include(oi => oi.Order)
-                .Where(oi => oi.Order.VendorId == vendor.Id &&
+                .Where(oi => oi.Order != null &&
+                             oi.Order.VendorId == vendor.Id &&
                              oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered)
-                .GroupBy(oi => oi.Product.ProductCategory != null ? oi.Product.ProductCategory.Name : "Uncategorized")
+                .GroupBy(oi =>
+                    oi.Product != null && oi.Product.ProductCategory != null
+                        ? oi.Product.ProductCategory.Name
+                        : "Uncategorized")
                 .Select(g => new
                 {
                     CategoryName = g.Key,
@@ -199,9 +203,11 @@ public class HomeService : IHomeService
             var topProductsData = await _unitOfWork.OrderItems.Query()
                 .Include(oi => oi.Product)
                 .Include(oi => oi.Order)
-                .Where(oi => oi.Order.VendorId == vendor.Id &&
-                             oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered)
-                .GroupBy(oi => new { oi.Product.Name, oi.Product.ImageUrl })
+                .Where(oi => oi.Order != null &&
+                             oi.Order.VendorId == vendor.Id &&
+                             oi.Order.Status == Talabi.Core.Enums.OrderStatus.Delivered &&
+                             oi.Product != null)
+                .GroupBy(oi => new { oi.Product!.Name, oi.Product.ImageUrl })
                 .Select(g => new
                 {
                     ProductName = g.Key.Name,

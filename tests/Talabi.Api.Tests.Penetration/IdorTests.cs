@@ -10,12 +10,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// <summary>
 /// IDOR (Insecure Direct Object Reference) testleri
 /// </summary>
-public class IdorTests : IClassFixture<WebApplicationFactory<Program>>
+public class IdorTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public IdorTests(WebApplicationFactory<Program> factory)
+    public IdorTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

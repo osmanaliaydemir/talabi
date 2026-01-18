@@ -37,6 +37,7 @@ public class AuthControllerTests
         _mockEmailSender = new Mock<IEmailSender>();
         var mockTokenVerifier = new Mock<IExternalAuthTokenVerifier>();
         var mockVerificationSecurity = new Mock<IVerificationCodeSecurityService>();
+        var mockNotificationService = new Mock<INotificationService>();
         var logger = ControllerTestHelpers.CreateMockLogger<AuthController>();
 
         _controller = new AuthController(
@@ -46,6 +47,7 @@ public class AuthControllerTests
             _mockEmailSender.Object,
             mockTokenVerifier.Object,
             mockVerificationSecurity.Object,
+            mockNotificationService.Object,
             mockUnitOfWork.Object,
             logger,
             mockLocalizationService.Object,

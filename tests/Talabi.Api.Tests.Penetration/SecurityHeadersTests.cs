@@ -9,12 +9,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// Security Headers testleri
 /// SecurityHeadersMiddleware'in doğru header'ları eklediğini doğrular
 /// </summary>
-public class SecurityHeadersTests : IClassFixture<WebApplicationFactory<Program>>
+public class SecurityHeadersTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public SecurityHeadersTests(WebApplicationFactory<Program> factory)
+    public SecurityHeadersTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

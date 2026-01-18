@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using MockQueryable;
 using MockQueryable.Moq;
 using Moq;
-using Talabi.Api.Controllers;
+using Talabi.Api.Controllers.Vendors;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
@@ -22,16 +22,16 @@ public class VendorProductsControllerTests
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
-    private readonly VendorProductsController _controller;
+    private readonly ProductsController _controller;
 
     public VendorProductsControllerTests()
     {
         _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
-        var logger = ControllerTestHelpers.CreateMockLogger<VendorProductsController>();
+        var logger = ControllerTestHelpers.CreateMockLogger<ProductsController>();
 
-        _controller = new VendorProductsController(
+        _controller = new ProductsController(
             _mockUnitOfWork.Object,
             logger,
             _mockLocalizationService.Object,

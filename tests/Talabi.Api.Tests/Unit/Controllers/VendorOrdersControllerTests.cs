@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using MockQueryable;
 using MockQueryable.Moq;
 using Moq;
-using Talabi.Api.Controllers;
+using Talabi.Api.Controllers.Vendors;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
@@ -30,7 +30,7 @@ public class VendorOrdersControllerTests
     private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
-    private readonly VendorOrdersController _controller;
+    private readonly OrdersController _controller;
 
     public VendorOrdersControllerTests()
     {
@@ -46,9 +46,9 @@ public class VendorOrdersControllerTests
         mockClients.Setup(x => x.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
         _mockHubContext.Setup(x => x.Clients).Returns(mockClients.Object);
 
-        var logger = ControllerTestHelpers.CreateMockLogger<VendorOrdersController>();
+        var logger = ControllerTestHelpers.CreateMockLogger<OrdersController>();
 
-        _controller = new VendorOrdersController(
+        _controller = new OrdersController(
             _mockUnitOfWork.Object,
             logger,
             _mockLocalizationService.Object,
@@ -90,7 +90,7 @@ public class VendorOrdersControllerTests
             .Returns(new List<VendorOrderItemDto>());
 
         // Act
-        var result = await _controller.GetVendorOrders();
+        var result = await _controller.GetOrders();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -123,7 +123,7 @@ public class VendorOrdersControllerTests
         _mockUnitOfWork.Setup(x => x.Orders).Returns(mockRepo.Object);
 
         // Act
-        var result = await _controller.GetVendorOrder(orderId);
+        var result = await _controller.GetOrder(orderId);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -214,7 +214,7 @@ public class VendorOrdersControllerTests
         mockCustomerRepo.Setup(x => x.Query()).Returns(new List<Customer>().AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Customers).Returns(mockCustomerRepo.Object);
 
-        var rejectDto = new RejectOrderDto { Reason = "Out of stock - sorry" }; // > 10 chars
+        var rejectDto = new Talabi.Api.Controllers.Vendors.RejectOrderDto { Reason = "Out of stock - sorry" }; // > 10 chars
 
         // Act
         var result = await _controller.RejectOrder(orderId, rejectDto);

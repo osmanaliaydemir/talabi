@@ -4,8 +4,8 @@ namespace Talabi.Core.Entities;
 
 public class Wallet : BaseEntity
 {
-    public string AppUserId { get; set; }
-    public AppUser AppUser { get; set; }
+    public string AppUserId { get; set; } = null!;
+    public AppUser AppUser { get; set; } = null!;
 
     public decimal Balance { get; set; }
     public string Currency { get; set; } = "TRY";

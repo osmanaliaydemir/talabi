@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MockQueryable.Moq;
 using Moq;
-using Talabi.Api.Controllers;
+using Talabi.Api.Controllers.Couriers;
+using CourierOrdersController = Talabi.Api.Controllers.Couriers.OrdersController;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Courier;
@@ -30,7 +30,14 @@ public class CourierControllerTests
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
-    private readonly CourierController _controller;
+    private readonly Mock<IOrderAssignmentService> _mockAssignmentService;
+    private readonly Mock<IRepository<SystemSetting>> _mockSystemSettingRepo;
+    private readonly Mock<IRepository<WalletTransaction>> _mockWalletTransactionRepo;
+
+    private readonly AccountController _accountController;
+    private readonly StatisticsController _statisticsController;
+    private readonly CourierOrdersController _ordersController;
+    private readonly Talabi.Api.Controllers.AdminCourierController _adminCourierController;
 
     public CourierControllerTests()
     {
@@ -39,21 +46,66 @@ public class CourierControllerTests
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockMapper = new Mock<IMapper>();
         _mockHubContext = new Mock<IHubContext<NotificationHub>>();
+        _mockAssignmentService = new Mock<IOrderAssignmentService>();
+        _mockSystemSettingRepo = new Mock<IRepository<SystemSetting>>();
+        _mockWalletTransactionRepo = new Mock<IRepository<WalletTransaction>>();
 
         var userStore = new Mock<IUserStore<AppUser>>();
         _mockUserManager =
             new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        var logger = ControllerTestHelpers.CreateMockLogger<CourierController>();
+        var accountLogger = ControllerTestHelpers.CreateMockLogger<AccountController>();
+        var statisticsLogger = ControllerTestHelpers.CreateMockLogger<StatisticsController>();
+        var ordersLogger = ControllerTestHelpers.CreateMockLogger<CourierOrdersController>();
+        var adminLogger = ControllerTestHelpers.CreateMockLogger<Talabi.Api.Controllers.AdminCourierController>();
 
-        _controller = new CourierController(
+        // Default: empty queries for enrichment dependencies
+        _mockSystemSettingRepo.Setup(x => x.Query()).Returns(new List<SystemSetting>().AsQueryable().BuildMock());
+        _mockWalletTransactionRepo.Setup(x => x.Query()).Returns(new List<WalletTransaction>().AsQueryable().BuildMock());
+
+        _accountController = new AccountController(
             _mockUnitOfWork.Object,
             _mockUserManager.Object,
-            logger,
+            accountLogger,
             _mockLocalizationService.Object,
             _mockUserContextService.Object,
             _mockMapper.Object,
             _mockHubContext.Object
+        )
+        {
+            ControllerContext = ControllerTestHelpers.CreateControllerContext()
+        };
+
+        _statisticsController = new StatisticsController(
+            _mockUnitOfWork.Object,
+            statisticsLogger,
+            _mockLocalizationService.Object,
+            _mockUserContextService.Object
+        )
+        {
+            ControllerContext = ControllerTestHelpers.CreateControllerContext()
+        };
+
+        _ordersController = new CourierOrdersController(
+            _mockUnitOfWork.Object,
+            ordersLogger,
+            _mockLocalizationService.Object,
+            _mockUserContextService.Object,
+            _mockMapper.Object,
+            _mockAssignmentService.Object,
+            _mockSystemSettingRepo.Object,
+            _mockWalletTransactionRepo.Object
+        )
+        {
+            ControllerContext = ControllerTestHelpers.CreateControllerContext()
+        };
+
+        _adminCourierController = new Talabi.Api.Controllers.AdminCourierController(
+            _mockUnitOfWork.Object,
+            adminLogger,
+            _mockLocalizationService.Object,
+            _mockUserContextService.Object,
+            _mockAssignmentService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -82,7 +134,7 @@ public class CourierControllerTests
             .Returns(new CourierProfileDto { Name = "Test Courier" });
 
         // Act
-        var result = await _controller.GetProfile();
+        var result = await _accountController.GetProfile();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -153,7 +205,7 @@ public class CourierControllerTests
         var dto = new UpdateCourierStatusDto { Status = "Available" };
 
         // Act
-        var result = await _controller.UpdateStatus(dto);
+        var result = await _accountController.UpdateStatus(dto);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
@@ -185,7 +237,7 @@ public class CourierControllerTests
         var dto = new UpdateCourierStatusDto { Status = "Offline" };
 
         // Act
-        var result = await _controller.UpdateStatus(dto);
+        var result = await _accountController.UpdateStatus(dto);
 
         // Assert
         var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -214,7 +266,7 @@ public class CourierControllerTests
         var dto = new Talabi.Core.DTOs.Courier.UpdateCourierLocationDto { Latitude = 41.0, Longitude = 29.0 };
 
         // Act
-        var result = await _controller.UpdateLocation(dto);
+        var result = await _accountController.UpdateLocation(dto);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
@@ -268,7 +320,7 @@ public class CourierControllerTests
         _mockUnitOfWork.Setup(x => x.OrderCouriers).Returns(mockOCRepo.Object);
 
         // Act
-        var result = await _controller.GetStatistics();
+        var result = await _statisticsController.GetStatistics();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -303,7 +355,7 @@ public class CourierControllerTests
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
         // Act
-        var result = await _controller.CheckAvailability();
+        var result = await _accountController.CheckAvailability();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -316,39 +368,46 @@ public class CourierControllerTests
     }
 
     [Fact]
-    public async Task GetActiveCouriers_ReturnsOnlyActiveCouriersWithLocation()
+    public async Task AdminGetCouriers_WhenFilteredByIsActive_ReturnsOnlyActiveCouriers()
     {
         // Arrange
         var couriers = new List<Courier>
         {
             new Courier
             {
-                Id = Guid.NewGuid(), IsActive = true, CurrentLatitude = 1, CurrentLongitude = 1, Name = "Active"
+                Id = Guid.NewGuid(),
+                UserId = "u1",
+                Name = "Active",
+                IsActive = true,
+                Status = CourierStatus.Available,
+                CurrentLatitude = 41.0,
+                CurrentLongitude = 29.0
             },
             new Courier
             {
-                Id = Guid.NewGuid(), IsActive = false, CurrentLatitude = 2, CurrentLongitude = 2, Name = "Inactive"
-            },
-            new Courier { Id = Guid.NewGuid(), IsActive = true, Name = "NoLocation" } // missing lat/long
+                Id = Guid.NewGuid(),
+                UserId = "u2",
+                Name = "Inactive",
+                IsActive = false,
+                Status = CourierStatus.Offline,
+                CurrentLatitude = 41.1,
+                CurrentLongitude = 29.1
+            }
         };
 
         var mockRepo = new Mock<IRepository<Courier>>();
         mockRepo.Setup(x => x.Query()).Returns(couriers.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
-        _mockMapper.Setup(x => x.Map<Talabi.Core.DTOs.CourierLocationDto>(It.IsAny<Courier>()))
-            .Returns((Courier c) => new Talabi.Core.DTOs.CourierLocationDto { CourierName = c.Name });
-
         // Act
-        var result = await _controller.GetActiveCouriers();
+        var result = await _adminCourierController.GetCouriers(status: null, isActive: true);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<Talabi.Core.DTOs.CourierLocationDto>>>()
-            .Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<CourierProfileDto>>>().Subject;
 
         apiResponse.Data!.Should().HaveCount(1);
-        apiResponse.Data!.First().CourierName.Should().Be("Active");
+        apiResponse.Data!.First().Name.Should().Be("Active");
     }
 
     [Fact]
@@ -365,15 +424,14 @@ public class CourierControllerTests
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
         var orders = new List<Order> { new Order { Id = Guid.NewGuid() } };
-        var mockAssignmentService = new Mock<IOrderAssignmentService>();
-        mockAssignmentService.Setup(x => x.GetActiveOrdersForCourierAsync(courierId))
+        _mockAssignmentService.Setup(x => x.GetActiveOrdersForCourierAsync(courierId))
             .ReturnsAsync(orders);
 
         _mockMapper.Setup(x => x.Map<CourierOrderDto>(It.IsAny<Order>()))
             .Returns(new CourierOrderDto { Id = orders[0].Id });
 
         // Act
-        var result = await _controller.GetActiveOrders(mockAssignmentService.Object);
+        var result = await _ordersController.GetActiveOrders();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -395,11 +453,10 @@ public class CourierControllerTests
         mockRepo.Setup(x => x.Query()).Returns(new List<Courier> { courier }.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
-        var mockAssignmentService = new Mock<IOrderAssignmentService>();
-        mockAssignmentService.Setup(x => x.AcceptOrderAsync(orderId, courierId)).ReturnsAsync(true);
+        _mockAssignmentService.Setup(x => x.AcceptOrderAsync(orderId, courierId)).ReturnsAsync(true);
 
         // Act
-        var result = await _controller.AcceptOrder(orderId, mockAssignmentService.Object);
+        var result = await _ordersController.AcceptOrder(orderId);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
@@ -419,13 +476,12 @@ public class CourierControllerTests
         mockRepo.Setup(x => x.Query()).Returns(new List<Courier> { courier }.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
-        var mockAssignmentService = new Mock<IOrderAssignmentService>();
-        mockAssignmentService.Setup(x => x.RejectOrderAsync(orderId, courierId, It.IsAny<string>())).ReturnsAsync(true);
+        _mockAssignmentService.Setup(x => x.RejectOrderAsync(orderId, courierId, It.IsAny<string>())).ReturnsAsync(true);
 
         var dto = new Talabi.Core.DTOs.Courier.RejectOrderDto { Reason = "Traffic is too heavy right now" };
 
         // Act
-        var result = await _controller.RejectOrder(orderId, dto, mockAssignmentService.Object);
+        var result = await _ordersController.RejectOrder(orderId, dto);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
@@ -445,11 +501,10 @@ public class CourierControllerTests
         mockRepo.Setup(x => x.Query()).Returns(new List<Courier> { courier }.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
-        var mockAssignmentService = new Mock<IOrderAssignmentService>();
-        mockAssignmentService.Setup(x => x.PickUpOrderAsync(orderId, courierId)).ReturnsAsync(true);
+        _mockAssignmentService.Setup(x => x.PickUpOrderAsync(orderId, courierId)).ReturnsAsync(true);
 
         // Act
-        var result = await _controller.PickUpOrder(orderId, mockAssignmentService.Object);
+        var result = await _ordersController.PickUpOrder(orderId);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();
@@ -469,11 +524,10 @@ public class CourierControllerTests
         mockRepo.Setup(x => x.Query()).Returns(new List<Courier> { courier }.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.Couriers).Returns(mockRepo.Object);
 
-        var mockAssignmentService = new Mock<IOrderAssignmentService>();
-        mockAssignmentService.Setup(x => x.DeliverOrderAsync(orderId, courierId)).ReturnsAsync(true);
+        _mockAssignmentService.Setup(x => x.DeliverOrderAsync(orderId, courierId)).ReturnsAsync(true);
 
         // Act
-        var result = await _controller.DeliverOrder(orderId, mockAssignmentService.Object);
+        var result = await _ordersController.DeliverOrder(orderId);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();

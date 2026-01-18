@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MockQueryable.Moq;
 using Moq;
-using Talabi.Api.Controllers;
+using Talabi.Api.Controllers.Vendors;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
 using Talabi.Core.Entities;
@@ -23,19 +23,19 @@ public class VendorNotificationsControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
-    private readonly VendorNotificationsController _controller;
+    private readonly NotificationsController _controller;
 
     public VendorNotificationsControllerTests()
     {
         _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
-        var logger = ControllerTestHelpers.CreateMockLogger<VendorNotificationsController>();
+        var logger = ControllerTestHelpers.CreateMockLogger<NotificationsController>();
 
         var store = new Mock<IUserStore<AppUser>>();
         _mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        _controller = new VendorNotificationsController(
+        _controller = new NotificationsController(
             _mockUnitOfWork.Object,
             logger,
             _mockLocalizationService.Object,

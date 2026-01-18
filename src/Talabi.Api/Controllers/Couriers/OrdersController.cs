@@ -83,7 +83,7 @@ public class OrdersController : BaseController
         // If there is a WalletTransaction of type Payment for this order, it's Online. Otherwise Cash.
         var orderIds = dtos.Select(d => d.Id.ToString()).ToList();
         var paymentTransactions = await _walletTransactionRepository.Query()
-            .Where(t => orderIds.Contains(t.ReferenceId) && t.TransactionType == TransactionType.Payment)
+            .Where(t => t.ReferenceId != null && orderIds.Contains(t.ReferenceId) && t.TransactionType == TransactionType.Payment)
             .Select(t => t.ReferenceId)
             .ToListAsync();
 

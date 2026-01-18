@@ -141,7 +141,7 @@ public class OrderService : IOrderService
                 .Include(o => o.StatusHistory)
                 .Include(o => o.OrderCouriers)
                 .ThenInclude(oc => oc.Courier)
-                .ThenInclude(c => c.User)
+                .ThenInclude(c => c!.User)
                 .FirstOrDefaultAsync(o => o.Id == id && o.VendorId == vendorId.Value, ct);
 
             if (order == null) return null;

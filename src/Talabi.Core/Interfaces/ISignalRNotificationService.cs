@@ -4,6 +4,6 @@ namespace Talabi.Core.Interfaces
 {
     public interface ISignalRNotificationService : INotificationService
     {
-        Task SendOrderAssignmentNotificationAsync(string userId, Guid orderId, string? languageCode = null);
+        // Marker interface for SignalR-based notification delivery
     }
 }

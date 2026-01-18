@@ -42,8 +42,8 @@ public class BannersControllerTests
 
         // Setup CacheService to execute the factory
         _mockCacheService
-            .Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<PromotionalBannerDto>>>>(), It.IsAny<int>()))
-            .Returns<string, Func<Task<List<PromotionalBannerDto>>>, int>((k, f, t) => f());
+            .Setup(x => x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<PromotionalBannerDto>?>>>(), It.IsAny<int>()))
+            .Returns<string, Func<Task<List<PromotionalBannerDto>?>>, int>((k, f, t) => f());
 
         var logger = ControllerTestHelpers.CreateMockLogger<BannersController>();
 
@@ -96,8 +96,9 @@ public class BannersControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<List<PromotionalBannerDto>>>().Subject;
 
         apiResponse.Success.Should().BeTrue();
-        apiResponse.Data.Should().HaveCount(1);
-        apiResponse.Data.First().Title.Should().Be("Banner 1");
+        apiResponse.Data.Should().NotBeNull();
+        apiResponse.Data!.Should().HaveCount(1);
+        apiResponse.Data!.First().Title.Should().Be("Banner 1");
     }
 
     [Fact]
@@ -127,7 +128,8 @@ public class BannersControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<PromotionalBannerDto>>().Subject;
 
         apiResponse.Success.Should().BeTrue();
-        apiResponse.Data.Id.Should().Be(id);
+        apiResponse.Data.Should().NotBeNull();
+        apiResponse.Data!.Id.Should().Be(id);
     }
 
     [Fact]

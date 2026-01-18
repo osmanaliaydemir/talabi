@@ -49,7 +49,7 @@ public class DeliveryZoneService : IDeliveryZoneService
         if (vendorId == null) return new List<VendorDeliveryZoneDto>();
 
         var zones = await _dbContext.VendorDeliveryZones
-            .Include(z => z.District).ThenInclude(d => d.City)
+            .Include(z => z.District).ThenInclude(d => d!.City)
             .Include(z => z.Locality)
             .Where(z => z.VendorId == vendorId.Value && z.IsActive)
             .ToListAsync(ct);
@@ -103,7 +103,7 @@ public class DeliveryZoneService : IDeliveryZoneService
 
         var existingZoneLocalityIds = await _dbContext.VendorDeliveryZones
             .Where(z => z.VendorId == vendorId.Value && z.IsActive && z.LocalityId.HasValue)
-            .Select(z => z.LocalityId.Value)
+            .Select(z => z.LocalityId.GetValueOrDefault())
             .ToListAsync(ct);
 
         var newZones = new List<VendorDeliveryZone>();

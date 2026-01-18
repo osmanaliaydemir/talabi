@@ -52,7 +52,7 @@ public class CourierService : ICourierService
             {
                 Id = c.Id.ToString(),
                 Name = c.Name,
-                Email = c.User != null ? c.User.Email : null,
+                Email = c.User != null ? (c.User.Email ?? string.Empty) : string.Empty,
                 PhoneNumber = c.PhoneNumber,
                 VehicleType = c.VehicleType.ToString(),
                 IsActive = c.IsActive,
@@ -85,7 +85,7 @@ public class CourierService : ICourierService
         {
             Id = courier.Id.ToString(),
             Name = courier.Name,
-            Email = courier.User?.Email,
+            Email = courier.User?.Email ?? string.Empty,
             PhoneNumber = courier.PhoneNumber,
             VehicleType = courier.VehicleType.ToString(),
             IsActive = courier.IsActive,

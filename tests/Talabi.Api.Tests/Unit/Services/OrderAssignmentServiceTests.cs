@@ -21,6 +21,7 @@ public class OrderAssignmentServiceTests
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         var mockLogger = new Mock<ILogger<OrderAssignmentService>>();
         var mockNotificationService = new Mock<INotificationService>();
+        var mockSignalRNotificationService = new Mock<ISignalRNotificationService>();
         var mockLocalizationService = new Mock<ILocalizationService>();
         var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
         var mockWalletService = new Mock<IWalletService>();
@@ -30,6 +31,7 @@ public class OrderAssignmentServiceTests
             _mockUnitOfWork.Object,
             mockLogger.Object,
             mockNotificationService.Object,
+            mockSignalRNotificationService.Object,
             mockLocalizationService.Object,
             mockHttpContextAccessor.Object,
             mockWalletService.Object,

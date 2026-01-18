@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MockQueryable.Moq;
 using Moq;
-using Talabi.Api.Controllers;
+using Talabi.Api.Controllers.Couriers;
 using Talabi.Api.Tests.Helpers;
 using Talabi.Core.DTOs;
 using Talabi.Core.DTOs.Courier;
@@ -23,7 +23,7 @@ public class CourierNotificationsControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
-    private readonly CourierNotificationsController _controller;
+    private readonly NotificationsController _controller;
 
     public CourierNotificationsControllerTests()
     {
@@ -34,9 +34,9 @@ public class CourierNotificationsControllerTests
         var userStore = new Mock<IUserStore<AppUser>>();
         _mockUserManager = new Mock<UserManager<AppUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        var logger = ControllerTestHelpers.CreateMockLogger<CourierNotificationsController>();
+        var logger = ControllerTestHelpers.CreateMockLogger<NotificationsController>();
 
-        _controller = new CourierNotificationsController(
+        _controller = new NotificationsController(
             _mockUnitOfWork.Object,
             _mockUserManager.Object,
             logger,

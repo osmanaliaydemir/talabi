@@ -202,24 +202,31 @@ public class ProductsControllerTests
         {
             Query = "Test",
             Page = 1,
-            PageSize = 10
+            PageSize = 10,
+            UserLatitude = 41.0,
+            UserLongitude = 29.0
         };
 
+        var vendorInRadius = new Vendor { Id = Guid.NewGuid(), IsActive = true, Latitude = 41.0, Longitude = 29.0, DeliveryRadiusInKm = 50 };
         var products = new List<Product>
         {
             new Product
             {
-                Id = Guid.NewGuid(), Name = "Test Product 1", Price = 10, Vendor = new Vendor { IsActive = true }
+                Id = Guid.NewGuid(), Name = "Test Product 1", Price = 10, VendorId = vendorInRadius.Id, Vendor = vendorInRadius, IsAvailable = true
             },
             new Product
             {
-                Id = Guid.NewGuid(), Name = "Other Product", Price = 20, Vendor = new Vendor { IsActive = true }
+                Id = Guid.NewGuid(), Name = "Other Product", Price = 20, VendorId = vendorInRadius.Id, Vendor = vendorInRadius, IsAvailable = true
             }
         };
 
         var mockRepo = new Mock<IRepository<Product>>();
         mockRepo.Setup(x => x.Query()).Returns(products.BuildMock());
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockRepo.Object);
+
+        var mockVendorRepo = new Mock<IRepository<Vendor>>();
+        mockVendorRepo.Setup(x => x.Query()).Returns(new List<Vendor> { vendorInRadius }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockVendorRepo.Object);
 
         var mockOrderItemsRepo = new Mock<IRepository<OrderItem>>();
         mockOrderItemsRepo.Setup(x => x.Query()).Returns(new List<OrderItem>().AsQueryable().BuildMock());
@@ -244,23 +251,38 @@ public class ProductsControllerTests
     public async Task GetCategories_WhenCalled_ReturnsCategoriesFromCacheOrDb()
     {
         // Arrange
+        var vendorInRadius = new Vendor { Id = Guid.NewGuid(), IsActive = true, Latitude = 41.0, Longitude = 29.0, DeliveryRadiusInKm = 50 };
+        var categoryId = Guid.NewGuid();
         var categories = new List<Category>
         {
-            new Category { Id = Guid.NewGuid(), Name = "Electronics", DisplayOrder = 1 }
+            new Category { Id = categoryId, Name = "Electronics", DisplayOrder = 1, Translations = new List<CategoryTranslation>() }
         };
 
         var mockRepo = new Mock<IRepository<Category>>();
         mockRepo.Setup(x => x.Query()).Returns(categories.BuildMock());
         _mockUnitOfWork.Setup(x => x.Categories).Returns(mockRepo.Object);
 
+        // Categories endpoint depends on products-in-radius and vendor-in-radius
+        var mockVendorRepo = new Mock<IRepository<Vendor>>();
+        mockVendorRepo.Setup(x => x.Query()).Returns(new List<Vendor> { vendorInRadius }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockVendorRepo.Object);
+
+        var products = new List<Product>
+        {
+            new Product { Id = Guid.NewGuid(), VendorId = vendorInRadius.Id, IsAvailable = true, CategoryId = categoryId }
+        };
+        var mockProductRepo = new Mock<IRepository<Product>>();
+        mockProductRepo.Setup(x => x.Query()).Returns(products.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
         // Mock Cache to execute callback
         _mockCacheService.Setup(x =>
-                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<CategoryDto>>>>(),
+                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<CategoryDto>?>>>(),
                     It.IsAny<int>()))
-            .Returns<string, Func<Task<PagedResultDto<CategoryDto>>>, int>((key, func, ttl) => func());
+            .Returns<string, Func<Task<PagedResultDto<CategoryDto>?>>, int>((key, func, ttl) => func());
 
         // Act
-        var result = await _controller.GetCategories();
+        var result = await _controller.GetCategories(userLatitude: 41.0, userLongitude: 29.0);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -299,13 +321,18 @@ public class ProductsControllerTests
     public async Task GetPopularProducts_WhenCalled_ReturnsProductsOrderedBySales()
     {
         // Arrange
-        var prod1 = new Product { Id = Guid.NewGuid(), Name = "Popular", Vendor = new Vendor { IsActive = true } };
-        var prod2 = new Product { Id = Guid.NewGuid(), Name = "Unpopular", Vendor = new Vendor { IsActive = true } };
+        var vendorInRadius = new Vendor { Id = Guid.NewGuid(), IsActive = true, Latitude = 41.0, Longitude = 29.0, DeliveryRadiusInKm = 50 };
+        var prod1 = new Product { Id = Guid.NewGuid(), Name = "Popular", VendorId = vendorInRadius.Id, Vendor = vendorInRadius, IsAvailable = true };
+        var prod2 = new Product { Id = Guid.NewGuid(), Name = "Unpopular", VendorId = vendorInRadius.Id, Vendor = vendorInRadius, IsAvailable = true };
         var products = new List<Product> { prod1, prod2 };
 
         var mockProductRepo = new Mock<IRepository<Product>>();
         mockProductRepo.Setup(x => x.Query()).Returns(products.BuildMock());
         _mockUnitOfWork.Setup(x => x.Products).Returns(mockProductRepo.Object);
+
+        var mockVendorRepo = new Mock<IRepository<Vendor>>();
+        mockVendorRepo.Setup(x => x.Query()).Returns(new List<Vendor> { vendorInRadius }.AsQueryable().BuildMock());
+        _mockUnitOfWork.Setup(x => x.Vendors).Returns(mockVendorRepo.Object);
 
         // Mock OrderItems to simulate sales
         var orderItems = new List<OrderItem>
@@ -324,12 +351,12 @@ public class ProductsControllerTests
 
         // Mock Cache to execute callback
         _mockCacheService.Setup(x =>
-                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<ProductDto>>>>(),
+                x.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<PagedResultDto<ProductDto>?>>>(),
                     It.IsAny<int>()))
-            .Returns<string, Func<Task<PagedResultDto<ProductDto>>>, int>((key, func, ttl) => func());
+            .Returns<string, Func<Task<PagedResultDto<ProductDto>?>>, int>((key, func, ttl) => func());
 
         // Act
-        var result = await _controller.GetPopularProducts();
+        var result = await _controller.GetPopularProducts(userLatitude: 41.0, userLongitude: 29.0);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;

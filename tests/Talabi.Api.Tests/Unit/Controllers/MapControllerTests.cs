@@ -165,8 +165,8 @@ public class MapControllerTests
         // Arrange
         var vendors = new List<Vendor>
         {
-            new Vendor { Id = Guid.NewGuid(), Name = "Vendor 1", Latitude = 41.0082, Longitude = 28.9784 },
-            new Vendor { Id = Guid.NewGuid(), Name = "Vendor 2", Latitude = 41.0122, Longitude = 28.9764 }
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor 1", IsActive = true, Latitude = 41.0082, Longitude = 28.9784, DeliveryRadiusInKm = 50 },
+            new Vendor { Id = Guid.NewGuid(), Name = "Vendor 2", IsActive = true, Latitude = 41.0122, Longitude = 28.9764, DeliveryRadiusInKm = 50 }
         };
 
         var mockRepo = new Mock<IRepository<Vendor>>();
@@ -177,7 +177,7 @@ public class MapControllerTests
             .Returns((Vendor v) => new VendorMapDto { Id = v.Id, Name = v.Name, Latitude = v.Latitude ?? 0, Longitude = v.Longitude ?? 0 });
 
         // Act
-        var result = await _controller.GetVendorsForMap(null, null);
+        var result = await _controller.GetVendorsForMap(41.0, 29.0);
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -197,8 +197,9 @@ public class MapControllerTests
         // Vendor 1 is closer, Vendor 2 is farther (roughly)
         var vendors = new List<Vendor>
         {
-            new Vendor { Id = Guid.NewGuid(), Name = "Far Vendor", Latitude = 42.0000, Longitude = 29.0000 },
-            new Vendor { Id = Guid.NewGuid(), Name = "Near Vendor", Latitude = 41.0100, Longitude = 28.0100 }
+            // Ensure both vendors include the user within their own delivery radius
+            new Vendor { Id = Guid.NewGuid(), Name = "Far Vendor", IsActive = true, Latitude = 42.0000, Longitude = 29.0000, DeliveryRadiusInKm = 500 },
+            new Vendor { Id = Guid.NewGuid(), Name = "Near Vendor", IsActive = true, Latitude = 41.0100, Longitude = 28.0100, DeliveryRadiusInKm = 500 }
         };
 
         var mockRepo = new Mock<IRepository<Vendor>>();

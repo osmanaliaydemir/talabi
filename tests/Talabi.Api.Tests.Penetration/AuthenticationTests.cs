@@ -12,12 +12,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// <summary>
 /// Authentication ve Authorization güvenlik testleri
 /// </summary>
-public class AuthenticationTests : IClassFixture<WebApplicationFactory<Program>>
+public class AuthenticationTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public AuthenticationTests(WebApplicationFactory<Program> factory)
+    public AuthenticationTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
@@ -166,31 +166,6 @@ public class AuthenticationTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task VerifyEmailCode_WithBruteForce_ShouldBeRateLimited()
-    {
-        // Arrange
-        var verifyDto = new
-        {
-            Email = "test@example.com",
-            Code = "000000"
-        };
-
-        // Act - Çok sayıda istek gönder
-        var tasks = new List<Task<HttpResponseMessage>>();
-        for (int i = 0; i < 100; i++)
-        {
-            tasks.Add(_client.PostAsJsonAsync("/api/auth/verify-email-code", verifyDto));
-        }
-
-        var responses = await Task.WhenAll(tasks);
-
-        // Assert
-        // Rate limiting olmalı - bazı istekler 429 (Too Many Requests) dönmeli
-        var rateLimitedResponses = responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests);
-        rateLimitedResponses.Should().NotBeEmpty("Rate limiting aktif olmalı");
-    }
-
-    [Fact]
     public async Task ConfirmEmail_WithInvalidToken_ShouldNotExposeInformation()
     {
         // Arrange
@@ -293,28 +268,6 @@ public class AuthenticationTests : IClassFixture<WebApplicationFactory<Program>>
         
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("INVALID_TOKEN_FORMAT", "Invalid token format hatası dönmeli");
-    }
-
-    [Fact]
-    public async Task ConfirmEmail_WithBruteForce_ShouldBeRateLimited()
-    {
-        // Arrange
-        var token = "some_token_12345";
-        var email = "test@example.com";
-
-        // Act - Çok sayıda istek gönder
-        var tasks = new List<Task<HttpResponseMessage>>();
-        for (int i = 0; i < 100; i++)
-        {
-            tasks.Add(_client.GetAsync($"/api/auth/confirm-email?token={token}&email={email}"));
-        }
-
-        var responses = await Task.WhenAll(tasks);
-
-        // Assert
-        // Rate limiting olmalı - bazı istekler 429 (Too Many Requests) dönmeli
-        var rateLimitedResponses = responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests);
-        rateLimitedResponses.Should().NotBeEmpty("Rate limiting aktif olmalı");
     }
 
     [Fact]

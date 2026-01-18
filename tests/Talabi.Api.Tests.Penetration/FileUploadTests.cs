@@ -10,12 +10,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// <summary>
 /// File Upload güvenlik testleri
 /// </summary>
-public class FileUploadTests : IClassFixture<WebApplicationFactory<Program>>
+public class FileUploadTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public FileUploadTests(WebApplicationFactory<Program> factory)
+    public FileUploadTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

@@ -102,7 +102,7 @@ public class BannersController : BaseController
                 }).ToList();
             },
             _cacheOptions.BannersCacheTTLMinutes
-        );
+        ) ?? new List<PromotionalBannerDto>();
 
         return Ok(new ApiResponse<List<PromotionalBannerDto>>(result, LocalizationService.GetLocalizedString(ResourceName, "BannersRetrievedSuccessfully", CurrentCulture)));
     }

@@ -97,7 +97,8 @@ namespace Talabi.Infrastructure.Services
             var culture = new CultureInfo("tr");
             var title = _resourceManager.GetString("NewProductTitle", culture) ?? "New Product Added! 🎉";
             var bodyTemplate = _resourceManager.GetString("NewProductBody", culture) ?? "{0} added a new product: {1}";
-            var body = string.Format(bodyTemplate, product.Vendor.Name, product.Name);
+            var vendorName = product.Vendor?.Name ?? "Vendor";
+            var body = string.Format(bodyTemplate, vendorName, product.Name);
 
             await _notificationService.SendNotificationAsync("/topics/all_users", // Topic subscription required on mobile
                 title, body,

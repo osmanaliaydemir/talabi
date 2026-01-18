@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Talabi.Api.Controllers;
 using Talabi.Api.Tests.Helpers;
-using Talabi.Core.DTOs;
 using Talabi.Core.Interfaces;
+using Talabi.Core.Services;
 using Xunit;
 
 namespace Talabi.Api.Tests.Unit.Controllers;
@@ -15,7 +15,7 @@ public class NotificationControllerTests
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
     private readonly Mock<INotificationService> _mockNotificationService;
-    private readonly NotificationController _controller;
+    private readonly AuthController _controller;
 
     public NotificationControllerTests()
     {
@@ -23,14 +23,30 @@ public class NotificationControllerTests
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
         _mockNotificationService = new Mock<INotificationService>();
-        var logger = ControllerTestHelpers.CreateMockLogger<NotificationController>();
+        var logger = ControllerTestHelpers.CreateMockLogger<AuthController>();
 
-        _controller = new NotificationController(
+        // AuthController has many dependencies; this test only targets RegisterDevice.
+        var authService = new Mock<IAuthService>();
+        var memoryCache = new Mock<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+        var emailSender = new Mock<Talabi.Core.Services.IEmailSender>();
+        var tokenVerifier = new Mock<IExternalAuthTokenVerifier>();
+        var verificationSecurity = new Mock<IVerificationCodeSecurityService>();
+        var userStore = new Mock<Microsoft.AspNetCore.Identity.IUserStore<Talabi.Core.Entities.AppUser>>();
+        var userManager = new Mock<Microsoft.AspNetCore.Identity.UserManager<Talabi.Core.Entities.AppUser>>(
+            userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+
+        _controller = new AuthController(
+            authService.Object,
+            userManager.Object,
+            memoryCache.Object,
+            emailSender.Object,
+            tokenVerifier.Object,
+            verificationSecurity.Object,
+            _mockNotificationService.Object,
             _mockUnitOfWork.Object,
             logger,
             _mockLocalizationService.Object,
-            _mockUserContextService.Object,
-            _mockNotificationService.Object
+            _mockUserContextService.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -79,29 +95,5 @@ public class NotificationControllerTests
         ), Times.Once);
     }
 
-    [Fact]
-    public async Task SendTestNotification_WhenCalled_SendsNotification()
-    {
-        // Arrange
-        var request = new SendNotificationRequest
-        {
-            Token = "target-token",
-            Title = "Test",
-            Body = "Body",
-            Data = new { foo = "bar" }
-        };
-
-        // Act
-        var result = await _controller.SendTestNotification(request);
-
-        // Assert
-        result.Result.Should().BeOfType<OkObjectResult>();
-
-        _mockNotificationService.Verify(x => x.SendNotificationAsync(
-            request.Token,
-            request.Title,
-            request.Body,
-            request.Data
-        ), Times.Once);
-    }
+    // Note: "SendTestNotification" endpoint no longer exists in the API layer.
 }

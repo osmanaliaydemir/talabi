@@ -663,7 +663,20 @@ public class AuthController : BaseController
         string? accessToken = dto.Token;
         string? refreshToken = dto.RefreshToken;
 
-        var principal = _authService.GetPrincipalFromExpiredToken(accessToken);
+        ClaimsPrincipal? principal;
+        try
+        {
+            principal = _authService.GetPrincipalFromExpiredToken(accessToken);
+        }
+        catch (Exception ex)
+        {
+            // Security: never leak token parsing/validation internals
+            Logger.LogWarning(ex, "RefreshToken: invalid access token format");
+            return BadRequest(new ApiResponse<LoginResponseDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture),
+                "INVALID_TOKEN"));
+        }
+
         if (principal == null)
             return BadRequest(new ApiResponse<LoginResponseDto>(
                 LocalizationService.GetLocalizedString(ResourceName, "InvalidToken", CurrentCulture), "INVALID_TOKEN"));

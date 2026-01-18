@@ -10,16 +10,6 @@ namespace Talabi.Portal.Controllers;
 public class NotificationsController : Controller
 {
     private readonly IDashboardNotificationService _notificationService;
-    private readonly IDeliveryZoneService _deliveryZoneService; // Hack to get vendorId via its helper method or just use UserContext
-    // The DeliveryZoneService has GetVendorIdAsync but it is private.
-    // I should use IUserContextService directly if possible or repeat the logic.
-    // Looking at other controllers... OrderService uses IUserContextService.
-    
-    // I will duplicate the GetVendorId logic using IUserContextService + DbContext if needed, 
-    // or better, rely on the fact that DashboardNotificationService needs VendorId.
-    // Wait, DashboardNotificationService is in Infrastructure, so it doesn't know about HttpContext.
-    // I must pass vendorId to it.
-    
     private readonly Talabi.Infrastructure.Data.TalabiDbContext _dbContext;
     private readonly IUserContextService _userContextService;
 

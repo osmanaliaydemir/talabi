@@ -10,12 +10,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// <summary>
 /// Rate Limiting bypass testleri
 /// </summary>
-public class RateLimitingTests : IClassFixture<WebApplicationFactory<Program>>
+public class RateLimitingTests : IClassFixture<TalabiApiRateLimitFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiRateLimitFactory _factory;
 
-    public RateLimitingTests(WebApplicationFactory<Program> factory)
+    public RateLimitingTests(TalabiApiRateLimitFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

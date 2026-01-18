@@ -714,7 +714,14 @@ public class ProductsController : BaseController
                 };
             },
             _cacheOptions.PopularProductsCacheTTLMinutes
-        );
+        ) ?? new PagedResultDto<ProductDto>
+        {
+            Items = new List<ProductDto>(),
+            TotalCount = 0,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = 0
+        };
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
             result,

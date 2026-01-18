@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ namespace Talabi.Api.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class OrdersController : BaseController
 {
     private readonly IOrderAssignmentService _assignmentService;
@@ -162,7 +164,7 @@ public class OrdersController : BaseController
             .ThenInclude(oi => oi.Product)
             .Include(o => o.OrderCouriers)
             .ThenInclude(oc => oc.Courier)
-            .ThenInclude(c => c.User);
+            .ThenInclude(c => c!.User);
 
         // Only allow access to orders that belong to the authenticated user
         var order = await query.FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == userId);
@@ -221,7 +223,7 @@ public class OrdersController : BaseController
         // VendorType filtresi
         if (vendorType.HasValue)
         {
-            query = query.Where(o => o.Vendor.Type == vendorType.Value);
+            query = query.Where(o => o.Vendor != null && o.Vendor.Type == vendorType.Value);
         }
 
         IOrderedQueryable<Order> orderedQuery = query.OrderByDescending(o => o.CreatedAt);

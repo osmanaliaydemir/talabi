@@ -47,7 +47,8 @@ public class CacheService : ICacheService
         }
     }
 
-    public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, int? expirationMinutes = null) where T : class
+    public async Task<T?> GetOrSetAsync<T>(string key, Func<Task<T?>> factory, int? expirationMinutes = null)
+        where T : class
     {
         // Try to get from cache first
         var cachedValue = Get<T>(key);

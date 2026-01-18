@@ -22,20 +22,29 @@ public class NotificationsControllerTests
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ILocalizationService> _mockLocalizationService;
     private readonly Mock<IUserContextService> _mockUserContextService;
-    private readonly NotificationsController _controller;
+    private readonly ProfileController _controller;
 
     public NotificationsControllerTests()
     {
         _mockUnitOfWork = ControllerTestHelpers.CreateMockUnitOfWork();
         _mockLocalizationService = ControllerTestHelpers.CreateMockLocalizationService();
         _mockUserContextService = ControllerTestHelpers.CreateMockUserContextService();
-        var logger = ControllerTestHelpers.CreateMockLogger<NotificationsController>();
+        var logger = ControllerTestHelpers.CreateMockLogger<ProfileController>();
 
-        _controller = new NotificationsController(
+        // ProfileController constructor also requires UserManager and IMapper.
+        // Tests in this file only cover notification settings logic, so we can provide mocks for those dependencies.
+        var userStore = new Mock<Microsoft.AspNetCore.Identity.IUserStore<AppUser>>();
+        var userManager = new Mock<Microsoft.AspNetCore.Identity.UserManager<AppUser>>(
+            userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var mapper = new Mock<AutoMapper.IMapper>();
+
+        _controller = new ProfileController(
             _mockUnitOfWork.Object,
             logger,
             _mockLocalizationService.Object,
-            _mockUserContextService.Object
+            _mockUserContextService.Object,
+            userManager.Object,
+            mapper.Object
         )
         {
             ControllerContext = ControllerTestHelpers.CreateControllerContext()
@@ -63,7 +72,7 @@ public class NotificationsControllerTests
         _mockUnitOfWork.Setup(x => x.NotificationSettings).Returns(mockRepo.Object);
 
         // Act
-        var result = await _controller.GetSettings();
+        var result = await _controller.GetNotificationSettings();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -88,7 +97,7 @@ public class NotificationsControllerTests
         _mockUnitOfWork.Setup(x => x.NotificationSettings).Returns(mockRepo.Object);
 
         // Act
-        var result = await _controller.GetSettings();
+        var result = await _controller.GetNotificationSettings();
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -123,7 +132,7 @@ public class NotificationsControllerTests
         };
 
         // Act
-        var result = await _controller.UpdateSettings(dto);
+        var result = await _controller.UpdateNotificationSettings(dto);
 
         // Assert
         result.Result.Should().BeOfType<OkObjectResult>();

@@ -154,7 +154,7 @@ public class ReviewsController : BaseController
         var reviewWithRelations = await UnitOfWork.Reviews.Query()
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p.Vendor)
+                .ThenInclude(p => p!.Vendor)
             .Include(r => r.Vendor)
             .FirstOrDefaultAsync(r => r.Id == review.Id);
 
@@ -470,7 +470,7 @@ public class ReviewsController : BaseController
         var reviews = await orderedQuery
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p.Vendor)
+                .ThenInclude(p => p!.Vendor)
             .Include(r => r.Vendor)
             .ToListAsync();
 
@@ -501,7 +501,7 @@ public class ReviewsController : BaseController
             .Include(r => r.User)
             .Include(r => r.Vendor)
             .Include(r => r.Product)
-                .ThenInclude(p => p.Vendor)
+                .ThenInclude(p => p!.Vendor)
             .Where(r => r.VendorId == vendorId);
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);

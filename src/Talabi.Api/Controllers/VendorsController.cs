@@ -521,7 +521,7 @@ public class VendorsController : BaseController
                     .ToListAsync();
             },
             _cacheOptions.CitiesCacheTTLMinutes
-        );
+        ) ?? new List<string>();
 
         // Pagination (memory'de - tüm şehirler zaten cache'de)
         var totalCount = allCities.Count;

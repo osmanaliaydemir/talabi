@@ -225,8 +225,9 @@ public class CartController(
                 }
 
                 // Verify product exists
+                // NOTE: Avoid Include() here to keep the query provider-agnostic (unit tests/mocks) and
+                // load Vendor explicitly only when needed.
                 var product = await UnitOfWork.Products.Query()
-                    .Include(p => p.Vendor)
                     .FirstOrDefaultAsync(p => p.Id == dto.ProductId);
                 
                 if (product == null)
@@ -236,23 +237,30 @@ public class CartController(
                         "PRODUCT_NOT_FOUND"));
                 }
 
+                // Load vendor if needed for delivery radius check
+                Vendor? productVendor = null;
+                if (product.VendorId != Guid.Empty)
+                {
+                    productVendor = await UnitOfWork.Vendors.GetByIdAsync(product.VendorId);
+                }
+
                 // Konum kuralı: Vendor'ın delivery radius kontrolü
                 var defaultAddress = await UnitOfWork.UserAddresses.Query()
                     .FirstOrDefaultAsync(a => a.UserId == userId && a.IsDefault);
 
                 if (defaultAddress?.Latitude.HasValue == true &&
                     defaultAddress.Longitude.HasValue == true &&
-                    product.Vendor != null &&
-                    product.Vendor.Latitude.HasValue &&
-                    product.Vendor.Longitude.HasValue)
+                    productVendor != null &&
+                    productVendor.Latitude.HasValue &&
+                    productVendor.Longitude.HasValue)
                 {
                     var userLat = defaultAddress.Latitude.Value;
                     var userLon = defaultAddress.Longitude.Value;
-                    var vendorLat = product.Vendor.Latitude.Value;
-                    var vendorLon = product.Vendor.Longitude.Value;
+                    var vendorLat = productVendor.Latitude.Value;
+                    var vendorLon = productVendor.Longitude.Value;
 
                     // DeliveryRadiusInKm = 0 ise, 5 km olarak kabul et (default)
-                    var deliveryRadius = product.Vendor.DeliveryRadiusInKm == 0 ? 5 : product.Vendor.DeliveryRadiusInKm;
+                    var deliveryRadius = productVendor.DeliveryRadiusInKm == 0 ? 5 : productVendor.DeliveryRadiusInKm;
                     var distance = GeoHelper.CalculateDistance(userLat, userLon, vendorLat, vendorLon);
 
                     if (distance > deliveryRadius)

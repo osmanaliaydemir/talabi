@@ -26,7 +26,7 @@ public class RealtimeTrackingController(Core.Interfaces.IUnitOfWork unitOfWork) 
         var courierLocations = await unitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Courier)
             .Include(oc => oc.Order)
-            .ThenInclude(o => o.DeliveryAddress) // To show destination
+            .ThenInclude(o => o!.DeliveryAddress) // To show destination
             .Where(oc => oc.Order != null // Ensure Order is not null
                          && oc.Order.VendorId == vendorId
                          && oc.IsActive
@@ -38,14 +38,14 @@ public class RealtimeTrackingController(Core.Interfaces.IUnitOfWork unitOfWork) 
                              oc.Order.Status == OrderStatus.OutForDelivery))
             .Select(oc => new
             {
-                CourierId = oc.Courier.Id,
-                CourierName = oc.Courier.Name,
-                Lat = oc.Courier.CurrentLatitude,
-                Lng = oc.Courier.CurrentLongitude,
+                CourierId = oc.Courier!.Id,
+                CourierName = oc.Courier!.Name,
+                Lat = oc.Courier!.CurrentLatitude,
+                Lng = oc.Courier!.CurrentLongitude,
                 OrderId = oc.OrderId,
-                OrderNo = oc.Order.CustomerOrderId,
-                Status = oc.Order.Status.ToString(),
-                Destination = oc.Order.DeliveryAddress != null ? oc.Order.DeliveryAddress.FullAddress : "N/A",
+                OrderNo = oc.Order!.CustomerOrderId,
+                Status = oc.Order!.Status.ToString(),
+                Destination = oc.Order!.DeliveryAddress != null ? oc.Order.DeliveryAddress.FullAddress : "N/A",
                 Color = "blue"
             })
             .ToListAsync();

@@ -21,7 +21,7 @@ public interface ICacheService
     /// <param name="factory">Factory function to create value if not cached</param>
     /// <param name="expirationMinutes">Optional expiration time in minutes (uses default if null)</param>
     /// <returns>Cached or newly created value</returns>
-    Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, int? expirationMinutes = null) where T : class;
+    Task<T?> GetOrSetAsync<T>(string key, Func<Task<T?>> factory, int? expirationMinutes = null) where T : class;
 
     /// <summary>
     /// Sets a value in cache with optional expiration

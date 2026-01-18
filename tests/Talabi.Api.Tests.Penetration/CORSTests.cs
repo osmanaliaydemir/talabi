@@ -9,12 +9,12 @@ namespace Talabi.Api.Tests.Penetration;
 /// CORS (Cross-Origin Resource Sharing) testleri
 /// CORS yapılandırmasının doğru çalıştığını doğrular
 /// </summary>
-public class CORSTests : IClassFixture<WebApplicationFactory<Program>>
+public class CORSTests : IClassFixture<TalabiApiTestFactory>
 {
     private readonly HttpClient _client;
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TalabiApiTestFactory _factory;
 
-    public CORSTests(WebApplicationFactory<Program> factory)
+    public CORSTests(TalabiApiTestFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
@@ -33,8 +33,9 @@ public class CORSTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.SendAsync(request);
 
         // Assert
-        response.Headers.Should().ContainKey("Access-Control-Allow-Origin",
-            "CORS preflight response'unda Access-Control-Allow-Origin header'ı olmalı");
+        response.Headers.Contains("Access-Control-Allow-Origin")
+            .Should()
+            .BeTrue($"CORS preflight response'unda Access-Control-Allow-Origin header'ı olmalı. Status: {response.StatusCode}");
     }
 
     [Fact]

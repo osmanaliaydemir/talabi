@@ -115,8 +115,8 @@ public class OrdersController : BaseController
             {
                 Id = o.Id,
                 CustomerOrderId = o.CustomerOrderId,
-                CustomerName = o.Customer.FullName,
-                CustomerEmail = o.Customer.Email,
+                CustomerName = o.Customer != null ? o.Customer.FullName : string.Empty,
+                CustomerEmail = o.Customer != null ? (o.Customer.Email ?? string.Empty) : string.Empty,
                 TotalAmount = o.TotalAmount,
                 Status = o.Status.ToString(),
                 CreatedAt = o.CreatedAt,
