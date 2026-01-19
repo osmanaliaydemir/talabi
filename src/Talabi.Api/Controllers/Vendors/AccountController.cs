@@ -92,7 +92,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Güncellenecek profil bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("profile")]
+    [HttpPost("profile")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateVendorProfileDto dto)
     {
         if (dto == null)

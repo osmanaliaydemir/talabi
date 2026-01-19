@@ -158,7 +158,7 @@ class VendorRemoteDataSource {
     // Assuming simple JSON update or Map for now as per ApiService signature.
     // If ApiService handled file upload, we might need to look closer.
 
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.profile,
       data: data,
     );
