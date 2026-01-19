@@ -15,6 +15,7 @@ public class TalabiApiTestFactory : WebApplicationFactory<Talabi.Api.Program>
             // Minimal config to make CORS deterministic in tests
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["Testing:DisableHangfire"] = "true",
                 ["Cors:AllowCredentials"] = "true",
                 ["Cors:Test:AllowedOrigins:0"] = "https://example.com",
                 ["Cors:AllowedMethods:0"] = "GET",

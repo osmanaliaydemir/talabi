@@ -463,23 +463,82 @@ public class OrderService : IOrderService
         // --- BULK UPDATE LOGIC START ---
         var now = DateTime.UtcNow;
 
-        // 1. Bulk Update Order Items
-        // Mark all items as cancelled
-        await _unitOfWork.OrderItems.Query()
-            .Where(oi => oi.OrderId == orderId)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(oi => oi.IsCancelled, true)
-                .SetProperty(oi => oi.CancelReason, dto.Reason)
-                .SetProperty(oi => oi.CancelledAt, now));
+        try
+        {
+            // 1. Bulk Update Order Items
+            // Mark all items as cancelled
+            await _unitOfWork.OrderItems.Query()
+                .Where(oi => oi.OrderId == orderId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(oi => oi.IsCancelled, true)
+                    .SetProperty(oi => oi.CancelReason, dto.Reason)
+                    .SetProperty(oi => oi.CancelledAt, now));
 
-        // 2. Bulk Update Order
-        // Updates status directly avoiding Concurrency Checks
-        await _unitOfWork.Orders.Query()
-            .Where(o => o.Id == orderId)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(o => o.Status, OrderStatus.Cancelled)
-                .SetProperty(o => o.CancelReason, dto.Reason)
-                .SetProperty(o => o.CancelledAt, now));
+            // 2. Bulk Update Order
+            // Updates status directly avoiding Concurrency Checks
+            await _unitOfWork.Orders.Query()
+                .Where(o => o.Id == orderId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.Status, OrderStatus.Cancelled)
+                    .SetProperty(o => o.CancelReason, dto.Reason)
+                    .SetProperty(o => o.CancelledAt, now));
+        }
+        catch (NotSupportedException)
+        {
+            // Fallback for non-relational providers (e.g., EF InMemory) that don't support ExecuteUpdate.
+            var trackedOrder = await _unitOfWork.Orders.Query().FirstOrDefaultAsync(o => o.Id == orderId);
+            if (trackedOrder == null)
+            {
+                throw new KeyNotFoundException(
+                    _localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
+            }
+
+            var trackedItems = await _unitOfWork.OrderItems.Query()
+                .Where(oi => oi.OrderId == orderId)
+                .ToListAsync();
+
+            foreach (var item in trackedItems)
+            {
+                item.IsCancelled = true;
+                item.CancelReason = dto.Reason;
+                item.CancelledAt = now;
+                _unitOfWork.OrderItems.Update(item);
+            }
+
+            trackedOrder.Status = OrderStatus.Cancelled;
+            trackedOrder.CancelReason = dto.Reason;
+            trackedOrder.CancelledAt = now;
+            _unitOfWork.Orders.Update(trackedOrder);
+        }
+        catch (InvalidOperationException ex) when (
+            ex.Message.Contains("ExecuteUpdate", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("not supported by the current database provider", StringComparison.OrdinalIgnoreCase))
+        {
+            // Same fallback for providers that throw InvalidOperationException instead of NotSupportedException.
+            var trackedOrder = await _unitOfWork.Orders.Query().FirstOrDefaultAsync(o => o.Id == orderId);
+            if (trackedOrder == null)
+            {
+                throw new KeyNotFoundException(
+                    _localizationService.GetLocalizedString(ResourceName, "OrderNotFound", culture));
+            }
+
+            var trackedItems = await _unitOfWork.OrderItems.Query()
+                .Where(oi => oi.OrderId == orderId)
+                .ToListAsync();
+
+            foreach (var item in trackedItems)
+            {
+                item.IsCancelled = true;
+                item.CancelReason = dto.Reason;
+                item.CancelledAt = now;
+                _unitOfWork.OrderItems.Update(item);
+            }
+
+            trackedOrder.Status = OrderStatus.Cancelled;
+            trackedOrder.CancelReason = dto.Reason;
+            trackedOrder.CancelledAt = now;
+            _unitOfWork.Orders.Update(trackedOrder);
+        }
 
         // 3. Add History Record (Manual Insert)
         // Since we bypassed tracking/hooks, we need to add history manually

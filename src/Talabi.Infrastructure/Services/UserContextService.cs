@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Talabi.Core.Interfaces;
 using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Talabi.Infrastructure.Services;
@@ -28,7 +29,22 @@ public class UserContextService : IUserContextService
 
     public string? GetUserId()
     {
-        return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null) return null;
+
+        // Prefer standard NameIdentifier
+        var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrWhiteSpace(id)) return id;
+
+        // JWT subject claim (depends on MapInboundClaims / NameClaimType settings)
+        id = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? user.FindFirstValue("sub");
+        if (!string.IsNullOrWhiteSpace(id)) return id;
+
+        // Fallbacks (some providers use these)
+        id = user.FindFirstValue("uid") ?? user.FindFirstValue(ClaimTypes.Name);
+        if (!string.IsNullOrWhiteSpace(id)) return id;
+
+        return null;
     }
 
     public async Task<Guid?> GetVendorIdAsync()

@@ -72,6 +72,8 @@ public class AuthService : IAuthService
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            // Ensure downstream services can reliably read user id even when MapInboundClaims is disabled
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(ClaimTypes.Email, user.Email!), // Standard ClaimType for easier extraction
             new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),

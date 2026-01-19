@@ -512,12 +512,6 @@ public class OrdersController : BaseController
 
             var allItemsCancelled = remainingItemsCount == 0;
 
-            // Ensure StatusHistory is initialized
-            if (orderItem.Order.StatusHistory == null)
-            {
-                orderItem.Order.StatusHistory = new List<OrderStatusHistory>();
-            }
-
             if (allItemsCancelled)
             {
                 orderItem.Order.Status = OrderStatus.Cancelled;
@@ -525,7 +519,7 @@ public class OrdersController : BaseController
                 orderItem.Order.CancelReason = "All items cancelled";
 
                 // Add to status history
-                orderItem.Order.StatusHistory.Add(new OrderStatusHistory
+                await UnitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
                 {
                     OrderId = orderItem.Order.Id,
                     Status = OrderStatus.Cancelled,
@@ -536,7 +530,7 @@ public class OrdersController : BaseController
             else
             {
                 // Add status history note for item cancellation
-                orderItem.Order.StatusHistory.Add(new OrderStatusHistory
+                await UnitOfWork.OrderStatusHistories.AddAsync(new OrderStatusHistory
                 {
                     OrderId = orderItem.Order.Id,
                     Status = orderItem.Order.Status,
@@ -544,20 +538,20 @@ public class OrdersController : BaseController
                     CreatedBy = userId
                 });
             }
-
-            UnitOfWork.OrderItems.Update(orderItem);
-            UnitOfWork.Orders.Update(orderItem.Order);
-            await UnitOfWork.SaveChangesAsync();
-
-            // Note: Customer notification for order item cancellation can be added via service if needed
-
-            await UnitOfWork.SaveChangesAsync();
             await UnitOfWork.CommitTransactionAsync();
 
             return Ok(new ApiResponse<object>(
                 new { },
                 LocalizationService.GetLocalizedString(ResourceName, "OrderItemCancelledSuccessfully",
                     CurrentCulture)));
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await UnitOfWork.RollbackTransactionAsync();
+            return Conflict(new ApiResponse<object>(
+                LocalizationService.GetLocalizedString(ResourceName, "ConcurrencyConflict", CurrentCulture),
+                "CONCURRENCY_CONFLICT"
+            ));
         }
         catch
         {

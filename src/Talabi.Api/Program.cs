@@ -101,8 +101,24 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 // Database
+var useInMemoryDatabase =
+    builder.Configuration.GetValue("Testing:UseInMemoryDatabase", false) ||
+    builder.Environment.EnvironmentName.Equals("Test", StringComparison.OrdinalIgnoreCase);
+
 builder.Services.AddDbContext<TalabiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (useInMemoryDatabase)
+    {
+        var dbName = builder.Configuration.GetValue<string?>("Testing:InMemoryDatabaseName") ?? "Talabi_TestDb";
+        options.UseInMemoryDatabase(dbName);
+        // InMemory provider doesn't support transactions; tests run with InMemory DB should not fail on this warning.
+        options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning));
+    }
+    else
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 
 // Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
@@ -159,10 +175,17 @@ builder.Services.AddScoped<IFileUploadSecurityService, FileUploadSecurityService
 builder.Services.AddSingleton<IActivityLoggingService, ActivityLoggingService>();
 builder.Services.AddHttpContextAccessor();
 
+var disableHangfire =
+    builder.Configuration.GetValue("Testing:DisableHangfire", false) ||
+    builder.Environment.EnvironmentName.Equals("Test", StringComparison.OrdinalIgnoreCase);
+
 // Hangfire
-builder.Services.AddHangfire(config =>
-    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddHangfireServer();
+if (!disableHangfire)
+{
+    builder.Services.AddHangfire(config =>
+        config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Services.AddHangfireServer();
+}
 
 // SignalR
 builder.Services.AddSignalR();
@@ -365,6 +388,18 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 // JWT Authentication
+// Test environment: make JWT settings deterministic for integration/contract tests.
+if (builder.Environment.EnvironmentName.Equals("Test", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+    {
+        ["JwtSettings:Secret"] = "test_secret_test_secret_test_secret_test_secret",
+        ["JwtSettings:Issuer"] = "Talabi.Test",
+        ["JwtSettings:Audience"] = "Talabi.Test",
+        ["JwtSettings:ExpirationInMinutes"] = "60"
+    });
+}
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secret = jwtSettings["Secret"];
 
@@ -611,19 +646,22 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
 });
 
 // Hangfire Dashboard with authentication
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
+if (!disableHangfire)
 {
-    Authorization = new[] { new HangfireAuthorizationFilter() },
-    DashboardTitle = "Talabi Background Jobs",
-    StatsPollingInterval = 2000,
-    DisplayStorageConnectionString = false, // Security: Don't display connection string
-    IgnoreAntiforgeryToken = false
-});
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[] { new HangfireAuthorizationFilter() },
+        DashboardTitle = "Talabi Background Jobs",
+        StatsPollingInterval = 2000,
+        DisplayStorageConnectionString = false, // Security: Don't display connection string
+        IgnoreAntiforgeryToken = false
+    });
 
-// Schedule Recurring Jobs
-RecurringJob.AddOrUpdate<IBackgroundJobService>(
-    "check-abandoned-carts",
-    service => service.CheckAbandonedCarts(),
-    Cron.Hourly);
+    // Schedule Recurring Jobs
+    RecurringJob.AddOrUpdate<IBackgroundJobService>(
+        "check-abandoned-carts",
+        service => service.CheckAbandonedCarts(),
+        Cron.Hourly);
+}
 
 app.Run();

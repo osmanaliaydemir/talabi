@@ -256,7 +256,12 @@ public class OrdersControllerTests
         // MockQueryable handles Where/FirstOrDefault well
         mockItemRepo.Setup(x => x.Query()).Returns(orderItems.AsQueryable().BuildMock());
         _mockUnitOfWork.Setup(x => x.OrderItems).Returns(mockItemRepo.Object);
-        _mockUnitOfWork.Setup(x => x.Orders.Update(It.IsAny<Order>()));
+
+        var mockHistoryRepo = new Mock<IRepository<OrderStatusHistory>>();
+        mockHistoryRepo
+            .Setup(x => x.AddAsync(It.IsAny<OrderStatusHistory>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OrderStatusHistory h, CancellationToken _) => h);
+        _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(mockHistoryRepo.Object);
 
         var cancelDto = new CancelOrderDto { Reason = "Too expensive" };
 
@@ -270,9 +275,9 @@ public class OrdersControllerTests
         orderItem.CancelReason.Should().Be(cancelDto.Reason);
         order.TotalAmount.Should().Be(50); // 100 - (2*25) = 50
         order.Status.Should().Be(OrderStatus.Pending); // Still pending as items remain
-
-        _mockUnitOfWork.Verify(x => x.OrderItems.Update(orderItem), Times.Once);
-        _mockUnitOfWork.Verify(x => x.Orders.Update(order), Times.Once);
+        mockHistoryRepo.Verify(
+            x => x.AddAsync(It.IsAny<OrderStatusHistory>(), It.IsAny<CancellationToken>()),
+            Times.Once);
         _mockUnitOfWork.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -315,6 +320,12 @@ public class OrdersControllerTests
         var mockOrderRepo = new Mock<IRepository<Order>>();
         _mockUnitOfWork.Setup(x => x.Orders).Returns(mockOrderRepo.Object);
 
+        var mockHistoryRepo = new Mock<IRepository<OrderStatusHistory>>();
+        mockHistoryRepo
+            .Setup(x => x.AddAsync(It.IsAny<OrderStatusHistory>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OrderStatusHistory h, CancellationToken _) => h);
+        _mockUnitOfWork.Setup(x => x.OrderStatusHistories).Returns(mockHistoryRepo.Object);
+
         var cancelDto = new CancelOrderDto { Reason = "Product is defective and not working" };
 
         // Act
@@ -325,5 +336,9 @@ public class OrdersControllerTests
 
         orderItem.IsCancelled.Should().BeTrue();
         order.Status.Should().Be(OrderStatus.Cancelled); // Order cancelled because all items cancelled
+
+        mockHistoryRepo.Verify(
+            x => x.AddAsync(It.IsAny<OrderStatusHistory>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }
