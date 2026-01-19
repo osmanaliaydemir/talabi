@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mobile/core/models/problem_details.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 /// Utility class for handling and parsing API errors.
@@ -37,6 +38,24 @@ class ErrorHandler {
       final responseData = error.response!.data;
 
       if (responseData is Map<String, dynamic>) {
+        // ProblemDetails (RFC7807) support for model binding errors.
+        final contentType = error.response?.headers.value('content-type') ?? '';
+        final looksLikeProblemDetails =
+            responseData.containsKey('title') &&
+            responseData.containsKey('status');
+        if (looksLikeProblemDetails ||
+            contentType.contains('application/problem+json')) {
+          try {
+            final pd = ProblemDetails.fromJson(responseData);
+            final msg = pd.toUserMessage();
+            if (msg.trim().isNotEmpty) {
+              return msg;
+            }
+          } catch (_) {
+            // Fall through to existing parsing
+          }
+        }
+
         String? specificError;
 
         // Check for 'errors' object
@@ -120,6 +139,24 @@ class ErrorHandler {
       final responseData = error.response!.data;
 
       if (responseData is Map<String, dynamic>) {
+        // ProblemDetails (RFC7807) support for model binding errors.
+        final contentType = error.response?.headers.value('content-type') ?? '';
+        final looksLikeProblemDetails =
+            responseData.containsKey('title') &&
+            responseData.containsKey('status');
+        if (looksLikeProblemDetails ||
+            contentType.contains('application/problem+json')) {
+          try {
+            final pd = ProblemDetails.fromJson(responseData);
+            final msg = pd.toUserMessage();
+            if (msg.trim().isNotEmpty) {
+              return msg;
+            }
+          } catch (_) {
+            // Fall through to existing parsing
+          }
+        }
+
         if (responseData.containsKey('errors') &&
             responseData['errors'] is List) {
           final errors = responseData['errors'] as List;
@@ -180,16 +217,96 @@ class ErrorHandler {
         final responseData = error.response!.data;
 
         if (responseData is Map<String, dynamic>) {
-          if (responseData.containsKey('message')) {
+          // ProblemDetails (RFC7807): typically from [ApiController] model binding.
+          // We also check content-type when available, but shape-based detection is enough.
+          final contentType =
+              error.response?.headers.value('content-type') ?? '';
+          final looksLikeProblemDetails =
+              responseData.containsKey('title') &&
+              responseData.containsKey('status');
+
+          if (looksLikeProblemDetails ||
+              contentType.contains('application/problem+json')) {
+            try {
+              final pd = ProblemDetails.fromJson(responseData);
+              final msg = pd.toUserMessage();
+              if (msg.trim().isNotEmpty) {
+                return msg;
+              }
+            } catch (_) {
+              // Fall through to other strategies
+            }
+          }
+
+          // ApiResponse envelope
+          if (responseData.containsKey('message') &&
+              (responseData['message']?.toString().trim().isNotEmpty ??
+                  false)) {
             errorMessage = responseData['message'].toString();
           } else if (responseData.containsKey('errors')) {
             final errors = responseData['errors'];
+
+            // Common API shape: errors is List<string>
             if (errors is List && errors.isNotEmpty) {
+              final joined = errors.map((e) => e.toString()).join('\n');
+              if (joined.trim().isNotEmpty) {
+                errorMessage = joined;
+              }
+            }
+            // Legacy/other shape: errors is List<Map{message:..}>
+            else if (errors is List && errors.isNotEmpty) {
               final firstError = errors.first;
               if (firstError is Map && firstError.containsKey('message')) {
                 errorMessage = firstError['message'].toString();
               }
             }
+            // Validation shape: errors is Map{ field: [msg] }
+            else if (errors is Map) {
+              final messages = <String>[];
+              errors.forEach((_, value) {
+                if (value is List) {
+                  messages.addAll(value.map((e) => e.toString()));
+                } else if (value != null) {
+                  messages.add(value.toString());
+                }
+              });
+              final joined = messages
+                  .where((m) => m.trim().isNotEmpty)
+                  .join('\n');
+              if (joined.isNotEmpty) {
+                errorMessage = joined;
+              }
+            }
+          }
+
+          // Use errorCode as fallback if message is empty
+          if (errorMessage.trim().isEmpty &&
+              responseData.containsKey('errorCode')) {
+            final code = responseData['errorCode']?.toString();
+            if (code != null && code.trim().isNotEmpty) {
+              errorMessage = code;
+            }
+          }
+        }
+      }
+
+      // Fallback: sometimes we throw DioException with a structured `error` payload
+      // even when response parsing isn't available (or callers don't pass response through).
+      final err = error.error;
+      if (errorMessage.trim().isEmpty && err is Map) {
+        final msg = err['message']?.toString();
+        if (msg != null && msg.trim().isNotEmpty) {
+          return msg;
+        }
+        final code = err['errorCode']?.toString();
+        if (code != null && code.trim().isNotEmpty) {
+          return code;
+        }
+        final errs = err['errors'];
+        if (errs is List && errs.isNotEmpty) {
+          final joined = errs.map((e) => e.toString()).join('\n');
+          if (joined.trim().isNotEmpty) {
+            return joined;
           }
         }
       }

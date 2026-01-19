@@ -181,20 +181,43 @@ class NetworkClient {
         data: {'token': token, 'refreshToken': refreshToken},
       );
 
-      final apiResponse = ApiResponse.fromJson(
-        response.data as Map<String, dynamic>,
-        (json) => json as Map<String, dynamic>,
-      );
+      // Refresh endpoint is expected to return ApiResponse<Map<String,dynamic>>,
+      // but in some cases (model binding / edge errors) it may return ProblemDetails.
+      final raw = response.data;
+      if (raw is Map<String, dynamic>) {
+        final looksLikeApiResponse = raw.containsKey('success');
+        final looksLikeProblemDetails =
+            raw.containsKey('title') && raw.containsKey('status');
 
-      if (!apiResponse.success || apiResponse.data == null) {
-        throw Exception(apiResponse.message ?? 'Token refresh failed');
+        if (looksLikeProblemDetails) {
+          final title = raw['title']?.toString();
+          final detail = raw['detail']?.toString();
+          throw Exception(
+            detail?.isNotEmpty == true
+                ? detail
+                : (title ?? 'Token refresh failed'),
+          );
+        }
+
+        if (looksLikeApiResponse) {
+          final apiResponse = ApiResponse.fromJson(
+            raw,
+            (json) => json as Map<String, dynamic>,
+          );
+
+          if (!apiResponse.success || apiResponse.data == null) {
+            throw Exception(apiResponse.message ?? 'Token refresh failed');
+          }
+
+          final data = apiResponse.data!;
+          return {
+            'token': data['token'] as String,
+            'refreshToken': data['refreshToken'] as String,
+          };
+        }
       }
 
-      final data = apiResponse.data!;
-      return {
-        'token': data['token'] as String,
-        'refreshToken': data['refreshToken'] as String,
-      };
+      throw Exception('Token refresh failed');
     } finally {
       permit.release();
     }
@@ -202,6 +225,12 @@ class NetworkClient {
 
   void _handleAuthFailure() {
     if (!_isRedirectingToLogin) {
+      // Stop additional non-auth requests quickly
+      _isLoggingOut = true;
+
+      // Clear tokens and user data (best-effort; do not block UI navigation)
+      unawaited(SecureStorageService.instance.clearAll());
+
       _isRedirectingToLogin = true;
       // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
       NavigationService.navigateToRemoveUntil('/login', (route) => false);
@@ -266,14 +295,24 @@ class NetworkClient {
           if (!apiResponse.success) {
             throw DioException(
               requestOptions: response.requestOptions,
-              error: apiResponse.message,
+              response: response,
+              error: {
+                'message': apiResponse.message,
+                'errorCode': apiResponse.errorCode,
+                'errors': apiResponse.errors,
+              },
               type: DioExceptionType.badResponse,
             );
           }
           if (apiResponse.data == null) {
             throw DioException(
               requestOptions: response.requestOptions,
-              error: 'Response data is null',
+              response: response,
+              error: {
+                'message': 'Response data is null',
+                'errorCode': apiResponse.errorCode,
+                'errors': apiResponse.errors,
+              },
             );
           }
           return apiResponse.data!;
@@ -315,7 +354,24 @@ class NetworkClient {
         if (!apiResponse.success) {
           throw DioException(
             requestOptions: response.requestOptions,
-            error: apiResponse.message,
+            response: response,
+            error: {
+              'message': apiResponse.message,
+              'errorCode': apiResponse.errorCode,
+              'errors': apiResponse.errors,
+            },
+            type: DioExceptionType.badResponse,
+          );
+        }
+        if (apiResponse.data == null) {
+          throw DioException(
+            requestOptions: response.requestOptions,
+            response: response,
+            error: {
+              'message': 'Response data is null',
+              'errorCode': apiResponse.errorCode,
+              'errors': apiResponse.errors,
+            },
             type: DioExceptionType.badResponse,
           );
         }
