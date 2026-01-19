@@ -9,6 +9,10 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get verificationCodeExpired =>
+      'Verification code has expired. Please request a new code.';
+
+  @override
   String get checkSearchHistory => 'What are you looking for?';
 
   @override

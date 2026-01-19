@@ -8,9 +8,8 @@ import 'package:mobile/services/logger_service.dart';
 /// Özel exception sınıfı - 403 Forbidden hatası için
 /// CartProvider bu exception'ı yakalayıp local state'i temizleyebilir
 class ForbiddenException implements Exception {
-  final String message;
   ForbiddenException(this.message);
-
+  final String message;
   @override
   String toString() => message;
 }

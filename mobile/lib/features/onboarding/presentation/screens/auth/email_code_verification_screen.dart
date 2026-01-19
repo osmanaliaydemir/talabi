@@ -409,72 +409,123 @@ class _EmailCodeVerificationScreenState
                           textAlign: TextAlign.center,
                         ),
                         AppTheme.verticalSpace(3),
-                        // Code Input Fields
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(4, (index) {
-                            return SizedBox(
-                              width: 55,
-                              height: 65,
-                              child: TextField(
-                                controller: _controllers[index],
-                                focusNode: _focusNodes[index],
-                                textAlign: TextAlign.center,
-                                textAlignVertical: TextAlignVertical.center,
-                                keyboardType: TextInputType.number,
-                                maxLength: 1,
-                                style: AppTheme.poppins(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimary,
-                                ),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  contentPadding:
-                                      EdgeInsets.zero, // Remove default padding
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusMedium,
-                                    ),
-                                    borderSide: const BorderSide(
-                                      color: AppTheme.dividerColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusMedium,
-                                    ),
-                                    borderSide: const BorderSide(
-                                      color: AppTheme.dividerColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusMedium,
-                                    ),
-                                    borderSide: BorderSide(
-                                      color: primaryColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: AppTheme.backgroundColor,
-                                ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                onChanged: (value) =>
-                                    _onCodeChanged(index, value),
+                        if (_canResend) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppTheme.spacingMedium,
+                            ),
+                            child: Text(
+                              localizations.verificationCodeExpired,
+                              textAlign: TextAlign.center,
+                              style: AppTheme.poppins(
+                                fontSize: 16,
+                                color: AppTheme.error,
+                                fontWeight: FontWeight.w600,
                               ),
-                            );
-                          }),
-                        ),
-                        AppTheme.verticalSpace(2),
-                        // Timer or Resend Button
-                        if (!_canResend)
+                            ),
+                          ),
+                          AppTheme.verticalSpace(2),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isResending ? null : _resendCode,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: AppTheme.textOnPrimary,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingMedium,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
+                                ),
+                                elevation: AppTheme.elevationNone,
+                              ),
+                              child: _isResending
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: AppTheme.textOnPrimary,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      localizations.resendCode,
+                                      style: AppTheme.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ] else ...[
+                          // Code Input Fields
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: List.generate(4, (index) {
+                              return SizedBox(
+                                width: 55,
+                                height: 65,
+                                child: TextField(
+                                  controller: _controllers[index],
+                                  focusNode: _focusNodes[index],
+                                  textAlign: TextAlign.center,
+                                  textAlignVertical: TextAlignVertical.center,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 1,
+                                  style: AppTheme.poppins(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                  decoration: InputDecoration(
+                                    counterText: '',
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      borderSide: const BorderSide(
+                                        color: AppTheme.dividerColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      borderSide: const BorderSide(
+                                        color: AppTheme.dividerColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: primaryColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: AppTheme.backgroundColor,
+                                  ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  onChanged: (value) =>
+                                      _onCodeChanged(index, value),
+                                ),
+                              );
+                            }),
+                          ),
+                          AppTheme.verticalSpace(2),
+                          // Timer
                           Text(
                             localizations.codeExpiresIn(
                               _formatTime(_remainingSeconds),
@@ -483,65 +534,45 @@ class _EmailCodeVerificationScreenState
                               fontSize: 14,
                               color: AppTheme.textSecondary,
                             ),
-                          )
-                        else
-                          TextButton(
-                            onPressed: _isResending ? null : _resendCode,
-                            child: _isResending
-                                ? SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: primaryColor,
-                                    ),
-                                  )
-                                : Text(
-                                    localizations.resendCode,
-                                    style: AppTheme.poppins(
-                                      color: primaryColor,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
                           ),
-                        AppTheme.verticalSpace(2),
-                        // Verify Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _verifyCode,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: AppTheme.textOnPrimary,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppTheme.spacingMedium,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusMedium,
+                          AppTheme.verticalSpace(2),
+                          // Verify Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _verifyCode,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: AppTheme.textOnPrimary,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingMedium,
                                 ),
-                              ),
-                              elevation: AppTheme.elevationNone,
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: AppTheme.textOnPrimary,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text(
-                                    localizations.verify,
-                                    style: AppTheme.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
                                   ),
+                                ),
+                                elevation: AppTheme.elevationNone,
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: AppTheme.textOnPrimary,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      localizations.verify,
+                                      style: AppTheme.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

@@ -6,7 +6,6 @@ import 'package:mobile/utils/error_handler.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/providers/localization_provider.dart';
 import 'package:mobile/features/auth/presentation/screens/courier/login_screen.dart';
-// Todo: Email verification screen OAA
 import 'package:mobile/features/onboarding/presentation/screens/auth/email_code_verification_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/customer/register_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/vendor/login_screen.dart';
@@ -14,7 +13,6 @@ import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
-
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:mobile/widgets/password_validation_widget.dart';
 import 'package:flutter/services.dart';

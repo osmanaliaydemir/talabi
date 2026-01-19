@@ -100,6 +100,12 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// No description provided for @verificationCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code has expired. Please request a new code.'**
+  String get verificationCodeExpired;
+
   /// Prompt to check search history when no results/query
   ///
   /// In en, this message translates to:

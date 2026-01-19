@@ -1,5 +1,6 @@
 {
   "@@locale": "en",
+  "verificationCodeExpired": "Verification code has expired. Please request a new code.",
   "checkSearchHistory": "What are you looking for?",
   "@checkSearchHistory": {
     "description": "Prompt to check search history when no results/query"

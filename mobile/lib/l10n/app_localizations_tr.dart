@@ -9,6 +9,10 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get verificationCodeExpired =>
+      'Doğrulama kodunun süresi doldu. Lütfen yeni kod isteyin.';
+
+  @override
   String get checkSearchHistory => 'Ne aramak istersiniz?';
 
   @override
