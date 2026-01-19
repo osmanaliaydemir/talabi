@@ -3,6 +3,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
 import 'package:mobile/features/cart/presentation/providers/cart_provider.dart';
+import 'package:mobile/features/cart/data/datasources/cart_remote_data_source.dart';
 import 'package:mobile/widgets/custom_confirmation_dialog.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/home/presentation/widgets/shared_header.dart';
@@ -1074,6 +1075,21 @@ class _CartScreenState extends State<CartScreen> {
             Navigator.of(context).pop();
             try {
               await cart.clear();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(localizations.clearCartSuccess),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+              }
+            } on ForbiddenException {
+              // 403 hatası alındığında, local state zaten temizlendi
+              // Kullanıcıya başarı mesajı göster (local state temizlendi)
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

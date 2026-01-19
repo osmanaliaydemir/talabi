@@ -162,8 +162,16 @@ class CartRemoteDataSource {
     } on DioException catch (e, stackTrace) {
       // 403 hatası için özel mesaj
       if (e.response?.statusCode == 403) {
+        // Request headers'ı kontrol et
+        final requestHeaders = e.requestOptions.headers;
+        final hasAuth = requestHeaders.containsKey('Authorization');
+        final authValue = hasAuth
+            ? '${requestHeaders['Authorization']?.toString().substring(0, 20)}...'
+            : 'YOK';
+
         LoggerService().warning(
-          '403 Forbidden: DELETE /api/cart - Bu hata genellikle sunucu yapılandırmasından kaynaklanır.',
+          '403 Forbidden: DELETE /api/cart - Authorization header: $authValue. '
+          'Bu hata genellikle sunucu yapılandırmasından veya token eksikliğinden kaynaklanır.',
           e,
           stackTrace,
         );

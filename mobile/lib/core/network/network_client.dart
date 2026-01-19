@@ -75,6 +75,13 @@ class NetworkClient {
           final token = await SecureStorageService.instance.getToken();
           if (token != null && !options.headers.containsKey('Authorization')) {
             options.headers['Authorization'] = 'Bearer $token';
+          } else if (token == null && options.method.toUpperCase() != 'GET') {
+            // DELETE, POST, PUT gibi isteklerde token yoksa uyarı ver
+            LoggerService().warning(
+              '⚠️ Token bulunamadı: ${options.method} ${options.path} - Bu istek 401/403 hatası verebilir',
+              null,
+              StackTrace.current,
+            );
           }
 
           // Logout race condition check
