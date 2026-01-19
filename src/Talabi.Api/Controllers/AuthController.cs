@@ -888,13 +888,26 @@ public class AuthController : BaseController
     public async Task<ActionResult<ApiResponse<object>>> RegisterDevice(
         [FromBody] RegisterDeviceRequest request)
     {
-        // If user is authenticated, use their ID; otherwise use the token as a guest identifier
-        var userId = UserContext.GetUserId() ?? $"guest_{request.Token.GetHashCode()}";
+        try
+        {
+            // If user is authenticated, use their ID; otherwise use the token as a guest identifier
+            var userId = UserContext.GetUserId() ?? $"guest_{request.Token.GetHashCode()}";
 
-        await _notificationService.RegisterDeviceTokenAsync(userId, request.Token, request.DeviceType);
-        return Ok(new ApiResponse<object>(
-            new { }, 
-            LocalizationService.GetLocalizedString("NotificationResources", "DeviceRegisteredSuccessfully", CurrentCulture)));
+            await _notificationService.RegisterDeviceTokenAsync(userId, request.Token, request.DeviceType);
+            return Ok(new ApiResponse<object>(
+                new { },
+                LocalizationService.GetLocalizedString("NotificationResources", "DeviceRegisteredSuccessfully",
+                    CurrentCulture)));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Device registration failed");
+            return StatusCode(500, new ApiResponse<object>(
+                "Device registration failed: " + ex.Message,
+                "INTERNAL_ERROR",
+                new List<string> { ex.ToString() } // Include stack trace for debugging
+            ));
+        }
     }
 }
 
