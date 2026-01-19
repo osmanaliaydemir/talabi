@@ -40,7 +40,7 @@ namespace Talabi.Api.Controllers
             return Ok(new ApiResponse<BankAccount>(account));
         }
 
-        [HttpPut]
+        [HttpPost("update")]
         public async Task<IActionResult> UpdateBankAccount([FromBody] UpdateBankAccountRequest request)
         {
             var userId = UserContext.GetUserId();
@@ -58,7 +58,7 @@ namespace Talabi.Api.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpPost("{id}/delete")]
         public async Task<IActionResult> DeleteBankAccount(Guid id)
         {
             var userId = UserContext.GetUserId();

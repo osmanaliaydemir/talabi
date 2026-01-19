@@ -75,7 +75,7 @@ class LocationRemoteDataSource {
     double longitude,
   ) async {
     try {
-      await _networkClient.dio.put(
+      await _networkClient.dio.post(
         '${ApiEndpoints.courierLocation}/$courierId/location',
         data: {'latitude': latitude, 'longitude': longitude},
       );

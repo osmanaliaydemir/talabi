@@ -187,7 +187,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Yeni resim bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("profile/image")]
+    [HttpPost("profile/image")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateImage([FromBody] UpdateVendorImageDto dto)
     {
         if (dto == null || string.IsNullOrEmpty(dto.ImageUrl))
@@ -250,7 +250,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Güncellenecek ayar bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("settings")]
+    [HttpPost("settings")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateSettings([FromBody] UpdateVendorSettingsDto dto)
     {
         if (dto == null)
@@ -313,7 +313,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Aktif durumu</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("settings/active")]
+    [HttpPost("settings/active")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateActiveStatus([FromBody] UpdateVendorActiveStatusDto dto)
     {
         if (dto == null)
@@ -347,7 +347,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Yoğunluk durumu</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("settings/status")]
+    [HttpPost("settings/status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateBusyStatus([FromBody] UpdateVendorBusyStatusDto dto)
     {
         if (dto == null)

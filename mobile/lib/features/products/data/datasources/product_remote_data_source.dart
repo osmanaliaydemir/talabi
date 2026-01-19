@@ -214,7 +214,7 @@ class ProductRemoteDataSource {
   }
 
   Future<void> updateProductPrice(String productId, double price) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.productPrice(productId),
       data: {'price': price},
     );
@@ -233,7 +233,7 @@ class ProductRemoteDataSource {
     String productId,
     bool isAvailable,
   ) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.productAvailability(productId),
       data: {'isAvailable': isAvailable},
     );
@@ -251,8 +251,8 @@ class ProductRemoteDataSource {
   }
 
   Future<void> deleteProduct(String productId) async {
-    final response = await _networkClient.dio.delete(
-      VendorApiEndpoints.product(productId),
+    final response = await _networkClient.dio.post(
+      '${VendorApiEndpoints.product(productId)}/delete',
     );
 
     final apiResponse = ApiResponse.fromJson(

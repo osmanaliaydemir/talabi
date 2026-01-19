@@ -67,7 +67,7 @@ public class AddressesController : BaseController
             .ThenByDescending(a => a.CreatedAt);
 
         var addresses = await orderedQuery.ToListAsync();
-        
+
         var dtos = addresses.Select(a => new AddressDto
         {
             Id = a.Id,
@@ -166,7 +166,7 @@ public class AddressesController : BaseController
     /// <param name="id">Adres ID'si</param>
     /// <param name="dto">Güncellenecek adres bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateAddress(Guid id, UpdateAddressDto dto)
     {
         var userId = UserContext.GetUserId();
@@ -207,7 +207,7 @@ public class AddressesController : BaseController
     /// </summary>
     /// <param name="id">Adres ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/set-default")]
+    [HttpPost("{id}/set-default")]
     public async Task<ActionResult<ApiResponse<object>>> SetDefaultAddress(Guid id)
     {
         var userId = UserContext.GetUserId();
@@ -249,7 +249,7 @@ public class AddressesController : BaseController
     /// </summary>
     /// <param name="id">Adres ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteAddress(Guid id)
     {
         var userId = UserContext.GetUserId();

@@ -6,7 +6,6 @@ import 'package:mobile/services/logger_service.dart';
 
 @lazySingleton
 class UserRemoteDataSource {
-
   UserRemoteDataSource(this._networkClient);
   final NetworkClient _networkClient;
 
@@ -59,7 +58,7 @@ class UserRemoteDataSource {
       if (dateFormat != null) data['dateFormat'] = dateFormat;
       if (timeFormat != null) data['timeFormat'] = timeFormat;
 
-      final response = await _networkClient.dio.put(
+      final response = await _networkClient.dio.post(
         ApiEndpoints.userPreferences,
         data: data,
       );

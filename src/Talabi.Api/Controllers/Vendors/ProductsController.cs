@@ -289,7 +289,7 @@ public class ProductsController : BaseController
     /// <param name="id">Ürün ID'si</param>
     /// <param name="dto">Güncellenecek ürün bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProduct(Guid id, UpdateProductDto dto)
     {
         try
@@ -394,7 +394,7 @@ public class ProductsController : BaseController
     /// </summary>
     /// <param name="id">Ürün ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult<ApiResponse<object>>> DeleteProduct(Guid id)
     {
         var vendorId = await GetVendorIdAsync();
@@ -429,7 +429,7 @@ public class ProductsController : BaseController
     /// <param name="id">Ürün ID'si</param>
     /// <param name="dto">Müsaitlik bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/availability")]
+    [HttpPost("{id}/availability")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductAvailability(Guid id,
         UpdateProductAvailabilityDto dto)
     {
@@ -469,7 +469,7 @@ public class ProductsController : BaseController
     /// <param name="id">Ürün ID'si</param>
     /// <param name="dto">Fiyat bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/price")]
+    [HttpPost("{id}/price")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProductPrice(Guid id, UpdateProductPriceDto dto)
     {
         var vendorId = await GetVendorIdAsync();

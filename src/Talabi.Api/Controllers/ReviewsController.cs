@@ -50,7 +50,6 @@ public class ReviewsController : BaseController
     [Authorize]
     public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview(CreateReviewDto dto)
     {
-
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -58,6 +57,7 @@ public class ReviewsController : BaseController
                 LocalizationService.GetLocalizedString(ResourceName, "UserIdentityNotFound", CurrentCulture),
                 "USER_IDENTITY_NOT_FOUND"));
         }
+
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
@@ -142,7 +142,8 @@ public class ReviewsController : BaseController
         }
         else
         {
-            return BadRequest(new ApiResponse<ReviewDto>(LocalizationService.GetLocalizedString(ResourceName, "InvalidTargetType", CurrentCulture),
+            return BadRequest(new ApiResponse<ReviewDto>(
+                LocalizationService.GetLocalizedString(ResourceName, "InvalidTargetType", CurrentCulture),
                 "INVALID_TARGET_TYPE"
             ));
         }
@@ -154,7 +155,7 @@ public class ReviewsController : BaseController
         var reviewWithRelations = await UnitOfWork.Reviews.Query()
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p!.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .Include(r => r.Vendor)
             .FirstOrDefaultAsync(r => r.Id == review.Id);
 
@@ -163,7 +164,8 @@ public class ReviewsController : BaseController
         if (review.ProductId.HasValue)
         {
             return CreatedAtAction(nameof(GetProductReviews), new { productId = review.ProductId.Value },
-                new ApiResponse<ReviewDto>(reviewDto, LocalizationService.GetLocalizedString(ResourceName, "ReviewCreatedSuccessfully", CurrentCulture)));
+                new ApiResponse<ReviewDto>(reviewDto,
+                    LocalizationService.GetLocalizedString(ResourceName, "ReviewCreatedSuccessfully", CurrentCulture)));
         }
 
         if (review.VendorId.HasValue)
@@ -204,7 +206,7 @@ public class ReviewsController : BaseController
             .Include(o => o.OrderItems)
             .Include(o => o.Vendor)
             .Include(o => o.OrderCouriers)
-                .ThenInclude(oc => oc.Courier)
+            .ThenInclude(oc => oc.Courier)
             .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
 
         // Manually populate active courier if not mapped
@@ -323,13 +325,16 @@ public class ReviewsController : BaseController
                     await _notificationService.SendNotificationAsync(
                         order.ActiveOrderCourier.Courier.UserId, // Assuming token logic handles UserId mapping
                         LocalizationService.GetLocalizedString(ResourceName, "NewCourierReviewTitle", CurrentCulture),
-                        string.Format(LocalizationService.GetLocalizedString(ResourceName, "NewCourierReviewBody", CurrentCulture), courierReview.Rating),
+                        string.Format(
+                            LocalizationService.GetLocalizedString(ResourceName, "NewCourierReviewBody",
+                                CurrentCulture), courierReview.Rating),
                         new { OrderId = order.Id, Type = "CourierReview" }
                     );
                 }
 
                 // 4.2 Vendor Notification
-                if (order.Vendor?.OwnerId != null && (reviewsToAdd.Any(r => r.VendorId.HasValue) || reviewsToAdd.Any(r => r.ProductId.HasValue)))
+                if (order.Vendor?.OwnerId != null && (reviewsToAdd.Any(r => r.VendorId.HasValue) ||
+                                                      reviewsToAdd.Any(r => r.ProductId.HasValue)))
                 {
                     await _notificationService.SendNotificationAsync(
                         order.Vendor.OwnerId,
@@ -406,10 +411,10 @@ public class ReviewsController : BaseController
         // Get last delivered order
         Order? lastDeliveredOrder = await UnitOfWork.Orders.Query()
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+            .ThenInclude(oi => oi.Product)
             .Include(o => o.Vendor)
             .Include(o => o.OrderCouriers)
-                .ThenInclude(oc => oc.Courier)
+            .ThenInclude(oc => oc.Courier)
             .Where(o => o.CustomerId == userId && o.Status == OrderStatus.Delivered)
             .OrderByDescending(o => o.UpdatedAt) // Most recent first
             .FirstOrDefaultAsync();
@@ -430,7 +435,8 @@ public class ReviewsController : BaseController
             .Where(r => r.OrderId == lastDeliveredOrder.Id)
             .ToListAsync();
 
-        bool isCourierNeedsReview = lastDeliveredOrder.ActiveOrderCourier != null && !reviews.Any(r => r.CourierId.HasValue);
+        bool isCourierNeedsReview =
+            lastDeliveredOrder.ActiveOrderCourier != null && !reviews.Any(r => r.CourierId.HasValue);
         bool isVendorNeedsReview = !reviews.Any(r => r.VendorId.HasValue);
 
         // Popup mantığı: Kurye veya Restoran değerlendirilmemişse göster
@@ -451,11 +457,10 @@ public class ReviewsController : BaseController
     [HttpGet("products/{productId}")]
     public async Task<ActionResult<ApiResponse<ProductReviewsSummaryDto>>> GetProductReviews(Guid productId)
     {
-
         IQueryable<Review> query = UnitOfWork.Reviews.Query()
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p!.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .Where(r => r.ProductId == productId && r.IsApproved);
 
         // Ortalama rating ve toplam sayıları hesapla
@@ -470,7 +475,7 @@ public class ReviewsController : BaseController
         var reviews = await orderedQuery
             .Include(r => r.User)
             .Include(r => r.Product)
-                .ThenInclude(p => p!.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .Include(r => r.Vendor)
             .ToListAsync();
 
@@ -485,7 +490,8 @@ public class ReviewsController : BaseController
         };
 
         return Ok(new ApiResponse<ProductReviewsSummaryDto>(summary,
-            LocalizationService.GetLocalizedString(ResourceName, "ProductReviewsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "ProductReviewsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -496,12 +502,11 @@ public class ReviewsController : BaseController
     [HttpGet("vendors/{vendorId}")]
     public async Task<ActionResult<ApiResponse<List<ReviewDto>>>> GetVendorReviews(Guid vendorId)
     {
-
         IQueryable<Review> query = UnitOfWork.Reviews.Query()
             .Include(r => r.User)
             .Include(r => r.Vendor)
             .Include(r => r.Product)
-                .ThenInclude(p => p!.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .Where(r => r.VendorId == vendorId);
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);
@@ -511,7 +516,8 @@ public class ReviewsController : BaseController
 
         return Ok(new ApiResponse<List<ReviewDto>>(
             reviewDtos,
-            LocalizationService.GetLocalizedString(ResourceName, "VendorReviewsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "VendorReviewsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -519,11 +525,10 @@ public class ReviewsController : BaseController
     /// </summary>
     /// <param name="reviewId">Değerlendirme ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPatch("{reviewId}/approve")]
+    [HttpPost("{reviewId}/approve")]
     [Authorize]
     public async Task<ActionResult<ApiResponse<object>>> ApproveReview(Guid reviewId)
     {
-
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -535,7 +540,7 @@ public class ReviewsController : BaseController
         var review = await UnitOfWork.Reviews.Query()
             .Include(r => r.Vendor)
             .Include(r => r.Product)
-                .ThenInclude(p => p!.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .FirstOrDefaultAsync(r => r.Id == reviewId);
 
         if (review == null)
@@ -587,11 +592,10 @@ public class ReviewsController : BaseController
     /// </summary>
     /// <param name="reviewId">Değerlendirme ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPatch("{reviewId}/reject")]
+    [HttpPost("{reviewId}/reject")]
     [Authorize]
     public async Task<ActionResult<ApiResponse<object>>> RejectReview(Guid reviewId)
     {
-
         var userId = UserContext.GetUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
@@ -603,7 +607,7 @@ public class ReviewsController : BaseController
         var review = await UnitOfWork.Reviews.Query()
             .Include(r => r.Vendor)
             .Include(r => r.Product)
-                .ThenInclude(p => p!.Vendor)
+            .ThenInclude(p => p!.Vendor)
             .FirstOrDefaultAsync(r => r.Id == reviewId);
 
         if (review == null)
@@ -644,7 +648,8 @@ public class ReviewsController : BaseController
         UnitOfWork.Reviews.Remove(review);
         await UnitOfWork.SaveChangesAsync();
 
-        return Ok(new ApiResponse<object>(new { }, LocalizationService.GetLocalizedString(ResourceName, "ReviewRejectedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<object>(new { },
+            LocalizationService.GetLocalizedString(ResourceName, "ReviewRejectedSuccessfully", CurrentCulture)));
     }
 
     /// <summary>
@@ -681,10 +686,10 @@ public class ReviewsController : BaseController
 
         // Bekleyen review'ları getir: hem vendor review'ları hem de vendor'ın ürünlerinin review'ları
         IQueryable<Review> query = UnitOfWork.Reviews.Query().Include(r => r.User).Where(r => !r.IsApproved &&
-            (
-                (r.VendorId == vendor.Id) ||
-                (r.ProductId.HasValue && vendorProductIds.Contains(r.ProductId.Value))
-            ));
+        (
+            (r.VendorId == vendor.Id) ||
+            (r.ProductId.HasValue && vendorProductIds.Contains(r.ProductId.Value))
+        ));
 
         IOrderedQueryable<Review> orderedQuery = query.OrderByDescending(r => r.CreatedAt);
 
@@ -701,8 +706,11 @@ public class ReviewsController : BaseController
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<ReviewDto>>(reviews, LocalizationService.GetLocalizedString(ResourceName, "PendingReviewsRetrievedSuccessfully", CurrentCulture)));
+        return Ok(new ApiResponse<List<ReviewDto>>(reviews,
+            LocalizationService.GetLocalizedString(ResourceName, "PendingReviewsRetrievedSuccessfully",
+                CurrentCulture)));
     }
+
     /// <summary>
     /// Kullanıcının kendi yaptığı tüm değerlendirmeleri getirir
     /// </summary>
@@ -723,7 +731,7 @@ public class ReviewsController : BaseController
             .Include(r => r.Product)
             .Include(r => r.Vendor)
             .Include(r => r.Courier)
-                .ThenInclude(c => c!.User)
+            .ThenInclude(c => c!.User)
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
@@ -749,8 +757,8 @@ public class ReviewsController : BaseController
         // Kullanıcının bu ürünü içeren ve teslim edilmiş bir siparişi var mı?
         var hasPurchased = await UnitOfWork.Orders.Query()
             .AnyAsync(o => o.CustomerId == userId &&
-                          o.Status == OrderStatus.Delivered &&
-                          o.OrderItems.Any(oi => oi.ProductId == productId));
+                           o.Status == OrderStatus.Delivered &&
+                           o.OrderItems.Any(oi => oi.ProductId == productId));
 
         return Ok(new ApiResponse<bool>(hasPurchased));
     }

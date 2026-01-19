@@ -140,7 +140,7 @@ class ReviewRemoteDataSource {
 
   Future<void> approveReview(String reviewId) async {
     try {
-      await _networkClient.dio.put(
+      await _networkClient.dio.post(
         '${ApiEndpoints.reviews}/$reviewId/approve',
       ); // Corrected to use ID
     } catch (e, stackTrace) {
@@ -151,7 +151,7 @@ class ReviewRemoteDataSource {
 
   Future<void> rejectReview(String reviewId) async {
     try {
-      await _networkClient.dio.put(
+      await _networkClient.dio.post(
         '${ApiEndpoints.reviews}/$reviewId/reject',
       ); // Corrected to use ID
     } catch (e, stackTrace) {

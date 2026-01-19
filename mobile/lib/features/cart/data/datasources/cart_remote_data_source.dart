@@ -83,7 +83,7 @@ class CartRemoteDataSource {
 
   Future<void> updateCartItem(String itemId, int quantity) async {
     try {
-      final response = await _networkClient.dio.put(
+      final response = await _networkClient.dio.post(
         '${ApiEndpoints.cartItems}/$itemId',
         data: {'quantity': quantity},
       );
@@ -107,8 +107,8 @@ class CartRemoteDataSource {
 
   Future<void> removeFromCart(String itemId) async {
     try {
-      final response = await _networkClient.dio.delete(
-        '${ApiEndpoints.cartItems}/$itemId',
+      final response = await _networkClient.dio.post(
+        '${ApiEndpoints.cartItems}/$itemId/delete',
       );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
@@ -145,7 +145,9 @@ class CartRemoteDataSource {
 
   Future<void> clearCart() async {
     try {
-      final response = await _networkClient.dio.delete(ApiEndpoints.cart);
+      final response = await _networkClient.dio.post(
+        '${ApiEndpoints.cart}/clear',
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -192,7 +194,7 @@ class CartRemoteDataSource {
     String? campaignId,
   }) async {
     try {
-      final response = await _networkClient.dio.put(
+      final response = await _networkClient.dio.post(
         '${ApiEndpoints.cart}/promotions',
         data: {'couponCode': couponCode, 'campaignId': campaignId},
       );
@@ -218,8 +220,8 @@ class CartRemoteDataSource {
 
   Future<void> clearCartPromotions() async {
     try {
-      final response = await _networkClient.dio.delete(
-        '${ApiEndpoints.cart}/promotions',
+      final response = await _networkClient.dio.post(
+        '${ApiEndpoints.cart}/promotions/delete',
       );
 
       final apiResponse = ApiResponse<Map<String, dynamic>?>.fromJson(

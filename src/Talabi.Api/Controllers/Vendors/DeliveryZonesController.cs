@@ -50,7 +50,8 @@ public class DeliveryZonesController : BaseController
 
         if (vendor == null)
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString("VendorProfileResources", "VendorProfileNotFound", CurrentCulture),
+                LocalizationService.GetLocalizedString("VendorProfileResources", "VendorProfileNotFound",
+                    CurrentCulture),
                 "VENDOR_PROFILE_NOT_FOUND"));
 
         // 1. If no city selected, return list of cities
@@ -105,7 +106,7 @@ public class DeliveryZonesController : BaseController
     /// Syncs delivery zones for a specific city.
     /// Replaces all zones for the city with the provided list.
     /// </summary>
-    [HttpPut]
+    [HttpPost]
     public async Task<ActionResult<ApiResponse<object>>> SyncZones([FromBody] DeliveryZoneSyncDto dto)
     {
         var userId = UserContext.GetUserId();

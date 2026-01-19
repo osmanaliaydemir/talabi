@@ -72,7 +72,7 @@ public class ProfileController : BaseController
     /// </summary>
     /// <param name="dto">Güncellenecek profil bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut]
+    [HttpPost]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile(UpdateProfileDto dto)
     {
         var userId = UserContext.GetUserId();
@@ -117,7 +117,7 @@ public class ProfileController : BaseController
     /// </summary>
     /// <param name="dto">Şifre değiştirme bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("password")]
+    [HttpPost("password")]
     public async Task<ActionResult<ApiResponse<object>>> ChangePassword(ChangePasswordDto dto)
     {
         var userId = UserContext.GetUserId();
@@ -191,8 +191,9 @@ public class ProfileController : BaseController
         };
 
         return Ok(new ApiResponse<NotificationSettingsDto>(
-            dto, 
-            LocalizationService.GetLocalizedString("NotificationResources", "SettingsRetrievedSuccessfully", CurrentCulture)));
+            dto,
+            LocalizationService.GetLocalizedString("NotificationResources", "SettingsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -200,8 +201,9 @@ public class ProfileController : BaseController
     /// </summary>
     /// <param name="dto">Güncellenecek bildirim ayarları</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("notification-settings")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateNotificationSettings([FromBody] NotificationSettingsDto dto)
+    [HttpPost("notification-settings")]
+    public async Task<ActionResult<ApiResponse<object>>> UpdateNotificationSettings(
+        [FromBody] NotificationSettingsDto dto)
     {
         var userId = UserContext.GetUserId();
         if (userId == null)
@@ -229,7 +231,8 @@ public class ProfileController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
-            LocalizationService.GetLocalizedString("NotificationResources", "SettingsUpdatedSuccessfully", CurrentCulture)));
+            new { },
+            LocalizationService.GetLocalizedString("NotificationResources", "SettingsUpdatedSuccessfully",
+                CurrentCulture)));
     }
 }

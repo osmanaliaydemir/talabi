@@ -389,7 +389,7 @@ public class OrdersController : BaseController
     /// <param name="id">Sipariş ID'si</param>
     /// <param name="dto">Yeni durum bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/status")]
+    [HttpPost("{id}/status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
         try

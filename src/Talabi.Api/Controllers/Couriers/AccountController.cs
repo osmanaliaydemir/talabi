@@ -122,7 +122,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Güncellenecek profil bilgileri</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("profile")]
+    [HttpPost("profile")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateCourierProfileDto dto)
     {
         if (dto == null)
@@ -235,7 +235,7 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Yeni durum bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("status")]
+    [HttpPost("status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateStatus([FromBody] UpdateCourierStatusDto dto)
     {
         if (dto == null)
@@ -304,8 +304,9 @@ public class AccountController : BaseController
     /// </summary>
     /// <param name="dto">Yeni konum bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("location")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateLocation([FromBody] Talabi.Core.DTOs.Courier.UpdateCourierLocationDto dto)
+    [HttpPost("location")]
+    public async Task<ActionResult<ApiResponse<object>>> UpdateLocation(
+        [FromBody] Talabi.Core.DTOs.Courier.UpdateCourierLocationDto dto)
     {
         if (dto == null)
         {
@@ -348,7 +349,9 @@ public class AccountController : BaseController
         try
         {
             var activeOrders = await UnitOfWork.OrderCouriers.Query()
-                .Where(oc => oc.CourierId == courier.Id && oc.IsActive && oc.Order != null && oc.Order.Status == OrderStatus.OutForDelivery)
+                .Where(oc =>
+                    oc.CourierId == courier.Id && oc.IsActive && oc.Order != null &&
+                    oc.Order.Status == OrderStatus.OutForDelivery)
                 .Select(oc => new { oc.OrderId, VendorId = oc.Order!.VendorId })
                 .ToListAsync();
 

@@ -40,7 +40,7 @@ public class FavoritesController : BaseController
     /// <returns>Sayfalanmış favori ürün listesi</returns>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PagedResultDto<ProductDto>>>> GetFavorites(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
@@ -86,7 +86,7 @@ public class FavoritesController : BaseController
         };
 
         return Ok(new ApiResponse<PagedResultDto<ProductDto>>(
-            result, 
+            result,
             LocalizationService.GetLocalizedString(ResourceName, "FavoritesRetrievedSuccessfully", CurrentCulture)));
     }
 
@@ -109,7 +109,7 @@ public class FavoritesController : BaseController
         if (product == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "ProductNotFound", CurrentCulture),
                 "PRODUCT_NOT_FOUND"));
         }
 
@@ -120,7 +120,7 @@ public class FavoritesController : BaseController
         if (exists)
         {
             return BadRequest(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "AlreadyInFavorites", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "AlreadyInFavorites", CurrentCulture),
                 "ALREADY_IN_FAVORITES"));
         }
 
@@ -134,7 +134,7 @@ public class FavoritesController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "AddedToFavorites", CurrentCulture)));
     }
 
@@ -143,7 +143,7 @@ public class FavoritesController : BaseController
     /// </summary>
     /// <param name="productId">Ürün ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpDelete("{productId}")]
+    [HttpPost("{productId}/delete")]
     public async Task<ActionResult<ApiResponse<object>>> RemoveFromFavorites(Guid productId)
     {
         var userId = UserContext.GetUserId();
@@ -158,7 +158,7 @@ public class FavoritesController : BaseController
         if (favorite == null)
         {
             return NotFound(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "FavoriteNotFound", CurrentCulture), 
+                LocalizationService.GetLocalizedString(ResourceName, "FavoriteNotFound", CurrentCulture),
                 "FAVORITE_NOT_FOUND"));
         }
 
@@ -166,7 +166,7 @@ public class FavoritesController : BaseController
         await UnitOfWork.SaveChangesAsync();
 
         return Ok(new ApiResponse<object>(
-            new { }, 
+            new { },
             LocalizationService.GetLocalizedString(ResourceName, "RemovedFromFavorites", CurrentCulture)));
     }
 
@@ -188,7 +188,7 @@ public class FavoritesController : BaseController
             .AnyAsync(f => f.UserId == userId && f.ProductId == productId);
 
         return Ok(new ApiResponse<object>(
-            new { IsFavorite = isFavorite }, 
+            new { IsFavorite = isFavorite },
             LocalizationService.GetLocalizedString(ResourceName, "FavoriteStatusChecked", CurrentCulture)));
     }
 }

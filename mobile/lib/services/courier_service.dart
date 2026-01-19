@@ -39,7 +39,7 @@ class CourierService {
 
   Future<void> updateStatus(String status) async {
     try {
-      final response = await _dio.put(
+      final response = await _dio.post(
         CourierApiEndpoints.status,
         data: {'status': status},
       );
@@ -63,7 +63,7 @@ class CourierService {
 
   Future<void> updateLocation(double latitude, double longitude) async {
     try {
-      final response = await _dio.put(
+      final response = await _dio.post(
         CourierApiEndpoints.location,
         data: {'latitude': latitude, 'longitude': longitude},
       );
@@ -552,7 +552,7 @@ class CourierService {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put(CourierApiEndpoints.profile, data: data);
+      final response = await _dio.post(CourierApiEndpoints.profile, data: data);
 
       if (response.data is Map<String, dynamic> &&
           (response.data as Map<String, dynamic>).containsKey('success')) {

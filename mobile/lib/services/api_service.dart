@@ -699,7 +699,7 @@ class ApiService {
 
   Future<void> updateAddress(String id, Map<String, dynamic> data) async {
     try {
-      final response = await dio.put('/addresses/$id', data: data);
+      final response = await dio.post('/addresses/$id', data: data);
       _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
@@ -721,7 +721,7 @@ class ApiService {
 
   Future<void> deleteAddress(String id) async {
     try {
-      final response = await dio.delete('/addresses/$id');
+      final response = await dio.post('/addresses/$id/delete');
       _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
@@ -743,7 +743,7 @@ class ApiService {
 
   Future<void> setDefaultAddress(String id) async {
     try {
-      final response = await dio.put('/addresses/$id/set-default');
+      final response = await dio.post('/addresses/$id/set-default');
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -843,7 +843,9 @@ class ApiService {
 
   Future<void> removeFromFavorites(String productId) async {
     try {
-      final response = await dio.delete('${ApiEndpoints.favorites}/$productId');
+      final response = await dio.post(
+        '${ApiEndpoints.favorites}/$productId/delete',
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -2552,7 +2554,10 @@ class ApiService {
     UpdateBankAccountRequest request,
   ) async {
     try {
-      final response = await dio.put('/bankaccount', data: request.toJson());
+      final response = await dio.post(
+        '/bankaccount/update',
+        data: request.toJson(),
+      );
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
         (json) => BankAccount.fromJson(json as Map<String, dynamic>),
@@ -2571,7 +2576,7 @@ class ApiService {
 
   Future<void> deleteBankAccount(String id) async {
     try {
-      final response = await dio.delete('/bankaccount/$id');
+      final response = await dio.post('/bankaccount/$id/delete');
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
         (json) => json,

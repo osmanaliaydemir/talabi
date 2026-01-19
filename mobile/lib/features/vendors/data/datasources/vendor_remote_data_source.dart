@@ -136,7 +136,7 @@ class VendorRemoteDataSource {
   }
 
   Future<void> updateVendorBusyStatus(bool isBusy) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.settingsStatus,
       data: {'isBusy': isBusy},
     );
@@ -174,7 +174,7 @@ class VendorRemoteDataSource {
   }
 
   Future<void> updateVendorSettings(Map<String, dynamic> settings) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.settings,
       data: settings,
     );
@@ -210,7 +210,7 @@ class VendorRemoteDataSource {
   }
 
   Future<void> toggleVendorActive(bool isActive) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.settingsActive,
       data: {'isActive': isActive},
     );
@@ -315,7 +315,7 @@ class VendorRemoteDataSource {
   }
 
   Future<void> syncDeliveryZones(DeliveryZoneSyncDto dto) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.deliveryZones,
       data: dto.toJson(),
     );
@@ -353,7 +353,7 @@ class VendorRemoteDataSource {
   }
 
   Future<void> updateVendorImage(String imageUrl) async {
-    final response = await _networkClient.dio.put(
+    final response = await _networkClient.dio.post(
       VendorApiEndpoints.profileImage,
       data: {'imageUrl': imageUrl},
     );

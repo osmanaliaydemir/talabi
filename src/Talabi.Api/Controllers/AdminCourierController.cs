@@ -46,8 +46,6 @@ public class AdminCourierController : BaseController
         [FromQuery] string? status,
         [FromQuery] bool? isActive)
     {
-
-
         IQueryable<Courier> query = UnitOfWork.Couriers.Query();
 
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<CourierStatus>(status, true, out var statusEnum))
@@ -101,8 +99,6 @@ public class AdminCourierController : BaseController
         Guid id,
         [FromQuery] Guid courierId)
     {
-
-
         var success = await _assignmentService.AssignOrderToCourierAsync(id, courierId);
         if (!success)
         {
@@ -124,8 +120,6 @@ public class AdminCourierController : BaseController
     [HttpGet("{id}/performance")]
     public async Task<ActionResult<ApiResponse<CourierStatisticsDto>>> GetPerformance(Guid id)
     {
-
-
         var courier = await UnitOfWork.Couriers.GetByIdAsync(id);
         if (courier == null)
         {
@@ -142,8 +136,8 @@ public class AdminCourierController : BaseController
         var orderCouriers = await UnitOfWork.OrderCouriers.Query()
             .Include(oc => oc.Order)
             .Where(oc => oc.CourierId == id
-                && oc.Order != null
-                && oc.Order.Status == OrderStatus.Delivered)
+                         && oc.Order != null
+                         && oc.Order.Status == OrderStatus.Delivered)
             .ToListAsync();
 
         var todayOrders = orderCouriers.Count(oc => oc.DeliveredAt.HasValue && oc.DeliveredAt.Value.Date == today);
@@ -176,7 +170,8 @@ public class AdminCourierController : BaseController
 
         return Ok(new ApiResponse<CourierStatisticsDto>(
             stats,
-            LocalizationService.GetLocalizedString(ResourceName, "PerformanceStatisticsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "PerformanceStatisticsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 
     /// <summary>
@@ -184,11 +179,9 @@ public class AdminCourierController : BaseController
     /// </summary>
     /// <param name="id">Kurye ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/activate")]
+    [HttpPost("{id}/activate")]
     public async Task<ActionResult<ApiResponse<object>>> ActivateCourier(Guid id)
     {
-
-
         var courier = await UnitOfWork.Couriers.GetByIdAsync(id);
         if (courier == null)
         {
@@ -212,11 +205,9 @@ public class AdminCourierController : BaseController
     /// </summary>
     /// <param name="id">Kurye ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/deactivate")]
+    [HttpPost("{id}/deactivate")]
     public async Task<ActionResult<ApiResponse<object>>> DeactivateCourier(Guid id)
     {
-
-
         var courier = await UnitOfWork.Couriers.GetByIdAsync(id);
         if (courier == null)
         {
@@ -228,7 +219,8 @@ public class AdminCourierController : BaseController
         if (courier.CurrentActiveOrders > 0)
         {
             return BadRequest(new ApiResponse<object>(
-                LocalizationService.GetLocalizedString(ResourceName, "CannotDeactivateWithActiveOrders", CurrentCulture),
+                LocalizationService.GetLocalizedString(ResourceName, "CannotDeactivateWithActiveOrders",
+                    CurrentCulture),
                 "CANNOT_DEACTIVATE_WITH_ACTIVE_ORDERS"));
         }
 
@@ -249,13 +241,11 @@ public class AdminCourierController : BaseController
     /// <param name="id">Kurye ID'si</param>
     /// <param name="dto">Yeni durum bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("{id}/status")]
+    [HttpPost("{id}/status")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateCourierStatus(
         Guid id,
         [FromBody] UpdateCourierStatusDto dto)
     {
-
-
         var courier = await UnitOfWork.Couriers.GetByIdAsync(id);
         if (courier == null)
         {
@@ -288,8 +278,6 @@ public class AdminCourierController : BaseController
     [HttpGet("statistics")]
     public async Task<ActionResult<ApiResponse<object>>> GetOverallStatistics()
     {
-
-
         var totalCouriers = await UnitOfWork.Couriers.CountAsync();
         var activeCouriers = await UnitOfWork.Couriers.CountAsync(c => c.IsActive);
         var availableCouriers = await UnitOfWork.Couriers.CountAsync(c => c.Status == CourierStatus.Available);
@@ -298,9 +286,9 @@ public class AdminCourierController : BaseController
         var today = DateTime.Today;
         var todayDeliveries = await UnitOfWork.OrderCouriers.Query()
             .Where(oc => oc.Order != null
-                && oc.Order.Status == OrderStatus.Delivered
-                && oc.DeliveredAt.HasValue
-                && oc.DeliveredAt.Value.Date == today)
+                         && oc.Order.Status == OrderStatus.Delivered
+                         && oc.DeliveredAt.HasValue
+                         && oc.DeliveredAt.Value.Date == today)
             .CountAsync();
 
         var todayEarnings = await UnitOfWork.CourierEarnings.Query()
@@ -319,6 +307,7 @@ public class AdminCourierController : BaseController
 
         return Ok(new ApiResponse<object>(
             stats,
-            LocalizationService.GetLocalizedString(ResourceName, "OverallStatisticsRetrievedSuccessfully", CurrentCulture)));
+            LocalizationService.GetLocalizedString(ResourceName, "OverallStatisticsRetrievedSuccessfully",
+                CurrentCulture)));
     }
 }

@@ -158,6 +158,7 @@ public class CartController(
                 {
                     UnitOfWork.CartItems.Remove(cartItemToRemove);
                 }
+
                 await UnitOfWork.SaveChangesAsync();
             }
 
@@ -229,7 +230,7 @@ public class CartController(
                 // load Vendor explicitly only when needed.
                 var product = await UnitOfWork.Products.Query()
                     .FirstOrDefaultAsync(p => p.Id == dto.ProductId);
-                
+
                 if (product == null)
                 {
                     return NotFound(new ApiResponse<object>(
@@ -268,7 +269,8 @@ public class CartController(
                         // Vendor'ın delivery radius dışında - ürün eklenemez
                         return BadRequest(new ApiResponse<object>(
                             LocalizationService.GetLocalizedString(ResourceName, "ProductOutOfDeliveryRadius",
-                                CurrentCulture) ?? $"Bu ürün teslimat yarıçapınız ({deliveryRadius} km) dışında. Mesafe: {distance:F2} km",
+                                CurrentCulture) ??
+                            $"Bu ürün teslimat yarıçapınız ({deliveryRadius} km) dışında. Mesafe: {distance:F2} km",
                             "PRODUCT_OUT_OF_DELIVERY_RADIUS"));
                     }
                 }
@@ -364,7 +366,7 @@ public class CartController(
     /// <param name="itemId">Sepet öğesi ID'si</param>
     /// <param name="dto">Güncellenecek miktar bilgisi</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpPut("items/{itemId}")]
+    [HttpPost("items/{itemId}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateCartItem(Guid itemId, UpdateCartItemDto dto)
     {
         var userId = UserContext.GetUserId();
@@ -412,7 +414,7 @@ public class CartController(
     /// </summary>
     /// <param name="itemId">Sepet öğesi ID'si</param>
     /// <returns>İşlem sonucu</returns>
-    [HttpDelete("items/{itemId}")]
+    [HttpPost("items/{itemId}/delete")]
     public async Task<ActionResult<ApiResponse<object>>> RemoveFromCart(Guid itemId)
     {
         var userId = UserContext.GetUserId();
@@ -451,7 +453,7 @@ public class CartController(
     /// <summary>
     /// Sepetin promosyon (kampanya/kupon) bilgilerini günceller
     /// </summary>
-    [HttpPut("promotions")]
+    [HttpPost("promotions")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateCartPromotions(UpdateCartPromotionsDto dto)
     {
         var userId = UserContext.GetUserId();
@@ -553,7 +555,7 @@ public class CartController(
     /// <summary>
     /// Sepetteki tüm promosyonları (kampanya ve kupon) temizler
     /// </summary>
-    [HttpDelete("promotions")]
+    [HttpPost("promotions/delete")]
     public async Task<ActionResult<ApiResponse<object>>> ClearPromotions()
     {
         var userId = UserContext.GetUserId();
@@ -589,7 +591,7 @@ public class CartController(
     /// Sepeti temizler
     /// </summary>
     /// <returns>İşlem sonucu</returns>
-    [HttpDelete]
+    [HttpPost("clear")]
     public async Task<ActionResult<ApiResponse<object>>> ClearCart()
     {
         var userId = UserContext.GetUserId();
@@ -644,7 +646,8 @@ public class CartController(
         {
             // Kullanıcı konumu zorunlu - gönderilmediyse boş liste döndür
             return Ok(new ApiResponse<List<ProductDto>>(new List<ProductDto>(),
-                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForRecommendations", CurrentCulture) ?? "Kullanıcı konumu gerekli"));
+                LocalizationService.GetLocalizedString(ResourceName, "UserLocationRequiredForRecommendations",
+                    CurrentCulture) ?? "Kullanıcı konumu gerekli"));
         }
 
         var targetLat = lat.Value;
@@ -730,7 +733,7 @@ public class CartController(
 
             var vendorsInRadius = allVendors
                 .Where(v => GeoHelper.CalculateDistance(userLat, userLon, v.Latitude!.Value, v.Longitude!.Value) <=
-                           (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
+                            (v.DeliveryRadiusInKm == 0 ? 5 : v.DeliveryRadiusInKm))
                 .ToList();
 
             if (!vendorsInRadius.Any())
