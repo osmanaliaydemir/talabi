@@ -467,6 +467,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerFailed => 'Registration failed';
 
   @override
+  String get sessionExpired => 'Your session has expired. Please log in again.';
+
+  @override
   String get membershipAgreement => 'Membership Agreement';
 
   @override

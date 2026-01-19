@@ -620,6 +620,10 @@
   "@registerFailed": {
     "description": "Registration failed"
   },
+  "sessionExpired": "Your session has expired. Please log in again.",
+  "@sessionExpired": {
+    "description": "Session expired message shown when token is invalid/expired"
+  },
   "membershipAgreement": "Membership Agreement",
   "@membershipAgreement": {
     "description": "Membership Agreement"

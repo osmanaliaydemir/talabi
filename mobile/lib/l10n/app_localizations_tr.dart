@@ -468,6 +468,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get registerFailed => 'Kayıt başarısız';
 
   @override
+  String get sessionExpired =>
+      'Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.';
+
+  @override
   String get membershipAgreement => 'Üyelik Sözleşmesi';
 
   @override

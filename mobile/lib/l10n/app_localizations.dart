@@ -988,6 +988,12 @@ abstract class AppLocalizations {
   /// **'Registration failed'**
   String get registerFailed;
 
+  /// Session expired message shown when token is invalid/expired
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please log in again.'**
+  String get sessionExpired;
+
   /// Membership Agreement
   ///
   /// In en, this message translates to:

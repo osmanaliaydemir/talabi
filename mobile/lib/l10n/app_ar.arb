@@ -621,6 +621,10 @@
   "@registerFailed": {
     "description": "فشل التسجيل"
   },
+  "sessionExpired": "انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.",
+  "@sessionExpired": {
+    "description": "Session expired message shown when token is invalid/expired"
+  },
   "membershipAgreement": "اتفاقية العضوية",
   "@membershipAgreement": {
     "description": "اتفاقية العضوية"

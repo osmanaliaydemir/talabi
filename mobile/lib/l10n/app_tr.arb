@@ -621,6 +621,10 @@
   "@registerFailed": {
     "description": "Kayıt başarısız"
   },
+  "sessionExpired": "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.",
+  "@sessionExpired": {
+    "description": "Session expired message shown when token is invalid/expired"
+  },
   "membershipAgreement": "Üyelik Sözleşmesi",
   "@membershipAgreement": {
     "description": "Üyelik Sözleşmesi"

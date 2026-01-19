@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/cart/data/models/cart_item.dart';
+import 'package:mobile/features/cart/data/datasources/cart_remote_data_source.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
 import 'package:mobile/features/products/data/models/product.dart';
 import 'package:mobile/features/profile/presentation/screens/customer/add_edit_address_screen.dart';
@@ -737,6 +738,17 @@ class CartProvider with ChangeNotifier {
       _items.clear();
       _appliedCoupon = null;
       notifyListeners();
+    } on ForbiddenException catch (e) {
+      // 403 hatası alındığında, local state'i temizle ve kullanıcıya bilgi ver
+      LoggerService().warning(
+        '403 Forbidden hatası alındı, local state temizleniyor: ${e.message}',
+        e,
+        StackTrace.current,
+      );
+      _items.clear();
+      _appliedCoupon = null;
+      notifyListeners();
+      // Exception'ı fırlatma, local state zaten temizlendi
     } catch (e, stackTrace) {
       LoggerService().error('Error clearing cart', e, stackTrace);
       rethrow;

@@ -571,9 +571,17 @@ app.MapScalarApiReference(options =>
         .WithOpenApiRoutePattern("/swagger/v1/swagger.json"); // Swagger spec kullan
 });
 
-// Root path'i Scalar'a yönlendir (Scalar default path: /scalar/v1)
-// Kullanıcı root path'e geldiğinde direkt Scalar dokümantasyonu açılır
-app.MapGet("/", () => Results.Redirect("/scalar/v1", permanent: false));
+// Root path için basit bir API info response
+// Scalar dokümantasyonu için: /scalar/v1
+app.MapGet("/", () => Results.Json(new
+{
+    name = "Talabi API",
+    version = "v1",
+    status = "running",
+    documentation = "/scalar/v1",
+    health = "/health",
+    apiBase = "/api"
+}));
 
 app.MapControllers();
 app.MapHub<Talabi.Api.Hubs.NotificationHub>("/hubs/notifications");

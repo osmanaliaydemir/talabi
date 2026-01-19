@@ -7,6 +7,27 @@ import 'package:mobile/l10n/app_localizations.dart';
 /// This class centralizes error handling logic, eliminating code duplication
 /// across registration screens and other error-prone operations.
 class ErrorHandler {
+  static String? _mapErrorCodeToMessage(
+    String? errorCode,
+    AppLocalizations localizations,
+  ) {
+    if (errorCode == null) return null;
+
+    // Normalize
+    final code = errorCode.trim().toUpperCase();
+    if (code.isEmpty) return null;
+
+    switch (code) {
+      case 'INVALID_TOKEN':
+      case 'UNAUTHORIZED':
+        return localizations.sessionExpired;
+      case 'CODE_EXPIRED':
+        return localizations.codeExpired;
+      default:
+        return null;
+    }
+  }
+
   /// Parses a registration error and returns a user-friendly message.
   ///
   /// Handles various error types:
@@ -113,6 +134,15 @@ class ErrorHandler {
         } else if (responseData.containsKey('message')) {
           errorMessage = responseData['message'].toString();
         }
+
+        // If backend sends errorCode, prefer localized mapping
+        final mapped = _mapErrorCodeToMessage(
+          responseData['errorCode']?.toString(),
+          localizations,
+        );
+        if (mapped != null && mapped.trim().isNotEmpty) {
+          errorMessage = mapped;
+        }
       }
     }
 
@@ -176,6 +206,14 @@ class ErrorHandler {
         } else if (responseData.containsKey('message')) {
           errorMessage = responseData['message'].toString();
         }
+
+        final mapped = _mapErrorCodeToMessage(
+          responseData['errorCode']?.toString(),
+          localizations,
+        );
+        if (mapped != null && mapped.trim().isNotEmpty) {
+          errorMessage = mapped;
+        }
       }
     }
 
@@ -217,6 +255,17 @@ class ErrorHandler {
         final responseData = error.response!.data;
 
         if (responseData is Map<String, dynamic>) {
+          // If backend sends errorCode, prefer localized mapping immediately
+          final codeFromResponse = responseData['errorCode']?.toString();
+          final mappedFromResponse = _mapErrorCodeToMessage(
+            codeFromResponse,
+            localizations,
+          );
+          if (mappedFromResponse != null &&
+              mappedFromResponse.trim().isNotEmpty) {
+            return mappedFromResponse;
+          }
+
           // ProblemDetails (RFC7807): typically from [ApiController] model binding.
           // We also check content-type when available, but shape-based detection is enough.
           final contentType =
@@ -283,6 +332,10 @@ class ErrorHandler {
           if (errorMessage.trim().isEmpty &&
               responseData.containsKey('errorCode')) {
             final code = responseData['errorCode']?.toString();
+            final mapped = _mapErrorCodeToMessage(code, localizations);
+            if (mapped != null && mapped.trim().isNotEmpty) {
+              return mapped;
+            }
             if (code != null && code.trim().isNotEmpty) {
               errorMessage = code;
             }
@@ -293,12 +346,16 @@ class ErrorHandler {
       // Fallback: sometimes we throw DioException with a structured `error` payload
       // even when response parsing isn't available (or callers don't pass response through).
       final err = error.error;
-      if (errorMessage.trim().isEmpty && err is Map) {
+      if (err is Map) {
         final msg = err['message']?.toString();
         if (msg != null && msg.trim().isNotEmpty) {
           return msg;
         }
         final code = err['errorCode']?.toString();
+        final mapped = _mapErrorCodeToMessage(code, localizations);
+        if (mapped != null && mapped.trim().isNotEmpty) {
+          return mapped;
+        }
         if (code != null && code.trim().isNotEmpty) {
           return code;
         }

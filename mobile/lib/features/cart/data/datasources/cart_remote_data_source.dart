@@ -1,8 +1,19 @@
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/services/logger_service.dart';
+
+/// Özel exception sınıfı - 403 Forbidden hatası için
+/// CartProvider bu exception'ı yakalayıp local state'i temizleyebilir
+class ForbiddenException implements Exception {
+  final String message;
+  ForbiddenException(this.message);
+
+  @override
+  String toString() => message;
+}
 
 @lazySingleton
 class CartRemoteDataSource {
@@ -112,6 +123,21 @@ class CartRemoteDataSource {
           throw Exception(apiResponse.message ?? 'Ürün sepetten silinemedi');
         }
       }
+    } on DioException catch (e, stackTrace) {
+      // 403 hatası için özel mesaj
+      if (e.response?.statusCode == 403) {
+        LoggerService().warning(
+          '403 Forbidden: DELETE /api/cart/items/$itemId - Bu hata genellikle sunucu yapılandırmasından kaynaklanır.',
+          e,
+          stackTrace,
+        );
+        // 403 hatası için özel exception fırlat (CartProvider bunu handle edecek)
+        throw ForbiddenException(
+          'Ürün sepetten silinemedi: Sunucu yapılandırma hatası',
+        );
+      }
+      LoggerService().error('Error removing from cart', e, stackTrace);
+      rethrow;
     } catch (e, stackTrace) {
       LoggerService().error('Error removing from cart', e, stackTrace);
       rethrow;
@@ -133,6 +159,21 @@ class CartRemoteDataSource {
           throw Exception(apiResponse.message ?? 'Sepet temizlenemedi');
         }
       }
+    } on DioException catch (e, stackTrace) {
+      // 403 hatası için özel mesaj
+      if (e.response?.statusCode == 403) {
+        LoggerService().warning(
+          '403 Forbidden: DELETE /api/cart - Bu hata genellikle sunucu yapılandırmasından kaynaklanır.',
+          e,
+          stackTrace,
+        );
+        // 403 hatası için özel exception fırlat (CartProvider bunu handle edecek)
+        throw ForbiddenException(
+          'Sepet temizlenemedi: Sunucu yapılandırma hatası',
+        );
+      }
+      LoggerService().error('Error clearing cart', e, stackTrace);
+      rethrow;
     } catch (e, stackTrace) {
       LoggerService().error('Error clearing cart', e, stackTrace);
       rethrow;
@@ -182,6 +223,19 @@ class CartRemoteDataSource {
       if (!apiResponse.success) {
         throw Exception(apiResponse.message ?? 'Promosyonlar temizlenemedi');
       }
+    } on DioException catch (e, stackTrace) {
+      // 403 hatası için özel mesaj
+      if (e.response?.statusCode == 403) {
+        LoggerService().warning(
+          '403 Forbidden: DELETE /api/cart/promotions - Bu hata genellikle sunucu yapılandırmasından kaynaklanır. Lütfen sunucu yöneticisi ile iletişime geçin.',
+          e,
+          stackTrace,
+        );
+        // 403 hatası kritik değil, sessizce devam et
+        return;
+      }
+      LoggerService().error('Error clearing cart promotions', e, stackTrace);
+      rethrow;
     } catch (e, stackTrace) {
       LoggerService().error('Error clearing cart promotions', e, stackTrace);
       rethrow;

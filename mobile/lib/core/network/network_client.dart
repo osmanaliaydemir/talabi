@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/models/api_response.dart';
 import 'package:mobile/services/api_request_scheduler.dart';
@@ -14,7 +15,8 @@ const String _requestPermitKey = '_apiRequestPermit';
 
 @lazySingleton
 class NetworkClient {
-  NetworkClient(this._connectivityService, this._requestScheduler) {
+  NetworkClient(this._connectivityService, this._requestScheduler)
+    : baseUrl = AppConfig.apiBaseUrl {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -25,7 +27,8 @@ class NetworkClient {
     _setupInterceptors();
   }
 
-  static const String baseUrl = 'https://talabi.runasp.net/api';
+  /// API base URL (environment-aware).
+  final String baseUrl;
 
   final ConnectivityService _connectivityService;
   final ApiRequestScheduler _requestScheduler;

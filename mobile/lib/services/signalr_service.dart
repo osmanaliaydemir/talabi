@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:signalr_core/signalr_core.dart';
-import 'package:mobile/core/network/network_client.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/services/secure_storage_service.dart';
 
 class SignalRService {
@@ -21,7 +21,7 @@ class SignalRService {
     if (token == null) return;
 
     final hubUrl =
-        '${NetworkClient.baseUrl.replaceAll('/api', '')}/hubs/notifications';
+        '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/hubs/notifications';
 
     _hubConnection = HubConnectionBuilder()
         .withUrl(

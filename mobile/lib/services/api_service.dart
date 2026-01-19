@@ -23,6 +23,7 @@ import 'package:mobile/features/wallet/data/models/wallet_model.dart';
 import 'package:mobile/features/wallet/data/models/wallet_transaction_model.dart';
 import 'package:mobile/features/wallet/data/models/bank_account_model.dart';
 import 'package:mobile/features/wallet/data/models/withdrawal_request_model.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/network/network_client.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:mobile/features/products/data/datasources/product_remote_data_source.dart';
@@ -72,7 +73,7 @@ class ApiService {
   final Map<String, List<Campaign>> _cachedCampaigns = {};
 
   Dio get dio => _networkClient.dio;
-  static const String baseUrl = NetworkClient.baseUrl;
+  static String get baseUrl => AppConfig.apiBaseUrl;
   void notifyLogout() => _networkClient.notifyLogout();
   void resetLogout() => _networkClient.resetLogout();
 

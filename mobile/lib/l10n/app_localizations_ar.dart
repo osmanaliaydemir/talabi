@@ -466,6 +466,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get registerFailed => 'فشل التسجيل';
 
   @override
+  String get sessionExpired =>
+      'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.';
+
+  @override
   String get membershipAgreement => 'اتفاقية العضوية';
 
   @override
