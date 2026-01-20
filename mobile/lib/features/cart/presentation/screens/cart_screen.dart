@@ -35,6 +35,7 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   int? _currentVendorType;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -401,9 +402,15 @@ class _CartScreenState extends State<CartScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: TextButton(
-                                  onPressed: cart.itemCount == 0
+                                  onPressed:
+                                      (cart.itemCount == 0 || _isNavigating)
                                       ? null
                                       : () async {
+                                          if (mounted) {
+                                            setState(
+                                              () => _isNavigating = true,
+                                            );
+                                          }
                                           if (!context.mounted) return;
                                           // Check for updates before proceeding
                                           final isVersionValid =
@@ -506,22 +513,30 @@ class _CartScreenState extends State<CartScreen> {
                                           if (!context.mounted) return;
 
                                           // Navigate to checkout screen
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  CheckoutScreen(
-                                                    cartItems: cart.items,
-                                                    vendorId: vendorId,
-                                                    subtotal:
-                                                        cart.subtotalAmount,
-                                                    deliveryFee:
-                                                        cart.deliveryFee,
-                                                    discountAmount:
-                                                        cart.discountAmount,
-                                                  ),
-                                            ),
-                                          );
+                                          if (mounted) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CheckoutScreen(
+                                                      cartItems: cart.items,
+                                                      vendorId: vendorId,
+                                                      subtotal:
+                                                          cart.subtotalAmount,
+                                                      deliveryFee:
+                                                          cart.deliveryFee,
+                                                      discountAmount:
+                                                          cart.discountAmount,
+                                                    ),
+                                              ),
+                                            ).then((_) {
+                                              if (mounted) {
+                                                setState(
+                                                  () => _isNavigating = false,
+                                                );
+                                              }
+                                            });
+                                          }
                                         },
                                   child: Text(
                                     localizations.placeOrder,

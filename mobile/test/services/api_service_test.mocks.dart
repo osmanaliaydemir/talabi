@@ -1311,14 +1311,17 @@ class MockVendorRemoteDataSource extends _i1.Mock
       ) as _i8.Future<void>);
 
   @override
-  _i8.Future<List<String>> getVendorProductCategories() => (super.noSuchMethod(
+  _i8.Future<List<Map<String, dynamic>>> getVendorProductCategories() =>
+      (super.noSuchMethod(
         Invocation.method(
           #getVendorProductCategories,
           [],
         ),
-        returnValue: _i8.Future<List<String>>.value(<String>[]),
-        returnValueForMissingStub: _i8.Future<List<String>>.value(<String>[]),
-      ) as _i8.Future<List<String>>);
+        returnValue: _i8.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i8.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i8.Future<List<Map<String, dynamic>>>);
 
   @override
   _i8.Future<void> updateVendorImage(String? imageUrl) => (super.noSuchMethod(

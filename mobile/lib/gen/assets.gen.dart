@@ -53,6 +53,10 @@ class $AssetsImagesGen {
   AssetGenImage get orderNowButton =>
       const AssetGenImage('assets/images/order_now_button.png');
 
+  /// File path: assets/images/splash_logo.png
+  AssetGenImage get splashLogo =>
+      const AssetGenImage('assets/images/splash_logo.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         ellipse,
@@ -61,7 +65,8 @@ class $AssetsImagesGen {
         location,
         marketBanner,
         onboarding1,
-        orderNowButton
+        orderNowButton,
+        splashLogo
       ];
 }
 
