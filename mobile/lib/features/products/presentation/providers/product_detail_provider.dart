@@ -47,10 +47,10 @@ class ProductDetailProvider with ChangeNotifier {
     if (_product == null) return 0.0;
     double totalPrice = _product!.price;
 
-    for (var group in _product!.optionGroups) {
+    for (final group in _product!.optionGroups) {
       final selectedIds = _selectedOptions[group.id];
       if (selectedIds != null) {
-        for (var option in group.options) {
+        for (final option in group.options) {
           if (selectedIds.contains(option.id)) {
             totalPrice += option.priceAdjustment;
           }
