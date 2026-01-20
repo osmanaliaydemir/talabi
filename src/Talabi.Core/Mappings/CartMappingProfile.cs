@@ -27,6 +27,10 @@ public class CartMappingProfile : Profile
             .ForMember(dest => dest.VendorType,
                 opt => opt.MapFrom(src =>
                     src.Product != null && src.Product.Vendor != null ? (int)src.Product.Vendor.Type : 0))
+            .ForMember(dest => dest.Currency,
+                opt => opt.MapFrom(src => src.Product != null ? (int)src.Product.Currency : 0))
+            .ForMember(dest => dest.CurrencyCode,
+                opt => opt.MapFrom(src => src.Product != null ? src.Product.Currency.ToString() : "TRY"))
             .ForMember(dest => dest.SelectedOptions, opt => opt.MapFrom(src =>
                 !string.IsNullOrEmpty(src.SelectedOptions)
                     ? System.Text.Json.JsonSerializer.Deserialize<List<CartItemOptionDto>>(src.SelectedOptions,

@@ -27,6 +27,8 @@ public class CartItemDto
     public int VendorType { get; set; } // 1 = Restaurant, 2 = Market
     public double? Rating { get; set; }
     public int ReviewCount { get; set; }
+    public int Currency { get; set; }
+    public string CurrencyCode { get; set; } = "TRY";
     public List<CartItemOptionDto>? SelectedOptions { get; set; }
 }
 

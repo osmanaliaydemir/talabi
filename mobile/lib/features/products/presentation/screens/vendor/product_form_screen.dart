@@ -515,7 +515,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
               decoration: InputDecoration(
                 labelText: localizations.vendorProductFormCurrencyLabel,
                 border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.currency_exchange),
+                prefixIcon: const Icon(Icons.monetization_on_outlined),
               ),
               items: Currency.values.map((currency) {
                 return DropdownMenuItem(
@@ -534,7 +534,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
               decoration: InputDecoration(
                 labelText: localizations.vendorProductFormPriceLabel,
                 border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.attach_money),
+                prefixIcon: const Icon(Icons.payments_outlined),
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
