@@ -1,6 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -89,6 +86,17 @@ public class AuthController : Controller
         _logger.LogInformation("User logged out.");
 
         return RedirectToAction("Login");
+    }
+
+    [HttpGet]
+    public IActionResult AccessDenied(string? returnUrl = null)
+    {
+        _logger.LogWarning("Access denied to {ReturnUrl} for user {User}",
+            returnUrl ?? "unknown",
+            User.Identity?.Name ?? "anonymous");
+
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
     }
 
     [HttpGet]

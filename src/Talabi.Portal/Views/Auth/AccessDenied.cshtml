@@ -1,0 +1,84 @@
+@{
+    ViewData["Title"] = "Erişim Reddedildi";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-lock text-danger" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <h1 class="display-4 text-danger mb-3">403</h1>
+                    <h2 class="h3 mb-3">Erişim Reddedildi</h2>
+
+                    <p class="lead text-muted mb-4">
+                        Bu sayfaya erişim yetkiniz bulunmamaktadır.
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(ViewData["ReturnUrl"]?.ToString()))
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Erişmeye çalıştığınız sayfa: <code>@ViewData["ReturnUrl"]</code>
+                        </div>
+                    }
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                        </a>
+
+                        @if (!User.Identity!.IsAuthenticated)
+                        {
+                            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Profile" asp-action="Complete" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-user me-2"></i>Profilim
+                            </a>
+                        }
+                    </div>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="mt-4 pt-4 border-top">
+                            <p class="text-muted small mb-0">
+                                Oturum açmış kullanıcı: <strong>@User.Identity.Name</strong>
+                            </p>
+                            <p class="text-muted small">
+                                Eğer bu bir hata olduğunu düşünüyorsanız, lütfen sistem yöneticisi ile iletişime geçin.
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            border-radius: 1rem;
+        }
+        
+        .btn-lg {
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+        }
+        
+        code {
+            background-color: #f8f9fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            color: #d63384;
+        }
+    </style>
+}
