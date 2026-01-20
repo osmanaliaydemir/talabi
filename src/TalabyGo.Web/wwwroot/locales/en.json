@@ -1,0 +1,78 @@
+{
+    "nav": {
+        "home": "Home",
+        "features": "Features",
+        "about": "About"
+    },
+    "hero": {
+        "title": "Talaby Go - Your New Way to Shop",
+        "subtitle": "E-commerce and fast delivery in one app",
+        "downloadApp": "Download App",
+        "description": "Experience a unique shopping journey with Talaby Go. Order your favorite products and get fast delivery to your doorstep"
+    },
+    "features": {
+        "title": "App Features",
+        "subtitle": "Everything you need in one place",
+        "ecommerce": {
+            "title": "E-Commerce",
+            "description": "Browse thousands of products from various stores"
+        },
+        "delivery": {
+            "title": "Fast Delivery",
+            "description": "Get your orders delivered as quickly as possible"
+        },
+        "wallet": {
+            "title": "Digital Wallet",
+            "description": "Pay easily and securely through your electronic wallet"
+        },
+        "vendors": {
+            "title": "Store Management",
+            "description": "For vendors: Manage your store and products with ease"
+        },
+        "orders": {
+            "title": "Order Tracking",
+            "description": "Track your orders in real-time until delivery"
+        },
+        "multilingual": {
+            "title": "Multilingual Support",
+            "description": "Available in Arabic, Turkish, and English"
+        }
+    },
+    "stats": {
+        "title": "Talaby Go by Numbers",
+        "users": "Active Users",
+        "vendors": "Stores",
+        "orders": "Delivered Orders",
+        "rating": "User Rating"
+    },
+    "cta": {
+        "title": "Start Your Experience Now",
+        "subtitle": "Download the app and enjoy exclusive offers",
+        "appStore": "Download on App Store",
+        "playStore": "Get it on Google Play"
+    },
+    "footer": {
+        "description": "Talaby Go - E-commerce and fast delivery platform",
+        "quickLinks": "Quick Links",
+        "contact": "Contact Us",
+        "email": "Email",
+        "phone": "Phone",
+        "followUs": "Follow Us",
+        "rights": "All rights reserved"
+    },
+    "about": {
+        "title": "About Talaby Go",
+        "vision": {
+            "title": "Our Vision",
+            "description": "To be the leading platform in e-commerce and fast delivery in the region"
+        },
+        "mission": {
+            "title": "Our Mission",
+            "description": "To provide an easy and secure shopping experience with fast and reliable delivery"
+        },
+        "contact": {
+            "title": "Get in Touch",
+            "description": "We're here to answer your questions"
+        }
+    }
+}

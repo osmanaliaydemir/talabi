@@ -1,0 +1,78 @@
+{
+    "nav": {
+        "home": "Ana Sayfa",
+        "features": "Özellikler",
+        "about": "Hakkında"
+    },
+    "hero": {
+        "title": "Talaby Go - Alışverişin Yeni Yolu",
+        "subtitle": "E-ticaret ve hızlı teslimat tek bir uygulamada",
+        "downloadApp": "Uygulamayı İndir",
+        "description": "Talaby Go ile benzersiz bir alışveriş deneyimi yaşayın. Favori ürünlerinizi sipariş edin ve kapınıza kadar hızlı teslimat alın"
+    },
+    "features": {
+        "title": "Uygulama Özellikleri",
+        "subtitle": "İhtiyacınız olan her şey tek bir yerde",
+        "ecommerce": {
+            "title": "E-Ticaret",
+            "description": "Çeşitli mağazalardan binlerce ürüne göz atın"
+        },
+        "delivery": {
+            "title": "Hızlı Teslimat",
+            "description": "Siparişlerinizi en kısa sürede teslim alın"
+        },
+        "wallet": {
+            "title": "Dijital Cüzdan",
+            "description": "Elektronik cüzdanınız ile kolay ve güvenli ödeme yapın"
+        },
+        "vendors": {
+            "title": "Mağaza Yönetimi",
+            "description": "Satıcılar için: Mağazanızı ve ürünlerinizi kolayca yönetin"
+        },
+        "orders": {
+            "title": "Sipariş Takibi",
+            "description": "Siparişlerinizi anlık olarak takip edin"
+        },
+        "multilingual": {
+            "title": "Çoklu Dil Desteği",
+            "description": "Uygulama Türkçe, Arapça ve İngilizce dillerinde mevcut"
+        }
+    },
+    "stats": {
+        "title": "Talaby Go Rakamlarla",
+        "users": "Aktif Kullanıcı",
+        "vendors": "Mağaza",
+        "orders": "Teslim Edilen Sipariş",
+        "rating": "Kullanıcı Değerlendirmesi"
+    },
+    "cta": {
+        "title": "Deneyiminize Şimdi Başlayın",
+        "subtitle": "Uygulamayı indirin ve özel tekliflerden yararlanın",
+        "appStore": "App Store'dan İndir",
+        "playStore": "Google Play'den İndir"
+    },
+    "footer": {
+        "description": "Talaby Go - E-ticaret ve hızlı teslimat platformu",
+        "quickLinks": "Hızlı Bağlantılar",
+        "contact": "İletişim",
+        "email": "E-posta",
+        "phone": "Telefon",
+        "followUs": "Bizi Takip Edin",
+        "rights": "Tüm hakları saklıdır"
+    },
+    "about": {
+        "title": "Talaby Go Hakkında",
+        "vision": {
+            "title": "Vizyonumuz",
+            "description": "Bölgede e-ticaret ve hızlı teslimat alanında lider platform olmak"
+        },
+        "mission": {
+            "title": "Misyonumuz",
+            "description": "Hızlı ve güvenilir teslimat ile kolay ve güvenli bir alışveriş deneyimi sunmak"
+        },
+        "contact": {
+            "title": "İletişime Geçin",
+            "description": "Sorularınızı yanıtlamak için buradayız"
+        }
+    }
+}

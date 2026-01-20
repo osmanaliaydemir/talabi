@@ -1,0 +1,156 @@
+/* rtl.css - RTL (Sağdan Sola) Destek Dosyası - Arapça için */
+
+/* Bu dosya sadece html[dir="rtl"] olduğunda yüklenir */
+
+/* Text Direction */
+body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Flex Direction Overrides */
+.navbar-container,
+.nav-menu,
+.download-buttons,
+.lang-switcher,
+.social-links {
+    flex-direction: row-reverse;
+}
+
+.features-grid,
+.stats-grid,
+.footer-content {
+    direction: rtl;
+}
+
+/* Margin & Padding Adjustments */
+.navbar-logo {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.nav-menu a::after {
+    left: auto;
+    right: 0;
+}
+
+/* Hero Section */
+.hero-container {
+    direction: rtl;
+}
+
+.hero-content {
+    text-align: right;
+}
+
+/* Buttons */
+.btn {
+    flex-direction: row-reverse;
+}
+
+/* Feature Cards */
+.feature-card {
+    text-align: right;
+}
+
+.feature-icon {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Footer */
+.footer-section {
+    text-align: right;
+}
+
+.social-links {
+    flex-direction: row;
+}
+
+/* Animations - RTL specific */
+.fade-in {
+    transform: translateY(20px);
+}
+
+html[dir="rtl"] .fade-in.animate-in {
+    transform: translateY(0);
+}
+
+/* Float Animation - RTL */
+@keyframes float-rtl {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+html[dir="rtl"] .hero-image img {
+    animation: float-rtl 3s ease-in-out infinite;
+}
+
+/* Language Switcher - RTL */
+html[dir="rtl"] .lang-switcher {
+    flex-direction: row;
+}
+
+/* Menu Toggle - RTL */
+html[dir="rtl"] .menu-toggle {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* Responsive RTL Adjustments */
+@media (max-width: 768px) {
+    .nav-menu {
+        text-align: right;
+    }
+
+    .hero-content {
+        text-align: center;
+    }
+
+    .download-buttons {
+        justify-content: center;
+        flex-direction: row;
+    }
+}
+
+/* Typography - Better Arabic Support */
+html[lang="ar"] {
+    font-feature-settings: "liga" 1, "calt" 1;
+}
+
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3,
+html[lang="ar"] h4 {
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+html[lang="ar"] p {
+    line-height: 1.8;
+}
+
+/* Scrollbar - RTL */
+html[dir="rtl"] ::-webkit-scrollbar {
+    width: 10px;
+}
+
+html[dir="rtl"] ::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+html[dir="rtl"] ::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+html[dir="rtl"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
