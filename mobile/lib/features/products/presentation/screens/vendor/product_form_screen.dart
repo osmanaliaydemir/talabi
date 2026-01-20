@@ -119,53 +119,10 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
     setState(() {
       _isLoadingCategories = true;
     });
-    final localeName = AppLocalizations.of(context)?.localeName;
 
     try {
-      // First fetch vendor profile to get vendor type and location
-      int? vendorType;
-      double? vendorLatitude;
-      double? vendorLongitude;
-
-      try {
-        final vendorProfile = await _apiService.getVendorProfile();
-
-        // Get vendor type
-        if (vendorProfile.containsKey('type') &&
-            vendorProfile['type'] != null) {
-          vendorType = vendorProfile['type'] is int
-              ? vendorProfile['type']
-              : int.tryParse(vendorProfile['type'].toString());
-        } else {}
-
-        // Get vendor location (required by backend API)
-        if (vendorProfile.containsKey('latitude') &&
-            vendorProfile['latitude'] != null &&
-            vendorProfile.containsKey('longitude') &&
-            vendorProfile['longitude'] != null) {
-          vendorLatitude = vendorProfile['latitude'] is double
-              ? vendorProfile['latitude']
-              : (vendorProfile['latitude'] as num).toDouble();
-          vendorLongitude = vendorProfile['longitude'] is double
-              ? vendorProfile['longitude']
-              : (vendorProfile['longitude'] as num).toDouble();
-        } else {
-          LoggerService().warning(
-            'Vendor location not found in profile. Categories may not load.',
-          );
-        }
-      } catch (e) {
-        LoggerService().error('Error fetching vendor profile: $e', e);
-        // Continue without vendor type - will try to fetch categories anyway
-      }
-
-      final categories = await _apiService.getCategories(
-        language: localeName,
-        pageSize: 100,
-        vendorType: vendorType,
-        userLatitude: vendorLatitude,
-        userLongitude: vendorLongitude,
-      );
+      // Use the new vendor-specific category endpoint
+      final categories = await _apiService.getVendorProductCategories();
 
       if (mounted) {
         setState(() {
@@ -173,8 +130,6 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
           _isLoadingCategories = false;
 
           // Try to match existing category
-          if (widget.product != null) {}
-
           if (widget.product?.categoryId != null) {
             final exists = categories.any(
               (c) => c['id'].toString() == widget.product!.categoryId,
@@ -183,17 +138,13 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
             if (exists) {
               _selectedCategoryId = widget.product!.categoryId;
             } else {
-              // Fallback: Try Name Match if ID match failed?
-              // Logic: Maybe ID changed or is inconsistent?
-              // Let's check name match if ID fails
+              // Try Name Match if ID match failed?
               final nameMatch = categories.firstWhere(
                 (c) => c['name'] == widget.product!.category,
                 orElse: () => {},
               );
               if (nameMatch.isNotEmpty) {
                 _selectedCategoryId = nameMatch['id'].toString();
-              } else {
-                _selectedCategoryId = null; // Reset if category not found
               }
             }
           } else if (widget.product?.category != null) {
@@ -212,7 +163,7 @@ class _VendorProductFormScreenState extends State<VendorProductFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Kategori bulunamadı. Lütfen daha sonra tekrar deneyin.',
+                'Kategori bulunamadı. Lütfen panelden kategori tanımlandığından emin olun.',
               ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),

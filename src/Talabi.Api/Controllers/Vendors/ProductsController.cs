@@ -502,28 +502,51 @@ public class ProductsController : BaseController
     }
 
     /// <summary>
-    /// Satıcının ürün kategorilerini getirir
+    /// Satıcının ürün ekleyebileceği tüm kategorileri getirir
     /// </summary>
     /// <returns>Kategori listesi</returns>
     [HttpGet("categories")]
-    public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
+    public async Task<ActionResult<ApiResponse<List<CategoryDto>>>> GetCategories()
     {
         var vendorId = await GetVendorIdAsync();
         if (vendorId == null)
         {
-            return NotFound(new ApiResponse<List<string>>(
+            return NotFound(new ApiResponse<List<CategoryDto>>(
                 LocalizationService.GetLocalizedString(ResourceName, "VendorNotFoundForUser", CurrentCulture),
                 "VENDOR_NOT_FOUND"));
         }
 
-        var categories = await UnitOfWork.Products.Query()
-            .Where(p => p.VendorId == vendorId.Value && p.Category != null)
-            .Select(p => p.Category!)
-            .Distinct()
-            .OrderBy(c => c)
+        var vendor = await UnitOfWork.Vendors.GetByIdAsync(vendorId.Value);
+        if (vendor == null)
+        {
+            return NotFound(new ApiResponse<List<CategoryDto>>(
+                LocalizationService.GetLocalizedString(ResourceName, "VendorNotFound", CurrentCulture),
+                "VENDOR_NOT_FOUND"));
+        }
+
+        // Dil kodu tespiti
+        var languageCode = CurrentCulture.TwoLetterISOLanguageName;
+
+        // Satıcının türüne (Restaurant, Grocery vs.) göre kategorileri getir
+        var categories = await UnitOfWork.Categories.Query()
+            .Where(c => c.VendorType == vendor.Type)
+            .OrderBy(c => c.DisplayOrder)
+            .Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                VendorType = c.VendorType,
+                Name = c.Translations
+                    .Where(t => t.LanguageCode == languageCode)
+                    .Select(t => t.Name)
+                    .FirstOrDefault() ?? c.Name,
+                Icon = c.Icon,
+                Color = c.Color,
+                ImageUrl = c.ImageUrl,
+                DisplayOrder = c.DisplayOrder
+            })
             .ToListAsync();
 
-        return Ok(new ApiResponse<List<string>>(
+        return Ok(new ApiResponse<List<CategoryDto>>(
             categories,
             LocalizationService.GetLocalizedString(ResourceName, "CategoriesRetrievedSuccessfully", CurrentCulture)));
     }

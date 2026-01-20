@@ -2177,7 +2177,7 @@ class ApiService {
     }
   }
 
-  Future<List<String>> getVendorProductCategories() async {
+  Future<List<Map<String, dynamic>>> getVendorProductCategories() async {
     try {
       return await _vendorRemoteDataSource.getVendorProductCategories();
     } catch (e, stackTrace) {

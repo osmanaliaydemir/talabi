@@ -330,7 +330,7 @@ class VendorRemoteDataSource {
     }
   }
 
-  Future<List<String>> getVendorProductCategories() async {
+  Future<List<Map<String, dynamic>>> getVendorProductCategories() async {
     final response = await _networkClient.dio.get(
       VendorApiEndpoints.productCategories,
     );
@@ -339,7 +339,7 @@ class VendorRemoteDataSource {
         response.data.containsKey('success')) {
       final apiResponse = ApiResponse.fromJson(
         response.data as Map<String, dynamic>,
-        (json) => (json as List).map((e) => e as String).toList(),
+        (json) => (json as List).map((e) => e as Map<String, dynamic>).toList(),
       );
 
       if (!apiResponse.success || apiResponse.data == null) {
@@ -349,7 +349,9 @@ class VendorRemoteDataSource {
       return apiResponse.data!;
     }
     // Legacy support
-    return List<String>.from(response.data);
+    return (response.data as List)
+        .map((e) => e as Map<String, dynamic>)
+        .toList();
   }
 
   Future<void> updateVendorImage(String imageUrl) async {

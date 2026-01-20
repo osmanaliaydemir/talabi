@@ -80,26 +80,30 @@ class NotificationService {
           }
         }
 
-        // Add timeout to prevent app hang on startup if APNS is not ready
-        final token = await _firebaseMessaging!.getToken().timeout(
-          const Duration(seconds: 5),
-        );
+        try {
+          // Add timeout to prevent app hang on startup if APNS is not ready
+          final token = await _firebaseMessaging!.getToken().timeout(
+            const Duration(seconds: 5),
+          );
 
-        // Debug logları kaldırıldı - sadece warning ve error logları gösteriliyor
-
-        if (token != null) {
-          try {
-            final deviceType = Platform.isIOS ? 'iOS' : 'Android';
-            await ApiService().registerDeviceToken(token, deviceType);
-            // Info logları kaldırıldı - sadece warning ve error logları gösteriliyor
-          } catch (e, stackTrace) {
-            LoggerService().error(
-              '❌ Failed to register device token',
-              e,
-              stackTrace,
-            );
-            // Don't rethrow, just log and continue
+          if (token != null) {
+            try {
+              final deviceType = Platform.isIOS ? 'iOS' : 'Android';
+              await ApiService().registerDeviceToken(token, deviceType);
+            } catch (e, stackTrace) {
+              LoggerService().error(
+                '❌ Failed to register device token',
+                e,
+                stackTrace,
+              );
+              // Don't rethrow, just log and continue
+            }
           }
+        } catch (e) {
+          // Catch generic errors like [firebase_messaging/unknown] which happen on Simulators
+          LoggerService().warning(
+            '⚠️ Failed to get FCM token (Simulator or Configuration issue): $e',
+          );
         }
 
         // 4. Handle Foreground Messages
