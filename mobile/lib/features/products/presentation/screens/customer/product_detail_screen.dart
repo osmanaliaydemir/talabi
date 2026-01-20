@@ -15,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:mobile/features/home/presentation/providers/home_provider.dart';
 import 'package:mobile/features/products/presentation/providers/product_detail_provider.dart';
 import 'package:mobile/utils/location_extractor.dart';
+import 'package:mobile/utils/currency_formatter.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   const ProductDetailScreen({
@@ -857,7 +858,7 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                   child: Row(
                     children: [
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -871,7 +872,10 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${product.price.toStringAsFixed(2)} ${product.currency.symbol}',
+                              CurrencyFormatter.format(
+                                provider.effectivePrice,
+                                product.currency,
+                              ),
                               style: AppTheme.poppins(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -881,9 +885,9 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        flex: 3,
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 180,
                         child: Consumer<CartProvider>(
                           builder: (context, cartProvider, child) {
                             final cartItem = cartProvider.getCartItem(
@@ -892,10 +896,10 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
 
                             if (cartItem != null) {
                               return Container(
-                                height: 56,
+                                height: 40,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(8),
                                   border: Border.all(color: Colors.grey[300]!),
                                 ),
                                 clipBehavior: Clip.antiAlias,
@@ -908,12 +912,13 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                                         );
                                       },
                                       child: Container(
-                                        width: 56,
+                                        width: 32,
                                         height: double.infinity,
                                         color: colorScheme.primary,
                                         child: const Icon(
                                           Icons.remove,
                                           color: Colors.white,
+                                          size: 18,
                                         ),
                                       ),
                                     ),
@@ -922,7 +927,7 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                                         child: Text(
                                           '${cartItem.quantity}',
                                           style: AppTheme.poppins(
-                                            fontSize: 20,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black,
                                           ),
@@ -936,12 +941,13 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                                         );
                                       },
                                       child: Container(
-                                        width: 56,
+                                        width: 32,
                                         height: double.infinity,
                                         color: colorScheme.primary,
                                         child: const Icon(
                                           Icons.add,
                                           color: Colors.white,
+                                          size: 18,
                                         ),
                                       ),
                                     ),
@@ -984,19 +990,22 @@ class _ProductDetailContentState extends State<_ProductDetailContent> {
                                 backgroundColor: colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                  vertical: 8,
+                                  horizontal: 8,
                                 ),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                               child: Text(
                                 l10n.addToCart,
                                 style: AppTheme.poppins(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             );
                           },

@@ -45,10 +45,20 @@ class ProductDetailProvider with ChangeNotifier {
   // Computed properties
   double get effectivePrice {
     if (_product == null) return 0.0;
-    final price = _product!.price;
-    // Add logic for option prices if available in data model
-    // For now assuming base price + options (if options had price impacts logic)
-    return price;
+    double totalPrice = _product!.price;
+
+    for (var group in _product!.optionGroups) {
+      final selectedIds = _selectedOptions[group.id];
+      if (selectedIds != null) {
+        for (var option in group.options) {
+          if (selectedIds.contains(option.id)) {
+            totalPrice += option.priceAdjustment;
+          }
+        }
+      }
+    }
+
+    return totalPrice;
   }
 
   // Methods
