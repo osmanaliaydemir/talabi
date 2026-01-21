@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
@@ -235,6 +236,28 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
             ),
           );
           _loadOrder();
+        }
+      } on DioException catch (e) {
+        if (mounted) {
+          String errorMessage = 'Sipariş durumu güncellenemedi';
+
+          // Extract error message from backend API response
+          if (e.response?.data != null) {
+            try {
+              final data = e.response!.data;
+              if (data is Map<String, dynamic>) {
+                errorMessage = data['message'] ?? errorMessage;
+              }
+            } catch (_) {}
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -608,13 +631,59 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     try {
       final result = await _apiService.autoAssignCourier(widget.orderId);
       if (mounted) {
+        // Check if this is a broadcast result (no courier assigned yet)
+        if (result.containsKey('offeredCount')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Teklif ${result['offeredCount']} kuryeye gönderildi. İlk kabul eden kurye siparişi alacak.',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        } else if (result.containsKey('courierName')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Kurye otomatik atandı: ${result['courierName']}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        _loadOrder();
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        String errorMessage = 'Otomatik atama başarısız';
+
+        // Extract error message from backend API response
+        if (e.response?.data != null) {
+          try {
+            final data = e.response!.data;
+            // Log the full response for debugging
+            print('=== AUTO-ASSIGN ERROR DEBUG ===');
+            print('Status Code: ${e.response!.statusCode}');
+            print('Response Data Type: ${data.runtimeType}');
+            print('Response Data: $data');
+            print('==============================');
+
+            if (data is Map<String, dynamic>) {
+              errorMessage = data['message'] ?? errorMessage;
+            } else if (data is String) {
+              errorMessage = data;
+            }
+          } catch (parseError) {
+            print('Error parsing response: $parseError');
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kurye otomatik atandı: ${result['courierName']}'),
-            backgroundColor: Colors.green,
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
-        _loadOrder();
       }
     } catch (e) {
       if (mounted) {
@@ -624,6 +693,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
           SnackBar(
             content: Text('Otomatik atama başarısız: $message'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }

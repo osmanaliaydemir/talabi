@@ -1684,7 +1684,7 @@ class ApiService {
     String? note,
   }) async {
     try {
-      final response = await dio.put(
+      final response = await dio.post(
         VendorApiEndpoints.orderStatus(orderId),
         data: {'status': status, 'note': note},
       );
