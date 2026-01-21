@@ -197,8 +197,8 @@ public class OrderAssignmentService(
         if (!string.IsNullOrEmpty(courier.UserId))
         {
             await notificationService.SendOrderAssignmentNotificationAsync(courier.UserId, orderId);
-            // Send SignalR notification (Real-time)
-            await signalRNotificationService.SendOrderAssignmentNotificationAsync(courier.UserId, orderId);
+            // Send SignalR notification (Real-time) - Grup tabanlı bildirim (courierId ile)
+            await signalRNotificationService.SendOrderAssignmentNotificationToCourierAsync(courier.Id, orderId);
         }
 
         // Send notification to customer
@@ -327,8 +327,8 @@ public class OrderAssignmentService(
             if (!string.IsNullOrEmpty(item.Courier.UserId))
             {
                 await notificationService.SendOrderAssignmentNotificationAsync(item.Courier.UserId, orderId);
-                // Send SignalR notification (Real-time)
-                await signalRNotificationService.SendOrderAssignmentNotificationAsync(item.Courier.UserId, orderId);
+                // Send SignalR notification (Real-time) - Grup tabanlı bildirim (courierId ile)
+                await signalRNotificationService.SendOrderAssignmentNotificationToCourierAsync(item.Courier.Id, orderId);
             }
         }
 

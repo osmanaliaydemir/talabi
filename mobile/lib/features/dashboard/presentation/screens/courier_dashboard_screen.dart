@@ -62,6 +62,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   void _initializeNotifications() async {
     await _notificationService.init();
 
+    // SignalR bağlantısını başlat
+    await _signalRService.startConnection();
+
     // Listen to the broadcast stream (FCM)
     _orderAssignedSubscription = _notificationService.orderAssignedStream
         .listen((orderId) {
@@ -146,6 +149,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           _activeOrders = orders;
           _isLoading = false;
         });
+
+        // SignalR grubuna courierId ile katıl (profil yüklendikten sonra)
+        if (courier.id != null && courier.id!.isNotEmpty) {
+          await _signalRService.joinCourierGroupWithId(courier.id!);
+        }
 
         // Check if vehicle type is not selected
         if (courier.vehicleType == null || courier.vehicleType!.isEmpty) {

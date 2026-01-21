@@ -43,6 +43,27 @@ public class SignalRNotificationService(IHubContext<NotificationHub> hubContext)
         });
     }
 
+    /// <summary>
+    /// Kuryeye sipariş atama bildirimi gönderir (Grup tabanlı - courierId ile)
+    /// </summary>
+    public async Task SendOrderAssignmentNotificationToCourierAsync(Guid courierId, Guid orderId, string? languageCode = null)
+    {
+        // Grup tabanlı bildirim gönder (JoinCourierGroup ile katılan kuryeler alır)
+        await hubContext.Clients.Group($"courier_{courierId}").SendAsync("ReceiveOrderAssignment", new
+        {
+            orderId,
+            languageCode
+        });
+        
+        // Ayrıca NewOrderAssigned event'ini de gönder (alternatif handler için)
+        await hubContext.Clients.Group($"courier_{courierId}").SendAsync("NewOrderAssigned", new
+        {
+            OrderId = orderId,
+            LanguageCode = languageCode,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
     public async Task SendOrderStatusUpdateNotificationAsync(string userId, Guid orderId, string status,
         string? languageCode = null)
     {

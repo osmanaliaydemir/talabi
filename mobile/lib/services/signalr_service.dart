@@ -58,7 +58,12 @@ class SignalRService {
       debugPrint('SignalR: NewOrderAssigned event received: $arguments');
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments[0] as Map<String, dynamic>;
-        _orderAssignedController.add(data);
+        // Normalize field names (C# uses PascalCase, Dart uses camelCase)
+        final normalizedData = <String, dynamic>{
+          'orderId': data['OrderId'] ?? data['orderId'],
+          'languageCode': data['LanguageCode'] ?? data['languageCode'],
+        };
+        _orderAssignedController.add(normalizedData);
       }
     });
 
@@ -67,7 +72,12 @@ class SignalRService {
       debugPrint('SignalR: ReceiveOrderAssignment event received: $arguments');
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments[0] as Map<String, dynamic>;
-        _orderAssignedController.add(data);
+        // Normalize field names (C# uses PascalCase, Dart uses camelCase)
+        final normalizedData = <String, dynamic>{
+          'orderId': data['OrderId'] ?? data['orderId'],
+          'languageCode': data['LanguageCode'] ?? data['languageCode'],
+        };
+        _orderAssignedController.add(normalizedData);
       }
     });
 
@@ -76,7 +86,12 @@ class SignalRService {
       debugPrint('SignalR: OrderAssigned event received: $arguments');
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments[0] as Map<String, dynamic>;
-        _orderAssignedController.add(data);
+        // Normalize field names (C# uses PascalCase, Dart uses camelCase)
+        final normalizedData = <String, dynamic>{
+          'orderId': data['OrderId'] ?? data['orderId'],
+          'languageCode': data['LanguageCode'] ?? data['languageCode'],
+        };
+        _orderAssignedController.add(normalizedData);
       }
     });
   }
@@ -109,6 +124,19 @@ class SignalRService {
         debugPrint('Joined Courier Group: $userId');
       } catch (e) {
         debugPrint('Error joining courier group: $e');
+      }
+    }
+  }
+
+  /// Kurye ID'si ile gruba katılır (profil yüklendikten sonra çağrılmalı)
+  Future<void> joinCourierGroupWithId(String courierId) async {
+    if (courierId.isNotEmpty &&
+        _hubConnection?.state == HubConnectionState.connected) {
+      try {
+        await _hubConnection!.invoke('JoinCourierGroup', args: [courierId]);
+        debugPrint('Joined Courier Group with courierId: $courierId');
+      } catch (e) {
+        debugPrint('Error joining courier group with courierId: $e');
       }
     }
   }

@@ -4,6 +4,7 @@ import 'package:mobile/config/app_theme.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/settings/data/models/currency.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dart';
 import 'package:mobile/widgets/cached_network_image_widget.dart';
@@ -660,12 +661,6 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
         if (e.response?.data != null) {
           try {
             final data = e.response!.data;
-            // Log the full response for debugging
-            print('=== AUTO-ASSIGN ERROR DEBUG ===');
-            print('Status Code: ${e.response!.statusCode}');
-            print('Response Data Type: ${data.runtimeType}');
-            print('Response Data: $data');
-            print('==============================');
 
             if (data is Map<String, dynamic>) {
               errorMessage = data['message'] ?? errorMessage;
@@ -673,7 +668,11 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
               errorMessage = data;
             }
           } catch (parseError) {
-            print('Error parsing response: $parseError');
+            LoggerService().error(
+              'Error parsing response: $parseError',
+              e,
+              StackTrace.current,
+            );
           }
         }
 
