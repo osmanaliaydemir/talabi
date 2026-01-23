@@ -28,18 +28,6 @@ public class NotificationHub : Hub
             .SendAsync("OrderLocationUpdated", orderId, latitude, longitude);
     }
 
-    // Notify courier about new order assignment
-    public async Task NotifyOrderAssignment(string courierId, string orderId, string vendorName, string deliveryAddress)
-    {
-        await Clients.Group($"courier_{courierId}").SendAsync("NewOrderAssigned", new
-        {
-            OrderId = orderId,
-            VendorName = vendorName,
-            DeliveryAddress = deliveryAddress,
-            Timestamp = DateTime.UtcNow
-        });
-    }
-
     // Notify customer about order status change
     public async Task NotifyOrderStatusChange(string orderId, string status, string message)
     {

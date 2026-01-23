@@ -105,25 +105,8 @@ class SignalRService {
       try {
         await _hubConnection!.start();
         debugPrint('SignalR Connected');
-        await _joinCourierGroup();
       } catch (e) {
         debugPrint('SignalR Connection Error: $e');
-      }
-    }
-  }
-
-  Future<void> _joinCourierGroup() async {
-    final userId = await _secureStorage.getUserId();
-    if (userId != null &&
-        _hubConnection?.state == HubConnectionState.connected) {
-      // Ideally the server adds the user to the group based on the token logic,
-      // but if there's a specific method to call like "JoinCourierGroup", call it here.
-      // Based on NotificationHub.cs, there is a method JoinCourierGroup(string courierId)
-      try {
-        await _hubConnection!.invoke('JoinCourierGroup', args: [userId]);
-        debugPrint('Joined Courier Group: $userId');
-      } catch (e) {
-        debugPrint('Error joining courier group: $e');
       }
     }
   }

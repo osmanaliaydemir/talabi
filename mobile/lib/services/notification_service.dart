@@ -23,8 +23,9 @@ class NotificationService {
   bool get isFirebaseAvailable => _firebaseMessaging != null;
 
   // Broadcast stream for order assignment notifications
-  final _orderAssignedController = StreamController<int>.broadcast();
-  Stream<int> get orderAssignedStream => _orderAssignedController.stream;
+  // NOTE: orderId is treated as String (can be GUID or numeric)
+  final _orderAssignedController = StreamController<String>.broadcast();
+  Stream<String> get orderAssignedStream => _orderAssignedController.stream;
 
   // Callback for order assignment notifications (Deprecated - use stream)
   // void Function(int orderId)? onOrderAssigned;
@@ -198,11 +199,9 @@ class NotificationService {
         message.data.containsKey('type')) {
       final type = message.data['type'];
       if (type == 'order_assigned' || type == 'ORDER_ASSIGNED') {
-        final orderId = int.tryParse(message.data['orderId'].toString());
-        if (orderId != null) {
-          // Add to stream instead of callback
-          _orderAssignedController.add(orderId);
-        }
+        final orderId = message.data['orderId'].toString();
+        // Add to stream instead of callback
+        _orderAssignedController.add(orderId);
       }
     }
 

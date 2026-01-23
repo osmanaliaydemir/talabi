@@ -10,6 +10,8 @@ import 'package:mobile/utils/currency_formatter.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_header.dart';
 import 'package:mobile/features/dashboard/presentation/widgets/courier_bottom_nav.dart';
 import 'package:mobile/services/notification_service.dart';
+import 'package:mobile/services/signalr_service.dart';
+import 'package:mobile/config/injection.dart';
 import 'dart:async';
 
 class CourierActiveDeliveriesScreen extends StatefulWidget {
@@ -44,7 +46,8 @@ class _CourierActiveDeliveriesScreenState
   bool _isLoadingMore = false;
 
   final NotificationService _notificationService = NotificationService();
-  StreamSubscription? _orderAssignedSubscription;
+  StreamSubscription<String>? _orderAssignedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRSubscription;
 
   @override
   void initState() {
@@ -56,12 +59,21 @@ class _CourierActiveDeliveriesScreenState
     );
     _tabController.addListener(_onTabChanged);
 
-    // Subscribe to notifications for real-time updates
+    // Subscribe to FCM notifications for real-time updates
     _orderAssignedSubscription = _notificationService.orderAssignedStream.listen((
       orderId,
     ) {
       // Refresh active orders tab if we are on it, or just in background to keep data fresh
       _loadActiveOrders();
+    });
+
+    // Subscribe to SignalR order assignment stream for real-time updates
+    _signalRSubscription = getIt<SignalRService>().onOrderAssigned.listen((
+      data,
+    ) {
+      if (data.containsKey('orderId')) {
+        _loadActiveOrders();
+      }
     });
 
     // İlk yükleme
@@ -86,6 +98,7 @@ class _CourierActiveDeliveriesScreenState
   @override
   void dispose() {
     _orderAssignedSubscription?.cancel();
+    _signalRSubscription?.cancel();
     _tabController
       ..removeListener(_onTabChanged)
       ..dispose();
