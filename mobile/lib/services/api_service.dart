@@ -69,7 +69,7 @@ class ApiService {
   final UserRemoteDataSource _userRemoteDataSource;
   final CacheService _cacheService;
   Map<String, String>? _cachedSystemSettings;
-  List<dynamic>? _cachedAddresses;
+
   final Map<String, List<Campaign>> _cachedCampaigns = {};
 
   Dio get dio => _networkClient.dio;
@@ -645,9 +645,6 @@ class ApiService {
 
   // Address methods
   Future<List<dynamic>> getAddresses() async {
-    if (_cachedAddresses != null) {
-      return _cachedAddresses!;
-    }
     try {
       final response = await dio.get('/addresses');
       // Backend artık ApiResponse<T> formatında döndürüyor
@@ -663,12 +660,11 @@ class ApiService {
           throw Exception(apiResponse.message ?? 'Adresler getirilemedi');
         }
 
-        _cachedAddresses = apiResponse.data!;
-        return _cachedAddresses!;
+        return apiResponse.data!;
       }
       // Eski format (direkt liste)
-      _cachedAddresses = response.data as List;
-      return _cachedAddresses!;
+      // _cachedAddresses = response.data as List; // Cache removed
+      return response.data as List;
     } catch (e, stackTrace) {
       LoggerService().error('Error fetching addresses', e, stackTrace);
       rethrow;
@@ -678,7 +674,6 @@ class ApiService {
   Future<void> createAddress(Map<String, dynamic> data) async {
     try {
       final response = await dio.post('/addresses', data: data);
-      _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -700,7 +695,6 @@ class ApiService {
   Future<void> updateAddress(String id, Map<String, dynamic> data) async {
     try {
       final response = await dio.post('/addresses/$id', data: data);
-      _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -722,7 +716,6 @@ class ApiService {
   Future<void> deleteAddress(String id) async {
     try {
       final response = await dio.post('/addresses/$id/delete');
-      _cachedAddresses = null; // Invalidate cache
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {

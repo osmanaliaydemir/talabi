@@ -176,8 +176,9 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                       width: 90,
                                       height: 90,
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryOrange
-                                            .withValues(alpha: 0.1),
+                                        color: Theme.of(
+                                          context,
+                                        ).primaryColor.withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
@@ -189,10 +190,10 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen>
                                           ),
                                         ],
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.language,
                                         size: 45,
-                                        color: AppTheme.primaryOrange,
+                                        color: Theme.of(context).primaryColor,
                                       ),
                                     ),
                                   ),

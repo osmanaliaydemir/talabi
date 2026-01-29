@@ -138,10 +138,10 @@ class _ImprintScreenState extends State<ImprintScreen> {
           Container(
             padding: const EdgeInsets.all(AppTheme.spacingSmall),
             decoration: BoxDecoration(
-              color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
-            child: Icon(icon, color: AppTheme.primaryOrange, size: 20),
+            child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
           ),
           const SizedBox(width: AppTheme.spacingMedium),
           Expanded(

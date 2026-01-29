@@ -1337,50 +1337,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Card (like vendor)
-              Card(
-                color: Colors.teal.shade50,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.delivery_dining,
-                        size: 48,
-                        color: Colors.teal.shade700,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              localizations?.courierWelcome ??
-                                  'Welcome Back, Courier!',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _courier?.name ??
-                                  authProvider.fullName ??
-                                  authProvider.email ??
-                                  '',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
               // Status Card
               Card(
                 child: Padding(
@@ -1449,125 +1405,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              // Stats cards (like vendor)
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      icon: Icons.history,
-                      title:
-                          localizations?.deliveryHistory ?? 'Delivery History',
-                      value: _statistics?.todayDeliveries.toString() ?? '0',
-                      subtitle: localizations?.today ?? 'Today',
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      icon: Icons.attach_money,
-                      title: localizations?.earnings ?? 'Earnings',
-                      value: CurrencyFormatter.format(
-                        _statistics?.todayEarnings ?? 0,
-                        Currency.try_,
-                      ),
-                      subtitle: localizations?.today ?? 'Today',
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      icon: Icons.star,
-                      title: localizations?.rating ?? 'Rating',
-                      value:
-                          _statistics?.averageRating.toStringAsFixed(1) ??
-                          '0.0',
-                      subtitle:
-                          '(${_statistics?.totalRatings ?? 0} ${(localizations?.reviews(_statistics?.totalRatings ?? 0) ?? '').replaceAll(RegExp(r'[\(\)]'), '').replaceAll('${_statistics?.totalRatings ?? 0}', '').trim().isNotEmpty ? (localizations?.reviews(_statistics?.totalRatings ?? 0) ?? '').replaceAll(RegExp(r'[\(\)]'), '').replaceAll('${_statistics?.totalRatings ?? 0}', '').trim() : "reviews"})',
-                      color: AppTheme.primaryOrange,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      icon: Icons.local_shipping,
-                      title: localizations?.total ?? 'Total',
-                      value: _statistics?.totalDeliveries.toString() ?? '0',
-                      subtitle: localizations?.allTime ?? 'All time',
-                      color: Colors.purple,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              // Quick Actions (like vendor)
-              Text(
-                localizations?.quickActions ?? 'Quick Actions',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.5,
-                children: [
-                  _buildActionCard(
-                    context,
-                    localizations?.activeDeliveries ?? 'Active Deliveries',
-                    Icons.delivery_dining,
-                    Colors.teal,
-                    () {
-                      Navigator.of(
-                        context,
-                      ).pushNamed('/courier/active-deliveries');
-                    },
-                  ),
-                  _buildActionCard(
-                    context,
-                    localizations?.earnings ?? 'Earnings',
-                    Icons.attach_money,
-                    Colors.green,
-                    () {
-                      Navigator.of(context).pushNamed('/courier/earnings');
-                    },
-                  ),
-                  _buildActionCard(
-                    context,
-                    localizations?.profile ?? 'Profile',
-                    Icons.person,
-                    Colors.blue,
-                    () {
-                      Navigator.of(context).pushNamed('/courier/profile');
-                    },
-                  ),
-                  _buildActionCard(
-                    context,
-                    localizations?.deliveryHistory ?? 'Delivery History',
-                    Icons.history,
-                    Colors.purple,
-                    () {
-                      Navigator.of(
-                        context,
-                      ).pushNamed('/courier/active-deliveries', arguments: 1);
-                    },
-                  ),
-                ],
               ),
               const SizedBox(height: 24),
               // Active Deliveries Section
@@ -1747,6 +1584,125 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                         );
                       },
                     ),
+              const SizedBox(height: 24),
+              // Stats cards (like vendor)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.history,
+                      title:
+                          localizations?.deliveryHistory ?? 'Delivery History',
+                      value: _statistics?.todayDeliveries.toString() ?? '0',
+                      subtitle: localizations?.today ?? 'Today',
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.attach_money,
+                      title: localizations?.earnings ?? 'Earnings',
+                      value: CurrencyFormatter.format(
+                        _statistics?.todayEarnings ?? 0,
+                        Currency.try_,
+                      ),
+                      subtitle: localizations?.today ?? 'Today',
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.star,
+                      title: localizations?.rating ?? 'Rating',
+                      value:
+                          _statistics?.averageRating.toStringAsFixed(1) ??
+                          '0.0',
+                      subtitle:
+                          '(${_statistics?.totalRatings ?? 0} ${(localizations?.reviews(_statistics?.totalRatings ?? 0) ?? '').replaceAll(RegExp(r'[\(\)]'), '').replaceAll('${_statistics?.totalRatings ?? 0}', '').trim().isNotEmpty ? (localizations?.reviews(_statistics?.totalRatings ?? 0) ?? '').replaceAll(RegExp(r'[\(\)]'), '').replaceAll('${_statistics?.totalRatings ?? 0}', '').trim() : "reviews"})',
+                      color: AppTheme.primaryOrange,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      icon: Icons.local_shipping,
+                      title: localizations?.total ?? 'Total',
+                      value: _statistics?.totalDeliveries.toString() ?? '0',
+                      subtitle: localizations?.allTime ?? 'All time',
+                      color: Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Quick Actions (like vendor)
+              Text(
+                localizations?.quickActions ?? 'Quick Actions',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.5,
+                children: [
+                  _buildActionCard(
+                    context,
+                    localizations?.activeDeliveries ?? 'Active Deliveries',
+                    Icons.delivery_dining,
+                    Colors.teal,
+                    () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed('/courier/active-deliveries');
+                    },
+                  ),
+                  _buildActionCard(
+                    context,
+                    localizations?.earnings ?? 'Earnings',
+                    Icons.attach_money,
+                    Colors.green,
+                    () {
+                      Navigator.of(context).pushNamed('/courier/earnings');
+                    },
+                  ),
+                  _buildActionCard(
+                    context,
+                    localizations?.profile ?? 'Profile',
+                    Icons.person,
+                    Colors.blue,
+                    () {
+                      Navigator.of(context).pushNamed('/courier/profile');
+                    },
+                  ),
+                  _buildActionCard(
+                    context,
+                    localizations?.deliveryHistory ?? 'Delivery History',
+                    Icons.history,
+                    Colors.purple,
+                    () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed('/courier/active-deliveries', arguments: 1);
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         ),

@@ -58,7 +58,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   Text(
                     appLocalizations?.dateFormat ?? 'Date Format',
                     style: AppTheme.poppins(
-                      color: AppTheme.primaryOrange,
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -72,7 +72,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   ].map((format) {
                     // ignore: deprecated_member_use
                     return RadioListTile<String>(
-                      activeColor: AppTheme.primaryOrange,
+                      activeColor: Theme.of(context).primaryColor,
                       title: Text(
                         format,
                         style: AppTheme.poppins(color: AppTheme.textPrimary),
@@ -95,7 +95,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   Text(
                     appLocalizations?.timeFormat ?? 'Time Format',
                     style: AppTheme.poppins(
-                      color: AppTheme.primaryOrange,
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -103,7 +103,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   const SizedBox(height: AppTheme.spacingSmall),
                   // ignore: deprecated_member_use
                   RadioListTile<String>(
-                    activeColor: AppTheme.primaryOrange,
+                    activeColor: Theme.of(context).primaryColor,
                     title: Text(
                       appLocalizations?.hour24 ?? '24 Hour',
                       style: AppTheme.poppins(color: AppTheme.textPrimary),
@@ -120,7 +120,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   ),
                   // ignore: deprecated_member_use
                   RadioListTile<String>(
-                    activeColor: AppTheme.primaryOrange,
+                    activeColor: Theme.of(context).primaryColor,
                     title: Text(
                       appLocalizations?.hour12 ?? '12 Hour',
                       style: AppTheme.poppins(color: AppTheme.textPrimary),
@@ -142,7 +142,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                   Text(
                     appLocalizations?.timeZone ?? 'Time Zone',
                     style: AppTheme.poppins(
-                      color: AppTheme.primaryOrange,
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -190,7 +190,7 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryOrange,
+                        backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: AppTheme.textOnPrimary,
                         padding: const EdgeInsets.symmetric(
                           vertical: AppTheme.spacingMedium,
@@ -226,14 +226,14 @@ class _RegionalSettingsScreenState extends State<RegionalSettingsScreen> {
     LocalizationProvider localization,
   ) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.95),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
           ],
         ),
       ),

@@ -62,16 +62,16 @@ class LegalMenuScreen extends StatelessWidget {
                         leading: Container(
                           padding: const EdgeInsets.all(AppTheme.spacingSmall),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withValues(
-                              alpha: 0.1,
-                            ),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusSmall,
                             ),
                           ),
                           child: Icon(
                             doc['icon'] as IconData,
-                            color: AppTheme.primaryOrange,
+                            color: Theme.of(context).primaryColor,
                             size: AppTheme.iconSizeMedium,
                           ),
                         ),
@@ -126,14 +126,14 @@ class LegalMenuScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.95),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
           ],
         ),
       ),

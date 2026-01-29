@@ -27,40 +27,8 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSectionHeader(context, localizations.displaySettings),
-                    // Dark mode geçici olarak devre dışı bırakıldı
-                    // SwitchListTile(
-                    //   activeColor: AppTheme.primaryOrange,
-                    //   title: Text(
-                    //     localizations.darkMode,
-                    //     style: AppTheme.poppins(
-                    //       fontWeight: FontWeight.w500,
-                    //       color: AppTheme.textPrimary,
-                    //     ),
-                    //   ),
-                    //   subtitle: Text(
-                    //     localizations.darkModeDescription,
-                    //     style: AppTheme.poppins(
-                    //       fontSize: 12,
-                    //       color: AppTheme.textSecondary,
-                    //     ),
-                    //   ),
-                    //   value: themeProvider.themeMode == ThemeMode.dark,
-                    //   onChanged: (value) {
-                    //     themeProvider.setThemeMode(
-                    //       value ? ThemeMode.dark : ThemeMode.light,
-                    //     );
-                    //     ToastMessage.show(
-                    //       context,
-                    //       message: localizations.settingsSaved,
-                    //       isSuccess: true,
-                    //     );
-                    //   },
-                    //   contentPadding: EdgeInsets.symmetric(
-                    //     horizontal: AppTheme.spacingMedium,
-                    //   ),
-                    // ),
                     SwitchListTile(
-                      activeThumbColor: AppTheme.primaryOrange,
+                      activeThumbColor: Theme.of(context).primaryColor,
                       title: Text(
                         localizations.highContrast,
                         style: AppTheme.poppins(
@@ -109,9 +77,10 @@ class AccessibilitySettingsScreen extends StatelessWidget {
                               Text('A', style: AppTheme.poppins(fontSize: 14)),
                               Expanded(
                                 child: Slider(
-                                  activeColor: AppTheme.primaryOrange,
-                                  inactiveColor: AppTheme.primaryOrange
-                                      .withValues(alpha: 0.3),
+                                  activeColor: Theme.of(context).primaryColor,
+                                  inactiveColor: Theme.of(
+                                    context,
+                                  ).primaryColor.withValues(alpha: 0.3),
                                   value: themeProvider.textScaleFactor,
                                   min: 0.8,
                                   max: 1.5,
@@ -159,14 +128,14 @@ class AccessibilitySettingsScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, AppLocalizations localizations) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.lightOrange,
-            AppTheme.primaryOrange,
-            AppTheme.darkOrange,
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.95),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
           ],
         ),
       ),
@@ -254,7 +223,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
       child: Text(
         title,
         style: AppTheme.poppins(
-          color: AppTheme.primaryOrange,
+          color: Theme.of(context).primaryColor,
           fontWeight: FontWeight.bold,
           fontSize: 16,
         ),

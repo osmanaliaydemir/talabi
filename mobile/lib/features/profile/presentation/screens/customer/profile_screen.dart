@@ -249,7 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           ),
-          child: Icon(icon, color: AppTheme.primaryOrange, size: 24),
+          child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
         ),
         title: Text(
           title,
@@ -284,7 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onPressed: () => _showLogoutConfirmation(context, localizations),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          side: const BorderSide(color: Colors.red),
+          side: BorderSide(color: Theme.of(context).primaryColor),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           ),
@@ -294,7 +294,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: AppTheme.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Colors.red,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       ),
