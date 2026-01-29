@@ -20,8 +20,11 @@ class SignalRService {
     final token = await _secureStorage.getToken();
     if (token == null) return;
 
-    final hubUrl =
-        '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/hubs/notifications';
+    String baseUrl = AppConfig.apiBaseUrl;
+    if (baseUrl.endsWith('/api')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 4);
+    }
+    final hubUrl = '$baseUrl/hubs/notifications';
 
     _hubConnection = HubConnectionBuilder()
         .withUrl(
