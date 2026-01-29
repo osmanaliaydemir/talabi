@@ -26,11 +26,18 @@ class SignalRService {
     }
     final hubUrl = '$baseUrl/hubs/notifications';
 
+    // 403 Hatasını (Negotiate Block) aşmak için:
+    // 1. skipNegotiation: true (Negotiate isteği atma)
+    // 2. transport: HttpTransportType.webSockets (Doğrudan WS aç)
+    // 3. Token'ı sadece URL'den gönder (accessTokenFactory'yi null yap, conflict olmasın)
+    final hubUrlWithToken = '$hubUrl?access_token=$token';
+
     _hubConnection = HubConnectionBuilder()
         .withUrl(
-          hubUrl,
+          hubUrlWithToken,
           HttpConnectionOptions(
-            accessTokenFactory: () async => token,
+            transport: HttpTransportType.webSockets,
+            skipNegotiation: true,
             logging: (level, message) => debugPrint('SignalR: $message'),
           ),
         )
