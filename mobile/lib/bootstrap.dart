@@ -8,6 +8,7 @@ import 'package:mobile/config/injection.dart';
 import 'package:mobile/firebase_options.dart';
 import 'package:mobile/services/logger_service.dart';
 import 'package:mobile/services/preferences_service.dart';
+import 'package:mobile/services/notification_service.dart';
 
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,17 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Initialize Notification Service (Requests permissions & sets up channels)
+    try {
+      await NotificationService().init();
+    } catch (e, stackTrace) {
+      LoggerService().error(
+        'Notification initialization failed',
+        e,
+        stackTrace,
+      );
+    }
 
     // Pass all uncaught "fatal" errors from the framework to Crashlytics
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

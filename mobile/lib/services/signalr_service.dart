@@ -14,6 +14,11 @@ class SignalRService {
   Stream<Map<String, dynamic>> get onOrderAssigned =>
       _orderAssignedController.stream;
 
+  final _vendorNewOrderController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get onVendorNewOrder =>
+      _vendorNewOrderController.stream;
+
   bool get isConnected => _hubConnection?.state == HubConnectionState.connected;
 
   Future<void> init() async {
@@ -104,6 +109,15 @@ class SignalRService {
         _orderAssignedController.add(normalizedData);
       }
     });
+
+    // Listen for "NewOrder" event (Vendor specific)
+    _hubConnection!.on('NewOrder', (arguments) {
+      debugPrint('SignalR: NewOrder event received: $arguments');
+      if (arguments != null && arguments.isNotEmpty) {
+        final data = arguments[0] as Map<String, dynamic>;
+        _vendorNewOrderController.add(data);
+      }
+    });
   }
 
   Future<void> startConnection() async {
@@ -130,6 +144,19 @@ class SignalRService {
         debugPrint('Joined Courier Group with courierId: $courierId');
       } catch (e) {
         debugPrint('Error joining courier group with courierId: $e');
+      }
+    }
+  }
+
+  /// Satıcı ID'si ile gruba katılır (profil yüklendikten sonra çağrılmalı)
+  Future<void> joinVendorGroup(String vendorId) async {
+    if (vendorId.isNotEmpty &&
+        _hubConnection?.state == HubConnectionState.connected) {
+      try {
+        await _hubConnection!.invoke('JoinVendorGroup', args: [vendorId]);
+        debugPrint('Joined Vendor Group with vendorId: $vendorId');
+      } catch (e) {
+        debugPrint('Error joining vendor group with vendorId: $e');
       }
     }
   }

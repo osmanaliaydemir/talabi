@@ -1,7 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:mobile/utils/custom_routes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/features/orders/presentation/screens/vendor/orders_screen.dart';
 import 'package:mobile/features/products/presentation/screens/vendor/products_screen.dart';
 import 'package:mobile/features/reports/presentation/screens/vendor/reports_screen.dart';
@@ -15,6 +18,7 @@ import 'package:mobile/features/dashboard/presentation/widgets/vendor_header.dar
 import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav.dart';
 import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/services/signalr_service.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/pending_approval_widget.dart';
@@ -32,10 +36,54 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   bool _isLoading = true;
   bool _isCheckingProfile = true;
 
+  final SignalRService _signalRService = SignalRService();
+  StreamSubscription? _newOrderSubscription;
+
   @override
   void initState() {
     super.initState();
     _checkProfileAndLoad();
+    _initSignalR();
+  }
+
+  Future<void> _initSignalR() async {
+    await _signalRService.startConnection();
+    _setupSignalRListener();
+  }
+
+  void _setupSignalRListener() {
+    _newOrderSubscription = _signalRService.onVendorNewOrder.listen((data) {
+      debugPrint('Vendor Dashboard: New Order Received via SignalR');
+      if (mounted) {
+        // Show notification/toast
+        ToastMessage.show(
+          context,
+          message: 'Yeni sipariş alındı!',
+          isSuccess: true,
+        );
+
+        // Sesli ve Titreşimli Bildirim Tetikle
+        try {
+          NotificationService().showManualNotification(
+            title: 'Yeni Sipariş!',
+            body: 'Tebrikler, yeni bir sipariş aldınız.',
+            payload: json.encode(data), // datayı json string'e çevir
+          );
+        } catch (e) {
+          debugPrint('Notification Error: $e');
+        }
+
+        // Refresh dashboard data
+        _loadSummary();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _newOrderSubscription?.cancel();
+    _signalRService.stopConnection(); // Stop connection to clean up resources
+    super.dispose();
   }
 
   /// Zorunlu profil alanlarını kontrol eder
@@ -85,6 +133,21 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
           );
         }
         return;
+      }
+
+      // Profil yüklendikten sonra SignalR grubuna katıl
+      if (profile.containsKey('id')) {
+        final vendorId = profile['id'].toString();
+        debugPrint('Connecting to Vendor SignalR Group: $vendorId');
+        // Bağlantı kurulana kadar bekle veya hemen katılmayı dene
+        if (_signalRService.isConnected) {
+          await _signalRService.joinVendorGroup(vendorId);
+        } else {
+          // Bağlantı henüz hazır değilse, bağlantı sonrası için tekrar dene (basit retry)
+          Future.delayed(const Duration(seconds: 2), () async {
+            await _signalRService.joinVendorGroup(vendorId);
+          });
+        }
       }
 
       // Profil tamamsa dashboard'u yükle
