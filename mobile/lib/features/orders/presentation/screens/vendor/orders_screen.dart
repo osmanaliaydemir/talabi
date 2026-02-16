@@ -11,7 +11,9 @@ import 'package:mobile/features/dashboard/presentation/widgets/vendor_bottom_nav
 import 'package:mobile/services/logger_service.dart';
 
 class VendorOrdersScreen extends StatefulWidget {
-  const VendorOrdersScreen({super.key});
+  final int initialIndex;
+
+  const VendorOrdersScreen({super.key, this.initialIndex = 0});
 
   @override
   State<VendorOrdersScreen> createState() => _VendorOrdersScreenState();
@@ -44,12 +46,24 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabCount, vsync: this);
+    _tabController = TabController(
+      length: _tabCount,
+      vsync: this,
+      initialIndex: widget.initialIndex,
+    );
     _tabController.addListener(_handleTabChange);
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
-    // İlk tab'ı (Pending) seç
-    _selectedStatus = 'Pending';
+    // İlk tab'ı (initialIndex'e göre) seç
+    final statuses = [
+      'Pending',
+      'Preparing',
+      'Ready',
+      'OutForDelivery',
+      'Delivered',
+      'Cancelled',
+    ];
+    _selectedStatus = statuses[widget.initialIndex];
     _loadOrderCounts();
     _loadOrders();
   }

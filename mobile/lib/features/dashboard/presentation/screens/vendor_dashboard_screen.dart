@@ -197,21 +197,20 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       return const PendingApprovalWidget();
     }
 
-    // Profil kontrolü yapılıyorsa loading göster
     if (_isCheckingProfile) {
       return const Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFF5F7FA), // Light corporate background
         body: Center(
           child: CircularProgressIndicator(color: Colors.deepPurple),
         ),
       );
     }
 
-    // Use SYP as default currency for vendor dashboard revenue
     const Currency displayCurrency = Currency.syp;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: VendorHeader(
         title: localizations?.vendorDashboard ?? 'Satıcı Paneli',
         subtitle: auth.email ?? '',
@@ -219,128 +218,109 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadSummary,
+        color: primaryColor,
         child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.deepPurple),
-              )
+            ? Center(child: CircularProgressIndicator(color: primaryColor))
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Welcome card
-                    Card(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.store,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    localizations != null
-                                        ? localizations.welcomeVendor(
-                                            auth.fullName ??
-                                                localizations.vendor,
-                                          )
-                                        : 'Hoş Geldiniz, ${auth.fullName ?? "Satıcı"}',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    auth.email ?? '',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                    // Welcome Section
+                    _buildWelcomeSection(context, auth, localizations),
+                    const SizedBox(height: 24),
+
+                    // Stats Grid
+                    Text(
+                      localizations?.vendorDashboard ?? 'Genel Bakış',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    // Stats cards
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            context,
-                            localizations?.todayOrders ?? 'Bugünkü Siparişler',
-                            '${_summary?['todayOrders'] ?? 0}',
-                            Icons.shopping_bag,
-                            Colors.blue,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            context,
-                            localizations?.pendingOrders ??
-                                'Bekleyen Siparişler',
-                            '${_summary?['pendingOrders'] ?? 0}',
-                            Icons.pending,
-                            Colors.deepPurple,
-                          ),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 12),
-                    Row(
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.3,
                       children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            context,
-                            localizations?.todayRevenue ?? 'Bugünkü Gelir',
-                            CurrencyFormatter.format(
-                              (_summary?['todayRevenue'] ?? 0).toDouble(),
-                              displayCurrency,
-                            ),
-                            Icons.account_balance_wallet,
-                            Colors.green,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                NoSlidePageRoute(
-                                  builder: (context) => const WalletScreen(
-                                    bottomNavigationBar: VendorBottomNav(
-                                      currentIndex: 3,
-                                    ),
+                        _buildStatCard(
+                          context,
+                          localizations?.todayOrders ?? 'Bugünkü Siparişler',
+                          '${_summary?['todayOrders'] ?? 0}',
+                          Icons.shopping_bag_outlined,
+                          Colors.blue,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              NoSlidePageRoute(
+                                builder: (context) =>
+                                    const VendorOrdersScreen(initialIndex: 4),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildStatCard(
+                          context,
+                          localizations?.pendingOrders ?? 'Bekleyen Siparişler',
+                          '${_summary?['pendingOrders'] ?? 0}',
+                          Icons.hourglass_empty_outlined,
+                          Colors.orange,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              NoSlidePageRoute(
+                                builder: (context) =>
+                                    const VendorOrdersScreen(initialIndex: 0),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildStatCard(
+                          context,
+                          localizations?.todayRevenue ?? 'Bugünkü Gelir',
+                          CurrencyFormatter.format(
+                            (_summary?['todayRevenue'] ?? 0).toDouble(),
+                            displayCurrency,
+                          ),
+                          Icons.account_balance_wallet_outlined,
+                          Colors.green,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              NoSlidePageRoute(
+                                builder: (context) => const WalletScreen(
+                                  bottomNavigationBar: VendorBottomNav(
+                                    currentIndex: 3,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            context,
-                            localizations?.weeklyRevenue ?? 'Haftalık Gelir',
-                            CurrencyFormatter.format(
-                              (_summary?['weekRevenue'] ?? 0).toDouble(),
-                              displayCurrency,
-                            ),
-                            Icons.trending_up,
-                            Colors.purple,
+                        _buildStatCard(
+                          context,
+                          localizations?.weeklyRevenue ?? 'Haftalık Gelir',
+                          CurrencyFormatter.format(
+                            (_summary?['weekRevenue'] ?? 0).toDouble(),
+                            displayCurrency,
                           ),
+                          Icons.trending_up,
+                          Colors.purple,
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 24),
+
                     // Alerts Section
                     FutureBuilder<Map<String, dynamic>>(
                       future: _apiService.getDashboardAlerts(),
@@ -367,98 +347,63 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                             Text(
                               localizations?.attentionRequired ??
                                   'Dikkat Gerekenler',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange[800],
-                                  ),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D3748),
+                              ),
                             ),
                             const SizedBox(height: 12),
                             if (criticalStockCount > 0)
-                              Card(
-                                color: Colors.red[50],
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.production_quantity_limits,
-                                    color: Colors.red,
+                              _buildAlertCard(
+                                context,
+                                localizations?.criticalStockAlert(
+                                      criticalStockCount,
+                                    ) ??
+                                    '$criticalStockCount ürün kritik stok seviyesinde',
+                                Icons.warning_amber_rounded,
+                                Colors.red.shade600,
+                                Colors.red.shade50,
+                                () => Navigator.push(
+                                  context,
+                                  NoSlidePageRoute(
+                                    builder: (_) =>
+                                        const VendorProductsScreen(),
                                   ),
-                                  title: Text(
-                                    localizations?.criticalStockAlert(
-                                          criticalStockCount,
-                                        ) ??
-                                        '$criticalStockCount ürün kritik stok seviyesinde',
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 16,
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      NoSlidePageRoute(
-                                        builder: (context) =>
-                                            const VendorProductsScreen(),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             if (delayedOrdersCount > 0)
-                              Card(
-                                color: Colors.orange[50],
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.timer_off,
-                                    color: Colors.orange,
+                              _buildAlertCard(
+                                context,
+                                localizations?.delayedOrdersAlert(
+                                      delayedOrdersCount,
+                                    ) ??
+                                    '$delayedOrdersCount sipariş gecikmiş durumda',
+                                Icons.timer_off_outlined,
+                                Colors.orange.shade800,
+                                Colors.orange.shade50,
+                                () => Navigator.push(
+                                  context,
+                                  NoSlidePageRoute(
+                                    builder: (_) => const VendorOrdersScreen(),
                                   ),
-                                  title: Text(
-                                    localizations?.delayedOrdersAlert(
-                                          delayedOrdersCount,
-                                        ) ??
-                                        '$delayedOrdersCount sipariş gecikmiş durumda',
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 16,
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      NoSlidePageRoute(
-                                        builder: (context) =>
-                                            const VendorOrdersScreen(),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             if (unansweredReviewsCount > 0)
-                              Card(
-                                color: Colors.blue[50],
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.rate_review,
-                                    color: Colors.blue,
+                              _buildAlertCard(
+                                context,
+                                localizations?.unansweredReviewsAlert(
+                                      unansweredReviewsCount,
+                                    ) ??
+                                    '$unansweredReviewsCount cevaplanmamış yorum var',
+                                Icons.rate_review_outlined,
+                                Colors.blue.shade700,
+                                Colors.blue.shade50,
+                                () => Navigator.push(
+                                  context,
+                                  NoSlidePageRoute(
+                                    builder: (_) => const VendorReviewsScreen(),
                                   ),
-                                  title: Text(
-                                    localizations?.unansweredReviewsAlert(
-                                          unansweredReviewsCount,
-                                        ) ??
-                                        '$unansweredReviewsCount cevaplanmamış yorum var',
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 16,
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      NoSlidePageRoute(
-                                        builder: (context) =>
-                                            const VendorReviewsScreen(),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             const SizedBox(height: 24),
@@ -467,107 +412,76 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       },
                     ),
 
-                    // Quick actions
+                    // Quick Actions
                     Text(
                       localizations?.quickActions ?? 'Hızlı İşlemler',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.5,
-                      children: [
-                        _buildActionCard(
-                          context,
-                          localizations?.orders ?? 'Siparişler',
-                          Icons.receipt_long,
-                          Colors.blue,
-                          () {
-                            TapLogger.logNavigation(
-                              'VendorDashboard',
-                              'VendorOrders',
-                            );
-                            Navigator.push(
-                              context,
-                              NoSlidePageRoute(
-                                builder: (context) =>
-                                    const VendorOrdersScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildActionCard(
-                          context,
-                          localizations?.products ?? 'Ürünler',
-                          Icons.inventory_2,
-                          Colors.purple,
-                          () {
-                            TapLogger.logNavigation(
-                              'VendorDashboard',
-                              'VendorProducts',
-                            );
-                            Navigator.push(
-                              context,
-                              NoSlidePageRoute(
-                                builder: (context) =>
-                                    const VendorProductsScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildActionCard(
-                          context,
-                          localizations?.reports ?? 'Raporlar',
-                          Icons.bar_chart,
-                          Colors.green,
-                          () {
-                            TapLogger.logNavigation(
-                              'VendorDashboard',
-                              'VendorReports',
-                            );
-                            Navigator.push(
-                              context,
-                              NoSlidePageRoute(
-                                builder: (context) =>
-                                    const VendorReportsScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildActionCard(
-                          context,
-                          localizations != null
-                              ? (localizations.reviews(0).split('(')[0].trim())
-                              : 'Yorumlar',
-                          Icons.comment,
-                          Colors.deepPurple,
-                          () {
-                            TapLogger.logNavigation(
-                              'VendorDashboard',
-                              'VendorReviews',
-                            );
-                            Navigator.push(
-                              context,
-                              NoSlidePageRoute(
-                                builder: (context) =>
-                                    const VendorReviewsScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                    _buildQuickActionsGrid(context, localizations),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
       ),
       bottomNavigationBar: const VendorBottomNav(currentIndex: 0),
+    );
+  }
+
+  Widget _buildWelcomeSection(
+    BuildContext context,
+    AuthProvider auth,
+    AppLocalizations? localizations,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Hoş Geldiniz,',
+              style: TextStyle(
+                color: Color(0xFF718096),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              auth.fullName ?? localizations?.vendor ?? 'Satıcı',
+              style: const TextStyle(
+                color: Color(0xFF2D3748),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.store_rounded,
+            color: Theme.of(context).primaryColor,
+            size: 28,
+          ),
+        ),
+      ],
     );
   }
 
@@ -579,63 +493,254 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
     Color color, {
     VoidCallback? onTap,
   }) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.05),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ],
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildActionCard(
+  Widget _buildAlertCard(
+    BuildContext context,
+    String message,
+    IconData icon,
+    Color iconColor,
+    Color bgColor,
+    VoidCallback onTap,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: bgColor.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF4A5568),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.grey[400],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsGrid(
+    BuildContext context,
+    AppLocalizations? localizations,
+  ) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 2.2,
+      children: [
+        _buildActionTile(
+          context,
+          localizations?.orders ?? 'Siparişler',
+          Icons.receipt_long_rounded,
+          const Color(0xFF3182CE),
+          () {
+            TapLogger.logNavigation('VendorDashboard', 'VendorOrders');
+            Navigator.push(
+              context,
+              NoSlidePageRoute(builder: (_) => const VendorOrdersScreen()),
+            );
+          },
+        ),
+        _buildActionTile(
+          context,
+          localizations?.products ?? 'Ürünler',
+          Icons.inventory_2_rounded,
+          const Color(0xFF805AD5),
+          () {
+            TapLogger.logNavigation('VendorDashboard', 'VendorProducts');
+            Navigator.push(
+              context,
+              NoSlidePageRoute(builder: (_) => const VendorProductsScreen()),
+            );
+          },
+        ),
+        _buildActionTile(
+          context,
+          localizations?.reports ?? 'Raporlar',
+          Icons.bar_chart_rounded,
+          const Color(0xFF38A169),
+          () {
+            TapLogger.logNavigation('VendorDashboard', 'VendorReports');
+            Navigator.push(
+              context,
+              NoSlidePageRoute(builder: (_) => const VendorReportsScreen()),
+            );
+          },
+        ),
+        _buildActionTile(
+          context,
+          localizations != null
+              ? (localizations.reviews(0).split('(')[0].trim())
+              : 'Yorumlar',
+          Icons.chat_bubble_outline_rounded,
+          const Color(0xFFD69E2E),
+          () {
+            TapLogger.logNavigation('VendorDashboard', 'VendorReviews');
+            Navigator.push(
+              context,
+              NoSlidePageRoute(builder: (_) => const VendorReviewsScreen()),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionTile(
     BuildContext context,
     String title,
     IconData icon,
     Color color,
     VoidCallback onTap,
   ) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
