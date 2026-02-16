@@ -78,7 +78,7 @@ class TransactionDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${isPositive ? "+" : "-"}${transaction.amount.toStringAsFixed(2)} TRY',
+                    '${isPositive ? "+" : "-"}${transaction.amount.toStringAsFixed(2)} SYP',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,

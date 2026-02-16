@@ -464,7 +464,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fullNameRequired => 'الاسم الكامل مطلوب';
 
   @override
-  String get loginFailed => 'فشل تسجيل الدخول';
+  String get loginFailed => 'عنوان البريد الإلكتروني أو كلمة المرور غير صالحة';
 
   @override
   String get registerFailed => 'فشل التسجيل';

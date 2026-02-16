@@ -613,7 +613,7 @@
   "@fullNameRequired": {
     "description": "Full name is required"
   },
-  "loginFailed": "Login failed",
+  "loginFailed": "Invalid email address or password",
   "@loginFailed": {
     "description": "Login failed"
   },

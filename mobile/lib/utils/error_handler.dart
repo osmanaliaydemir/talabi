@@ -23,6 +23,9 @@ class ErrorHandler {
         return localizations.sessionExpired;
       case 'CODE_EXPIRED':
         return localizations.codeExpired;
+      case 'INVALID_CREDENTIALS':
+        return localizations
+            .loginFailed; // Or a more specific "Invalid email or password" if available
       default:
         return null;
     }
@@ -240,7 +243,7 @@ class ErrorHandler {
     AppLocalizations localizations, {
     String? fallbackMessage,
   }) {
-    String errorMessage = error.toString().replaceAll('Exception: ', '');
+    String errorMessage = '';
 
     if (error is DioException) {
       // Handle network errors
@@ -287,7 +290,7 @@ class ErrorHandler {
             }
           }
 
-          // ApiResponse envelope
+          // ApiResponse envelope - Prioritize 'message'
           if (responseData.containsKey('message') &&
               (responseData['message']?.toString().trim().isNotEmpty ??
                   false)) {
@@ -340,30 +343,35 @@ class ErrorHandler {
               errorMessage = code;
             }
           }
+        } else if (responseData is String) {
+          // If response is just a string
+          errorMessage = responseData;
         }
       }
 
       // Fallback: sometimes we throw DioException with a structured `error` payload
       // even when response parsing isn't available (or callers don't pass response through).
-      final err = error.error;
-      if (err is Map) {
-        final msg = err['message']?.toString();
-        if (msg != null && msg.trim().isNotEmpty) {
-          return msg;
-        }
-        final code = err['errorCode']?.toString();
-        final mapped = _mapErrorCodeToMessage(code, localizations);
-        if (mapped != null && mapped.trim().isNotEmpty) {
-          return mapped;
-        }
-        if (code != null && code.trim().isNotEmpty) {
-          return code;
-        }
-        final errs = err['errors'];
-        if (errs is List && errs.isNotEmpty) {
-          final joined = errs.map((e) => e.toString()).join('\n');
-          if (joined.trim().isNotEmpty) {
-            return joined;
+      if (errorMessage.isEmpty) {
+        final err = error.error;
+        if (err is Map) {
+          final msg = err['message']?.toString();
+          if (msg != null && msg.trim().isNotEmpty) {
+            return msg;
+          }
+          final code = err['errorCode']?.toString();
+          final mapped = _mapErrorCodeToMessage(code, localizations);
+          if (mapped != null && mapped.trim().isNotEmpty) {
+            return mapped;
+          }
+          if (code != null && code.trim().isNotEmpty) {
+            return code;
+          }
+          final errs = err['errors'];
+          if (errs is List && errs.isNotEmpty) {
+            final joined = errs.map((e) => e.toString()).join('\n');
+            if (joined.trim().isNotEmpty) {
+              return joined;
+            }
           }
         }
       }
@@ -373,8 +381,15 @@ class ErrorHandler {
       return errorMessage;
     }
 
+    // Default fallback
     if (fallbackMessage != null) {
       return fallbackMessage;
+    }
+
+    // Last resort cleanup
+    final cleanError = error.toString().replaceAll('Exception: ', '');
+    if (cleanError.isNotEmpty) {
+      return cleanError;
     }
 
     return localizations.error;

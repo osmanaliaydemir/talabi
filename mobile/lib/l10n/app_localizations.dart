@@ -985,7 +985,7 @@ abstract class AppLocalizations {
   /// Login failed
   ///
   /// In en, this message translates to:
-  /// **'Login failed'**
+  /// **'Invalid email address or password'**
   String get loginFailed;
 
   /// Registration failed

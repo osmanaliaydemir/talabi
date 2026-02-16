@@ -7,11 +7,12 @@ import 'package:mobile/features/auth/presentation/screens/customer/login_screen.
 import 'package:mobile/features/dashboard/presentation/screens/vendor_dashboard_screen.dart';
 import 'package:mobile/utils/navigation_logger.dart';
 import 'package:provider/provider.dart';
-import 'package:dio/dio.dart';
+
 import 'package:mobile/features/auth/presentation/screens/vendor/register_screen.dart';
 import 'package:mobile/widgets/auth_header.dart';
 import 'package:mobile/utils/role_mismatch_exception.dart';
 import 'package:mobile/widgets/toast_message.dart';
+import 'package:mobile/utils/error_handler.dart';
 
 class VendorLoginScreen extends StatefulWidget {
   const VendorLoginScreen({super.key});
@@ -78,19 +79,8 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        String errorMessage = e.toString();
-
-        // Hata mesajını temizle
-        final localizations = AppLocalizations.of(context);
-        if (e is DioException) {
-          errorMessage =
-              e.message ??
-              e.error?.toString() ??
-              (localizations?.defaultError ?? 'Bir hata oluştu');
-        } else if (errorMessage.startsWith('Exception: ')) {
-          errorMessage = errorMessage.substring(11);
-        }
-
+        final localizations = AppLocalizations.of(context)!;
+        final errorMessage = ErrorHandler.parseApiError(e, localizations);
         ToastMessage.show(context, message: errorMessage, isSuccess: false);
       }
     } finally {

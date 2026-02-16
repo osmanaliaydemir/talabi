@@ -14,6 +14,7 @@ import 'package:mobile/widgets/toast_message.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/widgets/auth_header.dart';
 import 'package:mobile/utils/role_mismatch_exception.dart';
+import 'package:mobile/utils/error_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -130,22 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on DioException catch (e) {
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;
-        String errorMessage = '';
-
-        // Extract error message from response
-        if (e.response?.data != null) {
-          final responseData = e.response!.data;
-          if (responseData is Map) {
-            errorMessage = responseData['message']?.toString() ?? '';
-          } else if (responseData is String) {
-            errorMessage = responseData;
-          }
-        }
-
-        // If no message in response, use exception message
-        if (errorMessage.isEmpty) {
-          errorMessage = e.message ?? e.toString();
-        }
+        final errorMessage = ErrorHandler.parseApiError(e, localizations);
 
         // Check if email is not confirmed
         if (errorMessage.toLowerCase().contains('email not confirmed') ||
@@ -162,13 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
             isSuccess: false,
           );
         } else {
-          ToastMessage.show(
-            context,
-            message: errorMessage.isNotEmpty
-                ? errorMessage
-                : '${localizations.loginFailed}: ${e.message}',
-            isSuccess: false,
-          );
+          ToastMessage.show(context, message: errorMessage, isSuccess: false);
         }
       }
     } catch (e) {

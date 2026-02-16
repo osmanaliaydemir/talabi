@@ -466,7 +466,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fullNameRequired => 'Ad soyad gerekli';
 
   @override
-  String get loginFailed => 'Giriş başarısız';
+  String get loginFailed => 'Girdiğiniz mail adresi veya şifre hatalı';
 
   @override
   String get registerFailed => 'Kayıt başarısız';

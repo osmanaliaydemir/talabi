@@ -616,7 +616,7 @@ class ApiService {
     String newPassword,
   ) async {
     try {
-      final response = await dio.put(
+      final response = await dio.post(
         '/profile/password',
         data: {'currentPassword': currentPassword, 'newPassword': newPassword},
       );
@@ -2070,7 +2070,7 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     try {
-      final response = await dio.put(
+      final response = await dio.post(
         VendorApiEndpoints.product(productId),
         data: data,
       );
@@ -2094,7 +2094,9 @@ class ApiService {
 
   Future<void> deleteProduct(String productId) async {
     try {
-      final response = await dio.delete(VendorApiEndpoints.product(productId));
+      final response = await dio.post(
+        '${VendorApiEndpoints.product(productId)}/delete',
+      );
       // Backend artık ApiResponse<T> formatında döndürüyor
       if (response.data is Map<String, dynamic> &&
           response.data.containsKey('success')) {
@@ -2118,7 +2120,7 @@ class ApiService {
     bool isAvailable,
   ) async {
     try {
-      final response = await dio.put(
+      final response = await dio.post(
         VendorApiEndpoints.productAvailability(productId),
         data: {'isAvailable': isAvailable},
       );
@@ -2148,7 +2150,7 @@ class ApiService {
 
   Future<void> updateProductPrice(String productId, double price) async {
     try {
-      final response = await dio.put(
+      final response = await dio.post(
         VendorApiEndpoints.productPrice(productId),
         data: {'price': price},
       );

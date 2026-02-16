@@ -331,7 +331,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen>
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    const Currency displayCurrency = Currency.try_;
+    const Currency displayCurrency = Currency.syp;
 
     return Scaffold(
       appBar: VendorHeader(

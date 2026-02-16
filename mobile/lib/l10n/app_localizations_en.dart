@@ -465,7 +465,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fullNameRequired => 'Full name is required';
 
   @override
-  String get loginFailed => 'Login failed';
+  String get loginFailed => 'Invalid email address or password';
 
   @override
   String get registerFailed => 'Registration failed';

@@ -164,7 +164,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${request.amount.toStringAsFixed(2)} ₺',
+                      '${request.amount.toStringAsFixed(2)} SYP',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Icon(statusIcon, color: statusColor, size: 16),
@@ -222,7 +222,7 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${_wallet?.balance.toStringAsFixed(2)} ${_wallet?.currency ?? "TRY"}',
+            '${_wallet?.balance.toStringAsFixed(2)} SYP',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 32,
@@ -331,7 +331,7 @@ class _WalletScreenState extends State<WalletScreen> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           trailing: Text(
-            '${isPositive ? "+" : "-"}${transaction.amount.toStringAsFixed(2)} TRY',
+            '${isPositive ? "+" : "-"}${transaction.amount.toStringAsFixed(2)} SYP',
             style: TextStyle(
               color: isPositive ? Colors.green : Colors.red,
               fontWeight: FontWeight.bold,

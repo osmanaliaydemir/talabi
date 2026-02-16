@@ -40,7 +40,7 @@ public class WalletService : IWalletService
             {
                 AppUserId = userId,
                 Balance = 0,
-                Currency = "TRY"
+                Currency = "SYP"
             };
             _context.Wallets.Add(wallet);
             await _context.SaveChangesAsync();

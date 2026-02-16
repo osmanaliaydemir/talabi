@@ -1,7 +1,7 @@
 enum Currency {
   try_('TRY', '₺'),
   usd('USD', '\$'),
-  syp('SYP', 'ل.س');
+  syp('SYP', 'SYP');
 
   const Currency(this.code, this.symbol);
 

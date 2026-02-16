@@ -22,6 +22,7 @@ import 'package:mobile/services/signalr_service.dart';
 
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/widgets/pending_approval_widget.dart';
+import 'package:mobile/features/wallet/presentation/screens/wallet_screen.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
@@ -206,8 +207,8 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       );
     }
 
-    // Use TRY as default currency for vendor dashboard revenue
-    const Currency displayCurrency = Currency.try_;
+    // Use SYP as default currency for vendor dashboard revenue
+    const Currency displayCurrency = Currency.syp;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -308,8 +309,20 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                               (_summary?['todayRevenue'] ?? 0).toDouble(),
                               displayCurrency,
                             ),
-                            Icons.attach_money,
+                            Icons.account_balance_wallet,
                             Colors.green,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                NoSlidePageRoute(
+                                  builder: (context) => const WalletScreen(
+                                    bottomNavigationBar: VendorBottomNav(
+                                      currentIndex: 3,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -563,30 +576,35 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
     String title,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
         ),
       ),
     );

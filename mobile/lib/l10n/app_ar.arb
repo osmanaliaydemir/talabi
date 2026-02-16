@@ -613,7 +613,7 @@
   "@fullNameRequired": {
     "description": "الاسم الكامل مطلوب"
   },
-  "loginFailed": "فشل تسجيل الدخول",
+  "loginFailed": "عنوان البريد الإلكتروني أو كلمة المرور غير صالحة",
   "@loginFailed": {
     "description": "فشل تسجيل الدخول"
   },

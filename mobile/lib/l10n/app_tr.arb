@@ -614,7 +614,7 @@
   "@fullNameRequired": {
     "description": "Ad soyad gerekli"
   },
-  "loginFailed": "Giriş başarısız",
+  "loginFailed": "Girdiğiniz mail adresi veya şifre hatalı",
   "@loginFailed": {
     "description": "Giriş başarısız"
   },

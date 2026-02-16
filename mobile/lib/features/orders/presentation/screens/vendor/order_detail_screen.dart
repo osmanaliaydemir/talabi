@@ -754,7 +754,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
   Widget build(BuildContext context) {
     // Use TRY as default currency for order display
     // In the future, currency can be retrieved from order items if available
-    const Currency displayCurrency = Currency.try_;
+    const Currency displayCurrency = Currency.syp;
 
     if (_isLoading) {
       return const Scaffold(
@@ -910,14 +910,14 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
                                     ),
                                   ],
                                   Text(
-                                    '${item['quantity']} x ${(item['unitPrice'] as num).toDouble().toStringAsFixed(2)} ₺',
+                                    '${item['quantity']} x ${(item['unitPrice'] as num).toDouble().toStringAsFixed(2)} SYP',
                                     style: TextStyle(color: Colors.grey[600]),
                                   ),
                                 ],
                               ),
                             ),
                             Text(
-                              '${(item['totalPrice'] as num).toDouble().toStringAsFixed(2)} ₺',
+                              '${(item['totalPrice'] as num).toDouble().toStringAsFixed(2)} SYP',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),

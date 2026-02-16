@@ -266,7 +266,7 @@ class AuthRemoteDataSource {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _networkClient.dio.put(
+      final response = await _networkClient.dio.post(
         ApiEndpoints.userProfile,
         data: data,
       );
